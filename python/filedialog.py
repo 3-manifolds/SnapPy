@@ -1,8 +1,5 @@
 import sys, platform
-if sys.version_info.major < 3:
-    import tkFileDialog
-else:
-    import tkinter.filedialog as tkFileDialog
+import tkinter.filedialog as tkFileDialog
 
 def askopenfile(**options):
     if sys.platform == 'darwin' and platform.mac_ver()[0] < '10.15.2':

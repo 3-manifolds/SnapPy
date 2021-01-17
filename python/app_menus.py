@@ -2,10 +2,7 @@
 from __future__ import unicode_literals
 from builtins import range
 import sys, os, webbrowser
-if sys.version_info.major < 3:
-    from urllib import pathname2url
-else:
-    from urllib.request import pathname2url
+from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir
 from .infodialog import about_snappy, InfoDialog

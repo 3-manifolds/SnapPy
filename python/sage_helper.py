@@ -88,8 +88,6 @@ def cyopengl_works():
             root = Tk_.Tk()
             if sys.platform not in ('linux', 'linux2'):
                 root.withdraw()
-            if sys.version_info.major < 3:
-                Tk_._default_root = root
         except:
             # tkinter loads OK but is not able to get a display.
             _gui_status['tk'] = _gui_status['cyopengl'] = False

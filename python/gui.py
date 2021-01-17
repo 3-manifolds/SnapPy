@@ -4,13 +4,8 @@ import os, sys, time, tempfile, png
 import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
-if sys.version_info.major < 3:
-    from tkSimpleDialog import Dialog
-    from SimpleDialog import SimpleDialog
-    from tkMessageBox import askyesno
-else:
-    from tkinter.simpledialog import Dialog, SimpleDialog
-    from tkinter.messagebox import askyesno
+from tkinter.simpledialog import Dialog, SimpleDialog
+from tkinter.messagebox import askyesno
 
 from plink.ipython_tools import IPythonTkRoot
 from . import filedialog

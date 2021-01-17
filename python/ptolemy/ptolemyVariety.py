@@ -22,17 +22,9 @@ try:
 except ImportError:
     _within_sage = False
 
-if sys.version_info.major < 3:
-    from urllib import urlopen
-    from urllib import quote as urlquote
-
-    class HTTPError(Exception):
-        pass
-
-else:
-    from urllib.request import urlopen
-    from urllib.request import quote as urlquote
-    from urllib.error import HTTPError
+from urllib.request import urlopen
+from urllib.request import quote as urlquote
+from urllib.error import HTTPError
 
 class PtolemyFileMissingError(Exception):
     """

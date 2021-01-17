@@ -1,4 +1,3 @@
-from future.utils import iteritems
 """
 This has been moved to FundamentalPolyhedronEngine.
 Only the testing code was left here.

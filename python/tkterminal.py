@@ -4,10 +4,7 @@ from builtins import range
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
-if sys.version_info.major < 3:
-    from urllib import pathname2url
-else:
-    from urllib.request import pathname2url
+from urllib.request import pathname2url
 from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))

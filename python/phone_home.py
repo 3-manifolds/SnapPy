@@ -1,8 +1,5 @@
 import sys
-if sys.version_info.major < 3:
-    from httplib import HTTPConnection
-else:
-    from http.client import HTTPConnection
+from http.client import HTTPConnection
 from threading import Thread
 from .version import version as this_version
 from distutils.version import LooseVersion

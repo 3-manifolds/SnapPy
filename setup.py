@@ -227,7 +227,8 @@ class SnapPyPipInstall(Command):
         if os.path.exists(egginfo):
             shutil.rmtree(egginfo)
         wheels = glob('dist' + os.sep + '*.whl')
-        new_wheel = max(wheels, key=os.path.getmtime)            
+        new_wheel = max(wheels, key=os.path.getmtime)
+        check_call([python, '-m', 'pip', 'uninstall', '-y', 'snappy'])
         check_call([python, '-m', 'pip', 'install', '--upgrade',
                     '--upgrade-strategy', 'only-if-needed',
                     new_wheel])
@@ -476,28 +477,23 @@ TwisterCore = Extension(
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 install_requires = ['plink>=2.3.1', 'spherogram>=1.8.3', 'FXrays>=1.3',
-                    'pypng', 'decorator', 'future', 'snappy_manifolds>=1.1.1']
+                    'pypng', 'decorator', 'snappy_manifolds>=1.1.1']
 try:
     import sage
 except ImportError:
-    install_requires.append('cypari>=2.2')
+    install_requires.append('cypari>=2.3')
     install_requires.append('ipython>=0.13')
-    if sys.version_info < (3, 4):
-        install_requires.append('ipython<6.0')
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
 
 # Determine whether we will be able to activate the GUI code
 
 try:
-    if sys.version_info[0] < 3: 
-        import Tkinter as Tk
-    else:
-        import tkinter as Tk
+    import tkinter as Tk
 except ImportError:
     Tk = None
 
-if Tk != None:
+if Tk is not None:
     if sys.platform == 'win32': # really only for Visual C++
         ext_modules.append(CyOpenGL)
     else:
@@ -526,6 +522,7 @@ long_description = long_description.split('Downloads')[0]
 setup( name = 'snappy',
        version = version,
        zip_safe = False,
+       python_requires = '>=3',
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/snap/peripheral',

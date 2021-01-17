@@ -29,6 +29,9 @@ def build_lib_dir():
     
 sys.path.insert(0, os.path.abspath(build_lib_dir()))
 
+import snappy
+print('Using: ' + snappy.__file__)
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -54,7 +57,7 @@ autosectionlabel_prefix_document = True
 
 
 project = u'SnapPy'
-copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Jeffrey Weeks and others' % datetime.datetime.now().year
+copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Matthias Goerner, Jeffrey Weeks and others' % datetime.datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

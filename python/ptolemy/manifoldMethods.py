@@ -236,12 +236,11 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     The beginning of the magma input
 
-    >>> print(s.strip())       #doctest: +ELLIPSIS
+    >>> print(s.strip())       #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     // Setting up the Polynomial ring and ideal
     <BLANKLINE>
     R<c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 8, "grevlex");
-    MyIdeal := ideal<R |
-              c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
+    MyIdeal := ideal<R | c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
     ...
 
 
@@ -315,10 +314,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     >>> p = get_ptolemy_variety(M, N = 3, eliminate_fixed_ptolemys = True)
     >>> s = p.to_magma()
-    >>> print(s.split('ring and ideal')[1].strip())          #doctest: +ELLIPSIS
+    >>> print(s.split('ring and ideal')[1].strip())          #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     R<c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 6, "grevlex");
-    MyIdeal := ideal<R |
-              c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
+    MyIdeal := ideal<R | c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
         ...
 
     """

@@ -371,12 +371,12 @@ class PtolemyVariety(object):
         """
 
         if os.path.isfile(template_path):
-            template = open(template_path, 'rb').read().decode('ascii')
+            template = open(template_path, 'r').read()
         else:
             from snappy.ptolemy import __path__ as base_paths
             abs_path = os.path.join(base_paths[0], template_path)
             if os.path.isfile(abs_path):
-                template = open(abs_path, 'rb').read().decode('ascii')
+                template = open(abs_path, 'r').read()
             else:
                 raise Exception("No file at template_path %s" % template_path)
 

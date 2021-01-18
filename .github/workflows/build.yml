@@ -29,9 +29,9 @@ jobs:
           # Skip Python 2.7 and 3.5, 32 bit Linux, and PyPy
           CIBW_SKIP: cp27-* cp35-* cp36-* cp37-* cp39-* *-manylinux_i686 pp*
           CIBW_BEFORE_BUILD: |
-            pip install cython sphinx
-                        https://github.com/3-manifolds/PLink/archive/master.zip
-                        https://github.com/3-manifolds/snappy_manifolds/archive/master.zip
+            pip install cython sphinx \ 
+                        https://github.com/3-manifolds/PLink/archive/master.zip \
+                        https://github.com/3-manifolds/snappy_manifolds/archive/master.zip \
                         https://github.com/3-manifolds/Spherogram/archive/master.zip
           CIBW_BEFORE_TEST: |
             pip install cython &&

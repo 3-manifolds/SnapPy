@@ -26,13 +26,17 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
+          # Skip Python 2.7 and 3.5, 32 bit Linux, and PyPy
+          CIBW_SKIP: cp27-* cp35-* *-manylinux_i686 pp*
           CIBW_BEFORE_BUILD: |
             pip install cython sphinx &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
             pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
             pip install https://github.com/3-manifolds/Spherogram/archive/master.zip
-          # Skip Python 2.7 and 3.5, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp27-* cp35-* *-manylinux_i686 pp*
+          CIBW_BEFORE_TEST: |
+            pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
+            pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
+            pip install https://github.com/3-manifolds/Spherogram/archive/master.zip
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 
       - uses: actions/upload-artifact@v2

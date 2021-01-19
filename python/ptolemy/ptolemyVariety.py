@@ -65,9 +65,10 @@ class PtolemyVariety(object):
     Produce magma input:
 
     >>> s = p.to_magma()
-    >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
     R<c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 2, "grevlex");
-    MyIdeal := ideal<R | - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
+    MyIdeal := ideal<R |
+              - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
 
     Call ``p.compute_solutions()`` to automatically compute solutions!

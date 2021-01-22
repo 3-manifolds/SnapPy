@@ -1,4 +1,3 @@
-from __future__ import print_function
 from . import matrix
 from . import homology
 from .polynomial import Polynomial
@@ -932,7 +931,7 @@ def _retrieve_url(url):
             signal.signal(signal.SIGALRM, sigalrm_handler)
 
     # Read the text
-    text = s.read().decode('ascii')
+    text = s.read().decode('ascii').replace('\r\n', '\n')
 
     if url[:5] != 'http:':
         # If this is a normal file, we are done

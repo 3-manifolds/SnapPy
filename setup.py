@@ -197,7 +197,7 @@ class SnapPySdist(sdist):
         python = sys.executable
         check_call([python, 'setup.py', 'bdist_wheel'])
         sdist.run(self)
-        
+
 
 class SnapPyPipInstall(Command):
     user_options = []
@@ -478,21 +478,20 @@ try:
 except ImportError:
     Tk = None
 
-if Tk is not None:
-    if sys.platform == 'win32': # really only for Visual C++
-        ext_modules.append(CyOpenGL)
+if sys.platform == 'win32':
+    ext_modules.append(CyOpenGL)
+elif Tk is not None:
+    missing = {}
+    for header in ['gl.h']:
+        results = [exists(os.path.join(path, header))
+                   for path in CyOpenGL_includes]
+        missing[header] = (True in results)
+    if False in missing.values():
+        print("***WARNING***: OpenGL headers not found, "
+              "not building CyOpenGL, "
+              "will disable some graphics features.")
     else:
-        missing = {}
-        for header in ['gl.h']:
-            results = [exists(os.path.join(path, header))
-                       for path in CyOpenGL_includes]
-            missing[header] = (True in results)
-        if False in missing.values():
-            print("***WARNING***: OpenGL headers not found, "
-                  "not building CyOpenGL, "
-                  "will disable some graphics features.")
-        else:
-            ext_modules.append(CyOpenGL)
+        ext_modules.append(CyOpenGL)
 else:
     print("***WARNING**: Tkinter not installed, GUI won't work")
 

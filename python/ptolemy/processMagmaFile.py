@@ -6,6 +6,7 @@ from . import utilities
 import snappy
 
 import re
+import sys
 import tempfile
 import subprocess
         
@@ -229,7 +230,10 @@ def run_magma(content,
     if verbose:
         print("Magma's output in:", out_file)
 
-    cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
+    if sys.platform.startswith('win'):
+        cmd = 'echo | magma "%s" > "%s"' % (in_file, out_file)
+    else:
+        cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
             int(memory_limit / 1024), in_file, out_file)
 
     if verbose:

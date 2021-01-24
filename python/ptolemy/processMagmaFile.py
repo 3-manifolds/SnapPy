@@ -1,4 +1,3 @@
-from __future__ import print_function
 from .polynomial import Polynomial
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from . import processFileBase
@@ -9,6 +8,7 @@ import re
 import sys
 import tempfile
 import subprocess
+import shutil
         
 ###############################################################################
 # functions
@@ -205,12 +205,22 @@ def solutions_from_magma(output, numerical = False):
     return decomposition_from_magma(output).solutions(
         numerical = numerical)
 
+def magma_executable():
+    for name in ['magma', 'magma.exe']:
+        if shutil.which(name):
+            return name
+    return None
+
 def run_magma(content,
               filename_base, memory_limit, directory, verbose):
 
     """
     call magma on the given content and 
     """
+
+    magma = magma_executable()
+    if magma is None:
+        raise ValueError('Sorry, could not find the Magma executable')
 
     if directory:
         resolved_dir = directory
@@ -231,10 +241,10 @@ def run_magma(content,
         print("Magma's output in:", out_file)
 
     if sys.platform.startswith('win'):
-        cmd = 'echo | magma "%s" > "%s"' % (in_file, out_file)
+        cmd = 'echo | %s "%s" > "%s"' % (magma, in_file, out_file)
     else:
-        cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
-            int(memory_limit / 1024), in_file, out_file)
+        cmd = 'ulimit -m %d; echo | %s "%s" > "%s"' % (
+            int(memory_limit / 1024), magma, in_file, out_file)
 
     if verbose:
         print("Command:", cmd)

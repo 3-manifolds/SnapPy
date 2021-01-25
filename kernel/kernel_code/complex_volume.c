@@ -619,7 +619,7 @@ Boolean cross_ratio_not_flat(Complex z)
 				    complex_plus(z, I)),
 			I);
 
-      if( fabs(complex_modulus(Mz) - 1.0) < flat_small )
+      if(!(fabs(complex_modulus(Mz) - 1.0) > flat_small))
 	  return FALSE;
     }
 

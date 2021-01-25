@@ -38,15 +38,8 @@
  *     dilog(z) + dilog(1/z) = - ----- - ----------                         (2)
  *                                 6          2
  *
- * For 1/3 <= |z| <= 3 and Re(z) < 1/2, we use the following identity to
- * reduce to one of the other cases (implemented in dialog_left):
- *                               2
- *                             pi
- *    dilog(z) + dilog(1-z) = ----- - log(z) * log(1-z)                     (3)
- *                              6
- *
- * For the remaining case (implemented in dilog_near_one), we use the
- * following formula for the polylogarithm with |u| < 2 pi:
+ * For 1/3 <= |z| <= 3 and Re(z) > 1/2, we use the following formula for the
+ * polylogarithm with |u| < 2 pi:
  *
  *                n-1
  *       u       u                                             zeta(n-k)     k
@@ -57,7 +50,7 @@
  *
  * Wikipedia cites
  *      Wood, D.C (June 1992).
- *            "The Computation of Polylogarithms. Tecnical Report 15-92"
+ *            "The Computation of Polylogarithms. Technical Report 15-92"
  *      Gradshteyn, I.S.; Ryzhik, I.M. (1980).
  *            "Tables of Integrals, Series, and Products"
  * for this equation.
@@ -66,11 +59,11 @@
  *
  * For the dilog, this simplifies to
  *
- *    dilog(e^u) = pi^2/6 + u * (1 - log(-u)) - u^2 / 4 + sum_(k=3) c_k u^k (4)
+ *    dilog(e^u) = pi^2/6 + u * (1 - log(-u)) - u^2 / 4 + sum_(k=3) c_k u^k (3)
  *
  * where
  *           zeta(2-k)        B_(k-1)         B'_(k-1)
- *    c  = ----------- = - ------------ = - -----------                     (5)
+ *    c  = ----------- = - ------------ = - -----------                     (4)
  *     k       k!           (k-1) * k!       (k-1) * k
  *
  * where B_m is the m-th Bernoulli number and we define B'_m = B_m / m!.
@@ -91,16 +84,23 @@
  * or taking out B_1 = -1/2 and only regarding the even terms
  *
  *              1          i - 1       B'_2j
- *   B'  = ----------- - sum    ---------------- for i > 0.                 (6)
+ *   B'  = ----------- - sum    ---------------- for i > 0.                 (5)
  *    2i    2 * (2i)!      j = 0  (2i - 2j + 1)!
  *
  * We prefer to compute the B'_m instead of B_m because they have
  * about the same magnitude as the c_k whereas the B_m might overflow
  * a floating-point number.
  *
+ * For the remaining case (1/3 <= |z| <= 3 and Re(z) < 1/2), we use the following
+ * identity and then use (3) to compute dilog(1-z) (implemented in dialog_left):
+ *                               2
+ *                             pi
+ *    dilog(z) + dilog(1-z) = ----- - log(z) * log(1-z)                     (6)
+ *                              6
+ *
  * Remarks about Precision:
  * 
- * Iterating equation (6) is not numerically stable. Luckily, the later terms
+ * Iterating equation (5) is not numerically stable. Luckily, the later terms
  * do not contribute much to the series, so only the first couple of Bernoulli
  * numbers need to be precise.
  * We hard code them here as rational numbers so the division gives them with
@@ -110,7 +110,7 @@
  * to precision beyond quad-double.
  * 
  * Each subsequent term has at most half the modulus of the previous term in
- * series (1), respectively, series (4) at least after the first two dozen
+ * series (1), respectively, series (3) at least after the first two dozen
  * terms. The remainder of the series is thus bound by the current term and
  * we can stop once the term is smaller than the epsilon of the Real type (
  * we are even adding a bit of safety margin, yielding safe_epsilon).
@@ -128,7 +128,7 @@ static Real safe_epsilon;
 #define NUMBER_OF_TERMS 210
 
 /* coefficients[i] stores the coefficient c_k with k = 3 + 2 * i
-   in equation (4). */
+   in equation (3). */
 
 #define NUMBER_OF_COEFFICIENTS 140
 static Complex coefficients[NUMBER_OF_COEFFICIENTS];
@@ -227,7 +227,7 @@ void initialize_coefficients(void)
 
     int i, j;
     Real s;
-    /* Stores b_prime[i] stores B'_2i from equation (6) */
+    /* Stores b_prime[i] stores B'_2i from equation (5) */
     Real b_prime[ NUMBER_OF_COEFFICIENTS + 1 ];
     /* Stores inv_factorials[i] stores 1/i! */
     Real inv_factorials[ 2 * NUMBER_OF_COEFFICIENTS  + 2 ];
@@ -253,7 +253,7 @@ void initialize_coefficients(void)
 	    bernoulli_fractions[i][2];
     }
 
-    /* Compute the remaining B'_m using equation (6) */
+    /* Compute the remaining B'_m using equation (5) */
     for (; i < NUMBER_OF_COEFFICIENTS + 1; i++) {
 	/* Computing B'_2i */
 	b_prime[i] = inv_factorials[2 * i] * 0.5;
@@ -263,7 +263,7 @@ void initialize_coefficients(void)
 	}
     }
 
-    /* Finally, compute the coefficients using equation (5) */
+    /* Finally, compute the coefficients using equation (4) */
 
     for (i = 1; i < NUMBER_OF_COEFFICIENTS + 1; i++) {
 	/* computing c_k with k = 2 * i + 1 */
@@ -322,7 +322,7 @@ Complex dilog_small(Complex z)
 static
 Complex dilog_near_one(Complex z)
 {
-    /* Implements equation (4) */
+    /* Implements equation (3) */
 
     Complex u = complex_volume_log(z); /* u = log(z) */
     Complex u_square = complex_mult(u, u); /* u^2 */
@@ -360,7 +360,7 @@ Complex dilog_near_one(Complex z)
 	res = complex_plus(res, terms[i]);
     }
     
-    /* Compute the three extra terms in equation (4) */
+    /* Compute the three extra terms in equation (3) */
     res = complex_minus(
 	res, complex_mult(Quarter, u_square));
     res = complex_plus(
@@ -391,7 +391,7 @@ Complex dilog_large(Complex z)
 static
 Complex dilog_left(Complex z)
 {
-    /* By equation (3), we need to compute
+    /* By equation (6), we need to compute
                       pi^2/6 - dilog(1-z) - log(z) * log(1-z) */
 
     Complex oneMinusZ = complex_minus(One, z);
@@ -399,7 +399,7 @@ Complex dilog_left(Complex z)
 	complex_volume_log(z),
 	complex_volume_log(oneMinusZ));
     
-    res = complex_plus(res, complex_volume_dilog(oneMinusZ));
+    res = complex_plus(res, dilog_near_one(oneMinusZ));
     
     return complex_minus(PiSquareOver6, res);
 }
@@ -454,7 +454,6 @@ Complex complex_volume_log(Complex z)
 Real Lobachevsky_via_dilog(Real t)
 {
     Complex z;
-    Real result;
     z.real = cos(2.0*t);
     z.imag = sin(2.0*t);
     return 0.5*complex_volume_dilog(z).imag;

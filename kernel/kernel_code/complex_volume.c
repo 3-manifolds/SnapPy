@@ -102,7 +102,7 @@
  *
  * 7. We do steps 2-6 with the manifold before it was subdivided in
  *    step 1. This will give the right result only up to multiples of
- *    pi**2 / 12. We do this for both the ultimate (last iteration of
+ *    pi**2 / 6. We do this for both the ultimate (last iteration of
  *    Newton method to determine cross ratios) and penultimate (second
  *    last iteration) solution. The difference will give us an
  *    estimate of the error. This is the same way it is done in
@@ -176,6 +176,9 @@
 /*
  * Matthias Goerner 2021/01/25 - cross_ratio_not_degenerate now rejects NaN and
  * and random_cp1 avoids zero and infinity.
+ * Also changing the torsion adjustment from pi^2/12 (smaller than necessary) to
+ * pi^2/6 (matches Neumann's results about unordered triangulations) in 
+ * fit_up_to_pisquare_over_6.
  */
 
 #include "dilog.h"
@@ -215,11 +218,10 @@ const static ComplexWithLog regular_shape = {
 const static Complex Half           = {0.5, 0.0};
 const static Complex PiI            = { 0.0, PI};
 const static Complex PiIOver2       = { 0.0, PI/2.0};
-const static Complex PiSquareOver6  = { PI*PI/6.0, 0.0};
 
 const static Real PiSquare       = PI*PI;
 const static Real HalfPiSquare   = PI*PI/2.0;
-const static Real PiSquareOver12 = PI*PI/12.0;
+const static Real PiSquareOver6  = PI*PI/6.0;
 
 typedef struct
 {
@@ -277,7 +279,7 @@ static Complex         random_cp1(void);
 static Complex         LMap(Complex z,
 			    Complex p,
 			    Complex q);
-static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex target);
+static Complex         fit_up_to_pisquare_over_6(Complex exact_val, Complex target);
 
 
 /******************************************************************************
@@ -394,11 +396,11 @@ Complex complex_volume(
 
     /* Do the calculation, but with the manifold before it was
        subdivided, this will give the complex volume up to a multiple of
-       pi**2 / 12. fit_up_to_pisquare_over_12 will fix this.
+       pi**2 / 6. fit_up_to_pisquare_over_6 will fix this.
     */
 
     vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
-    vol_ultimate = fit_up_to_pisquare_over_12(vol_ultimate,vol);
+    vol_ultimate = fit_up_to_pisquare_over_6(vol_ultimate,vol);
 
     /* now do the same thing with the penultimate solution */
 
@@ -410,7 +412,7 @@ Complex complex_volume(
                 tet->shape[complete]->cwl[penultimate][i];
 
     vol_penultimate = complex_volume_ordered_manifold(filled_manifold);
-    vol_penultimate = fit_up_to_pisquare_over_12(vol_penultimate, vol);
+    vol_penultimate = fit_up_to_pisquare_over_6(vol_penultimate, vol);
 
     /* if we allocated a manifold in ordered_triangulation, we free it */
   
@@ -1826,16 +1828,26 @@ static Complex LMap(Complex z,
 	  complex_plus(
              complex_mult(q,LogZ),
 	     complex_mult(p,LogOneMinusZ))));
-  result=
-    complex_minus(
-       result,
-       PiSquareOver6);
+
+  result.real -= PiSquareOver6;
+
   return result;
 }
 
-static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)
+static Real my_round(
+    Real x)
 {
-    exact_val.imag += PiSquareOver12*floor(0.5 + (target.imag-exact_val.imag)/PiSquareOver12);
+    /* Quad-double implements floor but not round.
+     */
+    return floor(0.5 + x);
+}
+
+static Complex fit_up_to_pisquare_over_6(
+    Complex exact_val,
+    Complex target)
+{
+    exact_val.imag +=
+        PiSquareOver6 * my_round((target.imag-exact_val.imag) / PiSquareOver6);
     return exact_val;
 }
 #include "end_namespace.h"

@@ -57,7 +57,8 @@ separator = '_'
 
 base64_pat = r'([a-zA-Z0-9\+\-]+)'
 separator_pat = '[%s]{1}'%separator
-isosig_pattern = re.compile(base64_pat + separator_pat + base64_pat + '$')
+base64_opt_pat = r'([a-zA-Z0-9\+\-]*)'
+isosig_pattern = re.compile(base64_pat + separator_pat + base64_opt_pat + '$')
 
 # We store lists of integers as base64 strings.  
 
@@ -206,6 +207,11 @@ def decorated_isosig(manifold, triangulation_class,
                      ignore_curve_orientations = False):
 
     isosig = manifold.triangulation_isosig(decorated = False)
+    
+    # Do not decorate if no cusps
+    if manifold.num_cusps() == 0:
+        return isosig
+
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
 

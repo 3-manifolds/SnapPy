@@ -305,9 +305,10 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
         flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
         flattening.check_against_manifold(M, epsilon = 1e-80)
 
-        is_close(flattening.complex_volume(),
-                 M.complex_volume(), # returns only double precision
-                 epsilon = 1e-13) 
+        if not is_close(flattening.complex_volume(),
+                        M.complex_volume(), # returns only double precision
+                        epsilon = 1e-13):
+            raise Exception("Wrong volume")
         
     # test high precision
 
@@ -315,9 +316,10 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
     flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
     flattening.check_against_manifold(M, epsilon = 1e-80)
 
-    is_close(flattening.complex_volume(),
-             pari('2.828122088330783162763898809276634942770981317300649477043520327258802548322471630936947017929999108 - 3.024128376509301659719951221694600993984450242270735312503300643508917708286193746506469158300472966*I'),
-             epsilon = 1e-80)
+    if not is_close(flattening.complex_volume(),
+                    pari('2.828122088330783162763898809276634942770981317300649477043520327258802548322471630936947017929999108 - 3.024128376509301659719951221694600993984450242270735312503300643508917708286193746506469158300472966*I'),
+                    epsilon = 1e-80):
+        raise Exception("Wrong volume")
 
     pari.set_real_precision(old_precision)
 

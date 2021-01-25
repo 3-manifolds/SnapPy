@@ -223,18 +223,17 @@ const static Real PiSquareOver12 = PI*PI/12.0;
 
 typedef struct
 {
-  /* We consider the triangle obtained by intersecting the tetrahedron
-     with a horosphere around the vertex v. The vertex of the triangle
-     opposite to face f has coordinates x[v][f]. */
-
+    /* We consider the triangle obtained by intersecting the tetrahedron
+     * with a horosphere around the vertex v. The vertex of the triangle
+     * opposite to face f has coordinates x[v][f]. */
     Complex     x[4][4];
     Boolean     in_use[4];
 } CuspCoordinates_orientable;
 
 struct extra
 {
-  CuspCoordinates_orientable coord;
-  Complex c[6]; /* These are the edge parameters c(g_xy) */
+    CuspCoordinates_orientable coord;
+    Complex c[6]; /* These are the edge parameters c(g_xy) */
 };
 
 typedef struct
@@ -287,156 +286,158 @@ static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex tar
  *
  *****************************************************************************/
 
-Complex complex_volume(Triangulation *old_manifold,
-		       const char **err_msg,
-		       int *precision)
+Complex complex_volume(
+    Triangulation *old_manifold,
+    const char **err_msg,
+    int *precision)
 {
-  Tetrahedron   *tet;
-  int           i, places;
-  Complex       vol = Zero;
-  Complex       vol_ultimate = Zero;
-  Complex       vol_penultimate = Zero;
-  Triangulation *manifold;
-  Triangulation *filled_manifold;
-  Boolean       *fill_cusp;
-  Boolean       all_cusp_filled;
-  Real          epsilon;
+    Tetrahedron   *tet;
+    int           i, places;
+    Complex       vol = Zero;
+    Complex       vol_ultimate = Zero;
+    Complex       vol_penultimate = Zero;
+    Triangulation *manifold;
+    Triangulation *filled_manifold;
+    Boolean       *fill_cusp;
+    Boolean       all_cusp_filled;
+    Real          epsilon;
 
-  if(err_msg != NULL)
-    *err_msg = NULL;
+    if (err_msg != NULL)
+        *err_msg = NULL;
 
-  fill_cusp = NEW_ARRAY(old_manifold->num_cusps, Boolean);
+    fill_cusp = NEW_ARRAY(old_manifold->num_cusps, Boolean);
 
-  all_cusp_filled = TRUE;
+    all_cusp_filled = TRUE;
 
-  for( i = 0; i < old_manifold->num_cusps; i++ )
-  {
-      fill_cusp[i] = cusp_is_fillable(old_manifold,i);
-      all_cusp_filled &= fill_cusp[i];
-  }
-
-  if( all_cusp_filled )
-  {
-      /*       uFatalError("complex_volume","complex_volume"); */
-      /* all cusps were filled, no ideal points */
-
-      if(err_msg != NULL)
-	*err_msg = "There is no unfilled cusp";
-
-      my_free(fill_cusp);
-      return Zero;
-  }
-
-  filled_manifold=fill_cusps(old_manifold,fill_cusp,"filled manifold",FALSE);
-
-  my_free(fill_cusp);
-     
-  if(filled_manifold == NULL)
-  {
-      if(err_msg != NULL)
-	*err_msg = "Filling the manifold failed";
-
-      /* filled_manifold failed */
-      return Zero;
-  }
-
-  if(filled_manifold->solution_type[complete] == not_attempted ||
-     filled_manifold->solution_type[complete] == no_solution ||
-     filled_manifold->solution_type[complete] == degenerate_solution)
-  {
-      /*       uFatalError("complex_volume","complex_volume"); */
-      /* filled manifold has no geometric solution */
-      if(err_msg != NULL)
-	*err_msg = "Shapes for (filled) triangulation are not given or degenerate";
-
-      free_triangulation(filled_manifold);
-      return Zero;
-  }
-
-  if(filled_manifold->orientability != oriented_manifold)
-  {
-      /*       uFatalError("complex_volume","complex_volume"); */
-      /* filld manifold is not orientable */
-      if(err_msg != NULL)
-	*err_msg = "Manifold is not oriented";
-
-      free_triangulation(filled_manifold);
-      return Zero;
-  }
-  
-  /* The manifold we get has all tetrahedra positively oriented, mark
-     this in the flag */
-
-  initialize_flags(filled_manifold);
-
-  /* If the original Triangulation was already ordered, use it,
-     otherwise perform step 2a to 2c of the algorithm.
-  */
-
-  if(!triangulation_is_ordered(filled_manifold))
-    manifold=ordered_triangulation(filled_manifold);
-  else
-    manifold=filled_manifold;
-
-  if(manifold == NULL)
+    for (i = 0; i < old_manifold->num_cusps; i++)
     {
-      /* This means that subdivide_1_4 couldn't pick z4s */
-      if(err_msg != NULL)
-	*err_msg = "Could not subdivide into non-degenerate tetrahedra";
+        fill_cusp[i] = cusp_is_fillable(old_manifold,i);
+        all_cusp_filled &= fill_cusp[i];
+    }
+    
+    if (all_cusp_filled)
+    {
+        /* all cusps were filled, no ideal points */
+        if(err_msg != NULL)
+            *err_msg = "There is no unfilled cusp";
 
-      free_triangulation(filled_manifold);
-      return Zero;
+        my_free(fill_cusp);
+        return Zero;
     }
 
-  vol = complex_volume_ordered_manifold(manifold);
+    filled_manifold = fill_cusps(
+        old_manifold,
+        fill_cusp,
+        "filled manifold",
+        FALSE);
 
-  /* vol is the volume */
+    my_free(fill_cusp);
+     
+    if (filled_manifold == NULL)
+    {
+        if (err_msg != NULL)
+            *err_msg = "Filling the manifold failed";
+        
+        /* filled_manifold failed */
+        return Zero;
+    }
 
-  /* do the calculation, but with the manifold before it was
-     subdivided, this will give the complex volume up to a multiple of
-     pi**2 / 12. fit_up_to_pisquare_over_12 will fix this.
-  */
+    if (filled_manifold->solution_type[complete] == not_attempted ||
+        filled_manifold->solution_type[complete] == no_solution ||
+        filled_manifold->solution_type[complete] == degenerate_solution)
+    {
+        /* filled manifold has no geometric solution */
+        if (err_msg != NULL)
+            *err_msg = "Shapes for (filled) triangulation are not given or degenerate";
 
-  vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
-  vol_ultimate = fit_up_to_pisquare_over_12(vol_ultimate,vol);
+        free_triangulation(filled_manifold);
+        return Zero;
+    }
 
-  /* now do the same thing with the penultimate solution */
+    if (filled_manifold->orientability != oriented_manifold)
+    {
+        /* filld manifold is not orientable */
+        if(err_msg != NULL)
+            *err_msg = "Manifold is not oriented";
 
-  for (tet = filled_manifold->tet_list_begin.next;
-       tet != &filled_manifold->tet_list_end;
-       tet = tet -> next)
-    for (i = 0; i < 3; i++)
-      tet->shape[complete]->cwl[ultimate][i]=tet->shape[complete]->cwl[penultimate][i];
+        free_triangulation(filled_manifold);
+        return Zero;
+    }
+    
+    /* The manifold we get has all tetrahedra positively oriented, mark
+     * this in the flag */
 
-  vol_penultimate = complex_volume_ordered_manifold(filled_manifold);
-  vol_penultimate = fit_up_to_pisquare_over_12(vol_penultimate, vol);
+    initialize_flags(filled_manifold);
 
-  /* if we allocated a manifold in ordered_triangulation, we free it */
+    /* If the original Triangulation was already ordered, use it,
+     * otherwise perform step 2a to 2c of the algorithm.
+     */
+
+    if (!triangulation_is_ordered(filled_manifold))
+        manifold=ordered_triangulation(filled_manifold);
+    else
+        manifold=filled_manifold;
+
+    if (manifold == NULL)
+    {
+        /* This means that subdivide_1_4 couldn't pick z4s */
+        if(err_msg != NULL)
+            *err_msg = "Could not subdivide into non-degenerate tetrahedra";
+        
+        free_triangulation(filled_manifold);
+        return Zero;
+    }
+
+    vol = complex_volume_ordered_manifold(manifold);
+
+    /* vol is the volume */
+
+    /* Do the calculation, but with the manifold before it was
+       subdivided, this will give the complex volume up to a multiple of
+       pi**2 / 12. fit_up_to_pisquare_over_12 will fix this.
+    */
+
+    vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
+    vol_ultimate = fit_up_to_pisquare_over_12(vol_ultimate,vol);
+
+    /* now do the same thing with the penultimate solution */
+
+    for (tet = filled_manifold->tet_list_begin.next;
+         tet != &filled_manifold->tet_list_end;
+         tet = tet -> next)
+        for (i = 0; i < 3; i++)
+            tet->shape[complete]->cwl[ultimate][i] =
+                tet->shape[complete]->cwl[penultimate][i];
+
+    vol_penultimate = complex_volume_ordered_manifold(filled_manifold);
+    vol_penultimate = fit_up_to_pisquare_over_12(vol_penultimate, vol);
+
+    /* if we allocated a manifold in ordered_triangulation, we free it */
   
-  if(manifold!=filled_manifold)  
-    free_triangulation(manifold); 
+    if( manifold!=filled_manifold)  
+        free_triangulation(manifold); 
 
-  free_triangulation(filled_manifold);
+    free_triangulation(filled_manifold);
   
-  /* we estimate the precision the same way it is done in volume */
+    /* we estimate the precision the same way it is done in volume */
 
-  places = complex_decimal_places_of_accuracy(vol_ultimate,vol_penultimate)-1;
-  if (precision != NULL)
-    *precision = places;
-  epsilon = pow((Real)10.0, -(Real)places);
+    places =
+        complex_decimal_places_of_accuracy(vol_ultimate,vol_penultimate) - 1;
+    if (precision != NULL)
+        *precision = places;
+    epsilon = pow((Real)10.0, -(Real)places);
 
-  /* Conjugate to make this fit into Snap's convention */
+    /* Conjugate to make this fit into Snap's convention */
 
-  vol_ultimate.imag = -vol_ultimate.imag;
+    vol_ultimate.imag = -vol_ultimate.imag;
 
-  /* Make sure we don't get -0.25 for the Chern-Simons invariant. */
+    /* Make sure we don't get -0.25 for the Chern-Simons invariant. */
  
-  if (vol_ultimate.imag < -HalfPiSquare + epsilon )
-    vol_ultimate.imag += PiSquare;
+    if (vol_ultimate.imag < -HalfPiSquare + epsilon )
+        vol_ultimate.imag += PiSquare;
 
-  return vol_ultimate;
+    return vol_ultimate;
 }
-
 
 static Complex complex_volume_ordered_manifold(Triangulation *manifold)
 {

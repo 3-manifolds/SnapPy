@@ -19,6 +19,10 @@
  * using complex_log caused some problems for negative real numbers.
  */
 
+/* Matthias Goerner 2021/01/25 - Handle the case 1/2 <= |z| <= 3 and Re(z) < 1/2
+ * differently to avoid potential infinity recursion.
+ */
+
 /* When computing the dilogarithm, we distinguish between the three cases where
  * |z| < 1/3, |z| > 3 and 1/3 <= |z| <= 3. In the last case, we distinguish
  * between Re(z) < 1/2 and Re(z) >= 1/2.

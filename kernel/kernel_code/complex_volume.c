@@ -173,6 +173,11 @@
  * on that sign.
  */
 
+/*
+ * Matthias Goerner 2021/01/25 - cross_ratio_not_flat now rejects NaN and
+ * and random_cp1 avoids zero and infinity.
+ */
+
 #include "dilog.h"
 #include <math.h>
 #include <stdlib.h>
@@ -197,6 +202,10 @@
 /* Defines when a tetrahedra is considered flat */
 
 #define flat_small 0.003
+
+/* Sampling range on Riemann sphere */
+
+#define sampling_range 0.99
 
 const static ComplexWithLog regular_shape = {
   {0.5, ROOT_3_OVER_2},
@@ -619,6 +628,9 @@ Boolean cross_ratio_not_flat(Complex z)
 				    complex_plus(z, I)),
 			I);
 
+      /* Do not use fabs(...) < flat_small because it is false
+       * for NaN.
+       */
       if(!(fabs(complex_modulus(Mz) - 1.0) > flat_small))
 	  return FALSE;
     }
@@ -1744,18 +1756,40 @@ static Complex complex_volume_tet(Tetrahedron *tet)
  *
  *****************************************************************************/
 
-/* This function returns a random complex number z0 */
-/* The distribution is uniform on the Riemann sphere [z0:z1] in CP^1 */
-
+/*
+ * This function returns a random complex number.
+ *
+ * The distribution is uniform on the Riemann sphere [z0:z1] in CP^1 avoiding
+ * zero and infinity.
+ */
 static Complex random_cp1(void)
 {
-  //  Complex z= {0.785,1.307};
-  Complex z= { 1.2,1.45};
+  Complex z;
   
-  Real angle = 2.0*PI*((Real)rand()/RAND_MAX);
+  Real angle = 2.0 * PI * ((Real)rand() / RAND_MAX);
   
-  Real r = 2.0*((Real)rand()/RAND_MAX)-1.0;
+  /*
+   * Pick a height on the Riemann sphere.
+   */
+  Real r = 2.0 * ((Real)rand() / RAND_MAX) - 1.00;
+
+  /*
+   * Note that the C standard specifies the RAND_MAX to be at least 32,767
+   * (and this seems to be the value on Windows).
+   *
+   * Thus, without multiplying by sampling_range, there might be a non-trivial
+   * possibility we hit the north pole of the Riemann sphere resulting in NaN.
+   */
+  r *= sampling_range;
+
+  /*
+   * Convert height on Riemann sphere to distance from origin.
+   */
   r = sqrt(1.0 - r*r) / (1.0 - r);
+
+  /*
+   * Convert from polar to Cartesian coordinates.
+   */
   z.real = r * cos(angle);
   z.imag = r * sin(angle);
   

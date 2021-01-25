@@ -18,7 +18,7 @@
  * retrieve error messages. Otherwise use as follows:
  *    char *err_msg;
  *    complex_volume(manifold,&err_msg);
- *    if(err_msg != NULL) { handle_error(err_msg); err_msg=NULL; };
+ *    if (err_msg != NULL) { handle_error(err_msg); err_msg=NULL; }
  * 
  *
  *
@@ -211,8 +211,8 @@
 #define SAMPLING_RANGE 0.99
 
 const static ComplexWithLog regular_shape = {
-  {0.5, ROOT_3_OVER_2},
-  {0.0, PI_OVER_3}
+    {0.5, ROOT_3_OVER_2},
+    {0.0, PI_OVER_3}
 };
 
 const static Complex Half           = {0.5, 0.0};
@@ -280,6 +280,7 @@ static Complex         LMap(Complex z,
 			    Complex p,
 			    Complex q);
 static Complex         fit_up_to_pisquare_over_6(Complex exact_val, Complex target);
+static Real            my_round(Real x);
 
 
 /******************************************************************************
@@ -320,7 +321,7 @@ Complex complex_volume(
     if (all_cusp_filled)
     {
         /* all cusps were filled, no ideal points */
-        if(err_msg != NULL)
+        if (err_msg != NULL)
             *err_msg = "There is no unfilled cusp";
 
         my_free(fill_cusp);
@@ -359,7 +360,7 @@ Complex complex_volume(
     if (filled_manifold->orientability != oriented_manifold)
     {
         /* filld manifold is not orientable */
-        if(err_msg != NULL)
+        if (err_msg != NULL)
             *err_msg = "Manifold is not oriented";
 
         free_triangulation(filled_manifold);
@@ -383,7 +384,7 @@ Complex complex_volume(
     if (manifold == NULL)
     {
         /* This means that subdivide_1_4 couldn't pick z4s */
-        if(err_msg != NULL)
+        if (err_msg != NULL)
             *err_msg = "Could not subdivide into non-degenerate tetrahedra";
         
         free_triangulation(filled_manifold);
@@ -395,8 +396,8 @@ Complex complex_volume(
     /* vol is the volume */
 
     /* Do the calculation, but with the manifold before it was
-       subdivided, this will give the complex volume up to a multiple of
-       pi**2 / 6. fit_up_to_pisquare_over_6 will fix this.
+     * subdivided, this will give the complex volume up to a multiple of
+     * pi**2 / 6. fit_up_to_pisquare_over_6 will fix this.
     */
 
     vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
@@ -416,7 +417,7 @@ Complex complex_volume(
 
     /* if we allocated a manifold in ordered_triangulation, we free it */
   
-    if( manifold!=filled_manifold)  
+    if (manifold!=filled_manifold)  
         free_triangulation(manifold); 
 
     free_triangulation(filled_manifold);
@@ -441,48 +442,46 @@ Complex complex_volume(
     return vol_ultimate;
 }
 
-static Complex complex_volume_ordered_manifold(Triangulation *manifold)
+static Complex complex_volume_ordered_manifold(
+    Triangulation *manifold)
 {
-  Tetrahedron   *tet;
-  int           i,j;
-  Complex       vol=Zero;
+    Tetrahedron   *tet;
+    int           i,j;
+    Complex       vol = Zero;
 
-  attach_extra(manifold);
+    attach_extra(manifold);
 
-  compute_cusp_coordinates(manifold);
+    compute_cusp_coordinates(manifold);
 
-  /* Take conjugate for cusp coordinates (we converted SnapPy
-     crossratios by conjugate inverse) */
+    /* Take conjugate for cusp coordinates (we converted SnapPy
+     * crossratios by conjugate inverse) */
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next)
+        for (i = 0; i < 4; i++)
+            for (j = 0; j < 4; j++)
+                tet->extra->coord.x[i][j].imag *= -1.0;
 
-  for (tet = manifold->tet_list_begin.next;
-       tet != &manifold->tet_list_end;
-       tet = tet->next)
-    for(i=0;i<4;i++)
-      for(j=0;j<4;j++)
-	    tet->extra->coord.x[i][j].imag*=-1.0;
+    compute_c_parameters(manifold);
 
-  compute_c_parameters(manifold);
+    /* Add complex volumes over all tetrahedra */
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next)
 
-  /* Add complex volumes over all tetrahedra */
-
-  for (tet = manifold->tet_list_begin.next;
-       tet != &manifold->tet_list_end;
-       tet = tet->next)
-
-       if(tet->flag == -1)
-	 vol=complex_minus(vol, complex_volume_tet(tet));
-       else
-	 vol=complex_plus(vol, complex_volume_tet(tet));
+        if (tet->flag == -1)
+            vol=complex_minus(vol, complex_volume_tet(tet));
+        else
+            vol=complex_plus(vol, complex_volume_tet(tet));
   
-  free_extra(manifold);
+    free_extra(manifold);
 
-  vol = complex_div(vol,I);
+    vol = complex_div(vol,I);
 
-  /* normalize volume */
+    /* complex normalize volume */
+    vol.imag = vol.imag - PI * PI * my_round(vol.imag / (PI*PI));
 
-  vol.imag = vol.imag - PI*PI*floor(vol.imag / (PI*PI) + 0.5);
-
-  return vol;
+    return vol;
 }
 
 
@@ -494,33 +493,38 @@ static Complex complex_volume_ordered_manifold(Triangulation *manifold)
  *****************************************************************************/
 
 /* neighboring_face returns the index of the face glued to the face
-   of tet */
+ * of tet */
 
-int neighboring_face(Tetrahedron *tet, int face)
+int neighboring_face(
+    Tetrahedron *tet,
+    int face)
 {
-  return EVALUATE(tet->gluing[face],face);
+    return EVALUATE(tet->gluing[face], face);
 }
 
 /* Gluing descriptions
+ *
+ * In SnapPea gluing of one face to another face can be described
+ * either by a permutation of 4 vertices.
+ * If we relabel the vertices of the faces in question by 0, 1, 2
+ * consistent with the ordering of each tetrahedron, we get a
+ * permutation of 0, 1, 2.
+ *
+ * evaluate_gluing_on will convert to this description.
+ */
 
-   In SnapPea gluing of one face to another face can be described
-   either by a permutation of 4 vertices.
-   If we relabel the vertices of the faces in question by 0, 1, 2
-   consistent with the ordering of each tetrahedron, we get a
-   permutation of 0, 1, 2.
-
-   evaluate_gluing_on will convert to this description.
-*/
-
-int evaluate_gluing_on_face(Tetrahedron *tet, int face, int vertex)
+int evaluate_gluing_on_face(
+    Tetrahedron *tet,
+    int face,
+    int vertex)
 {
-  int n_face=neighboring_face(tet,face);
-  if(vertex>=face)
-      vertex++;
-  vertex=EVALUATE(tet->gluing[face],vertex);
-  if(vertex>n_face)
-      vertex--;
-  return vertex;
+    int n_face = neighboring_face(tet,face);
+    if (vertex >= face)
+        vertex++;
+    vertex = EVALUATE(tet->gluing[face], vertex);
+    if (vertex > n_face)
+        vertex--;
+    return vertex;
 }
 
 
@@ -567,35 +571,37 @@ static void check_neighbors_and_gluings(
 
 
 
-/* initialize_TetShape sets all cross ratios to that of a regular
-   ideal tetrahedron */
+/* Initialize_TetShape sets all cross ratios to that of a regular
+ * ideal tetrahedron */
 
-void initialize_TetShape(TetShape *shape)
+void initialize_TetShape(
+    TetShape *shape)
 {
     int i,j;
 
-    for(i = 0; i < 2; i++)
-        for(j = 0; j < 3; j++)
-	    shape->cwl[i][j]=regular_shape;
+    for (i = 0; i < 2; i++)
+        for (j = 0; j < 3; j++)
+	    shape->cwl[i][j] = regular_shape;
 }
 
-/* initialize the flag of every tetrahedron
-   
-   a flag is zero iff the tetrahedron has the same orientation than the
-   manifold
-   if a flag is non zero, the volume of the tetrahedron has to be
-   counted negative
+/* Initialize the flag of every tetrahedron
+ *   
+ * A flag is zero iff the tetrahedron has the same orientation than the
+ * manifold.
+ * If a flag is non zero, the volume of the tetrahedron has to be
+ * counted negative.
  */
 
-void initialize_flags(Triangulation *manifold)
+void initialize_flags(
+    Triangulation *manifold)
 {
-  Tetrahedron *tet;
+    Tetrahedron *tet;
 
-  for(tet = manifold->tet_list_begin.next;
-      tet != &manifold->tet_list_end;
-      tet = tet-> next)
-    
-      tet -> flag = +1;
+    for (tet = manifold->tet_list_begin.next;
+        tet != &manifold->tet_list_end;
+        tet = tet-> next)
+        
+        tet -> flag = +1;
 }
 
 /******************************************************************************
@@ -606,93 +612,96 @@ void initialize_flags(Triangulation *manifold)
  *****************************************************************************/
 
 /* cross_ratio_not_degenerate is returning true if the cross ratio does not
-   correspond to a degenerate tetrahedron.
+ * correspond to a degenerate tetrahedron.
 
-   cross_ratio_not_degenerate computes the the two remaining cross ratios of
-   a tetrahedron, and checks for all three cross ratios whether their
-   image under the Moebius transformation M is not close to the unit
-   circle (at least distance DEGENERATE_EPSILON).
+ * cross_ratio_not_degenerate computes the the two remaining cross ratios of
+ * a tetrahedron, and checks for all three cross ratios whether their
+ * image under the Moebius transformation M is not close to the unit
+ * circle (at least distance DEGENERATE_EPSILON).
    
-   The Moebius transformation M(z)=2/(z+I)+I maps the real line to the
-   unit circle. */
+ * The Moebius transformation M(z)=2/(z+I)+I maps the real line to the
+ * unit circle. */
    
-Boolean cross_ratio_not_degenerate(Complex z)
+Boolean cross_ratio_not_degenerate(
+    Complex z)
 {
-  Complex Mz;
-  int i;
+    Complex Mz;
+    int i;
 
-  for(i = 0; 
-      i < 3; 
-      i++, z = complex_div(One, complex_minus(One, z)))
+    for (i = 0; 
+        i < 3; 
+        i++, z = complex_div(One, complex_minus(One, z)))
     {
-      Mz = complex_plus(
-			complex_div(Two,
-				    complex_plus(z, I)),
-			I);
+        Mz = complex_plus(
+                complex_div(Two, complex_plus(z, I)),
+                I);
 
-      /* Do not use fabs(...) < DEGENERATE_EPSILON because it is false
-       * for NaN.
-       */
-      if(!(fabs(complex_modulus(Mz) - 1.0) > DEGENERATE_EPSILON))
-	  return FALSE;
+        /* Do not use fabs(...) < DEGENERATE_EPSILON because it is false
+         * for NaN.
+         */
+        if (!(fabs(complex_modulus(Mz) - 1.0) > DEGENERATE_EPSILON))
+            return FALSE;
     }
 
-  return TRUE;
+    return TRUE;
 }
 
 /* tet_is_not_degenerate is true if the tetrahedron is not degenerate */
 
-Boolean tet_is_not_degenerate(Tetrahedron *tet)
+Boolean tet_is_not_degenerate(
+    Tetrahedron *tet)
 {
-  return cross_ratio_not_degenerate(tet->shape[complete]->cwl[ultimate][0].rect);
+    return cross_ratio_not_degenerate(tet->shape[complete]->cwl[ultimate][0].rect);
 }
 
 /* two_three_move_not_degenerate returns true if the tetrahedra resulting
-   from performing a 2-3 move does not result in one or more
-   tetrahedra being degenerate.
-   The two tetrahedra for the 2-3 move are tet0 and the tetrahedra
-   neighboring the face face of tet0.
+ * from performing a 2-3 move does not result in one or more
+ * tetrahedra being degenerate.
+ * The two tetrahedra for the 2-3 move are tet0 and the tetrahedra
+ * neighboring the face face of tet0.
 */
 
-Boolean two_three_move_not_degenerate(Tetrahedron *tet0, int face)
+Boolean two_three_move_not_degenerate(
+    Tetrahedron *tet0,
+    int face)
 {
-  Tetrahedron* tet1;
-  int v0[3];
-  int v1[3];
-  int i,j;
-  int e0,e1;
-  Complex z0, z1, z;
+    Tetrahedron* tet1;
+    int v0[3];
+    int v1[3];
+    int i,j;
+    int e0,e1;
+    Complex z0, z1, z;
+    
+    tet1 = tet0 -> neighbor[face];
 
-  tet1 = tet0 -> neighbor[face];
-
-  if(tet0->shape[complete] == NULL || tet1->shape[complete] == NULL)
+    if (tet0->shape[complete] == NULL || tet1->shape[complete] == NULL)
     {
-      uFatalError("two_three_move_not_degenerate","complex_volume");
-      return FALSE;
+        uFatalError("two_three_move_not_degenerate","complex_volume");
+        return FALSE;
     }
 
-  for(i = 0,j = 0; i < 4; i++)
-    if(i != face)
-      {
-	v0[j] = i;
-	v1[j] = EVALUATE(tet0->gluing[face],i);
-	j++;
-      }
+    for (i = 0,j = 0; i < 4; i++)
+        if (i != face)
+        {
+            v0[j] = i;
+            v1[j] = EVALUATE(tet0->gluing[face],i);
+            j++;
+        }
 
-  for(i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++)
     {
-      e0 = edge3_between_vertices[v0[i]][v0[(i+1)%3]];
-      e1 = edge3_between_vertices[v1[i]][v1[(i+1)%3]];
-      z0 = tet0->shape[complete]->cwl[ultimate][e0].rect;
-      z1 = tet1->shape[complete]->cwl[ultimate][e1].rect;
-      if(tet0->flag == tet1->flag)
-	z=complex_mult(z0,z1);
-      else
-	z=complex_div(z0,z1);
-      if(!cross_ratio_not_degenerate(z))
-	  return FALSE;
+        e0 = edge3_between_vertices[v0[i]][v0[(i+1)%3]];
+        e1 = edge3_between_vertices[v1[i]][v1[(i+1)%3]];
+        z0 = tet0->shape[complete]->cwl[ultimate][e0].rect;
+        z1 = tet1->shape[complete]->cwl[ultimate][e1].rect;
+        if (tet0->flag == tet1->flag)
+            z = complex_mult(z0,z1);
+        else
+            z = complex_div(z0,z1);
+        if (!cross_ratio_not_degenerate(z))
+            return FALSE;
     }
-  return TRUE;
+    return TRUE;
 }
 
 /******************************************************************************
@@ -703,87 +712,90 @@ Boolean two_three_move_not_degenerate(Tetrahedron *tet0, int face)
  *****************************************************************************/
 
 /* triangulation_is_ordered checks whether all tetrahedra are glued
-   together in a order preserving fashion */
+ * together in a order preserving fashion */
 
-Boolean triangulation_is_ordered(Triangulation *manifold)
+Boolean triangulation_is_ordered(
+    Triangulation *manifold)
 {
-  Tetrahedron *tet;
-  int         face;
-  int         vertex;
-  int         img[3];
+    Tetrahedron *tet;
+    int         face;
+    int         vertex;
+    int         img[3];
 
-  /* For each face of each tetrahedron ... */
+    /* For each face of each tetrahedron ... */
 
-  for(tet = manifold->tet_list_begin.next;
-      tet != &manifold->tet_list_end;
-      tet = tet-> next)
-    for(face = 0; face < 4; face++)
-      {
-	/* compute how the gluing looks on the faces ... */
-	for(vertex = 0; vertex < 3; vertex++)
-	  img[vertex] = evaluate_gluing_on_face(tet,face,vertex);
-	/* and check whether it is order preserving */
-	if(img[0]>img[1])
-	  return 0;
-	if(img[1]>img[2])
-	  return FALSE;
-      }
-  return TRUE;
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet-> next)
+        for (face = 0; face < 4; face++)
+        {
+            /* compute how the gluing looks on the faces ... */
+            for (vertex = 0; vertex < 3; vertex++)
+                img[vertex] = evaluate_gluing_on_face(tet,face,vertex);
+            /* and check whether it is order preserving */
+            if (img[0] > img[1])
+                return FALSE;
+            if (img[1] > img[2])
+                return FALSE;
+        }
+    return TRUE;
 }
 
 /* ordered_triangulation performs step 2a-2c of the algorithm */
 /* It will allocate a new Triangulation structure in which all face
-   gluings are order preserving, but not necessarily orientation preserving */
+ * gluings are order preserving, but not necessarily orientation preserving */
 
-Triangulation* ordered_triangulation(Triangulation *manifold)
+Triangulation* ordered_triangulation(
+    Triangulation *manifold)
 {
-  Triangulation *new_manifold;
-  Tetrahedron   *tet;
+    Triangulation *new_manifold;
+    Tetrahedron   *tet;
 
-  new_manifold=subdivide_1_4(manifold);
-  if (new_manifold == NULL) {
-    return NULL;
-  }
-
-  /* perform the 2-3 moves, we assume here that two_to_three inserts
-     the three new tetrahedra at the place of the tetrahedron
-     two_to_three was called with.
-     The tetrahedra on which a 2-3 move was performed appear at the
-     begining of the linked list, the tetrahedra which still need to
-     be processed appear at the begining. tet points to the last
-     tetrahedron in the linked list on which a 2-3 move was already
-     performed. */
-     
-
-  /* subdivide_1_4 returns all tetrahedra with the correct orientation
-     (i.e. flag = +1), so performing two_to_three is safe */
-
-  tet=&new_manifold->tet_list_begin;
-  while(tet->next!=&new_manifold->tet_list_end)
-    {
-      if(two_to_three(tet->next,3,
-		      &new_manifold->num_tetrahedra)!=func_OK)
-	uFatalError("ordered_triangulation","complex_volume");
-      tet=tet->next->next->next;
+    new_manifold = subdivide_1_4(manifold);
+    if (new_manifold == NULL) {
+        return NULL;
     }
 
-  /* two_to_three does not set the orientation of a tetrahedron (flag) */
+    /* perform the 2-3 moves, we assume here that two_to_three inserts
+     * the three new tetrahedra at the place of the tetrahedron
+     * two_to_three was called with.
+     * The tetrahedra on which a 2-3 move was performed appear at the
+     * begining of the linked list, the tetrahedra which still need to
+     * be processed appear at the begining. tet points to the last
+     * tetrahedron in the linked list on which a 2-3 move was already
+     * performed. */
+     
 
-  initialize_flags(new_manifold);
+    /* subdivide_1_4 returns all tetrahedra with the correct orientation
+     * (i.e. flag = +1), so performing two_to_three is safe */
 
-  order_triangulation_after_2_3(new_manifold);
+    tet = &new_manifold->tet_list_begin;
+    while (tet->next!=&new_manifold->tet_list_end)
+    {
+        if (two_to_three(tet->next,3,
+                         &new_manifold->num_tetrahedra) != func_OK)
+            uFatalError("ordered_triangulation","complex_volume");
+        tet = tet->next->next->next;
+    }
+
+    /* two_to_three does not set the orientation of a tetrahedron (flag) */
+
+    initialize_flags(new_manifold);
+
+    order_triangulation_after_2_3(new_manifold);
   
-  return new_manifold;
+    return new_manifold;
 }
 
 /* subdivide_1_4 will allocate a new triangulation structure which is
-   obtained by doing a 1-4 move on every tetrahedron.
-   The newly introduced vertices will always be vertex 3 of every new
-   tetrahedron.
-   subdivide_1_4 will not allocate cusp structures.
+ * obtained by doing a 1-4 move on every tetrahedron.
+ * The newly introduced vertices will always be vertex 3 of every new
+ * tetrahedron.
+ * subdivide_1_4 will not allocate cusp structures.
 */
 
-Triangulation* subdivide_1_4(Triangulation *source)
+Triangulation* subdivide_1_4(
+    Triangulation *source)
 {
     Triangulation *destination;
     Tetrahedron   *tet;
@@ -792,6 +804,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
     Boolean       no_degenerate_tetrahedra;
     int           tries;
     Complex       z3, z4, OneMinusz3, OneMinusz4;
+
     /*
      *  Allocate and initialize space for the new Triangulation.
      */
@@ -810,15 +823,15 @@ Triangulation* subdivide_1_4(Triangulation *source)
     /* Allocate new tetrahedra and insert into doubly linked list */
 
     new_tets = NEW_ARRAY(4 * source -> num_tetrahedra, Tetrahedron*);
-    for(i = 0; i < 4 * source -> num_tetrahedra; i++)
-      {
+    for (i = 0; i < 4 * source -> num_tetrahedra; i++)
+    {
 	tet = NEW_STRUCT(Tetrahedron);
 	initialize_tetrahedron(tet);
 	new_tets[i] = tet;
 	INSERT_BEFORE(tet, &destination->tet_list_end);
-      }
+    }
 
-    destination->num_tetrahedra = 4*source->num_tetrahedra;
+    destination->num_tetrahedra = 4 * source->num_tetrahedra;
 
     /* The tetrahedron new_tets[4*i+j] will correspond to the
        j-th face of the i-th tetrahedron in tets */
@@ -826,73 +839,73 @@ Triangulation* subdivide_1_4(Triangulation *source)
     for (tet = source->tet_list_begin.next, i = 0;
          tet != &source->tet_list_end;
          tet = tet->next, i++)
-      {
+    {
 	i = tet->index;
 
 	/* do external gluings */
 
-	for(j=0;j<4;j++)
-	  {
-	    new_tets[4*i+j]->neighbor[3]=new_tets[4*tet->neighbor[j]->index+
-						  neighboring_face(tet,j)];
-	    new_tets[4*i+j]->gluing[3]=CREATE_PERMUTATION(0,evaluate_gluing_on_face(tet,j,0),
-							  1,evaluate_gluing_on_face(tet,j,1),
-							  2,evaluate_gluing_on_face(tet,j,2),
-							  3,3);
+	for (j = 0; j < 4; j++)
+        {
+	    new_tets[4*i+j]->neighbor[3] =
+                new_tets[4*tet->neighbor[j]->index + neighboring_face(tet,j)];
+	    new_tets[4*i+j]->gluing[3] =
+                CREATE_PERMUTATION(0, evaluate_gluing_on_face(tet,j,0),
+                                   1, evaluate_gluing_on_face(tet,j,1),
+                                   2, evaluate_gluing_on_face(tet,j,2),
+                                   3, 3);
 
             /* The internal gluings are order preserving.
-	       This means that the two of the four tetrahedra will
-	       have orientation opposite to that of the original
-	       tetrahedron.
-	       (This is the reason why the signs alternate in the
-	       5-term relationship
-	       sum_{i=0}^4 (-1)^i [[z0:...:\hat{zi}:...:z4]] = 0
-	       of the Bloch group.) */
+	     * This means that the two of the four tetrahedra will
+	     * have orientation opposite to that of the original
+	     * tetrahedron.
+	     * (This is the reason why the signs alternate in the
+             * 5-term relationship
+	     * sum_{i=0}^4 (-1)^i [[z0:...:\hat{zi}:...:z4]] = 0
+	     * of the Bloch group.) */
 
-	    if(j % 2 == 0)
+	    if (j % 2 == 0)
 	        new_tets[4*i+j]->flag = -tet->flag;
 	    else
 	        new_tets[4*i+j]->flag = tet->flag;
-	      
-	  }
+
+        }
 	
 	/* Do internal gluings */
 	/*    Vertices of subdivded tetrahedron 0 1 2 3
-	      Vertices of tet 0                   1 2 3 4
-	      Vertices of tet 1                 0   2 3 4
-	      Vertices of tet 2                 0 1   3 4
-	      Vertices of tet 3                 0 1 2   4 */
-	
-	
-	new_tets[4*i]->neighbor[0]=new_tets[4*i+1];
-	new_tets[4*i]->gluing[0]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
-	new_tets[4*i]->neighbor[1]=new_tets[4*i+2];
-	new_tets[4*i]->gluing[1]=CREATE_PERMUTATION(0,1, 1,0, 2,2, 3,3);
-	new_tets[4*i]->neighbor[2]=new_tets[4*i+3];
-	new_tets[4*i]->gluing[2]=CREATE_PERMUTATION(0,1, 1,2, 2,0, 3,3);
-      
-	new_tets[4*i+1]->neighbor[0]=new_tets[4*i+0];
-	new_tets[4*i+1]->gluing[0]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
-	new_tets[4*i+1]->neighbor[1]=new_tets[4*i+2];
-	new_tets[4*i+1]->gluing[1]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
-	new_tets[4*i+1]->neighbor[2]=new_tets[4*i+3];
-	new_tets[4*i+1]->gluing[2]=CREATE_PERMUTATION(0,0, 1,2, 2,1, 3,3);
-	
-	new_tets[4*i+2]->neighbor[0]=new_tets[4*i+0];
-	new_tets[4*i+2]->gluing[0]=CREATE_PERMUTATION(0,1, 1,0, 2,2, 3,3);
-	new_tets[4*i+2]->neighbor[1]=new_tets[4*i+1];
-	new_tets[4*i+2]->gluing[1]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
-	new_tets[4*i+2]->neighbor[2]=new_tets[4*i+3];
-	new_tets[4*i+2]->gluing[2]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
-	
-	new_tets[4*i+3]->neighbor[0]=new_tets[4*i+0];
-	new_tets[4*i+3]->gluing[0]=CREATE_PERMUTATION(0,2, 1,0, 2,1, 3,3);
-	new_tets[4*i+3]->neighbor[1]=new_tets[4*i+1];
-	new_tets[4*i+3]->gluing[1]=CREATE_PERMUTATION(0,0, 1,2, 2,1, 3,3);
-	new_tets[4*i+3]->neighbor[2]=new_tets[4*i+2];
-	new_tets[4*i+3]->gluing[2]=CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	 *    Vertices of tet 0                   1 2 3 4
+	 *    Vertices of tet 1                 0   2 3 4
+	 *    Vertices of tet 2                 0 1   3 4
+	 *    Vertices of tet 3                 0 1 2   4 */
 
-      }
+	new_tets[4*i+0]->neighbor[0] = new_tets[4*i+1];
+	new_tets[4*i+0]->gluing[0] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	new_tets[4*i+0]->neighbor[1] = new_tets[4*i+2];
+	new_tets[4*i+0]->gluing[1] = CREATE_PERMUTATION(0,1, 1,0, 2,2, 3,3);
+	new_tets[4*i+0]->neighbor[2] = new_tets[4*i+3];
+	new_tets[4*i+0]->gluing[2] = CREATE_PERMUTATION(0,1, 1,2, 2,0, 3,3);
+      
+	new_tets[4*i+1]->neighbor[0] = new_tets[4*i+0];
+	new_tets[4*i+1]->gluing[0] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	new_tets[4*i+1]->neighbor[1] = new_tets[4*i+2];
+	new_tets[4*i+1]->gluing[1] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	new_tets[4*i+1]->neighbor[2] = new_tets[4*i+3];
+	new_tets[4*i+1]->gluing[2] = CREATE_PERMUTATION(0,0, 1,2, 2,1, 3,3);
+	
+	new_tets[4*i+2]->neighbor[0] = new_tets[4*i+0];
+	new_tets[4*i+2]->gluing[0] = CREATE_PERMUTATION(0,1, 1,0, 2,2, 3,3);
+	new_tets[4*i+2]->neighbor[1] = new_tets[4*i+1];
+	new_tets[4*i+2]->gluing[1] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	new_tets[4*i+2]->neighbor[2] = new_tets[4*i+3];
+	new_tets[4*i+2]->gluing[2] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+	
+	new_tets[4*i+3]->neighbor[0] = new_tets[4*i+0];
+	new_tets[4*i+3]->gluing[0] = CREATE_PERMUTATION(0,2, 1,0, 2,1, 3,3);
+	new_tets[4*i+3]->neighbor[1] = new_tets[4*i+1];
+	new_tets[4*i+3]->gluing[1] = CREATE_PERMUTATION(0,0, 1,2, 2,1, 3,3);
+	new_tets[4*i+3]->neighbor[2] = new_tets[4*i+2];
+	new_tets[4*i+3]->gluing[2] = CREATE_PERMUTATION(0,0, 1,1, 2,2, 3,3);
+
+    }
 
 	
     /* The tetrahedron new_tets[4*i+j] will correspond to the
@@ -901,148 +914,144 @@ Triangulation* subdivide_1_4(Triangulation *source)
     for (tet = source->tet_list_begin.next, i = 0;
          tet != &source->tet_list_end;
          tet = tet->next, i++)
-      {
+    {
 	i = tet->index;
-
-
+        
+        
 	/* Allocate TetShape which keeps cross ratios */
-
-	for(j = 0; j < 4; j++)
-	  {
-	    new_tets[4*i+j]->shape[complete]=NEW_STRUCT(TetShape);
+        
+	for (j = 0; j < 4; j++)
+        {
+	    new_tets[4*i+j]->shape[complete] = NEW_STRUCT(TetShape);
 	    initialize_TetShape(new_tets[4*i+j]->shape[complete]);
-	    new_tets[4*i+j]->shape[filled]=NEW_STRUCT(TetShape);
+	    new_tets[4*i+j]->shape[filled] = NEW_STRUCT(TetShape);
 	    initialize_TetShape(new_tets[4*i+j]->shape[filled]);
-	  };
+        }
 
 	/* Set the new cross ratios */
 	/* The vertices of the original tetrahedron are z0, z1, z2, z3
-	   The newly introduced vertex is z4.
-	   
-	   We assume that 
-           z0 = infinity
-	   z1 = 0
-	   z2 = 1
-           z3 = SnapPea cross ratio
-                     tet->shape[complete]->cwl[ultimate][0].rect
-           z4 = some random point in CP^1
-
-	   The SnapPea cross ratios are
-
-	   [z1:z2:z3:z4] = ((z1-z3)*(z2-z4)) /
-	                   ((z1-z4)*(z2-z3))
-                         = (z3*(1-z4)) / (z4*(1-z3))
-	   [z0:z2:z3:z4] = ((z0-z3)*(z2-z4)) /
-	                   ((z0-z4)*(z2-z3))
-                         = (1-z4) / (1-z3)
-	   [z0:z1:z3:z4] = ((z0-z3)*(z1-z4)) /
-	                   ((z0-z4)*(z1-z3))
-                         = z4 / z3
-	   [z0:z1:z2:z4] = ((z0-z2)*(z1-z4)) /
-	                   ((z0-z4)*(z1-z2))
-                         = z4
-	   [z0:z1:z2:z3] = ((z0-z2)*(z1-z3)) /
-	                   ((z0-z3)*(z1-z2))
-                         = z3	   
-
-	*/
+	 * The newly introduced vertex is z4.
+	 * 
+	 * We assume that 
+         * z0 = infinity
+	 * z1 = 0
+	 * z2 = 1
+         * z3 = SnapPea cross ratio
+         *           tet->shape[complete]->cwl[ultimate][0].rect
+         * z4 = some random point in CP^1
+         *
+	 * The SnapPea cross ratios are
+         *
+	 * [z1:z2:z3:z4] = ((z1-z3)*(z2-z4)) /
+	 *                 ((z1-z4)*(z2-z3))
+         *               = (z3*(1-z4)) / (z4*(1-z3))
+	 * [z0:z2:z3:z4] = ((z0-z3)*(z2-z4)) /
+	 *                 ((z0-z4)*(z2-z3))
+         *               = (1-z4) / (1-z3)
+	 * [z0:z1:z3:z4] = ((z0-z3)*(z1-z4)) /
+	 *                 ((z0-z4)*(z1-z3))
+         *               = z4 / z3
+	 * [z0:z1:z2:z4] = ((z0-z2)*(z1-z4)) /
+	 *                 ((z0-z4)*(z1-z2))
+         *               = z4
+	 * [z0:z1:z2:z3] = ((z0-z2)*(z1-z3)) /
+	 *                 ((z0-z3)*(z1-z2))
+         *               = z3	   
+         *
+         */
 		
 	z3 = tet->shape[complete]->cwl[ultimate][0].rect;
 
 	/* Pick a random z4 several times until there are no degenerate
-	   tetrahedra */
+	 * tetrahedra */
 	
 	tries = NO_TRIES_SUBDIVIDE_1_4;
-
+        
 	do {
-	     tries--;
+            tries--;
 
-	     /* Randomize here */
-
-	     z4 = random_cp1();
-	     OneMinusz3= complex_minus(One,z3);
-	     OneMinusz4= complex_minus(One,z4);
-	
-	     new_tets[4*i]->shape[complete]->cwl[ultimate][0].rect=
-	       complex_div(
-			   complex_mult(z3,OneMinusz4),
-			   complex_mult(z4,OneMinusz3));
-	     new_tets[4*i+1]->shape[complete]->cwl[ultimate][0].rect=
-	       complex_div(OneMinusz4,OneMinusz3);
-	     new_tets[4*i+2]->shape[complete]->cwl[ultimate][0].rect=
-	       complex_div(z4,z3);
-	     new_tets[4*i+3]->shape[complete]->cwl[ultimate][0].rect=z4;
+            /* Randomize here */
+            
+            z4 = random_cp1();
+            OneMinusz3= complex_minus(One,z3);
+            OneMinusz4= complex_minus(One,z4);
+            
+            new_tets[4*i+0]->shape[complete]->cwl[ultimate][0].rect =
+                complex_div(
+                    complex_mult(z3,OneMinusz4),
+                    complex_mult(z4,OneMinusz3));
+            new_tets[4*i+1]->shape[complete]->cwl[ultimate][0].rect =
+                complex_div(OneMinusz4,OneMinusz3);
+            new_tets[4*i+2]->shape[complete]->cwl[ultimate][0].rect =
+                complex_div(z4,z3);
+            new_tets[4*i+3]->shape[complete]->cwl[ultimate][0].rect =
+                z4;
 	     
-	     for(j = 0; j < 4; j++)
-	     {
-		 /* Still using complex_log here - we do not use this
-		    result ever in this code, it is just here from
-		    copying the 2-3 moves from the SnapPea kernel.
-                    Remark: The SnapPea kernel implements the 2-3 move
-                    wrong (probably) because it might change the
-		    Chern-Simons invariant. */
+            for (j = 0; j < 4; j++)
+            {
+                /* Still using complex_log here - we do not use this
+                 * result ever in this code, it is just here from
+                 * copying the 2-3 moves from the SnapPea kernel.
+                 * Remark: The SnapPea kernel implements the 2-3 move
+                 * wrong (probably) because it might change the
+                 * Chern-Simons invariant. */
 
-		 new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].log=
-		   complex_log(
-		      new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].rect, 
-		      PI_OVER_2);
-		 new_tets[4*i+j]->shape[filled]->cwl[ultimate][0]=
-		   new_tets[4*i+j]->shape[complete]->cwl[ultimate][0];
-		 compute_remaining_angles(new_tets[4*i+j],0);
-	     }
+                new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].log =
+                    complex_log(
+                        new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].rect, 
+                        PI_OVER_2);
+                new_tets[4*i+j]->shape[filled]->cwl[ultimate][0] =
+                    new_tets[4*i+j]->shape[complete]->cwl[ultimate][0];
+                compute_remaining_angles(new_tets[4*i+j], 0);
+            }
 
-	     /* Check for non-degenerate tetrahedra.
-              * We are checking for: the 1-4 move did not produce 
-              * non-degenerate tetrahedra and the following 2-3 move will not
-              * produce degenerate tetrahedra. Of course, we can check the 2-3
-              * move only if the neighboring tetrahedron has already been
-	      *	assigned a cross ratio.
-	      */
+            /* Check for non-degenerate tetrahedra.
+             * We are checking for: the 1-4 move did not produce 
+             * non-degenerate tetrahedra and the following 2-3 move will not
+             * produce degenerate tetrahedra. Of course, we can check the 2-3
+             * move only if the neighboring tetrahedron has already been
+             *	assigned a cross ratio.
+             */
+            
+            no_degenerate_tetrahedra = TRUE;
+            
+            for (j = 0; j < 4; j++)
+            {
+                no_degenerate_tetrahedra &=
+                    tet_is_not_degenerate(new_tets[4*i+j]);
 
-	     no_degenerate_tetrahedra = TRUE;
-
-	     for(j = 0; j < 4; j++)
-	       {
-		 no_degenerate_tetrahedra &=
-                     tet_is_not_degenerate(new_tets[4*i+j]);
-
-		 if(new_tets[4*i+j]->neighbor[3]->shape[complete])
-		   no_degenerate_tetrahedra &=
-                       two_three_move_not_degenerate(new_tets[4*i+j],3);
+                if (new_tets[4*i+j]->neighbor[3]->shape[complete])
+                    no_degenerate_tetrahedra &=
+                        two_three_move_not_degenerate(new_tets[4*i+j],3);
 	       }
-
-	} while((!no_degenerate_tetrahedra) && (tries > 0));
+            
+	} while ((!no_degenerate_tetrahedra) && (tries > 0));
 
 	/* If there are still degenerate tetrahedra after the tries, throw
-	   error */
+	 * error */
 
-	if(!no_degenerate_tetrahedra)
-	  {
-/* 	    uFatalError("subdivide_1_4","complex_volume"); */
-	    
+	if (!no_degenerate_tetrahedra)
+        {
 	    my_free(new_tets);
 	    free_triangulation(destination);
-
+            
 	    return NULL;
-
-	    /* should we return a zero pointer and free new_tets and
-	       the manifold */
-	  }
-
-      }
-
+        }
+        
+    }
+    
     check_neighbors_and_gluings(destination);
 
     create_edge_classes(destination);
     orient_edge_classes(destination);
 
     /* make all tetrahedra have the right orientation again */
-
+    
     for (tet = destination->tet_list_begin.next, i = 0;
          tet != &destination->tet_list_end;
          tet = tet->next, i++)
-      if(tet->flag == -1)
-	reorder_tetrahedron(tet,CREATE_PERMUTATION(0,1,1,0,2,2,3,3));
+        if (tet->flag == -1)
+            reorder_tetrahedron(tet, CREATE_PERMUTATION(0,1,1,0,2,2,3,3));
 
     orient_edge_classes(destination);
     
@@ -1053,12 +1062,13 @@ Triangulation* subdivide_1_4(Triangulation *source)
 
 
 /* order_triangulation_after_2_3 is given a triangulation where all gluings
-   are already order preserving on the faces with the only exception
-   being the edge between vertices 2 and 3.
-   If such an edge is detected, one of tetrahedra is flipped.
+ * are already order preserving on the faces with the only exception
+ * being the edge between vertices 2 and 3.
+ * If such an edge is detected, one of tetrahedra is flipped.
  */
 
-static void order_triangulation_after_2_3(Triangulation *manifold)
+static void order_triangulation_after_2_3(
+    Triangulation *manifold)
 {
     Tetrahedron   *old_tet;
     Tetrahedron   *new_tet;
@@ -1080,17 +1090,17 @@ static void order_triangulation_after_2_3(Triangulation *manifold)
          edge = edge->next)
     {
 
-        old_tet=edge->incident_tet;
-	e=edge->incident_edge_index;
+        old_tet = edge->incident_tet;
+	e = edge->incident_edge_index;
 	old_front = one_face_at_edge[e];
 	old_back = other_face_at_edge[e];
 	old_v0 = one_vertex_at_edge[e];
 	old_v1 = other_vertex_at_edge[e];
 	
-	if(old_v0>old_v1)
+	if (old_v0 > old_v1)
             uFatalError("order_triangulation_after_2_3","complex_volume");
 
-	for(count = edge-> order; --count >= 0; )
+	for (count = edge-> order; --count >= 0; )
         {
 	    gluing = old_tet->gluing[old_front];
 	    new_tet = old_tet->neighbor[old_front];
@@ -1099,12 +1109,12 @@ static void order_triangulation_after_2_3(Triangulation *manifold)
 	    new_v1 = EVALUATE(gluing,old_v1);
 	    new_v0 = EVALUATE(gluing,old_v0);
 
-            if(new_v0 > new_v1)
+            if (new_v0 > new_v1)
 	    {
-		if(new_v0!=3)
+		if (new_v0 != 3)
 		    uFatalError("order_triangulation_after_2_3",
 				"complex_volume");
-		if(new_v1!=2)
+		if (new_v1 != 2)
   		    uFatalError("order_triangulation_after_2_3",
 				"complex_volume");
 		reorder_tetrahedron(new_tet,
@@ -1115,15 +1125,15 @@ static void order_triangulation_after_2_3(Triangulation *manifold)
 		new_back = EVALUATE(gluing, old_front);
 		new_v1 = EVALUATE(gluing,old_v1);
 		new_v0 = EVALUATE(gluing,old_v0);
-		if(new_v0 > new_v1)
+		if (new_v0 > new_v1)
   		    uFatalError("order_triangulation_after_2_3",
 				"complex_volume");
 	    }
-	    old_tet=new_tet;
-	    old_front=new_front;
-	    old_back=new_back;
-	    old_v0=new_v0;
-	    old_v1=new_v1;
+	    old_tet = new_tet;
+	    old_front = new_front;
+	    old_back = new_back;
+	    old_v0 = new_v0;
+	    old_v1 = new_v1;
 	}
     }
 }
@@ -1131,116 +1141,111 @@ static void order_triangulation_after_2_3(Triangulation *manifold)
 
 
 /* this reorders the vertices in tet
-   the place taken orignally by vertex v will be taken by vertex p(v)
-   after applying reorder_tetrahedron */
+ * the place taken orignally by vertex v will be taken by vertex p(v)
+ * after applying reorder_tetrahedron */
 
-void reorder_tetrahedron(Tetrahedron *tet, Permutation p)
+void reorder_tetrahedron(
+    Tetrahedron *tet,
+    Permutation p)
 {
-  int i,j,k,l;
-  Tetrahedron *neighbors[4];
-  int n_faces[4];
-  Permutation gluing[4];
-  TetShape shape[2];
-  Cusp* cusp[4];
-  int curve[2][2][4][4];
-  EdgeClass* edge_class[6];
+    int i,j,k,l;
+    Tetrahedron *neighbors[4];
+    int n_faces[4];
+    Permutation gluing[4];
+    TetShape shape[2];
+    Cusp* cusp[4];
+    int curve[2][2][4][4];
+    EdgeClass* edge_class[6];
 
-  /* save original neighbors and gluings, cusps, shapes */
-  for(k = 0; k < 2; k++)
-    shape[k] = *tet->shape[k];
+    /* save original neighbors and gluings, cusps, shapes */
+    for (k = 0; k < 2; k++)
+        shape[k] = *tet->shape[k];
 
-  for(i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
     {
-      neighbors[i] = tet->neighbor[i];
-      n_faces[i] = neighboring_face(tet,i);
-      gluing[i] = neighbors[i] -> gluing[n_faces[i]];
-      cusp[i] = tet->cusp[i];
-      for(j = 0; j < 4; j++)
-	for(k = 0; k < 2; k++)
-	  for(l = 0; l < 2; l++)
-	    curve[k][l][i][j]=tet->curve[k][l][i][j];
+        neighbors[i] = tet->neighbor[i];
+        n_faces[i] = neighboring_face(tet,i);
+        gluing[i] = neighbors[i]->gluing[n_faces[i]];
+        cusp[i] = tet->cusp[i];
+        for (j = 0; j < 4; j++)
+            for (k = 0; k < 2; k++)
+                for (l = 0; l < 2; l++)
+                    curve[k][l][i][j]=tet->curve[k][l][i][j];
     }
 
-  /* save per edge information */
+    /* save per edge information */
+    for (i = 0; i < 6; i++)
+        edge_class[i] = tet->edge_class[i];
 
-  for(i = 0; i < 6; i++)
-      edge_class[i]=tet->edge_class[i];
+    /* fix the gluing of the neighbors */
+    for (i = 0; i < 4; i++)
+        neighbors[i]->gluing[n_faces[i]] = compose_permutations(p,gluing[i]);
 
-  /* fix the gluing of the neighbors */
-
-  for(i = 0; i < 4; i++)
-    neighbors[i] -> gluing[n_faces[i]] = compose_permutations(p,gluing[i]);
-
-  /* fix neighbors, cusps and gluings of tet */
-
-  for(i = 0; i < 4; i++)
+    /* fix neighbors, cusps and gluings of tet */
+    for (i = 0; i < 4; i++)
     {
-      tet->neighbor[EVALUATE(p,i)]=neighbors[i];
-      tet->gluing[EVALUATE(p,i)]=inverse_permutation[neighbors[i] -> gluing[n_faces[i]]];
-      tet->cusp[EVALUATE(p,i)]=cusp[i];
+        tet->neighbor[EVALUATE(p,i)] = neighbors[i];
+        tet->gluing[EVALUATE(p,i)] =
+            inverse_permutation[neighbors[i]->gluing[n_faces[i]]];
+        tet->cusp[EVALUATE(p,i)] = cusp[i];
     }
 
-  /* Permute the peripheral curve information */
+    /* Permute the peripheral curve information */
+    for (i = 0; i < 4; i++)
+        for (j = 0; j < 4; j++)
+            for (k = 0; k < 2; k++)
+                for (l = 0; l < 2; l++)
+                    tet->curve[k][l][EVALUATE(p,i)][EVALUATE(p,j)]=curve[k][l][i][j];
 
-  for(i = 0; i < 4; i++)
-    for(j = 0; j < 4; j++)
-      for(k = 0; k < 2; k++)
-	for(l = 0; l < 2; l++)
-	  tet->curve[k][l][EVALUATE(p,i)][EVALUATE(p,j)]=curve[k][l][i][j];
+    /* Compute what will happen to the cross ratios? */
+    for (i = 1; i < 4; i++)
+        for (j = 0; j < 2; j++)
+            for (k = 0; k < 2; k++)
+                tet->shape[j]->cwl[k][
+                            edge3_between_vertices[EVALUATE(p,0)][EVALUATE(p,i)]] = 
+                     shape[j].cwl[k][
+                            edge3_between_vertices[           0 ][           i ]];
 
-  /* Compute what will happen to the cross ratios? */
-
-  for(i = 1; i < 4; i++)
-    for(j = 0; j < 2; j++)
-      for( k = 0; k < 2; k++)
-	  tet->shape[j]->cwl[k][
-				edge3_between_vertices[EVALUATE(p,0)][EVALUATE(p,i)]] = 
-	          shape[j].cwl[k][
-		  	          edge3_between_vertices[           0 ][           i ]];
-
-  if(parity[p]) /* if it is an odd permutation, need to invert cross
-		   ratios */
+    /* if it is an odd permutation, need to invert cross
+     * ratios
+     */
+    if (parity[p])
     {
-      tet->flag = -tet->flag;
-      for(i = 0; i < 3; i++)
-	for(j = 0; j < 2; j++)
-	  for( k = 0; k < 2; k++)
-	    {
-	      tet->shape[j]->cwl[k][i].rect=complex_div(One,tet->shape[j]->cwl[k][i].rect);
-	      tet->shape[j]->cwl[k][i].log=complex_minus(Zero,tet->shape[j]->cwl[k][i].log);
-	    }
+        tet->flag = -tet->flag;
+        for (i = 0; i < 3; i++)
+            for (j = 0; j < 2; j++)
+                for (k = 0; k < 2; k++)
+                {
+                    tet->shape[j]->cwl[k][i].rect =
+                        complex_div(One,tet->shape[j]->cwl[k][i].rect);
+                    tet->shape[j]->cwl[k][i].log =
+                        complex_minus(Zero,tet->shape[j]->cwl[k][i].log);
+                }
     }
 
-  /* permute the edge_class */
-  for(j = 0; j < 6; j++)
+    /* permute the edge_class */
+    for (j = 0; j < 6; j++)
+        tet->edge_class[
+                    edge_between_vertices[EVALUATE(p,  one_vertex_at_edge[j])]
+                                         [EVALUATE(p,other_vertex_at_edge[j])]] =
+            edge_class[j];
+    
+    /* set this tetrahedron for edge_class */
+    
+    for (j = 0; j < 6; j++)
     {
-      tet->edge_class[
-           edge_between_vertices[EVALUATE(p,  one_vertex_at_edge[j])]
-                                [EVALUATE(p,other_vertex_at_edge[j])]] = edge_class[j];
+        tet->edge_class[j]->incident_tet = tet;
+        tet->edge_class[j]->incident_edge_index = j;
     }
 
-  /* edge_orientations give me a headache */
+    /* throw an error with things we can't handle */
 
-  /* set this tetrahedron for edge_class */
-
-  for(j = 0; j < 6; j++)
-    {
-      tet->edge_class[j]->incident_tet=tet;
-      tet->edge_class[j]->incident_edge_index=j;
-    }
-
-  
-
-  /* throw an error with things we can't handle */
-
-  if(tet->cross_section != NULL)
-      uFatalError("reorder_tetrahedron", "complex_volume");
-  if(tet->canonize_info != NULL)
-      uFatalError("reorder_tetrahedron", "complex_volume");
-  if(tet->cusp_nbhd_position != NULL)
-      uFatalError("reorder_tetrahedron", "complex_volume");
-
-
+    if (tet->cross_section != NULL)
+        uFatalError("reorder_tetrahedron", "complex_volume");
+    if (tet->canonize_info != NULL)
+        uFatalError("reorder_tetrahedron", "complex_volume");
+    if (tet->cusp_nbhd_position != NULL)
+        uFatalError("reorder_tetrahedron", "complex_volume");
 }
 
 
@@ -1251,46 +1256,48 @@ void reorder_tetrahedron(Tetrahedron *tet, Permutation p)
  *
  *****************************************************************************/
 
-static void attach_extra(Triangulation   *manifold)
+static void attach_extra(
+    Triangulation   *manifold)
 {
-  Tetrahedron *tet;
+    Tetrahedron *tet;
 
-  for (tet = manifold->tet_list_begin.next;
-       tet != &manifold->tet_list_end;
-       tet = tet->next)
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next)
     {
-      /*
-       *  Make sure no other routine is using the "extra"
-       *  field in the Tetrahedron data structure.
-       */
-      if (tet->extra != NULL)
-	uFatalError("attach_extra", "complex_volume");
+        /*
+         *  Make sure no other routine is using the "extra"
+         *  field in the Tetrahedron data structure.
+         */
+        if (tet->extra != NULL)
+            uFatalError("attach_extra", "complex_volume");
 
-      /*
-       *  Attach the locally defined struct extra.
-       */
-      tet->extra = NEW_STRUCT(Extra);
+        /*
+         *  Attach the locally defined struct extra.
+         */
+        tet->extra = NEW_STRUCT(Extra);
     }
 }
 
-static void free_extra(Triangulation   *manifold)
+static void free_extra(
+    Triangulation   *manifold)
 {
-  Tetrahedron *tet;
+    Tetrahedron *tet;
 
-  for (tet = manifold->tet_list_begin.next;
-       tet != &manifold->tet_list_end;
-       tet = tet->next)
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next)
     {
-      /*
-       *  Free the struct extra.
-       */
-      my_free(tet->extra);
+        /*
+         *  Free the struct extra.
+         */
+        my_free(tet->extra);
 
-      /*
-       *  Set the extra pointer to NULL to let other
-       *  modules know we're done with it.
-       */
-      tet->extra = NULL;
+        /*
+         *  Set the extra pointer to NULL to let other
+         *  modules know we're done with it.
+         */
+        tet->extra = NULL;
     }
 }
 
@@ -1303,31 +1310,32 @@ static void free_extra(Triangulation   *manifold)
 
 /* This function is copied and modified from CuspNeighborhoods */
 /* In particular, all manifolds are assumed to be orientable, so there
-   is no need to keep track of sheets in the orientation Real cover */
+ * is no need to keep track of sheets in the orientation Real cover */
 
-static void compute_cusp_coordinates(Triangulation *manifold)
+static void compute_cusp_coordinates(
+    Triangulation *manifold)
 {
-  Tetrahedron     *tet;
-  VertexIndex     v;
-  int             max_triangles;
-  FaceIndex       f;
+    Tetrahedron     *tet;
+    VertexIndex     v;
+    int             max_triangles;
+    FaceIndex       f;
+    
+    /*
+     *  Initialize all the tet->in_use[] fields to FALSE,
+     *  and all tet->x[][] to Zero.
+     */
 
-  /*
-   *  Initialize all the tet->in_use[] fields to FALSE,
-   *  and all tet->x[][] to Zero.
-   */
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next)
 
-  for (tet = manifold->tet_list_begin.next;
-       tet != &manifold->tet_list_end;
-       tet = tet->next)
-
-      for (v = 0; v < 4; v++)
-      {
-	  for (f = 0; f < 4; f++)
-	      tet->extra->coord.x[v][f] = Zero;
+        for (v = 0; v < 4; v++)
+        {
+            for (f = 0; f < 4; f++)
+                tet->extra->coord.x[v][f] = Zero;
 	  
-	  tet->extra->coord.in_use[v] = FALSE;
-      }
+            tet->extra->coord.in_use[v] = FALSE;
+        }
     /*
      *  For each vertex cross section which has not yet been set, set the
      *  positions of its three vertices, and then recursively set the
@@ -1344,16 +1352,15 @@ static void compute_cusp_coordinates(Triangulation *manifold)
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
          tet = tet->next)
-
+        
         for (v = 0; v < 4; v++)
-
-	  if (tet->extra->coord.in_use[v] == FALSE)
-	    
-              set_one_component(tet, v, max_triangles);
+            
+            if (tet->extra->coord.in_use[v] == FALSE)
+                
+                set_one_component(tet, v, max_triangles);
 
     /* We don't need to normalize any coordinates on the cusp */
     /* so just return at this point */
-
 }
 
 
@@ -1397,9 +1404,9 @@ static void set_one_component(
      *  Find the three FaceIndices for the corners of the triangle.
      *  (f == v is excluded.)
      */
-    for (   i = 0, ff = 0;
-            i < 3;
-            i++, ff++)
+    for (i = 0, ff = 0;
+         i < 3;
+         i++, ff++)
     {
         if (ff == v)
             ff++;
@@ -1603,76 +1610,77 @@ static void coord_find_third_corner(
  *
  *****************************************************************************/
 
-static void compute_c_parameters(Triangulation* manifold)
+static void compute_c_parameters(
+    Triangulation* manifold)
 {
-  EdgeClass *edge;
-  Tetrahedron *tet;
-  EdgeIndex e;
-  FaceIndex front,
-    back,
-    temp;
-  Permutation gluing;
-  int  count;
+    EdgeClass *edge;
+    Tetrahedron *tet;
+    EdgeIndex e;
+    FaceIndex front,
+              back,
+              temp;
+    Permutation gluing;
+    int  count;
+    
+    Complex c;
 
-  Complex c;
-
-  for(edge = manifold->edge_list_begin.next;
-      edge != &manifold->edge_list_end;
-      edge = edge->next)
+    for (edge = manifold->edge_list_begin.next;
+         edge != &manifold->edge_list_end;
+         edge = edge->next)
     {
-      /*
-       *  Find an incident edge.
-       */
-      tet     = edge->incident_tet;
-      e       = edge->incident_edge_index;
-      front   = one_face_at_edge[e];
-      back    = other_face_at_edge[e];
+        /*
+         *  Find an incident edge.
+         */
+        tet     = edge->incident_tet;
+        e       = edge->incident_edge_index;
+        front   = one_face_at_edge[e];
+        back    = other_face_at_edge[e];
 
-      c = compute_c(tet,e);
+        c = compute_c(tet,e);
 
-      /*
-       *  We'll walk around the EdgeClass, setting
-       *  the Orientation of each incident edge.
-       */
+        /*
+         *  We'll walk around the EdgeClass, setting
+         *  the Orientation of each incident edge.
+         */
       
-      for (count = edge->order; --count >= 0; )
+        for (count = edge->order; --count >= 0; )
         {
 
-	  tet->extra->c[e]=c;
+            tet->extra->c[e]=c;
 
-	  /*
-           *  . . . and move on to the next edge.
-	   */
-	  gluing  = tet->gluing[front];
-	  tet     = tet->neighbor[front];
-	  temp    = front;
-	  front   = EVALUATE(gluing, back);
-	  back    = EVALUATE(gluing, temp);
-	  e       = edge_between_faces[front][back];
+            /*
+             *  . . . and move on to the next edge.
+             */
+            gluing  = tet->gluing[front];
+            tet     = tet->neighbor[front];
+            temp    = front;
+            front   = EVALUATE(gluing, back);
+            back    = EVALUATE(gluing, temp);
+            e       = edge_between_faces[front][back];
 	}
     }
-
 }
 
-static Complex compute_c(Tetrahedron *tet, int edge)
+static Complex compute_c(
+    Tetrahedron *tet,
+    int edge)
 {
-  CuspCoordinates_orientable *pos=&tet->extra->coord;
+    CuspCoordinates_orientable *pos = &tet->extra->coord;
 
-  int one_vertex=one_vertex_at_edge[edge];
-  int other_vertex=other_vertex_at_edge[edge];
-  int one_face=one_face_at_edge[edge];
+    int one_vertex = one_vertex_at_edge[edge];
+    int other_vertex = other_vertex_at_edge[edge];
+    int one_face = one_face_at_edge[edge];
   
-  return complex_div(One,
-             complex_sqrt(
-                 complex_mult(
-                     complex_minus(
-  	                 pos->x[one_vertex][other_vertex],
-  	      	         pos->x[one_vertex][one_face]),
-		     complex_minus(
-  	                 pos->x[other_vertex][one_face],
-  	                 pos->x[other_vertex][one_vertex])
-		    )));
-
+    return complex_div(One,
+                complex_sqrt(
+                    complex_mult(
+                        complex_minus(
+                            pos->x[one_vertex][other_vertex],
+                            pos->x[one_vertex][one_face]),
+                        complex_minus(
+                            pos->x[other_vertex][one_face],
+                            pos->x[other_vertex][one_vertex])
+                        )));
 }
 
 
@@ -1685,69 +1693,70 @@ static Complex compute_c(Tetrahedron *tet, int edge)
  *****************************************************************************/
 
 /* complex_volume_tet will compute the flattening of a
-   tetrahedron and then call LMap to get the complex volume */
+ * tetrahedron and then call LMap to get the complex volume */
 
-static Complex complex_volume_tet(Tetrahedron *tet)
+static Complex complex_volume_tet(
+    Tetrahedron *tet)
 {
-  Complex log_c23=complex_volume_log(tet->extra->c[0]);
-  Complex log_c13=complex_volume_log(tet->extra->c[1]);
-  Complex log_c12=complex_volume_log(tet->extra->c[2]);
-  Complex log_c03=complex_volume_log(tet->extra->c[3]);
-  Complex log_c02=complex_volume_log(tet->extra->c[4]);
-  Complex log_c01=complex_volume_log(tet->extra->c[5]);
+    Complex log_c23 = complex_volume_log(tet->extra->c[0]);
+    Complex log_c13 = complex_volume_log(tet->extra->c[1]);
+    Complex log_c12 = complex_volume_log(tet->extra->c[2]);
+    Complex log_c03 = complex_volume_log(tet->extra->c[3]);
+    Complex log_c02 = complex_volume_log(tet->extra->c[4]);
+    Complex log_c01 = complex_volume_log(tet->extra->c[5]);
+    
 
+    Complex w0 = complex_minus(complex_plus(log_c03,log_c12),
+                               complex_plus(log_c02,log_c13));
 
-  Complex w0=complex_minus(complex_plus(log_c03,log_c12),
-			   complex_plus(log_c02,log_c13));
+    Complex w1 = complex_minus(complex_plus(log_c02,log_c13),
+                               complex_plus(log_c01,log_c23));
+    
+    Complex w2 = complex_minus(complex_plus(log_c01,log_c23),
+                               complex_plus(log_c03,log_c12));
 
-  Complex w1=complex_minus(complex_plus(log_c02,log_c13),
-			   complex_plus(log_c01,log_c23));
+    /* SnapPea has the cross ratio different */
+    
+    Complex z = complex_conjugate(
+	            complex_div(
+                        One,
+                        tet->shape[complete]->cwl[ultimate][0].rect));
 
-  Complex w2=complex_minus(complex_plus(log_c01,log_c23),
-			   complex_plus(log_c03,log_c12));
+    Complex p = complex_div(
+	            complex_minus(
+                        w0,
+                        complex_volume_log(z)),
+                    PiI);
+    
+    Complex q = complex_div(
+	            complex_plus(
+                        w1,
+                        complex_volume_log(
+                            complex_minus(
+                                One,
+                                z))),
+                    PiI);
 
-  /* SnapPea has the cross ratio different */
+    /* check that w0 + w1 + w2 = 0 */
 
-  Complex z=complex_conjugate(
-	       complex_div(
-		  One,
-		  tet->shape[complete]->cwl[ultimate][0].rect));
+    if (complex_modulus(complex_plus(w0,complex_plus(w1,w2))) > 0.000001)
+        uFatalError("complex_volume_tet","complex_volume");
 
-  Complex p=complex_div(
-	       complex_minus(
-		  w0,
-		  complex_volume_log(z)),
-	       PiI);
+    /* check that p and q are (really close to) integers */
 
-  Complex q=complex_div(
-	       complex_plus(
-		  w1,
-		  complex_volume_log(
-		     complex_minus(
-			 One,
-			 z))),
-	       PiI);
+    if (!(fabs(p.real - my_round(p.real)) < 0.000001))
+        uFatalError("complex_volume_tet","complex_volume");
 
-  /* check that w0 + w1 + w2 = 0 */
+    if (!(fabs(p.imag) < 0.000001))
+        uFatalError("complex_volume_tet","complex_volume");
 
-  if( complex_modulus(complex_plus(w0,complex_plus(w1,w2))) > 0.000001 )
-      uFatalError("complex_volume_tet","complex_volume");
+    if (!(fabs(q.real - my_round(q.real)) < 0.000001))
+        uFatalError("complex_volume_tet","complex_volume");
 
-  /* check that p and q are (really close to) integers */
+    if (!(fabs(q.imag) < 0.000001))
+        uFatalError("complex_volume_tet","complex_volume");
 
-  if( fabs(p.real - floor(p.real + 0.5)) > 0.000001 )
-      uFatalError("complex_volume_tet","complex_volume");
-
-  if( fabs(p.imag) > 0.000001)
-      uFatalError("complex_volume_tet","complex_volume");
-
-  if( fabs(q.real - floor(q.real + 0.5)) > 0.000001 )
-      uFatalError("complex_volume_tet","complex_volume");
-
-  if( fabs(q.imag) > 0.000001)
-      uFatalError("complex_volume_tet","complex_volume");
-
-  return LMap(z,p,q);
+    return LMap(z,p,q);
 }
 
 
@@ -1763,83 +1772,73 @@ static Complex complex_volume_tet(Tetrahedron *tet)
  * The distribution is uniform on the Riemann sphere [z0:z1] in CP^1 avoiding
  * zero and infinity.
  */
-static Complex random_cp1(void)
+static Complex random_cp1(
+    void)
 {
-  Complex z;
+    Complex z;
   
-  Real angle = 2.0 * PI * ((Real)rand() / RAND_MAX);
+    Real angle = 2.0 * PI * ((Real)rand() / RAND_MAX);
   
-  /*
-   * Pick a height on the Riemann sphere.
-   */
-  Real r = 2.0 * ((Real)rand() / RAND_MAX) - 1.00;
-
-  /*
-   * Note that the C standard specifies the RAND_MAX to be at least 32,767
-   * (and this seems to be the value on Windows).
-   *
-   * Thus, without multiplying by SAMPLING_RANGE, there might be a non-trivial
-   * possibility we hit the north pole of the Riemann sphere resulting in NaN.
-   */
-  r *= SAMPLING_RANGE;
-
-  /*
-   * Convert height on Riemann sphere to distance from origin.
-   */
-  r = sqrt(1.0 - r*r) / (1.0 - r);
-
-  /*
-   * Convert from polar to Cartesian coordinates.
-   */
-  z.real = r * cos(angle);
-  z.imag = r * sin(angle);
-  
-  return z;
+    /*
+     * Pick a height on the Riemann sphere.
+     */
+    Real r = 2.0 * ((Real)rand() / RAND_MAX) - 1.00;
+    
+    /*
+     * Note that the C standard specifies the RAND_MAX to be at least 32,767
+     * (and this seems to be the value on Windows).
+     *
+     * Thus, without multiplying by SAMPLING_RANGE, there might be a non-trivial
+     * possibility we hit the north pole of the Riemann sphere resulting in NaN.
+     */
+    r *= SAMPLING_RANGE;
+    
+    /*
+     * Convert height on Riemann sphere to distance from origin.
+     */
+    r = sqrt(1.0 - r*r) / (1.0 - r);
+    
+    /*
+     * Convert from polar to Cartesian coordinates.
+     */
+    z.real = r * cos(angle);
+    z.imag = r * sin(angle);
+    
+    return z;
 }
 
 /* The map L: flattenings -> complex volume */
 
-static Complex LMap(Complex z,
-		    Complex p,
-		    Complex q)
+static Complex LMap(
+    Complex z,
+    Complex p,
+    Complex q)
 {
-  Complex result;
-  Complex LogZ=complex_volume_log(z);
-  Complex LogOneMinusZ=complex_volume_log(complex_minus(One,z));
-  /*
-   * If we were not provided with a callback for computing dilog(z)
-   * we use the static function defined in this module.
-   */
+    Complex result;
+    Complex LogZ = complex_volume_log(z);
+    Complex LogOneMinusZ = complex_volume_log(complex_minus(One,z));
 
-  result= complex_volume_dilog(z);
+    result = complex_volume_dilog(z);
 
-  result=
-    complex_plus(
-       result,
-       complex_mult(
-	  Half,		  
-	  complex_mult(LogZ,LogOneMinusZ)));
+    result =
+        complex_plus(
+            result,
+            complex_mult(
+                Half,		  
+                complex_mult(LogZ,LogOneMinusZ)));
 
-  result=
-    complex_plus(
-       result,
-       complex_mult(
-	  PiIOver2,
-	  complex_plus(
-             complex_mult(q,LogZ),
-	     complex_mult(p,LogOneMinusZ))));
-
-  result.real -= PiSquareOver6;
-
-  return result;
-}
-
-static Real my_round(
-    Real x)
-{
-    /* Quad-double implements floor but not round.
-     */
-    return floor(0.5 + x);
+    result =
+        complex_plus(
+            result,
+            complex_mult(
+                PiIOver2,
+                complex_plus(
+                    complex_mult(q,LogZ),
+                    complex_mult(p,LogOneMinusZ))));
+    
+    result.real -= PiSquareOver6;
+    
+    return result;
 }
 
 static Complex fit_up_to_pisquare_over_6(
@@ -1850,4 +1849,13 @@ static Complex fit_up_to_pisquare_over_6(
         PiSquareOver6 * my_round((target.imag-exact_val.imag) / PiSquareOver6);
     return exact_val;
 }
+
+static Real my_round(
+    Real x)
+{
+    /* Quad-double implements floor but not round.
+     */
+    return floor(0.5 + x);
+}
+
 #include "end_namespace.h"

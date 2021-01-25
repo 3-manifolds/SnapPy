@@ -189,16 +189,16 @@
 #include "kernel_namespace.h"
 
 /* Issues: 
-   - subdivide_1_4 move does not preserve peripheral curves and cusp
-     structures, this is fine as long as subdivide_1_4 is not used
-     anywhere outside this module
-   - flag is used to mark orientation, flag has other meanings in
-     other modules
+ * - subdivide_1_4 move does not preserve peripheral curves and cusp
+ *   structures, this is fine as long as subdivide_1_4 is not used
+ *   anywhere outside this module
+ * - flag is used to mark orientation, flag has other meanings in
+ *   other modules
 */
 
 
 /* The number of tries for finding an ideal vertex in the 1-4 move
-   which does not resut in degenerate tetrahedra */
+ * which does not resut in degenerate tetrahedra */
 
 #define NO_TRIES_SUBDIVIDE_1_4 40
 
@@ -276,9 +276,7 @@ static Complex         compute_c(Tetrahedron *, int);
 static Complex         complex_volume_tet(Tetrahedron *tet);
 
 static Complex         random_cp1(void);
-static Complex         LMap(Complex z,
-                            Complex p,
-                            Complex q);
+static Complex         LMap(Complex z, Complex p, Complex q);
 static Complex         fit_up_to_pisquare_over_6(Complex exact_val, Complex target);
 static Real            my_round(Real x);
 
@@ -377,9 +375,9 @@ Complex complex_volume(
      */
 
     if (!triangulation_is_ordered(filled_manifold))
-        manifold=ordered_triangulation(filled_manifold);
+        manifold = ordered_triangulation(filled_manifold);
     else
-        manifold=filled_manifold;
+        manifold = filled_manifold;
 
     if (manifold == NULL)
     {
@@ -470,9 +468,9 @@ static Complex complex_volume_ordered_manifold(
          tet = tet->next)
 
         if (tet->flag == -1)
-            vol=complex_minus(vol, complex_volume_tet(tet));
+            vol = complex_minus(vol, complex_volume_tet(tet));
         else
-            vol=complex_plus(vol, complex_volume_tet(tet));
+            vol = complex_plus(vol, complex_volume_tet(tet));
   
     free_extra(manifold);
 

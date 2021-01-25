@@ -174,7 +174,7 @@
  */
 
 /*
- * Matthias Goerner 2021/01/25 - cross_ratio_not_flat now rejects NaN and
+ * Matthias Goerner 2021/01/25 - cross_ratio_not_degenerate now rejects NaN and
  * and random_cp1 avoids zero and infinity.
  */
 
@@ -195,17 +195,17 @@
 
 
 /* The number of tries for finding an ideal vertex in the 1-4 move
-   which does not resut in flat or degenerate tetrahedra */
+   which does not resut in degenerate tetrahedra */
 
 #define NO_TRIES_SUBDIVIDE_1_4 40
 
-/* Defines when a tetrahedra is considered flat */
+/* Defines when a tetrahedra is considered degenerate */
 
-#define flat_small 0.003
+#define DEGENERATE_EPSILON 0.003
 
 /* Sampling range on Riemann sphere */
 
-#define sampling_range 0.99
+#define SAMPLING_RANGE 0.99
 
 const static ComplexWithLog regular_shape = {
   {0.5, ROOT_3_OVER_2},
@@ -251,9 +251,9 @@ static void            check_neighbors_and_gluings(Triangulation*);
 static void            initialize_TetShape(TetShape*);
 static void            initialize_flags(Triangulation*);
 
-static Boolean         cross_ratio_not_flat(Complex z);
-static Boolean         tet_is_not_flat(Tetrahedron *tet);
-static Boolean         two_three_move_not_flat(Tetrahedron *tet, int face);
+static Boolean         cross_ratio_not_degenerate(Complex z);
+static Boolean         tet_is_not_degenerate(Tetrahedron *tet);
+static Boolean         two_three_move_not_degenerate(Tetrahedron *tet, int face);
 
        Boolean         triangulation_is_ordered(Triangulation*);
        Triangulation*  ordered_triangulation(Triangulation*);
@@ -380,10 +380,9 @@ Complex complex_volume(Triangulation *old_manifold,
 
   if(manifold == NULL)
     {
-/*       uFatalError("complex_volume","complex_volume"); */
       /* This means that subdivide_1_4 couldn't pick z4s */
       if(err_msg != NULL)
-	*err_msg = "Could not subdivide into non-flat tetrahedra";
+	*err_msg = "Could not subdivide into non-degenerate tetrahedra";
 
       free_triangulation(filled_manifold);
       return Zero;
@@ -598,23 +597,23 @@ void initialize_flags(Triangulation *manifold)
 
 /******************************************************************************
  *
- * This section contains functions to detect flat tetrahedra, and to
- * detect whether a 2-3 move will result in flat tetrahedra
+ * This section contains functions to detect degenerate tetrahedra, and to
+ * detect whether a 2-3 move will result in degenerate tetrahedra
  *
  *****************************************************************************/
 
-/* cross_ratio_not_flat is returning true if the cross ratio does not
-   correspond to a flat tetrahedron.
+/* cross_ratio_not_degenerate is returning true if the cross ratio does not
+   correspond to a degenerate tetrahedron.
 
-   cross_ratio_not_flat computes the the two remaining cross ratios of
+   cross_ratio_not_degenerate computes the the two remaining cross ratios of
    a tetrahedron, and checks for all three cross ratios whether their
    image under the Moebius transformation M is not close to the unit
-   circle (at least distance flat_small).
+   circle (at least distance DEGENERATE_EPSILON).
    
    The Moebius transformation M(z)=2/(z+I)+I maps the real line to the
    unit circle. */
    
-Boolean cross_ratio_not_flat(Complex z)
+Boolean cross_ratio_not_degenerate(Complex z)
 {
   Complex Mz;
   int i;
@@ -628,31 +627,31 @@ Boolean cross_ratio_not_flat(Complex z)
 				    complex_plus(z, I)),
 			I);
 
-      /* Do not use fabs(...) < flat_small because it is false
+      /* Do not use fabs(...) < DEGENERATE_EPSILON because it is false
        * for NaN.
        */
-      if(!(fabs(complex_modulus(Mz) - 1.0) > flat_small))
+      if(!(fabs(complex_modulus(Mz) - 1.0) > DEGENERATE_EPSILON))
 	  return FALSE;
     }
 
   return TRUE;
 }
 
-/* tet_is_not_flat is true if the tetrahedron is not flat */
+/* tet_is_not_degenerate is true if the tetrahedron is not degenerate */
 
-Boolean tet_is_not_flat(Tetrahedron *tet)
+Boolean tet_is_not_degenerate(Tetrahedron *tet)
 {
-  return cross_ratio_not_flat(tet->shape[complete]->cwl[ultimate][0].rect);
+  return cross_ratio_not_degenerate(tet->shape[complete]->cwl[ultimate][0].rect);
 }
 
-/* two_three_move_not_flat returns true if the tetrahedra resulting
+/* two_three_move_not_degenerate returns true if the tetrahedra resulting
    from performing a 2-3 move does not result in one or more
-   tetrahedra being flat.
+   tetrahedra being degenerate.
    The two tetrahedra for the 2-3 move are tet0 and the tetrahedra
    neighboring the face face of tet0.
 */
 
-Boolean two_three_move_not_flat(Tetrahedron *tet0, int face)
+Boolean two_three_move_not_degenerate(Tetrahedron *tet0, int face)
 {
   Tetrahedron* tet1;
   int v0[3];
@@ -665,7 +664,7 @@ Boolean two_three_move_not_flat(Tetrahedron *tet0, int face)
 
   if(tet0->shape[complete] == NULL || tet1->shape[complete] == NULL)
     {
-      uFatalError("two_three_move_not_flat","complex_volume");
+      uFatalError("two_three_move_not_degenerate","complex_volume");
       return FALSE;
     }
 
@@ -687,7 +686,7 @@ Boolean two_three_move_not_flat(Tetrahedron *tet0, int face)
 	z=complex_mult(z0,z1);
       else
 	z=complex_div(z0,z1);
-      if(!cross_ratio_not_flat(z))
+      if(!cross_ratio_not_degenerate(z))
 	  return FALSE;
     }
   return TRUE;
@@ -787,7 +786,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
     Tetrahedron   *tet;
     Tetrahedron   **new_tets;
     int           i,j;
-    int           no_flat_tetrahedra;
+    Boolean       no_degenerate_tetrahedra;
     int           tries;
     Complex       z3, z4, OneMinusz3, OneMinusz4;
     /*
@@ -947,7 +946,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
 		
 	z3 = tet->shape[complete]->cwl[ultimate][0].rect;
 
-	/* Pick a random z4 several times until there are no flat
+	/* Pick a random z4 several times until there are no degenerate
 	   tetrahedra */
 	
 	tries = NO_TRIES_SUBDIVIDE_1_4;
@@ -989,33 +988,32 @@ Triangulation* subdivide_1_4(Triangulation *source)
 		 compute_remaining_angles(new_tets[4*i+j],0);
 	     }
 
-	     /* check for non-flat tetrahedra. We are checking for
-		both: the 1-4 move did not produce flat tetrahedra,
-		and the following 2-3 move will not produce flat
-		tetrahedra. Of course, we can check the 2-3 move only
-		if the neighboring tetrahedron has already been
-		assigned a cross ratio.
-	     */
+	     /* Check for non-degenerate tetrahedra.
+              * We are checking for: the 1-4 move did not produce 
+              * non-degenerate tetrahedra and the following 2-3 move will not
+              * produce degenerate tetrahedra. Of course, we can check the 2-3
+              * move only if the neighboring tetrahedron has already been
+	      *	assigned a cross ratio.
+	      */
 
-	     no_flat_tetrahedra = 1;
+	     no_degenerate_tetrahedra = TRUE;
 
 	     for(j = 0; j < 4; j++)
 	       {
-		 no_flat_tetrahedra &= tet_is_not_flat(new_tets[4*i+j]);
+		 no_degenerate_tetrahedra &=
+                     tet_is_not_degenerate(new_tets[4*i+j]);
+
 		 if(new_tets[4*i+j]->neighbor[3]->shape[complete])
-		   no_flat_tetrahedra &= two_three_move_not_flat(new_tets[4*i+j],3);
+		   no_degenerate_tetrahedra &=
+                       two_three_move_not_degenerate(new_tets[4*i+j],3);
 	       }
 
-	} while((!no_flat_tetrahedra) && (tries > 0));
+	} while((!no_degenerate_tetrahedra) && (tries > 0));
 
-/* 	if(tries < NO_TRIES_SUBDIVIDE_1_4 - 1) */
-/* 	  printf("%i Tries: %i\n", i, NO_TRIES_SUBDIVIDE_1_4 - tries); */
-
-
-	/* If there are still flat tetrahedra after the tries, throw
+	/* If there are still degenerate tetrahedra after the tries, throw
 	   error */
 
-	if(!no_flat_tetrahedra)
+	if(!no_degenerate_tetrahedra)
 	  {
 /* 	    uFatalError("subdivide_1_4","complex_volume"); */
 	    
@@ -1777,10 +1775,10 @@ static Complex random_cp1(void)
    * Note that the C standard specifies the RAND_MAX to be at least 32,767
    * (and this seems to be the value on Windows).
    *
-   * Thus, without multiplying by sampling_range, there might be a non-trivial
+   * Thus, without multiplying by SAMPLING_RANGE, there might be a non-trivial
    * possibility we hit the north pole of the Riemann sphere resulting in NaN.
    */
-  r *= sampling_range;
+  r *= SAMPLING_RANGE;
 
   /*
    * Convert height on Riemann sphere to distance from origin.

@@ -204,14 +204,14 @@ def _process_extensions(extensions):
     number_field = poly.substitute(ext_assignments)
     
     # Process the other extensions
-    # number_field is the polynomial in x definining the number field
+    # number_field is the polynomial in x defining the number field
     # obtained so far in the tower
     for extension in extensions[1:]:
 
         # Get next extension
         poly, var, degree = extension
 
-        # Replace all variables previously occuring in the tower
+        # Replace all variables previously occurring in the tower
         # by polynomials in x
         poly = poly.substitute(ext_assignments)
 
@@ -234,14 +234,15 @@ def _process_extensions(extensions):
     
     return number_field, ext_assignments
 
+
 def _number_field_and_ext_assignment_to_pari(number_field, ext_assignment):
     # Convert the number_field into a pari polynomial, or None if over Q
     if number_field:
         pari_number_field = pari(number_field)
     else:
         pari_number_field = None
-    
-    # Convert the assignemnts to variables involved in the field extension
+
+    # Convert the assignments to variables involved in the field extension
     # tower into pari Mod objects
     def item_to_pari(item):
         key, value = item
@@ -254,6 +255,7 @@ def _number_field_and_ext_assignment_to_pari(number_field, ext_assignment):
                             for item in ext_assignment.items()])
 
     return pari_number_field, pari_ext_assignment
+
 
 def process_extensions_to_pari(extensions):
     '''

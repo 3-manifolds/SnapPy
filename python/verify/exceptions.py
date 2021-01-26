@@ -1,5 +1,5 @@
 """
-All final excepions are deriving from two base classes:
+All final exceptions are deriving from two base classes:
 
 - a subclass of VerifyErrorBase to indicate whether a numerical or exact
   verification failed

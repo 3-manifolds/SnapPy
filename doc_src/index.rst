@@ -49,7 +49,7 @@ News
       in disjoint embedded cusp neighborhoods.
 
   - The census :class:`HTLinkExteriors <snappy.HTLinkExteriors>` has
-    been extented to 15 crossing knots (contributed by Malik
+    been extended to 15 crossing knots (contributed by Malik
     Obeidin).
 
   - The census :class:`CensusKnots <snappy.CensusKnots>` has been

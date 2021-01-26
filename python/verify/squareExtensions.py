@@ -74,7 +74,7 @@ def eval_number_field_elt(elt, root):
 # This was still very slow and failed on t11669 and 9 manifolds with 9 tetrahedra.
 # 
 # The fastest implementation so far is in realAlgebra. The implementation there
-# turns the one complex equation p(z) = 0 definining the number field into two
+# turns the one complex equation p(z) = 0 defining the number field into two
 # real equations for the real and imaginary part of the complex equation and
 # then uses the resultant to find exact solutions.
 
@@ -370,7 +370,7 @@ class SqrtLinCombination(object):
         return self.__rdiv__(other)
 
     def sqrt(self):
-        # Implent sqrt of 0 and c_1 * sqrt(1)
+        # Implement sqrt of 0 and c_1 * sqrt(1)
         l = len(self._dict)
         if l == 0:
             # sqrt of 0
@@ -494,11 +494,11 @@ class SqrtLinCombination(object):
     def sign(self):
         """
         Returns the +1, 0, -1 depending on whether the value is positive,
-        zero or negative. For the zero case, exact artihmetic is used to
+        zero or negative. For the zero case, exact arithmetic is used to
         certify. Otherwise, interval arithmetic is used.
-        
         """
         return self.sign_with_interval()[0]
+
 
 class ComplexSqrtLinCombination(object):
     """
@@ -902,14 +902,15 @@ def _get_embed_cache(l1, l2):
              isinstance(l, _FactorizedSqrtLinCombination)) and
             not l._embed_cache is None):
             return l._embed_cache
-        
+
     return None
+
 
 def _get_interval_embedding_from_cache(nf, RIF, cache):
     """
     Evaluate RIF(nf.gen_embedding()) where RIF is a RealIntervalField with
-    some precision. This is a real interval that is guarenteed to contain the
-    prefered root of the defining polynomial of the number field.
+    some precision. This is a real interval that is guaranteed to contain the
+    preferred root of the defining polynomial of the number field.
 
     To avoid re-evaluation, use cache which is (a reference) to a python
     dictionary.

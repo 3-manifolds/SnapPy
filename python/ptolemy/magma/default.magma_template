@@ -173,7 +173,7 @@ POrder := ZeroDimensionalIdealsChangeOrder(P, termOrder);
 print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime();
 
 if Type(POrder) eq RngIntElt then
-    // An error or user interrupt occured, bail
+    // An error or user interrupt occurred, bail
     print "IDEAL=DECOMPOSITION" cat "=FAILED";
     exit;
 end if;

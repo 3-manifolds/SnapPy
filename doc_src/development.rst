@@ -206,7 +206,7 @@ need to do, one must install additional tools.
   It is handy to have symbolic links from your MSYS2 home directory to
   the Downloads and Desktop folders on the Windows side.  `See this
   discussion <http://www.howtogeek.com/howto/16226/>`_, but basically
-  you start a "Command Prompt" as Adminstrator and do::
+  you start a "Command Prompt" as Administrator and do::
 
     cd "C:\msys64\home\Nathan Dunfield"
     mklink /D Desktop "C:\Users\Nathan Dunfield\Desktop"

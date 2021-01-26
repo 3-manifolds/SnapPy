@@ -334,7 +334,7 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
         [ (s, False) for s in solutions_trivial ] +
         [ (s, True)  for s in solutions_non_trivial ])
 
-    # Dimensions and volumes encounterd
+    # Dimensions and volumes encountered
     dimensions = set()
     volumes = []
     volumes_2 = []
@@ -565,19 +565,20 @@ def testMapleLikeRur():
     
     pari.set_real_precision(old_precision)
 
+
 def testNumericalSolutions():
 
     M = ManifoldGetter("m003")
     N = 3
 
-    varities = M.ptolemy_variety(N, obstruction_class = 'all')
+    varieties = M.ptolemy_variety(N, obstruction_class = 'all')
 
     solutions = [ 
         solutions_from_magma(
             get_precomputed_magma(variety,
                                   dir = testing_files_generalized_directory),
             numerical = True)
-        for variety in varities ]
+        for variety in varieties ]
 
     for obstruction_index, obstruction in enumerate(solutions):
         for component in obstruction:

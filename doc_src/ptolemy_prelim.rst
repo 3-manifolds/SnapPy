@@ -93,7 +93,7 @@ Future work
 
 In unpublished work, we developed an algorithm that takes some triangulation of a manifold and constructs a set of triangulations and corresponding Ptolemy varieties (with extra edge relations) such that we can guarantee that all boundary-unipotent PSL(2,C)-representations are found - not just the ones that are generically decorated with respect to the chosen triangulation. This is inspired by [S2009]_. The ptolemy module might support this in the future.
 
-In [Z2014]_, the Ptolemy variety was extended to detect non boundary-unipotent representations as well. The ptolemy module might produce these varities in the future. This might offer another way of computing A-polynomials - that when combined with the above algorithm is guarenteed to be the full A-polynomial and not just a factor of it.
+In [Z2014]_, the Ptolemy variety was extended to detect non boundary-unipotent representations as well. The ptolemy module might produce these varieties in the future. This might offer another way of computing A-polynomials - that when combined with the above algorithm is guaranteed to be the full A-polynomial and not just a factor of it.
 
 References
 ----------

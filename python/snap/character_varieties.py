@@ -340,6 +340,7 @@ def character_variety(gens, rels=None):
 
     return Presentation(ring.vars, t1+t2+r)
 
+
 def character_variety_ideal(gens, rels=None):
     """
     sage: M = Manifold('m004')
@@ -349,14 +350,15 @@ def character_variety_ideal(gens, rels=None):
     sage: len(I.radical().primary_decomposition())
     2
     """
-    pres = character_variety(gens, rels)
+    presentation = character_variety(gens, rels)
     from sage.all import PolynomialRing, QQ
-    R = PolynomialRing(QQ, [repr(v) for v in pres.gens])
-    I = R.ideal([R(p) for p in pres.rels])
-    return I
+    R = PolynomialRing(QQ, [repr(v) for v in presentation.gens])
+    return R.ideal([R(p) for p in presentation.rels])
+
 
 def total_answer_length(I):
     return sum([len(list(p)) for p in I.gens()])
+
 
 if __name__ == "__main__":
    from snappy.sage_helper import _within_sage, doctest_modules

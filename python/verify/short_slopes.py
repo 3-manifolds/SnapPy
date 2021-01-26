@@ -9,7 +9,7 @@ if _within_sage:
     from sage.rings.complex_interval import is_ComplexIntervalFieldElement
 
     # python's sqrt only work for floats
-    # They would fail or convert to float loosing precision
+    # They would fail or convert to float losing precision
     from sage.all import sqrt
 else:
     try:
@@ -17,11 +17,11 @@ else:
         from math import gcd
     except ImportError:
         from fractions import gcd
-        
+
     # Otherwise, define our own sqrt which checks whether
     # the given type defines a sqrt method and fallsback
     # to python's log and sqrt which has the above drawback of
-    # potentially loosing precision.
+    # potentially losing precision.
     def sqrt(x):
         if hasattr(x, 'sqrt'):
             return x.sqrt()

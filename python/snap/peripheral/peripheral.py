@@ -29,6 +29,7 @@ def peripheral_curve_from_snappy(dual_cell, snappy_data):
     assert 2*sum(abs(w) for w in weights) == total_raw_weights
     return dual_cellulation.OneCycle(D, weights)
 
+
 def peripheral_curve_package(snappy_manifold):
     """
     Given a 1-cusped snappy_manifold M, this function returns
@@ -40,7 +41,7 @@ def peripheral_curve_package(snappy_manifold):
     3. the dual to the cusp triangulation, and
 
     4. two 1-cocycles on the dual cellulation which are
-    *algebraically* dual to the peripheral framming of M.
+    *algebraically* dual to the peripheral framing of M.
 
     sage: M = peripheral_curve_package(Manifold('t00000'))[0]
     sage: len(M)
@@ -111,6 +112,7 @@ class PeripheralOneCocycle(object):
         w = self.cocycle.weights[dual_edge.index]
         s = global_edge.orientation_with_respect_to(side)
         return w*s
+
 
 def peripheral_cohomology_basis(manifold):
     """

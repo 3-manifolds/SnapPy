@@ -117,7 +117,7 @@ rst_epilog += '.. |tarball| replace:: ' + tarball + '\n'
 rst_epilog += '.. _tarball: ' + tarball_url + '\n'
 
 
-# Surpress "self" in method names.
+# Suppress "self" in method names.
 
 def suppress_method_arg_self(app, what, name, obj, options,
                             signature, return_annotation):

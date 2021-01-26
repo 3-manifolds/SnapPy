@@ -63,7 +63,7 @@ P := -1;
 P,Q:=PrimaryDecomposition(I);
 
 if Type(P) eq RngIntElt then
-   // Some error occured
+   // Some error occurred
    print "PRIMARY=DECOMPOSITION" cat "=FAILED";
 else
    // Success

@@ -333,14 +333,15 @@ def _compute_loops_for_generators_from_info(choose_generators_info,
                     
     return loops_for_generators
 
+
 def compute_loops_for_generators(M, penalties):
     """
     Given a SnapPy Manifold M, return a loop of short, middle, and long edges
-    representing a generator of the fundamental group in the 
+    representing a generator of the fundamental group in the
     unsimplified presentation for each generator.
 
-    Each short, middle, respectively, long edge has an associate penalty 
-    (encoded the triple penalities). For each generator, the method returns
+    Each short, middle, respectively, long edge has an associate penalty
+    (encoded the triple penalties). For each generator, the method returns
     a loop with the smallest total penalty.
     """
 
@@ -391,15 +392,15 @@ def _evaluate_path(coordinate_object, path):
         
     return m
 
+
 def images_of_original_generators(coordinate_object, penalties):
     """
     Given Ptolemy coordinates or cross ratio (or anything which supports
     get_manifold and methods to return matrices for short, middle, and long
-    edges) and penalities (triple giving preferences to avoid short, middle,
+    edges) and penalties (triple giving preferences to avoid short, middle,
     and long edges), give two lists of matrices that are the images and inverse
     images of the fundamental group generators of the unsimplified presentation.
     """
-    
     # Get the manifold
     M = coordinate_object.get_manifold()
 

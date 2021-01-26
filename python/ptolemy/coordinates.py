@@ -461,7 +461,7 @@ class PtolemyCoordinates(dict):
                     # by a small offset
                     branch_factor *= pari('exp(0.0001 * I)')
 
-            raise Exception("Could not find non-ambigious branch cut for log")
+            raise Exception("Could not find non-ambiguous branch cut for log")
         else:
             return ZeroDimensionalComponent(
                 [num.flattenings_numerical() for num in self.numerical()])
@@ -551,7 +551,7 @@ class PtolemyCoordinates(dict):
     def diamond_coordinate(self, tet, v0, v1, v2, pt):
         """
         Returns the diamond coordinate for tetrahedron with index tet
-        for the face with vertices v0, v1, v2 (integers betwen 0 and 3) and
+        for the face with vertices v0, v1, v2 (integers between 0 and 3) and
         integral point pt (quadruple adding up to N-2).
 
         See Definition 10.1:
@@ -607,7 +607,7 @@ class PtolemyCoordinates(dict):
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
         http://arxiv.org/abs/1207.6711
 
-        Note that this definiton turned out to have the wrong sign. Multiply
+        Note that this definition turned out to have the wrong sign. Multiply
         the result by -1 if v1 < v0 and N is even.
         """
 
@@ -615,7 +615,7 @@ class PtolemyCoordinates(dict):
         pt_v0 = [ a + _kronecker_delta(v0, i) for i, a in enumerate(pt) ]
         pt_v1 = [ a + _kronecker_delta(v1, i) for i, a in enumerate(pt) ]
 
-        # Ptolemy coordiantes at those integral points
+        # Ptolemy coordinates at those integral points
         c_pt_v0 = self._coordinate_at_tet_and_point(tet, pt_v0)
         c_pt_v1 = self._coordinate_at_tet_and_point(tet, pt_v1)
 
@@ -877,7 +877,7 @@ class PtolemyCoordinates(dict):
 
         * M --- manifold to check this for
         * epsilon --- maximal allowed error when checking the relations, use
-          None for exact comparision.
+          None for exact comparison.
         """
 
         if M is None:
@@ -967,6 +967,7 @@ class PtolemyCoordinates(dict):
                     return True
             return False
 
+
 class Flattenings(dict):
     """
     Represents a flattening assigned to each edge of a simplex as dictionary.
@@ -977,7 +978,7 @@ class Flattenings(dict):
            w = log(z) + p * (2 * pi * i / N)   where N is fixed and even.
            
     For N = 2, the three triples belonging to a simplex form a combinatorial
-    flattening (w0, w1, w2) as defined in Definiton 3.1 in
+    flattening (w0, w1, w2) as defined in Definition 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
     http://arxiv.org/abs/math.GT/0307092
 
@@ -1148,14 +1149,11 @@ class Flattenings(dict):
 
         """
         Gives a flattening as triple [z;p,q] representing an element
-        in the generalized Extended Bloch group similiar to the way the
+        in the generalized Extended Bloch group similar to the way the
         triple [z;p,q] is used in Lemma 3.2 in 
         Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
         http://arxiv.org/abs/math.GT/0307092
-        
-
         """
-
         if not key_z[:2] == 'z_':
             raise Exception("Need to be called with cross ratio variable z_....")
         key_zp = 'zp_' + key_z[2:]
@@ -1474,8 +1472,8 @@ class CrossRatios(dict):
         integers, give the cross ratio at that integral point and edge of that
         tetrahedron.
         This method translates the SnapPy conventions of labeling simplices
-        and the conventions in Definiton 4.2 of
-        
+        and the conventions in Definition 4.2 of
+
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
         http://arxiv.org/abs/1207.6711
@@ -1527,7 +1525,7 @@ class CrossRatios(dict):
     def long_edge(self, tet, v0, v1, v2):
         """
         The matrix that labels a long edge starting at vertex (v0, v1, v2)
-        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        of a doubly truncated simplex corresponding to the ideal tetrahedron
         with index tet.
 
         This matrix was labeled alpha^{v0v1v2} in Figure 18 of
@@ -1561,7 +1559,7 @@ class CrossRatios(dict):
     def middle_edge(self, tet, v0, v1, v2):
         """
         The matrix that labels a middle edge starting at vertex (v0, v1, v2)
-        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        of a doubly truncated simplex corresponding to the ideal tetrahedron
         with index tet.
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
@@ -1629,7 +1627,7 @@ class CrossRatios(dict):
     def short_edge(self, tet, v0, v1, v2):
         """
         The matrix that labels a long edge starting at vertex (v0, v1, v2)
-        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        of a doubly truncated simplex corresponding to the ideal tetrahedron
         with index tet.
 
         This matrix was labeled gamma^{v0v1v2} in Figure 18 of
@@ -1730,9 +1728,8 @@ class CrossRatios(dict):
 
         M --- manifold to check this for
         epsilon --- maximal allowed error when checking the relations, use
-        None for exact comparision.
+        None for exact comparison.
         """
-
         if M is None:
             M = self.get_manifold()
 
@@ -1831,7 +1828,7 @@ class CrossRatios(dict):
         PSL(2,C) representation.
         """
 
-        # Create an auxillary dictionary containing one z, zp, zpp per tet
+        # Create an auxiliary dictionary containing one z, zp, zpp per tet
         d = { }
 
         for key, value in self.items():
@@ -1841,10 +1838,10 @@ class CrossRatios(dict):
            if not len(index) == 4:
                raise Exception("Not 4 indices")
 
-           # The key in the auxillary dictionary
+           # The key in the auxiliary dictionary
            short_key = variable_name + '_' + tet_index
 
-           # Get the old value in the auxillary dictionary
+           # Get the old value in the auxiliary dictionary
            old_value = d.setdefault(short_key, value)
 
            if epsilon is None:
@@ -1881,8 +1878,8 @@ class CrossRatios(dict):
 
         The user can supply another parameter, epsilon2. If any | LHS - RHS | is in
         the interval [epsilon, epsilon2], this method fails with an exception
-        as the value of | LHS - RHS | is an ambigious interval where
-        it is unclear whether inequality fails to hold because it truely does
+        as the value of | LHS - RHS | is an ambiguous interval where
+        it is unclear whether inequality fails to hold because it truly does
         hold or just because of numerical noise.
         """
 

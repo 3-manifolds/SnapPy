@@ -30,7 +30,7 @@
 //	file format allow "unfinished" link components.  That is,
 //	some or all of the link components may be topological
 //	intervals instead of topological circles.  Indeed, a link
-//	component may consist of a single vertex.  Morever, the
+//	component may consist of a single vertex.  Moreover, the
 //	format allows for a "hot vertex".  The hot vertex is the
 //	vertex (if any) which the link editor will join to the next
 //	point the user clicks.

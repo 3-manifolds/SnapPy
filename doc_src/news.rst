@@ -27,7 +27,7 @@ News
       in disjoint embedded cusp neighborhoods.
 
   - The census :class:`HTLinkExteriors <snappy.HTLinkExteriors>` has
-    been extented to 15 crossing knots (contributed by Malik
+    been extended to 15 crossing knots (contributed by Malik
     Obeidin).
 
   - The census :class:`CensusKnots <snappy.CensusKnots>` has been
@@ -156,7 +156,7 @@ News
   orientable cusped manifolds with 9 tetrahedra. <http://arxiv.org/abs/1405.2695>`_
 
 * Version 2.1 (February 2014): New `high-precision manifolds
-  (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic stuctures
+  (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic structures
   (and everything related) in `quad-double (212 bit) <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_
   precision.
 

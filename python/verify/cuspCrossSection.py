@@ -27,21 +27,21 @@ import math
 
 if _within_sage:
     # python's log and sqrt only work for floats
-    # They would fail or convert to float loosing precision
+    # They would fail or convert to float losing precision
     from sage.functions.log import log
     from sage.functions.other import sqrt
 else:
     # Otherwise, define our own log and sqrt which checks whether
     # the given type defines a log/sqrt method and fallsback
     # to python's log and sqrt which has the above drawback of
-    # potentially loosing precision.
+    # potentially losing precision.
     import cmath
 
     def log(x):
         if hasattr(x, 'log'):
             return x.log()
         return cmath.log(x)
-    
+
     def sqrt(x):
         if hasattr(x, 'sqrt'):
             return x.sqrt()
@@ -399,7 +399,8 @@ class CuspCrossSectionBase(McomplexEngine):
 
     def check_polynomial_edge_equations_exactly(self):
         """
-        Check that the polynomial edge equations are fullfilled exactly.
+        Check that the polynomial edge equations are fulfilled exactly.
+
         We use the conjugate inverse to support non-orientable manifolds.
         """
 
@@ -493,10 +494,10 @@ class CuspCrossSectionBase(McomplexEngine):
         """
 
         # First, we check whether the center of the circumcenter of the
-        # triangle containing 0, 1, and z is containted within the triangle.
+        # triangle containing 0, 1, and z is contained within the triangle.
         
         # If the center is outside of the triangle, the Euclidean height of the
-        # horosphere is that of the heighest point of the three arcs between
+        # horosphere is that of the highest point of the three arcs between
         # 0, 1, and z.
         # The height is half of the length e of the longest edge of the 
         # triangle.
@@ -725,7 +726,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
     exact number type (such as the ones in ``squareExtension.py``) might be
     prohibitively more complicated. Furthermore, ``ComplexCuspCrossSection``
     does not work for non-orientable manifolds (it does not implement working
-    in a cusp's double-cover like the SnapPea kernel does). 
+    in a cusp's double-cover like the SnapPea kernel does).
     """
 
     HoroTriangle = RealHoroTriangle
@@ -735,7 +736,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         """
         **Examples:**
 
-        Intialize from shapes provided from the floats returned by 
+        Initialize from shapes provided from the floats returned by
         tetrahedra_shapes. The tilts appear to be negative but are not
         verified by interval arithmetics::
 
@@ -1258,7 +1259,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         # Then the similarity is described the complex number z = -l1 / l0
         # which is one or the holonomy of meridian or longitude (depending
         # on whether the common edge is inside or on the boundary of a
-        # fundamental domain implicitly chosed when developing the cusp).
+        # fundamental domain implicitly chosen when developing the cusp).
         #
         # Furthermore, we can compute the fixed point p of the similarity
         # using p1 - p = z * (p0 - p).
@@ -1270,7 +1271,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         # Compute fixed point
         return (p1 - z * p0) / (1 - z)
-        
+
     def _compute_cusp_fixed_point_data(self, cusp):
         """
         Compute abs(z-1), z, p0, p1 for each horotriangle, vertex and edge

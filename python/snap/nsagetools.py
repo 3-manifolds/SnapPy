@@ -17,13 +17,14 @@ else:
     SageObject = object
     ZZ, Id2 = None, None
 
-def search_for_low_rank_triangulation(M, trys = 100, target_lower_bound = 0):
+
+def search_for_low_rank_triangulation(M, tries=100, target_lower_bound=0):
     rank_lower_bound = max(M.homology().rank(), target_lower_bound)
 
     rank_upper_bound = M.fundamental_group().num_generators()
     N = M.copy()
     curr_best_tri = N.copy()
-    for i in range(trys):
+    for i in range(tries):
         if rank_upper_bound == rank_lower_bound:
             break
         N.randomize()

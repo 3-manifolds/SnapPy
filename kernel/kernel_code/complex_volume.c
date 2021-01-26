@@ -6,11 +6,12 @@
  *     Complex complex_volume(Triangulation *manifold,
  *                            const char** err_msg);
  *
- * It computes and returns the 
- *     complex volume = volume + Chern-Simons invariant * I 
- *                                 (modulo I*pi^2)
- * of an orientable manifold with a hyperbolic sructure.
- * The result is normalized with the imaginary part in
+ * It computes and returns the
+ *     complex volume = volume + CS * I (modulo I*pi^2)
+ * of an orientable manifold with a hyperbolic structure where CS
+ * is the (unnormalized) Chern-Simons invariant.
+ *
+ * The result in C is picked such that the imaginary part in
  *                                (-pi**2/2,pi**2/2].
  *
  * When complex_volume is called, the manifold is copied before any
@@ -19,13 +20,19 @@
  *    char *err_msg;
  *    complex_volume(manifold,&err_msg);
  *    if (err_msg != NULL) { handle_error(err_msg); err_msg=NULL; }
- * 
  *
+ * We compute the complex volume by computing the dilogarithm for
+ * flattenings from
+ * W. Neumann,
+ * Extended Bloch group and the Cheeger–Chern–Simons class,
+ * Geom. Topol. vol 8 no. 1 (2004) 413-474, arXiv:math/0307092.
  *
- * The algorithm used here is described in 
+ * The flattenings are computed from lifted Ptolemy variables which
+ * are computed from the shapes of the simplices using the algorithm
+ * described in 
  * C. Zickert, 
  * The volume and Chern-Simons invariant of a representation, 
- * Duke Math. J. 150 no. 3 (2009) 489-532, math.GT/0710.2049
+ * Duke Math. J. 150 no. 3 (2009) 489-532, arXiv:0710.2049.
  *
  * Algorithm
  *
@@ -63,24 +70,25 @@
  *    squeezed flat onto a horosphere) are given complex
  *    coordinates.
  *
- * 4. The edge parameters are computed.
+ * 4. The lifted Ptolemy coordinates are computed.
  *    For an edge e, pick a tetrahedron t and a face f. At each end of
  *    the edge e, the tetrahedron intersects the horosphere in a
  *    triangle, one of its sides being the intersection with
  *    f. Having picked complex coordinates on each horosphere, we get
- *    two complex numbers a and b for these sides. We assign
- *    c=1/sqrt(a*b) to the edge e. c does not depend on which
- *    tetrahedron or face we pick for an edge.
+ *    two complex numbers a and b for these sides. Using Zickert's result
+ *    the Ptolemy variable for the edge is given by 1 / sqrt(a * b).
+ *    We use slightly different conventions from Neumann and Zickert here
+ *    and compute the lifted Ptolemy variable as log(a * b) / 2.
  *
  * 5. The flattenings and complex volume for each tetrahedron are
  *    computed.
  *
  *    If c_ij is the edge parameter for the edge between vertex i and
- *    j, then w0, w1, w2 are given by
+ *    j, then w0, w1, w2 (with the conventions used here) are given by
  *
  *      w0 = log c03 + log c12 - log c02 - log c13
- *      w1 = log c02 + log c13 - log c01 - log c23
- *      w2 = log c01 + log c23 - log c03 - log c12
+ *      w1 = log c01 + log c23 - log c03 - log c12
+ *      w2 = log c02 + log c13 - log c01 - log c23
  *
  *    In this module, we fix the main branch of the logarithm.
  *
@@ -179,6 +187,14 @@
  * fit_up_to_pisquare_over_6.
  */
 
+/*
+ * Matthias Goerner 2021/01/26 - permuting the terms used to compute w0 and w1
+ * to account for the convention for the cross-ratio that SnapPea which differs
+ * from the one from Neumann and Zickert. This way we do not need to invert or
+ * conjugate shapes. Avoiding to take the sqrt to compute a Ptolemy variable by
+ * halfing the logarithm instead. Compute logarithm only once per edge class.
+ */
+
 #include "dilog.h"
 #include <math.h>
 #include <stdlib.h>
@@ -233,7 +249,7 @@ typedef struct
 struct extra
 {
     CuspCoordinates_orientable coord;
-    Complex c[6]; /* These are the edge parameters c(g_xy) */
+    Complex c[6]; /* Lifted Ptolemy variables. */
 };
 
 typedef struct
@@ -268,8 +284,8 @@ static void            set_one_component(Tetrahedron *tet, VertexIndex v, int ma
 static void            coord_find_third_corner(Tetrahedron *, VertexIndex v, FaceIndex f0, FaceIndex f1, FaceIndex f2);
 
 
-static void            compute_c_parameters(Triangulation*);
-static Complex         compute_c(Tetrahedron *, int);
+static void            compute_lifted_ptolemys(Triangulation*);
+static Complex         compute_lifted_ptolemy(Tetrahedron *, int);
 
 static Complex         complex_volume_tet(Tetrahedron *tet);
 
@@ -444,7 +460,7 @@ static Complex complex_volume_ordered_manifold(
 
     compute_cusp_coordinates(manifold);
 
-    compute_c_parameters(manifold);
+    compute_lifted_ptolemys(manifold);
 
     /* Add complex volumes over all tetrahedra */
     for (tet = manifold->tet_list_begin.next;
@@ -745,11 +761,13 @@ Triangulation* ordered_triangulation(
      * begining of the linked list, the tetrahedra which still need to
      * be processed appear at the begining. tet points to the last
      * tetrahedron in the linked list on which a 2-3 move was already
-     * performed. */
+     * performed.
+     */
      
 
     /* subdivide_1_4 returns all tetrahedra with the correct orientation
-     * (i.e. flag = +1), so performing two_to_three is safe */
+     * (i.e. flag = +1), so performing two_to_three is safe.
+     */
 
     tet = &new_manifold->tet_list_begin;
     while (tet->next!=&new_manifold->tet_list_end)
@@ -774,7 +792,7 @@ Triangulation* ordered_triangulation(
  * The newly introduced vertices will always be vertex 3 of every new
  * tetrahedron.
  * subdivide_1_4 will not allocate cusp structures.
-*/
+ */
 
 Triangulation* subdivide_1_4(
     Triangulation *source)
@@ -1592,7 +1610,7 @@ static void coord_find_third_corner(
  *
  *****************************************************************************/
 
-static void compute_c_parameters(
+static void compute_lifted_ptolemys(
     Triangulation* manifold)
 {
     EdgeClass *edge;
@@ -1618,7 +1636,7 @@ static void compute_c_parameters(
         front   = one_face_at_edge[e];
         back    = other_face_at_edge[e];
 
-        c = compute_c(tet,e);
+        c = compute_lifted_ptolemy(tet,e);
 
         /*
          *  We'll walk around the EdgeClass, setting
@@ -1643,7 +1661,7 @@ static void compute_c_parameters(
     }
 }
 
-static Complex compute_c(
+static Complex compute_lifted_ptolemy(
     Tetrahedron *tet,
     int edge)
 {
@@ -1657,13 +1675,13 @@ static Complex compute_c(
         complex_mult(
             Half,
             complex_volume_log(
-            complex_mult(
-                complex_minus(
-                    pos->x[one_vertex][other_vertex],
-                    pos->x[one_vertex][one_face]),
-                complex_minus(
-                    pos->x[other_vertex][one_face],
-                    pos->x[other_vertex][one_vertex])
+                complex_mult(
+                    complex_minus(
+                        pos->x[one_vertex][other_vertex],
+                        pos->x[one_vertex][one_face]),
+                    complex_minus(
+                        pos->x[other_vertex][one_face],
+                        pos->x[other_vertex][one_vertex])
                     )));
 }
 
@@ -1791,7 +1809,7 @@ static Complex LMap(
 {
     Complex result;
     Complex LogZ = complex_volume_log(z);
-    Complex LogOneMinusZ = complex_volume_log(complex_minus(One,z));
+    Complex LogOneMinusZ = complex_volume_log(complex_minus(One, z));
 
     result = complex_volume_dilog(z);
 
@@ -1800,7 +1818,7 @@ static Complex LMap(
             result,
             complex_mult(
                 Half,             
-                complex_mult(LogZ,LogOneMinusZ)));
+                complex_mult(LogZ, LogOneMinusZ)));
 
     result =
         complex_plus(
@@ -1808,8 +1826,8 @@ static Complex LMap(
             complex_mult(
                 PiIOver2,
                 complex_plus(
-                    complex_mult(q,LogZ),
-                    complex_mult(p,LogOneMinusZ))));
+                    complex_mult(q, LogZ),
+                    complex_mult(p, LogOneMinusZ))));
     
     result.real -= PiSquareOver6;
     

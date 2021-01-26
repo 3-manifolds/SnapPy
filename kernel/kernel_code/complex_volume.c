@@ -428,9 +428,9 @@ Complex complex_volume(
         *precision = places;
     epsilon = pow((Real)10.0, -(Real)places);
 
-    /* Conjugate to make this fit into Snap's convention */
+    /* Since we inverted the tetrahedra shapes. */
 
-    vol_ultimate.imag = -vol_ultimate.imag;
+    vol_ultimate = complex_negate(vol_ultimate);
 
     /* Make sure we don't get -0.25 for the Chern-Simons invariant. */
  
@@ -444,21 +444,11 @@ static Complex complex_volume_ordered_manifold(
     Triangulation *manifold)
 {
     Tetrahedron   *tet;
-    int           i,j;
     Complex       vol = Zero;
 
     attach_extra(manifold);
 
     compute_cusp_coordinates(manifold);
-
-    /* Take conjugate for cusp coordinates (we converted SnapPy
-     * crossratios by conjugate inverse) */
-    for (tet = manifold->tet_list_begin.next;
-         tet != &manifold->tet_list_end;
-         tet = tet->next)
-        for (i = 0; i < 4; i++)
-            for (j = 0; j < 4; j++)
-                tet->extra->coord.x[i][j].imag *= -1.0;
 
     compute_c_parameters(manifold);
 
@@ -1715,10 +1705,9 @@ static Complex complex_volume_tet(
 
     /* SnapPea has the cross ratio different */
     
-    Complex z = complex_conjugate(
-                    complex_div(
+    Complex z = complex_div(
                         One,
-                        tet->shape[complete]->cwl[ultimate][0].rect));
+                        tet->shape[complete]->cwl[ultimate][0].rect);
 
     Complex p = complex_div(
                     complex_minus(

@@ -148,8 +148,6 @@
  * In the rest of SnapPea, the cross ratio is defined as
  * 1/[z0:z1:z2:z3].
  * 
- * We convert the SnapPea cross ratio by taking the conjugate inverse.
- *
  * 09/11/23 Matthias Goerner
  *
  */
@@ -427,10 +425,6 @@ Complex complex_volume(
     if (precision != NULL)
         *precision = places;
     epsilon = pow((Real)10.0, -(Real)places);
-
-    /* Since we inverted the tetrahedra shapes. */
-
-    vol_ultimate = complex_negate(vol_ultimate);
 
     /* Make sure we don't get -0.25 for the Chern-Simons invariant. */
  
@@ -1659,16 +1653,16 @@ static Complex compute_c(
     int other_vertex = other_vertex_at_edge[edge];
     int one_face = one_face_at_edge[edge];
   
-    return complex_div(One,
-                complex_sqrt(
-                    complex_mult(
-                        complex_minus(
-                            pos->x[one_vertex][other_vertex],
-                            pos->x[one_vertex][one_face]),
-                        complex_minus(
-                            pos->x[other_vertex][one_face],
-                            pos->x[other_vertex][one_vertex])
-                        )));
+    return
+        complex_sqrt(
+            complex_mult(
+                complex_minus(
+                    pos->x[one_vertex][other_vertex],
+                    pos->x[one_vertex][one_face]),
+                complex_minus(
+                    pos->x[other_vertex][one_face],
+                    pos->x[other_vertex][one_vertex])
+                ));
 }
 
 
@@ -1693,21 +1687,18 @@ static Complex complex_volume_tet(
     Complex log_c02 = complex_volume_log(tet->extra->c[4]);
     Complex log_c01 = complex_volume_log(tet->extra->c[5]);
     
+    /* Note that the cross ratio is 1/z of the cross ratio
+     * used by Neumann, so these formulas have some lifted
+     * Ptolemy variables permuted.
+     */
 
     Complex w0 = complex_minus(complex_plus(log_c03,log_c12),
                                complex_plus(log_c02,log_c13));
 
-    Complex w1 = complex_minus(complex_plus(log_c02,log_c13),
-                               complex_plus(log_c01,log_c23));
-    
-    Complex w2 = complex_minus(complex_plus(log_c01,log_c23),
+    Complex w1 = complex_minus(complex_plus(log_c01,log_c23),
                                complex_plus(log_c03,log_c12));
-
-    /* SnapPea has the cross ratio different */
     
-    Complex z = complex_div(
-                        One,
-                        tet->shape[complete]->cwl[ultimate][0].rect);
+    Complex z = tet->shape[complete]->cwl[ultimate][0].rect;
 
     Complex p = complex_div(
                     complex_minus(
@@ -1723,11 +1714,6 @@ static Complex complex_volume_tet(
                                 One,
                                 z))),
                     PiI);
-
-    /* check that w0 + w1 + w2 = 0 */
-
-    if (complex_modulus(complex_plus(w0,complex_plus(w1,w2))) > 0.000001)
-        uFatalError("complex_volume_tet","complex_volume");
 
     /* check that p and q are (really close to) integers */
 

@@ -34,7 +34,7 @@ def evaluate_at_roots(numberField, exact_values, precision = 53):
 def compute_representative_ptolemys_and_full_var_dict(M, precision = 53):
     """
     Given a closed manifold (as Dehn-filling on 1-cusped manifold), compute
-    a list of list of dictionaries assinging complex intervals to
+    a list of list of dictionaries assigning complex intervals to
     a subset of ptolemy variables and the full var dictionary to expand these
     to all variables.
     (Outer list for components, inner list for Galois conjugates).

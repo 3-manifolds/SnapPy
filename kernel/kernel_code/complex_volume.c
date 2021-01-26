@@ -1654,7 +1654,9 @@ static Complex compute_c(
     int one_face = one_face_at_edge[edge];
   
     return
-        complex_sqrt(
+        complex_mult(
+            Half,
+            complex_volume_log(
             complex_mult(
                 complex_minus(
                     pos->x[one_vertex][other_vertex],
@@ -1662,7 +1664,7 @@ static Complex compute_c(
                 complex_minus(
                     pos->x[other_vertex][one_face],
                     pos->x[other_vertex][one_vertex])
-                ));
+                    )));
 }
 
 
@@ -1680,12 +1682,12 @@ static Complex compute_c(
 static Complex complex_volume_tet(
     Tetrahedron *tet)
 {
-    Complex log_c23 = complex_volume_log(tet->extra->c[0]);
-    Complex log_c13 = complex_volume_log(tet->extra->c[1]);
-    Complex log_c12 = complex_volume_log(tet->extra->c[2]);
-    Complex log_c03 = complex_volume_log(tet->extra->c[3]);
-    Complex log_c02 = complex_volume_log(tet->extra->c[4]);
-    Complex log_c01 = complex_volume_log(tet->extra->c[5]);
+    Complex log_c23 = tet->extra->c[edge_between_vertices[2][3]];
+    Complex log_c13 = tet->extra->c[edge_between_vertices[1][3]];
+    Complex log_c12 = tet->extra->c[edge_between_vertices[1][2]];
+    Complex log_c03 = tet->extra->c[edge_between_vertices[0][3]];
+    Complex log_c02 = tet->extra->c[edge_between_vertices[0][2]];
+    Complex log_c01 = tet->extra->c[edge_between_vertices[0][1]];
     
     /* Note that the cross ratio is 1/z of the cross ratio
      * used by Neumann, so these formulas have some lifted

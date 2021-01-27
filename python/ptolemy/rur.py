@@ -528,7 +528,7 @@ class RUR(object):
             return self
         if other % 2:
             return self * (self ** (other - 1))
-        return (self * self) ** (other / 2)
+        return (self * self) ** (other // 2)
 
     def _is_zero(self):
         return any(p == 0 and e > 0

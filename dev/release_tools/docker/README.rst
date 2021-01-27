@@ -55,7 +55,7 @@ are saved.  You can restart the container via::
 
   docker start -i build64
 
-and create addtional shells on a running container via::
+and create additional shells on a running container via::
 
   docker exec -i -t build64 /bin/bash
 
@@ -126,10 +126,9 @@ For more options, do::
   python test_pypi.py -h
 
 To test with Python 3 rather than Python 2, just run "test_pypi.py"
-with "python3".  To stop the container and destory it, do::
+with "python3".  To stop the container and destroy it, do::
 
   docker stop test
   docker rm test
 
 The end.
- 

@@ -1,7 +1,7 @@
 """
 
 Giac [1] is included in Sage 6.8 (July 2015) and newer with Sage
-providing a pexpect interpeter interface.  Additionally, there is a
+providing a pexpect interpreter interface.  Additionally, there is a
 Cython-based wrapper for Giac [2] with a Sage-specific incarnation [3]
 which is installable as an optional Sage spkg::
 

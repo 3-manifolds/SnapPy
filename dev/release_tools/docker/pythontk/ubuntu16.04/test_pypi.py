@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(description='Check packages on (Test)PyPI via v
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-p', '--pip', help='Use pip to install the packages',
                     action='store_true')
-group.add_argument('-e', '--easy_install', help='Use easy_install to aquire the packages',
+group.add_argument('-e', '--easy_install', help='Use easy_install to acquire the packages',
                     action='store_true')
 parser.add_argument('-s', '--source', help='Make pip not use wheels',
                     action='store_true')

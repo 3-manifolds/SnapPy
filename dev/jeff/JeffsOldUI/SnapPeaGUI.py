@@ -14,7 +14,7 @@
 #    constituent SnapPeaGUITriangulationDataPanes, and the
 #    SnapPeaGUITriangulationDataPanes keep pointers to the
 #    SnapPeaGUITriangulation, so neither will ever be freed.
-#    It's embarassing to intentionally write code like this,
+#    It's embarrassing to intentionally write code like this,
 #    but for a rapid prototyping tool I guess it's OK.
 #    Serious work should take place in the command line interpreter.
 #    [Perhaps I could eventually fix this by manually deleting

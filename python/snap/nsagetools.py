@@ -66,7 +66,7 @@ class MapToAbelianization(SageObject):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         ab_words = [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]
-        if len(ab_words) == 0:
+        if not ab_words:
             n = fund_group.num_generators()
             self.elementary_divisors = n*[0,]
             self.U = identity_matrix(n)
@@ -263,41 +263,51 @@ def fox_derivative_with_involution(word, phi, var):
 # polynomials, so we need to be able to clear denominators.  This add
 # to the complexity of the code.
 
+
 def join_lists(list_of_lists):
-    ans = []
     for L in list_of_lists:
-        ans += L
-    return ans
+        yield from L
+
 
 def uniform_poly_exponents(poly):
-    return [list(e) if hasattr(e, "__getitem__") else (e,) for e in poly.exponents()]
+    if poly.parent().ngens() == 1:
+        return [(e,) for e in poly.exponents()]
+    return poly.exponents()
+
 
 def minimum_exponents(elts):
-    A =  matrix(ZZ, join_lists([ uniform_poly_exponents(p) for p in elts]))
-    return vector([min(row) for row in A.transpose()])
+    exps = iter(join_lists(uniform_poly_exponents(p) for p in elts))
+    mins = list(next(exps))
+    n = len(mins)
+    for e in exps:
+        for i in range(n):
+            if e[i] < mins[i]:
+                mins[i] = e[i]
+    return mins
 
 
-def convert_laurent_to_poly(elt, expshift, P):
-   if elt == 0:
-       return P.zero()
-   return P({tuple(e - f for e, f in zip(exps, expshift)): c
-             for exps, c in elt.dict().items()})
+def convert_laurent_to_poly(elt, minexp, P):
+    return P({tuple(e - f for e, f in zip(exps, minexp)): c
+              for exps, c in elt.dict().items()})
 
 
 def alexander_polynomial_basic(G, phi):
     R = phi.range()
     P = R.polynomial_ring()
-    M = [[fox_derivative(rel, phi, var)  for rel in G.relators()] for  var in G.generators()]
-    expshift = minimum_exponents(join_lists(M))
-    MS = M.parent().change_ring(P)
-    M = MS([[ convert_laurent_to_poly(p, expshift, P) for p in row] for row in M])
+    M = [[fox_derivative(rel, phi, var) for rel in G.relators()]
+         for var in G.generators()]
+    minexp = minimum_exponents(join_lists(M))
+    M = matrix(P, [[ convert_laurent_to_poly(p, minexp, P) for p in row]
+                   for row in M])
     alex_poly = gcd(M.minors(G.num_generators() - 1))
     # Normalize it
     return convert_laurent_to_poly(alex_poly, minimum_exponents( [alex_poly] ), P)
 
+
 def alexander_polynomial_group(G):
     phi = MapToGroupRingOfFreeAbelianization(G)
     return alexander_polynomial_basic(G, phi)
+
 
 @sage_method
 def alexander_polynomial(manifold, **kwargs):
@@ -317,7 +327,7 @@ def alexander_polynomial(manifold, **kwargs):
     """
     ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
     coeffs = ans.coefficients()
-    if len(coeffs) > 0 and coeffs[0] < 0:
+    if coeffs and coeffs[0] < 0:
         ans = -ans
     return ans
 
@@ -455,10 +465,10 @@ def fast_determinant_of_laurent_poly_matrix(A):
     polynomial entries.
     """
     R = A.base_ring()
-    expshift = minimum_exponents(A.list())
+    minexp = minimum_exponents(A.list())
     P = R.polynomial_ring()
     MS = A.parent().change_ring(P)
-    Ap = MS([convert_laurent_to_poly(p, expshift, P) for p in A.list()])
+    Ap = MS([convert_laurent_to_poly(p, minexp, P) for p in A.list()])
     return Ap.det()
 
 def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,

@@ -282,7 +282,7 @@ class KrawczykShapesEngine:
            - df([z]) is the derivative of f (interval-)evaluated for [z]
            
         Note that z0 in self.initial_shapes which are complex intervals
-        containg only one value (the candidate solution given initially).
+        containing only one value (the candidate solution given initially).
 
         If K is contained in [z], then we have proven that [z] contains a solution
         to the gluing equations.
@@ -416,7 +416,7 @@ class KrawczykShapesEngine:
         if not M.is_orientable():
             raise Exception("Manifold needs to be orientable")
 
-        # Intialize the shape intervals, they have zero length
+        # Initialize the shape intervals, they have zero length
         self.initial_shapes = vector(
             [self.CIF(shape) for shape in initial_shapes])
         

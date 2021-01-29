@@ -188,8 +188,8 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     === Arguments ===
 
     N --- which SL(N,C) we want the variety.
-    
-    obstruction_class --- class from Definiton 1.7 of (1).
+
+    obstruction_class --- class from Definition 1.7 of (1).
     None for trivial class or a value returned from get_ptolemy_obstruction_classes.
     Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
     for each obstruction. For easier iteration, can set obstruction_class to 

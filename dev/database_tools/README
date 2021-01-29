@@ -27,11 +27,11 @@ as tabulated by Hoste-Thistlethwaite and Thistlethwaite.  This takes
 a long time, and the script attempts to occupy all CPUs at 100%
 to do the job.
 
-The more_manifolds.sqlite database supercedes part of the
+The more_manifolds.sqlite database supersedes part of the
 AlternatingKnots and NonalternatingKnots iterators, but they go through
 16 crossings for knots.
 
 IMPORTANT: The AlternatingKnots and NonalternatingKnots iterators use
 a different numbering scheme than more_manifolds.sqlite.  In
 more_manifolds.sqlite we were careful to use the same numbering as
-is used in KnotInof and the Knot Atlas.
+is used in KnotInfo and the Knot Atlas.

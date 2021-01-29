@@ -49,10 +49,9 @@ geodesics.
 
 (v) Compute eta invariant
 
-(vi) Alterative algorithm for finding symmetry groups which provides
+(vi) Alternative algorithm for finding symmetry groups which provides
 additional information (e.g. matrices realizing the symmetries).
 
 Best,
 
 Nathan
-

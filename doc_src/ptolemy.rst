@@ -26,16 +26,16 @@ The ptolemy module is still under development. Please report bugs or email sugge
 
 Examples of what the Ptolemy module can do:
 
-* Give the :ref:`equations for the reduced Ptolemy varities<ptolemy-example-basic>` to find all :ref:`generically decorated <ptolemy-generically-decorated>` and :ref:`boundary-unipotent <ptolemy-boundary-unipotent>` representations into SL(*N*, **C**).
+* Give the :ref:`equations for the reduced Ptolemy varieties<ptolemy-example-basic>` to find all :ref:`generically decorated <ptolemy-generically-decorated>` and :ref:`boundary-unipotent <ptolemy-boundary-unipotent>` representations into SL(*N*, **C**).
 * Same for representations into PSL(*N*, **C**) using :ref:`Obstruction classes <ptolemy-example-obstruction-class>`.
-* Retrieve the :ref:`exact <ptolemy-example-retrieve-exact-solutions>` and :ref:`numerical <ptolemy-example-retrieve-numerical-solutions>` solutions for these varities.
+* Retrieve the :ref:`exact <ptolemy-example-retrieve-exact-solutions>` and :ref:`numerical <ptolemy-example-retrieve-numerical-solutions>` solutions for these varieties.
 * Compute the matrices for these representations :ref:`exactly <ptolemy-example-matrices>` or :ref:`numerically <ptolemy-example-numerical-matrix>` given a generator of or word in the fundamental group.
 * Compute the :ref:`traces <ptolemy-example-traces>` for these matrices.
 * Compute the :ref:`trace field <ptolemy-examples-trace-field>` of the representation.
 * Compute the :ref:`boundary holonomoy <ptolemy-example-boundary-holonomy>`.
 * Compute the corresponding :ref:`shape parameters/cross ratios <ptolemy-example-cross-ratios>` for a representation.
 * Compute the :ref:`volume <ptolemy-example-volume>` and :ref:`complex volume <ptolemy-example-complex-volume>` (volume + i Chern-Simons) for a representation.
-* Compute solutions to the Ptolemy varities :ref:`using magma or sage <ptolemy-example-using-magma-sage>`.
+* Compute solutions to the Ptolemy varieties :ref:`using magma or sage <ptolemy-example-using-magma-sage>`.
 * Find :ref:`positively dimensional components <ptolemy-non-zero-dim-comp>` of the Ptolemy variety.
 * Find :ref:`positively dimensional families <ptolemy-example-non-zero-dim-rep>` of boundary-unipotent representations.
 

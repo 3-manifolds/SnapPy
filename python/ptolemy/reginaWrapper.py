@@ -197,8 +197,7 @@ class NTriangulationForPtolemy(NTriangulation):
         Returns the XML code for the regina package containing
         this triangulation.
         """
-
-        # Create temporary file and close it immeadiately
+        # Create temporary file and close it immediately
         f = tempfile.NamedTemporaryFile(delete=False)
         filename = f.name
         f.close()
@@ -398,15 +397,14 @@ class NTriangulationForPtolemy(NTriangulation):
         """
         This is reimplementing get_ptolemy_equations_action_by_decoration_change
         from addl_code/ptolemy_equations.c
-        
+
         We can change a decoration by multiplying a coset of a cusp by a
         diagonal matrix. Let's let a diagonal matrix SL(n,C) with diagonal
-        entries 1 1 ... z 1 ... 1 1/z (z at positon j) act on cusp i. It
+        entries 1 1 ... z 1 ... 1 1/z (z at position j) act on cusp i. It
         changes some Ptolemy coordinate c_p_t by some power z^n.
         This is expressed in the following matrix as the entry in row
-        labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i.
+        labelled c_p_t and the column labelled diagonal_entry_j_on_cusp_i.
         """
-    
         matrix = []
         row_explanations = []
 

@@ -317,7 +317,7 @@ def verified_canonical_retriangulation(
     SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of 
     `Fominykh, Garoufalidis, Goerner, Tarkaev, Vesnin <http://arxiv.org/abs/1502.00383>`_.
 
-    Canonical cell decompostion of ``m004`` has 2 tetrahedral cells::
+    Canonical cell decomposition of ``m004`` has 2 tetrahedral cells::
 
        sage: from snappy import Manifold
        sage: M = Manifold("m004")

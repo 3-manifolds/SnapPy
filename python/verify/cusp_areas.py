@@ -8,7 +8,7 @@ if _within_sage:
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
 
     # python's sqrt only work for floats
-    # They would fail or convert to float loosing precision
+    # They would fail or convert to float losing precision
     from sage.all import sqrt
 else:
     import math
@@ -16,18 +16,18 @@ else:
     # Otherwise, define our own sqrt which checks whether
     # the given type defines a sqrt method and fallsback
     # to python's log and sqrt which has the above drawback of
-    # potentially loosing precision.
+    # potentially losing precision.
     def sqrt(x):
         if hasattr(x, 'sqrt'):
             return x.sqrt()
         return math.sqrt(x)
+
 
 def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     """
 
     Examples::
 
-    
         sage: from sage.all import matrix, RIF
         sage: unbiased_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
@@ -144,11 +144,11 @@ def _verified_unbiased_cusp_areas_from_cusp_area_matrix(
 
         for area in result:
             if not area < stop_size:
-                raise Exception("New area smaller than exisiting areas")
+                raise Exception("New area smaller than existing areas")
 
         for cusp in cusps:
             result[cusp] = stop_size
-            
+
         for i in range(num_cusps):
             for j in range(i, num_cusps):
                 if i in cusps or j in cusps:

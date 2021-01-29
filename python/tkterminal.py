@@ -34,7 +34,7 @@ class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
         Tk_.Tk.__init__(self, className='snappy')
         # Tkinter ignores exceptions raised by callbacks, but
-        # calls this function to report their occurence.
+        # calls this function to report their occurrence.
         if error_handler:
             self.report_callback_exception = error_handler
         # In Python 2.7 the _default root does not get set correctly.

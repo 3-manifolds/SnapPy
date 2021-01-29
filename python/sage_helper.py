@@ -44,7 +44,7 @@ else:
         return decorator.decorator(_sage_method, function)
 
 
-# Not currently used, but could be exploited by an interpeter to hide
+# Not currently used, but could be exploited by an interpreter to hide
 # sage_methods when in plain Python.
 
 def sage_methods(obj):
@@ -52,7 +52,7 @@ def sage_methods(obj):
     for attr in dir(obj):
         try:
             methods = getattr(obj, attr)
-            if methods._sage_method == True:
+            if methods._sage_method is True:
                 ans.append(methods)
         except AttributeError:
             pass

@@ -70,8 +70,8 @@ Note that the volumes of the representations are in a list of lists of lists. At
 
 **Remark:** Unfortunately, this is not compatible with tab-autocompletion, see :ref:`later <ptolemy-example-missing-auto-completion>`.
 
-A comparision of ``m003`` and ``m004``
---------------------------------------
+A comparison of ``m003`` and ``m004``
+-------------------------------------
 
 We can now compare the set of volumes of ``m003`` and ``m004``:
 
@@ -90,7 +90,7 @@ We can also compute the volumes for a manifold that might be non-hyperbolic, her
     >>> Manifold("5_1").ptolemy_variety(2,'all').retrieve_solutions(verbose=False).volume_numerical()
     [[], [[1.52310839130992 E-14, 0.E-37]]]
 
-Note that one of the Ptolemy varities is non-empty which proves that all edges of the triangulation are essential. We also see that all volumes are 0 and thus smaller than the volume 2.029883... of the figure-eight knot complement that is proven to be the smallest volume of any orientable cusped manifold. Thus, it follows from Theorem 1.3 and Remark 1.4 of [GGZ2014]_ that 5\ :sub:`1` is not hyperbolic.
+Note that one of the Ptolemy varieties is non-empty which proves that all edges of the triangulation are essential. We also see that all volumes are 0 and thus smaller than the volume 2.029883... of the figure-eight knot complement that is proven to be the smallest volume of any orientable cusped manifold. Thus, it follows from Theorem 1.3 and Remark 1.4 of [GGZ2014]_ that 5\ :sub:`1` is not hyperbolic.
 
 **Remark:** The ptolemy module does not (yet) support interval arithmetics, otherwise, this would be a proof that 5\ :sub:`1` is not hyperbolic.
 
@@ -275,7 +275,7 @@ Given exact or numerical solutions to the Ptolemy variety, we can also compute t
                    'zpp_0000_1': Mod(x + 1, x^2 + x + 1)},
 		  is_numerical = False, ...)]]
 
-**Remark**: The shapes will be given as element in the Ptolemy field with definining polynomial being the second argument to ``Mod(..., ...)``, here, x\ :sup:`2`\ +x+1. The Ptolemy field is a (possibly trivial) extension of the shape field. For *N* =2, the Ptolemy field is the trace field [GGZ2014]_ and an iterated square extension of the shape field which is the invariant trace field for a cusped manifold.
+**Remark**: The shapes will be given as element in the Ptolemy field with defining polynomial being the second argument to ``Mod(..., ...)``, here, x\ :sup:`2`\ +x+1. The Ptolemy field is a (possibly trivial) extension of the shape field. For *N* =2, the Ptolemy field is the trace field [GGZ2014]_ and an iterated square extension of the shape field which is the invariant trace field for a cusped manifold.
 
 And numerically, so that we can compare to SnapPy's shapes::
 

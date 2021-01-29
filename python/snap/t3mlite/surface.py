@@ -13,7 +13,7 @@ import sys
 from .linalg import Vector, Matrix
 
 # NOTE (1) The functions in this module only make sense for closed
-# manifolds.  It will need to be rewritten to accomodate spun normal
+# manifolds.  It will need to be rewritten to accommodate spun normal
 # surfaces.  In particular, build_weights tries to compute the
 # triangle weights from the quad weights.  We could set them to
 # infinity, I suppose, near a torus cusp.
@@ -369,7 +369,7 @@ class ClosedSurface(Surface):
                 return
             out.write("Normal surface #%d of Euler characteristic %d\n"
                       %(manifold.NormalSurfaces.index(self), self.EulerCharacteristic))
-            # addional message about bounding subcomplex
+            # additional message about bounding subcomplex
             b, d, t = self.BoundingInfo
             if b == 1:
                 out.write("  Bounds %s subcomplex\n"  % t)
@@ -487,7 +487,7 @@ class ClosedSurfaceInCusped(ClosedSurface):
             out.write("    is thin linking surface of edge %s\n" % manifold.Edges[e])
             return
 
-        # addional message about bounding subcomplex
+        # additional message about bounding subcomplex
         b, d, t = self.BoundingInfo
         if b == 1:
             out.write("  Bounds %s subcomplex\n"  % t)

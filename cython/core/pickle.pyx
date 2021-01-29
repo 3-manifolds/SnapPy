@@ -43,7 +43,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
     # Every pickle starts with b'pickle:'
     result = b'pickle:'
 
-    # The first byte uses the two least signficant bits to indicate the
+    # The first byte uses the two least significant bits to indicate the
     # orientability type and other bits as flags.
     buf[0] = <unsigned char>tri_data.orientability
     # NOTE: tri_data.num_tetrahedra is a positive signed int.

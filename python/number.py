@@ -495,7 +495,7 @@ class Number(Number_baseclass):
 
     def sage(self):
         """
-        Return as an element of the approriate RealField or
+        Return as an element of the appropriate RealField or
         ComplexField
         """
         if not _within_sage:

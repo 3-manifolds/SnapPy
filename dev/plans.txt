@@ -139,7 +139,7 @@ a. Spherogram should keep track of unknotted and unlinked components.
 
 b. General cleanup.
 
-c. Additional user-friendly knot/link construtors.
+c. Additional user-friendly knot/link constructors.
 
 
 Whither Python 2.7

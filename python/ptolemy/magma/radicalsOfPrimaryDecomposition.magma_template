@@ -14,7 +14,7 @@ print $QUOTED_PREAMBLE;
 
 
 
-// Initialize Q to -1 so that we can check whether an error happend
+// Initialize Q to -1 so that we can check whether an error happened
 // by checking that Q is still of type integer.
 Q := -1;
 
@@ -33,7 +33,7 @@ P, Q := PrimaryDecomposition(MyIdeal);
 print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime(primTime);
 
 if Type(Q) eq RngIntElt then
-    // Some error occured
+    // Some error occurred
     print "IDEAL=DECOMPOSITION" cat "=FAILED";
     exit;
 else

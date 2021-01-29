@@ -1,4 +1,4 @@
-We currently relases an app and wheels for 10.6 (or is it 10.9?) and up
+We currently release an app and wheels for 10.6 (or is it 10.9?) and up
 for 64-bit intel only.
 
 
@@ -31,7 +31,7 @@ Update and build::
   sudo make -C macosx install
 
 Assuming one has installed a recent Python 3.7 (say) from python.org,
-then you have to overide its internal copy of Tk as follows::
+then you have to override its internal copy of Tk as follows::
 
   sudo cp  /Library/Frameworks/Tk.framework/Versions/8.6/Tk \
            /Library/Frameworks/Python.framework/Versions/3.7/lib/libtk8.6.dylib

@@ -7,16 +7,17 @@ def _break_line_iterator(line, line_length):
     for i in range(0, len(line), line_length):
         yield line[i:i+line_length]
 
+
 def break_long_lines(text, line_length = 76):
     """
-    Break lines in ASCII text text longer than line_length by inserting 
+    Break lines in ASCII text text longer than line_length by inserting
     newline characters preceded by backslash (thus the resulting lines might
     be one character longer than ling_length).
 
     The reverse operation is join_long_lines, so
     join_long_lines(break_long_lines(text)) is always returning text as long as
     consisted of ASCII characters (even when text already had lines
-    ending in a backslash as those backslashs are specially escaped)!
+    ending in a backslash as those backslashes are specially escaped)!
 
     This is consistent with the interpretation of the backslash newline
     sequence by many languages such as magma, python, C, C++ which treat these

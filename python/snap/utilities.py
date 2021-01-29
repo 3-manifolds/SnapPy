@@ -2,7 +2,7 @@
 features of Sage; the purpose of these is to allow some of the
 snappy.snap tools to be used in an environment where Sage is not
 available, such as in the SnapPy GUI or in a Windows python
-interpretor.
+interpreter.
 
 """
 
@@ -18,6 +18,7 @@ if _within_sage:
     is_field = lambda R: isinstance(R, (SnapPyNumbers, RealField_class, ComplexField_class))
 else:
     is_field = lambda R: isinstance(R, SnapPyNumbers)
+
 
 class MatrixBase(object):
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""

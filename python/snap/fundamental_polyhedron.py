@@ -84,7 +84,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         generator). The face pairing data consists of a pair of t3mlite.Corner's
         indicating the paired faces as well as the permutation to take one
         face to the other.
-        Here, for example, the generator corresonds to exactly one face
+        Here, for example, the generator corresponds to exactly one face
         pairing of face 2 of tet 1 to face 1 of tet0 such that face 2 is
         taken to face 1 by the permutation (3, 0, 1, 2)::
 
@@ -300,7 +300,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         ...         g = -g
         ...     return generatorMatrices[g]
 
-        Check that relations are fullfilled up to sign:
+        Check that relations are fulfilled up to sign:
 
         >>> def p(L): return reduce(lambda x, y: x * y, L)
         >>> def close_to_identity(m, epsilon = 1e-12):
@@ -329,10 +329,10 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                 self.mcomplex.GeneratorMatrices[ g] = m
                 self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 
-    def matrices_for_presentation(self, G, match_kernel = False):
+    def matrices_for_presentation(self, G, match_kernel=False):
         """
         Given the result of M.fundamental_group(...) where M is the
-        cooresponding SnapPy.Manifold, return the matrices for that
+        corresponding SnapPy.Manifold, return the matrices for that
         presentation of the fundamental polyhedron.
 
         The GeneratorMatrices computed here are for the face-pairing

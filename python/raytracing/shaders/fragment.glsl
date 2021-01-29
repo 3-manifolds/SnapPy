@@ -258,7 +258,7 @@ struct RayHit
     int object_index;
 };
 
-// We distinguish betweeen:
+// We distinguish between:
 // - colored ray hits: the geometry is lit, e.g., the cylinder
 //   about an edge reacts to light)
 // - valued ray hits: we use a value such as the distance or cohomology
@@ -577,7 +577,7 @@ parabolicSO13(vec2 z)
                      z.y,    -z.y,     0.0,     1.0 );
 }
 
-// Compute the SO13 transform coresponding to the PGL(2,C)-matrix
+// Compute the SO13 transform corresponding to the PGL(2,C)-matrix
 // [[ exp(z), 0], [0, 1]].
 // Special case of the kernel's Moebius_to_O31 for diagonal matrices.
 mat4
@@ -1049,7 +1049,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
 // 
 // For optimization, leaveVertexNeighborhood will also apply a
 // parabolic transformation to the ray trying to bring the
-// where we exit the horosphere closer to teh entry point.
+// where we exit the horosphere closer to the entry point.
 bool
 leaveVertexNeighborhood(inout RayHit rayHit)
 {
@@ -1176,7 +1176,7 @@ RayHit computeRayHit(vec2 xy){
 
     if (hitPeripheral) {
         // If we hit a peripheral curve, leaveVertexNeighborhood has given us
-        // the intersection point and we can immeadiately shade.
+        // the intersection point and we can immediately shade.
     } else {
         // In all other cases, we need to raytrace before we shade.
         ray_trace(ray_tet_space);

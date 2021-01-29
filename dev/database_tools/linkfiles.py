@@ -322,11 +322,11 @@ class LinkProjection:
         main convention:
 
         If you view a crossing (from above) so that the strands go in the
-        direction of the postive x- and y-axes, then the strand going in
+        direction of the positive x- and y-axes, then the strand going in
         the x-direction is the KLPStrandX, and the strand going in the
         y-direction is the KLPStrandY.  Note that this definition does not
         depend on which is the overstrand and which is the understrand::
-        
+
                                    KLPStrandY
                                        ^
                                        |
@@ -412,7 +412,7 @@ class LinkProjection:
                     crossing.hit(-count)
                 else:
                     crossing.hit(count)
-                if count%2 == 1:
+                if count % 2:
                     odd_count += 1
                 count += 1
             chunks.append(odd_count)
@@ -426,7 +426,7 @@ class LinkProjection:
                 # Choose the next component, by Morwen's rules:
                 # Use the component containing the partner of the
                 # first odd-numbered crossing that is shared with
-                # another commponent (if there are any).
+                # another component (if there are any).
                 odd_shared.sort(key=lambda x : x.hit1)
                 next_component = odd_shared[0].comp2
                 components.remove(next_component)
@@ -434,7 +434,7 @@ class LinkProjection:
         # build the Dowker-Thistlethwaite code
         even_codes = [None]*len(self.Crossings)
         for crossing in self.Crossings:
-            if crossing.hit1%2 != 0:
+            if crossing.hit1 % 2:
                 even_codes[(crossing.hit1 - 1)//2] = crossing.hit2
             else:
                 even_codes[(crossing.hit2 - 1)//2] = crossing.hit1

@@ -66,7 +66,7 @@ class MapToAbelianization(SageObject):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         ab_words = [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]
-        if len(ab_words) == 0:
+        if not ab_words:
             n = fund_group.num_generators()
             self.elementary_divisors = n*[0,]
             self.U = identity_matrix(n)
@@ -80,7 +80,7 @@ class MapToAbelianization(SageObject):
             num_ones = diag.count(1)
             self.elementary_divisors = diag[num_ones:] + [0,]*(m - d)
             self.U = U[num_ones:]
-            
+
         tor = [d for d in self.elementary_divisors if d != 0]
         free = [d for d in self.elementary_divisors if d == 0]
         names = []
@@ -100,11 +100,11 @@ class MapToAbelianization(SageObject):
     def _normalize_exponents(self, exponents):
         D = self.elementary_divisors
         return [v % d if d > 0 else v for (v, d) in zip(exponents, D)]
-        
+
     def _exponents_of_word(self, word):
         exponents = self.U*abelianize_word(word, self.domain_gens)
         return self._normalize_exponents(exponents)
-        
+
     def __call__(self, word):
         return self._range(self._exponents_of_word(word))
 
@@ -117,35 +117,35 @@ class MapToFreeAbelianization(MapToAbelianization):
         v = self.U*abelianize_word(word, self.domain_gens)
         return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
-# Finding the longitude 
+# Finding the longitude
 
 @sage_method
 def homological_longitude(manifold, cusp=None):
     """
     Returns the peripheral curve in the given cusp, if any, which is
     homologically trivial (with rational coefficients) in the manifold::
-    
+
         sage: M = Manifold('m015')
         sage: M.homological_longitude()
         (2, -1)
 
     If no cusp is specified, the default is the first unfilled cusp;
     if all cusps are filled, the default is the first cusp::
-      
+
         sage: M = Manifold('L5a1(3,4)(0,0)')
         sage: M.homological_longitude()
         (0, 1)
 
     The components of the next link have nontrivial linking number
     so there is no such curve::
-      
+
         sage: W = Manifold('L7a2')
-        sage: W.homological_longitude(cusp=1) == None
+        sage: W.homological_longitude(cusp=1) is None
         True
 
     If every curve in the given cusp is trivial in the rational homology of
     the manifold, an exception is raised::
-      
+
         sage: M = Manifold('4_1(1,0)')
         sage: M.homological_longitude()
         Traceback (most recent call last):
@@ -218,7 +218,7 @@ def setup_fox_derivative(word, phi, var, involute=False):
 
     gens = list(set( (var + word).lower() ))
     gens += [g.upper() for g in gens]
-    
+
     phi_ims = {}
     fox_ders = {}
     for g in gens:
@@ -236,7 +236,7 @@ def fox_derivative(word, phi, var):
     phi( d word / d var), i.e. the image of the fox derivative
     of the word with respect to var.
     """
-    
+
     R, phi_ims, fox_ders = setup_fox_derivative(word, phi, var)
     D = 0
     curr_prod = R.one()
@@ -259,42 +259,58 @@ def fox_derivative_with_involution(word, phi, var):
         D = fox_ders[w] + D*phi_ims[w]
     return D
 
-# It's best to deal with matrixes of polynomials rather than Laurent
+# It's best to deal with matrices of polynomials rather than Laurent
 # polynomials, so we need to be able to clear denominators.  This add
-# to the complexity of the code.  
+# to the complexity of the code.
+
 
 def join_lists(list_of_lists):
-    ans = []
     for L in list_of_lists:
-        ans += L
-    return ans
+        yield from L
+
 
 def uniform_poly_exponents(poly):
-    return [list(e) if hasattr(e, "__getitem__") else (e,) for e in poly.exponents()]
-    
-def minimum_exponents(elts):
-    A =  matrix(ZZ, join_lists([ uniform_poly_exponents(p) for p in elts]))
-    return vector( [min(row) for row in A.transpose()] )
+    if poly.parent().ngens() == 1:
+        return [(e,) for e in poly.exponents()]
+    return poly.exponents()
 
-def convert_laurent_to_poly(elt, expshift, P):
-   if elt == 0:
-       return P(0)
-   return sum( [  c*prod([g**e for g, e in zip(P.gens(), vector(exps) + expshift)]) for c, exps in zip(elt.coefficients(), uniform_poly_exponents(elt))])
+
+def minimum_exponents(elts):
+    exps = iter(join_lists(uniform_poly_exponents(p) for p in elts))
+    mins = list(next(exps))
+    n = len(mins)
+    for e in exps:
+        for i in range(n):
+            if e[i] < mins[i]:
+                mins[i] = e[i]
+    return mins
+
+
+def convert_laurent_to_poly(elt, minexp, P):
+    if P.ngens() == 1:
+        f = minexp[0]
+        return P({e - f: c for e, c in elt.dict().items()})
+    return P({tuple(e - f for e, f in zip(exps, minexp)): c
+              for exps, c in elt.dict().items()})
 
 
 def alexander_polynomial_basic(G, phi):
     R = phi.range()
-    P = PolynomialRing(R.base_ring(), R.variable_names())
-    M = [[fox_derivative(rel, phi, var)  for rel in G.relators()] for  var in G.generators()]
-    expshift = -minimum_exponents(join_lists(M))
-    M = matrix(P, [[ convert_laurent_to_poly(p, expshift, P) for p in row] for row in M])
+    P = R.polynomial_ring()
+    M = [[fox_derivative(rel, phi, var) for rel in G.relators()]
+         for var in G.generators()]
+    minexp = minimum_exponents(join_lists(M))
+    M = matrix(P, [[ convert_laurent_to_poly(p, minexp, P) for p in row]
+                   for row in M])
     alex_poly = gcd(M.minors(G.num_generators() - 1))
     # Normalize it
-    return convert_laurent_to_poly(alex_poly, -minimum_exponents( [alex_poly] ), P)
+    return convert_laurent_to_poly(alex_poly, minimum_exponents( [alex_poly] ), P)
+
 
 def alexander_polynomial_group(G):
     phi = MapToGroupRingOfFreeAbelianization(G)
     return alexander_polynomial_basic(G, phi)
+
 
 @sage_method
 def alexander_polynomial(manifold, **kwargs):
@@ -310,17 +326,17 @@ def alexander_polynomial(manifold, **kwargs):
         a^2*b + a*b^2 + a*b + a + b
 
     Any provided keyword arguments are passed to fundamental_group and
-    so affect the group presentation used in the computation.  
+    so affect the group presentation used in the computation.
     """
     ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
     coeffs = ans.coefficients()
-    if len(coeffs) > 0 and coeffs[0] < 0:
+    if coeffs and coeffs[0] < 0:
         ans = -ans
     return ans
 
 #--------------------------------------------------------------
 #
-#  Computing the twisted torsion polynomials 
+#  Computing the twisted torsion polynomials
 #     for deficiency one presentations.
 #
 #--------------------------------------------------------------
@@ -336,7 +352,7 @@ class PhiAlpha():
         return self.image_ring
 
     def __call__(self, word):
-        a = self.phi(word) 
+        a = self.phi(word)
         A = self.alpha(word)
         M = self.image_ring(0)
         M[0,0], M[0,1], M[1,0], M[1,1] = a*A[0,0], a*A[0,1], a*A[1,0], a*A[1,1]
@@ -368,7 +384,7 @@ def univ_exponents(p):
         return [a[0] for a in p.exponents()]
     except TypeError:
         return p.exponents()
-    
+
 def clean_laurent(p, error):
     R = p.parent()
     t = R.gen()
@@ -417,9 +433,10 @@ def last_square_submatrix(A):
 def first_square_submatrix(A):
     r, c = A.nrows(), A.ncols()
     if r <= c:
-        return A.matrix_from_columns( range(0, r) )
+        return A.matrix_from_columns( range(r) )
     else:
-        return A.matrix_from_rows( range( 0, c) )
+        return A.matrix_from_rows( range(c) )
+
 
 class TorsionComputationError(Exception):
     pass
@@ -427,7 +444,7 @@ class TorsionComputationError(Exception):
 @sage_method
 def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
     """
-    Computes the hyperbolic torision polynomial as defined in
+    Computes the hyperbolic torsion polynomial as defined in
     `[DFJ] <http://arxiv.org/abs/1108.3045>`_::
 
         sage: M = Manifold('K11n42')
@@ -451,14 +468,11 @@ def fast_determinant_of_laurent_poly_matrix(A):
     polynomial entries.
     """
     R = A.base_ring()
-    if not hasattr(R, 'polynomial_ring'):
-        assert False
-        return det(A)
-
-    expshift = -minimum_exponents(A.list())
-    P = PolynomialRing(R.base_ring(), R.variable_names())  # Note: P.polynomial_ring() doesn't work here!
-    Ap = matrix(P, A.nrows(), A.ncols(), [ convert_laurent_to_poly(p, expshift, P) for p in A.list()])
-    return det(Ap)
+    minexp = minimum_exponents(A.list())
+    P = R.polynomial_ring()
+    MS = A.parent().change_ring(P)
+    Ap = MS([convert_laurent_to_poly(p, minexp, P) for p in A.list()])
+    return Ap.det()
 
 def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
                     return_parts = False, return_as_poly=True,
@@ -471,7 +485,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
     big_epsilon = ZZ(2)**(-bits_prec//5) if not F.is_exact() else None
     gens, rels = G.generators(), G.relators()
     k = len(gens)
-    if phi == None:
+    if phi is None:
         phi = MapToGroupRingOfFreeAbelianization(G, F)
 
     # Make sure this special algorithm applies.
@@ -480,12 +494,12 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
     # Want the first variable to be homologically nontrivial
     i0 = [i for i, g in enumerate(gens) if phi(g) != 1][0]
     gens = gens[i0:] + gens[:i0]
-    if phialpha == None: 
+    if phialpha is None:
         phialpha = PhiAlpha(phi, alpha)
 
     # Boundary maps for chain complex
 
-    if not wada_conventions:   # Using the conventions of our paper.  
+    if not wada_conventions:   # Using the conventions of our paper.
         d2 = [ [fox_derivative_with_involution(R, phialpha, g) for R in rels] for g in gens]
         d2 = block_matrix(d2, nrows=k, ncols=k-1)
         d1 = [phialpha(g.swapcase())  - 1  for g in gens]
@@ -498,7 +512,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
         d1 = [phialpha(g)  - 1  for g in gens]
         d1 = block_matrix(d1, nrows=k, ncols=1)
         dsquared = d2 * d1
-        
+
     if not matrix_has_small_entries( dsquared , epsilon ):
         raise TorsionComputationError("(boundary)^2 != 0")
 
@@ -536,11 +550,11 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
 
 #--------------------------------------------------------------
 #
-#  Computing the torsion polynomials 
-#     for the *adjoint* representation 
+#  Computing the torsion polynomials
+#     for the *adjoint* representation
 #     i.e. the poly of Dubois-Yamaguichi
 #--------------------------------------------------------------
-        
+
 
 def adjoint_action(A):
     a, b, c, d = A.list()
@@ -565,7 +579,7 @@ class PhiAlpha3():
         return self.image_ring
 
     def __call__(self, word):
-        a = self.phi(word) 
+        a = self.phi(word)
         A = adjoint_action(self.alpha(word))
         M = self.image_ring(0)
         for i in range(3):
@@ -578,13 +592,13 @@ class PhiAlphaN():
     def __init__(self, phi, alpha, N):
         self.base_ring = phi.range()
         self.image_ring = MatrixSpace(self.base_ring, N)
-        self.phi, self.alpha, self.N = phi, alpha, N 
+        self.phi, self.alpha, self.N = phi, alpha, N
 
     def range(self):
         return self.image_ring
 
     def __call__(self, word):
-        a = self.phi(word) 
+        a = self.phi(word)
         A = SL2_to_SLN(self.alpha(word), self.N)
         M = self.image_ring(0)
         for i in range(self.N):
@@ -609,7 +623,7 @@ def hyperbolic_SLN_torsion(manifold, N, bits_prec=100):
         sage: [M.hyperbolic_SLN_torsion(N).degree() for N in [2, 3, 4]]
         [18, 27, 36]
     """
-    
+
     G = alpha = polished_holonomy(manifold, bits_prec)
     phi = MapToGroupRingOfFreeAbelianization(G, alpha('a').base_ring())
     phialpha = PhiAlphaN(phi, alpha, N)

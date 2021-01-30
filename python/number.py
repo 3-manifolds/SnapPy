@@ -29,7 +29,7 @@ if _within_sage:
         Metaclass for Sage parents of SnapPy Number objects.
         """
         def __new__(mcs, name, bases, dict):
-            dict['category'] = lambda self : Fields()
+            dict['category'] = lambda self: Fields()
             return ClasscallMetaclass.__new__(
                 mcs, name, bases, dict)
 
@@ -38,8 +38,9 @@ if _within_sage:
             Morphism.__init__(self, Hom(source, target, Rings()))
             self.SPN = target
             self.target_precision = precision
+
         def _call_(self, x):
-            result = Number(x, precision = self.SPN.precision())
+            result = Number(x, precision=self.SPN.precision())
             # The next line is a hack to trick sage into creating a
             # number with the correct precision when performing binary
             # operations involving SnapPy Numbers and Sage Numbers.
@@ -59,23 +60,24 @@ if _within_sage:
         """
         Sage parents of SnapPy Number objects.
         """
+
         def __init__(self, precision):
             Parent.__init__(self)
             self._precision = precision
             self.register_coercion(MorphismToSPN(ZZ, self, self._precision))
             self.register_coercion(MorphismToSPN(QQ, self, self._precision))
-            to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
+            to_SR = Hom(self, SR, Sets())(lambda x: SR(x.sage()))
             SR.register_coercion(to_SR)
 
         def _repr_(self):
-            return "SnapPy Numbers with %s bits precision"%self._precision
+            return "SnapPy Numbers with %s bits precision" % self._precision
 
         def __call__(self, x):
             try:
                 return Number(RealField(self._precision)(x))
             except:
                 return Number(ComplexField(self._precision)(x))
-            
+
         def _an_element_(self):
             return Number(RealField(self._precision)(1.0))
 
@@ -83,8 +85,8 @@ if _within_sage:
             return Number(RealField(self._precision)(x))
 
         def _coerce_map_from_(self, S):
-            if ( isinstance(S, RealField_class) or
-                 isinstance(S, ComplexField_class) ):
+            if (isinstance(S, RealField_class) or
+                    isinstance(S, ComplexField_class)):
                 prec = min(S.prec(), self._precision)
                 return MorphismToSPN(S, self, prec)
 
@@ -92,7 +94,7 @@ if _within_sage:
             return self._precision
 
         prec = precision
-        
+
         def is_field(self, *args, **kwargs):
             return True
 
@@ -109,8 +111,7 @@ if _within_sage:
             return Number(RealField(self._precision).random_element(min, max))
 
         def zero(self):
-            return Number(RealField(self._precision).zero()) 
-
+            return Number(RealField(self._precision).zero())
 
     Number_baseclass = FieldElement
 
@@ -123,10 +124,12 @@ if _within_sage:
             return x.gen.precision() == 0
         return False
 
-    float_to_gen = lambda x, precision: pari(x)
+    def float_to_gen(x, precision):
+        return pari(x)
 
-    complex_to_gen = lambda x, precision: pari(x)
-    
+    def complex_to_gen(x, precision):
+        return pari(x)
+
 else:  # We are not in Sage
     Number_baseclass = object
 
@@ -144,9 +147,9 @@ else:  # We are not in Sage
 
     def complex_to_gen(x, precision):
         return pari.complex(
-                pari._real_coerced_to_bits_prec(x.real, precision),
-                pari._real_coerced_to_bits_prec(x.imag, precision))
-        
+            pari._real_coerced_to_bits_prec(x.real, precision),
+            pari._real_coerced_to_bits_prec(x.imag, precision))
+
     class SnapPyNumbers(object):
         """
         Surrogate parent for a SnapPy Number, to make calls to Number.parent() work
@@ -164,7 +167,7 @@ else:  # We are not in Sage
         _cache = {}
 
         def __new__(cls, precision=53):
-            if not precision in SnapPyNumbers._cache:
+            if precision not in SnapPyNumbers._cache:
                 obj = super(SnapPyNumbers, cls).__new__(cls)
                 obj._precision = precision
                 SnapPyNumbers._cache[precision] = obj
@@ -173,7 +176,7 @@ else:  # We are not in Sage
                 return SnapPyNumbers._cache[precision]
 
         def __repr__(self):
-            return "SnapPy Numbers with %s bits precision"%self._precision
+            return "SnapPy Numbers with %s bits precision" % self._precision
 
         def __call__(self, x):
             return Number(x, precision=self._precision)
@@ -182,7 +185,7 @@ else:  # We are not in Sage
             return self._precision
 
         prec = precision
-        
+
         def pi(self):
             return self(pari.pi(precision=self._precision))
 
@@ -192,13 +195,15 @@ else:  # We are not in Sage
         def random_element(self, min=-1, max=1):
             min = self(min)
             max = self(max)
-            limit = (max - min)*(self(2)**self._precision)
+            limit = (max - min) * (self(2)**self._precision)
             normalizer = self(2.0)**-self._precision
-            return min + normalizer*gen.random(limit.gen)
+            return min + normalizer * gen.random(limit.gen)
+
 
 class SupportsMultiplicationByNumber(object):
     pass
-        
+
+
 class Number(Number_baseclass):
     """
     Python class which wraps PARI GENs of type t_INT, t_FRAC, t_REAL
@@ -254,11 +259,11 @@ class Number(Number_baseclass):
         elif isinstance(data, complex):
             self.gen = complex_to_gen(data, self._precision)
         else:
-            self.gen = gen = pari(data)
+            self.gen = pari(data)
         type = self.gen.type()
-        if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
+        if type not in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
             raise ValueError(
-                'Invalid initialization for a Number: %s has type %s!'%(self.gen, type))
+                'Invalid initialization for a Number: %s has type %s!' % (self.gen, type))
         if type == 't_REAL' or type == 't_COMPLEX':
             self.gen = self.gen.bitprecision(self._precision)
         if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
@@ -273,12 +278,12 @@ class Number(Number_baseclass):
 
     def __hash__(self):
         return hash(self.gen)
-            
+
     # How to convert a Number to a Pari gen.
     def _pari_(self):
         return self.gen
 
-    # Variant for Sage 8.0 and on.  
+    # Variant for Sage 8.0 and on.
     def __pari__(self):
         return self.gen
 
@@ -326,12 +331,12 @@ class Number(Number_baseclass):
             else:
                 left_side = len(str(int_part))
             if left_side + accuracy > 0:
-                old_precision = pari.set_real_precision(left_side+accuracy)
+                old_precision = pari.set_real_precision(left_side + accuracy)
                 result = str(gen)
                 pari.set_real_precision(old_precision)
             else:
                 # The number of zeros to the right of the decimal point
-                # exceeds the accuracy. 
+                # exceeds the accuracy.
                 result = '0.0'
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
@@ -358,7 +363,7 @@ class Number(Number_baseclass):
                 gen.real(), self.accuracy, full_precision)
             imag_part = self._real_string(
                 gen.imag(), self.accuracy, full_precision)
-            return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
+            return ('%s + %s*I' % (real_part, imag_part)).replace('+ -', '- ')
 
     def _binop(self, operator, other):
         try:
@@ -378,78 +383,103 @@ class Number(Number_baseclass):
 
     def __float__(self):
         return float(self.gen)
+
     def __complex__(self):
         return complex(self.gen)
+
     def __int__(self):
         return int(float(self.gen))
 
     def __add__(self, other):
         return self._binop(self.gen.__add__, other)
     __iadd__ = __add__
+
     def __sub__(self, other):
         return self._binop(self.gen.__sub__, other)
     __isub__ = __sub__
+
     def __mul__(self, other):
         if isinstance(other, SupportsMultiplicationByNumber):
             return other._multiply_by_scalar(self)
         return self._binop(self.gen.__mul__, other)
     __imul__ = __mul__
+
     def __div__(self, other):
         return self._binop(self.gen.__div__, other)
     __idiv__ = __div__
+
     def __truediv__(self, other):
         return self._binop(self.gen.__truediv__, other)
+
     def __floordiv__(self, other):
         result = self._binop(self.gen.__truediv__, other)
         if result != NotImplemented:
             result = result.floor()
         return result
+
     def __radd__(self, other):
         return self._binop(self.gen.__radd__, other)
+
     def __rsub__(self, other):
         return self._binop(self.gen.__rsub__, other)
+
     def __rmul__(self, other):
         return self._binop(self.gen.__rmul__, other)
+
     def __rdiv__(self, other):
         return self._binop(self.gen.__rdiv__, other)
+
     def __rtruediv__(self, other):
         return self._binop(self.gen.__rtruediv__, other)
+
     def __rfloordiv__(self, other):
         result = self._binop(self.gen.__rtruediv__, other)
         if result != NotImplemented:
             result = result.floor()
         return result
+
     def __mod__(self, other):
         return self._binop(self.gen.__mod__, other)
+
     def __eq__(self, other):
         return self.gen.__eq__(pari(other))
+
     def __ne__(self, other):
         return self.gen.__ne__(pari(other))
+
     def __lt__(self, other):
         return self.gen.__lt__(pari(other))
+
     def __gt__(self, other):
         return self.gen.__gt__(pari(other))
+
     def __le__(self, other):
         return self.gen.__le__(pari(other))
+
     def __ge__(self, other):
         return self.gen.__ge__(pari(other))
+
     def __neg__(self):
         return Number(-self.gen, self.accuracy, self._precision)
+
     def __abs__(self):
         return Number(self.gen.abs(), self.accuracy, self._precision)
+
     def __inv__(self):
         return 1/self
+
     def __pow__(self, *args):
-        return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
+        return Number(self.gen.__pow__(*args), self.accuracy, self._precision)
+
     def __round__(self, ndigits):
         return round(float(self), ndigits)
 
     def abs(self):
         return abs(self)
-    
+
     def conjugate(self):
         return Number(self.gen.conj(), self.accuracy, self._precision)
-    
+
     def precision(self):
         """Return the *binary* precision of the Number.  Note that the value
         of a Number may be exact, even though it has a specified
@@ -461,7 +491,7 @@ class Number(Number_baseclass):
     # Emulate the behavior of Sage RealField or ComplexField elements.
     # This is needed for some Sage interoperation to work.
     prec = precision
-    
+
     @property
     def real(self):
         return Number(self.gen.real(), self.accuracy, self._precision)
@@ -487,10 +517,10 @@ class Number(Number_baseclass):
             B = zz/zz.abs()
             C = zzz/zzz.abs()
             bits = self._precision
-            volume = (   (A*A).dilog(precision=bits).imag()
-                         + (B*B).dilog(precision=bits).imag()
-                         + (C*C).dilog(precision=bits).imag()
-                         )/2
+            volume = ((A * A).dilog(precision=bits).imag()
+                      + (B * B).dilog(precision=bits).imag()
+                      + (C * C).dilog(precision=bits).imag()
+                      ) / 2
         return Number(volume, self.accuracy, self._precision)
 
     def sage(self):
@@ -526,12 +556,16 @@ class Number(Number_baseclass):
         return CIF(self.sage())
 
 # add a bunch of analytical methods to the Number class
+
+
 def add_number_method(name, include_precision=True):
     method = getattr(Gen, name)
     if include_precision:
-        setattr(Number, name, lambda self: self.parent()(method(self.gen, precision=self._precision)))
+        setattr(Number, name, lambda self: self.parent()(
+            method(self.gen, precision=self._precision)))
     else:
         setattr(Number, name, lambda self: self.parent()(method(self.gen)))
+
 
 for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
                'cos', 'cosh', 'cotan', 'dilog', 'exp', 'log', 'sin',
@@ -542,6 +576,6 @@ for method in ['ceil', 'floor', 'round']:
     add_number_method(method, include_precision=False)
 
 for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
-    setattr(Number, 'arc'+trig, getattr(Number, 'a'+trig))
+    setattr(Number, 'arc' + trig, getattr(Number, 'a' + trig))
 
 Number.argument = Number.arg

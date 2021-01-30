@@ -1,5 +1,4 @@
 import operator
-import sys
 import functools
 
 # Dependency on pari for:
@@ -13,6 +12,7 @@ from ..sage_helper import _within_sage
 from ..pari import Gen, pari
 if _within_sage:
     from sage.rings.integer import Integer
+
 
 class RUR(object):
 
@@ -57,7 +57,7 @@ class RUR(object):
     factor is evaluated first before multiplication (increases numerical
     precision and prevents polynomial coefficients from blowing up).
     However, addition and subtraction trigger multiplication.
-    
+
     >>> a * b
     ( 4^2 ) / ( 5 )
 
@@ -77,7 +77,7 @@ class RUR(object):
 
     >>> 2 * c
     ( 7 * 2 ) / ( 10 )
-    
+
     A division example
 
     >>> a / b
@@ -87,9 +87,9 @@ class RUR(object):
 
     >>> b ** 3 + a
     ( 564 ) / ( 5^-3 )
-    
+
     A subtraction example
-    
+
     >>> a - b
     ( 16 ) / ( 5 )
 
@@ -154,7 +154,7 @@ class RUR(object):
 
     >>> r1 - r2 == 0
     False
-    
+
     >>> r1 + r2 == 0
     False
 
@@ -163,7 +163,6 @@ class RUR(object):
 
     """
 
-
     @staticmethod
     def from_int(value):
         return RUR( [ (value, 1) ] )
@@ -171,10 +170,10 @@ class RUR(object):
     @staticmethod
     def from_pari_fraction_and_number_field(fraction, poly):
         if poly:
-            return RUR( [ (  fraction.numerator().Mod(poly),  1),
+            return RUR( [ (  fraction.numerator().Mod(poly), 1),
                           (fraction.denominator().Mod(poly), -1)] )
         else:
-            return RUR( [ (  fraction.numerator(),  1),
+            return RUR( [ (  fraction.numerator(), 1),
                           (fraction.denominator(), -1)] )
 
     def __init__(self, polymod_exponent_pairs):
@@ -195,7 +194,7 @@ class RUR(object):
                     reduced_polymod_exponent_pairs[i] = (p, e + exponent)
                     return
 
-            reduced_polymod_exponent_pairs.append((polymod,exponent))
+            reduced_polymod_exponent_pairs.append((polymod, exponent))
 
         def detect_zero(polymod, exponent):
             if polymod == 0:
@@ -227,15 +226,15 @@ class RUR(object):
 
         def process_pair(polymodExponent):
             polymod, exponent = polymodExponent
-            if abs(exponent) == 1: 
+            if abs(exponent) == 1:
                 return '%s' % polymod
             else:
                 return '%s^%d' % (polymod, exponent)
 
-        numerator   = ' * '.join(
-            [ process_pair(pair) for pair in self._numerator_terms() ])
+        numerator = ' * '.join(
+            process_pair(pair) for pair in self._numerator_terms())
         denominator = ' * '.join(
-            [ process_pair(pair) for pair in self._denominator_terms() ])
+            process_pair(pair) for pair in self._denominator_terms())
 
         if not numerator:
             numerator = 1
@@ -290,12 +289,12 @@ class RUR(object):
 
             if type(p) == Gen and p.type() == 't_POLMOD':
                 return p.lift().substpol('x', root)
-            
+
             return pari(p)
 
         return _prod(
             [ evaluate_poly(p) ** e for p, e in self._polymod_exponent_pairs ])
-    
+
     def multiply_terms(self):
         """
         Multiplies all the terms that make up the numerator and denominator
@@ -320,7 +319,6 @@ class RUR(object):
 
         return RUR( [ (self._numerator(), 1), (self._denominator(), -1) ] )
 
-
     def multiply_and_simplify_terms(self):
         """
         Multiplies all terms that make up the numerator and denominator
@@ -336,9 +334,9 @@ class RUR(object):
         >>> r2 = RUR.from_pari_fraction_and_number_field(c / a, nf)
         >>> r3 = RUR.from_pari_fraction_and_number_field(d, nf)
         >>> r = r1 * r2 * r3
-        
+
         The c's cancel when multiplying.
-        
+
         >>> r
         ( Mod(1849*x^6 + 129*x^3 + 2, x^97 + x^3 + x + 32121) * Mod(43*x^3 + 4, x^97 + x^3 + x + 32121) ) / ( Mod(43*x^3 + 1, x^97 + x^3 + x + 32121) )
 
@@ -374,10 +372,9 @@ class RUR(object):
 
         >>> r.to_PUR()
         Mod(1035922/257944341*x^8 - 129/85981447*x^7 - 1035922/85981447*x^6 + 387/85981447*x^5 + 3107766/85981447*x^4 - 1161/85981447*x^3 - 26933972/257944341*x^2 + 3697205575/85981447*x + 81837838/257944341, x^9 + x^3 + x + 32121)
-        
-        
-        """
 
+
+        """
 
         return pari(self._numerator()) / pari(self._denominator())
 
@@ -405,7 +402,7 @@ class RUR(object):
 
         return (pari(self._numerator()).lift() /
                 pari(self._denominator()).lift())
-    
+
     def _filtered_terms(self, sgn):
         return [ (p, e) for p, e in self._polymod_exponent_pairs
                  if sgn * e >= 0 ]
@@ -426,7 +423,7 @@ class RUR(object):
         return self._multiply_terms( -1)
 
     def __add__(self, other):
-        
+
         if isinstance(other, int):
             return self + RUR.from_int(other)
 
@@ -442,13 +439,13 @@ class RUR(object):
         for rur in self, other:
             for polymod, exponent in rur._denominator_terms():
                 add_to_new_denominator_terms(polymod, exponent)
-        
+
         def subtract_denominator_from_list(polymod, exponent, l):
             for i, (p, e) in enumerate(l):
                 if p - polymod == 0:
                     l[i] = (p, e - exponent)
                     return
-    
+
         def term_to_expand_fraction_by(old_terms):
             result = [ pair for pair in new_denominator_terms ]
             for p, e in old_terms:
@@ -459,22 +456,19 @@ class RUR(object):
                 assert e <= 0
 
             return _prod([ p ** -e for p, e in result if e < 0 ])
-        
-        self_expand  = term_to_expand_fraction_by( self._denominator_terms())
+
+        self_expand = term_to_expand_fraction_by( self._denominator_terms())
         other_expand = term_to_expand_fraction_by(other._denominator_terms())
-        
-        new_numerator = ( self._numerator() *  self_expand +
+
+        new_numerator = ( self._numerator() * self_expand +
                          other._numerator() * other_expand)
 
-        #print(n)
-        #print(new_denominator_terms)
-
-        return RUR([(new_numerator,1)] + new_denominator_terms)
+        return RUR([(new_numerator, 1)] + new_denominator_terms)
 
     def __radd__(self, other):
         if isinstance(other, int):
             return self + RUR.from_int(other)
-        
+
         raise Exception("Addition of types not supported")
 
     def __sub__(self, other):
@@ -514,7 +508,7 @@ class RUR(object):
         raise Exception("Division of types not supported")
 
     __rtruediv__ = __rdiv__
-    
+
     def __pow__(self, other):
         if _within_sage:
             if isinstance(other, Integer):
@@ -532,15 +526,13 @@ class RUR(object):
             return RUR.from_int(1)
         if other == 1:
             return self
-        if other % 2 == 1:
-            return self * (self ** (other-1))
-        return (self * self) ** (other/2)
+        if other % 2:
+            return self * (self ** (other - 1))
+        return (self * self) ** (other // 2)
 
     def _is_zero(self):
-        for p, e in self._polymod_exponent_pairs:
-            if p == 0 and e > 0:
-                return True
-        return False
+        return any(p == 0 and e > 0
+                   for p, e in self._polymod_exponent_pairs)
 
     def _is_one(self):
         return self._numerator() - self._denominator() == 0
@@ -555,6 +547,7 @@ class RUR(object):
             return self._is_zero()
 
         return (self / other)._is_one()
+
 
 def _prod(iterable):
     return functools.reduce(operator.mul, iterable, 1)

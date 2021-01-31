@@ -6,6 +6,7 @@ import spherogram.test
 import snappy.verify.test
 import snappy.ptolemy.test
 import snappy.raytracing.ideal_raytracing_data
+import snappy.raytracing.cohomology_fractal
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -85,13 +86,24 @@ if _within_sage:
                               verbose)
         use_snappy_field_conversion()
         return ans
+    def cohomology_fractal_doctester(verbose):
+        use_sage_field_conversion()
+        ans = doctest_modules([snappy.raytracing.cohomology_fractal],
+                              verbose)
+        use_snappy_field_conversion()
+        return ans
 else:
     def raytracing_data_doctester(verbose):
         ans = doctest_modules([snappy.raytracing.ideal_raytracing_data],
                               verbose)
         return ans
+    def cohomology_fractal_doctester(verbose):
+        ans = doctest_modules([snappy.raytracing.cohomology_fractal],
+                              verbose)
+        return ans
     
 raytracing_data_doctester.__name__ = 'snappy.raytracing.ideal_raytracing_data'
+cohomology_fractal_doctester.__name__ = 'snappy.raytracing.chomology_fractal'
 
 def spherogram_doctester(verbose):
     return spherogram.test.run_doctests(verbose, print_info=False)
@@ -123,6 +135,7 @@ modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
             snappy_doctester,
             snap_doctester,
             raytracing_data_doctester,
+            cohomology_fractal_doctester,
             ptolemy_doctester, spherogram_doctester]
 
 if _within_sage:

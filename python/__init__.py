@@ -585,17 +585,26 @@ try:
     from .gui import ViewerWindow
     from .raytracing.inside_viewer import InsideViewer
     from .raytracing.inside_viewer import NonorientableUnsupportedError
+    from .raytracing import cohomology_fractal
 except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
 
-def manifold_inside_view(self):
+def manifold_inside_view(self, cohomology_class = None):
     """
     Show raytraced inside view of hyperbolic manifold:
 
         >>> M = Manifold("m004")
         >>> M.inside_view() #doctest: +CYMODERNOPENGL
 
+    Or show the cohomology fractal:
+
+        >>> M = Manifold("m004")
+        >>> M.inside_view(chomology_class = 0) #doctest: +CYMODERNOPENGL
+
+    The ``cohomology_class`` can be an index to choose a basis vector for
+    the cohomology group or an array of weights for each face of each
+    tetrahedron.
     """
     
     if InsideViewer is None:
@@ -606,8 +615,11 @@ def manifold_inside_view(self):
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
-    return ViewerWindow(InsideViewer, self,
-                title = "Inside view of %s" % self.name())
+    return ViewerWindow(
+        InsideViewer,
+        self,
+        title = "Inside view of %s" % self.name(),
+        weights = cohomology_fractal.compute_weights(self, cohomology_class))
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

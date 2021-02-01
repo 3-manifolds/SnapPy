@@ -8,7 +8,7 @@ import os
 from . import manifoldMethods
 from . import utilities
 
-# This file is mostly reimplementing the functions in 
+# This file is mostly reimplementing the functions in
 # addl_code/ptolemy_equations.c for regina triangulations.
 
 # See addl_code/ptolemy_equations.c for more comments.
@@ -29,12 +29,12 @@ class NTriangulationForPtolemy(NTriangulation):
     >>> N = NTriangulationForPtolemy(T)
 
     Use it like a snappy triangulation to use ptolemy:
-    
+
     >>> N.ptolemy_variety(2,'all')
     [Ptolemy Variety for Figure eight knot complement, N = 2, obstruction_class = 0, Ptolemy Variety for Figure eight knot complement, N = 2, obstruction_class = 1]
 
     """
-    
+
     def __init__(self, *args, **kwargs):
         """
         Constructor - takes same arguments as NTriangulation.
@@ -68,7 +68,7 @@ class NTriangulationForPtolemy(NTriangulation):
 
         # Read triangulation from it
         T = readXMLFile(filename)
-        
+
         if not isinstance(T, NTriangulation):
             raise Exception("Not a regina triangulation")
 
@@ -79,7 +79,7 @@ class NTriangulationForPtolemy(NTriangulation):
         os.unlink(filename)
 
         return NTriangulationForPtolemy(T)
-        
+
 
     def ptolemy_obstruction_classes(self):
         """
@@ -138,21 +138,21 @@ class NTriangulationForPtolemy(NTriangulation):
 
     def ptolemy_variety(self, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
-        
+
         """
         M.ptolemy_variety(N, obstruction_class = None, simplify = True, eliminate_fixed_ptolemys = False)
-        
+
         Returns a Ptolemy variety as described in
 
-        * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert: 
+        * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert:
           "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
           (http://arxiv.org/abs/1111.2828)
         * Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert:
           "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds "
           (http://arxiv.org/abs/1207.6711)
-        
+
         The variety can be exported to magma or sage and solved there. The
-        solutions can be processed to compute invariants. 
+        solutions can be processed to compute invariants.
 
         For example, the figure eight knot complement has two Ptolemy
         varieties for N = 2, one for the representations lifting to SL(2,C)
@@ -216,7 +216,7 @@ class NTriangulationForPtolemy(NTriangulation):
         return s
 
     def _index_of_tetrahedron_face(self, tetrahedron, face):
-        """
+        r"""
         Helper for computing the homology. We call a generator
         of the simplicial chain C_2(M, \partial M) a face class.
         There are 2 * #tetrahedra faces classes and we need to
@@ -228,24 +228,23 @@ class NTriangulationForPtolemy(NTriangulation):
         regina already gives indices to the triangles, so we can
         use that here.
 
-        In addl_code/ptolemy_equations.c, this was done in 
+        In addl_code/ptolemy_equations.c, this was done in
         _fill_tet_face_to_index_data .
         """
-
         return self.triangleIndex(tetrahedron.getTriangle(face))
 
     @staticmethod
     def _sign_of_tetrahedron_face(tetrahedron, face):
         """
         Recall the comments from _index_of_tetrahedron_face
-        
+
         A regina triangle has two embeddings and thus yields
         two (tetrahedron, face) pairs representing a face class,
         albeit with different signs.
         We assume that the first embedding always represents the
         + face class and the second one - face class.
 
-        In addl_code/ptolemy_equations.c, this was done in 
+        In addl_code/ptolemy_equations.c, this was done in
         _fill_tet_face_to_index_data . There, the choice was made
         that the pair (tetrahedron, face) with the lower tetrahedron
         index (face index in case tie) represents + face class.
@@ -278,12 +277,12 @@ class NTriangulationForPtolemy(NTriangulation):
         This is reimplementing get_ptolemy_equations_identified_face_classes
         from addl_code/ptolemy_equations.c
 
-        This function returns an identification structure where s_f_t gets 
+        This function returns an identification structure where s_f_t gets
         identified with -s_g_u if face f of tetrahedron t is glued to face g of
-        tetrahedron u. 
+        tetrahedron u.
 
         We can represent a 2-cohomology class H^2(M,boundary M) by denoting by
-        s_f_t the value the 2-cohomology class takes on the face f of 
+        s_f_t the value the 2-cohomology class takes on the face f of
         tetrahedron t with the orientation being the one induced from the
         orientation of the tetrahedron.
         Because a face class of the triangulation has two representatives
@@ -307,7 +306,7 @@ class NTriangulationForPtolemy(NTriangulation):
         # Process each triangle
         return [ process_triangle(triangle)
                  for triangle in self.getTriangles() ]
-    
+
     def _ptolemy_equations_boundary_map_2(self):
         """
         This is reimplementing get_ptolemy_equations_boundary_map_2
@@ -320,10 +319,10 @@ class NTriangulationForPtolemy(NTriangulation):
         complex when representing a linear map as a matrix m acting on a column
         vector v by left-multiplication m * v. With right-multiplication acting
         on row vectors, the matrix represents the coboundary map in the cochain
-        complex. 
-        
+        complex.
+
         The basis for C_3 are just the oriented tetrahedra of the triangulation.
-        The basis for C_2 are the face classes, see 
+        The basis for C_2 are the face classes, see
         _ptolemy_equations_identified_face_classes.
         """
 
@@ -413,14 +412,14 @@ class NTriangulationForPtolemy(NTriangulation):
                                                        N, skipVertices = True):
 
                 row = (N - 1) * self.getNumberOfVertices() * [ 0 ]
-        
+
                 for vertex in range(4):
                     cusp_index = self.vertexIndex(tet.getVertex(vertex))
 
                     for diag_entry in range(pt[vertex]):
                         column_index = cusp_index * (N-1) + diag_entry
                         row[column_index] += 1
-                    
+
                 matrix.append(row)
                 row_explanations.append('c_%d%d%d%d' % pt + '_%d' % tet_index)
 
@@ -437,8 +436,8 @@ class NTriangulationForPtolemy(NTriangulation):
         This is reimplementing _compute_sign
         from addl_code/ptolemy_equations.c
         """
-        
-        # Following Remark 5.7 of 
+
+        # Following Remark 5.7 of
         # Garoufalidis, Goerner, Zickert:
         # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         # http://arxiv.org/abs/1207.6711
@@ -451,7 +450,7 @@ class NTriangulationForPtolemy(NTriangulation):
 
         # We need to detect whether effective_perm is even or odd
         # It has at most 3 elements, distinguish cases:
-                
+
         # Cases of length 0 and 1
         if len(effective_perm) < 2:
             return +1
@@ -461,7 +460,7 @@ class NTriangulationForPtolemy(NTriangulation):
             if effective_perm[0] < effective_perm[1]:
                 return +1
             return -1
-    
+
         # Case of length 3: even permutations = cyclic permutations
         if len(effective_perm) == 3:
             # Test whether cyclic permutation by i, including identity
@@ -471,7 +470,7 @@ class NTriangulationForPtolemy(NTriangulation):
                     return +1
             return -1
 
-        # index is for a face so one number in index is zero and len < 4, 
+        # index is for a face so one number in index is zero and len < 4,
         # we should never reach here
         raise Exception("Should never reach here")
 
@@ -484,7 +483,7 @@ class NTriangulationForPtolemy(NTriangulation):
         if v0 > v1:
             return - self._get_obstruction_on_edge(obstruction_class,
                                                    tet, v1, v0)
-        
+
         if v1 != v0 + 1:
             return 0
 
@@ -492,13 +491,13 @@ class NTriangulationForPtolemy(NTriangulation):
               obstruction_class[self._index_of_tetrahedron_face(tet, i)]
               for i in range(4) ]
 
-        if v0 == 0: # v0 = 0, v1 = 1 
+        if v0 == 0: # v0 = 0, v1 = 1
             return -s[0] - s[1] - s[3]
         if v0 == 1: # v0 = 1, v1 = 2
             return s[0] + s[1]
         if v0 == 2: # v0 = 2, v1 = 3
             return -s[1]
-        
+
         raise Exception("Should not get here")
 
     def _get_obstruction_on_edge_with_other_tet(self, obstruction_class,
@@ -528,7 +527,7 @@ class NTriangulationForPtolemy(NTriangulation):
         v0 = (face + 1) % 4
         v1 = (face + 2) % 4
         v2 = (face + 3) % 4
-        
+
         e01 = self._get_obstruction_on_edge_with_other_tet(obstruction_class,
                                                            tet, face, v0, v1)
         e02 = self._get_obstruction_on_edge_with_other_tet(obstruction_class,
@@ -537,9 +536,9 @@ class NTriangulationForPtolemy(NTriangulation):
                                                            tet, face, v1, v2)
 
         assert (e01 + e12 - e02) % N == 0
-        
+
         return e01, e02
-    
+
     @staticmethod
     def _get_power_from_obstruction_class(face, e01, e02, ptolemy_index):
         """
@@ -569,7 +568,7 @@ class NTriangulationForPtolemy(NTriangulation):
 
     def _ptolemy_equations_identified_coordinates(self, N,
                                                   obstruction_class = None):
- 
+
         identifications = []
 
         # For each triangle
@@ -638,7 +637,7 @@ class NTriangulationForPtolemy(NTriangulation):
         Provides information about the choices mades when regina computed the
         simplified fundamental group in a structure similar to SnapPy.
         """
-        
+
         # maximalForestInDualSkeleton was not exposed in earlier regina
         # versions
         if not hasattr(self, 'maximalForestInDualSkeleton'):
@@ -695,7 +694,7 @@ class NTriangulationForPtolemy(NTriangulation):
             or outbound generator it belongs to.
             """
             return [ get_generator(tet, face) for face in range(4) ]
-        
+
         return [ { 'index' : index,
                    'neighbors' : get_neighbors(tet),
                    'gluings' : get_gluings(tet),

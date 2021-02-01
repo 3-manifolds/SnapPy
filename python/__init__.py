@@ -238,10 +238,10 @@ def isometry_signature(
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
 
-def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
-                     verified = False, bits_prec = None):
-    
-    """
+
+def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
+                     verified=False, bits_prec=None):
+    r"""
     This function returns a matrix that can be used to check whether
     cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
     disjoint: the cusp neighborhoods about cusp i and j are
@@ -272,14 +272,14 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
         [28.0000000000?  7.0000000000?  7.0000000000?]
         [ 7.0000000000?  28.000000000? 7.00000000000?]
         [ 7.0000000000? 7.00000000000?   28.00000000?]
-        
+
     If ``verified = True`` is specified and ``method`` is not
     ``maximal``, the entries are all guaranteed to be less than the
     corresponding ones in the maximal cusp area matrix (more
     precisely, the lower end point of the interval is guaranteed to be
     less than the true value of the corresponding maximal cusp area
     matrix entry)::
-    
+
         sage: M.cusp_area_matrix(verified=True, bits_prec=70) # doctest: +NUMERIC15
         [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
         [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]

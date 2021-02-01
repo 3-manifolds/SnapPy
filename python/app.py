@@ -124,13 +124,13 @@ class SnapPyTerm(TkTerm, ListedWindow):
         if openfile:
             lines = openfile.readlines()
             openfile.close()
-            if re.search("%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", lines[0]):
+            if re.search(r"%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", lines[0]):
                 tkMessageBox.showwarning('Bad file',
                                          'This is a SnapPea link projection file, not a session transcript.')
-            elif re.search("%\s*[tT]riangulation", lines[0]):
+            elif re.search(r"%\s*[tT]riangulation", lines[0]):
                 tkMessageBox.showwarning('Bad file',
                                          'This is a SnapPea triangulation file, not a session transcript.')
-            elif re.search("%\s*Generators", lines[0]):
+            elif re.search(r"%\s*Generators", lines[0]):
                 tkMessageBox.showwarning('Bad file',
                                          'This is a SnapPea generator file, not a session transcript.')
             else:
@@ -150,7 +150,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
         if openfile:
-            if not re.search("%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
+            if not re.search(r"%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
                 tkMessageBox.showwarning('Bad file',
                                          'This is not a SnapPea link projection file')
                 openfile.close()

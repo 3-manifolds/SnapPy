@@ -602,9 +602,17 @@ def manifold_inside_view(self, cohomology_class = None):
         >>> M = Manifold("m004")
         >>> M.inside_view(chomology_class = 0) #doctest: +CYMODERNOPENGL
 
-    The ``cohomology_class`` can be an index to choose a basis vector for
-    the cohomology group or an array of weights for each face of each
-    tetrahedron.
+    The cohomology class in H^2(M, bd M; R) producing the cohomology
+    fractal can be specified as a cocycle or using an automatically computed
+    basis (of, say, length ``n``). Thus, ``cohomology_class`` can be one of
+    the following.
+
+    - An integer ``i`` between 0 and ``n`` - 1 to pick the ``i``-th basis
+      vector.
+    - An array of length ``n`` specifying the cohomology class as linear
+      combination of basis vectors.
+    - A weight for each face of each tetrahedron.
+
     """
     
     if InsideViewer is None:

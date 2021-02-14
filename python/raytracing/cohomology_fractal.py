@@ -178,11 +178,16 @@ def compute_weights_basis_class(trig, cohomology_class):
             return None, basis, as_list
         
         raise ValueError(
-            "Expected array assigning one weight per face and tetrahedron.")
+            ("Expected array of length %d or %d either assigning one number "
+             "for each basis vector of the second rational cohomology group "
+             "or one weight per face "
+             "and tetrahedron.") % (len(basis), 4 * trig.num_tetrahedra()))
     else:
         # User can just specify an integer to pick one of the basis
         # two-cocycles generating the cohomology.
         basis = rational_cohomology_basis(trig)
 
-        return None, basis, [ 1.0 if i == cohomology_class else 0.0
+        c = range(len(basis))[cohomology_class]
+
+        return None, basis, [ 1.0 if i == c else 0.0
                               for i in range(len(basis)) ]

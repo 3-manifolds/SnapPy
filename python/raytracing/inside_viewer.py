@@ -109,18 +109,28 @@ class InsideViewer(ttk.Frame):
 
         row = 0
 
+        self.class_controllers = []
+
         n = len(self.widget.ui_parameter_dict['cohomology_class'][1])
         for i in range(n):
-            UniformDictController.create_horizontal_scale(
+            button = ttk.Button(
                 frame,
-                uniform_dict = self.widget.ui_parameter_dict,
-                key = 'cohomology_class',
-                title = 'Class %d' % i,
-                left_end = -1.0,
-                right_end = 1.0,
-                row = row,
-                update_function = self.widget.recompute_raytracing_data_and_redraw,
-                index = i)
+                text = 'Class %d' % i,
+                takefocus = 0,
+                command = lambda i = i: self.pick_cohomology_class(i))
+            button.grid(row = row, column = 0)
+
+            self.class_controllers.append(
+                UniformDictController.create_horizontal_scale(
+                    frame,
+                    column = 1,
+                    uniform_dict = self.widget.ui_parameter_dict,
+                    key = 'cohomology_class',
+                    left_end = -1.0,
+                    right_end = 1.0,
+                    row = row,
+                    update_function = self.widget.recompute_raytracing_data_and_redraw,
+                    index = i))
             row += 1
         
         return frame
@@ -540,6 +550,14 @@ class InsideViewer(ttk.Frame):
 
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
+
+    def pick_cohomology_class(self, i):
+        cohomology_class = self.widget.ui_parameter_dict['cohomology_class'][1]
+        for j in range(len(cohomology_class)):
+            cohomology_class[j] = 1.0 if i ==j else 0.0
+        self.widget.recompute_raytracing_data_and_redraw()
+        for controller in self.class_controllers:
+            controller.update()
 
     def build_menus(self):
         pass

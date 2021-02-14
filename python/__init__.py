@@ -615,11 +615,17 @@ def manifold_inside_view(self, cohomology_class = None):
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
+    weights, cohomology_basis, cohomology_class = (
+        cohomology_fractal.compute_weights_basis_class(
+            self, cohomology_class))
+
     return ViewerWindow(
         InsideViewer,
         self,
         title = "Inside view of %s" % self.name(),
-        weights = cohomology_fractal.compute_weights(self, cohomology_class))
+        weights = weights,
+        cohomology_basis = cohomology_basis,
+        cohomology_class = cohomology_class)
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

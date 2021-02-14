@@ -85,11 +85,30 @@ _max_linear_camera_speed = 2.0
 _max_depth_for_orbiting = 0.9998
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
-    def __init__(self, trig_type, manifold, weights, master, *args,
+    def __init__(self,
+                 trig_type,
+                 manifold,
+                 weights,          # Weights for tet faces
+                 cohomology_basis, # Each entry are weights for the tet faces
+                 cohomology_class, # Number for each entry in basis specifying superposition
+                 master,
+                 *args,
                  **kwargs):
 
-        has_weights = weights and any(weights)
         self.trig_type = trig_type
+
+        # The view can be driven in two modes:
+        # The face weights can be explicitly specified with weights.
+        # Or both a cohomology_basis and cohomology_class can be given.
+        # The weights are then computed by multipliying (the transpose)
+        # cohomology_basis matrix with the cohomology_class vector.
+        # In the latter case, the GUI will provide a slider for each
+        # element in the cohomology_class.
+
+        self.weights = weights
+        self.cohomology_basis = cohomology_basis
+
+        has_weights = bool(weights or cohomology_class)
 
         self.ui_uniform_dict = {
             'maxSteps' : ['int', 99 if has_weights else 20],
@@ -115,7 +134,16 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'perspectiveType' : ['bool', False]
             }
 
-        self.weights = weights
+        if cohomology_class:
+            self.ui_parameter_dict['cohomology_class'] = [
+                'float[]', cohomology_class ]
+            if not self.cohomology_basis:
+                raise Exception(
+                    "Expected cohomology_basis when given cohomology_class")
+        if self.cohomology_basis:
+            if not cohomology_class:
+                raise Exception(
+                    "Expected cohomology_class when given cohomology_basis")
 
         self.manifold = manifold
 
@@ -135,7 +163,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         # Use distance view for now
         self.view = 1
-        if self.weights and any([w != 0.0 for w in self.weights]):
+        if has_weights:
             self.view = 0
 
         HyperboloidNavigation.__init__(self)
@@ -178,16 +206,25 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 pass
 
     def _unguarded_initialize_raytracing_data(self):
+        weights = self.weights
+        if self.cohomology_basis:
+            weights = [ 0.0 for c in self.cohomology_basis[0] ]
+
+            for f, basis in zip(self.ui_parameter_dict['cohomology_class'][1],
+                                self.cohomology_basis):
+                for i, b in enumerate(basis):
+                    weights[i] += f * b
+
         if self.trig_type == 'finite':
             self.raytracing_data = FiniteRaytracingData.from_triangulation(
                 self.manifold,
-                weights = self.weights)
+                weights = weights)
         else:
             self.raytracing_data = IdealRaytracingData.from_manifold(
                 self.manifold,
                 areas = self.ui_parameter_dict['cuspAreas'][1],
                 insphere_scale = self.ui_parameter_dict['insphere_scale'][1],
-                weights = self.weights)
+                weights = weights)
         
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())

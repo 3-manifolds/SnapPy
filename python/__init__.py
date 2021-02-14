@@ -600,7 +600,7 @@ def manifold_inside_view(self, cohomology_class = None):
     Or show the cohomology fractal:
 
         >>> M = Manifold("m004")
-        >>> M.inside_view(chomology_class = 0) #doctest: +CYMODERNOPENGL
+        >>> M.inside_view(cohomology_class = 0) #doctest: +CYMODERNOPENGL
 
     The cohomology class in H^2(M, bd M; R) producing the cohomology
     fractal can be specified as a cocycle or using an automatically computed

@@ -178,23 +178,18 @@ class InsideViewer(ttk.Frame):
 
         view_frame = ttk.Frame(frame)
         view_frame.grid(row = row, column = 1)
-        view_var = tkinter.IntVar()
-        
+        self.view_var = tkinter.IntVar(value = 0)
+
         view_label = ttk.Label(view_frame, text = "View:")
         view_label.grid(row = 0, column = 0)
 
-        buttons = []
-
         for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
             button = ttk.Radiobutton(view_frame,
-                                     variable = view_var,
+                                     variable = self.view_var,
                                      value = i,
                                      text = text,
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
-            buttons.append(button)
-
-        view_var.set(0)
 
         return frame
 

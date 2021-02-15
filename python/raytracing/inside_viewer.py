@@ -132,6 +132,21 @@ class InsideViewer(ttk.Frame):
                     update_function = self.widget.recompute_raytracing_data_and_redraw,
                     index = i))
             row += 1
+
+        if False:
+            # Show elevation.
+            #
+            # Still experimental so disabled for now.
+
+            frame.rowconfigure(row, weight = 1)
+
+            UniformDictController.create_checkbox(
+                frame,
+                self.widget.ui_uniform_dict,
+                'showElevation',
+                update_function = self.checkbox_update,
+                text = "Elevation",
+                row = row, column = 1)
         
         return frame
 

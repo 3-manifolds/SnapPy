@@ -47,6 +47,7 @@ uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
 uniform bool noGradient;
+uniform bool showElevation = false;
 
 // Convention: ##NAME## names a compile time constant.
 // The string ##NAME## is replaced by the code in __init__.py
@@ -230,6 +231,7 @@ const int object_type_edge_fan            = 5;
 const int object_type_insphere            = 6;
 const int object_type_vertex_sphere       = 7;
 const int object_type_margulis_tube       = 8;
+const int object_type_elevation           = 9;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -722,6 +724,18 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 }
 
+bool
+is_elevation_hit(float old_weight, float new_weight)
+{
+    const float liftsThickness = 0.01;
+
+    // Logic from Henry's shader
+    return 
+        ( new_weight <= liftsThickness && liftsThickness < old_weight ) || // see elevations from behind
+        ( old_weight < 0.0001          &&         0.0001 < new_weight ) ||  // see elevations from in front // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
+        ( 0.0001 < old_weight && old_weight <= liftsThickness && old_weight != new_weight); // see elevations from in between
+}
+
 void
 ray_trace(inout RayHit ray_hit) {
 
@@ -739,7 +753,17 @@ ray_trace(inout RayHit ray_hit) {
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        ray_hit.weight += weights[ index ];
+
+        float new_weight = ray_hit.weight + weights[ index ];        
+
+        if (showElevation) {
+            if (is_elevation_hit(ray_hit.weight, new_weight)) {
+                ray_hit.object_type = object_type_elevation;
+                break;
+            }
+        }
+
+        ray_hit.weight = new_weight;
 
         ray_hit.object_index = otherFaceNums[ index ];
         mat4 tsfm = SO13tsfms[ index ];
@@ -894,6 +918,11 @@ material_params(RayHit ray_hit)
 float valueForRayHit(RayHit ray_hit)
 {
     if (viewMode == 0) {
+        if (ray_hit.object_type == object_type_elevation) {
+            // How it is in Henry's version.
+            // return ray_hit.dist - 0.5 * maxDist;
+            return ray_hit.dist;
+        }
         return ray_hit.weight;
     } else if (viewMode == 1) {
         return 0.5 * ray_hit.dist;

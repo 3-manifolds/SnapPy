@@ -122,7 +122,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
             'lightBias' : ['float', 2.0],
             'lightFalloff' : ['float', 1.65],
-            'brightness' : ['float', 1.9]
+            'brightness' : ['float', 1.9],
+
+            'showElevation' : ['bool', False]
             }
 
         self.ui_parameter_dict = {

@@ -176,15 +176,32 @@ class InsideViewer(ttk.Frame):
 
         frame.rowconfigure(row, weight = 1)
 
-        UniformDictController.create_checkbox(
-            frame,
-            self.widget.ui_parameter_dict,
-            'perspectiveType',
-            update_function = self.checkbox_update,
-            text = "Ideal view",
-            row = row, column = 1)
+        view_frame = ttk.Frame(frame)
+        view_frame.grid(row = row, column = 1)
+        view_var = tkinter.IntVar()
+        
+        view_label = ttk.Label(view_frame, text = "View:")
+        view_label.grid(row = 0, column = 0)
+
+        buttons = []
+
+        for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
+            button = ttk.Radiobutton(view_frame,
+                                     variable = view_var,
+                                     value = i,
+                                     text = text,
+                                     command = lambda i = i: self.set_view(i))
+            button.grid(row = 0, column = i + 1)
+            buttons.append(button)
+
+        view_var.set(0)
 
         return frame
+
+    def set_view(self, i):
+        self.widget.ui_parameter_dict['perspectiveType'][1] = i
+        self.widget.redraw_if_initialized()
+        self.focus_viewer()
 
     def checkbox_update(self):
         self.widget.redraw_if_initialized()

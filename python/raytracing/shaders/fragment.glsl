@@ -231,7 +231,8 @@ const int object_type_edge_fan            = 5;
 const int object_type_insphere            = 6;
 const int object_type_vertex_sphere       = 7;
 const int object_type_margulis_tube       = 8;
-const int object_type_elevation           = 9;
+const int object_type_elevation_enter     = 9;
+const int object_type_elevation_exit      = 10;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -278,7 +279,9 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_edge_cylinder_enter ||
         ray_hit.object_type == object_type_edge_cylinder_exit ||
         ray_hit.object_type == object_type_margulis_tube ||
-        ray_hit.object_type == object_type_edge_fan;
+        ray_hit.object_type == object_type_edge_fan ||
+        ray_hit.object_type == object_type_elevation_enter ||
+        ray_hit.object_type == object_type_elevation_exit;
 }
 
 // Advances ray by distance atanh(p).
@@ -495,7 +498,9 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif    
     
-    if(ray_hit.object_type == object_type_edge_fan) {
+    if(ray_hit.object_type == object_type_edge_fan ||
+       ray_hit.object_type == object_type_elevation_enter ||
+       ray_hit.object_type == object_type_elevation_exit) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return planes[index];
     }
@@ -724,16 +729,22 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 }
 
-bool
+int
 is_elevation_hit(float old_weight, float new_weight)
 {
-    const float liftsThickness = 0.01;
+    const float eps = 1e-4;
+    float o = old_weight - eps;
+    float n = new_weight - eps;
 
-    // Logic from Henry's shader
-    return 
-        ( new_weight <= liftsThickness && liftsThickness < old_weight ) || // see elevations from behind
-        ( old_weight < 0.0001          &&         0.0001 < new_weight ) ||  // see elevations from in front // cannot make this too close to 0.0 or we get floating point issues from different sums of weights
-        ( 0.0001 < old_weight && old_weight <= liftsThickness && old_weight != new_weight); // see elevations from in between
+    if (o * n < 0.0) {
+        if (n < 0.0) {
+            return object_type_elevation_enter;
+        } else {
+            return object_type_elevation_exit;
+        }
+    }
+
+    return object_type_nothing;
 }
 
 void
@@ -757,8 +768,11 @@ ray_trace(inout RayHit ray_hit) {
         float new_weight = ray_hit.weight + weights[ index ];        
 
         if (showElevation) {
-            if (is_elevation_hit(ray_hit.weight, new_weight)) {
-                ray_hit.object_type = object_type_elevation;
+            int elevation_object_type =
+                is_elevation_hit(ray_hit.weight, new_weight);
+
+            if (elevation_object_type != object_type_nothing) {
+                ray_hit.object_type = elevation_object_type;
                 break;
             }
         }
@@ -911,6 +925,16 @@ material_params(RayHit ray_hit)
         result.ambient = 0.5 * result.diffuse;
     }
 
+    if (ray_hit.object_type == object_type_elevation_enter) {
+        result.diffuse = vec3(0.3,0.7,0.3);
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+    if (ray_hit.object_type == object_type_elevation_exit) {
+        result.diffuse = vec3(0.7,0.3,0.3);
+        result.ambient = 0.5 * result.diffuse;
+    }
+
     return result;
 }
 
@@ -918,11 +942,6 @@ material_params(RayHit ray_hit)
 float valueForRayHit(RayHit ray_hit)
 {
     if (viewMode == 0) {
-        if (ray_hit.object_type == object_type_elevation) {
-            // How it is in Henry's version.
-            // return ray_hit.dist - 0.5 * maxDist;
-            return ray_hit.dist;
-        }
         return ray_hit.weight;
     } else if (viewMode == 1) {
         return 0.5 * ray_hit.dist;

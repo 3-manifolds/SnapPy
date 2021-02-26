@@ -441,7 +441,7 @@ def alex_poly_of_induced_rep(p, knot_exterior, A, chi):
        sage: 5*quo/quo.leading_coefficient()
        5*t^3 + (10*z^3 + 14*z^2 + 14*z + 12)*t^2 + (-4*z^2 - 14*z - 2)*t + 5
 
-    Here is their example 10.6:
+    Here is their example 10.6::
 
        sage: M = Manifold('K12n224')
        sage: A3, A5 = matrix(GF(7), [[4]]), matrix(GF(7), [[2]])
@@ -492,7 +492,8 @@ def poly_involution(f):
 def poly_is_a_norm(g):
     """
     Return whether the polynomial g(t) over a CyclotomicField is equal to
-    (const) f(t) fbar(t) where fbar is poly_involution(f).
+    (const) f(t) fbar(t) where fbar is poly_involution(f)::
+
        sage: K = CyclotomicField(5, 'z')
        sage: R = PolynomialRing(K, 't')
        sage: z, t = K.gen(), R.gen()
@@ -523,7 +524,7 @@ def poly_is_a_norm(g):
 def slicing_is_obstructed(knot_exterior, p, q):
     """
     Applies the test of Section 8 of [HKL] to the F_q homology of the
-    branched cover B_p.
+    branched cover B_p::
 
        sage: M = Manifold('K12n813')
        sage: slicing_is_obstructed(M, 2, 3)

@@ -47,6 +47,7 @@ uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
 uniform bool noGradient;
+uniform bool showElevation = false;
 
 // Convention: ##NAME## names a compile time constant.
 // The string ##NAME## is replaced by the code in __init__.py
@@ -230,6 +231,8 @@ const int object_type_edge_fan            = 5;
 const int object_type_insphere            = 6;
 const int object_type_vertex_sphere       = 7;
 const int object_type_margulis_tube       = 8;
+const int object_type_elevation_enter     = 9;
+const int object_type_elevation_exit      = 10;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -276,7 +279,9 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_edge_cylinder_enter ||
         ray_hit.object_type == object_type_edge_cylinder_exit ||
         ray_hit.object_type == object_type_margulis_tube ||
-        ray_hit.object_type == object_type_edge_fan;
+        ray_hit.object_type == object_type_edge_fan ||
+        ray_hit.object_type == object_type_elevation_enter ||
+        ray_hit.object_type == object_type_elevation_exit;
 }
 
 // Advances ray by distance atanh(p).
@@ -493,7 +498,9 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif    
     
-    if(ray_hit.object_type == object_type_edge_fan) {
+    if(ray_hit.object_type == object_type_edge_fan ||
+       ray_hit.object_type == object_type_elevation_enter ||
+       ray_hit.object_type == object_type_elevation_exit) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return planes[index];
     }
@@ -722,6 +729,24 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 }
 
+int
+is_elevation_hit(float old_weight, float new_weight)
+{
+    const float eps = 1e-4;
+    float o = old_weight - eps;
+    float n = new_weight - eps;
+
+    if (o * n < 0.0) {
+        if (n < 0.0) {
+            return object_type_elevation_enter;
+        } else {
+            return object_type_elevation_exit;
+        }
+    }
+
+    return object_type_nothing;
+}
+
 void
 ray_trace(inout RayHit ray_hit) {
 
@@ -739,7 +764,20 @@ ray_trace(inout RayHit ray_hit) {
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        ray_hit.weight += weights[ index ];
+
+        float new_weight = ray_hit.weight + weights[ index ];        
+
+        if (showElevation) {
+            int elevation_object_type =
+                is_elevation_hit(ray_hit.weight, new_weight);
+
+            if (elevation_object_type != object_type_nothing) {
+                ray_hit.object_type = elevation_object_type;
+                break;
+            }
+        }
+
+        ray_hit.weight = new_weight;
 
         ray_hit.object_index = otherFaceNums[ index ];
         mat4 tsfm = SO13tsfms[ index ];
@@ -884,6 +922,16 @@ material_params(RayHit ray_hit)
         
         //using num_tets = num_edges
         result.diffuse = 0.3 * hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+    if (ray_hit.object_type == object_type_elevation_enter) {
+        result.diffuse = vec3(0.3,0.7,0.3);
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+    if (ray_hit.object_type == object_type_elevation_exit) {
+        result.diffuse = vec3(0.7,0.3,0.3);
         result.ambient = 0.5 * result.diffuse;
     }
 

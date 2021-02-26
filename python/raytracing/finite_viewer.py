@@ -11,7 +11,9 @@ from .zoom_slider import Slider, ZoomSlider
 class FiniteViewer(ttk.Frame):
     def __init__(self, master, manifold,
                  fillings_changed_callback = None,
-                 weights = None):
+                 weights = None,
+                 cohomology_basis = None,
+                 cohomology_class = None):
 
         ttk.Frame.__init__(self, master)
         self.bindtags(self.bindtags() + ('finite',))
@@ -20,7 +22,7 @@ class FiniteViewer(ttk.Frame):
         self.has_weights = weights and any(weights)
 
         main_frame = self.create_frame_with_main_widget(
-            self, manifold, weights)
+            self, manifold, weights, cohomology_basis, cohomology_class)
 
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
 
@@ -368,7 +370,11 @@ class FiniteViewer(ttk.Frame):
 
         return frame
 
-    def create_frame_with_main_widget(self, parent, manifold, weights):
+    def create_frame_with_main_widget(self, parent,
+                                      manifold,
+                                      weights,
+                                      cohomology_basis,
+                                      cohomology_class):
         frame = ttk.Frame(parent)
 
         column = 0
@@ -377,6 +383,8 @@ class FiniteViewer(ttk.Frame):
             'finite',
             manifold,
             weights = weights,
+            cohomology_basis = cohomology_basis,
+            cohomology_class = cohomology_class,
             master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)

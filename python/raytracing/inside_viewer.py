@@ -17,20 +17,26 @@ class InsideViewer(ttk.Frame):
     def __init__(self, master, manifold,
                  fillings_changed_callback = None,
                  weights = None,
+                 cohomology_basis = None,
+                 cohomology_class = None,
                  main_window = None):
         ttk.Frame.__init__(self, master)
         self.main_window = main_window
         self.bindtags(self.bindtags() + ('inside',))
         self.fillings_changed_callback = fillings_changed_callback
-        self.has_weights = weights and any(weights)
+        self.has_weights = bool(weights or cohomology_class)
 
         main_frame = self.create_frame_with_main_widget(
-            self, manifold, weights)
+            self, manifold, weights, cohomology_basis, cohomology_class)
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
         row = 0
         self.notebook = ttk.Notebook(self)
         self.notebook.grid(row = row, column = 0, sticky = tkinter.NSEW,
                            padx = 0, pady = 0, ipady = 0)
+
+        if cohomology_class:
+            self.notebook.add(self.create_cohomology_class_frame(self),
+                              text = 'Cohomology class')
 
         self.notebook.add(self.create_cusp_areas_frame(self),
                           text = 'Cusp areas')
@@ -94,6 +100,51 @@ class InsideViewer(ttk.Frame):
         # Update keymapping performed by hyperbolic navigation
         self.widget.apply_prefs(prefs)
 
+    def create_cohomology_class_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+
+        self.class_controllers = []
+
+        n = len(self.widget.ui_parameter_dict['cohomology_class'][1])
+        for i in range(n):
+            button = ttk.Button(
+                frame,
+                text = 'Class %d' % i,
+                takefocus = 0,
+                command = lambda i = i: self.pick_cohomology_class(i))
+            button.grid(row = row, column = 0)
+
+            self.class_controllers.append(
+                UniformDictController.create_horizontal_scale(
+                    frame,
+                    column = 1,
+                    uniform_dict = self.widget.ui_parameter_dict,
+                    key = 'cohomology_class',
+                    left_end = -1.0,
+                    right_end = 1.0,
+                    row = row,
+                    update_function = self.widget.recompute_raytracing_data_and_redraw,
+                    index = i))
+            row += 1
+
+        frame.rowconfigure(row, weight = 1)
+
+        UniformDictController.create_checkbox(
+            frame,
+            self.widget.ui_uniform_dict,
+            'showElevation',
+            update_function = self.checkbox_update,
+            text = "Elevation",
+            row = row, column = 1)
+        
+        return frame
+
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
 
@@ -120,15 +171,27 @@ class InsideViewer(ttk.Frame):
 
         frame.rowconfigure(row, weight = 1)
 
-        UniformDictController.create_checkbox(
-            frame,
-            self.widget.ui_parameter_dict,
-            'perspectiveType',
-            update_function = self.checkbox_update,
-            text = "Ideal view",
-            row = row, column = 1)
+        view_frame = ttk.Frame(frame)
+        view_frame.grid(row = row, column = 1)
+        self.view_var = tkinter.IntVar(value = 0)
+
+        view_label = ttk.Label(view_frame, text = "View:")
+        view_label.grid(row = 0, column = 0)
+
+        for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
+            button = ttk.Radiobutton(view_frame,
+                                     variable = self.view_var,
+                                     value = i,
+                                     text = text,
+                                     command = lambda i = i: self.set_view(i))
+            button.grid(row = 0, column = i + 1)
 
         return frame
+
+    def set_view(self, i):
+        self.widget.ui_parameter_dict['perspectiveType'][1] = i
+        self.widget.redraw_if_initialized()
+        self.focus_viewer()
 
     def checkbox_update(self):
         self.widget.redraw_if_initialized()
@@ -383,14 +446,23 @@ class InsideViewer(ttk.Frame):
 
         return frame
 
-    def create_frame_with_main_widget(self, parent, manifold, weights):
+    def create_frame_with_main_widget(self,
+                                      parent,
+                                      manifold,
+                                      weights,
+                                      cohomology_basis,
+                                      cohomology_class):
         frame = ttk.Frame(parent)
 
         column = 0
 
         self.widget = RaytracingView(
             'ideal',
-            manifold, weights = weights, master = frame,
+            manifold,
+            weights = weights,
+            cohomology_basis = cohomology_basis,
+            cohomology_class = cohomology_class,
+            master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.widget.make_current()
@@ -500,6 +572,14 @@ class InsideViewer(ttk.Frame):
 
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
+
+    def pick_cohomology_class(self, i):
+        cohomology_class = self.widget.ui_parameter_dict['cohomology_class'][1]
+        for j in range(len(cohomology_class)):
+            cohomology_class[j] = 1.0 if i ==j else 0.0
+        self.widget.recompute_raytracing_data_and_redraw()
+        for controller in self.class_controllers:
+            controller.update()
 
     def build_menus(self):
         pass

@@ -12,20 +12,19 @@ class InfoDialog(Dialog):
     def __init__(self, master, title='', content=''):
         self.content = content
         self.style = ttk.Style(master)
-        if sys.platform == 'darwin':
-            self.bg = 'SystemDialogBackgroundActive'
-        else:
-            self.bg = self.style.lookup('Button', 'background')
         self.image = Tk_.PhotoImage(file=icon_file)
         Dialog.__init__(self, master, title=title)
         
     def body(self, master):
-        self.config(bg=self.bg)
         self.resizable(False, False)
         box = ttk.Frame(self)
         icon = ttk.Label(box, image=self.image)
         icon.grid(row=0, column=0, pady=30, sticky=Tk_.N)
-        message = Tk_.Message(box, text=self.content, bg=self.bg)
+        if sys.platform == 'darwin':
+            message = Tk_.Message(box, text=self.content)
+        else:
+            bgColor=self.style.lookup('Button', 'background')
+            message = Tk_.Message(box, text=self.content, bg=bgColor)
         message.grid(row=0, column=1, padx=20, pady=10)
         box.pack()
 

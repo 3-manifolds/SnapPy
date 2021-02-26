@@ -43,9 +43,9 @@ class Manifold(_ManifoldLP):
         HP.set_tetrahedra_shapes(filled, complete, fillings)
         HP._polish_hyperbolic_structures()
         HP.set_name(self.name())
-        DT = self.DT_code()
+        DT = self.DT_code(flips=True)
         if DT:
-            HP._set_DTcode(DTcodec(DT))        
+            HP._set_DTcode(DTcodec(*DT))
         return HP
 
     def low_precision(self):
@@ -69,9 +69,9 @@ class ManifoldHP(_ManifoldHP):
         LP.set_tetrahedra_shapes(filled, complete, fillings)
         LP._polish_hyperbolic_structures()
         LP.set_name(self.name())
-        DT = self.DT_code()
+        DT = self.DT_code(flips=True)
         if DT:
-            LP._set_DTcode(DTcodec(DT))        
+            LP._set_DTcode(DTcodec(*DT))
         return LP
 
     def high_precision(self):
@@ -600,11 +600,19 @@ def manifold_inside_view(self, cohomology_class = None):
     Or show the cohomology fractal:
 
         >>> M = Manifold("m004")
-        >>> M.inside_view(chomology_class = 0) #doctest: +CYMODERNOPENGL
+        >>> M.inside_view(cohomology_class = 0) #doctest: +CYMODERNOPENGL
 
-    The ``cohomology_class`` can be an index to choose a basis vector for
-    the cohomology group or an array of weights for each face of each
-    tetrahedron.
+    The cohomology class in H^2(M, bd M; R) producing the cohomology
+    fractal can be specified as a cocycle or using an automatically computed
+    basis (of, say, length ``n``). Thus, ``cohomology_class`` can be one of
+    the following.
+
+    - An integer ``i`` between 0 and ``n`` - 1 to pick the ``i``-th basis
+      vector.
+    - An array of length ``n`` specifying the cohomology class as linear
+      combination of basis vectors.
+    - A weight for each face of each tetrahedron.
+
     """
     
     if InsideViewer is None:
@@ -615,11 +623,17 @@ def manifold_inside_view(self, cohomology_class = None):
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
+    weights, cohomology_basis, cohomology_class = (
+        cohomology_fractal.compute_weights_basis_class(
+            self, cohomology_class))
+
     return ViewerWindow(
         InsideViewer,
         self,
         title = "Inside view of %s" % self.name(),
-        weights = cohomology_fractal.compute_weights(self, cohomology_class))
+        weights = weights,
+        cohomology_basis = cohomology_basis,
+        cohomology_class = cohomology_class)
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

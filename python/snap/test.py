@@ -35,7 +35,7 @@ def test_polished(dec_prec=200):
             max_error = max(max_error, test_manifold(M))
             print('\r   ' + repr( (i, M) ).ljust(35) + '   Max error so far: %.2g' % float(max_error), end = '')
         print()
-              
+
     test_census('cusped census', snappy.OrientableCuspedCensus(filter='cusps>1')[-100:])
     test_census('closed census', snappy.OrientableClosedCensus()[-100:])
     test_census('4-component links', [M for M in snappy.LinkExteriors(num_cusps=4) if M.solution_type() == 'all tetrahedra positively oriented'])
@@ -99,6 +99,7 @@ def run_doctests(verbose=False, print_info=True):
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
     from snappy.snap.t3mlite import mcomplex
+    from snappy.snap import slice_obs_HKL
     from snappy.snap import character_varieties
     from snappy.snap import nsagetools
     from snappy.snap import polished_reps
@@ -107,13 +108,14 @@ def run_doctests(verbose=False, print_info=True):
     from snappy.snap.peripheral import dual_cellulation
     from snappy.snap.peripheral import link
     from snappy.snap.peripheral import peripheral
-    
+
     modules = [
         mcomplex,
         linalg,
         spun,
         character_varieties,
         nsagetools,
+        slice_obs_HKL,
         polished_reps,
         snap,
         interval_reps,
@@ -137,4 +139,3 @@ if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
     run_doctests(verbose)
-

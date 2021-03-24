@@ -72,10 +72,13 @@ void compute_fourth_corner(
 /*                                                                      */
 /************************************************************************/
 
-extern void close_cusps(Triangulation *manifold, Boolean fill_cusp[]);
+extern void close_cusps(Triangulation *manifold,
+			Boolean fill_cusp[],
+			Boolean fill_by_fold);
 /**<
  *  Permanently closes the cusps of *manifold for which fill_cusp[cusp->index]
- *  is TRUE.  Assumes *manifold is triangulated as in subdivide().
+ *  is TRUE.  Assumes *manifold is triangulated as in subdivide().  The default
+ *  for fill_by_fold is TRUE.
  */
 
 

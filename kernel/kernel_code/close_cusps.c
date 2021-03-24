@@ -102,7 +102,7 @@
  *  process.  First we collapse a line segment connecting the
  *  opposite vertices, then we collapse the two resulting bigons.
  *
- *           draw the line      
+ *           draw the line
  *            connecting       collapse       collapse
  *             opposite           the           the
  *             vertices          line          bigons
@@ -117,7 +117,7 @@
  *         o                o             o             o
  *
  *  Proposition A addresses the question of when these operations
- *  are valid. 
+ *  are valid.
  *
  *  Proof of Proposition A.
  *  By Lemma 1 the triangles are distinct, so the
@@ -162,15 +162,15 @@
  *                             to alter the
  *                             triangulation
  *                               as shown
- *                      o                       o      
- *                     / \                     /|\     
- *                    /   \                   / | \    
- *                   /     \                 /  |  \   
+ *                      o                       o
+ *                     / \                     /|\
+ *                    /   \                   / | \
+ *                   /     \                 /  |  \
  *                A o-------o B           A o   |   o B
- *                   \     /                 \  |  /   
- *                    \   /                   \ | /    
- *                     \ /                     \|/     
- *                      o                       o      
+ *                   \     /                 \  |  /
+ *                    \   /                   \ | /
+ *                     \ /                     \|/
+ *                      o                       o
  *
  *  Clearly an edge connecting inequivalent vertices must exist
  *  (by the connectivity of the torus or Klein bottle).  The only
@@ -196,34 +196,38 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
+
 struct extra
 {
     VertexIndex ideal_vertex_index;
     int         Dehn_filling_curve[4];
 };
 
-static void     transfer_to_short_list(Triangulation *manifold, Boolean fill_cusp[], Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static Boolean  incident_to_filled_cusp(Tetrahedron *tet, Boolean fill_cusp[]);
-static void     simplify_cusps(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static void     fold_boundary(Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static Boolean  cancel_triangles(Tetrahedron *tet, FaceIndex f0);
-static Boolean  further_simplification(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static Boolean  two_to_two(Triangulation *manifold, Tetrahedron *tet, FaceIndex f0, Boolean require_distinct_edges);
-static void     transfer_curves(Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static void     standard_form(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static void     standard_torus_form(Triangulation *manifold, Tetrahedron *tet);
-static int      max_abs_intersection_number(Tetrahedron *tet);
-static void     apply_two_to_two_to_eliminate(Triangulation *manifold, Tetrahedron *tet, int target);
-static void     standard_Klein_bottle_form(Triangulation *manifold, Tetrahedron *tet);
-static void     fold_cusps(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static void     fold_one_cusp(Triangulation *manifold, Tetrahedron *tet0);
-static void     replace_fake_cusps(Triangulation *manifold);
-static void     renumber_real_cusps(Triangulation *manifold);
-
+static void      transfer_to_short_list(Triangulation *manifold, Boolean fill_cusp[], Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static Boolean   incident_to_filled_cusp(Tetrahedron *tet, Boolean fill_cusp[]);
+static void      simplify_cusps(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static void      fold_boundary(Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static Boolean   cancel_triangles(Tetrahedron *tet, FaceIndex f0);
+static Boolean   further_simplification(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static Boolean   two_to_two(Triangulation *manifold, Tetrahedron *tet, FaceIndex f0, Boolean require_distinct_edges);
+static void      transfer_curves(Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static void      standard_form(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static void      standard_torus_form(Triangulation *manifold, Tetrahedron *tet);
+static int       max_abs_intersection_number(Tetrahedron *tet);
+static void      apply_two_to_two_to_eliminate(Triangulation *manifold, Tetrahedron *tet, int target);
+static void      standard_Klein_bottle_form(Triangulation *manifold, Tetrahedron *tet);
+static void      fold_cusps(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static void      fold_one_cusp(Triangulation *manifold, Tetrahedron *tet0);
+static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target);
+static void      fill_cusps_with_solid_tori(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
+static void      fill_cusp_with_solid_torus(Triangulation *manifold, Tetrahedron *tet0);
+static void      replace_fake_cusps(Triangulation *manifold);
+static void      renumber_real_cusps(Triangulation *manifold);
 
 void close_cusps(
     Triangulation   *manifold,
-    Boolean         fill_cusp[])
+    Boolean         fill_cusp[],
+    Boolean         fill_by_fold)
 {
     Tetrahedron short_list_begin,
                 short_list_end;
@@ -279,25 +283,34 @@ void close_cusps(
     standard_form(manifold, &short_list_begin, &short_list_end);
 
     /*
-     *  Collapse each cusp by folding along the diagonal in
-     *  the above illustrations.
+     *  Collapse each cusp by folding along the diagonal in the above
+     *  illustrations.  Alternatively, fill with a 1-tetrahedron solid
+     *  torus.
      */
-    fold_cusps(manifold, &short_list_begin, &short_list_end);
 
+    if (fill_by_fold){
+	fold_cusps(manifold, &short_list_begin, &short_list_end);
+    }
+    else{
+	fill_cusps_with_solid_tori(manifold, &short_list_begin, &short_list_end);
+    }
     /*
      *  Get rid of the old EdgeClasses and install new ones.
      */
+
     replace_edge_classes(manifold);
 
     /*
      *  Get rid of the old fake Cusps and install new ones.
      */
+
     replace_fake_cusps(manifold);
 
     /*
      *  Renumber the remaining real Cusps, so the indices
      *  are contiguous.
      */
+
     renumber_real_cusps(manifold);
 
     /*
@@ -314,6 +327,7 @@ void close_cusps(
      *  96/9/30  After adding the call to orient() I rechecked all
      *  Chern-Simons value for the cusped census, and they are all correct.
      */
+
     orient(manifold);
 }
 
@@ -418,16 +432,16 @@ static void simplify_cusps(
      *  triangles in a given boundary component exceeds two.
      *
      *           before               after
-     *             /\ c                /|\ c   
-     *            /  \                / | \    
-     *           /    \              /  |  \   
-     *          /      \            /   |   \  
+     *             /\ c                /|\ c
+     *            /  \                / | \
+     *           /    \              /  |  \
+     *          /      \            /   |   \
      *       a /________\ b      a /    |    \ b
-     *         \        /          \    |    / 
-     *          \      /            \   |   /  
-     *           \    /              \  |  /   
-     *            \  /                \ | /    
-     *             \/ c                \|/ c   
+     *         \        /          \    |    /
+     *          \      /            \   |   /
+     *           \    /              \  |  /
+     *            \  /                \ | /
+     *             \/ c                \|/ c
      *
      *  Note that this algorithm risks the creation of edges of order one
      *  in the (3-dimenisional) triangulation of the manifold.  But we
@@ -502,7 +516,7 @@ static Boolean cancel_triangles(
 
     /*
      *  f0 will be part of an array.
-     */ 
+     */
     f[0] = f0;
 
     /*
@@ -816,7 +830,7 @@ static Boolean two_to_two(
      *              o                       o
      *             / \                     / \
      *            /   \        OR         /   \
-     *           /     \                 /     \ 
+     *           /     \                 /     \
      *          /       \               /       \
      *       B o---------o B         B o---------o C
      *
@@ -855,7 +869,7 @@ static Boolean two_to_two(
      *                    \    /      \    /
      *                     \  /        \  /
      *                      \/__________\/
-     *                       B          C 
+     *                       B          C
      *
      *  It's easy to figure out that there are three possible
      *  gluing patterns for the square (xyXY, xyXy and xxyy)
@@ -1236,7 +1250,6 @@ static void standard_torus_form(
         }
 }
 
-
 static int max_abs_intersection_number(
     Tetrahedron *tet)
 {
@@ -1480,6 +1493,182 @@ static void fold_one_cusp(
         free_tetrahedron(tet[i]);
     }
 }
+
+
+static void fill_cusps_with_solid_tori(
+    Triangulation   *manifold,
+    Tetrahedron     *short_list_begin,
+    Tetrahedron     *short_list_end)
+{
+    while (short_list_begin->next != short_list_end)
+        fill_cusp_with_solid_torus(manifold, short_list_begin->next);
+}
+
+static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target){
+    VertexIndex v;
+    FaceIndex   f;
+
+    v = tet->extra->ideal_vertex_index;
+
+    /*
+     *  Find the FaceIndex f of the face of tet corresponding to the
+     *  2-d edge we want to eliminate.
+     */
+
+    for (f = 0; f < 4; f++)
+    {
+        if (f == v)
+            continue;
+
+        if (ABS(tet->extra->Dehn_filling_curve[f]) == target)
+            break;
+    }
+
+    if (f == 4) /* didn't find the right f */
+        uFatalError("face_with_specified_weight", "close_cusps");
+
+    return f;
+}
+
+
+
+static void fill_cusp_with_solid_torus(
+    Triangulation   *manifold,
+    Tetrahedron     *tet0)
+{
+    Tetrahedron *tet[2],
+	        *nbr[2],
+	        *new_tet;
+    FaceIndex   f[2][4],
+	        nf[2][4],
+	        nonideal_face,
+	        wt_one_face,
+	        wt_two_face;
+    int         i,
+                j;
+    Cusp        *dead_cusp;
+
+    /*
+     * First add on more tet so have {1, 2, 3} as absolute values of
+     * intersections of the filling curve with the three edges of the
+     * torus.
+     */
+
+    nonideal_face = tet0->extra->ideal_vertex_index;
+    wt_two_face = face_with_specified_weight(tet0, 2);
+    wt_one_face = remaining_face[nonideal_face][wt_two_face];
+    (void) two_to_two(manifold, tet0, wt_one_face, FALSE);
+
+    /*
+     *  f[0][0] will be the FaceIndex of the bottom face of tet[0]
+     *  (the one furthest from the ideal vertex).  For j > 0, f[0][j]
+     *  will be the face of curve weight j.  These should be in
+     *  counter-clockwise order when viewed from the ideal vertex.
+     */
+
+    tet[0] = tet0;
+    f[0][0] = tet[0]->extra->ideal_vertex_index;
+
+    /* We only support torus cusps for now. */
+    if (tet0->cusp[f[0][0]]->topology != torus_cusp){
+	uFatalError("fill_cusp_with_solid_torus_1", "close_cusps");
+    }
+
+    f[0][1] = face_with_specified_weight(tet[0], 3);
+    f[0][2] = remaining_face[f[0][0]][f[0][1]];
+    f[0][3] = remaining_face[f[0][1]][f[0][0]];
+
+    for (i = 1; i < 4; i ++){
+	if (ABS(tet[0]->extra->Dehn_filling_curve[f[0][i]]) + i != 4){
+	    uFatalError("fill_cusp_with_solid_torus_2", "close_cusps");
+	}
+    }
+
+    tet[1] = tet[0]->neighbor[f[0][1]];
+    for (i = 0; i < 4; i++)
+        f[1][i] = EVALUATE(tet[0]->gluing[f[0][1]], f[0][i]);
+
+    /*
+     *  nbr[0] (resp. nbr[1]) is the Tetrahedron (with all finite vertices)
+     *  which sits underneath tet[0] (resp. tet[1]).  Their FaceIndices
+     *  are nf[0][] and nf[1][], and are indexed in the natural way
+     *  relative to tet[0] and tet[1].
+     */
+
+    for (i = 0; i < 2; i++)
+    {
+        nbr[i] = tet[i]->neighbor[f[i][0]];
+
+        for (j = 0; j < 4; j++)
+            nf[i][j] = EVALUATE(tet[i]->gluing[f[i][0]], f[i][j]);
+    }
+
+    /*
+     *  Now we glue in a solid torus built from one tetrahedron.
+     */
+
+    new_tet = NEW_STRUCT(Tetrahedron);
+    initialize_tetrahedron(new_tet);
+    INSERT_BEFORE(new_tet, &manifold->tet_list_end);
+
+    /* One confusing solid torus */
+
+    new_tet->neighbor[2] = new_tet;
+    new_tet->neighbor[3] = new_tet;
+    new_tet->gluing[2] = CREATE_PERMUTATION(0,2, 1,0, 2,3, 3,1);
+    new_tet->gluing[3] = inverse_permutation[new_tet->gluing[2]];
+
+    for (i = 0; i < 4; i++){
+	new_tet->cusp[i] = tet[0]->cusp[f[0][1]];
+    }
+
+    /* glue first pair of faces */
+
+    nbr[0]->neighbor[nf[0][0]] = new_tet;
+    new_tet->neighbor[0] = nbr[0];
+    new_tet->gluing[0] = CREATE_PERMUTATION(0, nf[0][0],
+					    1, nf[0][1],
+					    2, nf[0][3],
+					    3, nf[0][2]);
+    nbr[0]->gluing[nf[0][0]] = inverse_permutation[new_tet->gluing[0]];
+
+    /* now the remaining pair */
+
+    nbr[1]->neighbor[nf[1][0]] = new_tet;
+    new_tet->neighbor[1] = nbr[1];
+    new_tet->gluing[1] = CREATE_PERMUTATION(0, nf[1][1],
+					    1, nf[1][0],
+					    2, nf[1][3],
+					    3, nf[1][2]);
+    nbr[1]->gluing[nf[1][0]] = inverse_permutation[new_tet->gluing[1]];
+
+    /*
+     *  Discard tet[0] and tet[1].
+     */
+
+    dead_cusp = tet[0]->cusp[f[0][0]];
+    if (dead_cusp->topology == torus_cusp)
+        manifold->num_or_cusps--;
+    else
+        manifold->num_nonor_cusps--;
+    manifold->num_cusps--;
+    REMOVE_NODE(dead_cusp);
+    my_free(dead_cusp);
+
+    for (i = 0; i < 2; i++)
+    {
+        REMOVE_NODE(tet[i]);
+        free_tetrahedron(tet[i]);
+    }
+
+    /* This looks wrong, since we have deleted two tets and added one,
+     * but the partially ideal ones were on the short_list and already
+     * removed from the count.
+     */
+
+    manifold->num_tetrahedra++;
+}
+
 
 
 static void replace_fake_cusps(

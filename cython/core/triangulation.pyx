@@ -1221,7 +1221,7 @@ cdef class Triangulation(object):
         filled_tri.set_name(self.name() + '_filled')
         return filled_tri
 
-    def _unsimplified_filled_triangulation(self):
+    def _unsimplified_filled_triangulation(self, method='fold'):
         """
         For a Triangulation that describes a closed manifold, returns
         the unsimplified finite triangulation that the kernel builds.
@@ -1232,6 +1232,15 @@ cdef class Triangulation(object):
         >>> F = M._unsimplified_filled_triangulation()
         >>> F.num_tetrahedra(), F._num_fake_cusps()
         (58, 7)
+
+        The default is to use the kernel's original fold method as
+        the final step to close off the cusp. Specifying
+        method='layered' uses a 1-tetrahedron solid torus instead.
+
+        >>> M = Triangulation('m004(1, 2)')
+        >>> F = M._unsimplified_filled_triangulation(method='layered')
+        >>> F.num_tetrahedra(), F._num_fake_cusps()
+        (60, 7)
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -1241,11 +1250,21 @@ cdef class Triangulation(object):
         cdef c_Triangulation* c_new_tri = NULL
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
+        cdef Boolean fill_by_fold
+        if method == 'fold':
+            fill_by_fold = True
+        elif method == 'layered':
+            fill_by_fold = False
+        else:
+            raise ValueError("The method must be 'fold' or 'layered'")
+        
         c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True
-            close_cusps(c_new_tri, fill_cusp_spec)
+
+
+        close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold)
         number_the_tetrahedra(c_new_tri)
         number_the_edge_classes(c_new_tri)
         create_fake_cusps(c_new_tri)

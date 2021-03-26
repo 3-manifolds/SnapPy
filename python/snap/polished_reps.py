@@ -185,7 +185,7 @@ class MatrixRepresentation(Object):
     def lift_to_SL2C(self):
         assert self.is_projective_representation()
         base_gen_images = [self(g) for g in self.generators()]
-        generators, relators, meridian = self.generators(), self.relators(), self.peripheral_curves()[0][0]
+        generators, relators = self.generators(), self.relators()
 
         # Make into a real rep
         pos_signs = product( *([(1, -1)]*len(base_gen_images)))

@@ -365,19 +365,19 @@ def cusp_areas(manifold, policy = 'unbiased',
     them up, set ``first_cusps`` to the appropriate list of cusps.
 
         >>> M = Manifold('o9_44210')
-        >>> M.cusp_areas(policy='greedy')
+        >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
         [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[]) # doctest: +NUMERIC9
         [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[0,]) # doctest: +NUMERIC9
         [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1]) # doctest: +NUMERIC9
         [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1,2])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1,2]) # doctest: +NUMERIC9
         [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,2,1])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[0,2,1]) # doctest: +NUMERIC9
         [7.053940530873898, 2.3513135103, 3.7690945490]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[1,])
+        >>> M.cusp_areas(policy='greedy', first_cusps=[1,]) # doctest: +NUMERIC9
         [4.0302253322, 5.725527974287718, 1.5478612583]
     
     ``cusp_areas`` is implemented using

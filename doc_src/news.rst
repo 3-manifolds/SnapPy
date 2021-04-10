@@ -18,7 +18,8 @@ News
   - Faster "local" algorithm for :meth:`jones_polynomial
     <spherogram.Link.jones_polynomial>`.
 
-  - Cohomology fractals in :meth:`inside_view <snappy.Manifold.inside_view>`.
+  - `Cohomology fractals <https://arxiv.org/abs/2010.05840>`_ added to
+    :meth:`inside_view <snappy.Manifold.inside_view>`.
 
   - Convention changes: Sign of knot signature (now positive knots have
     negative signatures), choice of braid generators (now positive

@@ -11,9 +11,9 @@ jobs:
     container:
       image: alpine:latest
 
-      steps:
-        - name: try
-          run: cat /etc/alpine-release
+    steps:
+      - name: try
+        run: cat /etc/alpine-release
 
-        - name: again
-          run: cat python/version.py
+      - name: again
+        run: cat python/version.py

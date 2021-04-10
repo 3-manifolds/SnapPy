@@ -2,6 +2,8 @@ name: sage-test
 
 on: [push, pull_request]
 
+runs-on: ubuntu-latest
+
 jobs:
   test:
     name: Test on Sage

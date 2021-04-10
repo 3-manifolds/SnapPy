@@ -3,7 +3,7 @@ from __future__ import print_function
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
@@ -53,19 +53,34 @@ class Insanity(Exception):
     pass
 
 class Mcomplex:
-
+    """
+    >>> T = Mcomplex([Tetrahedron()])
+    >>> len(T), len(T.Vertices)
+    (1, 4)
+    >>> T = Mcomplex('m004')
+    >>> len(T)
+    2
+    >>> tet_data = [([0,1,0,1], [(2,1,0,3), (0,3,2,1), (2,1,0,3), (0,1,3,2)]),
+    ...             ([1,1,0,0], [(1,0,2,3), (1,0,2,3), (0,1,3,2), (0,3,2,1)])]
+    >>> S = Mcomplex(tet_data)
+    >>> len(S)
+    2
+    """
     def __init__(self, tetrahedron_list=None):
         if tetrahedron_list is None:
             tetrahedron_list = []
-        if isinstance(tetrahedron_list, str) and snappy == None:
+        elif isinstance(tetrahedron_list, str) and snappy == None:
             tetrahedron_list = tets_from_data(files.read_SnapPea_file(file_name=tetrahedron_list))
-        if snappy:
+        elif snappy:
             if isinstance(tetrahedron_list, str):
                 tetrahedron_list = snappy.Triangulation(tetrahedron_list,
                                                         remove_finite_vertices=False)
             if hasattr(tetrahedron_list, '_get_tetrahedra_gluing_data'):
                 tetrahedron_list = tets_from_data(
                     tetrahedron_list._get_tetrahedra_gluing_data())
+        if isinstance(tetrahedron_list, (list, tuple)):
+            if len(tetrahedron_list) > 0 and not isinstance(tetrahedron_list[0], Tetrahedron):
+                tetrahedron_list = tets_from_data(tetrahedron_list)
 
         self.Tetrahedra = tetrahedron_list
         self.Edges                = []
@@ -227,7 +242,7 @@ class Mcomplex:
                         newEdge._add_corner(a)
                         a.Tetrahedron.Class[a.Edge] = newEdge
                         if a.next() == None:
-                           # We hit the boundary! 
+                           # We hit the boundary!
                            # Go back to the beginning and walk to the right.
                             # If this is our second boundary hit, we are done.
                             if not boundary_hits == 0:
@@ -275,7 +290,7 @@ class Mcomplex:
             vertex.Corners.append(Corner(tet,zero_subsimplex))
             for two_subsimplex in TwoSubsimplices:
                 if ( is_subset(zero_subsimplex,two_subsimplex)
-                     and 
+                     and
                      tet.Gluing[two_subsimplex] != None):
                     self.walk_vertex(vertex,
                                      tet.Gluing[two_subsimplex].image(zero_subsimplex),
@@ -299,7 +314,7 @@ class Mcomplex:
                 head.IntOrBdry = 'bdry'
         for vertex in self.Vertices:
             if vertex.IntOrBdry == '':
-                vertex.IntOrBdry = 'int'  
+                vertex.IntOrBdry = 'int'
 
 #Construct the faces.
     def build_face_classes(self):
@@ -350,7 +365,7 @@ class Mcomplex:
         if sign == 0:
             tet.reverse()
         for ssimp in TwoSubsimplices:
-            if not tet.Neighbor[ssimp] == None:  
+            if not tet.Neighbor[ssimp] == None:
                 self.walk_and_orient(tet.Neighbor[ssimp], tet.Gluing[ssimp].sign())
 
 # Normal Surfaces
@@ -406,7 +421,7 @@ class Mcomplex:
             raise ValueError("Algorithm must be in {'FXrays', 'regina'}")
 
         for coeff_vector in coeff_list:
-            if max(self.LinkGenera) == 0: 
+            if max(self.LinkGenera) == 0:
                 self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))
             elif self.LinkGenera.count(1) == len(self.LinkGenera):
                 self.NormalSurfaces.append(SpunSurface(self, coeff_vector))
@@ -498,7 +513,7 @@ class Mcomplex:
         return 1
 
 # Flatten the star of an edge of valence 2 to eliminate two tetrahedra.
-# Returns 1 on success, 0 if the move cannot be performed. 
+# Returns 1 on success, 0 if the move cannot be performed.
 #
     def two_to_zero(self, edge):
         if not edge.IntOrBdry == 'int':
@@ -558,7 +573,7 @@ class Mcomplex:
         if VERBOSE:
             print('0->2')
             print(self.EdgeValences)
-        return 1 
+        return 1
 
 # Replace an edge of valence 4 by another diagonal of the octahedron
 # formed by the star of the edge.  There are two choices for this
@@ -672,7 +687,7 @@ class Mcomplex:
             rand_tet = self[ random.randint(0, len(self) - 1) ]
             rand_face = TwoSubsimplices[random.randint(0,3)]
             self.two_to_three(rand_face, rand_tet)
-            self.eliminate_valence_two()       
+            self.eliminate_valence_two()
         return len(self)
 
 # Create n edges of valence 2 in random places, removing valence
@@ -685,10 +700,10 @@ class Mcomplex:
             k = random.randint(0, len(rand_edge.Corners) - 1 - j)
             one_subsimplex = rand_edge.Corners[j].Subsimplex
             two_subsimplex = LeftFace[one_subsimplex]
-            a = Arrow(one_subsimplex, two_subsimplex, 
+            a = Arrow(one_subsimplex, two_subsimplex,
                       rand_edge.Corners[j].Tetrahedron)
             self.zero_to_two(a, k)
-            self.eliminate_valence_three()       
+            self.eliminate_valence_three()
         return len(self)
 
     def randomize(self):
@@ -701,7 +716,7 @@ class Mcomplex:
 #
 # Find a boundary face adjoining a given boundary face.
 # Given an Arrow representing a boundary face, return the Arrow
-# representing the boundary face that shares the Arrow's Edge. 
+# representing the boundary face that shares the Arrow's Edge.
 #
     def bdry_neighbor(self, arrow):
         if arrow.next() != None:
@@ -820,7 +835,7 @@ class Mcomplex:
         bottom.glue(first_bottom.opposite())
         # Clean up the garbage.
         for tet in garbage:
-            self.delete_tet(tet) 
+            self.delete_tet(tet)
         self.rebuild()
         return first_top
 
@@ -912,7 +927,7 @@ class Mcomplex:
     # Currently the choice of triangulation of the
     # polygon is one that is the cone over an edge.  Probably this
     # should be generalized.  top_arrows and bottom arrows are for
-    # gluing in this complex via the method 
+    # gluing in this complex via the method
 
     def suspension_of_polygon(self, num_sides_of_polygon):
         top_tets = self.new_tets(num_sides_of_polygon - 2)
@@ -1000,7 +1015,7 @@ class Mcomplex:
 
     def boundary_maps(self):
         """
-        The boundary maps in the homology chain complex of the 
+        The boundary maps in the homology chain complex of the
         underlying cell-complex of a Mcomplex.
 
         >>> M = Mcomplex('o9_12345')

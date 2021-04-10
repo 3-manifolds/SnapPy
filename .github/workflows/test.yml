@@ -1,0 +1,11 @@
+name: sage-test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    container:
+      image: alpine:latest
+      run: |
+        uname -a
+        cat python/version.py

@@ -2,9 +2,9 @@ name: sage-test
 
 on: [push, pull_request]
 
-runs-on: ubuntu-latest
 
 jobs:
+  runs-on: ubuntu-latest 
   test:
     name: Test on Sage
     container:

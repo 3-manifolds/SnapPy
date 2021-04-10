@@ -4,8 +4,13 @@ on: [push, pull_request]
 
 jobs:
   test:
+    name: Test on Sage
     container:
       image: alpine:latest
-      run: |
-        uname -a
-        cat python/version.py
+
+    steps:
+      - name: try
+        run: cat /etc/alpine-release
+
+      - name: again
+        run: cat python/version.py

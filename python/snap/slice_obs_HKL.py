@@ -49,7 +49,7 @@ if _within_sage:
                           GF, QQ, CyclotomicField, vector, matrix,
                           identity_matrix, block_matrix, diagonal_matrix,
                           MatrixSpace, ChainComplex, prime_range)
-    
+
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,
                              fox_derivative_with_involution,
                              fox_derivative,
@@ -580,6 +580,12 @@ def slice_obstruction_HKL(self, primes_spec,
        sage: M.slice_obstruction_HKL((2, 3))
        sage: M.slice_obstruction_HKL((3, 7))
        (3, 7)
+
+    Technical note: As implemented, can only get an obstruction when
+    the decomposition of H_1(cover; F_q) into irreducible Z/pZ-modules
+    has no repeat factors.  The method of [HKL] can be used more
+    broadly, but other cases requires computing many more twisted
+    Alexander polynomials.
     """
 
     M = self

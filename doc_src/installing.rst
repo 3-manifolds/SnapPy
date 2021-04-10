@@ -14,31 +14,24 @@ macOS
 Simply download `SnapPy.dmg
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.  Works with macOS/OS X versions
-10.6 and newer.  Users of earlier versions of OS X should install
-`SnapPy-1.4.dmg
-<https://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_ instead.  We
-also offer a version based on Python 2 rather than the default Python 3:
-`SnapPy-Python2.dmg
-<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-Python2.dmg>`_;
-this was the default download in SnapPy 2.6.1 and earlier.
-
+it, just like any other application.  Works with macOS/OS X 10.9 and
+newer.  Earlier releases `can be found here
+<https://github.com/3-manifolds/SnapPy/releases/>`_.
 
 Windows
 -------
 
-Simply download and run
-`InstallSnapPy.exe <https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy.exe>`_.
-We also offer a version based on Python 2 rather than the default
-Python 3: `InstallSnapPy-Python2.exe
-<https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy-Python2.exe>`_.
+Simply download and run `InstallSnapPy.exe
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy.exe>`_.
+Earlier releases `can be found here
+<https://github.com/3-manifolds/SnapPy/releases/>`_.
 
 
 Linux
 -----
 
 Here are short recipes which work on most Linux systems, specifically
-those that run a 64-bit kernel and have Python 3.4 or newer. These
+those that run a 64-bit kernel and have Python 3.6 or newer. These
 instructions assume you have system administrator (superuser)
 privileges to install software packages from your Linux distribution
 but want to install SnapPy (and its various Python dependencies) just
@@ -46,7 +39,7 @@ in your own user directory, specifically ``~/.local``.  For other
 Linux systems, try the one closest to yours below, and if that fails,
 follow the instructions for `generic Unix`_.
 
-+ **Ubuntu/Debian/Mint**: Tested on Ubuntu 16.04 and 18.04 and Debian::
++ **Ubuntu/Debian/Mint**: Tested on Ubuntu 16.04, 18.04, 20.04 and Debian::
 
     sudo apt-get install python3-tk python3-pip
     # Note no "sudo" on the next one!
@@ -107,11 +100,11 @@ Python Modules for Macintosh or Windows
 
 If you write Python programs on a Macintosh or Windows system, you may
 wish to install SnapPy as a Python module into your own copy of
-Python.  We support Python 3.4 and up as well as the legacy Python
-2.7.  (On macOS, use a Python downloaded from `Python.org
-<http://python.org>`_ and not the one provided by Apple.)  After
-installing Python, you may install a SnapPy module from your Terminal
-application or Command Prompt with the commands::
+Python.  We support Python 3.6 and up.  (On macOS, use a Python
+downloaded from `Python.org <http://python.org>`_ and not the one
+provided by Apple.)  After installing Python, you may install a SnapPy
+module from your Terminal application or Command Prompt with the
+commands::
 
     python3 -m pip install --upgrade --user snappy
 
@@ -138,13 +131,8 @@ optional package via the following if using Sage 6.4 or newer::
   sage -pip install snappy
   sage -pip install snappy_15_knots  # Larger version of HTLinkExteriors
 
-If you are on macOS and it will likely complains about not having SSL,
-TLS, or something related to a certificate missing; to fix this,
-follow the instructions `here
-<https://github.com/3-manifolds/fix_mac_sage>`_.
-If you encounter other problems, on any platform, try::
-
-  sage -pip install --no-binary :all: snappy
+If you are on macOS, we recommend use `this binary
+<https://github.com/3-manifolds/Sage_macOS/releases>`_.
 
 Alternatively, SageMath on `CoCalc <https://cocalc.com/>`_ (formerly
 the SageMathCloud) also has SnapPy preinstalled, and the graphics
@@ -155,7 +143,7 @@ bottom of that page for more.
 If you previously installed SnapPy into SageMath and want to upgrade
 SnapPy to the latest version, do::
 
-  sage -pip install --upgrade --no-deps snappy_manifolds plink spherogram FXrays decorator snappy
+  sage -pip install --upgrade snappy
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" headers <openglmesa>`.  The graphical features may or may
@@ -188,6 +176,7 @@ optionally Sage (only on Mac OS and Linux). While it has none of the
 other aforementioned tools, it has the advantage that the GUI elements
 such as the link editor and the browser can be used directly.
 
+
 Generic Unix
 ------------
 
@@ -198,8 +187,8 @@ Here are some detailed instructions.
 Things you'll need:
 
 - Python 3 with Tkinter: You'll need to have `Python
-  <http://python.org>`_ (version 3.4 or newer) and `Tk
-  <http://tcl.tk>`_ (at least version 8.4) with `Tkinter
+  <http://python.org>`_ (version 3.6 or newer) and `Tk
+  <http://tcl.tk>`_ (at least version 8.5) with `Tkinter
   <http://wiki.python.org/moin/TkInter>`_ to connect them, including
   the header files.  For instance, on Debian or Ubuntu, install the
   packages "python3-tk", "python3-pip", and "python3-dev". On Fedora,
@@ -243,12 +232,9 @@ There is one more dependency that may need to be dealt with:
 
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
-  subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for
-  both 32-bit and 64-bit kernels, and should work on most systems.  If
-  they don't, you'll need to edit or follow "build_togl.sh" to build
-  Togl directly into "snappy/linux2-tk*" (32-bit kernel) or
-  "snappy/linux2-x86_64-tk*" (64-bit kernel), where "*" is the version
-  of Tk you are using.
+  subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built
+  for 64-bit kernels, and should work on most systems.  If they don't,
+  you'll need to edit or follow "build_togl.sh" to build Togl directly.
   
 Finally, compile and install the SnapPy module (which will install
 certain other dependencies) and test::

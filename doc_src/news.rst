@@ -1,8 +1,32 @@
 .. SnapPy news
 
-============
+====
 News
-============
+====
+
+* Version 3.0 (April 2021): New features include:
+
+  - Incorporates Zoltán Szabó's `program
+    <https://web.math.princeton.edu/~szabo/HFKcalc.html>`_ for
+    computing Knot Floer homology, see :meth:`knot_floer_homology
+    <spherogram.Link.knot_floer_homology>`.  This can compute the
+    Seifert genus of a 25 crossing knot in mere seconds!
+
+  - Topological slice obstructions of Herald-Kirk-Livingston, see
+    :meth:`slice_obstruction_HKL <snappy.Manifold.slice_obstruction_HKL>`.
+
+  - Faster "local" algorithm for :meth:`jones_polynomial
+    <spherogram.Link.jones_polynomial>`.
+
+  - Cohomology fractals in :meth:`inside_view <snappy.Manifold.inside_view>`.
+
+  - Convention changes: Sign of knot signature (now positive knots have
+    negative signatures), choice of braid generators (now positive
+    generators give positive crossings).
+
+  - Support for SageMath 9.3, Python 3.9, and macOS Big Sur.
+
+  - SnapPy now requires Python 3.6 or newer.
 
 * Version 2.8 (June 2020): New features include:
 

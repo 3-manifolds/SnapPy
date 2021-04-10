@@ -26,6 +26,31 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.0 (April 2021): New features include:
+
+  - Incorporates Zoltán Szabó's `program
+    <https://web.math.princeton.edu/~szabo/HFKcalc.html>`_ for
+    computing Knot Floer homology, see :meth:`knot_floer_homology
+    <spherogram.Link.knot_floer_homology>`.  This can compute the
+    Seifert genus of a 25 crossing knot in mere seconds!
+
+  - Topological slice obstructions of Herald-Kirk-Livingston, see
+    :meth:`slice_obstruction_HKL <snappy.Manifold.slice_obstruction_HKL>`.
+
+  - Faster "local" algorithm for :meth:`jones_polynomial
+    <spherogram.Link.jones_polynomial>`.
+
+  - Cohomology fractals in :meth:`inside_view <snappy.Manifold.inside_view>`.
+
+  - Convention changes: Sign of knot signature (now positive knots have
+    negative signatures), choice of braid generators (now positive
+    generators give positive crossings).
+
+  - Support for SageMath 9.3, Python 3.9, and macOS Big Sur.
+
+  - SnapPy now requires Python 3.6 or newer.
+
+
 * Version 2.8 (June 2020): New features include:
 
   - Raytraced interior views of a hyperbolic 3-manifold via the 
@@ -58,23 +83,6 @@ News
   - Support for SageMath 9.0 and macOS Catalina.
 
   - Development moved to `GitHub <https://github.com/3-manifolds>`_.
-
-* Version 2.7 (July 2019): New features include:
-
-  - Python 3 is now recommended over Python 2 on all platforms; the
-    default Mac and Windows apps use Python 3 rather than
-    Python 2. The only difference most users will notice is that one
-    must type ``print(blah)`` instead of ``print blah``.
-
-  - :doc:`verify`: performance improvements by switching to the Krawczyk test.
-
-  - Support for SageMath 8.8.
-
-  - Installation instructions extensively updated.
-
-  - GUI improvements, especially on macOS. These include improved
-    support for dark mode and tabs on macOS Mojave and preliminary
-    support for macOS Catalina.
 
 * :doc:`Complete version history <news>`.
 

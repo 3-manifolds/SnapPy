@@ -4,15 +4,16 @@ on: [push, pull_request]
 
 
 jobs:
-  runs-on: ubuntu-latest 
   test:
     name: Test on Sage
+    runs-on: ubuntu-latest 
+
     container:
       image: alpine:latest
 
-    steps:
-      - name: try
-        run: cat /etc/alpine-release
+      steps:
+        - name: try
+          run: cat /etc/alpine-release
 
-      - name: again
-        run: cat python/version.py
+          - name: again
+            run: cat python/version.py

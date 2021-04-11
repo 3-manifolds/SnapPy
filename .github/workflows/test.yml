@@ -17,15 +17,10 @@ jobs:
 
       - name: Go home
         # https://github.com/actions/runner/issues/863
-        run: |
-          echo $HOME
-          export HOME=/home/sage
-          echo $HOME
-          
+        run: sudo chown sage:sage $HOME           
 
       - name: Install PLink
-        run: |
-          export HOME=/home/sage
+        run: 
           sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip
 
       - name: Install snappy_manifolds

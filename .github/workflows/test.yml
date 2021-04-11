@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest 
 
     container:
-      image: alpine:latest
+      image: sagemath/sagemath:9.1
 
     steps:
       - uses: actions/checkout@v2
         
-      - name: try
-        run: cat /etc/alpine-release
+      - name: Sage version
+        run: sage --version
 
-      - name: again
-        run: cat python/version.py
+      - name: Install PLink
+        run: sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip

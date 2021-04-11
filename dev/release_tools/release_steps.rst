@@ -3,12 +3,10 @@ Overview
 
 Key tools:
 
-1. macOS wheels are built on a OS X 10.12 VM running in VMWare Fusion
-   on dehn.math.illinois.edu.  Recent macOS apps have been built by
-   Marc directly.
+1. Recent macOS apps have been built by Marc directly.
 
-2. Linux binaries are built via a derivative of the manylinux2010
-   Docker image; for details, see "docker/README.rst".
+2. Wheels for all three platforms are built using cibuildwheel as part
+   of an automatic GitHub action after each commit.
 
 3. Windows wheels are built automatically via AppVeyor, and can be
    accessed via the "Artifacts" tab on the job page.
@@ -27,7 +25,7 @@ Key tools:
 Warmup
 ======
 
-0.  Bump versions numbers to whatever you want them to be for the
+0.  Bump versions numbers to whatever you want them to be for final relase
     final release.  Commit and push.  
 
 1.  For each of plink, sphereogram, and snappy, run "python setup.py

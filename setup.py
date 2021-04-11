@@ -245,6 +245,15 @@ all_cython_files += glob(os.path.join('cython','core', '*.pyx'))
 try:
     from Cython.Build import cythonize
     from Cython import __version__ as cython_version
+    have_cython = True
+except ImportError:
+    have_cython = False
+
+def replace_ext(file, new_ext):
+    root, ext = os.path.splitext(file)
+    return root + '.' + new_ext
+
+if have_cython:
     if [int(x) for x in cython_version.split('.')] < [0, 28]:
         raise ImportError
 
@@ -255,23 +264,18 @@ try:
         cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
         cythonize(cython_cpp_sources,
                   compiler_directives={'embedsignature': True})
-except ImportError:
-    for file in cython_sources:
-        base = os.path.splitext(file)[0]
-        if not exists(base + '.c'):
-            raise ImportError(no_cython_message)
-    for file in cython_cpp_sources:
-        base = os.path.splitext(file)[0]
-        if not exists(base + '.cpp'):
-            raise ImportError(no_cython_message)
+else:  # No Cython, likely building an sdist
+    targets = [replace_ext(file, 'c') for file in cython_sources]
+    targets += [replace_ext(file, 'cpp') for file in cython_cpp_sources]
+    for file in targets:
+        if not exists(file):
+            raise ImportError(no_cython_message +
+                              'Missing Cythoned file: ' + file)
 
 # We check manually which object files need to be rebuilt; distutils
 # is overly cautious and always rebuilds everything, which makes
 # development painful.
 
-def replace_ext(file, new_ext):
-    root, ext = os.path.splitext(file)
-    return root + '.' + new_ext
 
 def modtime(file):
     if os.path.exists(file):

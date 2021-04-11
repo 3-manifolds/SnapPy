@@ -15,6 +15,12 @@ jobs:
       - name: Sage version
         run: sage --version
 
+      - name: Go home
+        # https://github.com/actions/runner/issues/863
+        run: |
+          mkdir -p /github
+          ln -s /home/sage $HOME
+
       - name: Install PLink
         run: sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip
 

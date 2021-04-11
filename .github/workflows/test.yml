@@ -24,6 +24,9 @@ jobs:
       - name: Install spherogram
         run: sage -pip install -U https://github.com/3-manifolds/spherogram/archive/master.zip
 
+      - name: Test spherogram
+        run: sage -python -m spherogram.test 
+
       - name: Install snappy
         run: sage -pip install -U https://github.com/3-manifolds/snappy/archive/master.zip
 

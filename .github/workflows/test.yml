@@ -12,6 +12,8 @@ jobs:
       image: alpine:latest
 
     steps:
+      - uses: actions/checkout@v2
+        
       - name: try
         run: cat /etc/alpine-release
 

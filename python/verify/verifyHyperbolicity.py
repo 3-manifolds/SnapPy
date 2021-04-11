@@ -7,7 +7,7 @@ __all__ = [
     'verify_hyperbolicity' ]
 
 if _within_sage:
-    from sage.all import pi, RIF
+    from sage.all import pi
     import sage.all
 
 class FalseTuple(tuple):
@@ -99,6 +99,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 
     # Get the ComplexIntervalField of the shape intervals
     CIF = shape_intervals[0].parent()
+    RIF = CIF.real_field()
     # 2 pi i in that field
     two_pi_i = CIF(2 * pi * sage.all.I)
 

@@ -456,7 +456,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
             twoPiI = NumericalField.pi() * NumericalField(2j)
 
-            if not abs(log_sum - twoPiI) < 1e-7:
+            if not abs(log_sum - twoPiI) < NumericalField(1e-7):
                 raise EdgeEquationLogLiftNumericalVerifyError(log_sum)
 
     def _testing_check_against_snappea(self, epsilon):

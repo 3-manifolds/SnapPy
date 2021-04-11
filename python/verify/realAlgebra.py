@@ -265,6 +265,7 @@ def _test_result(number_field, prec = 53, epsilon = 1e-10):
 
     CIF = ComplexIntervalField(prec)
     RIF = RealIntervalField(prec)
+    epsilon = RIF(epsilon)
 
     real_number_field, x_expression, y_expression = (
         field_containing_real_and_imaginary_part_of_number_field(number_field))

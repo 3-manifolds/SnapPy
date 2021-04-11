@@ -371,7 +371,8 @@ def _diff_to_kernel(value, snappeaValue):
     return value - NumericField(snappeaValue)
 
 def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
-    return abs(_diff_to_kernel(value, snappeaValue)) < error
+    NumericField = value.parent()
+    return abs(_diff_to_kernel(value, snappeaValue)) < NumericField(error)
 
 def _is_vertex_close_to_kernel(vertex, snappeaVertex):
     if vertex == Infinity or snappeaVertex == Infinity:

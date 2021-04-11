@@ -410,5 +410,5 @@ class _IdealPointTester(object):
 
             d = p.translate_PGL(m).dist(pt)
 
-            if not d < 1e-6:
+            if not d < RIF(1e-6):
                 raise Exception("Points differ %s" % d)

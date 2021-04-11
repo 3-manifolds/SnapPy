@@ -236,7 +236,7 @@ class _FinitePointTester(object):
         if not isinstance(d_after, RealIntervalFieldElement):
             raise Exception("Expected distance to be RIF")
         
-        if not abs(d_before - d_after) < 1e-12:
+        if not abs(d_before - d_after) < RIF(1e-12):
             raise Exception("Distance changed %r %r" % (d_before, d_after))
 
     def matrix_multiplication_works(self, matrices):
@@ -248,7 +248,7 @@ class _FinitePointTester(object):
         for m in matrices[::-1]:
             a = a.translate_PGL(m)
 
-        if not a.dist(a0) < 1e-6:
+        if not a.dist(a0) < RIF(1e-6):
             raise Exception("Distance %r" % a.dist(a0))
 
     def run_tests(self):

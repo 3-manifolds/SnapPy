@@ -7,7 +7,7 @@ __all__ = [
     'verify_hyperbolicity' ]
 
 if _within_sage:
-    from sage.all import pi
+    from sage.all import pi, RIF
     import sage.all
 
 class FalseTuple(tuple):
@@ -108,7 +108,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     # The first n_tet gluing equations are edge equations
     for edge_index in range(n_tet):
         # An edge equation should sum up to 2 pi i
-        if not abs(LHSs[LHS_index] - two_pi_i) < 0.1:
+        if not abs(LHSs[LHS_index] - two_pi_i) < RIF(0.1):
             raise exceptions.EdgeEquationLogLiftNumericalVerifyError(
                 LHSs[LHS_index])
         LHS_index += 1
@@ -127,7 +127,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 
         # Check the one or two equations
         for j in range(num_LHSs):
-            if not abs(LHSs[LHS_index] - value) < 0.1:
+            if not abs(LHSs[LHS_index] - value) < RIF(0.1):
                 raise exceptions.CuspEquationLogLiftNumericalVerifyError(
                     LHSs[LHS_index], value)
             # Advance to the next gluing equation

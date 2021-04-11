@@ -29,29 +29,24 @@ documentation for snappy module, e.g.
 # On some python distributions for Mac OS X, one needs to set the environment
 # variable MACOSX_DEPLOYMENT_TARGET to, e.g., 10.14.
 
-import os, platform, shutil, site, subprocess, sys, sysconfig, re
-from os.path import getmtime, exists
-from distutils.util import get_platform
-from distutils.ccompiler import get_default_compiler
-from glob import glob
-
-if sys.platform == 'darwin':
-    macOS_compile_args = macOS_link_args = []
-
 try:
     import setuptools
     import pkg_resources
 except ImportError:
     raise ImportError(no_setuptools_message)
-
-# Make sure setuptools is installed in a late enough version
-
 try:
     pkg_resources.working_set.require('setuptools>=1.0')
 except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
     raise ImportError(old_setuptools_message)
 
-from setuptools import distutils
+
+import os, platform, shutil, site, subprocess, sys, sysconfig, re
+from os.path import getmtime, exists
+get_default_compiler = setuptools.distutils.ccompiler.get_default_compiler
+from glob import glob
+
+if sys.platform == 'darwin':
+    macOS_compile_args = macOS_link_args = []
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
@@ -60,7 +55,7 @@ try:
 except:
     pass
 
-from distutils.extension import Extension
+from setuptools.extension import Extension
 from setuptools import setup, Command
 from pkg_resources import load_entry_point
 

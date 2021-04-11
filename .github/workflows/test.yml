@@ -19,7 +19,8 @@ jobs:
         # https://github.com/actions/runner/issues/863
         run: |
           echo $HOME
-          ls /github
+          export HOME=/home/sage
+          echo $HOME
           
 
       - name: Install PLink

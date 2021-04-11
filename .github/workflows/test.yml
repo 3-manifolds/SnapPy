@@ -12,8 +12,6 @@ jobs:
       image: sagemath/sagemath:9.1
 
     steps:
-      - uses: actions/checkout@v2
-        
       - name: Sage version
         run: sage --version
 

@@ -10,6 +10,7 @@ include kernel/unix_kit/*.c
 include kernel/addl_code/*.c
 include kernel/addl_code/*.cc
 include opengl/*.h
+include opengl/KHR/*.h
 include quad_double/addl_code/*.h
 include quad_double/headers/*.h
 include quad_double/real_type/*.h

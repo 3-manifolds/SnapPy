@@ -3,88 +3,65 @@ Overview
 
 Key tools:
 
-1. Recent macOS apps have been built by Marc directly.
-
-2. Wheels for all three platforms are built using cibuildwheel as part
+1. Wheels for all three platforms are built using cibuildwheel as part
    of an automatic GitHub action after each commit.
 
-3. Windows wheels are built automatically via AppVeyor, and can be
-   accessed via the "Artifacts" tab on the job page.
+2. The sdist tarballs are build by a GitHub action of the
+   "snappy_release" project.
 
-4. The Windows app is built via AppVeyor and the "snappy_release" project.
+3. The Windows app is also build by a GitHub action of
+   "snappy_release".
+
+4. Recent macOS apps have been built by Marc directly.
 
 5. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
 
-6. Linux testing done on a Ubuntu 18.04 (64-bit) VM running in VMWare
-   Fusion on dehn.math.illinois.edu.
+6. Testing done on virtual machines running in VMWare Fusion on
+   dehn.math.illinois.edu.
 
 7. Nathan stores current and old versions in "~/Dropbox/pypi/".
-   
+
 
 Warmup
 ======
 
-0.  Bump versions numbers to whatever you want them to be for final relase
-    final release.  Commit and push.  
+0. Bump versions numbers for each subproject to whatever you want them
+   to be for final release, plus some "rcN" suffix.  Commit and push.
 
-1.  For each of plink, sphereogram, and snappy, run "python setup.py
-    release" on one platform.  This will generate, among other things,
-    an "sdist" tarball.  Since even testpypi will not allow you to use
-    the same name twice, add a release candidate tag and then upload
-    to testpypi::
+1. Trigger the GitHub actions for "snappy_release".  Download the
+   artifacts for the "sdist" action and upload to testpypi::
 
-      rctag.py -r1 dist/*.tar.gz
-      twine upload -r test dist/*.tar.gz
+      twine upload -r test dist/snappy/*.tar.gz
 
    Further details can be found in "pypi.rst".
 
-2. Fire up the Linux testing VM and do::
+2. Fire up a Linux test VM and do::
 
-     cd SnapPy/dev/release_tools
-     hg pull -u
-     py27 test_pypi.py -p -t snappy
-     py35 test_pypi.py -p -t snappy
+     py36 test_pypi.py -p -t snappy
 
-3. Build Mac disk image and wheel on 10.12 VM.  Test on that machine and
-   some older one as well by via starting the app and typing::
+   Repeat for macOS and Windows.  This will flush out any new issues
+   with the sdist tarballs.
 
-     import snappy.test
-     snappy.test.runtests()
+3. Download Windows installer from "snappy_release" actions and test.
 
-4. Build Window exe on Win10, test on that machine and Win7 via
-   installing the app and typing::
+4. Do doctests in the most recent beta Sage if needed (handled by the
+   CI for snappy *if* the Sage docker images are up to date).
 
-     import snappy.test
-     snappy.test.runtests()
 
-5. Do doctests in Sage.
-
-6. **Future** Contact beta testers, providing incantations::
-
-     python -m pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps plink spherogram snappy
-
-   or for those who use sage::
-
-       sage -pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps --no-binary :all: plink spherogram snappy
-
-7. Fix issues pointed out by beta testers.  Lather, rinse, repeat.
-
-   Possible beta testers: Ken Baker, Craig Hodgson, Dave Futer, Saul
-   Schleimer, Mark Bell, and Ilya Kofman.
 
 
 Actual release
 ----------------------
 
 1. Build the eggs and wheels for all platforms, putting the results in
-   some directory.  
+   some directory.
 
 2. Rebuild full apps for OS X and Windows.  Test one last time.
 
 3. Use twine to upload everything to PyPI.
 
-4. Upload OS X and Windows apps to Bitbucket.  Record downloads. 
+4. Upload OS X and Windows apps to Bitbucket.  Record downloads.
 
 5. Update documentation on web.
 
@@ -125,7 +102,7 @@ Announce to the world
 
 4. Mailing list
 
-5. William Stein 
+5. William Stein
 
 
 Application Download Counts
@@ -158,7 +135,7 @@ PyPI statistics are based on:
 
 http://www.pypi-stats.com/package/?q=snappy
 
-for just the period of 2017.  
+for just the period of 2017.
 
 Getting download stats from GitHub:
 

@@ -18,6 +18,7 @@ jobs:
       - name: Go home
         # https://github.com/actions/runner/issues/863
         run: |
+          echo $HOME
           mkdir -p /github
           ln -s /home/sage $HOME
 

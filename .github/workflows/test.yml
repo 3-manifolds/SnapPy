@@ -7,9 +7,12 @@ jobs:
   test:
     name: Test on Sage
     runs-on: ubuntu-latest 
+    strategy:
+      matrix:
+        version: [9.1, 9.2]
 
     container:
-      image: sagemath/sagemath:9.1
+      image: sagemath/sagemath:${{ matrix.version }}
 
     steps:
       - name: Sage version

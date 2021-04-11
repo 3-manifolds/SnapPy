@@ -24,7 +24,9 @@ jobs:
           
 
       - name: Install PLink
-        run: sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip
+        run: |
+          export HOME=/home/sage
+          sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip
 
       - name: Install snappy_manifolds
         run: sage -pip install -U https://github.com/3-manifolds/snappy_manifolds/archive/master.zip

@@ -15,13 +15,13 @@ this_pyinstaller = os.path.abspath(
 
 if platform.architecture()[0] != '32bit':
     print("ERROR: Need to use a 32bit Python to build the apps")
-    sys.exit()
+    sys.exit(1)
 
 try:
     import pyx
 except ImportError:
     print("ERROR: Need to install PyX!")
-    sys.exit()
+    sys.exit(1)
 
 os.chdir("../windows_exe/../")
 os.system("git pull")

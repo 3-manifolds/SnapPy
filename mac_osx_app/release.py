@@ -5,6 +5,12 @@ from subprocess import call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
 
+try:
+    import pyx
+except ImportError:
+    print("ERROR: Need to install PyX!")
+    sys.exit(1)
+
 def get_tk_ver(python):
     """
     Figure out which version of Tk is used by this python.
@@ -21,7 +27,6 @@ def freshen_SnapPy(python):
     os.chdir("../")
     call(["git", "pull"])
     call([python, "setup.py", "pip_install"])
-    call([python, "setup.py", "build_docs", "pip_install"])
     os.chdir("mac_osx_app")
     
 def build_app(python):
@@ -133,15 +138,13 @@ def do_release(python, dmg_name):
 if '-m' in sys.argv or '--manual' in sys.argv:
     do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
 else:
-    if os.path.exists('/pkgs/pythons'):
+    nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
+    if os.path.exists(nmd_python_dir):
         print('Using virtualenv Pythons')
-        python2 = '/pkgs/pythons/py27/bin/python'
-        python3 = '/pkgs/pythons/py37/bin/python'
+        python3 = nmd_python_dir + '/py39/bin/python'
     else:
         framework = '/Library/Frameworks/Python.framework'
         print('Using python from %s'%framework)
-        python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
-        python3 = os.path.join(framework, 'Versions', '3.8', 'bin', 'python3')
+        python3 = os.path.join(framework, 'Versions', '3.9', 'bin', 'python3')
 
-    do_release(python2, "SnapPy-Python2")
     do_release(python3, "SnapPy")

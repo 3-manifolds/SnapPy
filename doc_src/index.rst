@@ -47,8 +47,6 @@ News
     negative signatures), choice of braid generators (now positive
     generators give positive crossings).
 
-  - Supporting argument `first_cusps` when picking disjoint cusp neighborhoods greedily with :meth:`cusp_areas <snappy.Manifold.cusp_areas>` and :meth:`short_slopes <snappy.Manifold.short_slopes>`. Contributed by Robert Haraway.
-
   - Method change: :meth:`cusp_translations <snappy.Manifold.cusp_translations>` takes the same arguments as :meth:`cusp_areas <snappy.Manifold.cusp_areas>`.
 
   - Support for SageMath 9.3, Python 3.9, and macOS Big Sur.

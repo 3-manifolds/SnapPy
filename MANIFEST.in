@@ -11,7 +11,13 @@ include kernel/addl_code/*.c
 include kernel/addl_code/*.cc
 include opengl/*.h
 include opengl/KHR/*.h
-include opengl/glew
+include opengl/glew/*
+include opengl/glew/bin/Release/Win32/*
+include opengl/glew/bin/Release/x64/*
+include opengl/glew/doc/*
+include opengl/glew/include/GL/*
+include opengl/glew/lib/Release/Win32/*
+include opengl/glew/lib/Release/x64/*
 include quad_double/addl_code/*.h
 include quad_double/headers/*.h
 include quad_double/real_type/*.h

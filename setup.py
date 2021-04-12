@@ -95,6 +95,8 @@ class SnapPyBuildDocs(Command):
     def finalize_options(self):
         pass
     def run(self):
+        if not os.path.exists('doc_src'):
+            return # Are in an sdist and may not have sphinx
         try:
             pkg_resources.working_set.require('sphinx>=1.7')
         except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):

@@ -25,7 +25,15 @@ News
     negative signatures), choice of braid generators (now positive
     generators give positive crossings).
 
+  - Updates to methods :meth:`cusp_translations
+    <snappy.Manifold.cusp_translations>`, :meth:`cusp_areas
+    <snappy.Manifold.cusp_areas>`, :meth:`short_slopes
+    <snappy.Manifold.short_slopes>`. Also :meth:`Link <spherogram.Link>`
+    now accepts DT codes.
+
   - Support for SageMath 9.3, Python 3.9, and macOS Big Sur.
+
+  - macOS app now code-signed and notarized.
 
   - SnapPy now requires Python 3.6 or newer.
 

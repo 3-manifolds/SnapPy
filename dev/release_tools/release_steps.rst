@@ -48,20 +48,20 @@ Warmup
 4. Do doctests in the most recent beta Sage if needed (handled by the
    CI for snappy *if* the Sage docker images are up to date).
 
-
+5. Upload GH built wheels to testpypi and test.  Include older
+   versions of macOS.
 
 
 Actual release
-----------------------
+==============
 
-1. Build the eggs and wheels for all platforms, putting the results in
-   some directory.
+1. Bump version numbers to final, trigger "snappy_release" rebuild.
 
-2. Rebuild full apps for OS X and Windows.  Test one last time.
+2. Build final macOS app.
 
 3. Use twine to upload everything to PyPI.
 
-4. Upload OS X and Windows apps to Bitbucket.  Record downloads.
+4. Upload macOS and Windows apps to GitHub.
 
 5. Update documentation on web.
 
@@ -76,12 +76,9 @@ On various systems, do::
   cd SnapPy/dev/release_tools
   py27 test_pypi.py -p/-e snappy
 
-including SageMathCloud (but there's an issue with sys.path in the
-latter).  When testing the stand-alone apps, do "import snappy.test".
-
-Then tag the releases in Mercurial::
-
-  hg tag 1.4_as_released; hg push
+including CoCalc (but there's an issue with sys.path in the
+latter).  When testing the stand-alone apps, do "import snappy.test;
+snappy.test.runtests()"
 
 A super-fast way to check the non-graphical stuff on Linux using
 Docker and the official Python images is::
@@ -94,15 +91,11 @@ Docker and the official Python images is::
 Announce to the world
 =====================
 
-1. LDT blog
+1. Facebook
 
-2. Facebook
+2. Mailing list
 
-3. Google+
-
-4. Mailing list
-
-5. William Stein
+3. CoCalc ticket
 
 
 Application Download Counts

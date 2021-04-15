@@ -16,18 +16,18 @@
 				<string>lnk</string>
 				<string>sur</string>
 			</array>
-                        <key>CFBundleTypeMIMETypes</key>
-                        <array>
-                                <string>application/x-python</string>
-                                <string>text/plain</string>
-                        </array>
-                        <key>CFBundleTypeName</key>
-                        <string>NSStringPboardType</string>
-                        <key>CFBundleTypeOSTypes</key>
-                        <array>
-                                <string>TEXT</string>
-                                <string>****</string>
-                        </array>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>application/x-python</string>
+				<string>text/plain</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>NSStringPboardType</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>TEXT</string>
+				<string>****</string>
+			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
@@ -45,19 +45,17 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XXX</string>
+	<string>3.0</string>
 	<key>CFBundleSignature</key>
 	<string>SnPy</string>
 	<key>CFBundleVersion</key>
-	<string>XXX</string>
+	<string>3.0</string>
 	<key>LSHasLocalizedDisplayName</key>
 	<false/>
 	<key>LSRequiresCarbon</key>
 	<true/>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
-	<key>OSAScriptingDefinition</key>
-	<string>SnapPy.sdef</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright (C) 2009 - present Marc Culler, Nathan Dunfield, Matthias Goerner and others</string>
 	<key>NSMainNibFile</key>
@@ -66,6 +64,8 @@
 	<string>NSApplication</string>
 	<key>NSRequiresAquaSystemAppearance</key>
 	<string>No</string>
+	<key>OSAScriptingDefinition</key>
+	<string>SnapPy.sdef</string>
 	<key>PyMainFileNames</key>
 	<array>
 		<string>__boot__</string>
@@ -92,20 +92,20 @@
 		<false/>
 	</dict>
 	<key>PyResourcePackages</key>
-	<array>
-	</array>
+	<array/>
 	<key>PyRuntimeLocations</key>
 	<array>
-		<string>@executable_path/../Frameworks/Python.framework/Versions/3.8/Python</string>
+		<string>@executable_path/../Frameworks/Python.framework/Versions/Current/Python</string>
 	</array>
 	<key>PythonInfoDict</key>
 	<dict>
 		<key>PythonExecutable</key>
-		<string>/Library/Frameworks/Python.framework/Versions/3.8/Resources/Python.app/Contents/MacOS/Python</string>
+		<string>@executable_path/../Frameworks/Python.framework/Versions/Current/bin/python3</string>
 		<key>PythonLongVersion</key>
-		<string>XXX</string>
+		<string>3.9.4 (v3.9.4:1f2e3088f3, Apr  4 2021, 12:32:44) 
+[Clang 6.0 (clang-600.0.57)]</string>
 		<key>PythonShortVersion</key>
-		<string>3.8</string>
+		<string>3.9</string>
 		<key>py2app</key>
 		<dict>
 			<key>alias</key>
@@ -113,7 +113,7 @@
 			<key>template</key>
 			<string>app</string>
 			<key>version</key>
-			<string>0.18</string>
+			<string>0.24</string>
 		</dict>
 	</dict>
 </dict>

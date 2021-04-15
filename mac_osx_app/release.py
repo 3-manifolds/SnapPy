@@ -1,8 +1,10 @@
-#! /usr/bin/env python3
-
-import os, sys, re
+#! /usr/bin/env python
+import os
+import sys
+import re
+import shutil
 from glob import glob
-from subprocess import check_call, Popen, PIPE
+from subprocess import call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
 
@@ -17,7 +19,7 @@ def get_tk_ver(python):
     Figure out which version of Tk is used by this python.
     """
     out, errors = Popen([python, "-c", "import _tkinter; print(_tkinter.TK_VERSION)"],
-                        stdout=PIPE, text=True).communicate()
+                    stdout = PIPE).communicate()
     return out.strip()
 
 def freshen_SnapPy(python):
@@ -26,8 +28,8 @@ def freshen_SnapPy(python):
     up to date.
     """
     os.chdir("../")
-    check_call(["git", "pull"])
-    check_call([python, "setup.py", "pip_install"])
+    call(["git", "pull"])
+    call([python, "setup.py", "pip_install"])
     os.chdir("mac_osx_app")
     
 def build_app(python):
@@ -44,49 +46,22 @@ def build_app(python):
     except:
         raise RuntimeError('Tk was not built for macOSX 10.9!')
     tk_ver = get_tk_ver(python)
-    check_call([python, "setup.py", "py2app"])
-    # We have to specify the Tcl and Tk frameworks for python 3.6, but then
-    # we get all versions of the framework which happen to be present on the
-    # build system.  We remove the ones we don't need.
-    tk_versions = "dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions"
-    tcl_versions = "dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions"
-    for version in os.listdir(tk_versions):
-        if version != tk_ver and version != 'Current':
-            os.system("rm -rf %s"%os.path.join(tk_versions, version)) 
-            os.system("rm -rf %s"%os.path.join(tcl_versions, version)) 
+    call([python, "setup.py", "py2app"])
+    # Replace the frameworks that py2app installs with our own signed frameworks.
+    shutil.rmtree(os.path.join('dist', 'SnapPy.app', 'Contents', 'Frameworks'))
+    call(['tar', 'xfz', 'Frameworks.tgz'])
+    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
+    resources = os.path.join(contents, 'Resources')
+    frameworks = os.path.join(contents, 'Frameworks')
+    os.rename('Frameworks', frameworks)
+    shutil.copy('Info.plist', contents)
+    shutil.copy('__boot__.py', resources)
 
 def cleanup_app(python):
     """
     Tidy things up.
     """
-    tk_ver = get_tk_ver(python)
-    # Make things a little smaller.
-    framework_dir = "dist/SnapPy.app/Contents/Frameworks/"
-    junk = glob(framework_dir + "Tcl.framework/Versions/*/Resources/English.lproj/ActiveTcl-*")
-    junk += glob(framework_dir + "Tk.framework/Versions/*/Resources/Scripts/demos")
-    check_call(["rm", "-rf"] + junk)
-
-    # Make sure we use the correct version of Tk:
-    tcl_current = framework_dir + "Tcl.framework/Versions/Current"
-    tk_current = framework_dir + "Tk.framework/Versions/Current"
-    if os.path.exists(tcl_current):
-        os.remove(tcl_current)
-    os.symlink(tk_ver, tcl_current)
-    if os.path.exists(tk_current):
-        os.remove(tk_current)
-    os.symlink(tk_ver, tk_current)
-
-    # Add a symlink so that py2app 0.13 can find the Tcl Scripts directory
-    libdir = "dist/SnapPy.app/Contents/lib/"
-    os.mkdir(libdir)
-    os.symlink("../Frameworks/Tk.Framework/Versions/Current/Resources/Scripts",
-               libdir + "tk%s"%tk_ver)
-
-    # Add a symlink so that Tcl will be able to find its "init.tcl"
-    try:
-        os.symlink('Versions/Current/Resources', framework_dir + 'Tcl.framework/Resources')
-    except FileExistsError:
-        pass
+    pass
 
 def package_app(dmg_name):
     """
@@ -113,19 +88,19 @@ def package_app(dmg_name):
         os.symlink("/Applications/", "dist/Applications")
 
     # Copy over the background and .DS_Store file.
-    check_call(["rm", "-rf", "dist/.background"])
+    call(["rm", "-rf", "dist/.background"])
     os.mkdir("dist/.background")
-    check_call(["cp", "dmg-maker/background.png", "dist/.background"])
-    check_call(["cp", "dmg-maker/dotDS_Store", "dist/.DS_Store"])
+    call(["cp", "dmg-maker/background.png", "dist/.background"])
+    call(["cp", "dmg-maker/dotDS_Store", "dist/.DS_Store"])
         
     # Figure out the needed size.
     raw_size, errors = Popen(["du", "-sh", "dist"], stdout=PIPE).communicate()
     size, units = re.search("([0-9.]+)([KMG])", str(raw_size)).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run hdiutil to build the dmg file.:
-    check_call(["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "SnapPy",
+    call(["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "SnapPy",
         "-hfs-openfolder", "dist", "dist", "-o", temp_path])
-    check_call(["hdiutil", "convert", "-format", "UDZO", temp_path, "-o", dmg_path])
+    call(["hdiutil", "convert", "-format", "UDZO", temp_path, "-o", dmg_path])
     os.remove(temp_path)
     # Delete the symlink to /Applications or egg_info will be glacial on newer setuptools.
     os.remove("dist/Applications")
@@ -134,7 +109,7 @@ def do_release(python, dmg_name):
     freshen_SnapPy(python)
     build_app(python)
     cleanup_app(python)
-    package_app(dmg_name)
+#    package_app(dmg_name)
 
 if '-m' in sys.argv or '--manual' in sys.argv:
     do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
@@ -143,9 +118,5 @@ else:
     if os.path.exists(nmd_python_dir):
         print('Using virtualenv Pythons')
         python3 = nmd_python_dir + '/py39/bin/python'
-    else:
-        framework = '/Library/Frameworks/Python.framework'
-        print('Using python from %s'%framework)
-        python3 = os.path.join(framework, 'Versions', '3.9', 'bin', 'python3')
+    do_release("python3", "SnapPy")
 
-    do_release(python3, "SnapPy")

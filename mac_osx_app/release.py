@@ -118,5 +118,7 @@ else:
     if os.path.exists(nmd_python_dir):
         print('Using virtualenv Pythons')
         python3 = nmd_python_dir + '/py39/bin/python'
-    do_release("python3", "SnapPy")
+    else:
+        python3 = 'python3'
+    do_release(python3, "SnapPy")
 

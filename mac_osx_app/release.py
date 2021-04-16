@@ -62,6 +62,10 @@ def cleanup_app(python):
     """
     extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
     shutil.rmtree(extra_dynload)
+    resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
+    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'))
+    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'))
+    shutil.rmtree(os.path.join(resources, 'lib', 'tk8.6'))
 
 def package_app(dmg_name):
     """

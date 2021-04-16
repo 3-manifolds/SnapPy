@@ -4,7 +4,7 @@ import sys
 import re
 import shutil
 from glob import glob
-from subprocess import call, Popen, PIPE
+from subprocess import check_call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
 
@@ -19,7 +19,7 @@ def get_tk_ver(python):
     Figure out which version of Tk is used by this python.
     """
     out, errors = Popen([python, "-c", "import _tkinter; print(_tkinter.TK_VERSION)"],
-                    stdout = PIPE).communicate()
+                        stdout=PIPE, text=True).communicate()
     return out.strip()
 
 def freshen_SnapPy(python):
@@ -28,8 +28,8 @@ def freshen_SnapPy(python):
     up to date.
     """
     os.chdir("../")
-    call(["git", "pull"])
-    call([python, "setup.py", "pip_install"])
+    check_call(["git", "pull"])
+    check_call([python, "setup.py", "pip_install"])
     os.chdir("mac_osx_app")
     
 def build_app(python):
@@ -45,11 +45,10 @@ def build_app(python):
             print('Tk looks fine on this build system.')
     except:
         raise RuntimeError('Tk was not built for macOSX 10.9!')
-    tk_ver = get_tk_ver(python)
-    call([python, "setup.py", "py2app"])
+    check_call([python, "setup.py", "py2app"])
     # Replace the frameworks that py2app installs with our own signed frameworks.
     shutil.rmtree(os.path.join('dist', 'SnapPy.app', 'Contents', 'Frameworks'))
-    call(['tar', 'xfz', 'Frameworks.tgz'])
+    check_call(['tar', 'xfz', 'Frameworks.tgz'])
     contents = os.path.join('dist', 'SnapPy.app', 'Contents')
     resources = os.path.join(contents, 'Resources')
     frameworks = os.path.join(contents, 'Frameworks')
@@ -61,7 +60,8 @@ def cleanup_app(python):
     """
     Tidy things up.
     """
-    pass
+    extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
+    shutil.rmtree(extra_dynload)
 
 def package_app(dmg_name):
     """
@@ -88,19 +88,19 @@ def package_app(dmg_name):
         os.symlink("/Applications/", "dist/Applications")
 
     # Copy over the background and .DS_Store file.
-    call(["rm", "-rf", "dist/.background"])
+    check_call(["rm", "-rf", "dist/.background"])
     os.mkdir("dist/.background")
-    call(["cp", "dmg-maker/background.png", "dist/.background"])
-    call(["cp", "dmg-maker/dotDS_Store", "dist/.DS_Store"])
+    check_call(["cp", "dmg-maker/background.png", "dist/.background"])
+    check_call(["cp", "dmg-maker/dotDS_Store", "dist/.DS_Store"])
         
     # Figure out the needed size.
     raw_size, errors = Popen(["du", "-sh", "dist"], stdout=PIPE).communicate()
     size, units = re.search("([0-9.]+)([KMG])", str(raw_size)).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run hdiutil to build the dmg file.:
-    call(["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "SnapPy",
-        "-hfs-openfolder", "dist", "dist", "-o", temp_path])
-    call(["hdiutil", "convert", "-format", "UDZO", temp_path, "-o", dmg_path])
+    check_call(["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "SnapPy",
+                "-hfs-openfolder", "dist", "dist", "-o", temp_path])
+    check_call(["hdiutil", "convert", "-format", "UDZO", temp_path, "-o", dmg_path])
     os.remove(temp_path)
     # Delete the symlink to /Applications or egg_info will be glacial on newer setuptools.
     os.remove("dist/Applications")

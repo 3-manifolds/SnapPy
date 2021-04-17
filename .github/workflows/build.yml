@@ -35,6 +35,7 @@ jobs:
             pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
             pip install https://github.com/3-manifolds/Spherogram/archive/master.zip
           CIBW_BEFORE_TEST: >
+            pip install cython &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
             pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
             pip install git+https://github.com/3-manifolds/Spherogram

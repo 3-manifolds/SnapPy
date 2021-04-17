@@ -104,7 +104,9 @@ class SnapPyBuildDocs(Command):
         sphinx_cmd = load_entry_point('sphinx>=1.7', 'console_scripts', 'sphinx-build')
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
-        sphinx_cmd(sphinx_args)
+        status = sphinx_cmd(sphinx_args)
+        if status != 0:
+            sys.exit(status)
 
 def distutils_dir_name(dname):
     """Returns the name of a distutils build subdirectory"""

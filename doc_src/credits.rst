@@ -26,7 +26,10 @@ Additional contributions:
 
 * Jean-Philippe Burelle, SL(2, C) character variety code.
 
-* David Bachman, Henry Segerman and Saul Schleimer, initial code the raytraced inside view is based on.
+* David Bachman, Henry Segerman and Saul Schleimer, initial code the
+  raytraced inside view is based on.
+
+* Zoltán Szabó, computing Knot Floer homology.
 
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 

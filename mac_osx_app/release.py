@@ -4,6 +4,8 @@ import sys
 import re
 import shutil
 from glob import glob
+import subprocess
+import configparser
 from subprocess import check_call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
@@ -62,6 +64,9 @@ def cleanup_app(python):
     """
     extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
     shutil.rmtree(extra_dynload)
+    dev_directory = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources', 'lib',
+         'python3.9', 'snappy', 'dev')
+    shutil.rmtree(dev_directory)
     resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'))
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'))
@@ -109,20 +114,48 @@ def package_app(dmg_name):
     # Delete the symlink to /Applications or egg_info will be glacial on newer setuptools.
     os.remove("dist/Applications")
 
+def sign_app():
+    if not os.path.exists('notabot.cfg'):
+        print('The notabot.cfg file does not exist.  The app cannot be signed.')
+        return
+    config = configparser.ConfigParser()
+    config.read('notabot.cfg')
+    identity = config['developer']['identity']
+    codesign = ['codesign', '-v', '-s', identity, '--timestamp', '--entitlements', 'entitlement.plist',
+                '--options', 'runtime', '--force']
+    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
+    resources = os.path.join(contents, 'Resources')
+    python_exe = os.path.join(contents, 'MacOS', 'python')
+    app = os.path.join('dist', 'SnapPy.app')
+
+    def sign(path):
+        subprocess.run(codesign + [path])
+
+    subprocess.run(['codesign', '--remove-signature', python_exe])
+    sign(python_exe)
+    for dirpath, dirnames, filenames in os.walk(resources):
+        for name in filenames:
+            base, ext = os.path.splitext(name)
+            if ext in ('.so', '.dylib'):
+                sign(os.path.join(dirpath, name))
+    sign(app)
+
 def do_release(python, dmg_name):
     freshen_SnapPy(python)
     build_app(python)
     cleanup_app(python)
+    sign_app()
 #    package_app(dmg_name)
 
-if '-m' in sys.argv or '--manual' in sys.argv:
-    do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
-else:
-    nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
-    if os.path.exists(nmd_python_dir):
-        print('Using virtualenv Pythons')
-        python3 = nmd_python_dir + '/py39/bin/python'
+if __name__ == '__main__':
+    if '-m' in sys.argv or '--manual' in sys.argv:
+        do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
     else:
-        python3 = 'python3'
-    do_release(python3, "SnapPy")
+        nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
+        if os.path.exists(nmd_python_dir):
+            print('Using virtualenv Pythons')
+            python3 = nmd_python_dir + '/py39/bin/python'
+        else:
+            python3 = 'python3'
+        do_release(python3, "SnapPy")
 

@@ -61,11 +61,11 @@ Actual release
 
 3. Use twine to upload everything to PyPI.
 
-4. Upload macOS and Windows apps to GitHub.
+4. Create releases on GitHub and upload macOS and Windows apps.
 
-5. Update documentation on web.
+5. Update documentation on web by copying docs into t3m_web/SnapPy.
 
-6. Update "current.txt".
+6. Create "current.txt" in t3m_web/SnapPy.
 
 
 Final testing
@@ -107,8 +107,14 @@ c. Version 2.5.*:  433 Mac,  729 Windows.
 d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
 e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
 f. Version 2.7:    986 Mac,  636 Windows (89% Python 3).
-g. Version 2.8:    120 Mac,  245 Windows (87% Python 3).  Through
-   Oct 11, 2020 only.
+g. Version 2.8:    295* Mac,  573 Windows (85% Python 3).
+
+   Mac app was silently replaced a couple times to deal with Big Sur
+   and Tk issues.  So missing dowloads from Oct 11 through Feb 21; 295
+   is estimate based on 175 known downloads.
+
+h. Version 3.0:    15 Mac, 15 Windows (first binary only, replaced
+   April 18).
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

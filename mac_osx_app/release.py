@@ -68,10 +68,7 @@ def cleanup_app(python):
          'python3.9', 'snappy', 'dev')
     shutil.rmtree(dev_directory)
     resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
-    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'))
-    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'))
-    shutil.rmtree(os.path.join(resources, 'lib', 'tk8.6'))
-
+    
 def package_app(dmg_name):
     """
     Create a disk image containing the app, with a nice background and
@@ -145,7 +142,7 @@ def do_release(python, dmg_name):
     build_app(python)
     cleanup_app(python)
     sign_app()
-#    package_app(dmg_name)
+    package_app(dmg_name)
 
 if __name__ == '__main__':
     if '-m' in sys.argv or '--manual' in sys.argv:

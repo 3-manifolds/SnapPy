@@ -67,8 +67,12 @@ def cleanup_app(python):
     dev_directory = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources', 'lib',
          'python3.9', 'snappy', 'dev')
     shutil.rmtree(dev_directory)
+    # Remove Python.org junk that may or may not have been added by py2app.
     resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
-    
+    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'), ignore_errors=True)
+    shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'), ignore_errors=True)
+    shutil.rmtree(os.path.join(resources, 'lib', 'tk8.6'), ignore_errors=True)
+
 def package_app(dmg_name):
     """
     Create a disk image containing the app, with a nice background and

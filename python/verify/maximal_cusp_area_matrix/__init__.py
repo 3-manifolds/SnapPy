@@ -33,7 +33,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
                         "precision is insufficient")
 
     C = CuspTilingEngine.from_manifold_and_shapes(snappy_manifold, shapes)
-    rows = [ C.compute_maximal_cusp_areas(i)
+    rows = [ C.compute_maximal_cusp_area_matrix_row(i)
              for i in range(C.num_cusps) ]
 
     for i in range(len(rows)):

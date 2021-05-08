@@ -482,11 +482,11 @@ class CuspCrossSectionBase(McomplexEngine):
                                 snappea_triangle_edge, length)
 
     @staticmethod
-    def _max_area_triangle_for_std_form(z):
+    def _lower_bound_max_area_triangle_for_std_form(z):
         """
         Imagine an ideal tetrahedron in the upper half space model with
         vertices at 0, 1, z, and infinity. Pick the lowest (horizontal)
-        horosphere about infinity that intersect the tetrahedron in a
+        horosphere about infinity that intersects the tetrahedron in a
         triangle, i.e, just touches the face opposite to infinity.
         This method will return the hyperbolic area of that triangle.
 
@@ -509,6 +509,7 @@ class CuspCrossSectionBase(McomplexEngine):
         # and implemented the last inequality the other way around!
         #
         # The center is outside if one of the angles is > pi/2, cover each case
+        #
 
         # Angle at 0 is > pi/2
         if z.real() < 0:
@@ -522,6 +523,11 @@ class CuspCrossSectionBase(McomplexEngine):
         if abs(2 * z - 1) < 1:
             # So longest edge of the triangle must be opposite of z
             return 2 * z.imag()
+
+        # An interval note: the circumcenter might still be in the triangle,
+        # we just were not able to prove it. The area we compute is a lower
+        # bound in any case. Thus, the function is not guaranteed to compute
+        # the maximal area, just a lower bound for it.
                 
         # Now cover the case that the center of the triangle is within the
         # triangle.
@@ -564,7 +570,7 @@ class CuspCrossSectionBase(McomplexEngine):
         for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
             z = tet.ShapeParameters[t3m.simplex.E01]
-            max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
+            max_area = ComplexCuspCrossSection._lower_bound_max_area_triangle_for_std_form(z)
 
             # For all four triangles corresponding to the four vertices of the
             # tetrahedron

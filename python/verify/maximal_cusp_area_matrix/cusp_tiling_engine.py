@@ -36,9 +36,9 @@ class CuspTilingEngine(McomplexEngine):
         sage: M = Manifold("s776")
         sage: C = CuspTilingEngine.from_manifold_and_shapes(
         ...     M, M.verify_hyperbolicity()[1])
-        sage: C.compute_maximal_cusp_areas(0) # doctest: +NUMERIC6
+        sage: C.compute_maximal_cusp_area_matrix_row(0) # doctest: +NUMERIC6
         [28.000000000?, 7.000000000?, 7.0000000000?]
-        sage: C.compute_maximal_cusp_areas(1) # doctest: +NUMERIC6
+        sage: C.compute_maximal_cusp_area_matrix_row(1) # doctest: +NUMERIC6
         [7.0000000000?, 28.00000000?, 7.0000000000?]
     """
 
@@ -381,9 +381,7 @@ class CuspTilingEngine(McomplexEngine):
                 return False
         return True
 
-    def get_maximal_cusp_areas(self):
-
-        # Should be maximal_cusp_areas_row
+    def retrieve_maximal_cusp_area_matrix_row(self):
 
         cusp = self.vertex_at_infinity.SubsimplexIndexInManifold
         cusp_area = self.cusp_areas[cusp]
@@ -395,11 +393,11 @@ class CuspTilingEngine(McomplexEngine):
 
         return [ maximal_cusp_area(i) for i in range(self.num_cusps) ]
 
-    def compute_maximal_cusp_areas(self, cusp_index):
+    def compute_maximal_cusp_area_matrix_row(self, cusp_index):
         self.reset_cusp(cusp_index)
         self.tile_infinity()
         self.tile_until_done()
-        return self.get_maximal_cusp_areas()
+        return self.retrieve_maximal_cusp_area_matrix_row()
 
 def _doctest():
     import doctest

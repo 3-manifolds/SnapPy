@@ -24,6 +24,10 @@ available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
   <http://dunfield.info/warwick2017/>`_ from the LMS-CMI Research
   School in Warwick in 2017.
 
+- Another hour-long demo `Practical computations with hyperbolic
+  3-manifolds <https://icerm.brown.edu/video_archive/?play=1856>`_
+  given at ICERM in 2019.
+
 The **key** thing to remember when using the SnapPy command shell window is
 that you can explore objects using introspection and tab-completion::
 

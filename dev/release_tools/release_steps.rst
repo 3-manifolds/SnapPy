@@ -115,6 +115,7 @@ g. Version 2.8:    295* Mac,  573 Windows (85% Python 3).
 
 h. Version 3.0:    15 Mac, 15 Windows (first binary only, replaced
    April 18).
+                   83 Mac (second mac binary, replaced June 12)
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

@@ -53,7 +53,7 @@ class Preferences:
             home = os.environ['HOME']
             self.prefs_file = os.path.join(home, 'Library',
                                            'Preferences',
-                                           'edu.t3m.SnapPy.plist')
+                                           'org.computop.SnapPy.plist')
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             home = os.environ['HOME']
             self.prefs_file = os.path.join(home, '.SnapPy.plist')
@@ -67,8 +67,8 @@ class Preferences:
         if self.prefs_file:
             try:
                 if hasattr(plistlib, 'load'):
-                    with open(self.prefs_file, 'rb') as file:
-                        self.prefs_dict.update(plistlib.load(file))
+                    with open(self.prefs_file, 'rb') as prefs_file:
+                        self.prefs_dict.update(plistlib.load(prefs_file))
                 else:
                     self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
                 # plistlib screws up tuples
@@ -78,7 +78,11 @@ class Preferences:
 
     def write_prefs(self):
         if self.prefs_file:
-            plistlib.writePlist(self.prefs_dict, self.prefs_file)
+            if hasattr(plistlib, 'dump'):
+                with open(self.prefs_file, 'wb') as prefs_file:
+                    plistlib.dump(self.prefs_dict, prefs_file)
+            else:
+                plistlib.writePlist(self.prefs_dict, self.prefs_file)
 
     def cache_prefs(self):
         self.cache.update(self.prefs_dict)

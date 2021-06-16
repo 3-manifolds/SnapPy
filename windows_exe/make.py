@@ -23,6 +23,13 @@ except ImportError:
     print("ERROR: Need to install PyX!")
     sys.exit(1)
 
+try:
+    import snappy_15_knots
+except ImportError:
+    print("ERROR: Need to install snappy_15_knots!")
+    sys.exit(1)
+
+
 os.chdir("../windows_exe/../")
 os.system("git pull")
 os.system("rm dist/*.egg")

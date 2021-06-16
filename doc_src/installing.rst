@@ -39,10 +39,17 @@ in your own user directory, specifically ``~/.local``.  For other
 Linux systems, try the one closest to yours below, and if that fails,
 follow the instructions for `generic Unix`_.
 
-+ **Ubuntu/Debian/Mint**: Tested on Ubuntu 16.04, 18.04, 20.04 and Debian::
++ **Ubuntu/Debian/Mint**: Tested on Ubuntu 20.04::
 
     sudo apt-get install python3-tk python3-pip
     # Note no "sudo" on the next one!
+    python3 -m pip install --upgrade --user snappy
+
+  Users of Ubuntu 18.04 or older should do::
+
+    sudo apt-get install python3-tk python3-pip
+    # Note no "sudo" on the next two
+    python3 -m pip install --upgrade --user pip wheel
     python3 -m pip install --upgrade --user snappy
 
 + **Fedora**: Tested on Fedora 30::

@@ -471,9 +471,6 @@ void length_spectrum(
      */
     num_translates = count_translates(tiling);
 
-    printf("tile done with %d tiles\n", num_translates);
-    
-
     /*
      *  Make a list of all group elements satisfying the following
      *  three conditions:
@@ -507,15 +504,10 @@ void length_spectrum(
                             cutoff_length + LENGTH_EPSILON,
                             polyhedron->spine_radius + SPINE_EPSILON);
 
-    printf("good geo done\n");
-
     /*
      *  Sort the geodesic_list by order of increasing lengths.
      */
     sort_by_length(geodesic_list, num_good_geodesics);
-
-     printf("sort done\n");
-
 
     /*
      *  We want only primitive group elements. Discard elements which are
@@ -525,9 +517,6 @@ void length_spectrum(
      *  for conjugacy.)
      */
     eliminate_powers(geodesic_list, &num_good_geodesics, cutoff_length + 2*LENGTH_EPSILON);
-
-     printf("powers elim\n");
-
 
     /*
      *  If multiplicities is TRUE, we want to retain precisely one
@@ -544,7 +533,6 @@ void length_spectrum(
                                 num_translates,
                                 polyhedron->spine_radius + CONJUGATE_SPINE_EPSILON);
 
-    
     /*
      *  Allocate space for the spectrum, copy in the lengths, parities,
      *  topologies and multiplicities, and report its size.

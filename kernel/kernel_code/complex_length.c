@@ -272,7 +272,7 @@
  *
  *          Case 2.3.2.  g is orientation-reversing.
  *
- *              Lemma.  g perserves some direction on H.
+ *              Lemma.  g preserves some direction on H.
  *
  *              Proof.  Draw a clock face on H (the old-fashioned analog
  *              kind -- no digital clocks please) and look at its image

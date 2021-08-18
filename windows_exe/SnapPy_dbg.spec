@@ -50,7 +50,7 @@ a = Analysis(['SnapPy.py'],
              cipher=block_cipher)
 
 # As of PyInstaller 3.3, the system dlls api-ms-win-core*.dll and
-# api-ms-win-crt*.dll are explicity included in the app bundle (see
+# api-ms-win-crt*.dll are explicitly included in the app bundle (see
 # pyinstaller.depend.dylib._includes).  But these DLLs are not
 # compatible across different versions of Windows, so an app built on
 # Windows 10 will crash on Windows 7.  Moreover, they do not need to

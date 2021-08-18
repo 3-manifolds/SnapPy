@@ -287,7 +287,7 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
      *  the basepoint even though no generator alone does.  If this happens,
      *  compute_Dirichlet_domain() will fail.  My hope is that the
      *  preceding call to simplify_generators() will find any elements
-     *  fixing the basepoint, if they aren't already explicity included
+     *  fixing the basepoint, if they aren't already explicitly included
      *  in the gen_list.)
      */
     if (generator_fixes_basepoint(&gen_list) == TRUE) {

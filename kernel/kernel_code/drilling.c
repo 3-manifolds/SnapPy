@@ -76,9 +76,9 @@
  *  while at the the remaining two vertices, one small triangle will
  *  be retained and two will have been discarded.  Now look at an entire
  *  torus or Klein bottle boundary component.  If the drilling
- *  curve is blatently parallel to this boundary component, then
+ *  curve is blatantly parallel to this boundary component, then
  *  when you glue the faces of the small Tetrahedra as explained
- *  in the preceeding paragraph, the image of the drilling curve
+ *  in the preceding paragraph, the image of the drilling curve
  *  on the boundary gets pinched off (draw yourself a picture).
  *  This increases the Euler characteristic of the boundary, and
  *  the function check_Euler_characteristic_of_boundary() flags the error.
@@ -143,7 +143,7 @@ struct extra
  *  Recall from above that the each old Tetrahedron intersecting
  *  the drilling curve contributes two small new Tetrahedra to
  *  the Triangulation of the new manifold.  These two small new
- *  Tetrahedra contibute a degenerate meridional annulus to the
+ *  Tetrahedra contribute a degenerate meridional annulus to the
  *  new boundary component.  In terms of the above imagery, the
  *  degenerate meridional annulus consists of the small red triangle,
  *  the small blue triangle, and the black line segment connecting
@@ -830,7 +830,7 @@ static void copy_old_peripheral_curves(
 
         /*
          *  Set up a PositionedTet, which we'll rotate about the
-         *  center of the green pizza descibed above.
+         *  center of the green pizza described above.
          */
 
         ptet0.tet           = new_tet;
@@ -998,7 +998,7 @@ static void create_new_meridian(
 
     /*
      *  Note that the meridian is set using "+=" rather than just "=".
-     *  This is becase the algorithm proceeds in the universal cover,
+     *  This is because the algorithm proceeds in the universal cover,
      *  and the curve might pass over itself in the manifold itself.
      *  (Such precautions aren't necessary for the longitude.)
      */

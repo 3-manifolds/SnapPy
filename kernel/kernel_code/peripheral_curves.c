@@ -351,7 +351,7 @@ void peripheral_curves(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite == FALSE)   /* 97/2/4 Added to accomodate finite vertices. */
+        if (cusp->is_finite == FALSE)   /* 97/2/4 Added to accommodate finite vertices. */
 
             do_one_cusp(manifold, cusp);
 

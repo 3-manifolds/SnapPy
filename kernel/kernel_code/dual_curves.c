@@ -29,7 +29,7 @@
  *      max_size        is the maximum number of segments in the curves
  *                      to be considered.  Six is a reasonable value.
  *
- *  Output aguments:
+ *  Output arguments:
  *
  *      *num_curves     will be set to the number of curves the function finds.
  *

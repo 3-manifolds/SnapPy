@@ -909,7 +909,7 @@ static void add_row_multiple(
      *  Let factor_max be the largest number you can multiply
      *  times "mult" without getting an overflow.
      *  (Division is slow compared to multiplication, but we only
-     *  do one division for the whole row, so it won't be noticable
+     *  do one division for the whole row, so it won't be noticeable
      *  for large matrices.)
      */
     factor_max = ENTRY_MAX / ABS(mult);
@@ -979,7 +979,7 @@ static void add_column_multiple(
      *  Let factor_max be the largest number you can multiply
      *  times "mult" without getting an overflow.
      *  (Division is slow compared to multiplication, but we only
-     *  do one division for the whole row, so it won't be noticable
+     *  do one division for the whole row, so it won't be noticeable
      *  for large matrices.)
      */
     factor_max = ENTRY_MAX / ABS(mult);

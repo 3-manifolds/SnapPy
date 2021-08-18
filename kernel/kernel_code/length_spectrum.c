@@ -285,7 +285,7 @@
 #define ISOMETRY_EPSILON            1e-3
 
 /*
- *  The lengths of two geodesics are considered potenially equal if they
+ *  The lengths of two geodesics are considered potentially equal if they
  *  differ by at most LENGTH_EPSILON.
  */
 #define LENGTH_EPSILON              1e-3
@@ -589,7 +589,7 @@ static void tile(
      *  whenever we need to know whether a given lift has already been
      *  found.  The search runs in log n time, where n ~ e^r and r is the
      *  radius we're tiling to, so each query will require about
-     *  log(e^r) ~ r comparisions.  This is a reasonable price to pay.
+     *  log(e^r) ~ r comparisons.  This is a reasonable price to pay.
      *  The constant time algorithm would be messy to write.  The tree
      *  algorithm is easy to write, robust, and fairly fast, since each of
      *  the log n operations is completely trivial (it might even beat the

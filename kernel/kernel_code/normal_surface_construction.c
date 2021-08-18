@@ -40,7 +40,7 @@
  *  Normal surfaces consist of a collection of squares and triangles,
  *  as described in normal_surfaces.h.  At present we assume the
  *  manifold has no filled cusps, although a later version of SnapPea
- *  may include an algoritm for the filled case as well.
+ *  may include an algorithm for the filled case as well.
  *
  *  When SnapPea tries to find a hyperbolic structure for a manifold
  *  containing an incompressible sphere, projective plane, torus or

@@ -195,7 +195,7 @@ FuncResult proto_canonize(
             }
 
             /*
-             *  Perform 3-2 moves whereever necessary.
+             *  Perform 3-2 moves wherever necessary.
              */
             if (attempt_three_to_two(manifold) == TRUE)
             {
@@ -204,7 +204,7 @@ FuncResult proto_canonize(
             }
 
             /*
-             *  Perform 2-3 moves whereever necessary.
+             *  Perform 2-3 moves wherever necessary.
              */
             if (attempt_two_to_three(manifold) == TRUE)
             {

@@ -70,7 +70,7 @@
  *
  *          (2) which approach gives faster convergence.
  *
- *      The image height approach is slighly simpler algebraically, and
+ *      The image height approach is slightly simpler algebraically, and
  *      therefore yields slightly simpler code.  But the difference is
  *      small, so if using the actual distances turned out to be faster,
  *      that would be the best approach.  At the moment, I can't decide

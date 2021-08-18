@@ -191,7 +191,7 @@ long int Zq_inverse(
      *  Normalize a to the range (0, q).
      *
      *  [My guess is that a must always fall in the range -q < a < q,
-     *  in which case the follwing code would simplify to
+     *  in which case the following code would simplify to
      *
      *      if (a < 0)
      *          a += q;

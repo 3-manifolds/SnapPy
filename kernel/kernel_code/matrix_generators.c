@@ -50,7 +50,7 @@ FuncResult matrix_generators(
      */
 
     /*
-     * [MC] If we don't have a reasonble solution, we don't belong
+     * [MC] If we don't have a reasonable solution, we don't belong
      * here.
      */
     if ( manifold->solution_type[filled] != geometric_solution &&

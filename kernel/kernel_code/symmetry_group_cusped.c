@@ -19,11 +19,11 @@
  *      for the manifold, and func_failed if it can't (e.g. because the manifold
  *      lacks a hyperbolic structure).
  *
- *      The "correspdoning link" lies in the space obtained by doing
+ *      The "corresponding link" lies in the space obtained by doing
  *      meridional Dehn fillings on all cusps.  The link itself consists
  *      of the core curves of the filled-in solid tori and/or Klein bottles.
  *      In the special case of a link complement in the 3-sphere, this
- *      defintion leads to the usual notion of the symmetry group of a link.
+ *      definition leads to the usual notion of the symmetry group of a link.
  *
  *  void recognize_group(SymmetryGroup *the_group);
  *

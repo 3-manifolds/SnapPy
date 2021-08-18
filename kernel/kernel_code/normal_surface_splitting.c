@@ -28,7 +28,7 @@
 /*
  *  The Algorithm
  *
- *  To understand this documention, you should first read normal_surfaces.h
+ *  To understand this documentation, you should first read normal_surfaces.h
  *  to learn what a normal surface is, and how its squares and triangles
  *  sit in a tetrahedron.  Then you should make yourself a drawing of an
  *  ideal tetrahedron with a couple squares across its middle and a

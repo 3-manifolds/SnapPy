@@ -205,7 +205,7 @@
  */
 
 /*
- *  Minor technical comment (which you may ingore).
+ *  Minor technical comment (which you may ignore).
  *
  *  The algorithm for finding representations into Z/n does not
  *  make use of the fact that Z/n is abelian, even though doing so
@@ -436,7 +436,7 @@ RepresentationList *find_representations(
         /*
          *  If the range is all of S(n), convert the representation_by_index[]
          *  to an array of pointers to rows of Sn.  Otherwise define
-         *  candidateZn to be a synomym for the representation_by_index[]
+         *  candidateZn to be a synonym for the representation_by_index[]
          *  array itself.
          */
         if (range == permutation_subgroup_Sn)

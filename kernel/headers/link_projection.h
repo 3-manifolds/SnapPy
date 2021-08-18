@@ -8,7 +8,7 @@
  *  link projection data structure.
  *
  *  The KLPStrandType and KLPDirectionType enums defined here are used
- *  to index array entires, so their values must be 0 and 1.  (But the
+ *  to index array entries, so their values must be 0 and 1.  (But the
  *  code does not rely on which has value 0 and which has value 1.)
  *
  */
@@ -23,7 +23,7 @@ typedef struct KLPProjection    KLPProjection;
 
 /**
  *  If you view a crossing (from above) so that the strands go in the
- *  direction of the postive x- and y-axes, then the strand going in
+ *  direction of the positive x- and y-axes, then the strand going in
  *  the x-direction is the KLPStrandX, and the strand going in the
  *  y-direction is the KLPStrandY.  Note that this definition does not
  *  depend on which is the overstrand and which is the understrand.

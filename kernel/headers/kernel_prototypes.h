@@ -319,7 +319,7 @@ extern void create_edge_classes(Triangulation *manifold);
 
 extern void replace_edge_classes(Triangulation *manifold);
 /**<
- *  Removes all EdgeClasses from a manifold and addes fresh ones.
+ *  Removes all EdgeClasses from a manifold and adds fresh ones.
  */
 
 extern void orient_edge_classes(Triangulation *manifold);

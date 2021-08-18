@@ -559,7 +559,7 @@ static void try_to_drill_curves(
      && remaining_curves.pos_multiplicity != remaining_curves.neg_multiplicity)
     {
         /*
-         *  Supress the curves with the greater multiplicity.
+         *  Suppress the curves with the greater multiplicity.
          */
         if (remaining_curves.pos_multiplicity > remaining_curves.neg_multiplicity)
         {

@@ -742,8 +742,8 @@ extern void canonical_retriangulation_with_opacities( Triangulation *manifold,
  * Similar to canonical_retriangulation, replaces the given triangulation
  * (which has to be a subdivision of the canonical cell decomposition) with
  * the canonical retriangulation of the canonical cell decompositon.
- * However, instead of doing numerical comparisions of tilt, it takes an array
- * of booleans indicating which faces are opaque. Four consecutive entires
+ * However, instead of doing numerical comparisons of tilt, it takes an array
+ * of booleans indicating which faces are opaque. Four consecutive entries
  * correspond to the four faces of one tetrahedron. Thus, the length has to
  * be 4 times the number of tetrahedra.
  */

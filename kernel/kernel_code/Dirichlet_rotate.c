@@ -15,7 +15,7 @@
  *  set_identity_matrix() sets a position or velocity matrix to the identity.
  *
  *  set_poly_velocity() takes as input the small rotation angles theta[]
- *      about each of the coordinate axes, and computes the corresonding
+ *      about each of the coordinate axes, and computes the corresponding
  *      rotation matrix.  set_poly_velocity() may be used to update the
  *      velocity when the user drags the polyhedron with the mouse.
  *      For example, say the user interface is using a coordinate system

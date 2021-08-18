@@ -646,7 +646,7 @@ static Complex Li2(
      *
      *          = |w/(N+1)|^2i0 / (i0^2 (1 - |w/(N+1)|^2))
      *
-     *  A quick calculcation in Mathematica shows that if
+     *  A quick calculation in Mathematica shows that if
      *  we are willing to calculate 30 terms in the series,
      *  then |w/(N+1)| < 0.5 implies the error will be
      *  less than 1e-20.  In other words, the series can

@@ -8,7 +8,7 @@
  *  +CONCAVITY_EPSILON.
  *
  *  cusp_neighborhoods.c now includes this file as well, so it can
- *  supress the drawing of faces which serve only to subdivide the
+ *  suppress the drawing of faces which serve only to subdivide the
  *  canonical cell decomposition into tetrahedra.
  */
 

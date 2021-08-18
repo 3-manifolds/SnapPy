@@ -840,7 +840,7 @@ static void find_isometries_which_extend(
     /*
      *  The function compute_cusped_isometries() (which calls this function)
      *  has already allocated space for the new IsometryList.
-     *  (It has also intialized the num_isometries and isometry fields,
+     *  (It has also initialized the num_isometries and isometry fields,
      *  but we reinitialize them here just for good form.)
      */
 

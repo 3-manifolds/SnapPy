@@ -68,7 +68,7 @@
  *  permutation, the next two bits contain the image of 2, etc.  So, for example,
  *  the permutation which takes 3210 to 2013 would be represented as 10000111.
  *  This representation is space-efficient, and also allows the definition of
- *  the following macro for evaluating permuations.
+ *  the following macro for evaluating permutations.
  */
 
 typedef unsigned char   Permutation;
@@ -386,7 +386,7 @@ typedef struct extra Extra;
  *  Normally one expects all the code to be compiled with the same set
  *  of calling conventions.  An exception arises when using C++
  *  in conjunction with ANSI library routines that require callback functions.
- *  Specifically, qsort() wants a comparision function declared using
+ *  Specifically, qsort() wants a comparison function declared using
  *  C calling conventions.  Typically this requires that the C++ code
  *  declare the callback function as cdecl or _cdecl ("C declaration").
  *  If this doesn't work, try the following syntax (which will require

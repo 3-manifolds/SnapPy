@@ -159,7 +159,7 @@
  *  as a 3-2 move (on one of the edge classes incident to the finite
  *  vertex) followed by a 2-0 move on a pair of tetrahedra having three
  *  faces and a finite vertex in common.  The code in cancel_tetrahedra()
- *  was modified to accomodate this.  When the finite vertex is removed,
+ *  was modified to accommodate this.  When the finite vertex is removed,
  *  a gap remains in the (negative) numbering of the Cusps structures
  *  for finite vertices, but this isn't a problem.
  */

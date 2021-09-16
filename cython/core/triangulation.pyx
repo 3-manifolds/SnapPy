@@ -273,6 +273,7 @@ cdef class Triangulation(object):
                     klp = LM.SnapPea_KLPProjection()
                     self._link_file_full_path = os.path.abspath(pathname)
                     self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))
+                    self._set_PDcode(LM.PD_code())
                     self.set_c_triangulation(
                         get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
                 else:

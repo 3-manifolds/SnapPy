@@ -403,13 +403,12 @@ def cusp_areas(manifold, policy = 'unbiased',
         [7.15679216175810579?]
 
     """
-
-    if not policy in ['unbiased', 'greedy']:
+    if policy not in ['unbiased', 'greedy']:
         raise RuntimeError("policy passed to cusp_areas must be 'unbiased' "
                            "or 'greedy'.")
 
     m = manifold.cusp_area_matrix(
-        method = method, verified = verified, bits_prec = bits_prec)
+        method=method, verified=verified, bits_prec=bits_prec)
 
     if policy == 'unbiased':
         return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)

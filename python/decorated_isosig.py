@@ -301,13 +301,16 @@ def set_peripheral_from_decoration(manifold, decoration):
  
 # Testing code
 
+
 def is_identity(A):
-    return A[0,0] == A[1,1] == 1 and A[1,0] == A[0,1] == 0
+    return A[0, 0] == A[1, 1] == 1 and A[1, 0] == A[0, 1] == 0
+
 
 def preserves_peripheral_curves(h):
     perm = h.cusp_images()
-    each_cusp = [is_identity(A) for A in h.cusp_maps()]
-    return perm == sorted(perm) and not False in each_cusp
+    each_cusp = all(is_identity(A) for A in h.cusp_maps())
+    return perm == sorted(perm) and each_cusp
+
 
 def same_peripheral_curves(M, N):
     for h in M.isomorphisms_to(N):

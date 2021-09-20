@@ -4,26 +4,29 @@ from threading import Thread
 from .version import version as this_version
 from distutils.version import LooseVersion
 
+
 class Phoner(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.answer = None
+
     def run(self):
         newest_version = None
         try:
             connection = HTTPConnection('snappy.math.uic.edu', timeout=1)
-            connection.request('GET','/current.txt')
+            connection.request('GET', '/current.txt')
             response = connection.getresponse()
             if response.status != 200:
                 return
             newest_version = response.read().strip()
             connection.close()
-        except:
+        except Exception:
             return
         if isinstance(newest_version, bytes):
             newest_version = newest_version.decode()
         if newest_version and LooseVersion(newest_version) > LooseVersion(this_version):
             self.answer = (newest_version, this_version)
+
 
 def update_needed():
     ET = Phoner()

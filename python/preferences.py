@@ -223,8 +223,8 @@ class PreferenceDialog(Dialog):
                                         relief=Tk_.FLAT,
                                         font=self.prefs['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
-        self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
-                                           'abcdefghijklmnopqrstuvwxyz')
+        self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'
+                           'abcdefghijklmnopqrstuvwxyz')
         sample.tag_add('all', '1.0', Tk_.END)
         self.set_font_sample()
         font_list.bind('<ButtonRelease-1>', self.set_font_sample)

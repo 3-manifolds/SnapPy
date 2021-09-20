@@ -110,7 +110,7 @@ f. Version 2.7:    986 Mac,  636 Windows (89% Python 3).
 g. Version 2.8:    295* Mac,  573 Windows (85% Python 3).
 
    Mac app was silently replaced a couple times to deal with Big Sur
-   and Tk issues.  So missing dowloads from Oct 11 through Feb 21; 295
+   and Tk issues.  So missing downloads from Oct 11 through Feb 21; 295
    is estimate based on 175 known downloads.
 
 h. Version 3.0:    15 Mac, 15 Windows (first binary only, replaced

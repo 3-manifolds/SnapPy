@@ -1034,7 +1034,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         for corner in vertex.Corners:
             # Get the corresponding tetrahedron
             tet = corner.Tetrahedron
-            # Get the corrsponding vertex of this tetrahedron
+            # Get the corresponding vertex of this tetrahedron
             subsimplex = corner.Subsimplex
             # Get the three faces of the tetrahedron adjacent to that vertex
             # Each one intersects the cusp cross-section in an edge of

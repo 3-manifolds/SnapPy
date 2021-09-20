@@ -379,7 +379,7 @@ Use the View Options to select which components of the scene are drawn.
         self.rebuild()
 
     def set_ties(self):
-        if self.nbhd == None:
+        if self.nbhd is None:
             return
         if len(self.tie_vars) == self.nbhd.num_cusps():
             for n, var in enumerate(self.tie_vars):
@@ -390,9 +390,9 @@ Use the View Options to select which components of the scene are drawn.
             self.cutoff = float(self.cutoff_var.get())
             self.scene.set_cutoff(self.cutoff)
             self.rebuild()
-        except:
+        except Exception:
             pass
-        self.cutoff_var.set('%.4f'%self.cutoff)
+        self.cutoff_var.set('%.4f' % self.cutoff)
 
     def delete_resource(self):
         try:

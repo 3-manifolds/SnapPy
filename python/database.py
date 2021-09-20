@@ -386,7 +386,7 @@ class ManifoldTable(object):
 
         mfld = mflds[0]
         # Check for identical triangulations.
-        if (not False in mfld.cusp_info('is_complete')) and not extends_to_link:
+        if (False not in mfld.cusp_info('is_complete')) and not extends_to_link:
             for n in range(100):
                 for N in sibs:
                     if mfld == N:

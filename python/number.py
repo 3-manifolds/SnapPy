@@ -75,7 +75,7 @@ if _within_sage:
         def __call__(self, x):
             try:
                 return Number(RealField(self._precision)(x))
-            except:
+            except Exception:
                 return Number(ComplexField(self._precision)(x))
 
         def _an_element_(self):

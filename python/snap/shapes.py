@@ -79,7 +79,7 @@ def complex_to_pari(z, dec_prec):
 def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_solution_type=False):
     """
     Refines the current solution to the gluing equations to one with
-    the specified accuracy.  
+    the specified accuracy.
     """
     if dec_prec is None:
         dec_prec = prec_bits_to_dec(bits_prec)
@@ -89,9 +89,9 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     target_espilon = float_to_pari(10.0, working_prec)**-dec_prec
     if _within_sage:
         CC = ComplexField(bits_prec)
-        number = lambda z : CC(z)
+        number = CC
     else:
-        number = lambda z : Number(z, precision=bits_prec)
+        number = lambda z: Number(z, precision=bits_prec)
 
     # This is a potentially long calculation, so we cache the result
 

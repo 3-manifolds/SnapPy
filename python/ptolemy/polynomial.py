@@ -58,8 +58,8 @@ class Monomial(object):
 
     def __str__(self):
         return self.to_string(
-            print_coefficient_method = lambda x:default_print_coefficient_method(x),
-            force_print_sign = False)
+            print_coefficient_method=default_print_coefficient_method,
+            force_print_sign=False)
 
     __repr__ = __str__
 
@@ -366,9 +366,9 @@ class Polynomial(object):
                 * other)
 
         return rest
-        
+
     def __str__(self):
-        return self.to_string(lambda x:default_print_coefficient_method(x))
+        return self.to_string(default_print_coefficient_method)
 
 #    def __repr__(self):
 #        return "Polynomial(%s)" % repr(self._monomials)
@@ -493,21 +493,20 @@ class Polynomial(object):
         else:
             return self._monomials[0].get_coefficient()
 
-    def degree(self, var = None):
+    def degree(self, var=None):
         """Return the total degree of this polynomial."""
         return max(
             [monomial.degree(var) for monomial in self._monomials] + [0])
 
     @classmethod
-    def parse_string(cls, s,
-                     parse_coefficient_function = lambda x:parse_int_or_fraction(x)):
+    def parse_string(cls, s, parse_coefficient_function=parse_int_or_fraction):
         """
         Construct a polynomial from a string using an optional function to parse the
         coefficients.
         """
         return _parse_polynomial_from_string(s, parse_coefficient_function)
 
-    def coefficient_type(self, the_type = int):
+    def coefficient_type(self, the_type=int):
         """Returns the type of the coefficients."""
         for monomial in self._monomials:
             the_type = _storage_type_policy(the_type, monomial.coefficient_type())
@@ -522,7 +521,7 @@ class Polynomial(object):
         for monomial in self._monomials:
             exponent, remainder = monomial.split_variable(variable)
             poly = poly + (
-                (Polynomial.from_variable_name(variable) ** exponent).convert_coefficients(lambda x:Polynomial.constant_polynomial(x)) *
+                (Polynomial.from_variable_name(variable) ** exponent).convert_coefficients(Polynomial.constant_polynomial) *
                 Polynomial.constant_polynomial(Polynomial((remainder,))))
         return poly
 

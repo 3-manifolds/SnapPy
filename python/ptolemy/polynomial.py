@@ -6,6 +6,7 @@ from fractions import Fraction
 import sys
 if sys.version > '3':
     long = int
+    unicode = str
 
 #######################################################
 ### Public Definitions of Monomial and Polynomial class
@@ -499,11 +500,13 @@ class Polynomial(object):
             [monomial.degree(var) for monomial in self._monomials] + [0])
 
     @classmethod
-    def parse_string(cls, s, parse_coefficient_function=parse_int_or_fraction):
+    def parse_string(cls, s, parse_coefficient_function=None):
         """
         Construct a polynomial from a string using an optional function to parse the
         coefficients.
         """
+        if parse_coefficient_function is None:
+            return _parse_polynomial_from_string(s, parse_int_or_fraction)
         return _parse_polynomial_from_string(s, parse_coefficient_function)
 
     def coefficient_type(self, the_type=int):

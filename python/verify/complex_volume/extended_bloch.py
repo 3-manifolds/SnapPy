@@ -145,14 +145,14 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     if z.real().center() < 0.5:
         # Check that we can apply equation (1)
         if not is_imaginary_part_bounded(logOneMinusZ, 2):
-            raise Exception("Problem with computig Neumanns dilog using (1)",
+            raise Exception("Problem with computing Neumanns dilog using (1)",
                             z, logOneMinusZ)
 
         return ( term1 + term2) / 2 + my_dilog(z) - my_pi * my_pi / 6
     else:
         # Check that we can apply equation (2)
         if not is_imaginary_part_bounded(logZ, 2):
-            raise Exception("Problem with computig Neumanns dilog using (2)",
+            raise Exception("Problem with computing Neumanns dilog using (2)",
                             z, logZ)
 
         return (-term1 + term2) / 2 - my_dilog(1 - z)

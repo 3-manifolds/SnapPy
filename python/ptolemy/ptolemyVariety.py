@@ -897,7 +897,7 @@ def _retrieve_url(url):
         s = urlopen(url)
 
     except HTTPError as e:
-        if e.code == 404:
+        if e.code in [404, 406]:
             raise PtolemyFileMissingError(
                 "The ptolemy variety has probably not been computed "
                 "yet, see %s (%s)" % (overview_url, e))
@@ -947,7 +947,7 @@ def _retrieve_url(url):
     # Otherwise we have an error
     httpErr = "(HTTP Error %d while accessing %s)" % (code, url)
 
-    if code == 404:
+    if code in [404, 406]:
         # 404 means file not found
         raise PtolemyFileMissingError(
             "The ptolemy variety has probably not been computed "

@@ -123,19 +123,26 @@ Mac (app on bitbucket): 53/month
 Windows (app on bitbucket): 86/month
 PyPI (eggs/wheels/tarballs): 161/month
 
-Average downloads for 2017-11-27 through 2020-10-11.
-
-Mac (app on bitbucket/github): 71/month
-Windows (app on bitbucket/github): 77/month
-PyPI (eggs/wheels/tarballs): ??/month
-
-
-
 PyPI statistics are based on:
 
 http://www.pypi-stats.com/package/?q=snappy
 
 for just the period of 2017.
+
+
+Average downloads for 2017-11-27 through 2021-10-4 (46 months).
+
+Mac (app on bitbucket/github): 63/month
+Windows (app on bitbucket/github): 75/month
+Docker (kitchen sink): 44/month
+PyPI (eggs/wheels/tarballs): ??/month
+
+The PyPI numbers are so large as to be unbelievable, more than 10,000
+a month. Nearly all of these are for Linux, with "just" 600 a month
+for Windows and Mac combined.
+
+
+
 
 Getting download stats from GitHub:
 

@@ -535,7 +535,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
 
     q, r = T.quo_rem(B)
     ans = clean_laurent_to_poly(q, epsilon)
-    if univ_abs(r) > epsilon:
+    if (not F.is_exact() and univ_abs(r) > epsilon) or (F.is_exact() and r != 0):
         raise TorsionComputationError("Division failed")
 
     # Now do a quick sanity check
@@ -543,7 +543,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
     if symmetry_test:
         coeffs = ans.coefficients()
         error = max( [univ_abs(a-b) for a,b in zip(coeffs, reversed(coeffs))] )
-        if error > epsilon:
+        if (not F.is_exact() and error > epsilon) or (F.is_exact() and error != 0):
             raise TorsionComputationError("Torsion polynomial doesn't seem symmetric")
 
     return ans

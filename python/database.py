@@ -215,7 +215,7 @@ class ManifoldTable(object):
                 elif stop < 0:
                     stop = int(self._length + stop)
                 conditions = []
-                base_query = 'select id from %s ' % self._table
+                base_query = 'select id from %s order by id ' % self._table
                 if self._filter:
                     base_query += 'where %s ' % self._filter
                 query = base_query + 'limit 1 offset %d' % start

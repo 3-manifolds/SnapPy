@@ -261,8 +261,8 @@ void basic_simplification_with_options(
         for (edge = manifold->edge_list_begin.next;
              edge != &manifold->edge_list_end;
              edge = edge->next)
-
-            if ((rand() & 3) > 0    /* proceed with probability 3/4 */
+            /* proceed with prob 3/4; shift as low bits of rand not great */
+            if (((rand() >> 12) & 3) > 0
              && create_new_order_four(edge, &where_to_resume, &manifold->num_tetrahedra) == func_OK)
             {
                 if (easy_simplification(manifold) == TRUE)
@@ -352,7 +352,7 @@ void randomize_triangulation_with_options(
 
         if (two_to_three(
                 get_tet(manifold, rand() % manifold->num_tetrahedra),
-                rand() % 4,
+                (rand() >> 12) % 4,
                 &manifold->num_tetrahedra)
             == func_OK)
 

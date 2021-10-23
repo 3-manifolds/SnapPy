@@ -19,6 +19,11 @@ from .SnapPy import Manifold as _ManifoldLP
 from .SnapPyHP import Triangulation as _TriangulationHP
 from .SnapPyHP import Manifold as _ManifoldHP
 
+# seed the kernel's random number generator.
+import time
+from .SnapPy import set_rand_seed
+set_rand_seed(int(time.time()))
+
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
     

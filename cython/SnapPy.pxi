@@ -19,6 +19,7 @@ cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
     void* malloc(size_t size)
     void free(void *mem)
+    void srand(unsigned seed)
 
 cdef extern from "string.h":
     char* strncpy(char* dst, char* src, size_t len)

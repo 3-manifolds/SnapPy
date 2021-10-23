@@ -469,6 +469,13 @@ SolutionType = ['not attempted', 'all tetrahedra positively oriented',
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
+def set_rand_seed(seed):
+    """
+    Set seed of the random number generator used for choosing
+    triangulation moves.
+    """
+    srand(seed)
+
 # Ptolemy utility functions
 # convert and free an identification of variables structure
 cdef convert_and_free_identification_of_variables(

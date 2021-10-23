@@ -74,7 +74,8 @@ void compute_fourth_corner(
 
 extern void close_cusps(Triangulation *manifold,
 			Boolean fill_cusp[],
-			Boolean fill_by_fold);
+			Boolean fill_by_fold,
+			Boolean mark_solid_tori);
 /**<
  *  Permanently closes the cusps of *manifold for which fill_cusp[cusp->index]
  *  is TRUE.  Assumes *manifold is triangulated as in subdivide().  The default
@@ -858,6 +859,10 @@ extern FuncResult   two_to_three(Tetrahedron *tet0, FaceIndex f, int *num_tetrah
 /**< See cancel_tetrahedra(). */
 extern void         one_to_four(Tetrahedron *tet, int *num_tetrahedra_ptr, int new_cusp_index);
 /**< See cancel_tetrahedra(). */
+
+extern void         unchangeable_tetrahedra(Triangulation *manifold, int* marked);
+extern void         all_tetrahedra_changeable(Triangulation *manifold);
+
 
 
 /************************************************************************/

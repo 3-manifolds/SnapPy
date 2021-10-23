@@ -200,8 +200,13 @@ static Boolean      four_tetrahedra_are_distinct(PositionedTet ptet);
 static void         set_inverse_neighbor_and_gluing(Tetrahedron *tet, FaceIndex f);
 
 
-void basic_simplification(
-    Triangulation   *manifold)
+void basic_simplification(Triangulation *manifold){
+    basic_simplification_with_options(manifold, ORDER_FOUR_ITERATIONS_IN_SIMPLIFY);
+}
+
+void basic_simplification_with_options(
+    Triangulation   *manifold,
+    int order_four_iterations)
 {
     SolutionType    original_solution_type[2];
     int             iter;
@@ -226,7 +231,7 @@ void basic_simplification(
     }
     else
         hyperbolic_structure_was_removed    = FALSE;
-    
+   
     /*
      *  First do all the easy simplifications, namely removing
      *  EdgeClasses of order 1, 2 and 3 when possible, and
@@ -240,8 +245,8 @@ void basic_simplification(
      *  Go down the list retriangulating the octahedra surrounding
      *  EdgeClasses of order 4, in the hope of creating new, more
      *  useful EdgeClasses of order 4.  Keep doing this until we've
-     *  gone through the list ORDER_FOUR_ITERATIONS_IN_SIMPLIFY times
-     *  with no further progress.
+     *  gone through the list order_four_iterations times with no
+     *  further progress.
      *
      *  The operation of the inner loop is complicated by the
      *  appearance and disappearance of EdgeClasses as the
@@ -251,7 +256,7 @@ void basic_simplification(
      *  potential retriangulation we encounter.
      */
 
-    for (iter = 0; iter < ORDER_FOUR_ITERATIONS_IN_SIMPLIFY; iter++)
+    for (iter = 0; iter < order_four_iterations; iter++)
 
         for (edge = manifold->edge_list_begin.next;
              edge != &manifold->edge_list_end;
@@ -296,9 +301,17 @@ void basic_simplification(
     compute_CS_fudge_from_value(manifold);
 }
 
+void randomize_triangulation(Triangulation* manifold){
+    randomize_triangulation_with_options(manifold,
+					 ORDER_FOUR_ITERATIONS_IN_SIMPLIFY,
+					 RANDOMIZATION_MULTIPLE);
+}
+    
 
-void randomize_triangulation(
-    Triangulation   *manifold)
+void randomize_triangulation_with_options(
+    Triangulation   *manifold,
+    int order_four_iterations,
+    int randomization_multiple)
 {
     SolutionType    original_solution_type[2];
     int             count;
@@ -335,7 +348,7 @@ void randomize_triangulation(
      *  themselves), but that's OK.
      */
 
-    for (count = RANDOMIZATION_MULTIPLE * manifold->num_tetrahedra; --count >= 0; )
+    for (count = randomization_multiple * manifold->num_tetrahedra; --count >= 0; )
 
         if (two_to_three(
                 get_tet(manifold, rand() % manifold->num_tetrahedra),
@@ -360,7 +373,7 @@ void randomize_triangulation(
         initialize_tet_shapes(manifold);  /* unnecessary, but robust */
     }
 
-    basic_simplification(manifold);
+    basic_simplification_with_options(manifold, order_four_iterations);
 }
 
 
@@ -650,7 +663,6 @@ static Boolean this_way_works(
      *  that the triangulation cannot be simplified.  JRW  2002/08/26
      */
     if (tet->neighbor[bottom_face] == tet)
-/*      uFatalError("this_way_works", "simplify_triangulation");    */
         return FALSE;
 
     /*
@@ -659,6 +671,8 @@ static Boolean this_way_works(
      */
 
     tet1 = tet->neighbor[bottom_face];
+    if (tet->unchangeable||tet1->unchangeable)
+	return FALSE;
     left1   = EVALUATE(tet->gluing[bottom_face],   left_face);
     right1  = EVALUATE(tet->gluing[bottom_face],  right_face);
     bottom1 = EVALUATE(tet->gluing[bottom_face], bottom_face);
@@ -773,6 +787,9 @@ FuncResult cancel_tetrahedra(
     if (tet[0] == tet[1])
         return func_failed;
 
+    if(tet[0]->unchangeable||tet[1]->unchangeable)
+	return func_failed;
+    
     /*
      *  If the edge connecting v[0][2] to v[0][3] belongs to the same
      *  EdgeClass as the edge connecting v[1][2] to v[1][3], then the
@@ -1237,9 +1254,13 @@ FuncResult three_to_two(
      *  simplification, so return func_failed.
      */
 
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++){
         if (tet[i] == tet[(i+1)%3])
             return func_failed;
+	if (tet[i]->unchangeable)
+            return func_failed;
+  
+    }
 
     /*
      *  This function should never be invoked when canonize_info is present.
@@ -1678,6 +1699,10 @@ FuncResult two_to_three(
 
     if (tet[0] == tet[1])
         return func_failed;
+
+    if (tet[0]->unchangeable||tet[1]->unchangeable)
+        return func_failed;
+
 
     /*
      *  If a hyperbolic structure is present and the 2-3 move would create
@@ -2468,11 +2493,13 @@ static FuncResult try_adjacent_fours(
      *  even if all six Tetrahedra aren't distinct?  Hmmm . . . seems
      *  unlikely.)
      */
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++){
+	if (tet[i]->unchangeable)
+	    return func_failed;
         for (j = i + 1; j < 6; j++)
             if (tet[i] == tet[j])
                 return func_failed;
-
+    }
     /*
      *  Note the two EdgeClasses which now have order four.
      */
@@ -2604,10 +2631,13 @@ static Boolean four_tetrahedra_are_distinct(
     }
 
     for (i = 0; i < 4; i++)
-        for (j = i + 1; j < 4; j++)
-            if (tet[i] == tet[j])
-                return FALSE;
-
+	{
+	    if (tet[i]->unchangeable)
+		return FALSE;
+	    for (j = i + 1; j < 4; j++)
+		if (tet[i] == tet[j])
+		    return FALSE;
+	}
     return TRUE;
 }
 
@@ -2621,4 +2651,28 @@ static void set_inverse_neighbor_and_gluing(
     tet->neighbor[f]->gluing  [EVALUATE(tet->gluing[f], f)]
         = inverse_permutation[tet->gluing[f]];
 }
+
+void unchangeable_tetrahedra(Triangulation *manifold, int* marked){
+    Tetrahedron *tet;
+    int         i;
+
+    i = 0;
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next){
+	marked[i] = tet->unchangeable;
+	i++;
+    }
+}
+
+void all_tetrahedra_changeable(Triangulation *manifold){
+    Tetrahedron *tet;
+    for (tet = manifold->tet_list_begin.next;
+         tet != &manifold->tet_list_end;
+         tet = tet->next){
+	tet->unchangeable = 0;
+    }
+}
+
+
 #include "end_namespace.h"

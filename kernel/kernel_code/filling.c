@@ -131,7 +131,7 @@ Triangulation *fill_cusps(
     /*
      *  Close the Cusps specified in the fill_cusp[] array.
      */
-    close_cusps(new_triangulation, fill_all_cusps ? all_true : fill_cusp, TRUE);
+    close_cusps(new_triangulation, fill_all_cusps ? all_true : fill_cusp, TRUE, FALSE);
 
     /*
      *  We're done with the all_true array.

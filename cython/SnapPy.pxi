@@ -655,7 +655,12 @@ cdef extern from "SnapPea.h":
     extern Complex transformed_cusp_shape(Complex cusp_shape, MatrixInt22 basis_change) except *
     extern void install_shortest_bases(c_Triangulation *manifold) except *
     extern void basic_simplification(c_Triangulation *manifold) except *
+    extern void basic_simplification_with_options(c_Triangulation *manifold, int order_four_iterations) except *
     extern void randomize_triangulation(c_Triangulation *manifold) except *
+    extern void randomize_triangulation_with_options(c_Triangulation *manifold, int order_four_iterations,
+                                                        int randomization_multiple) except *
+    extern void unchangeable_tetrahedra(c_Triangulation *manifold, int* marked) except *
+    extern void all_tetrahedra_changeable(c_Triangulation *manifold) except *
     extern Complex sl2c_determinant(SL2CMatrix m) except *
     extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, c_SymmetryGroup **symmetry_group_of_manifold, c_SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group) except *
     extern void free_symmetry_group(c_SymmetryGroup *symmetry_group) except *
@@ -723,7 +728,7 @@ cdef extern from "kernel_prototypes.h":
     extern void remove_finite_vertices(c_Triangulation *manifold)
     extern void count_cusps(c_Triangulation *manifold)
     extern c_Triangulation* subdivide(c_Triangulation *manifold, char *new_name) except *
-    extern void close_cusps(c_Triangulation *manifold, Boolean fill_cusp[], Boolean fill_by_fold)
+    extern void close_cusps(c_Triangulation *manifold, Boolean fill_cusp[], Boolean fill_by_fold, Boolean mark_solid_tori)
     extern void create_fake_cusps(c_Triangulation *manifold)
     extern void number_the_tetrahedra(c_Triangulation *manifold)
     extern void number_the_edge_classes(c_Triangulation *manifold)

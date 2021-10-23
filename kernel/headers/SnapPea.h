@@ -2360,11 +2360,29 @@ extern void basic_simplification(Triangulation *manifold);
  *  Simplifies the triangulation in a speedy yet effective manner.
  */
 
+extern void basic_simplification_with_options(Triangulation   *manifold,
+					      int order_four_iterations);
+
+/**<
+ * basic_simplification where the number of order_four_iterations can be
+ * controlled.
+ */
+
 extern void randomize_triangulation(Triangulation *manifold);
 /**<
  *  Randomizes the Triangulation, and then resimplifies it.
  */
 
+
+extern void randomize_triangulation_with_options(
+    Triangulation   *manifold,
+    int order_four_iterations,
+    int randomization_multiple);
+
+/**<
+ * Same as randomize_triangulation but with more control.
+ */
+   
 
 /************************************************************************/
 /*                                                                      */

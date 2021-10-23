@@ -167,6 +167,7 @@ struct Tetrahedron
                                 /**<  see Extra typedef in kernel_typedefs.h for details  */
     Tetrahedron         *prev;  /**< previous tetrahedron on doubly linked list           */
     Tetrahedron         *next;  /**<   next   tetrahedron on doubly linked list           */
+    int                 unchangeable;   /**< nonzero prevents retriang. moves on this tet */
 };
 
 struct EdgeClass

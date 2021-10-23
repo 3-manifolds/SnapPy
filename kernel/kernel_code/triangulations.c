@@ -909,6 +909,7 @@ void initialize_tetrahedron(
     tet->extra              = NULL;
     tet->prev               = NULL;
     tet->next               = NULL;
+    tet->unchangeable       = 0;
 }
 
 

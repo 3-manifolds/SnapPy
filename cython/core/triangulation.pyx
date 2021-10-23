@@ -374,6 +374,7 @@ cdef class Triangulation(object):
         >>> S.num_cusps(),  S._num_fake_cusps()
         (0, 2)
         """
+        count_cusps(self.c_triangulation)
         return get_num_fake_cusps(self.c_triangulation)
 
     def orientation_cover(self):
@@ -435,26 +436,48 @@ cdef class Triangulation(object):
         new_tri.set_c_triangulation(copy_c_triangulation)
         return new_tri
 
-    def randomize(self):
+    def randomize(self, blowup_multiple=4, passes_at_fours=6):
         """
-        Perform random Pachner moves on the underlying triangulation.
+        Perform random Pachner moves on the underlying triangulation,
+        including some intial 3 -> 2 moves that increase the number of
+        tetrahedra by blowup_multiple.
 
         >>> M = Triangulation('Braid:[1,2,-3,-3,1,2]')
         >>> M.randomize()
         """
         if self.c_triangulation is NULL: return
-        randomize_triangulation(self.c_triangulation)
+        randomize_triangulation_with_options(self.c_triangulation, passes_at_fours, blowup_multiple)
         self._cache.clear(message='randomize')
 
-    def simplify(self):
+    def simplify(self, passes_at_fours=6):
         """
         Try to simplify the triangulation by doing Pachner moves.
 
         >>> M = Triangulation('12n123')
         >>> M.simplify()
+
+        It does four kinds of moves that reduce the number of
+        tetrahedra:
+
+        * 3 -> 2 and 2 -> 0 Pacher moves, which eliminate one or two
+          tetrahedra respectively.
+
+        * On suitable valence-1 edges, does a 2 -> 3 and then 2 -> 0 move,
+          which removes a tetrahedron and creates a new valence-1 edge.
+
+        * When a 2-simplex has two edges of valence-4 giving rise to the
+          suspension of a pentagon, replace these 6 tetrahedra with a
+          single edge of valence 5.
+
+        It also does random 4 -> 4 moves in hopes of setting up a
+        simplfication.  The argument passes_at_fours is the number of
+        times it goes through the valence-4 edges without progress 
+        before giving up.
+
         """
-        if self.c_triangulation is NULL: return
-        basic_simplification(self.c_triangulation)
+        if self.c_triangulation is NULL:
+            return
+        basic_simplification_with_options(self.c_triangulation, passes_at_fours)
         self._cache.clear(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
@@ -782,7 +805,7 @@ cdef class Triangulation(object):
         ...    M = random_link(500).exterior()
         ...    if M.num_tetrahedra() > 256:
         ...       break
-        ... 
+        ...
         >>> M == loads(dumps(M))
         True
         """
@@ -1226,8 +1249,6 @@ cdef class Triangulation(object):
         """
         For a Triangulation that describes a closed manifold, returns
         the unsimplified finite triangulation that the kernel builds.
-        This is potentially useful as one can usually locate the cores
-        of the Dehn filling solid tori this triangulation.
 
         >>> M = Triangulation('m004(1, 2)')
         >>> F = M._unsimplified_filled_triangulation()
@@ -1237,11 +1258,30 @@ cdef class Triangulation(object):
         The default is to use the kernel's original fold method as
         the final step to close off the cusp. Specifying
         method='layered' uses a 1-tetrahedron solid torus instead.
+        For method='layered_and_marked', the core solid tori are marked
+        internally so that any calls to simplify/randomize will leave
+        these in place.
 
         >>> M = Triangulation('m004(1, 2)')
         >>> F = M._unsimplified_filled_triangulation(method='layered')
         >>> F.num_tetrahedra(), F._num_fake_cusps()
         (60, 7)
+	>>> F.simplify(); F.num_tetrahedra() < 15
+	True
+	>>> M = Triangulation('K8n1(1,0)')
+	>>> F = M._unsimplified_filled_triangulation(method='layered_and_marked')
+	>>> F.simplify()
+	>>> 15 < F.num_tetrahedra() < 25
+	True
+
+	You can determine which tets are the cores, and remove the
+	marks to allow unrestricted simplification.
+
+	>>> any(F._marked_tetrahedra(clear_marks=True))
+	True
+	>>> F.simplify()
+	>>> F.num_tetrahedra(), F._num_fake_cusps()
+	(1, 1)
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -1252,27 +1292,45 @@ cdef class Triangulation(object):
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
         cdef Boolean fill_by_fold
+        cdef Boolean marked
         if method == 'fold':
             fill_by_fold = True
         elif method == 'layered':
             fill_by_fold = False
+            mark_solid_tori = False
+        elif method == 'layered_and_marked':
+            fill_by_fold = False
+            mark_solid_tori = True
         else:
-            raise ValueError("The method must be 'fold' or 'layered'")
-        
+            raise ValueError("The method must be 'fold' or 'layered' or 'layered_and_marked'")
+
+        marked = True if mark_solid_tori else False
         c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True
 
 
-        close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold)
+        close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold, mark_solid_tori)
         number_the_tetrahedra(c_new_tri)
         number_the_edge_classes(c_new_tri)
         create_fake_cusps(c_new_tri)
         count_cusps(c_new_tri)
         filled_tri = _triangulation_class('empty')
         filled_tri.set_c_triangulation(c_new_tri)
+        free(fill_cusp_spec)
         return filled_tri
+
+    def _marked_tetrahedra(self, clear_marks=False):
+        cdef int *marked = NULL
+        n = self.num_tetrahedra()
+        marked = <int*>malloc(n*sizeof(int))
+        unchangeable_tetrahedra(self.c_triangulation, marked)
+        ans = [marked[i] for i in range(n)]
+        free(marked)
+        if clear_marks:
+            all_tetrahedra_changeable(self.c_triangulation)
+        return ans
 
     def edge_valences(self):
         """

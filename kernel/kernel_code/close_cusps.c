@@ -219,15 +219,16 @@ static void      standard_Klein_bottle_form(Triangulation *manifold, Tetrahedron
 static void      fold_cusps(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
 static void      fold_one_cusp(Triangulation *manifold, Tetrahedron *tet0);
 static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target);
-static void      fill_cusps_with_solid_tori(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end);
-static void      fill_cusp_with_solid_torus(Triangulation *manifold, Tetrahedron *tet0);
+static void      fill_cusps_with_solid_tori(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end, Boolean mark_solid_tori);
+static void      fill_cusp_with_solid_torus(Triangulation *manifold, Tetrahedron *tet0, int mark);
 static void      replace_fake_cusps(Triangulation *manifold);
 static void      renumber_real_cusps(Triangulation *manifold);
 
 void close_cusps(
     Triangulation   *manifold,
     Boolean         fill_cusp[],
-    Boolean         fill_by_fold)
+    Boolean         fill_by_fold,
+    Boolean         mark_solid_tori)
 {
     Tetrahedron short_list_begin,
                 short_list_end;
@@ -292,7 +293,7 @@ void close_cusps(
 	fold_cusps(manifold, &short_list_begin, &short_list_end);
     }
     else{
-	fill_cusps_with_solid_tori(manifold, &short_list_begin, &short_list_end);
+	fill_cusps_with_solid_tori(manifold, &short_list_begin, &short_list_end, mark_solid_tori);
     }
     /*
      *  Get rid of the old EdgeClasses and install new ones.
@@ -1498,10 +1499,15 @@ static void fold_one_cusp(
 static void fill_cusps_with_solid_tori(
     Triangulation   *manifold,
     Tetrahedron     *short_list_begin,
-    Tetrahedron     *short_list_end)
+    Tetrahedron     *short_list_end,
+    Boolean         mark_solid_tori)
 {
-    while (short_list_begin->next != short_list_end)
-        fill_cusp_with_solid_torus(manifold, short_list_begin->next);
+    int i;
+    i = 1;
+    while (short_list_begin->next != short_list_end){
+        fill_cusp_with_solid_torus(manifold, short_list_begin->next, mark_solid_tori ? i : 0);
+	i++;
+    }
 }
 
 static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target){
@@ -1534,7 +1540,8 @@ static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target){
 
 static void fill_cusp_with_solid_torus(
     Triangulation   *manifold,
-    Tetrahedron     *tet0)
+    Tetrahedron     *tet0,
+    int             mark)
 {
     Tetrahedron *tet[2],
 	        *nbr[2],
@@ -1617,6 +1624,7 @@ static void fill_cusp_with_solid_torus(
     new_tet->neighbor[3] = new_tet;
     new_tet->gluing[2] = CREATE_PERMUTATION(0,2, 1,0, 2,3, 3,1);
     new_tet->gluing[3] = inverse_permutation[new_tet->gluing[2]];
+    new_tet->unchangeable = mark;
 
     for (i = 0; i < 4; i++){
 	new_tet->cusp[i] = tet[0]->cusp[f[0][1]];

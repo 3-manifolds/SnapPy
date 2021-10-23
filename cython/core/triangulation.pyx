@@ -1270,7 +1270,7 @@ cdef class Triangulation(object):
 	True
 	>>> M = Triangulation('K8n1(1,0)')
 	>>> F = M._unsimplified_filled_triangulation(method='layered_and_marked')
-	>>> F.num_tetrahedra() > 1
+	>>> F.num_tetrahedra() > 2
 	True
 
 	You can determine which tets are the cores, and remove the
@@ -1279,8 +1279,8 @@ cdef class Triangulation(object):
 	>>> any(F._marked_tetrahedra(clear_marks=True))
 	True
 	>>> F.simplify()
-	>>> F.num_tetrahedra()
-	1
+	>>> F.num_tetrahedra() <= 2
+	True
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')

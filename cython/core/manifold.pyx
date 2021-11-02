@@ -221,13 +221,19 @@ cdef class Manifold(Triangulation):
         """
         Returns True if and only if the canonical
         cell decomposition is a triangulation.
+
+        >>> Manifold('K4a1')._canonical_cells_are_tetrahedra()
+        True
+        >>> Manifold('L6a4')._canonical_cells_are_tetrahedra()
+        False
         """
        
         cdef Manifold M
         M = self.copy()
         M.canonize()
         canonical_retriangulation(M.c_triangulation)
-        return not B2B(mark_fake_cusps(M.c_triangulation))
+        count_cusps(M.c_triangulation)
+        return get_num_fake_cusps(M.c_triangulation) == 0
 
     def _from_string(self, string, initialize_structure=True):
         """

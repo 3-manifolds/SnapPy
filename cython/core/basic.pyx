@@ -922,10 +922,16 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     copy_triangulation(T.c_triangulation, &c_triangulation)
     M.set_c_triangulation(c_triangulation)
     if recompute:
-        if mark_fake_cusps(c_triangulation):
+        # Need to remove any finite vertices to be able to find a
+        # hyperbolic structure.
+        count_cusps(c_triangulation)
+        if get_num_fake_cusps(c_triangulation) > 0:
             remove_finite_vertices(c_triangulation)
+            count_cusps(c_triangulation)
+
         find_complete_hyperbolic_structure(c_triangulation)
         do_Dehn_filling(c_triangulation)
+
     M.set_name(T.name())
     M._cover_info = T._cover_info
     return M

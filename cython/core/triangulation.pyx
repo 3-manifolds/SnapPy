@@ -2734,23 +2734,12 @@ cdef class Triangulation(object):
         >>> M.has_finite_vertices()
         False
         """
-
-        cdef c_Triangulation* copy_c_triangulation = NULL
-
         # Bail if empty
         if self.c_triangulation is NULL:
             return False
 
-        # Copy so that we don't loose any reindexing of the cusps on the
-        # original triangulation
-        copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-
-        result = B2B(mark_fake_cusps(copy_c_triangulation))
-
-        # Free the temporary copy
-        free_triangulation(copy_c_triangulation)
-
-        return result
+        count_cusps(self.c_triangulation)
+        return get_num_fake_cusps(self.c_triangulation) > 0
 
     def triangulation_isosig(self,
                              decorated=True,

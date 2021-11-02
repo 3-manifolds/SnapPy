@@ -53,8 +53,8 @@ class MapToAbelianization(SageObject):
     Multiplicative Abelian group isomorphic to C2 x C4 x Z
     sage: ab('ab').order()
     4
-    sage: ab('abc')
-    u1*t
+    sage: ab('abc').order()
+    +Infinity
 
     sage: U = Manifold('dLQbcbchecv')
     sage: ab = MapToAbelianization(U.fundamental_group())

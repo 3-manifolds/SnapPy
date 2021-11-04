@@ -1,4 +1,4 @@
-name: Build
+name: macOS Wheels
 
 on: [push, pull_request]
 
@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [macos-11]
 
     steps:
       - uses: actions/checkout@v2
@@ -27,9 +27,8 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           # Skip Python 2.7, 3.5, 3.10, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp27-* cp35-* *-manylinux_i686 *musllinux* pp*
+          CIBW_SKIP: cp27-* cp35-* pp*
           CIBW_ARCHS_MACOS: "x86_64"
-          CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >            
             pip install cython sphinx cypari FXrays &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
@@ -40,7 +39,6 @@ jobs:
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
             pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
             pip install git+https://github.com/3-manifolds/Spherogram
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 
       - uses: actions/upload-artifact@v2

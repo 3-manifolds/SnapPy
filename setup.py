@@ -470,10 +470,11 @@ try:
     import sage
 except ImportError:
     install_requires.append('cypari>=2.3')
-    install_requires.append('ipython>=0.13')
     if sys.platform == 'win32':
-        install_requires.append('pyreadline>=2.0')
-
+        install_requires.append('ipython>=5.0') # circa 2016
+    else:
+        install_requires.append('ipython>=1.0')
+        
 # Determine whether we will be able to activate the GUI code
 
 try:

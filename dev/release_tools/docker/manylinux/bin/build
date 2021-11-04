@@ -3,7 +3,7 @@
 import os, sys
 
 packages = ['FXrays', 'cypari', 'plink', 'snappy_manifolds', 'spherogram', 'snappy']
-pythons = ['py27', 'py36', 'py37', 'py38', 'py39']
+pythons = ['py36', 'py37', 'py38', 'py39', 'py310']
 
 args = sys.argv[1:]
 flags = [a for a in args if a.startswith('-')]
@@ -22,4 +22,4 @@ else:
         os.chdir('/build/' + package)
         os.system('git pull')
         os.environ['RELEASE_PYTHONS'] = ','.join(pythons)
-        os.system('py27 setup.py release ' + ' --install ' + ' '.join(flags))
+        os.system('py39 setup.py release ' + ' --install ' + ' '.join(flags))

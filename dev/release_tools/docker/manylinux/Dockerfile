@@ -1,4 +1,4 @@
-FROM quay.io/pypa/manylinux2014_x86_64:latest
+FROM quay.io/pypa/manylinux2010_x86_64:latest
 MAINTAINER Nathan Dunfield <nathan@dunfield.info>
 
 RUN yum install -y nano tk mesa-libGLU-devel openssh-clients wget

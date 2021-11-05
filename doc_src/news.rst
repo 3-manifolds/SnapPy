@@ -4,6 +4,9 @@
 News
 ====
 
+* Version 3.0.2 (November 2021):
+  - Support for SageMath 9.4 and 9.5, Python 3.10, and macOS Monterey.
+
 * Version 3.0 (April 2021): New features include:
 
   - Incorporates Zoltán Szabó's `program

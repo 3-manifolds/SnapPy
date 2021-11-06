@@ -3,7 +3,12 @@ from ..number import Number
 
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
-    from sage.rings.complex_interval_field import is_ComplexIntervalField
+    try:
+        import sage.rings.abc
+        def is_ComplexIntervalField(z):
+            return isinstance(z, sage.rings.abc.ComplexIntervalField)
+    except ImportError:
+        from sage.rings.complex_interval_field import is_ComplexIntervalField
     from sage.rings.complex_arb import ComplexBallField
     from sage.rings.real_mpfi import RealIntervalField
 

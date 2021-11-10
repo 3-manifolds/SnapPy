@@ -3,6 +3,7 @@ import os
 import sys
 os.environ["ARGVZERO"] = sys.argv[0]
 os.environ["RESOURCEPATH"] = os.path.split(__file__)[0]
+PYTHON = 'python3.10'
 
 def _reset_sys_path():
     # Clear generic sys.path[0]
@@ -11,7 +12,7 @@ def _reset_sys_path():
 
     resources = os.environ["RESOURCEPATH"]
     pythonlibdir = os.path.abspath(os.path.join(resources, os.path.pardir,
-        'Frameworks', 'Python.framework', 'Versions', 'Current', 'lib', 'python3.9'))
+        'Frameworks', 'Python.framework', 'Versions', 'Current', 'lib', PYTHON))
     while sys.path[0] == resources:
         del sys.path[0]
     sys.path.insert(0, os.path.join(pythonlibdir, 'lib-dynload'))

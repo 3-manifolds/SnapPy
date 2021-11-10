@@ -6,9 +6,20 @@ import shutil
 from glob import glob
 import subprocess
 import configparser
-from subprocess import check_call, Popen, PIPE
+from subprocess import check_call, call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
+APP_PYTHON = 'python3.10'
+PYTHON_ZIP = 'python310.zip'
+
+# Make sure that we have our frameworks.
+if not os.path.exists('Frameworks.tgz'):
+    print("Please build the frameworks for SnapPy.app first.")
+    sys.exit(1)
+
+# Disable M1 builds until we can test.
+os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-x86_64'
+os.environ['ARCHFLAGS'] = '-arch x86_64'
 
 try:
     import pyx
@@ -39,6 +50,8 @@ def build_app(python):
     Build the standalone app bundle.
     """
     try:
+        ### FIX ME - this is not correct when we provide our own framework.
+        ### We need to check the framework version, not the installed version.
         checker = TkChecker()
         if checker.Tk_target != '10.9' or checker.Tcl_target != '10.9':
             print(checker)
@@ -65,10 +78,10 @@ def cleanup_app(python):
     extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
     shutil.rmtree(extra_dynload)
     dev_directory = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources', 'lib',
-         'python3.9', 'snappy', 'dev')
-    shutil.rmtree(dev_directory)
-    # Remove Python.org junk that may or may not have been added by py2app.
+         python, 'snappy', 'dev')
+    shutil.rmtree(dev_directory, ignore_errors=True)
     resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
+    # Remove Python.org junk that may or may not have been added by py2app.
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'), ignore_errors=True)
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'), ignore_errors=True)
     shutil.rmtree(os.path.join(resources, 'lib', 'tk8.6'), ignore_errors=True)
@@ -157,6 +170,6 @@ if __name__ == '__main__':
             print('Using virtualenv Pythons')
             python3 = nmd_python_dir + '/py39/bin/python'
         else:
-            python3 = 'python3'
+            python3 = APP_PYTHON
         do_release(python3, "SnapPy")
 

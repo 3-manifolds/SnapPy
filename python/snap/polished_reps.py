@@ -133,6 +133,7 @@ def parabolic_eigenvector(A):
     assert (v - P*v).norm() < epsilon
     return v
 
+
 def extend_to_basis(v):
     u = (1/v.norm())*v
     w = vector(v.base_ring(), (-u[1].conjugate(), u[0].conjugate()))
@@ -141,8 +142,8 @@ def extend_to_basis(v):
 
 def is_essentially_Id2(M, error=10**-3):
     diff = M - identity(M)
-    R = diff.base_ring()
-    return all(abs(d) < R(error) for d in diff.list())
+    error = diff.base_ring()(error)
+    return all(abs(d) < error for d in diff.list())
 
 
 class MatrixRepresentation(Object):

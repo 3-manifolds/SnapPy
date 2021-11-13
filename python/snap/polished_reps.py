@@ -138,10 +138,12 @@ def extend_to_basis(v):
     w = vector(v.base_ring(), (-u[1].conjugate(), u[0].conjugate()))
     return matrix( [u, w] ).transpose()
 
-def is_essentially_Id2(M, error = 10**-3):
+
+def is_essentially_Id2(M, error=10**-3):
     diff = M - identity(M)
     R = diff.base_ring()
-    return all([ abs(d) < R(error) for d in diff.list()])
+    return all(abs(d) < R(error) for d in diff.list())
+
 
 class MatrixRepresentation(Object):
     def __init__(self, gens, relators, matrices):
@@ -166,22 +168,23 @@ class MatrixRepresentation(Object):
         return self._relators
 
     def __call__(self, word):
-        return prod( [self._hom_dict[g] for g in word], self._id)
+        return prod([self._hom_dict[g] for g in word], self._id)
 
     def is_nonprojective_representation(self):
         """
         True if this is an SL(2,C)-representation, i.e., if multiplying the generators
         in a word yields the identity matrix.
         """
-        return all([is_essentially_Id2(self(R)) for R in self.relators()])
+        return all(is_essentially_Id2(self(R)) for R in self.relators())
 
     def is_projective_representation(self):
         """
         True if this is an PSL(2,C)-representation, i.e., if multiplying the generators
         in a word yields the identity matrix or its negative.
         """
-        rel_images = [self(R) for R in self.relators()]
-        return all([is_essentially_Id2(M) or is_essentially_Id2(-M) for M in rel_images])
+        rel_images = (self(R) for R in self.relators())
+        return all(is_essentially_Id2(M) or is_essentially_Id2(-M)
+                   for M in rel_images)
 
     def lift_to_SL2C(self):
         assert self.is_projective_representation()

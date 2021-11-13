@@ -84,17 +84,18 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
 
     return result
 
+
 def _interval_minimum_candidates(intervals_and_extras):
-    
-    result = [ intervals_and_extras[0] ]
+    result = [intervals_and_extras[0]]
     for this in intervals_and_extras[1:]:
-        if not all([this[0] > other[0] for other in result]):
-            if all([this[0] < other[0] for other in result]):
-                result = [ this ]
+        t0 = this[0]
+        if not all(t0 > other[0] for other in result):
+            if all(t0 < other[0] for other in result):
+                result = [this]
             else:
                 result.append(this)
-            
     return result
+
 
 def _find_potential_stoppers(cusp_area_matrix, assigned_areas):
     def stopper(i, j):

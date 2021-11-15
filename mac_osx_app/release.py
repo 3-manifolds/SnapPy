@@ -49,17 +49,17 @@ def build_app(python):
     """
     Build the standalone app bundle.
     """
-    try:
-        ### FIX ME - this is not correct when we provide our own framework.
-        ### We need to check the framework version, not the installed version.
-        checker = TkChecker()
-        if checker.Tk_target != '10.9' or checker.Tcl_target != '10.9':
-            print(checker)
-            raise RuntimeError('Tk was not built for macOSX 10.9!')
-        else:
-            print('Tk looks fine on this build system.')
-    except:
-        raise RuntimeError('Tk was not built for macOSX 10.9!')
+    #try:
+    #    ### FIX ME - this is not correct when we provide our own framework.
+    #    ### We need to check the framework version, not the installed version.
+    #    checker = TkChecker()
+    #    if checker.Tk_target != '10.9' or checker.Tcl_target != '10.9':
+    #        print(checker)
+    #        raise RuntimeError('Tk was not built for macOSX 10.9!')
+    #    else:
+    #        print('Tk looks fine on this build system.')
+    #except:
+    #    raise RuntimeError('Tk was not built for macOSX 10.9!')
     check_call([python, "setup.py", "py2app"])
     # Replace the frameworks that py2app installs with our own signed frameworks.
     shutil.rmtree(os.path.join('dist', 'SnapPy.app', 'Contents', 'Frameworks'))
@@ -168,7 +168,7 @@ if __name__ == '__main__':
         nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
         if os.path.exists(nmd_python_dir):
             print('Using virtualenv Pythons')
-            python3 = nmd_python_dir + '/py39/bin/python'
+            python3 = nmd_python_dir + '/py310/bin/python'
         else:
             python3 = APP_PYTHON
         do_release(python3, "SnapPy")

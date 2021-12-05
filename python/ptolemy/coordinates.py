@@ -1510,7 +1510,7 @@ class CrossRatios(dict):
                 e = [ _kronecker_delta(v0, i) +
                       _kronecker_delta(v1, i)   for i in range(4) ]
                 p = [ x1 - x2 for x1, x2 in zip(pt, e) ]
-                if all([ x >= 0 for x in p ]):
+                if all(x >= 0 for x in p):
                     result *= self._shape_at_tet_point_and_edge(tet, p, e)
 
         return -result

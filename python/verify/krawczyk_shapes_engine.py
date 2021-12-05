@@ -342,7 +342,7 @@ class KrawczykShapesEngine:
             sage: KrawczykShapesEngine.interval_vector_is_contained_in(c, b)
             False
         """
-        return all([(a in b) for a, b in zip(vecA, vecB)])
+        return all((a in b) for a, b in zip(vecA, vecB))
 
     @staticmethod
     def interval_vector_union(vecA, vecB):
@@ -351,8 +351,8 @@ class KrawczykShapesEngine:
         i.e., the smallest interval containing both intervals.
         """
 
-        return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
-        
+        return vector([a.union(b) for a, b in zip(vecA, vecB)])
+
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
         Initializes the KrawczykShapesEngine given an orientable SnapPy

@@ -1190,7 +1190,8 @@ extern WEPolyhedron *Dirichlet_with_displacement(
                 double                  vertex_epsilon,
                 Boolean                 centroid_at_origin,
                 DirichletInteractivity  interactivity,
-                Boolean                 maximize_injectivity_radius);
+                Boolean                 maximize_injectivity_radius,
+                Boolean                 include_words);
 /**<
  *  Like Dirichlet(), only allows an arbitrary displacement
  *  of the basepoint.  The displacement is in tangent space
@@ -1198,6 +1199,8 @@ extern WEPolyhedron *Dirichlet_with_displacement(
  *  Reasonable displacements are to the order of 0.1.
  *  Large displacements are possible, but degrade the numerical
  *  accuracy of the resulting Dirichlet domain.
+ *
+ *  include_words added by MG 2022-01-24.
  */
 
 extern WEPolyhedron *Dirichlet_from_generators(
@@ -1217,10 +1220,13 @@ extern WEPolyhedron *Dirichlet_from_generators_with_displacement(
                 double                  displacement[3],
                 double                  vertex_epsilon,
                 DirichletInteractivity  interactivity,
-                Boolean                 maximize_injectivity_radius);
+                Boolean                 maximize_injectivity_radius,
+                Boolean                 include_words);
 /**<
  *  Combines the functionality of Dirichlet_with_displacement() and
  *  Dirichlet_from_generators().
+ *
+ *  include_words added by MG 2022-01-24.
  */
 
 

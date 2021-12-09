@@ -309,7 +309,8 @@ cdef class Manifold(Triangulation):
                          vertex_epsilon=default_vertex_epsilon,
                          displacement = (0.0, 0.0, 0.0),
                          centroid_at_origin=True,
-                         maximize_injectivity_radius=True):
+                         maximize_injectivity_radius=True,
+                         include_words=False):
         """
         Returns a DirichletDomain object representing a Dirichlet
         domain of the hyperbolic manifold, typically centered at a
@@ -322,6 +323,13 @@ cdef class Manifold(Triangulation):
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         >>> D.view()   #Shows 3d-graphical view.  #doctest: +CYOPENGL
         
+        The group elements for the face-pairings of the Dirichlet domain
+        can be given as words in the original generators of the
+        (unsimplified) fundamental group by setting include_words = True:
+
+        >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
+        ['A', 'AB', 'ABB', ...]
+
         Other options can be provided to customize the computation;
         the default choices are shown below:
 
@@ -338,7 +346,7 @@ cdef class Manifold(Triangulation):
         44 finite vertices, 1 ideal vertices; 69 edges; 26 faces
         """
         args = (vertex_epsilon, tuple(displacement), centroid_at_origin,
-                maximize_injectivity_radius)
+                maximize_injectivity_radius, include_words)
         try:
             return self._cache.lookup('dirichlet_domain', *args)
         except KeyError:

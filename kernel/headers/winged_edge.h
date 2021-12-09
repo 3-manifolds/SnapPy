@@ -333,6 +333,15 @@ struct WEFace
     O31Matrix       *group_element;
 
     /**
+     *  group_element_word is the (optional) word in the original generators
+     *  corresponding to group_element.
+     *
+     *  Added by MG 2022-01-24.
+     */
+
+    int             *group_element_word;
+
+    /**
      *  The distance from the face plane to the origin.
      *  Note that the point of closest approach may or may not lie on
      *  the face itself.

@@ -115,14 +115,15 @@
 #define FIXED_BASEPOINT_EPSILON 1e-18
 #endif
 
-static void         array_to_matrix_pair_list(O31Matrix generators[], int num_generators, MatrixPairList *gen_list);
+static void         array_to_matrix_pair_list(O31Matrix generators[], int num_generators, Boolean include_words, MatrixPairList *gen_list);
 static Boolean      is_matrix_on_list(O31Matrix m, MatrixPairList *gen_list);
-static void         insert_matrix_on_list(O31Matrix m, MatrixPairList *gen_list);
+static void         insert_matrix_on_list(O31Matrix m, int g, Boolean include_words, MatrixPairList *gen_list);
 static void         simplify_generators(MatrixPairList *gen_list);
 static Boolean      generator_fixes_basepoint(MatrixPairList *gen_list);
-static Real       product_height(O31Matrix a, O31Matrix b);
+static Real         product_height(O31Matrix a, O31Matrix b);
 static void         generators_from_polyhedron(WEPolyhedron *polyhedron, O31Matrix **generators, int *num_generators);
-
+static void         free_matrix_pair(MatrixPair *matrix_pair);
+static int          *letter_to_word(int letter);
 
 WEPolyhedron *Dirichlet(
     Triangulation           *manifold,
@@ -138,7 +139,8 @@ WEPolyhedron *Dirichlet(
                                         vertex_epsilon,
                                         centroid_at_origin,
                                         interactivity,
-                                        maximize_injectivity_radius);
+                                        maximize_injectivity_radius,
+                                        FALSE);
 }
 
 
@@ -157,7 +159,8 @@ WEPolyhedron *Dirichlet_from_generators(
                                         null_displacement,
                                         vertex_epsilon,
                                         interactivity,
-                                        maximize_injectivity_radius);
+                                        maximize_injectivity_radius,
+                                        FALSE);
 }
 
 
@@ -167,7 +170,8 @@ WEPolyhedron *Dirichlet_with_displacement(
     double                  vertex_epsilon,
     Boolean                 centroid_at_origin,
     DirichletInteractivity  interactivity,
-    Boolean                 maximize_injectivity_radius)
+    Boolean                 maximize_injectivity_radius,
+    Boolean                 include_words)
 {
     MoebiusTransformation   *Moebius_generators;
     O31Matrix               *o31_generators;
@@ -208,7 +212,8 @@ WEPolyhedron *Dirichlet_with_displacement(
                                             displacement,
                                             vertex_epsilon,
                                             interactivity,
-                                            maximize_injectivity_radius);
+                                            maximize_injectivity_radius,
+                                            include_words);
 
     /*
      *  Free the generators.
@@ -229,7 +234,8 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
     double                  displacement[3],
     double                  vertex_epsilon,
     DirichletInteractivity  interactivity,
-    Boolean                 maximize_injectivity_radius)
+    Boolean                 maximize_injectivity_radius,
+    Boolean                 include_words)
 {
     MatrixPairList  gen_list;
     WEPolyhedron    *polyhedron;
@@ -239,7 +245,8 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
     /*
      *  Convert the array of generators to a MatrixPairList.
      */
-    array_to_matrix_pair_list(generators, num_generators, &gen_list);
+    array_to_matrix_pair_list(
+        generators, num_generators, include_words, &gen_list);
 
     /*
      *  Roundoff error tends to accumulate throughout this algorithm.
@@ -263,8 +270,10 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
       int i;
       for (i=0; i< 3; i++)
 	solution[i] = (Real)displacement[i];
+
       conjugate_matrices(&gen_list, solution);
     }
+
     /*
      *  There is a danger that when initial_polyhedron() in
      *  Dirichlet_construction.c slices its cube with the elements of
@@ -359,10 +368,10 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
      */
 }
 
-
 static void array_to_matrix_pair_list(
     O31Matrix       generators[],
     int             num_generators,
+    Boolean         include_words,
     MatrixPairList  *gen_list)
 {
     int         i;
@@ -380,7 +389,7 @@ static void array_to_matrix_pair_list(
      *  includes the identity, but we do want to insure that the
      *  gen_list does, so we insert the identity matrix now.
      */
-    insert_matrix_on_list(O31_identity, gen_list);
+    insert_matrix_on_list(O31_identity, 0, include_words, gen_list);
 
     /*
      *  Add the matrices from the array "generators" to the
@@ -389,7 +398,7 @@ static void array_to_matrix_pair_list(
      */
     for (i = 0; i < num_generators; i++)
         if (is_matrix_on_list(generators[i], gen_list) == FALSE)
-            insert_matrix_on_list(generators[i], gen_list);
+            insert_matrix_on_list(generators[i], i+1, include_words, gen_list);
 }
 
 
@@ -416,8 +425,11 @@ static Boolean is_matrix_on_list(
 
 static void insert_matrix_on_list(
     O31Matrix       m,
+    int             g,
+    Boolean         include_words,
     MatrixPairList  *gen_list)
 {
+    int         i;
     O31Matrix   m_inverse;
     MatrixPair  *new_matrix_pair,
                 *mp;
@@ -428,6 +440,14 @@ static void insert_matrix_on_list(
     o31_copy(new_matrix_pair->m[0], m);
     o31_copy(new_matrix_pair->m[1], m_inverse);
     new_matrix_pair->height = m[0][0];
+
+    if (include_words) {
+        new_matrix_pair->m_word[0] = letter_to_word( g);
+        new_matrix_pair->m_word[1] = letter_to_word(-g);
+    } else {
+        for (i = 0; i < 2; i++)
+            new_matrix_pair->m_word[i] = NULL;
+    }
 
     /*
      *  Find the MatrixPair mp immediately following the point where
@@ -440,6 +460,17 @@ static void insert_matrix_on_list(
     INSERT_BEFORE(new_matrix_pair, mp);
 }
 
+static void free_matrix_pair(
+    MatrixPair *matrix_pair)
+{
+    int i = 0;
+
+    for (i = 0; i < 2; i++)
+        my_free(matrix_pair->m_word[i]);
+
+    my_free(matrix_pair);
+}
+
 
 void free_matrix_pairs(
     MatrixPairList  *gen_list)
@@ -450,7 +481,7 @@ void free_matrix_pairs(
     {
         dead_node = gen_list->begin.next;
         REMOVE_NODE(dead_node);
-        my_free(dead_node);
+        free_matrix_pair(dead_node);
     }
 }
 
@@ -488,6 +519,8 @@ void free_Dirichlet_domain(
         REMOVE_NODE(dead_face);
         if (dead_face->group_element != NULL)
             my_free(dead_face->group_element);
+        if (dead_face->group_element_word != NULL)
+            my_free(dead_face->group_element_word);
         my_free(dead_face);
     }
 
@@ -514,7 +547,6 @@ void free_Dirichlet_domain(
 
     my_free(polyhedron);
 }
-
 
 static void simplify_generators(
     MatrixPairList  *gen_list)
@@ -546,13 +578,15 @@ static void simplify_generators(
 
     MatrixPair  *aA,
                 *bB,
-                *best_aA = NULL;
-    O31Matrix   *best_aA_factor = NULL,
-                *best_bB_factor = NULL;
-    Real      max_improvement,
+                *best_aA = NULL,
+                *best_bB = NULL;
+    int         best_i,
+                best_j;
+    Real        max_improvement,
                 improvement;
     int         i,
                 j;
+    int         *word;
 
     /*
      *  Definition:  We'll say that one MatrixPair is "greater than"
@@ -630,11 +664,16 @@ static void simplify_generators(
                         {
                             max_improvement = improvement;
                             best_aA = aA;
+                            best_bB = bB;
+                            best_i  = i;
+                            best_j  = j;
+
 /*  Cater to a DEC compiler error that chokes on &(array)[i]    */
 /*                          best_aA_factor = &aA->m[i];         */
 /*                          best_bB_factor = &bB->m[j];         */
-                            best_aA_factor = aA->m + i;
-                            best_bB_factor = bB->m + j;
+
+/*                          best_aA_factor = aA->m + i;         */
+/*                          best_bB_factor = bB->m + j;         */
                         }
                     }
             }
@@ -651,9 +690,19 @@ static void simplify_generators(
          */
 
 	/* MC - DON'T USE THIS: precise_o31_product(*best_aA_factor, *best_bB_factor, best_aA->m[0]);*/
-        o31_product(*best_aA_factor, *best_bB_factor, best_aA->m[0]);
+        o31_product(best_aA->m[best_i], best_bB->m[best_j], best_aA->m[0]);
         o31_invert(best_aA->m[0], best_aA->m[1]);
         best_aA->height = best_aA->m[0][0][0];
+
+        if (best_aA->m_word[best_i]) {
+            word = concat_group_words(
+                best_aA->m_word[best_i], best_bB->m_word[best_j]);
+            my_free(best_aA->m_word[0]);
+            my_free(best_aA->m_word[1]);
+                        
+            best_aA->m_word[0] = word;
+            best_aA->m_word[1] = invert_group_word(word);
+        }
 
         /*
          *  If best_aA is the identity, remove it.
@@ -662,7 +711,7 @@ static void simplify_generators(
         if (o31_equal(best_aA->m[0], O31_identity, MATRIX_EPSILON) == TRUE)
         {
             REMOVE_NODE(best_aA);
-            my_free(best_aA);
+            free_matrix_pair(best_aA);
         }
     }
 }
@@ -741,7 +790,8 @@ void change_basepoint(
 
         (*polyhedron) = Dirichlet_from_generators_with_displacement(
             gen, num_gen, displacement, vertex_epsilon, interactivity,
-            maximize_injectivity_radius);
+            maximize_injectivity_radius,
+            FALSE);
 
         my_free(gen);
     }
@@ -750,11 +800,12 @@ void change_basepoint(
         if (manifold != NULL)
             (*polyhedron) = Dirichlet_with_displacement(
                 manifold, displacement, vertex_epsilon, centroid_at_origin,
-                interactivity, maximize_injectivity_radius);
+                interactivity, maximize_injectivity_radius, FALSE);
         else if (generators != NULL  &&  num_generators > 0)
             (*polyhedron) = Dirichlet_from_generators_with_displacement(
                 generators, num_generators, displacement, vertex_epsilon,
-                interactivity, maximize_injectivity_radius);
+                interactivity, maximize_injectivity_radius,
+                FALSE);
         else
             uFatalError("change_basepoint", "Dirichlet");
     }
@@ -784,4 +835,22 @@ static void generators_from_polyhedron(
     if (i != *num_generators)
         uFatalError("generators_from_polyhedron", "Dirichlet");
 }
+
+static int *letter_to_word(
+    int letter)
+{
+    int *word;
+
+    if (letter == 0) {
+        word = NEW_ARRAY(1, int);
+        word[0] = 0;
+    } else {
+        word = NEW_ARRAY(2, int);
+        word[0] = letter;
+        word[1] = 0;
+    }
+    
+    return word;
+}
+
 #include "end_namespace.h"

@@ -1287,6 +1287,7 @@ static void cone_face_to_center(
      */
     REMOVE_NODE(face);
     my_free(face->group_element);
+    my_free(face->group_element_word);
     my_free(face);
     face = NULL;
 

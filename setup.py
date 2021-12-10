@@ -46,7 +46,8 @@ get_default_compiler = setuptools.distutils.ccompiler.get_default_compiler
 from glob import glob
 
 if sys.platform == 'darwin':
-    macOS_compile_args = macOS_link_args = []
+    macOS_compile_args = []
+    macOS_link_args = []
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
@@ -363,7 +364,7 @@ if sys.platform == 'win32' and cc == 'msvc':
     # Uncomment to get debugging symbols for msvc.
     # hp_extra_compile_args += ['/DDEBUG', '/Zi',
     #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
-else:
+elif sys.platform != 'darwin' or platform.processor() != 'arm':
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 if sys.platform == 'darwin':
     hp_extra_compile_args += macOS_compile_args

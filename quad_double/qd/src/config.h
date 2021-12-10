@@ -183,4 +183,6 @@
 #define VERSION "2.3.12"
 
 /* Whether to use x86 fpu fix. */
+#ifdef __X86_64__
 #define X86 1
+#endif

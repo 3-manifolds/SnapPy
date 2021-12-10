@@ -471,7 +471,7 @@ class IntervalNewtonShapesEngine:
             sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(c, b)
             False
         """
-        return all([(a in b) for a, b in zip(vecA, vecB)])
+        return all((a in b) for a, b in zip(vecA, vecB))
 
     @staticmethod
     def interval_vector_union(vecA, vecB):
@@ -479,8 +479,7 @@ class IntervalNewtonShapesEngine:
         Given two vectors of intervals, return the vector of their unions,
         i.e., the smallest interval containing both intervals.
         """
-
-        return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
+        return vector([a.union(b) for a, b in zip(vecA, vecB)])
 
     @staticmethod
     def certified_newton_iteration(equations, shape_intervals,

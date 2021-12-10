@@ -94,7 +94,7 @@ class MatrixRepresentation():
         self.dim = self.image_ring.ncols()
         self.generators = generators
         self.relators = relators
-        assert all([m.parent() == self.image_ring for m in images.values()])
+        assert all(m.parent() == self.image_ring for m in images.values())
         self._check_rep()
 
     def _check_rep(self):
@@ -107,7 +107,7 @@ class MatrixRepresentation():
     def __call__(self, word):
         ans = self.image_ring(1)
         for w in word:
-            ans = ans*self.images[w]
+            ans = ans * self.images[w]
         return ans
 
     def __repr__(self):

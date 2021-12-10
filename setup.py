@@ -364,8 +364,9 @@ if sys.platform == 'win32' and cc == 'msvc':
     # Uncomment to get debugging symbols for msvc.
     # hp_extra_compile_args += ['/DDEBUG', '/Zi',
     #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
-elif sys.platform != 'darwin' or platform.processor() != 'arm':
-    hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
+else:
+    # These options are ignored when building for ARM.
+    hp_extra_compile_args = ['-msse2', '-mieee-fp']
 if sys.platform == 'darwin':
     hp_extra_compile_args += macOS_compile_args
     hp_extra_link_args += macOS_link_args

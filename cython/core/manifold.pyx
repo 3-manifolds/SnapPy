@@ -771,7 +771,7 @@ cdef class Manifold(Triangulation):
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.chern_simons().accuracy in (8, 9, 57) # Low and High precision
+        >>> M.chern_simons().accuracy in (8, 9, 56) # Low and High precision
         True
 
         By default, when the manifold has at least one cusp, Zickert's

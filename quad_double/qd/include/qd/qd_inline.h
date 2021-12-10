@@ -220,7 +220,6 @@ inline void renorm(double &c0, double &c1,
   s0 = c0;
   s1 = c1;
 
-  s0 = qd::quick_two_sum(c0, c1, s1);
   if (s1 != 0.0) {
     s1 = qd::quick_two_sum(s1, c2, s2);
     if (s2 != 0.0) {
@@ -228,7 +227,7 @@ inline void renorm(double &c0, double &c1,
       if (s3 != 0.0)
         s3 += c4;
       else
-        s2 += c4;
+        s2 = qd::quick_two_sum(s2, c4, s3);
     } else {
       s1 = qd::quick_two_sum(s1, c3, s2);
       if (s2 != 0.0)
@@ -556,7 +555,6 @@ inline qd_real &qd_real::operator-=(const qd_real &a) {
   return ((*this) += (-a));
 }
 
-/********** Multiplications **********/
 
 inline qd_real operator*(double a, const qd_real &b) {
   return (b * a);
@@ -570,6 +568,7 @@ inline qd_real mul_pwr2(const qd_real &a, double b) {
   return qd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
 }
 
+/********** Multiplications **********/
 inline qd_real operator*(const qd_real &a, double b) {
   double p0, p1, p2, p3;
   double q0, q1, q2;
@@ -816,8 +815,6 @@ inline qd_real &qd_real::operator*=(const qd_real &a) {
   return *this;
 }
 
-
-/********** Divisions **********/
 inline qd_real operator/ (const qd_real &a, const dd_real &b) {
 #ifdef QD_SLOPPY_DIV
   return qd_real::sloppy_div(a, b);
@@ -843,7 +840,6 @@ inline qd_real operator/(double a, const qd_real &b) {
 inline qd_real operator/(const dd_real &a, const qd_real &b) {
   return qd_real(a) / b;
 }
-
 
 /********** Self-Divisions **********/
 /* quad-double /= double */
@@ -980,6 +976,7 @@ inline bool operator>(const qd_real &a, const qd_real &b) {
                                               (a[2] == b[2] && a[3] > b[3]))))));
 }
 
+
 /********** Less-Than-Or-Equal-To Comparison **********/
 inline bool operator<=(const qd_real &a, double b) {
   return (a[0] < b || (a[0] == b && a[1] <= 0.0));
@@ -1031,6 +1028,8 @@ inline bool operator>=(const qd_real &a, const qd_real &b) {
                             (a[1] == b[1] && (a[2] > b[2] ||
                                               (a[2] == b[2] && a[3] >= b[3]))))));
 }
+
+
 
 /********** Not-Equal-To Comparison **********/
 inline bool operator!=(const qd_real &a, double b) {

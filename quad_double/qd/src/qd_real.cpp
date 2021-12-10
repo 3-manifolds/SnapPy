@@ -17,7 +17,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <algorithm>
 
 #include "config.h"
 #include <qd/qd_real.h>
@@ -379,10 +378,10 @@ void round_string_qd(char *s, int precision, int *offset){
 	int D = precision ;
 
 	/* Round, handle carry */
-	  if (s[D-1] >= '5') {
-	    s[D-2]++;
+	  if (D>0 && s[D] >= '5') {
+	    s[D-1]++;
 
-	    i = D-2;
+	    i = D-1;
 	    while (i > 0 && s[i] > '9') {
 	      s[i] -= 10;
 	      s[--i]++;
@@ -392,7 +391,7 @@ void round_string_qd(char *s, int precision, int *offset){
 	  /* If first digit is 10, shift everything. */
 	  if (s[0] > '9') {
 	    // e++; // don't modify exponent here
-	    for (i = precision; i >= 2; i--) s[i] = s[i-1];
+	    for (i = precision; i >= 1; i--) s[i+1] = s[i];
 	    s[0] = '1';
 	    s[1] = '0';
 
@@ -479,11 +478,12 @@ string qd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
         	to_digits(t, e, d);
         }
 
+        off = e + 1;
 
         if (fixed) {
           // fix the string if it's been computed incorrectly
           // round here in the decimal string if required
-          round_string_qd(t, d + 1 , &off);
+          round_string_qd(t, d, &off);
 
           if (off > 0) {
             for (i = 0; i < off; i++) s += t[i];
@@ -518,12 +518,12 @@ string qd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
     	// if this ratio is large, then we've got problems
     	if( fabs( from_string / this->x[0] ) > 3.0 ){
 
-	  //int point_position;
-	  //char temp;
+    		int point_position;
+    		char temp;
 
     		// loop on the string, find the point, move it up one
     		// don't act on the first character
-	        for(i=1; i < (int)s.length(); i++){
+    		for(i=1; i < s.length(); i++){
     			if(s[i] == '.'){
     				s[i] = s[i-1] ;
     				s[i-1] = '.' ;
@@ -784,19 +784,40 @@ qd_real nroot(const qd_real &a, int n) {
      we only need to perform it twice.
 
    */
+	if (n <= 0) {
+		qd_real::error("(qd_real::nroot): N must be positive.");
+		return qd_real::_nan;
+	}
 
-  if (a == 0.0) {
-    return qd_real(0.0);
-  }
+	if (n % 2 == 0 && a.is_negative()) {
+		qd_real::error("(qd_real::nroot): Negative argument.");
+		return qd_real::_nan;
+	}
 
-  qd_real r = std::pow(a[0], -1.0/n);
+	if (n == 1) {
+		return a;
+	}
+	if (n == 2) {
+		return sqrt(a);
+	}
+	if (a.is_zero()) {
+		return qd_real(0.0);
+	}
 
-  double dbl_n = static_cast<double>(n);
-  r += r * (1.0 - a * (r ^ n)) / dbl_n;
-  r += r * (1.0 - a * (r ^ n)) / dbl_n;
-  r += r * (1.0 - a * (r ^ n)) / dbl_n;
 
-  return 1.0 / r;
+	/* Note  a^{-1/n} = exp(-log(a)/n) */
+	qd_real r = abs(a);
+	qd_real x = std::exp(-std::log(r.x[0]) / n);
+
+	/* Perform Newton's iteration. */
+	double dbl_n = static_cast<double>(n);
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+	x += x * (1.0 - r * npwr(x, n)) / dbl_n;
+	if (a[0] < 0.0){
+		x = -x;
+	}
+	return 1.0 / x;
 }
 
 static const int n_inv_fact = 15;

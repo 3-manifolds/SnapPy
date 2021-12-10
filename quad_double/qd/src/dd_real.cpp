@@ -17,7 +17,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <algorithm>
 
 #include "config.h"
 #include <qd/dd_real.h>
@@ -168,22 +167,22 @@ dd_real pow(const dd_real &a, const dd_real &b) {
 }
 
 static const int n_inv_fact = 15;
-static const dd_real inv_fact[n_inv_fact] = {
-  dd_real( 1.66666666666666657e-01,  9.25185853854297066e-18),
-  dd_real( 4.16666666666666644e-02,  2.31296463463574266e-18),
-  dd_real( 8.33333333333333322e-03,  1.15648231731787138e-19),
-  dd_real( 1.38888888888888894e-03, -5.30054395437357706e-20),
-  dd_real( 1.98412698412698413e-04,  1.72095582934207053e-22),
-  dd_real( 2.48015873015873016e-05,  2.15119478667758816e-23),
-  dd_real( 2.75573192239858925e-06, -1.85839327404647208e-22),
-  dd_real( 2.75573192239858883e-07,  2.37677146222502973e-23),
-  dd_real( 2.50521083854417202e-08, -1.44881407093591197e-24),
-  dd_real( 2.08767569878681002e-09, -1.20734505911325997e-25),
-  dd_real( 1.60590438368216133e-10,  1.25852945887520981e-26),
-  dd_real( 1.14707455977297245e-11,  2.06555127528307454e-28),
-  dd_real( 7.64716373181981641e-13,  7.03872877733453001e-30),
-  dd_real( 4.77947733238738525e-14,  4.39920548583408126e-31),
-  dd_real( 2.81145725434552060e-15,  1.65088427308614326e-31)
+static const double inv_fact[n_inv_fact][2] = {
+  { 1.66666666666666657e-01,  9.25185853854297066e-18},
+  { 4.16666666666666644e-02,  2.31296463463574266e-18},
+  { 8.33333333333333322e-03,  1.15648231731787138e-19},
+  { 1.38888888888888894e-03, -5.30054395437357706e-20},
+  { 1.98412698412698413e-04,  1.72095582934207053e-22},
+  { 2.48015873015873016e-05,  2.15119478667758816e-23},
+  { 2.75573192239858925e-06, -1.85839327404647208e-22},
+  { 2.75573192239858883e-07,  2.37677146222502973e-23},
+  { 2.50521083854417202e-08, -1.44881407093591197e-24},
+  { 2.08767569878681002e-09, -1.20734505911325997e-25},
+  { 1.60590438368216133e-10,  1.25852945887520981e-26},
+  { 1.14707455977297245e-11,  2.06555127528307454e-28},
+  { 7.64716373181981641e-13,  7.03872877733453001e-30},
+  { 4.77947733238738525e-14,  4.39920548583408126e-31},
+  { 2.81145725434552060e-15,  1.65088427308614326e-31}
 };
 
 /* Exponential.  Computes exp(x) in double-double precision. */
@@ -219,12 +218,13 @@ dd_real exp(const dd_real &a) {
   p = sqr(r);
   s = r + mul_pwr2(p, 0.5);
   p *= r;
-  t = p * inv_fact[0];
+  t = p * dd_real(inv_fact[0][0], inv_fact[0][1]);
   int i = 0;
   do {
     s += t;
     p *= r;
-    t = p * inv_fact[++i];
+    ++i;
+    t = p * dd_real(inv_fact[i][0], inv_fact[i][1]);
   } while (std::abs(to_double(t)) > inv_k * dd_real::_eps && i < 5);
 
   s += t;
@@ -285,18 +285,18 @@ static const dd_real _pi16 = dd_real(1.963495408493620697e-01,
                                      7.654042494670957545e-18);
 
 /* Table of sin(k * pi/16) and cos(k * pi/16). */
-static const dd_real sin_table [] = {
-  dd_real(1.950903220161282758e-01, -7.991079068461731263e-18), 
-  dd_real(3.826834323650897818e-01, -1.005077269646158761e-17), 
-  dd_real(5.555702330196021776e-01,  4.709410940561676821e-17),
-  dd_real(7.071067811865475727e-01, -4.833646656726456726e-17)
+static const double sin_table [4][2] = {
+  {1.950903220161282758e-01, -7.991079068461731263e-18},
+  {3.826834323650897818e-01, -1.005077269646158761e-17},
+  {5.555702330196021776e-01,  4.709410940561676821e-17},
+  {7.071067811865475727e-01, -4.833646656726456726e-17}
 };
 
-static const dd_real cos_table [] = {
-  dd_real(9.807852804032304306e-01, 1.854693999782500573e-17),
-  dd_real(9.238795325112867385e-01, 1.764504708433667706e-17),
-  dd_real(8.314696123025452357e-01, 1.407385698472802389e-18),
-  dd_real(7.071067811865475727e-01, -4.833646656726456726e-17)
+static const double cos_table [4][2] = {
+  {9.807852804032304306e-01, 1.854693999782500573e-17},
+  {9.238795325112867385e-01, 1.764504708433667706e-17},
+  {8.314696123025452357e-01, 1.407385698472802389e-18},
+  {7.071067811865475727e-01, -4.833646656726456726e-17}
 };
 
 /* Computes sin(a) using Taylor series.
@@ -315,7 +315,7 @@ static dd_real sin_taylor(const dd_real &a) {
   r = a;
   do {
     r *= x;
-    t = r * inv_fact[i];
+    t = r * dd_real(inv_fact[i][0], inv_fact[i][1]);
     s += t;
     i += 2;
   } while (i < n_inv_fact && std::abs(to_double(t)) > thresh);
@@ -337,7 +337,7 @@ static dd_real cos_taylor(const dd_real &a) {
   int i = 1;
   do {
     r *= x;
-    t = r * inv_fact[i];
+    t = r * dd_real(inv_fact[i][0], inv_fact[i][1]);
     s += t;
     i += 2;
   } while (i < n_inv_fact && std::abs(to_double(t)) > thresh);
@@ -412,8 +412,8 @@ dd_real sin(const dd_real &a) {
     }
   }
 
-  dd_real u = cos_table[abs_k-1];
-  dd_real v = sin_table[abs_k-1];
+  dd_real u(cos_table[abs_k-1][0], cos_table[abs_k-1][1]);
+  dd_real v(sin_table[abs_k-1][0], sin_table[abs_k-1][1]);
   dd_real sin_t, cos_t;
   sincos_taylor(t, sin_t, cos_t);
   if (j == 0) {
@@ -490,8 +490,8 @@ dd_real cos(const dd_real &a) {
 
   dd_real sin_t, cos_t;
   sincos_taylor(t, sin_t, cos_t);
-  dd_real u = cos_table[abs_k-1];
-  dd_real v = sin_table[abs_k-1];
+  dd_real u(cos_table[abs_k-1][0], cos_table[abs_k-1][1]);
+  dd_real v(sin_table[abs_k-1][0], sin_table[abs_k-1][1]);
 
   if (j == 0) {
     if (k > 0) {
@@ -566,8 +566,8 @@ void sincos(const dd_real &a, dd_real &sin_a, dd_real &cos_a) {
     s = sin_t;
     c = cos_t;
   } else {
-    dd_real u = cos_table[abs_k-1];
-    dd_real v = sin_table[abs_k-1];
+    dd_real u(cos_table[abs_k-1][0], cos_table[abs_k-1][1]);
+    dd_real v(sin_table[abs_k-1][0], sin_table[abs_k-1][1]);
 
     if (k > 0) {
       s = u * sin_t + v * cos_t;
@@ -738,14 +738,28 @@ dd_real tanh(const dd_real &a) {
     return 0.0;
   }
 
-  dd_real ea = exp(a);
-  dd_real inv_ea = inv(ea);
-  return (ea - inv_ea) / (ea + inv_ea);
+  if (std::abs(to_double(a)) > 0.05) {
+    dd_real ea = exp(a);
+    dd_real inv_ea = inv(ea);
+    return (ea - inv_ea) / (ea + inv_ea);
+  } else {
+    dd_real s, c;
+    s = sinh(a);
+    c = sqrt(1.0 + sqr(s));
+    return s / c;
+  }
 }
 
-void sincosh(const dd_real &a, dd_real &sinh_a, dd_real &cosh_a) {
-  sinh_a = sinh(a);
-  cosh_a = cosh(a);
+void sincosh(const dd_real &a, dd_real &s, dd_real &c) {
+  if (std::abs(to_double(a)) <= 0.05) {
+    s = sinh(a);
+    c = sqrt(1.0 + sqr(s));
+  } else {
+    dd_real ea = exp(a);
+    dd_real inv_ea = inv(ea);
+    s = mul_pwr2(ea - inv_ea, 0.5);
+    c = mul_pwr2(ea + inv_ea, 0.5);
+  }
 }
 
 dd_real asinh(const dd_real &a) {
@@ -999,10 +1013,10 @@ void round_string(char *s, int precision, int *offset){
 	int D = precision ;
 
 	/* Round, handle carry */
-	  if (s[D-1] >= '5') {
-	    s[D-2]++;
+	  if (D>0 && s[D] >= '5') {
+	    s[D-1]++;
 
-	    i = D-2;
+	    i = D-1;
 	    while (i > 0 && s[i] > '9') {
 	      s[i] -= 10;
 	      s[--i]++;
@@ -1012,7 +1026,7 @@ void round_string(char *s, int precision, int *offset){
 	  /* If first digit is 10, shift everything. */
 	  if (s[0] > '9') {
 	    // e++; // don't modify exponent here
-	    for (i = precision; i >= 2; i--) s[i] = s[i-1];
+	    for (i = precision; i >= 1; i--) s[i+1] = s[i];
 	    s[0] = '1';
 	    s[1] = '0';
 
@@ -1092,10 +1106,12 @@ string dd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
         	to_digits(t, e, d);
         }
 
+        off = e + 1;
+
         if (fixed) {
           // fix the string if it's been computed incorrectly
           // round here in the decimal string if required
-          round_string(t, d + 1 , &off);
+          round_string(t, d, &off);
 
           if (off > 0) {
             for (i = 0; i < off; i++) s += t[i];
@@ -1130,12 +1146,12 @@ string dd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
     	// if this ratio is large, then we've got problems
     	if( fabs( from_string / this->x[0] ) > 3.0 ){
 
-	  //int point_position;
-	  //char temp;
+    		int point_position;
+    		char temp;
 
     		// loop on the string, find the point, move it up one
     		// don't act on the first character
-	        for(i=1; i < (int)s.length(); i++){
+    		for(i=1; i < s.length(); i++){
     			if(s[i] == '.'){
     				s[i] = s[i-1] ;
     				s[i-1] = '.' ;

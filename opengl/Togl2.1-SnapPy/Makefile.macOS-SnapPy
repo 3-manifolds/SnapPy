@@ -5,7 +5,7 @@
 TKVERSION = 8.6
 
 DEPLOY = -mmacosx-version-min=10.9
-CFLAGS_DEFAULT	= -Os -arch x86_64 $(DEPLOY)
+CFLAGS_DEFAULT	= -Os -arch arm64 -arch x86_64 $(DEPLOY)
 prefix = '.'
 execprefix = '.'
 libdir = 'darwin-tk$(TKVERSION)'

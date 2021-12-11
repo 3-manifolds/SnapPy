@@ -18,8 +18,8 @@ if not os.path.exists('Frameworks.tgz'):
     sys.exit(1)
 
 # Disable M1 builds until we can test.
-os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-x86_64'
-os.environ['ARCHFLAGS'] = '-arch x86_64'
+os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-universal2'
+os.environ['ARCHFLAGS'] = '-arch arm64 -arch x86_64'
 
 try:
     import pyx

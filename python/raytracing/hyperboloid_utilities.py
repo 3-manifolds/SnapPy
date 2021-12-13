@@ -4,7 +4,33 @@ from math import cos, sin, cosh, sinh, sqrt
 
 from snappy.snap.kernel_structures import Infinity
 
+"""
+Helpers for the 1,3-hyperboloid model and conversion to upper half
+space model of H^3, including converting between the transformations
+SO(1,3) and PSL(2,C).
+
+Follows SnapPea kernel conventions. Note that the SnapPea kernel writes
+O31 which is misleading because it is the first row/column of the matrix
+that is the time-like vector.
+
+Encoding:
+- real numbers can be encoded as SnapPy Numbers or elements
+  in SageMath's RealField(precision).
+- complex numbers can be encoded as SnapPy Numbers or elements
+  in SageMath's ComplexField(precision)
+- vectors are just lists or SnapPy vectors
+- matrices are either SnapPy matrices or SageMath matrices.
+"""
+
 def unit_time_vector_to_O13_hyperbolic_translation(v):
+    """
+    Takes a point (time-like vector) in the hyperboloid model
+    and returns the O13-matrix corresponding to the hyperbolic
+    translation moving the origin to that point (that is, the
+    translation fixing the geodesic between the origin and the
+    point and introducing no rotation about that geodesic).
+    """
+
     def diag(i, j):
         if i == j:
             if i == 0:
@@ -21,6 +47,13 @@ def unit_time_vector_to_O13_hyperbolic_translation(v):
          for j, y in enumerate(v1) ])
 
 def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
+    """
+    Takes a 3-vector in the unit tangent space at the origin of the
+    hyperboloid model and a hyperbolic distance. Returns the
+    O13-matrix corresponding to the translation moving the origin in
+    the given direction by the given distance.
+    """
+
     return unit_time_vector_to_O13_hyperbolic_translation(
         [ cosh(d)] + [ sinh(d) * x for x in v])
 
@@ -47,14 +80,28 @@ def _o13_matrix_column(A, m):
               fAmj[0][1].imag() ]
 
 def PSL2C_to_O13(A):
+    """
+    Converts matrix in PSL(2,C) to O13.
+    Python implementation of Moebius_to_O31 in matrix_conversion.c.
+    """
+
     return matrix(
         [ _o13_matrix_column(A, m)
           for m in _basis_vectors_sl2c(A[0,0].parent()) ]).transpose()
 
 def GL2C_to_O13(m):
+    """
+    Converts matrix in PGL(2,C) to O13.
+    Python implementation of Moebius_to_O31 in matrix_conversion.c.
+    """
     return PSL2C_to_O13(m / m.det().sqrt())
 
 def O13_x_rotation(angle):
+    """
+    SO(1,3)-matrix corresponding to a rotation about the x-Axis
+    by angle (in radians).
+    """
+
     c = cos(angle)
     s = sin(angle)
     return matrix(
@@ -64,6 +111,10 @@ def O13_x_rotation(angle):
          [ 0.0, 0.0,  -s,   c]])
 
 def O13_y_rotation(angle):
+    """
+    SO(1,3)-matrix corresponding to a rotation about the y-Axis
+    by angle (in radians).
+    """
     c = cos(angle)
     s = sin(angle)
     return matrix(
@@ -73,6 +124,10 @@ def O13_y_rotation(angle):
          [ 0.0,   s, 0.0,   c]])
 
 def O13_z_rotation(angle):
+    """
+    SO(1,3)-matrix corresponding to a rotation about the z-Axis
+    by angle (in radians).
+    """
     c = cos(angle)
     s = sin(angle)
     return matrix(
@@ -82,6 +137,11 @@ def O13_z_rotation(angle):
          [ 0.0, 0.0, 0.0, 1.0]])
 
 def complex_to_R13_light_vector(z):
+    """
+    Takes a point in C union { Infinity } regarded as boundary of the
+    upper half space model of H^3. Returns the corresponding ideal
+    point as light-vector in the 1,3-hyperboloid model.
+    """
 
     if z == Infinity:
         return [ 1.0, 1.0, 0.0, 0.0 ]
@@ -99,6 +159,11 @@ def complex_to_R13_light_vector(z):
              2 * z_im / denom ]
 
 def complex_and_height_to_R13_time_vector(z, t):
+    """
+    Takes a point in the upper half space model
+    H^3 = { z + t * j : z in C, t > 0 } and gives the
+    corresponding point in the 1,3-hyperboloid model.
+    """
     
     z_re = z.real()
     z_im = z.imag()
@@ -122,6 +187,14 @@ def complex_and_height_to_R13_time_vector(z, t):
           klein_factor * poincare[2] ])          
 
 def R13_time_vector_to_upper_halfspace(v):
+    """
+    Take a unit time-like vector in the 1,3-hyperboloid
+    model and returns the corresponding (finite) point
+    in the upper half space model
+    H^3 = { x + y * i + t * j : t > 0 } as triple
+    (x, y, t).
+    """
+
     klein = [ v[1] / v[0], v[2] / v[0], v[3] / v[0] ]
     klein_sqr = sum([x**2 for x in klein])
     poincare_factor = 1.0 / (1.0 + sqrt(1.0 - klein_sqr))
@@ -133,6 +206,10 @@ def R13_time_vector_to_upper_halfspace(v):
              (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
 
 def remove_column(m, k):
+    """
+    Removes k-th column from 4x4-matrix m.
+    """
+
     return [ [ m[i][j] for j in range(4) if j != k ]
              for i in range(3) ]
 
@@ -201,6 +278,12 @@ def _change_first_sign(u):
     return (-u[0], u[1], u[2], u[3])
 
 def edge_involution(u, v):
+    """
+    Takes two light-like vectors in the 1,3-hyperboloid model.
+    Computes the O(1,3)-matrix rotating by pi about the line between
+    the corresponding ideal points.
+    """
+
     b0 = vector(R13_normalise(u + v))
     b1 = u - v
     b1 = vector(R13_normalise(b1 + b0 * R13_dot(b0, b1)))
@@ -229,12 +312,26 @@ def matrix3_det(m):
             - m[0][1] * m[1][0] * m[2][2])
 
 def R13_plane_from_R13_light_vectors(light_vectors):
+    """
+    Given three light-like vectors, returns the normal to the plane
+    spanned by the corresponding ideal points in the 1,3-hyperboloid
+    model.
+    """
+
     light_vectors = [ (-a, b, c, d) for a, b, c, d in light_vectors ]
     return R13_normalise(
         [ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
           for j in range(4) ])
 
-def make_tet_planes(tet_vert_positions): #outward facing for positively oriented tetrahedra
+def make_tet_planes(tet_vert_positions):
+    """
+    Given four light-like vectors, returns the four normals for the
+    for faces of the ideal tetrahedron spanned by the corresponding
+    ideal points in the 1,3-hyperboloid model.
+
+    Outward facing for positively oriented tetrahedra.
+    """
+
     v0, v1, v2, v3 = tet_vert_positions
     return [ R13_plane_from_R13_light_vectors([v1, v3, v2]),
              R13_plane_from_R13_light_vectors([v0, v2, v3]),
@@ -242,18 +339,35 @@ def make_tet_planes(tet_vert_positions): #outward facing for positively oriented
              R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
 def complex_to_pair(z):
+    """
+    Returns a vector (x,y) given z = x + y * i.
+    """
+
     return vector([z.real(), z.imag()])
 
 def _dist_from_projection(p, dir):
     return (p/dir).imag() * abs(dir)
 
 def height_euclidean_triangle(z0, z1, z2):
+    """
+    Takes three (ideal) points in C subset C union { Infinity}
+    regarded as boundary of the upper half space model. Returns
+    the Euclidean height of the triangle spanned by the points.
+    """
+
     return abs(_dist_from_projection(z0 - z1, z2 - z1))
 
 def _adjoint2(m):
     return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
 def compute_so13_edge_involution(idealPoint0, idealPoint1):
+    """
+    Takes two (ideal) points in C subset C union { Infinity}
+    regarded as boundary of the upper half space model.
+    Computes the O(1,3)-matrix rotating by pi about the line between
+    the corresponding ideal points.
+    """
+
     ComplexField = idealPoint0.parent()
 
     m1 = matrix([ [ idealPoint0, idealPoint1],

@@ -48,3 +48,5 @@ mac_osx_app/disk_images/
 windows_exe/SnapPy/
 windows_exe/dist*
 windows_exe/vc_redist_installers/vc_redist_*.exe
+quad_double/qd/lib/
+quad_double/qd/qd-*

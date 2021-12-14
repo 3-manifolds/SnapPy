@@ -232,7 +232,10 @@ code  =  base_code + unix_code + addl_code
 
 # C++ source files we provide
 
-hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
+if sys.platform == 'darwin':
+    hp_qd_code = []
+else:
+    hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 
 # These are the Cython files that directly get compiled
 
@@ -348,8 +351,8 @@ SnapPyC = Extension(
     include_dirs = ['kernel/headers', 'kernel/unix_kit',
                     'kernel/addl_code', 'kernel/real_type'],
     language='c++',
-    extra_compile_args=snappy_extra_compile_args,
-    extra_link_args=snappy_extra_link_args,
+    extra_compile_args = snappy_extra_compile_args,
+    extra_link_args = snappy_extra_link_args,
     extra_objects = snappy_ext_files.up_to_date_objects)
 
 
@@ -379,6 +382,13 @@ if len(hp_snappy_ext_files.sources_to_build):
     matches = glob(os.path.join(ldir, 'snappy', 'SnapPyHP.*'))
     if len(matches) > 0:
         os.remove(matches[0])
+
+# For darwin we build fat qd libraries and link with them.
+if sys.platform == 'darwin' and 'clean' not in sys.argv:
+    os.chdir('quad_double/qd')
+    subprocess.run(['/bin/bash', 'build_qd.sh'])
+    os.chdir('../..')
+    hp_extra_link_args.append('quad_double/qd/lib/libqd.a')
 
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',

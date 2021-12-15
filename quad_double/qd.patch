@@ -1,0 +1,301 @@
+Files qd-2.3.23/AUTHORS and qd/AUTHORS are identical
+Only in qd: BSD-LBNL-License-1.doc
+Files qd-2.3.23/COPYING and qd/COPYING are identical
+Only in qd-2.3.23: INSTALL
+Only in qd-2.3.23: Makefile.am
+Only in qd-2.3.23: Makefile.in
+Only in qd-2.3.23: NEWS
+Files qd-2.3.23/README and qd/README are identical
+Only in qd-2.3.23: TODO
+Only in qd-2.3.23: aclocal.m4
+Only in qd-2.3.23: config
+Only in qd-2.3.23: config.h.in
+Only in qd-2.3.23: configure
+Only in qd-2.3.23: configure.ac
+Only in qd-2.3.23: docs
+Only in qd-2.3.23: fortran
+Only in qd-2.3.23/include: Makefile.am
+Only in qd-2.3.23/include: Makefile.in
+Files qd-2.3.23/include/qd/bits.h and qd/include/qd/bits.h are identical
+Files qd-2.3.23/include/qd/c_dd.h and qd/include/qd/c_dd.h are identical
+Files qd-2.3.23/include/qd/c_qd.h and qd/include/qd/c_qd.h are identical
+Files qd-2.3.23/include/qd/dd_inline.h and qd/include/qd/dd_inline.h are identical
+diff -r -u -s qd-2.3.23/include/qd/dd_real.h qd/include/qd/dd_real.h
+--- qd-2.3.23/include/qd/dd_real.h	2021-08-13 14:12:55.000000000 -0500
++++ qd/include/qd/dd_real.h	2021-12-14 16:09:38.000000000 -0600
+@@ -59,6 +59,10 @@
+ #undef min
+ #endif
+ 
++#ifdef _MSC_VER
++#include <math.h>
++#endif
++
+ struct QD_API dd_real {
+   double x[2];
+ 
+Files qd-2.3.23/include/qd/fpu.h and qd/include/qd/fpu.h are identical
+Files qd-2.3.23/include/qd/inline.h and qd/include/qd/inline.h are identical
+Only in qd/include/qd: qd_config.h
+Only in qd-2.3.23/include/qd: qd_config.h.in
+diff -r -u -s qd-2.3.23/include/qd/qd_inline.h qd/include/qd/qd_inline.h
+--- qd-2.3.23/include/qd/qd_inline.h	2021-08-13 14:12:55.000000000 -0500
++++ qd/include/qd/qd_inline.h	2021-12-14 16:08:53.000000000 -0600
+@@ -20,6 +20,88 @@
+ #define inline
+ #endif
+ 
++/* Additional inline operators needed by SnapPy */
++/* conversions */
++inline qd_real::operator int() const {
++  return (int) x[0];
++}
++
++inline qd_real::operator long int() const {
++  return (long int) x[0];
++}
++
++inline qd_real::operator long long() const {
++  return (long long) x[0];
++}
++
++inline qd_real::operator double() const {
++  return x[0];
++}
++
++/* arithmetic */
++inline qd_real mul_pwr2(const qd_real &a, int b) {
++  return qd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
++}
++
++inline qd_real operator*(int &a, const qd_real &b) {
++    return ((qd_real) a) * b;
++}
++
++inline qd_real operator*(const qd_real &a, int &b) {
++    return a * ((qd_real) b);
++}
++
++inline qd_real operator/(const int &a, const qd_real &b) {
++    return ((qd_real) a) / b;
++}
++
++inline qd_real operator/(const qd_real &a, const int &b) {
++    return a / ((qd_real) b);
++}
++
++/* comparisons */
++inline bool operator==(int a, const qd_real &b) {
++   return (b == (qd_real) a);
++}
++
++inline bool operator==(const qd_real &a, int b) {
++   return (a == (qd_real) b);
++}
++
++inline bool operator<(const int &a, const qd_real &b) {
++    return ((qd_real) a) < b;
++}
++
++inline bool operator<(const qd_real &a, const int &b) {
++    return a <  ((qd_real) b);
++}
++
++inline bool operator>(const int &a, const qd_real &b) {
++    return ((qd_real) a) > b;
++}
++
++inline bool operator>(const qd_real &a, const int &b) {
++    return a >  ((qd_real) b);
++}
++
++inline bool operator<=(const int &a, const qd_real &b) {
++    return ((qd_real) a) <= b;
++}
++
++inline bool operator<=(const qd_real &a, const int &b) {
++    return a <=  ((qd_real) b);
++}
++
++inline bool operator>=(const int &a, const qd_real &b) {
++    return ((qd_real) a) >= b;
++}
++
++inline bool operator>=(const qd_real &a, const int &b) {
++    return a >=  ((qd_real) b);
++}
++
++/* SnapPy */
++
+ /********** Constructors **********/
+ inline qd_real::qd_real(double x0, double x1, double x2, double x3) {
+   x[0] = x0;
+@@ -124,57 +206,57 @@
+   c3 = s3;
+ }
+ 
+-inline void renorm(double &c0, double &c1, 
+-                   double &c2, double &c3, double &c4) {
+-  double s0, s1, s2 = 0.0, s3 = 0.0;
+-
+-  if (QD_ISINF(c0)) return;
+-
+-  s0 = qd::quick_two_sum(c3, c4, c4);
+-  s0 = qd::quick_two_sum(c2, s0, c3);
+-  s0 = qd::quick_two_sum(c1, s0, c2);
+-  c0 = qd::quick_two_sum(c0, s0, c1);
+-
+-  s0 = c0;
+-  s1 = c1;
+-
+-  if (s1 != 0.0) {
+-    s1 = qd::quick_two_sum(s1, c2, s2);
+-    if (s2 != 0.0) {
+-      s2 = qd::quick_two_sum(s2, c3, s3);
+-      if (s3 != 0.0)
+-        s3 += c4;
+-      else
+-        s2 = qd::quick_two_sum(s2, c4, s3);
+-    } else {
+-      s1 = qd::quick_two_sum(s1, c3, s2);
+-      if (s2 != 0.0)
+-        s2 = qd::quick_two_sum(s2, c4, s3);
+-      else
+-        s1 = qd::quick_two_sum(s1, c4, s2);
+-    }
+-  } else {
+-    s0 = qd::quick_two_sum(s0, c2, s1);
+-    if (s1 != 0.0) {
+-      s1 = qd::quick_two_sum(s1, c3, s2);
+-      if (s2 != 0.0)
+-        s2 = qd::quick_two_sum(s2, c4, s3);
+-      else
+-        s1 = qd::quick_two_sum(s1, c4, s2);
+-    } else {
+-      s0 = qd::quick_two_sum(s0, c3, s1);
+-      if (s1 != 0.0)
+-        s1 = qd::quick_two_sum(s1, c4, s2);
+-      else
+-        s0 = qd::quick_two_sum(s0, c4, s1);
+-    }
+-  }
+-
+-  c0 = s0;
+-  c1 = s1;
+-  c2 = s2;
+-  c3 = s3;
+-}
++inline void renorm(double &c0, double &c1, 
++                   double &c2, double &c3, double &c4) {
++  double s0, s1, s2 = 0.0, s3 = 0.0;
++
++  if (QD_ISINF(c0)) return;
++
++  s0 = qd::quick_two_sum(c3, c4, c4);
++  s0 = qd::quick_two_sum(c2, s0, c3);
++  s0 = qd::quick_two_sum(c1, s0, c2);
++  c0 = qd::quick_two_sum(c0, s0, c1);
++
++  s0 = c0;
++  s1 = c1;
++
++  if (s1 != 0.0) {
++    s1 = qd::quick_two_sum(s1, c2, s2);
++    if (s2 != 0.0) {
++      s2 = qd::quick_two_sum(s2, c3, s3);
++      if (s3 != 0.0)
++        s3 += c4;
++      else
++        s2 = qd::quick_two_sum(s2, c4, s3);
++    } else {
++      s1 = qd::quick_two_sum(s1, c3, s2);
++      if (s2 != 0.0)
++        s2 = qd::quick_two_sum(s2, c4, s3);
++      else
++        s1 = qd::quick_two_sum(s1, c4, s2);
++    }
++  } else {
++    s0 = qd::quick_two_sum(s0, c2, s1);
++    if (s1 != 0.0) {
++      s1 = qd::quick_two_sum(s1, c3, s2);
++      if (s2 != 0.0)
++        s2 = qd::quick_two_sum(s2, c4, s3);
++      else
++        s1 = qd::quick_two_sum(s1, c4, s2);
++    } else {
++      s0 = qd::quick_two_sum(s0, c3, s1);
++      if (s1 != 0.0)
++        s1 = qd::quick_two_sum(s1, c4, s2);
++      else
++        s0 = qd::quick_two_sum(s0, c4, s1);
++    }
++  }
++
++  c0 = s0;
++  c1 = s1;
++  c2 = s2;
++  c3 = s3;
++}
+ }
+ 
+ inline void qd_real::renorm() {
+diff -r -u -s qd-2.3.23/include/qd/qd_real.h qd/include/qd/qd_real.h
+--- qd-2.3.23/include/qd/qd_real.h	2021-08-13 14:12:55.000000000 -0500
++++ qd/include/qd/qd_real.h	2021-12-14 16:09:35.000000000 -0600
+@@ -71,6 +71,13 @@
+   double operator[](int i) const;
+   double &operator[](int i);
+ 
++  /* Conversion operators used by SnapPy */
++  operator int() const;
++  operator long int() const;
++  operator long long() const;
++  operator double() const;
++  /* SnapPy */
++ 
+   static void error(const char *msg);
+ 
+   bool isnan() const;
+@@ -163,6 +170,9 @@
+ /* Computes  qd * d  where d is known to be a power of 2.
+    This can be done component wise.                      */
+ QD_API qd_real mul_pwr2(const qd_real &qd, double d);
++/* SnapPy needs integer powers too */
++QD_API qd_real mul_pwr2(const qd_real &a, int b);
++/* SnapPy */
+ 
+ QD_API qd_real operator+(const qd_real &a, const qd_real &b);
+ QD_API qd_real operator+(const dd_real &a, const qd_real &b);
+Only in qd: lib
+Only in qd-2.3.23: m4
+Only in qd: qd-config
+Files qd-2.3.23/qd-config.in and qd/qd-config.in are identical
+Only in qd-2.3.23: qd.pc.in
+Only in qd-2.3.23/src: Makefile.am
+Only in qd-2.3.23/src: Makefile.in
+Files qd-2.3.23/src/bits.cpp and qd/src/bits.cpp are identical
+Files qd-2.3.23/src/c_dd.cpp and qd/src/c_dd.cpp are identical
+Files qd-2.3.23/src/c_qd.cpp and qd/src/c_qd.cpp are identical
+Only in qd/src: config.h
+Files qd-2.3.23/src/dd_const.cpp and qd/src/dd_const.cpp are identical
+Files qd-2.3.23/src/dd_real.cpp and qd/src/dd_real.cpp are identical
+diff -r -u -s qd-2.3.23/src/fpu.cpp qd/src/fpu.cpp
+--- qd-2.3.23/src/fpu.cpp	2018-10-30 11:05:03.000000000 -0500
++++ qd/src/fpu.cpp	2021-12-14 22:19:47.000000000 -0600
+@@ -16,7 +16,11 @@
+ 
+ #ifdef X86
+ #ifdef  _WIN32
++#ifdef  __MINGW32__
++#include "C:\\MinGW\\include\\float.h"
++#else
+ #include <float.h>
++#endif
+ #else
+ 
+ #ifdef HAVE_FPU_CONTROL_H
+Files qd-2.3.23/src/qd_const.cpp and qd/src/qd_const.cpp are identical
+Files qd-2.3.23/src/qd_real.cpp and qd/src/qd_real.cpp are identical
+Files qd-2.3.23/src/util.cpp and qd/src/util.cpp are identical
+Files qd-2.3.23/src/util.h and qd/src/util.h are identical
+Only in qd-2.3.23: tests

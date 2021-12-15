@@ -45,7 +45,17 @@ from os.path import getmtime, exists
 get_default_compiler = setuptools.distutils.ccompiler.get_default_compiler
 from glob import glob
 
+# We do not want to build a fati macOS package; build only for this CPU.
 if sys.platform == 'darwin':
+    if platform.machine() == 'arm64':
+        os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-arm64'
+        os.environ['ARCHFLAGS'] = '-arch arm64'
+    elif platform.machine() == 'x86_64':
+        os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-x86_64'
+        os.environ['ARCHFLAGS'] = '-arch x86_64'
+    else:
+        print('%s is an unrecognized CPU type'%platform.machine())
+        sys.exit(1)
     macOS_compile_args = []
     macOS_link_args = []
 
@@ -232,10 +242,7 @@ code  =  base_code + unix_code + addl_code
 
 # C++ source files we provide
 
-if sys.platform == 'darwin':
-    hp_qd_code = []
-else:
-    hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
+hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 
 # These are the Cython files that directly get compiled
 
@@ -368,11 +375,8 @@ if sys.platform == 'win32' and cc == 'msvc':
     # hp_extra_compile_args += ['/DDEBUG', '/Zi',
     #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
 else:
-    # These options are ignored when building for ARM.
-    hp_extra_compile_args = ['-msse2', '-mieee-fp']
-if sys.platform == 'darwin':
-    hp_extra_compile_args += macOS_compile_args
-    hp_extra_link_args += macOS_link_args
+    if platform.machine() == 'x86_64':
+        hp_extra_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
 
 # SnapPyHP depends implicitly on the source for the main kernel, so we
 # we delete certain object files to force distutils to rebuild them.
@@ -384,11 +388,11 @@ if len(hp_snappy_ext_files.sources_to_build):
         os.remove(matches[0])
 
 # For darwin we build fat qd libraries and link with them.
-if sys.platform == 'darwin' and 'clean' not in sys.argv:
-    os.chdir('quad_double/qd')
-    subprocess.run(['/bin/bash', 'build_qd.sh'])
-    os.chdir('../..')
-    hp_extra_link_args.append('quad_double/qd/lib/libqd.a')
+#if sys.platform == 'darwin' and 'clean' not in sys.argv:
+#    os.chdir('quad_double')
+#    subprocess.run(['/bin/bash', 'build_fat_qd.sh'])
+#    os.chdir('..')
+#    hp_extra_link_args.append('quad_double/lib/libqd.a')
 
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',

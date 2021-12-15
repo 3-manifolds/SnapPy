@@ -1,0 +1,33 @@
+#! /usr/bin/env python3
+
+import os, sys, shutil, subprocess, tempfile, glob
+
+def module_name(wheel_file):
+    parts = os.path.basename(wheel_file).split('-')[:2]
+    return '-'.join(parts)
+
+raw_wheel_dir = sys.argv[1]
+module_names = {module_name(file) for file in glob.glob(raw_wheel_dir + '/*.whl')}
+raw_wheel_types = ['macosx_10_9_x86_64', 'macosx_11_0_arm64']
+pythons = ['cp38-cp38', 'cp39-cp39', 'cp310-cp310']
+tmp_dir = tempfile.mkdtemp()
+
+for module in module_names:
+    os.makedirs('merged_wheels', exist_ok=True)
+    for py in pythons:
+        for target in raw_wheel_types:
+            subprocess.check_call(['delocate-wheel',
+                                   f'raw_wheels/{module}-{py}-{target}.whl',
+                                   '--wheel-dir=' + tmp_dir])
+
+        intel_wheel = f'{tmp_dir}/{module}-{py}-macosx_10_9_x86_64.whl'
+        arm_wheel = f'{tmp_dir}/{module}-{py}-macosx_11_0_arm64.whl'
+        univ_wheel = f'{tmp_dir}/{module}-{py}-macosx_10_9_universal2.whl'
+        shutil.copy(intel_wheel, univ_wheel)
+        # Modifies the first wheel in place
+        subprocess.check_call(['delocate-fuse', univ_wheel, arm_wheel])
+        shutil.copy(intel_wheel, 'merged_wheels')
+        shutil.copy(arm_wheel, 'merged_wheels')
+        shutil.copy(univ_wheel, 'merged_wheels')
+    
+

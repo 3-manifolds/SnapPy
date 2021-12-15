@@ -387,13 +387,6 @@ if len(hp_snappy_ext_files.sources_to_build):
     if len(matches) > 0:
         os.remove(matches[0])
 
-# For darwin we build fat qd libraries and link with them.
-#if sys.platform == 'darwin' and 'clean' not in sys.argv:
-#    os.chdir('quad_double')
-#    subprocess.run(['/bin/bash', 'build_fat_qd.sh'])
-#    os.chdir('..')
-#    hp_extra_link_args.append('quad_double/lib/libqd.a')
-
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = hp_snappy_ext_files.sources_to_build,
@@ -413,7 +406,6 @@ CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
     OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
-
     sdk_roots = [
         '/Library/Developer/CommandLineTools/SDKs',
         '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs'

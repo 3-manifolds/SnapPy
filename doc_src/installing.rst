@@ -217,7 +217,7 @@ Things you'll need:
 
 - `Cython <http://cython.org>`_, which you can install via::
 
-    python3 -m pip --user cython
+    python3 -m pip install --user cython
 
 - The gcc C++ compiler, g++.
 

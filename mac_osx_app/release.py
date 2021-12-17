@@ -155,7 +155,8 @@ def sign_app():
     sign(app)
 
 def do_release(python, dmg_name, freshen=True):
-    freshen_SnapPy(python)
+    if freshen:
+        freshen_SnapPy(python)
     build_app(python)
     cleanup_app(python)
     sign_app()

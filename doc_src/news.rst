@@ -4,6 +4,10 @@
 News
 ====
 
+* Version 3.0.3 (December 2021):
+
+  - Runs natively on Macs with Apple Silicon processors (M1, M1 Pro, M1 Max).
+
 * Version 3.0.2 (November 2021):
 
   - Support for SageMath 9.4 and 9.5, Python 3.10, and macOS Monterey.

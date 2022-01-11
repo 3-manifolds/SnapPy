@@ -2,11 +2,9 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
-
-from .perm4 import *
 
 # Global definitions dealing with simplices
 SimplexError = 'Error'
@@ -47,22 +45,22 @@ def bitmap(tuple):
     bmap = 0
     for i in tuple:
         bmap = bmap | (1 << i)
-    return bmap  
+    return bmap
 
 # This list of subsimplex names can be used for printing.
 
 SubsimplexName = ('N', 'V0', 'V1', 'E01', 'V2', 'E02', 'E12', 'F3',
                   'V3', 'E03', 'E31', 'F2', 'E23', 'F1', 'F0', 'T')
 
-# A simplex is oriented like this:  
-#     1     
-#    /|\    
-#   / | \   
-#  /  |  \  
-# 2---|---3 
-#  \  |  /  
-#   \ | /   
-#    \|/    
+# A simplex is oriented like this:
+#     1
+#    /|\
+#   / | \
+#  /  |  \
+# 2---|---3
+#  \  |  /
+#   \ | /
+#    \|/
 #     0
 #
 # This is the same as SnapPea's default right_handed orientation.
@@ -70,22 +68,22 @@ SubsimplexName = ('N', 'V0', 'V1', 'E01', 'V2', 'E02', 'E12', 'F3',
 # Each edge has a default orientation.  The edge directions are chosen
 # so that vertex 0 is a source and so that a simplex looks like this
 # when viewed from any edge:
-#     *       
-#    /|\    
-#   / ^ \   
-#  /  |  \  
-# *-<-|---* 
-#  \  |  /  
-#   \ | /   
-#    \|/    
-#     *     
+#     *
+#    /|\
+#   / ^ \
+#  /  |  \
+# *-<-|---*
+#  \  |  /
+#   \ | /
+#    \|/
+#     *
 
 # These dictionaries associate to each edge its initial vertex, terminal
 # vertex, or a tuple containing both.
 
 Tail     = { E01:V0   , E02:V0   , E21:V2   , E03:V0   , E13:V1   , E32:V3   }
 Head     = { E01:V1   , E02:V2   , E21:V1   , E03:V3   , E13:V3   , E32:V2   }
-EdgeTuple= { E01:(0,1), E02:(0,2), E21:(2,1), E03:(0,3), E13:(1,3), E32:(3,2)} 
+EdgeTuple= { E01:(0,1), E02:(0,2), E21:(2,1), E03:(0,3), E13:(1,3), E32:(3,2)}
 
 # These dictionaries associate to each edge a face containing it.  If
 # the terminal vertex of the edge is on top then the associated face
@@ -164,19 +162,19 @@ VerticesOfFaceCounterclockwise = {
 # Decide if the bitmap x represents a subset of the bitmap y
 def is_subset(x, y):
     if (x & y == x):
-        return 1   
-    return 0  
+        return 1
+    return 0
 
-# Return the complement of a subsimplex
+# Return the complement of a subsimplexXS
 def comp(subsimplex):
     return ~subsimplex & 0xf
 
+
+EdgeFacePairs = [(edge, face) for face in TwoSubsimplices
+                              for edge in OneSubsimplices
+                              if is_subset(edge, face)]
+
 # Given and edge and a face, return the other face that meets the edge.
-def flip_face(edge, face):
-    #  if is_subset(edge, face):
-    return edge | ~face & 0xf
-#  else:
-#    raise SimplexError, 'flip_face: Edge not contained in face.'
 
-
-
+flip_face = {(edge, face):(edge | ~face & 0xf)
+             for edge, face in EdgeFacePairs}

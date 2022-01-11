@@ -2,12 +2,12 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
 from .simplex import *
-from .tetrahedron import *
+from .perm4 import Perm4, inv
 
 # I have implemented Casson's Arrow as a class whose attributes are
 # "an edge in a face in a tetrahedron".  The Edge attribute is the
@@ -34,6 +34,42 @@ from .tetrahedron import *
 # I have not tried to figure out how they will break if you try to
 # use them in a non-orientable manifold.
 
+
+# For speed, we create a lookup table for all possible gluing permutations
+
+_arrow_gluing_dict = dict()
+for edge0, face0 in EdgeFacePairs:
+    for edge1, face1 in EdgeFacePairs:
+        perm = Perm4({FaceIndex[face0]:FaceIndex[flip_face[edge1, face1]],
+                      FaceIndex[flip_face[edge0, face0]]:FaceIndex[face1]})
+        glued_face = perm.image(face0)
+        _arrow_gluing_dict[edge0, face0, edge1, face1] = (perm, inv(perm), glued_face)
+
+
+# Another table to speed Arrow.opposite
+
+_arrow_opposite_dict = dict()
+for edge, face in EdgeFacePairs:
+    tail = comp(face)
+    head = face & comp(edge)
+    new_face =  comp(OppTail[(tail, head)])
+    new_edge = comp(edge)
+    _arrow_opposite_dict[edge, face] = (new_edge, new_face)
+
+
+# Another table to speed Arrow.next
+
+_arrow_next_dict = dict()
+for edge, face in EdgeFacePairs:
+    for perm in Perm4.S4():
+        new_edge = perm.image(edge)
+        try:
+            new_face = flip_face[new_edge, perm.image(face)]
+            _arrow_next_dict[perm._index, edge, face] = (new_edge, new_face)
+        except:
+            KeyError
+
+
 class Arrow:
 
     def __init__(self, edge, face, tet):
@@ -43,7 +79,7 @@ class Arrow:
 
     def __repr__(self):
         return ('< '+SubsimplexName[self.Edge]+' | '+
-                SubsimplexName[self.Face]+' | '+str(self.Tetrahedron)+' >') 
+                SubsimplexName[self.Face]+' | '+str(self.Tetrahedron)+' >')
 
     def head(self):
         return self.Face & comp(self.Edge)
@@ -78,10 +114,10 @@ class Arrow:
 
     def face_class(self):
         return self.Tetrahedron.Class[self.Face]
-    
+
 # Does NOT create a new arrow.
     def reverse(self):
-        self.Face = flip_face(self.Edge, self.Face)
+        self.Face = flip_face[self.Edge, self.Face]
         return self
 
 # By successive applications of self.next() you can walk around an edge.
@@ -95,8 +131,11 @@ class Arrow:
             tet = self.Tetrahedron.Neighbor[self.Face]
         if tet == None:
             return None
-        self.Edge = perm.image(self.Edge)
-        self.Face = flip_face(self.Edge, perm.image(self.Face))
+
+        # Next line equivalent to:
+        # self.Edge = perm.image(self.Edge)
+        # self.Face = flip_face[self.Edge, perm.image(self.Face)]
+        self.Edge, self.Face = _arrow_next_dict[perm._index, self.Edge, self.Face]
         self.Tetrahedron = tet
         return self
 
@@ -109,12 +148,23 @@ class Arrow:
             other.reverse().glue(self)
             other.reverse()
             return
-        if other.Tetrahedron == None: 
+        if other.Tetrahedron == None:
             self.Tetrahedron.attach(self.Face, None, (0,1,2,3))
             return
-        self.Tetrahedron.attach(self.Face, other.Tetrahedron,
-                                { FaceIndex[self.Face]:FaceIndex[flip_face(other.Edge,other.Face)],
-                                  FaceIndex[flip_face(self.Edge,self.Face)]:FaceIndex[other.Face] })
+        # We do this manually for speed.  The below code is equivalent to
+        #
+        # self.Tetrahedron.attach(self.Face, other.Tetrahedron,
+        #                        { FaceIndex[self.Face]:FaceIndex[flip_face(other.Edge,other.Face)],
+        #                          FaceIndex[flip_face(self.Edge,self.Face)]:FaceIndex[other.Face] })
+        tet0, face0, edge0 = self.Tetrahedron, self.Face, self.Edge
+        tet1, face1, edge1 = other.Tetrahedron, other.Face, other.Edge
+        perm, inv_perm, glued_face = _arrow_gluing_dict[edge0, face0, edge1, face1]
+        tet0.Neighbor[face0] = tet1
+        tet0.Gluing[face0] = perm
+        tet1.Neighbor[glued_face] = tet0
+        tet1.Gluing[glued_face] = inv_perm
+
+
 
 # Returns a COPY of self.next(), or a null arrow in the case of a boundary
 # face.
@@ -128,8 +178,10 @@ class Arrow:
 # Changes the arrow into its opposite.
 # Does NOT create a new arrow.
     def opposite(self):
-        self.Face = comp(OppTail[(self.tail(),self.head())])
-        self.Edge = comp(self.Edge)
+        # Equivalent to
+        # self.Face = comp(OppTail[(self.tail(),self.head())])
+        # self.Edge = comp(self.Edge)
+        self.Edge, self.Face = _arrow_opposite_dict[self.Edge, self.Face]
         return self
 
 # Rotate arrow n/3 turns clockwise about self.head()
@@ -199,8 +251,3 @@ class eArrow(Arrow):
         self.Edge = comp( tail | head )
         self.Face = comp( tail )
         self.Tetrahedron = tet
-
-
-
-
-

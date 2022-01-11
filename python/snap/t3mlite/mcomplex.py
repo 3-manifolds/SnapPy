@@ -15,6 +15,7 @@ from .face import Face
 from .edge import Edge
 from .vertex import Vertex
 from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
+from .perm4 import Perm4, inv
 from . import files
 from . import linalg
 from . import homology

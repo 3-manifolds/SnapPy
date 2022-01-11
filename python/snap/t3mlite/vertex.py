@@ -6,11 +6,6 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from .simplex import *
-from .tetrahedron import *
-from .corner import *
-from .edge import *
-
 class Vertex:
     def __init__(self):
         self.Index = -1

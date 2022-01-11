@@ -17,7 +17,7 @@ for module in module_names:
     for py in pythons:
         for target in raw_wheel_types:
             subprocess.check_call(['delocate-wheel',
-                                   f'{raw_wheels_dir}/{module}-{py}-{target}.whl',
+                                   f'{raw_wheel_dir}/{module}-{py}-{target}.whl',
                                    '--wheel-dir=' + tmp_dir])
 
         intel_wheel = f'{tmp_dir}/{module}-{py}-macosx_10_9_x86_64.whl'

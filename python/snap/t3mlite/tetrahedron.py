@@ -7,6 +7,8 @@
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
 from .simplex import *
+from .perm4 import Perm4, inv
+
 import sys
 
 class Tetrahedron:

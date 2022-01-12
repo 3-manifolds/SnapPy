@@ -1,8 +1,10 @@
 """
-The linear algebra needed for t3m.  Build on top of PARI.  
+The linear algebra needed for t3m.  Build on top of PARI.
 """
 
 from snappy.pari import pari
+
+PariGen = type(pari(0))
 
 def is_iterable(obj):
     try:
@@ -11,9 +13,15 @@ def is_iterable(obj):
     except TypeError:
         return False
 
+def is_pari_vector(obj):
+    return isinstance(obj, PariGen) and obj.type() == 't_VEC'
+
+def is_pari_matrix(obj):
+    return isinstance(obj, PariGen) and obj.type() == 't_MAT'
+
 class Vector:
     """
-    >>> v = Vector(3, range(3, 6)); v 
+    >>> v = Vector(3, range(3, 6)); v
     [3, 4, 5]
     >>> len(v)
     3
@@ -38,14 +46,17 @@ class Vector:
     [2, 2, 6]
     """
     def __init__(self, n, entries=None):
-        if entries is None:
-            if is_iterable(n):
-                entries = n
-                n = len(entries)
-            else:
-                entries = n*[0]
-        assert n == len(entries)
-        self.pari = pari.vector(n, entries)
+        if is_pari_vector(n):
+            self.pari = n
+        else:
+            if entries is None:
+                if is_iterable(n):
+                    entries = n
+                    n = len(entries)
+                else:
+                    entries = n*[0]
+            assert n == len(entries)
+            self.pari = pari.vector(n, entries)
 
     def __getitem__(self, i):
         return self.pari[i]
@@ -71,7 +82,7 @@ class Vector:
         if isinstance(other, Vector):
             return self.pari == other.pari
         if other == 0:
-            return set([e == 0 for e in self]) == set([True])
+            return all(e == 0 for e in self)
         raise NotImplementedError
 
     def __ne__(self, other):
@@ -87,11 +98,14 @@ class Vector:
 
     def __add__(self, other):
         if isinstance(other, Vector):
-            return Vector(self.pari + other.pari)
+            return self.__class__(self.pari + other.pari)
         raise NotImplementedError
 
     def __rmul__(self, other):
-        return Vector([other*s for s in self])
+        return  self.__class__([other*s for s in self])
+
+    def __truediv__(self, other):
+        return self.__class__([e/other for e in self])
 
     def __mul__(self, other):
         if isinstance(other, Vector):
@@ -102,11 +116,11 @@ class Vector:
 
     def __sub__(self, other):
         if isinstance(other, Vector):
-            return Vector(self.pari -  other.pari)
+            return self.__class__(self.pari -  other.pari)
         raise NotImplementedError
 
     def __abs__(self):
-        return Vector([abs(s) for s in self])
+        return self.__class__([abs(s) for s in self])
 
     def __neg__(self):
         return (-1)*self
@@ -132,20 +146,26 @@ class Matrix:
     >>> Matrix([[1,0,1], [2,3,4]])
     [1, 0, 1; 2, 3, 4]
     """
+
+    _vector_class = Vector
+
     def __init__(self, nrows, ncols=None, entries=None):
-        if ncols==None:
-            nice_entries = nrows
-            try:
-                ncols = len(nrows[0])
-                nrows = len(nrows)
-            except TypeError:
-                ncols = nrows.ncols()
-                nrows = nrows.nrows()
-            entries = [e for row in nice_entries for e in row] 
-        if entries is None:
-            entries = (nrows*ncols)*[0]
-        assert len(entries) == nrows*ncols
-        self.pari = pari.matrix(nrows, ncols, entries)
+        if is_pari_matrix(nrows):
+            self.pari = nrows
+        else:
+            if ncols==None:
+                nice_entries = nrows
+                try:
+                    ncols = len(nrows[0])
+                    nrows = len(nrows)
+                except TypeError:
+                    ncols = nrows.ncols()
+                    nrows = nrows.nrows()
+                entries = [e for row in nice_entries for e in row]
+            if entries is None:
+                entries = (nrows*ncols)*[0]
+            assert len(entries) == nrows*ncols
+            self.pari = pari.matrix(nrows, ncols, entries)
 
     def nrows(self):
         return self.pari.nrows()
@@ -155,7 +175,31 @@ class Matrix:
 
     def column(self, j):
         pari_col = self.pari[j]
-        return Vector(pari_col)
+        return self._vector_class(pari_col)
+
+    def row(self, i):
+        """
+        >>> A = Matrix(3, 2, range(6))
+        >>> A.row(1)
+        [2, 3]
+        """
+        return self._vector_class([self[i, j] for j in range(self.ncols())])
+
+    def columns(self):
+        """
+        >>> A = Matrix(3, 2, range(6))
+        >>> A.columns()
+        [[0, 2, 4], [1, 3, 5]]
+        """
+        return [self.column(j) for j in range(self.ncols())]
+
+    def rows(self):
+        """
+        >>> A = Matrix(3, 2, range(6))
+        >>> A.rows()
+        [[0, 1], [2, 3], [4, 5]]
+        """
+        return [self.row(i) for i in range(self.nrows())]
 
     def entries(self):
         ans = []
@@ -173,9 +217,9 @@ class Matrix:
         if len(vec) != self.ncols():
             raise ValueError
         if not isinstance(vec, Vector):
-            vec = Vector(vec)
+            vec = self._vector_class(vec)
         ans = self.pari * vec.pari.Col()
-        return Vector(ans)
+        return self._vector_class(ans)
 
     def solve(self, b):
         """
@@ -189,20 +233,29 @@ class Matrix:
         [4, 5]
         """
         if not isinstance(b, Vector):
-            b = Vector(b)
+            b = self._vector_class(b)
 
         if self.nrows() == self.ncols():
-            ans = Vector(self.pari.matsolve(b.pari.Col()))
+            ans = self._vector_class(self.pari.matsolve(b.pari.Col()))
         elif self.nrows() > self.ncols():
             if self.rank() != self.ncols():
                 raise ValueError
             ker = self.pari.mattranspose().matker()
             M = Matrix(list(self.pari) + list(ker))
             M.pari = M.pari.mattranspose()
-            ans = Vector(list(M.solve(b))[:self.ncols()])
+            ans = self._vector_class(list(M.solve(b))[:self.ncols()])
         assert self.dot(ans) == b
-        return ans    
+        return ans
 
+    def solve_right(self, b):
+        """
+        Return a vector v for which A v = b.
+
+        >>> A = Matrix(2, 2, range(4))
+        >>> A.solve_right([6, 8])
+        [-5, 6]
+        """
+        return self.solve(b)
 
     def rank(self):
         """
@@ -233,6 +286,30 @@ class Matrix:
         a, b = self.nrows(), self.ncols()
         return [self[i, j] for i in range(a) for j in range(b)]
 
+    def transpose(self):
+        """
+        >>> A = Matrix(2, 3, range(6))
+        >>> B = Matrix([[0, 3], [1, 4], [2, 5]])
+        >>> A.transpose() == B and B.transpose() == A
+        True
+        """
+        return self.__class__(self.pari.mattranspose())
+
+    def inverse(self):
+        """
+        >>> A = Matrix([[1, 2], [3, 4]])
+        >>> A * A.inverse()
+        [1, 0; 0, 1]
+        """
+        a, b = self.nrows(), self.ncols()
+        if a != b:
+            raise ValueError('An invertible matrix must be square')
+
+        return self.__class__(self.pari.matsolve(pari.matid(a)))
+
+    def det(self):
+        return self.pari.matdet()
+
     def __repr__(self):
         return repr(self.pari)
 
@@ -245,7 +322,7 @@ class Matrix:
             return self.pari[ij]
         except TypeError:
             pari_row = self.pari.mattranspose()[ij]
-            return Vector(pari_row.length(), pari_row)
+            return self._vector_class(pari_row)
 
     def __mul__(self, other):
         """
@@ -259,10 +336,7 @@ class Matrix:
         if isinstance(other, Matrix):
             if other.nrows() != self.ncols():
                 raise ValueError('Matrix sizes do not allow for multiplication')
-            pari_ans = self.pari * other.pari
-            ans = Matrix(pari_ans.nrows(), pari_ans.ncols())
-            ans.pari = pari_ans
-            return ans
+            return self.__class__(self.pari * other.pari)
         if is_iterable(other):
             return self.dot(other)
 
@@ -314,4 +388,4 @@ def gcd(a, b):
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    print(doctest.testmod())

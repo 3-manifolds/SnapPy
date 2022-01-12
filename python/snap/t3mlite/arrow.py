@@ -63,11 +63,8 @@ _arrow_next_dict = dict()
 for edge, face in EdgeFacePairs:
     for perm in Perm4.S4():
         new_edge = perm.image(edge)
-        try:
-            new_face = flip_face[new_edge, perm.image(face)]
-            _arrow_next_dict[perm._index, edge, face] = (new_edge, new_face)
-        except:
-            KeyError
+        new_face = flip_face[new_edge, perm.image(face)]
+        _arrow_next_dict[perm._index, edge, face] = (new_edge, new_face)
 
 
 class Arrow:

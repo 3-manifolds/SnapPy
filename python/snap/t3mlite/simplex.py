@@ -165,7 +165,7 @@ def is_subset(x, y):
         return 1
     return 0
 
-# Return the complement of a subsimplexXS
+# Return the complement of a subsimplex
 def comp(subsimplex):
     return ~subsimplex & 0xf
 

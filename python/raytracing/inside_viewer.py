@@ -19,6 +19,7 @@ class InsideViewer(ttk.Frame):
                  weights = None,
                  cohomology_basis = None,
                  cohomology_class = None,
+                 geodesics = None,
                  main_window = None):
         ttk.Frame.__init__(self, master)
         self.main_window = main_window
@@ -27,7 +28,11 @@ class InsideViewer(ttk.Frame):
         self.has_weights = bool(weights or cohomology_class)
 
         main_frame = self.create_frame_with_main_widget(
-            self, manifold, weights, cohomology_basis, cohomology_class)
+            self,
+            manifold,
+            weights, cohomology_basis, cohomology_class,
+            geodesics)
+            
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
         row = 0
         self.notebook = ttk.Notebook(self)
@@ -451,7 +456,8 @@ class InsideViewer(ttk.Frame):
                                       manifold,
                                       weights,
                                       cohomology_basis,
-                                      cohomology_class):
+                                      cohomology_class,
+                                      geodesics):
         frame = ttk.Frame(parent)
 
         column = 0
@@ -462,6 +468,7 @@ class InsideViewer(ttk.Frame):
             weights = weights,
             cohomology_basis = cohomology_basis,
             cohomology_class = cohomology_class,
+            geodesics = geodesics,
             master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)

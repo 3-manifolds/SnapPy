@@ -117,6 +117,17 @@ layout (std140) uniform MargulisTubes
 };
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 
+#if ##num_geodesic_segments## > 0
+layout (std140) uniform geodesics
+{
+    vec4 geodesicTails[##num_geodesic_segments##];
+    vec4 geodesicHeads[##num_geodesic_segments##];
+    int geodesicOffsets[##num_tets## + 1];
+};
+
+uniform float geodesicTubeRadiusParam;
+#endif
+
 uniform float horosphereScales[4 * ##num_tets##];
 
 // Heights of the Euclidean triangle obtained when intersecting
@@ -233,6 +244,7 @@ const int object_type_vertex_sphere       = 7;
 const int object_type_margulis_tube       = 8;
 const int object_type_elevation_enter     = 9;
 const int object_type_elevation_exit      = 10;
+const int object_type_geodesic_tube       = 11;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -281,7 +293,8 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_margulis_tube ||
         ray_hit.object_type == object_type_edge_fan ||
         ray_hit.object_type == object_type_elevation_enter ||
-        ray_hit.object_type == object_type_elevation_exit;
+        ray_hit.object_type == object_type_elevation_exit ||
+        ray_hit.object_type == object_type_geodesic_tube;
 }
 
 // Advances ray by distance atanh(p).
@@ -470,6 +483,17 @@ horosphereEqn(int index)
 {
     return horosphereScales[index] * R13Vertices[index];
 }
+
+#if ##num_geodesic_segments## > 0
+// The two endpoints of a geodesic
+vec4[2]
+endpointsForGeodesic(int index)
+{
+    return vec4[](geodesicTails[index],
+                  geodesicHeads[index]);
+}
+#endif
+
 #endif
 
 vec4
@@ -496,7 +520,16 @@ normalForRayHit(RayHit ray_hit)
             ray_hit.ray.point,
             endpointsForMargulisTube(index));
     }
-#endif    
+
+#if ##num_geodesic_segments## > 0
+    if (ray_hit.object_type == object_type_geodesic_tube) {
+        return normalForTube(
+            ray_hit.ray.point,
+            endpointsForGeodesic(ray_hit.object_index));
+    }
+#endif
+
+#endif
     
     if(ray_hit.object_type == object_type_edge_fan ||
        ray_hit.object_type == object_type_elevation_enter ||
@@ -686,6 +719,25 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
             }
         }
     }
+
+#if ##num_geodesic_segments## > 0
+    for (int index = geodesicOffsets[ray_hit.tet_num];
+         index < geodesicOffsets[ray_hit.tet_num + 1];
+         index++) {
+
+        vec2 params = distParamsForTubeIntersection(
+            ray_hit.ray,
+            endpointsForGeodesic(index),
+            geodesicTubeRadiusParam,
+            0.0);
+
+        if (params.x < smallest_p) {
+            smallest_p = params.x;
+            ray_hit.object_type = object_type_geodesic_tube;
+            ray_hit.object_index = index;
+        }
+    }
+#endif
 
 #endif
 
@@ -934,6 +986,13 @@ material_params(RayHit ray_hit)
         result.diffuse = vec3(0.7,0.3,0.3);
         result.ambient = 0.5 * result.diffuse;
     }
+
+#if ##num_geodesic_segments## > 0
+    if (ray_hit.object_type == object_type_geodesic_tube) {
+        result.diffuse = vec3(0.3,0.3,0.9);
+        result.ambient = 0.5 * result.diffuse;
+    }
+#endif
 
     return result;
 }

@@ -23,6 +23,7 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
         constants_dict)
 
     num_tets = constants_dict[b'##num_tets##']
+    num_geodesic_segments = constants_dict[b'##num_geodesic_segments##']
 
     uniform_block_names_sizes_and_offsets = [
         ('TetrahedraBasics',
@@ -40,6 +41,11 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
         ('MargulisTubes',
          (64 + 64) * num_tets,
          { 'margulisTubeTails': 0,
-           'margulisTubeHeads' : 64 * num_tets}) ]
+           'margulisTubeHeads' : 64 * num_tets}),
+        ('geodesics',
+         (16 + 16) * num_geodesic_segments + 16 * (num_tets + 1),
+         { 'geodesicTails': 0,
+           'geodesicHeads': 16 * num_geodesic_segments,
+           'geodesicOffsets': (16 + 16) * num_geodesic_segments }) ]
     
     return src, uniform_block_names_sizes_and_offsets

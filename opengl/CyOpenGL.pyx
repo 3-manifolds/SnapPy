@@ -1757,6 +1757,17 @@ ELSE:
                     for j in range(4):
                         for k in range(4):
                             float_array[4 * 4 * i + 4 * j + k] = value[i][j][k]
+            elif uniform_type == 'int[]':
+                l = len(value)
+                if offset + 16 * l > self._buffer_size:
+                    raise Exception(
+                        ("Data for %s of length %d at offset %d not fitting "
+                         "into uniform buffer object of size %d") % (
+                            name, l, offset, self._buffer_size))
+
+                int_array = <GLint*>(self._buffer + offset)
+                for i in range(l):
+                    int_array[4 * i] = value[i]
             else:
                 raise Exception(
                     ("Unsupported uniform type %s for "

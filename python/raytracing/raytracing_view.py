@@ -4,6 +4,7 @@ from .hyperboloid_utilities import *
 from .ideal_raytracing_data import *
 from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
+from .geodesic import *
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
@@ -91,6 +92,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                  weights,          # Weights for tet faces
                  cohomology_basis, # Each entry are weights for the tet faces
                  cohomology_class, # Number for each entry in basis specifying superposition
+                 geodesics,
                  master,
                  *args,
                  **kwargs):
@@ -107,6 +109,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.weights = weights
         self.cohomology_basis = cohomology_basis
+        self.geodesics = geodesics
 
         has_weights = bool(weights or cohomology_class)
 
@@ -150,12 +153,17 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.manifold = manifold
 
         self._unguarded_initialize_raytracing_data()
+        self._initialize_geodesic_data()
 
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
+        compile_time_constants = _merge_dicts(
+            self.raytracing_data.get_compile_time_constants(),
+            self.geodesics_compile_time_constants)
+
         shader_source, uniform_block_names_sizes_and_offsets = (
             shaders.get_triangulation_shader_source_and_ubo_descriptors(
-                    self.raytracing_data.get_compile_time_constants()))
+                compile_time_constants))
 
         SimpleImageShaderWidget.__init__(
             self, master,
@@ -176,6 +184,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         result = _merge_dicts(
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
+            self.geodesics_uniform_bindings,
             {
                 'currentWeight' : ('float', current_weight),
                 'screenResolution' : ('vec2', [width, height]),
@@ -309,6 +318,38 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             unit_3_vector_and_distance_to_O13_hyperbolic_translation(
                 dir, -dist),
             speed)
+
+    def _initialize_geodesic_data(self):
+        if self.geodesics:
+            if len(self.geodesics) > 1:
+                raise Exception(
+                    "Drawing more than one geodesic is not yet supported.")
+            geodesic_info = GeodesicInfo(self.manifold, self.geodesics[0])
+
+            RF = self.manifold.tetrahedra_shapes('rect')[0].real().parent()
+            radius = RF(0.02)
+
+            tets_and_heads_and_tails = (
+                find_tets_and_R13_heads_and_tails_for_tube(
+                    geodesic_info, radius))
+
+            heads, tails, offsets = (
+                pack_tets_and_R13_heads_and_tails_for_shader(
+                    geodesic_info, tets_and_heads_and_tails))
+
+            radiusParam = (radius/2).cosh()**2 / 2
+
+            self.geodesics_compile_time_constants = {
+                b'##num_geodesic_segments##' : len(heads) }
+            self.geodesics_uniform_bindings = {
+                'geodesics.geodesicHeads' : ('vec4[]', heads),
+                'geodesics.geodesicTails' : ('vec4[]', tails),
+                'geodesics.geodesicOffsets' : ('int[]', offsets),
+                'geodesicTubeRadiusParam' : ('float', radiusParam) }
+        else:
+            self.geodesics_compile_time_constants = {
+                b'##num_geodesic_segments##' : 0 }
+            self.geodesics_uniform_bindings = {}
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

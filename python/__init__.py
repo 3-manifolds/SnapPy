@@ -588,7 +588,7 @@ except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
 
-def manifold_inside_view(self, cohomology_class = None):
+def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     """
     Show raytraced inside view of hyperbolic manifold:
 
@@ -631,7 +631,8 @@ def manifold_inside_view(self, cohomology_class = None):
         title = "Inside view of %s" % self.name(),
         weights = weights,
         cohomology_basis = cohomology_basis,
-        cohomology_class = cohomology_class)
+        cohomology_class = cohomology_class,
+        geodesics = geodesics)
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

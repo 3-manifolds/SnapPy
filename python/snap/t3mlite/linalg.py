@@ -44,11 +44,14 @@ class Vector:
     4
     >>> abs(w)
     [2, 2, 6]
+
+    Internally, a Vector is a PARI *column* vector:
+
+    >>> w.pari.type()
+    't_COL'
     """
-    def __init__(self, n, entries=None):
-        if is_pari_vector(n):
-            self.pari = n
-        else:
+    def __init__(self, n=None, entries=None, pari_vector=None):
+        if n is not None:
             if entries is None:
                 if is_iterable(n):
                     entries = n
@@ -56,7 +59,8 @@ class Vector:
                 else:
                     entries = n*[0]
             assert n == len(entries)
-            self.pari = pari.vector(n, entries)
+            pari_vector = pari.vector(n, entries).Col()
+        self.pari = pari_vector
 
     def __getitem__(self, i):
         return self.pari[i]
@@ -68,7 +72,7 @@ class Vector:
         return int(self.pari.length())
 
     def __repr__(self):
-        return repr(self.pari)
+        return repr(self.pari)[:-1]
 
     def __eq__(self, other):
         """
@@ -98,25 +102,25 @@ class Vector:
 
     def __add__(self, other):
         if isinstance(other, Vector):
-            return self.__class__(self.pari + other.pari)
+            return self.__class__(pari_vector=self.pari + other.pari)
         raise NotImplementedError
 
     def __rmul__(self, other):
-        return  self.__class__([other*s for s in self])
+        return  self.__class__(pari_vector=other*self.pari)
 
     def __truediv__(self, other):
-        return self.__class__([e/other for e in self])
+        return self.__class__(pari_vector=self.pari/other)
 
     def __mul__(self, other):
         if isinstance(other, Vector):
-            if len(self) != len(other):
+            if self.pari.length() != other.pari.length():
                 raise ValueError("Vectors have different lengths")
-            return sum( [other[i]*s for i, s in enumerate(self)] )
+            return self.pari.Vec() * other.pari
         raise NotImplementedError
 
     def __sub__(self, other):
         if isinstance(other, Vector):
-            return self.__class__(self.pari -  other.pari)
+            return self.__class__(pari_vector=self.pari - other.pari)
         raise NotImplementedError
 
     def __abs__(self):
@@ -149,10 +153,8 @@ class Matrix:
 
     _vector_class = Vector
 
-    def __init__(self, nrows, ncols=None, entries=None):
-        if is_pari_matrix(nrows):
-            self.pari = nrows
-        else:
+    def __init__(self, nrows=None, ncols=None, entries=None, pari_matrix=None):
+        if nrows is not None:
             if ncols==None:
                 nice_entries = nrows
                 try:
@@ -165,7 +167,8 @@ class Matrix:
             if entries is None:
                 entries = (nrows*ncols)*[0]
             assert len(entries) == nrows*ncols
-            self.pari = pari.matrix(nrows, ncols, entries)
+            pari_matrix = pari.matrix(nrows, ncols, entries)
+        self.pari = pari_matrix
 
     def nrows(self):
         return self.pari.nrows()
@@ -175,7 +178,7 @@ class Matrix:
 
     def column(self, j):
         pari_col = self.pari[j]
-        return self._vector_class(pari_col)
+        return self._vector_class(pari_vector=pari_col)
 
     def row(self, i):
         """
@@ -214,12 +217,12 @@ class Matrix:
         >>> A.dot(range(4, 8))
         [38, 126, 214]
         """
-        if len(vec) != self.ncols():
-            raise ValueError
         if not isinstance(vec, Vector):
             vec = self._vector_class(vec)
-        ans = self.pari * vec.pari.Col()
-        return self._vector_class(ans)
+        if vec.pari.length() != self.pari.ncols():
+            raise ValueError('Vector size does not match matrix')
+        ans = self.pari * vec.pari
+        return self._vector_class(pari_vector=ans)
 
     def solve(self, b):
         """
@@ -232,18 +235,20 @@ class Matrix:
         >>> B.solve([5, 23, 41, 59])
         [4, 5]
         """
+        ncols, nrows = self.ncols(), self.nrows()
         if not isinstance(b, Vector):
             b = self._vector_class(b)
 
-        if self.nrows() == self.ncols():
-            ans = self._vector_class(self.pari.matsolve(b.pari.Col()))
-        elif self.nrows() > self.ncols():
-            if self.rank() != self.ncols():
+        if nrows == ncols:
+            v = self.pari.matsolve(b.pari)
+            ans = self._vector_class(pari_vector=v)
+        elif nrows > ncols:
+            if self.rank() != ncols:
                 raise ValueError
             ker = self.pari.mattranspose().matker()
-            M = Matrix(list(self.pari) + list(ker))
-            M.pari = M.pari.mattranspose()
-            ans = self._vector_class(list(M.solve(b))[:self.ncols()])
+            M = self.pari.concat(ker)
+            v = M.matsolve(b.pari)
+            ans = self._vector_class(list(v)[:ncols])
         assert self.dot(ans) == b
         return ans
 
@@ -293,7 +298,7 @@ class Matrix:
         >>> A.transpose() == B and B.transpose() == A
         True
         """
-        return self.__class__(self.pari.mattranspose())
+        return self.__class__(pari_matrix=self.pari.mattranspose())
 
     def inverse(self):
         """
@@ -305,7 +310,7 @@ class Matrix:
         if a != b:
             raise ValueError('An invertible matrix must be square')
 
-        return self.__class__(self.pari.matsolve(pari.matid(a)))
+        return self.__class__(pari_matrix=self.pari.matsolve(pari.matid(a)))
 
     def det(self):
         return self.pari.matdet()
@@ -334,9 +339,9 @@ class Matrix:
         [20, 74]
         """
         if isinstance(other, Matrix):
-            if other.nrows() != self.ncols():
+            if other.pari.nrows() != self.pari.ncols():
                 raise ValueError('Matrix sizes do not allow for multiplication')
-            return self.__class__(self.pari * other.pari)
+            return self.__class__(pari_matrix=self.pari * other.pari)
         if is_iterable(other):
             return self.dot(other)
 

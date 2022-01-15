@@ -13,7 +13,10 @@ def is_iterable(obj):
     except TypeError:
         return False
 
-def is_pari_vector(obj):
+def is_pari_col_vector(obj):
+    return isinstance(obj, PariGen) and obj.type() == 't_COL'
+
+def is_pari_row_vector(obj):
     return isinstance(obj, PariGen) and obj.type() == 't_VEC'
 
 def is_pari_matrix(obj):
@@ -63,6 +66,19 @@ class Vector:
         self.pari = pari_vector
 
     def __getitem__(self, i):
+        """
+        >>> v = Vector([1, 2, 3, 4])
+        >>> v[1]
+        2
+        >>> v[-1]
+        4
+        >>> v[1:-1]
+        [2, 3]
+        """
+        if isinstance(i, slice):
+            return self.__class__(list(self.pari)[i])
+        if i < 0:
+            i = i % len(self)
         return self.pari[i]
 
     def __setitem__(self, i, value):

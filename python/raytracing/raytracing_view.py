@@ -167,9 +167,11 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         SimpleImageShaderWidget.__init__(
             self, master,
-            shader_source,
-            uniform_block_names_sizes_and_offsets,
             *args, **kwargs)
+
+        self.set_fragment_shader_source(
+            shader_source,
+            uniform_block_names_sizes_and_offsets)
 
         # Use distance view for now
         self.view = 1

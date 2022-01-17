@@ -164,6 +164,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.geodesics = Geodesics(manifold, geodesics)
         self._update_geodesic_data()
 
+        self._update_shader()
+
         # Use distance view for now
         self.view = 1
         if has_weights:
@@ -317,7 +319,11 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.ui_parameter_dict['geodesicTubeRadius'][1])
         self.geodesics_uniform_bindings = (
             self.geodesics.get_uniform_bindings())
+
+    def update_geodesic_data_and_redraw(self):
+        self._update_geodesic_data()
         self._update_shader()
+        self.redraw_if_initialized()
 
     def _update_shader(self):
         compile_time_constants = _merge_dicts(

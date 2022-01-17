@@ -52,6 +52,10 @@ class InsideViewer(ttk.Frame):
         self.notebook.add(self.create_skeleton_frame(self),
                           text = 'Skeleton')
 
+        if geodesics:
+            self.notebook.add(self.create_geodesics_frame(self),
+                              text = 'Geodesics')
+
         self.notebook.add(self.create_quality_frame(self),
                           text = 'Quality')
 
@@ -311,6 +315,27 @@ class InsideViewer(ttk.Frame):
             right_end = 0.2,
             update_function = self.widget.redraw_if_initialized)
 
+        return frame
+
+    def create_geodesics_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.widget.ui_parameter_dict,
+            key = 'geodesicTubeRadius',
+            title = 'Tube radius',
+            row = row,
+            left_end = 0.0,
+            right_end = 0.35,
+            update_function = self.widget.update_geodesic_data_and_redraw,
+            format_string = '%.3f')
+            
         return frame
 
     def create_quality_frame(self, parent):

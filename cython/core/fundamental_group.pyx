@@ -5,71 +5,100 @@ Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
 # Helper functions for manipulating fg. words
 
-def inverse_word(word):
-    parts = list(word.swapcase())
-    parts.reverse()
-    return ''.join(parts)
+def inverse_list_word(word):
+    return [ -x for x in word[::-1] ]
 
-reduce_word_regexp = re.compile('|'.join([x + x.swapcase()
-                                          for x in string.ascii_letters]))
-
-def reduce_word(word):
+def reduce_list_word(word):
     """
     Cancels inverse generators.
     """
-    ans, progress = word, 1
+    result = []
+    for letter in word:
+        if result and result[-1] == -letter:
+            result.pop()
+        else:
+            result.append(letter)
+    return result
 
-    while progress:
-        ans, progress =  reduce_word_regexp.subn('', ans)
-    return ans
+cdef c_word_as_int_list(int *word):
+    cdef int n = 0
+    word_list = []
+    while word[n] != 0:
+        word_list.append(word[n])
+        n += 1
+    return word_list
 
-def format_word(word, verbose_form):
-    if not verbose_form:
-        return word
-    if re.search('\d', word):
-        letters = re.findall('([xX]\d+)', word)
+cdef int *c_word_from_list(word_list):
+    cdef int *c_word
+    cdef int length, size, n
+    length = <int>len(word_list)
+    size = sizeof(int)*(1+length)
+    c_word = <int *>malloc(size)
+    for n from 0 <= n < length:
+        c_word[n] = word_list[n]
+    c_word[length] = 0
+    return c_word
+
+cdef int_to_gen_string(int g, int num_generators, verbose_form):
+    if num_generators <=26:
+        if verbose_form and g < 0:
+            return Alphabet[-g] + '^-1'
+        else:
+            return Alphabet[g]
     else:
-        letters = list(word)
-    return '*'.join([a if a[0].islower() else a.lower() + '^-1' for a in letters])
+        if verbose_form and g < 0:
+            return 'x%d^-1' % -g
+        else:
+            ans = 'x' if g > 0 else 'X'
+            return ans + '%d' % abs(g)
+
+def _letter_seperator(verbose_form):
+    if verbose_form:
+        return '*'
+    else:
+        return ''
+
+cdef c_word_as_string(int *word, int num_generators, verbose_form):
+    cdef int n = 0
+    cdef int letter
+    word_list = []
+    while word[n] != 0:
+        letter = word[n]
+        word_list.append(
+            int_to_gen_string(word[n], num_generators, verbose_form))
+        n += 1
+    return _letter_seperator(verbose_form).join(word_list)
+
+def word_as_list(word, int num_generators):
+    if not isinstance(word, basestring):
+        raise TypeError('Words must be represented '
+                        'as Python strings.')
+    word_list = []
+    if num_generators > 26:
+        for prefix, number in re.findall('([xX])(\d+)', word):
+            g = int(number)
+            if not (0 < g and g <= num_generators):
+                raise ValueError('The word contains a non-generator.')
+            if prefix.islower():
+                word_list.append( g)
+            else:
+                word_list.append(-g)
+    else:
+        for letter in word:
+            g = ord(letter.lower()) - ord("a") + 1
+            if not (0 < g and g <= num_generators):
+                raise ValueError('The word contains a non-generator.')
+            if letter.islower():
+                word_list.append( g)
+            else:
+                word_list.append(-g)
+
+    return word_list
 
 cdef class CFundamentalGroup(object):
     cdef c_GroupPresentation *c_group_presentation
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
-
-    cdef int_to_gen_string(self, int g):
-        if self.num_generators() <=26:
-            return Alphabet[g]
-        else:
-            ans = 'x' if g > 0 else 'X'
-            return ans + '%d' % abs(g)
-
-    cdef c_word_as_int_list(self, int *word):
-        cdef int n = 0
-        word_list = []
-        while word[n] != 0:
-            word_list.append(word[n])
-            n += 1
-        return word_list
-
-    cdef c_word_as_string(self, int *word):
-        cdef int n = 0
-        word_list = []
-        while word[n] != 0:
-            word_list.append(self.int_to_gen_string(word[n]))
-            n += 1
-        return ''.join(word_list)
-
-    cdef int *c_word_from_list(self, word_list):
-        cdef int *c_word
-        cdef int length, size, n
-        length = <int>len(word_list)
-        size = sizeof(int)*(1+length)
-        c_word = <int *>malloc(size)
-        for n from 0 <= n < length:
-            c_word[n] = word_list[n]
-        c_word[length] = 0
-        return c_word
 
     def __cinit__(self, Triangulation triangulation,
                   simplify_presentation = True,
@@ -97,23 +126,6 @@ cdef class CFundamentalGroup(object):
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
 
-    def _word_as_list(self, word):
-        if not isinstance(word, basestring):
-            raise TypeError('Words must be represented '
-                            'as Python strings.')
-        word_list = []
-        generators = self.generators()
-        if len(generators) > 26:
-            word = re.findall('[xX]\d+', word)
-        for letter in word:
-            try:
-                if letter[0].islower():
-                    word_list.append(1 + generators.index(letter))
-                else:
-                    word_list.append(-1 - generators.index(letter.lower()))
-            except ValueError:
-                raise RuntimeError('The word contains a non-generator.')
-        return word_list
 
     def num_generators(self):
         """
@@ -140,11 +152,12 @@ cdef class CFundamentalGroup(object):
         """
         cdef int n
         cdef int *gen
+        cdef int num_gen = self.num_generators()
+        cdef int num_orig_gens = self.num_original_generators()
         orig_gens = []
-        num_orig_gens = fg_get_num_orig_gens(self.c_group_presentation)
         for n from 0 <= n < num_orig_gens:
             gen = fg_get_original_generator(self.c_group_presentation, n)
-            word = format_word(self.c_word_as_string(gen), verbose_form)
+            word = c_word_as_string(gen, num_gen, verbose_form)
             orig_gens.append(word)
             fg_free_relation(gen)
         return orig_gens
@@ -165,10 +178,8 @@ cdef class CFundamentalGroup(object):
             return moves
 
         n = self.num_original_generators()
-        if n > 26:
-            raise ValueError('Too many generators.')
 
-        words = [None] + list(string.ascii_letters[:n])
+        words = [None] + [ [ i + 1 ] for i in range(n) ]
 
         while len(moves) > 0:
             a = moves.pop(0)
@@ -177,8 +188,8 @@ cdef class CFundamentalGroup(object):
                 # word is the expression of the new generator in terms
                 # of the old ones
                 word, moves = moves[:n], moves[n+1:]
-                words.append( reduce_word(''.join(
-                    [words[g] if g > 0 else inverse_word(words[-g])
+                words.append( reduce_list_word(''.join(
+                    [words[g] if g > 0 else inverse_list_word(words[-g])
                      for g in word]
                     )))
             else:
@@ -187,19 +198,23 @@ cdef class CFundamentalGroup(object):
                     words[a] = words[-1]
                     words = words[:-1]
                 elif a == -b: # invert generator
-                    words[a] = inverse_word(words[a])
+                    words[a] = inverse_list_word(words[a])
                 else: #handle slide
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
-                        B = inverse_word(B)
-                    words[abs(a)] = reduce_word(  A+B if a > 0 else B+A ) 
+                        B = inverse_list_word(B)
+                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A ) 
 
-        return [format_word( w, verbose_form) for w in words[1:]]
+        return [
+            _letter_seperator(verbose_form).join(
+                int_to_gen_string(g, n, verbose_form)
+                for g in word)
+            for word in words[1:] ]
 
     def _word_moves(self):
         cdef int *c_moves
         c_moves = fg_get_word_moves(self.c_group_presentation)
-        moves = self.c_word_as_int_list(c_moves)
+        moves = c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
         return moves
         
@@ -208,7 +223,8 @@ cdef class CFundamentalGroup(object):
         Return the letters representing the generators in the presentation.
         """
         n = self.num_generators()
-        return [ self.int_to_gen_string(i) for i in range(1, 1+n) ]
+        return [ int_to_gen_string(i, n, verbose_form = False)
+                 for i in range(1, 1+n) ]
 
     def relators(self, verbose_form = False, as_int_list = False):
         """
@@ -219,19 +235,21 @@ cdef class CFundamentalGroup(object):
         """
         cdef int n
         cdef int *relation
+        cdef int num_gens = self.num_generators()
+
         relation_list = []
         num_relations = fg_get_num_relations(self.c_group_presentation)
         for n from 0 <= n < num_relations:
             relation = fg_get_relation(self.c_group_presentation, n)
             if as_int_list:
-                word = self.c_word_as_int_list(relation)
+                word = c_word_as_int_list(relation)
             else:
-                word = format_word(self.c_word_as_string(relation), verbose_form)
+                word = c_word_as_string(relation, num_gens, verbose_form)
             relation_list.append(word)
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp=0, as_int_list = False):
+    def meridian(self, int which_cusp=0, as_int_list = False, verbose_form = False):
         """
         Returns a word representing a conjugate of the current
         meridian for the given cusp.  Guaranteed to commute with the
@@ -248,13 +266,15 @@ cdef class CFundamentalGroup(object):
             'The specified cusp (%s) does not exist.')
 
         if as_int_list:
-            return self.c_word_as_int_list(
+            return c_word_as_int_list(
                fg_get_meridian(self.c_group_presentation, which_cusp))
         else:
-            return self.c_word_as_string(
-               fg_get_meridian(self.c_group_presentation, which_cusp))
+            return c_word_as_string(
+               fg_get_meridian(self.c_group_presentation, which_cusp),
+               self.num_generators(),
+               verbose_form)
 
-    def longitude(self, int which_cusp=0, as_int_list = False):
+    def longitude(self, int which_cusp=0, as_int_list = False, verbose_form = False):
         """
         Returns a word representing a conjugate of the current
         longitude for the given cusp.  Guaranteed to commute with the
@@ -272,11 +292,13 @@ cdef class CFundamentalGroup(object):
             'The specified cusp (%s) does not exist.')
 
         if as_int_list:
-            return self.c_word_as_int_list(
+            return c_word_as_int_list(
                fg_get_longitude(self.c_group_presentation, which_cusp))
         else:
-            return self.c_word_as_string(
-               fg_get_longitude(self.c_group_presentation, which_cusp))
+            return c_word_as_string(
+               fg_get_longitude(self.c_group_presentation, which_cusp),
+               self.num_generators(),
+               verbose_form)
 
     def peripheral_curves(self, as_int_list = False):
         """
@@ -400,8 +422,8 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         cdef int *c_word
         cdef c_FuncResult result
         cdef int i, j
-        word_list = self._word_as_list(word)
-        c_word = self.c_word_from_list(word_list)
+        word_list = word_as_list(word, self.num_generators())
+        c_word = c_word_from_list(word_list)
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
         if result == 0:
             sl2 = matrix(

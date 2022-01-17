@@ -235,6 +235,11 @@ class SimpleMatrix(SupportsMultiplicationByNumber):
     def dimensions(self):
         return self.shape
 
+    def __neg__(self):
+        return SimpleMatrix(
+            [ [ -x for x in row ]
+              for row in self.data ])
+
     def _multiply_by_scalar(self, other):
         return SimpleMatrix(
             [[ other * e for e in row ]

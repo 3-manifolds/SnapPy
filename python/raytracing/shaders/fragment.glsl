@@ -741,7 +741,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
 #endif
 
-    if (edgeTubeRadiusParam > 0.50001) {
+    if (edgeTubeRadiusParam > 0.500001) {
 
 #if ##finiteTrig##
         float backDistParam = 0.0;

@@ -1,7 +1,7 @@
 from snappy.SnapPy import matrix
 
 """
-Helpers for the upper halfspace model H^3 = \{ z + tj : t > 0 \}.
+Helpers for the upper halfspace model H^3 = { z + tj : t > 0 }.
 
 We regard the boundary of H^3 as C union infinity. We represent infinity by
 a large number (e.g. 1e64). Some of the functions below though assume
@@ -57,35 +57,24 @@ def transfer_fourth_point(old_points, new_points):
     return fourth_point_from_cross_ratio(
         cross_ratio(*old_points), *new_points)
 
-def exp_of_half_dist_of_opposite_edges_from_cross_ratio(z):
+def dist_of_opposite_edges_from_cross_ratio(z):
     """
-    Imagine an ideal tetrahedron in H^3 with cross ratio z and take
-    the pair of opposite edges (where the cross ratio z was measured).
-    
-    Returns exp(d/2) where d is the distance between the two edges.
+    Imagine an ideal tetrahedron in H^3 with shape parameter z and
+    returns the distance between two opposite edges (namely, the ones
+    with cross ratio 1 - 1 / z).
     """
-
-    # Need to take cross ratio for the correct pair of opposite edges
-    # to make the following work.
-    z0 = 1 / (1 - z)
-
     # Compute w such that the (symmetric) vertices w, 1/w, -1/w, -w
-    # (= +/- z0.sqrt() +/- (z0 - 1).sqrt())
-    # span a tetrahedron with cross ratio z0.
-    w = z0.sqrt() + (z0 - 1).sqrt()
+    # span a tetrahedron with cross ratio z. Note that there are
+    # two choices for each sqrt: they correspond to the action
+    # of the Klein 4-group acting on the vertices which leaves the
+    # cross ratio the same.
+    w = z.sqrt() + (z - 1).sqrt()
 
-    # The shortest connection between the edges spanned w and -w and
-    # spanned by 1/w and -1/w is going from abs(w) j to abs(1/w) j with
-    # the center being at j. log(abs(w)) j is thus the signed distance
-    # from the center to abs(w) j. The distance is |log(abs(w))|.
-    r = abs(w)
+    # The shortest connection between the edges spanned by w and -w and
+    # spanned by 1/w and -1/w is going from |w| j to |1/w| j.
+    # Thus, the distance is thus given by 2 | log|w| |.
+    return 2 * abs(abs(w).log())
 
-    # We want to compute exp(|log(abs(w))|) which is equal abs(w) or
-    # 1/abs(w).
-    if r < 1:
-        return 1 / r
-    else:
-        return r
 
 def fixed_points_of_psl2c_matrix(m):
     """
@@ -152,6 +141,9 @@ def are_psl_matrices_close(m1, m2, epsilon = 1e-5):
         are_sl_matrices_close(m1,  m2, epsilon) or 
         are_sl_matrices_close(m1, -m2, epsilon))
 
+def _coshd(x):
+    return (x.exp() + (-x).exp()) / 2
+
 def _weight_for_circumcenter(i, side_lengths):
     """
     Given the index i of a vertex the side lengths of a Euclidean triangle,
@@ -169,58 +161,7 @@ def _weight_for_circumcenter(i, side_lengths):
     cosine = (c**2 - a**2 - b**2) / (2 * a * b)
     return c * cosine
 
-def _coshd(x):
-    return (x.exp() + (-x).exp()) / 2
-
-def is_dist_triangle_std_geodesic_smaller_than(verts, d):
-    """
-    Let T be the triangle spanned by the three ideal vertices
-    in upper halfspace H^3 (not at infinity).
-
-    Let L be the geodesic from 0 to infinity.
-
-    Return True if d(T,L) < d.
-    """
-
-    zero = verts[0].parent()(0.0)
-    inf = verts[0].parent()(1.0e64)
-
-    exp_half_d = (d / 2).exp()
-
-    # Think of the six-sided polyhedron obtained by suspending the
-    # face by the end points of the geodesic used in a 2-3 move.
-    # We compute the 3 cross ratios of the 3 tetrahedra spanned
-    # by one of the edges of the triangle and the geodesic.
-    #
-    zs = [ cross_ratio(zero, inf, verts[i], verts[(i+1)%3])
-           for i in range(3) ]
-
-    # If the 3 cross ratios have all positive or all negative
-    # imaginary part, then the geodesic intersects the
-    # triangle. Otherwise not - think of how a 2-3 move yields
-    # negatively oriented tetrahedra if the new edge does not
-    # intersect the common face.
-    zs_signs = [ z.imag() > 0 for z in zs ]
-    if zs_signs[0] == zs_signs[1] and zs_signs[1] == zs_signs[2]:
-        # Geodesic intersects triangle.
-        return True
-
-    # We can compute from each cross ratio the distance between
-    # the respective edge of the triangle and the geodesic.
-    for z in zs:
-        if exp_of_half_dist_of_opposite_edges_from_cross_ratio(z) < exp_half_d:
-            # That distance is smaller than given distance.
-            return True
-
-    return False
-
-    # TODO:
-    # It could be that an interior point of the triangle is
-    # close enough to the geodesic but none of the edges is.
-    # That is the cone about the geodesic (banana if the geodesic
-    # didn't have an endpoint at infinity) intersects the triangle
-    # in its interior only.
-
+def _compute_circumcenter(verts):
     side_lengths = [
         abs(verts[(i+2)%3] - verts[(i+1)%3])
         for i in range(3) ]
@@ -229,7 +170,17 @@ def is_dist_triangle_std_geodesic_smaller_than(verts, d):
         _weight_for_circumcenter(i, side_lengths)
         for i in range(3) ]
     t = sum(weights)
-    O = sum(w * v for w, v in zip(weights, verts)) / t
+
+    if abs(t) < 1.0e-8:
+        return None
+
+    return sum(w * v for w, v in zip(weights, verts)) / t
+
+def _dist_triangle_and_std_geodesic_interior_hit(verts):
+    O = _compute_circumcenter(verts)
+
+    if O is None:
+        return None
 
     # Circum radius
     R = abs(verts[0] - O)
@@ -238,16 +189,13 @@ def is_dist_triangle_std_geodesic_smaller_than(verts, d):
     D = abs(O)
 
     if R > D:
-        return False
+        return None
 
     c_sqr = D ** 2 - R ** 2
     c = c_sqr.sqrt()
 
     a = c_sqr / D
     b = c * R / D
-
-    if _coshd(2 * d) > 1 + 2 * (a/b) ** 2:
-        return False
 
     # Hit point
     h = (a / D) * O
@@ -256,7 +204,136 @@ def is_dist_triangle_std_geodesic_smaller_than(verts, d):
         ((h - verts[i]) / (verts[(i+1)%3] - verts[i])).imag() > 0
         for i in range(3) ]
 
-    if sidedness[0] == sidedness[1] and sidedness[1] == sidedness[2]:
-        return True
+    if sidedness[0] != sidedness[1] or sidedness[1] != sidedness[2]:
+        return None
 
-    return False
+    return (1 + 2 * (a/b) ** 2).arccosh() / 2    
+
+def dist_triangle_and_std_geodesic(verts):
+    """
+    Let T be the triangle spanned by the three ideal vertices
+    in upper halfspace H^3 (not at infinity).
+
+    Let L be the geodesic from 0 to infinity.
+
+    Returns d(T,L).
+
+    >>> from snappy import Manifold
+    >>> CF = Manifold("m004").tetrahedra_shapes('rect')[0].parent()
+
+    >>> z0 = CF(     1j)
+    >>> z1 = CF(  1 -1j)
+    >>> z2 = CF( -1 -1j)
+
+    Tests where geodesic intersects triangle::
+
+    >>> t = CF(0)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) == 0
+    True
+
+    >>> t = CF(0.4)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) == 0
+    True
+
+    >>> t = CF(0.4j)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z2, t + z1 ]) == 0
+    True
+
+    Test where geodesic just passes through edge::
+
+    >>> t = CF(0.5)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    0
+
+    
+    Tests where geodesic intersects plane supporting triangle but not triangle::
+    >>> t = CF(0.51)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    0.00799997
+    
+    >>> t = CF(0.7 + 0.1j)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    0.121245613709687
+
+    >>> t = CF(1.24 + 0.3j)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    0.512785267637076
+    
+    Tests where geodesic does not intersect plane supporting triangle
+    but point closest to geodesic is on the boundary::
+
+    >>> t = CF(1.25 + 0.3j)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    0.521243625149050
+
+    >>> t = CF(2)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    1.072531748734486
+
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z2, t + z1 ]) # doctest: +NUMERIC6
+    1.072531748734486
+
+    >>> t = CF(2.59629)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    1.365593756213600
+
+    Tests where closest point to geodesic is in the interior of the triangle::
+
+    >>> t = CF(2.5963)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    1.365598104310997
+
+    >>> t = CF(3 + 1j)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    1.555320650224947
+
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z2, t + z1 ]) # doctest: +NUMERIC6
+    1.555320650224947
+
+    >>> t = CF(10000)
+    >>> dist_triangle_and_std_geodesic([ t + z0, t + z1, t + z2 ]) # doctest: +NUMERIC6
+    9.680343997628168
+
+    Test cases where the vertical projection of the triangle is degenerate::
+
+    >>> dist_triangle_and_std_geodesic([CF(-1), CF(1), CF(2)]) # doctest: +NUMERIC6
+    0
+
+    >>> dist_triangle_and_std_geodesic([CF(3), CF(1), CF(2)]) # doctest: +NUMERIC6
+    1.316957896924817
+
+    >>> dist_triangle_and_std_geodesic([CF(3+1j), CF(1+1j), CF(2+1j)]) # doctest: +NUMERIC6
+    1.469351744368185
+
+    """
+
+    CF = verts[0].parent()
+    RF = verts[0].real().parent()
+
+    val = _dist_triangle_and_std_geodesic_interior_hit(verts)
+    if not val is None:
+        return val
+
+    zero = CF(0.0)
+    inf = CF(1.0e64)
+
+    # Think of the six-sided polyhedron obtained by suspending the
+    # face by the end points of the geodesic used in a 2-3 move.
+    # We compute the 3 cross ratios of the 3 tetrahedra spanned
+    # by one of the edges of the triangle and the geodesic.
+    #
+    zs = [ cross_ratio(zero, verts[i], verts[(i+1)%3], inf)
+           for i in range(3) ]
+
+    # If the 3 cross ratios have all positive or all negative
+    # imaginary part, then the geodesic intersects the
+    # triangle. Otherwise not - think of how a 2-3 move yields
+    # negatively oriented tetrahedra if the new edge does not
+    # intersect the common face.
+    if all(z.imag() >  1.0e-9 for z in zs):
+        return RF(0.0)
+
+    if all(z.imag() < -1.0e-9 for z in zs):
+        return RF(0.0)
+
+    return min(dist_of_opposite_edges_from_cross_ratio(z) for z in zs)

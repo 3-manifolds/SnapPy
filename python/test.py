@@ -7,6 +7,7 @@ import snappy.verify.test
 import snappy.ptolemy.test
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.cohomology_fractal
+import snappy.raytracing.upper_halfspace_utilities
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -81,7 +82,8 @@ snappy_doctester.__name__ = 'snappy'
 
 raytracing_modules = [
     snappy.raytracing.ideal_raytracing_data,
-    snappy.raytracing.cohomology_fractal
+    snappy.raytracing.cohomology_fractal,
+    snappy.raytracing.upper_halfspace_utilities
 ]
 
 if _within_sage:

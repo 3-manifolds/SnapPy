@@ -221,6 +221,7 @@ def find_tet_and_matrix_intersecting_geodesic(geodesic_info):
     # ratio introduced above.
 
     tet = 0
+    last_f = -1
     m = geodesic_info.identity_matrix
 
     for step in range(_max_steps):
@@ -228,90 +229,20 @@ def find_tet_and_matrix_intersecting_geodesic(geodesic_info):
         vertices = [ sl2c_action_on_boundary(m, v)
                      for v in geodesic_info.tet_to_vertices[tet] ]
 
-        # Compute the cross ratios described above for each oriented
-        # edge. That is, the cross ratio for edge ij is stored in
-        # cross_ratios_edge_fixed_points[i][j]
-        cross_ratios_edge_fixed_points = [ [ None for i in range(4) ]
-                                           for j in range(4) ]
-        for i in range(4):
-            for j in range(i+1):
-                z = cross_ratio(
-                    geodesic_info.fixed_points[0],
-                    geodesic_info.fixed_points[1],
-                    vertices[i],
-                    vertices[j])
-                cross_ratios_edge_fixed_points[i][j] = z
-                # Rather than re-computing the cross ratio, use that
-                # flipping the orientation of an edge means inverting
-                # the cross ratio.
-                cross_ratios_edge_fixed_points[j][i] = 1 / z
-
-        # Check whether geodesic intersects any of the faces.
-        # For each face...
-        for f in range(4):
-            signs = []
-            
-            # Compute the three cross ratios for that face and take
-            # the sign of the imaginary part
-            for j in range(3):
-                k = (f +  j         ) % 4
-                l = (f + (j + 1) % 3) % 4
-                signs.append(cross_ratios_edge_fixed_points[k][l].imag() > 0)
-
-            # Check that these signs are the same
-            if signs[0] == signs[1] and signs[1] == signs[2]:
-                return tet, m
-
-        # Compute the distances of the edges to the geodesic.
-        # Conventions similar to cross_ratios_edge_fixed_points
-        distance_edge_geodesic = [ [ None for i in range(4) ]
-                                   for j in range(4) ]
-        # At the same time, compute which edge is closest to the geodesic.
-        # (Exp of) the distance for that edge.
-        best_distance = 1.0e64
-        # One end point of that edge.
-        best_i = None
-        # Other end point of that edge.
-        best_j = None
-
-        for i in range(4):
-            for j in range(i + 1, 4):
-                d = exp_of_half_dist_of_opposite_edges_from_cross_ratio(
-                    cross_ratios_edge_fixed_points[i][j])
-                distance_edge_geodesic[i][j] = d
-                distance_edge_geodesic[j][i] = d
-                
-                # Found a closer edge, update best_...
-                if d < best_distance:
-                    best_distance = d
-                    best_i = i
-                    best_j = j
-
-        # Two vertices spanning the edge opposite to the edge closest
-        # to the geodesic.
-        k0, k1 = [ k for k in range(4) if k != best_i and k != best_j ]
-
-        # Find the face spanned by the edge closest to geodesic and
-        # the edge closest to geodesic among the adjacent edges.
-        # Distance of that edge to geodesic.
-        other_best_distance = 1.0e64
-        # The face spanned by the two edges.
         best_f = None
-        
-        # For each end point of the closest edge
-        for ij in [ best_i, best_j ]:
-            # For each end point k of the opposite edge.
-            # f is the face that is spanned by the closest edge and k.
-            for k, f in [ (k0, k1), (k1, k0) ]:
-                d = distance_edge_geodesic[ij][k]
+        best_d = 1e64
+        for f in range(4):
+            if f != last_f:
+                face_vertices = vertices[f+1:] + vertices[:f]
 
-                # Found a closer edge, update best_...
-                if d < other_best_distance:
-                    other_best_distance = d
+                d = dist_triangle_and_std_geodesic(face_vertices)
+                if d == 0:
+                    return tet, geodesic_info.canonical_matrix(m)
+                if d < best_d:
                     best_f = f
+                    best_d = d
 
         # Now traverse face best_f.
-                    
         tet_generators_info = geodesic_info.generators_info[tet]
 
         # Find which generator corresponds to traversing that
@@ -322,6 +253,8 @@ def find_tet_and_matrix_intersecting_geodesic(geodesic_info):
         
         # Find neighboring tetrahedron
         tet = tet_generators_info['neighbors'][best_f]
+
+        last_f = tet_generators_info['gluings'][best_f][best_f]
 
     # Geodesic is too far away from fundamental domain or
     # the algorithm failed for some other reason. Give up.
@@ -469,9 +402,10 @@ def find_tets_and_matrices_intersecting_tube(geodesic_info, radius):
                 # The three vertices of the face
                 face_vertices = vertices[f+1:] + vertices[:f]
                 
+                d = dist_triangle_and_std_geodesic(face_vertices)
+
                 # Check whether face is intersecting tube
-                if is_dist_triangle_std_geodesic_smaller_than(
-                                        face_vertices, radius):
+                if d < radius:
                     # If yes, traverse the face
                     new_tet = tet_generators_info['neighbors'][f]
                     g = tet_generators_info['generators'][f]

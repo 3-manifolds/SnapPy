@@ -308,7 +308,7 @@ class InsideViewer(ttk.Frame):
             title = 'Edge thickness',
             row = row,
             left_end = 0.0,
-            right_end = 0.4,
+            right_end = 0.2,
             update_function = self.widget.redraw_if_initialized)
 
         return frame

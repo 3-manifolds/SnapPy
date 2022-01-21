@@ -134,7 +134,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
-                                (0.05 if trig_type == 'finite' else 0.08)],
+                                (0.025 if trig_type == 'finite' else 0.04)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'perspectiveType' : ['bool', False]
             }
@@ -194,7 +194,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'edgeTubeRadiusParam' :
-                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0),
+                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1]) ** 2 / 2.0),
                 'vertexSphereRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1])),
                 'perspectiveType' :

@@ -388,17 +388,44 @@ distParamsForHorosphereIntersection(Ray ray,
 
 // Intersection with cylinder about the geodesic with the two given
 // (light-like) endpoints.
-// tubeRadiusParam is cosh(radius/2)^2/2.
+// tubeRadiusParam is cosh(radius)^2/2.
 // This function can detect intersections of the ray that happen
 // some distance before the start point of the ray. To use this feature,
 // set minDistParam to a negative value, namely to tanh(-distance),
 // where distance is how far back we want to track the ray.
 vec2
 distParamsForTubeIntersection(Ray ray,
-                             vec4[2] endpoints,
-                             float tubeRadiusParam,
-                             float minDistParam)
+                              vec4[2] endpoints,
+                              float tubeRadiusParam,
+                              float minDistParam)
 {
+    // The points p (with R13Dot(p,p) = -1) on a tube about a
+    // geodesic are given by
+    //
+    //     -tubeRadiusParam * R13Dot(endpoints[0], endpoints[1])
+    //           = R13Dot(endpoints[0],p) * R13Dot(endpoints[1],p)
+    //
+    // To see this, note that the isometries of the tube about
+    // the geodesic act on the like-like endpoints by multiplying
+    // them by s and 1/s, respectively, where s > 0. It is easy
+    // to check that the equation is invariant under this action.
+    //
+    // To compute the tubeRadiusParam in terms of the tube radius,
+    // place the endpoints at (1,-1,0,0) and (1,1,0,0) and p at
+    // (cosh(radius),0,sinh(radius),0). We obtain
+    //
+    //      tubeRadiusParam = cosh(radius)^2/2
+    //
+    // The ray is parameterized by
+    //
+    //      p = p0 / sqrt(-R13Dot(p0, p0))
+    //
+    // where
+    //     p0 = ray.point + t * ray.dir.
+    //
+    // Putting p into the above equation and multiplying by
+    // -R13Dot(p0, p0), we obtain a quadratic equation we can solve for.
+
     float start0Dot = R13Dot(endpoints[0], ray.point);
     float dir0Dot   = R13Dot(endpoints[0], ray.dir);
     float start1Dot = R13Dot(endpoints[1], ray.point);

@@ -162,51 +162,110 @@ def _weight_for_circumcenter(i, side_lengths):
     return c * cosine
 
 def _compute_circumcenter(verts):
+    """
+    Given three vertices in the complex plane, return the (Euclidean)
+    circumcenter.
+    """
+
+    # The three side lengths of the triangle.
     side_lengths = [
         abs(verts[(i+2)%3] - verts[(i+1)%3])
         for i in range(3) ]
 
+    # The non-normalized barycentric coordinates of the circumcenter.
     weights = [
         _weight_for_circumcenter(i, side_lengths)
         for i in range(3) ]
     t = sum(weights)
 
     if abs(t) < 1.0e-8:
+        # The three points are close to being on a line.
         return None
 
     return sum(w * v for w, v in zip(weights, verts)) / t
 
 def _dist_triangle_and_std_geodesic_interior_hit(verts):
-    O = _compute_circumcenter(verts)
+    """
+    Recall the distance d(T,L) in dist_triangle_and_std_geodesic.
 
+    This helper checks whether case 1 applies, that is, the shortest
+    hyperbolic line segment connecting the geodesic and the triangle
+    hits the triangle in the interior without the geodesic intersecting
+    the triangle.
+
+    If case 1 applies, return d(T,L), otherwise return None.
+    """
+
+    # Let P be the plane supporting the triangle T.
+
+    # Note that case 1 can only apply if the following conditions
+    # are met:
+    # 1. If P is a Euclidean half-sphere (rather than plane).
+    # 2. If P does not intersect L.
+    # 3. The shortest hyperbolic line segment connecting P and L
+    #    hits P in a point inside T.
+
+    # Compute the Euclidean circumcenter O of P, returns None if
+    # P is a plane and condition 1 is not met.
+    O = _compute_circumcenter(verts)
     if O is None:
         return None
 
-    # Circum radius
+    # Euclidean circumradius R
     R = abs(verts[0] - O)
 
-    # Euclidean distance of circum center to end point of geodesic
+    # Euclidean distance D of O to the lower endpoint of L at 0 in C
     D = abs(O)
 
     if R > D:
+        # Condition 2 is not met.
         return None
 
+    # Points with the same hyperbolic distance to L form a Euclidean
+    # cone about L.
+    #
+    # We want to find the cone that touches P and compute the vertical
+    # projection h (on the boundary C of the upper halfspace H^3) of
+    # the point p where they touch.
+
+    # Let a be the Euclidean distance from the lower endpoint of L to h.
+    # Let b be the Euclidean height of p.
+    # Let c be the Euclidean distance from the lower endpoint of L to p.
+
+    # Note that there are similar right triangles yielding:
+    # a:b:c = c:R:D
+
+    # Use Pythagoras to compute c
     c_sqr = D ** 2 - R ** 2
     c = c_sqr.sqrt()
 
+    # Use similar triangles to compute
     a = c_sqr / D
-    b = c * R / D
 
-    # Hit point
+    # Compute h using that it is on the line from the lower endpoint of L
+    # to O.
     h = (a / D) * O
 
+    # Compute to what side of an edge in the triangle h is.
     sidedness = [
         ((h - verts[i]) / (verts[(i+1)%3] - verts[i])).imag() > 0
         for i in range(3) ]
-
     if sidedness[0] != sidedness[1] or sidedness[1] != sidedness[2]:
+        # Condition 3 is not met.
         return None
 
+    # Use similar triangles to compute b
+    b = c * R / D
+
+    # The distance between two points in the upper half plane model is
+    # given by
+    #                                                    2          2
+    #                                             (x2-x1)  + (y2-y1)
+    #   dist( (x1,y1), (x2, y2) ) = arcosh(  1 + ---------------------  )
+    #                                                 2 * y1 * y2
+
+    # Applying this to compute the distance between (a,b) and (-a,b) which
+    # is twice the distance from p to L.
     return (1 + 2 * (a/b) ** 2).arccosh() / 2    
 
 def dist_triangle_and_std_geodesic(verts):
@@ -307,33 +366,52 @@ def dist_triangle_and_std_geodesic(verts):
 
     """
 
+    # Type for complex and real numbers.
     CF = verts[0].parent()
     RF = verts[0].real().parent()
 
+    # Note that the shortest hyperbolic line segment connecting the
+    # T and L can hit T
+    #  1. In the interior of T without the L intersecting T.
+    #  2. In the interior of T because the L intersects T.
+    #  3. In an edge of T.
+
+    ##################
+    # Check for case 1
+
+    # Handled by helper
     val = _dist_triangle_and_std_geodesic_interior_hit(verts)
     if not val is None:
+        # Case 1 applies
         return val
 
+    ##################
+    # Check for case 2
+
+    # Think of the six-sided polyhedron in a 2-3 move obtained by
+    # suspending T by the end points of L.
+    #
+    # Compute the 3 cross ratios of the 3 tetrahedra spanned by L and
+    # one of the edges of the T.
     zero = CF(0.0)
     inf = CF(1.0e64)
-
-    # Think of the six-sided polyhedron obtained by suspending the
-    # face by the end points of the geodesic used in a 2-3 move.
-    # We compute the 3 cross ratios of the 3 tetrahedra spanned
-    # by one of the edges of the triangle and the geodesic.
-    #
     zs = [ cross_ratio(zero, verts[i], verts[(i+1)%3], inf)
            for i in range(3) ]
 
-    # If the 3 cross ratios have all positive or all negative
-    # imaginary part, then the geodesic intersects the
-    # triangle. Otherwise not - think of how a 2-3 move yields
-    # negatively oriented tetrahedra if the new edge does not
-    # intersect the common face.
+    # Imagine the two cases where the new edge introduced in a 2-3
+    # move intersects or does not intersect the common face.
+    #
+    # We see that L intersects T if and only if the imaginary parts of
+    # the 3 cross ratios are all positive or all negative.
     if all(z.imag() >  1.0e-9 for z in zs):
         return RF(0.0)
 
     if all(z.imag() < -1.0e-9 for z in zs):
         return RF(0.0)
 
+    ########
+    # Case 3
+
+    # We can conveniently compute distances of each edge of T to L
+    # from the above cross ratios.
     return min(dist_of_opposite_edges_from_cross_ratio(z) for z in zs)

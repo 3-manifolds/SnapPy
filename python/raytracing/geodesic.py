@@ -228,7 +228,8 @@ class GeodesicInfo:
                     face_vertices = vertices[f+1:] + vertices[:f]
 
                     d = dist_triangle_and_std_geodesic(face_vertices)
-                    if d == 0:
+
+                    if d < 1e-9:
                         return tet, self.canonical_matrix(m)
                     if d < best_d:
                         best_f = f
@@ -246,6 +247,8 @@ class GeodesicInfo:
             # Find neighboring tetrahedron
             tet = tet_generators_info['neighbors'][best_f]
                 
+            # Record through which face of the neighboring tet it was
+            # entered
             last_f = tet_generators_info['gluings'][best_f][best_f]
 
         # Geodesic is too far away from fundamental domain or

@@ -331,13 +331,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             RF = self.manifold.tetrahedra_shapes('rect')[0].real().parent()
             radius = RF(0.02)
 
-            tets_and_heads_and_tails = (
-                find_tets_and_R13_heads_and_tails_for_tube(
-                    geodesic_info, radius))
+            tets_and_endpoints = (
+                geodesic_info.compute_tets_and_R13_endpoints_for_tube(radius))
 
             heads, tails, offsets = (
                 pack_tets_and_R13_heads_and_tails_for_shader(
-                    geodesic_info, tets_and_heads_and_tails))
+                    geodesic_info, tets_and_endpoints))
 
             radiusParam = (radius/2).cosh()**2 / 2
 

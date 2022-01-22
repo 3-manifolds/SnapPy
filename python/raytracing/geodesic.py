@@ -2,6 +2,8 @@ from .hyperboloid_utilities import complex_to_R13_light_vector
 from .upper_halfspace_utilities import *
 from .tet_and_matrix_set import TetAndMatrixSet
 
+import heapq
+
 class GeodesicForParabolicElementError(ValueError):
     def __init__(self, trace):
         self.trace = trace
@@ -19,6 +21,14 @@ class FindingTetrahedronGeodesicError(RuntimeError):
         return ('There was an error when trying to find a tetrahedron '
                 'intersecting the geodesic '
                 '(after %d steps).' % self.max_steps)
+
+class PendingPiece:
+    def __init__(self, d, tet_and_matrix):
+        self.d = d
+        self.tet_and_matrix = tet_and_matrix
+        
+    def __lt__(self, other):
+        return self.d < other.d
 
 class GeodesicInfo:
     def __init__(self, manifold, word):
@@ -139,8 +149,12 @@ class GeodesicInfo:
 
         # Store index of a tetrahedron and matrix such that the image
         # of the tetrahedron under that matrix intersects the geodesic.
-        self.first_tet_and_matrix = (
-            self.find_tet_and_matrix_intersecting_geodesic())
+        self.pending_pieces = [
+            PendingPiece(
+                0,
+                self.find_tet_and_matrix_intersecting_geodesic()) ]
+        self.visited = TetAndMatrixSet()
+        self.pieces = [ ]
 
     def normalize_matrix(self, m):
         """
@@ -255,7 +269,7 @@ class GeodesicInfo:
         # the algorithm failed for some other reason. Give up.
         raise FindingTetrahedronGeodesicError(_max_steps)
 
-    def find_tets_and_matrices_intersecting_tube(self, radius):
+    def cache_pieces_for_tube(self, radius):
         """
         Find all pieces forming the tube of radius about the closed geodesic.
 
@@ -269,23 +283,24 @@ class GeodesicInfo:
         of tetrahedra intersecting the tube.
         """
 
-        # The result as TetAndMatrixSet
-        visited = TetAndMatrixSet()
-
         # (tet, matrix) pairs for which we still need to check whether they
         # intersect the geodesic
-        pending_tets_and_matrices = [ self.first_tet_and_matrix ]
 
-        while pending_tets_and_matrices:
+        while self.pending_pieces[0].d < radius:
             # Pick next pair to check
-            tet_and_matrix = pending_tets_and_matrices.pop(0)
+            pending_piece = heapq.heappop(self.pending_pieces)
+            tet_and_matrix = pending_piece.tet_and_matrix
             # If not visited already
-            if visited.add(tet_and_matrix):
+            if self.visited.add(tet_and_matrix):
                 tet, m = tet_and_matrix
                 tet_generators_info = self.generators_info[tet]
             
                 # Compute the vertices of the translate of the tetrahedron
                 vertices = self.images_of_vertices_of_tetrahedron(tet, m)
+
+                self.pieces.append(
+                    (pending_piece.d,
+                     (tet, self.transfer_endpoints(tet, vertices))))
 
                 # For each face
                 for f in range(4):
@@ -294,78 +309,96 @@ class GeodesicInfo:
                 
                     d = dist_triangle_and_std_geodesic(face_vertices)
 
-                    # Check whether face is intersecting tube
-                    if d < radius:
-                        # If yes, traverse the face
-                        new_tet = tet_generators_info['neighbors'][f]
-                        g = tet_generators_info['generators'][f]
-                        if g != 0:
-                            # Use self.canonical_matrix to
-                            # cover tube about closed geodesic in 
-                            # manifold only once
-                            new_m = self.canonical_matrix(
-                                m * self.generator_matrices_and_inverses[g])
-                        else:
-                            new_m = m
+                    # If yes, traverse the face
+                    new_tet = tet_generators_info['neighbors'][f]
+                    g = tet_generators_info['generators'][f]
+                    if g != 0:
+                        # Use self.canonical_matrix to
+                        # cover tube about closed geodesic in 
+                        # manifold only once
+                        new_m = self.canonical_matrix(
+                            m * self.generator_matrices_and_inverses[g])
+                    else:
+                        new_m = m
 
-                        # Add as pending tet
-                        pending_tets_and_matrices.append((new_tet, new_m))
+                    # Add as pending tet
+                    heapq.heappush(
+                        self.pending_pieces,
+                        PendingPiece(d, (new_tet, new_m)))
 
-        return visited.values()
+    def transfer_endpoints(self, tet, vertices):
 
-def geodesic_R13_head_and_tail_from_tet_and_matrix(
-                                        geodesic_info, tet_and_matrix):
-    """
-    Compute end points of geodesic in R13 relative to a tetrahedron in
-    the coordinates used by IdealRayTracingData.
+        # Imagine the transformation taking the first triple of vertices
+        # the second triple of vertices. Use this transform to translate
+        # the endpoints 0 and infty of the geodesic. Convert to R13.
+        return [
+            complex_to_R13_light_vector(
+                transfer_fourth_point(
+                    (vertices[0],
+                     vertices[1],
+                     vertices[2],
+                     fixed_point),
+                    self.tet_to_shader_vertices[tet][:3]))
+            for fixed_point in self.fixed_points ]
 
-    The input is an instance of GeodesicInfo and a pair (tet, matrix)
-    as, e.g., given by find_tets_and_matrices_intersecting_tube.
+    def compute_tets_and_R13_endpoints_for_tube(self, radius):
+        """
+        Find all geodesic segments necessary to draw a tube about a closed
+        geodesic in a manifold.
 
-    The output consists of two points in R13. They span the geodesic
-    for the tube that the shader needs to trace against when raytracing
-    in the respective tetrahedron.
-    """
+        The output is a list of pairs (tet, (head, tail)) where tet is an
+        index to a tetrahedron of head and tail are points in R^{1,3}
+        using the same coordinates that IdealRaytracingData uses for its
+        tetrahedra.
 
-    tet, m = tet_and_matrix
-    
-    # Compute the vertices of face 3 of the translate of tetrahedron
-    face_vertices = geodesic_info.images_of_vertices_of_tetrahedron(tet, m)
+        >>> from snappy import Manifold
+        >>> M = Manifold("m004")
+        >>> g = GeodesicInfo(M, "a")
+        >>> t = g.compute_tets_and_R13_endpoints_for_tube(0.1)
+        >>> t # doctest: +NUMERIC6
+        [(0,
+          [[1.000000000000000,
+            0.459458976327570,
+            0.858506950258797,
+            -0.227735077292370],
+           [1.000000000000000,
+            -0.45945897632757,
+            -0.858506950258797,
+            -0.227735077292371]]),
+         (1,
+          [[1.000000000000000,
+            -0.858506950258796,
+            -0.227735077292370,
+            -0.459458976327570],
+           [1.000000000000000,
+            0.858506950258796,
+            -0.227735077292371,
+            0.45945897632757]])]
+        >>> len(g.compute_tets_and_R13_endpoints_for_tube(0.5))
+        8
+        >>> t == g.compute_tets_and_R13_endpoints_for_tube(0.4)
+        True
 
-    # Imagine the transformation taking the first triple of vertices
-    # the second triple of vertices. Use this transform to translate
-    # the endpoints 0 and infty of the geodesic. Convert to R13.
-    return [
-        complex_to_R13_light_vector(
-            transfer_fourth_point(
-                (face_vertices[0],
-                 face_vertices[1],
-                 face_vertices[2],
-                 fixed_point),
-                geodesic_info.tet_to_shader_vertices[tet][:3]))
-        for fixed_point in geodesic_info.fixed_points ]
+        >>> M = Manifold("o9_00000")
+        >>> [ len(GeodesicInfo(M, l).compute_tets_and_R13_endpoints_for_tube(0.01))
+        ...   for l in "abcd" ]
+        [3, 2, 11, 3]
+        
+        >>> [ len(GeodesicInfo(M, l).compute_tets_and_R13_endpoints_for_tube(0.4))
+        ...   for l in "abcd" ]
+        [5, 10, 25, 5]
 
-def find_tets_and_R13_heads_and_tails_for_tube(geodesic_info, radius):
-    """
-    Find all geodesic segments necessary to draw a tube about a closed
-    geodesic in a manifold.
+        """
 
-    The input is the same as for find_tets_and_matrices_intersecting_tube.
-    
-    The output is a list of pairs (tet, (head, tail)) where tet is an
-    index to a tetrahedron of head and tail are points in R^{1,3}
-    using the same coordinates that IdealRaytracingData uses for its
-    tetrahedra.
-    """
-    tets_and_matrices = (
-        geodesic_info.find_tets_and_matrices_intersecting_tube(
-            radius))
-    
-    return [
-        (tet_and_matrix[0],
-         geodesic_R13_head_and_tail_from_tet_and_matrix(
-                geodesic_info, tet_and_matrix))
-        for tet_and_matrix in tets_and_matrices ]
+        self.cache_pieces_for_tube(radius)
+
+        result = []
+        for d, tets_and_R13_endpoints in self.pieces:
+            if d > radius:
+                break
+            result.append(tets_and_R13_endpoints)
+
+        return result
 
 def pack_tets_and_R13_heads_and_tails_for_shader(
                                 geodesic_info, tets_and_heads_and_tails):

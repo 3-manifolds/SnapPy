@@ -5,8 +5,9 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test
 import snappy.ptolemy.test
-import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.cohomology_fractal
+import snappy.raytracing.geodesic
+import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
@@ -81,8 +82,9 @@ else:
 snappy_doctester.__name__ = 'snappy'
 
 raytracing_modules = [
-    snappy.raytracing.ideal_raytracing_data,
     snappy.raytracing.cohomology_fractal,
+    snappy.raytracing.geodesic,
+    snappy.raytracing.ideal_raytracing_data,
     snappy.raytracing.upper_halfspace_utilities
 ]
 

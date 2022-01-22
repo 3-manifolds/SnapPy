@@ -13,20 +13,10 @@ class TetAndMatrixSet:
         3-manifold.
         """
 
-        # Maps key (see compute_keys) of a PSL(2,C)-matrix to a list of Tile's.
+        # Maps key (see _compute_keys) of a PSL(2,C)-matrix to a list of Tile's.
         self.tiles = {}
 
-    def values(self):
-        """
-        Returns all pairs (tet, matrix) in this set.
-        """
-
-        return [ (tet, tile.m)
-                 for tile_list in self.tiles.values()
-                 for tile in tile_list
-                 for tet in tile.tets ]
-
-    def compute_keys(self, m):
+    def _compute_keys(self, m):
         """
         A list of one or two keys to look-up a matrix quickly.
 
@@ -61,7 +51,7 @@ class TetAndMatrixSet:
         tet, m = tet_and_matrix
 
         # Compute potential keys
-        keys = self.compute_keys(m)
+        keys = self._compute_keys(m)
         for key in keys:
             # Look for tiles under that key
             for tile in self.tiles.get(key, []):
@@ -73,10 +63,10 @@ class TetAndMatrixSet:
         # No tile yet for this PSL(2,C)-matrix. Add one - using only
         # one key, so that we don't have to update two tiles when adding
         # a new tetrahedron to an exisiting tile.
-        self.tiles.setdefault(keys[0], []).append(Tile(tet_and_matrix))
+        self.tiles.setdefault(keys[0], []).append(_Tile(tet_and_matrix))
         return True
 
-class Tile:
+class _Tile:
     def __init__(self, tet_and_matrix):
         """
         Data structure to help tiling H^3 by translates of the

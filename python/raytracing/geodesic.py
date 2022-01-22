@@ -1,5 +1,6 @@
 from .hyperboloid_utilities import complex_to_R13_light_vector
 from .upper_halfspace_utilities import *
+from .tet_and_matrix_set import TetAndMatrixSet
 
 class GeodesicForParabolicElementError(ValueError):
     def __init__(self, trace):
@@ -40,27 +41,9 @@ class GeodesicInfo:
         # Word
         self.word = word
 
-        # Num tetrahedra
-        self.num_tetrahedra = self.manifold.num_tetrahedra()
-
-        # Shapes of tetrahedra
-        self.shapes = self.manifold.tetrahedra_shapes('rect')
-
         # Unsimplified fundamental group
         self.group = self.manifold.fundamental_group(
             simplify_presentation = False)
-
-        self.manifold._choose_generators(
-            compute_corners = True,
-            centroid_at_origin = False)
-        
-        # For each tetrahedron, information which tetrahedra are neighboring,
-        # which face-pairings correspond to which generator in above group
-        # presentation and where the vertices of the tetrahedra are.
-        self.generators_info = self.manifold._choose_generators_info()
-
-        # Identity matrix
-        self.identity_matrix = self.group.SL2C('')
 
         # Matrix corresponding to work - in the same coordinates the
         # SnapPea kernel chose when developing the tetrahedra
@@ -70,6 +53,27 @@ class GeodesicInfo:
         trace = self.original_matrix[0,0] + self.original_matrix[1,1]
         if abs(trace - 2.0) < 1e-6 or abs(trace + 2.0) < 1e-6:
             raise GeodesicForParabolicElementError(trace)
+
+        # Num tetrahedra
+        self.num_tetrahedra = self.manifold.num_tetrahedra()
+
+        # Shapes of tetrahedra
+        self.shapes = self.manifold.tetrahedra_shapes('rect')
+
+        # How IdealRayTracingData places the vertices of each tetrahedron
+        # in H^3.
+        # Note that to keep away from cyclic dependencies, we just
+        # recompute them here instead of using them from IdealRayTracingData.
+        self.tet_to_shader_vertices = [
+            _shader_vertices(z) for z in self.shapes ]
+
+        # For each tetrahedron, information which tetrahedra are neighboring,
+        # which face-pairings correspond to which generator in above group
+        # presentation and where the vertices of the tetrahedra are.
+        self.manifold._choose_generators(
+            compute_corners = True,
+            centroid_at_origin = False)
+        self.generators_info = self.manifold._choose_generators_info()
 
         # End points of geodesic fixed by matrix - in the same
         # coordinates the SnapPea kernel chose when developing the
@@ -133,6 +137,11 @@ class GeodesicInfo:
         # geodesic up.
         self.signed_half_length = abs(self.eigenvalue0).log()
 
+        # Store index of a tetrahedron and matrix such that the image
+        # of the tetrahedron under that matrix intersects the geodesic.
+        self.first_tet_and_matrix = (
+            self.find_tet_and_matrix_intersecting_geodesic())
+
     def normalize_matrix(self, m):
         """
         Convert a matrix acting on coordinates chosing by the SnapPea kernel
@@ -183,245 +192,123 @@ class GeodesicInfo:
                               [0, self.eigenvalue1 ** steps]])
         return translation * m
 
-_max_steps = 300
+    def images_of_vertices_of_tetrahedron(self, tet, m):
+        return [ sl2c_action_on_boundary(m, v)
+                 for v in self.tet_to_vertices[tet] ]
 
-def find_tet_and_matrix_intersecting_geodesic(geodesic_info):
-    """
-    Given an instance GeodesicInfo, find a pair (tet, matrix) such
-    that the image of the tetrahedron with index tet (in the
-    fundamental domain) under that matrix intersects the geodesic (in
-    coordinates where the geodesic goes from 0 to infty).
-    """
+    def find_tet_and_matrix_intersecting_geodesic(self):
+        """
+        Find a pair (tet, matrix) such that the image of the
+        tetrahedron with index tet (in the fundamental domain) under
+        that matrix intersects the geodesic (in coordinates where the
+        geodesic goes from 0 to infty).
+        """
     
-    # We start with (tetrahedron, matrix) = (0, Identity) and iterate
-    # the following procedure:
-    #
-    # If the geodesic intersects one of the faces of the image under
-    # of the tetrahedron under the matrix, we are done.
-    #
-    # Otherwise, among the six edges of the tetrahedron, pick the one
-    # closest to the geodesic. Among the four edges adjacent to the
-    # closest edge, again pick the one closest to the geodesic. Traverse
-    # the face spanned by those two edges.
-    #
-    # For the above computations, we compute for each oriented edge of
-    # the tetrahedron the cross ratio of the edge and geodesic end points.
-    #
-    # For (an oriented) face, we obtain three cross ratios this way.
-    # If the imaginary parts of those three cross ratios have all the
-    # same sign, the geodesic intersects the face. To see this, think
-    # of six-sided polyhedron obtained by suspending the face by the
-    # end points of the geodesic used in a 2-3 move.
-    # If the new edge introduced by a 2-3 move is not intersecting
-    # the common face, one of the three simplices has a different
-    # orientation.
-    #
-    # The distance between an edge of the tetrhaedron and the
-    # geodesic can also be computed from the corresponding cross
-    # ratio introduced above.
+        # We start with (tetrahedron, matrix) = (0, Identity) and iterate
+        # the following procedure:
+        #
+        # Compute the distance to the geodesic for each face of the
+        # tetrahedron except the one we entered through. Traverse the face
+        # with the least distance.
+        #
+        tet = 0
+        last_f = -1
+        m = self.group.SL2C('') # Start with identity matrix
 
-    tet = 0
-    last_f = -1
-    m = geodesic_info.identity_matrix
+        _max_steps = 300
 
-    for step in range(_max_steps):
-        # Vertices of the image of the tetrahedron under matrix.
-        vertices = [ sl2c_action_on_boundary(m, v)
-                     for v in geodesic_info.tet_to_vertices[tet] ]
+        for step in range(_max_steps):
+            # Vertices of the image of the tetrahedron under matrix.
+            vertices = self.images_of_vertices_of_tetrahedron(tet, m)
 
-        best_f = None
-        best_d = 1e64
-        for f in range(4):
-            if f != last_f:
-                face_vertices = vertices[f+1:] + vertices[:f]
-
-                d = dist_triangle_and_std_geodesic(face_vertices)
-                if d == 0:
-                    return tet, geodesic_info.canonical_matrix(m)
-                if d < best_d:
-                    best_f = f
-                    best_d = d
-
-        # Now traverse face best_f.
-        tet_generators_info = geodesic_info.generators_info[tet]
-
-        # Find which generator corresponds to traversing that
-        # face
-        g = tet_generators_info['generators'][best_f]
-        if g != 0:
-            m = m * geodesic_info.generator_matrices_and_inverses[g]
-        
-        # Find neighboring tetrahedron
-        tet = tet_generators_info['neighbors'][best_f]
-
-        last_f = tet_generators_info['gluings'][best_f][best_f]
-
-    # Geodesic is too far away from fundamental domain or
-    # the algorithm failed for some other reason. Give up.
-    raise FindingTetrahedronGeodesicError(_max_steps)
-
-class Tile:
-    def __init__(self, tet_and_matrix):
-        """
-        Data structure to help tiling H^3 by translates of the
-        tetrahedra in the fundamental domain. Used by TetAndMatrixSet.
-
-        We translate the fundamental domain by the matrix self.m
-        and self.tets are the indices of tetrahedra within that
-        domain.
-
-        When constructed, one tetrahedron is marked as visited.
-        """
-        tet, self.m = tet_and_matrix
-        self.tets = { tet }
-
-    def add(self, tet):
-        """
-        Mark a tetrahedron in this translate of the fundamental
-        domain as visited. Returns true if tetrahedron was
-        not marked as visited before.
-        """
-
-        if tet in self.tets:
-            return False
-        self.tets.add(tet)
-        return True
-
-class TetAndMatrixSet:
-    epsilon = 1.0e-5
-
-    def __init__(self):
-        """
-        A set of pairs (tet, matrix) where tet is an index to a
-        tetrahedron and matrix is a PSL(2,C)-matrix.
-
-        Used to record which tetrahedra have already been visited when tiling
-        H^3 by translates of the tetrahedra in a fundamental domain of a
-        3-manifold.
-        """
-
-        # Maps key (see compute_keys) of a PSL(2,C)-matrix to a list of Tile's.
-        self.tiles = {}
-
-    def values(self):
-        """
-        Returns all pairs (tet, matrix) in this set.
-        """
-
-        return [ (tet, tile.m)
-                 for tile_list in self.tiles.values()
-                 for tile in tile_list
-                 for tet in tile.tets ]
-
-    def compute_keys(self, m):
-        """
-        A list of one or two keys to look-up a matrix quickly.
-
-        Note that two different words yield the same PSL(2,C)-matrix when
-        using exact arithmetic but two slightly different matrices numerically.
-        Thus, we return more than one key to account for the fact that
-        rounding for those two matrices might be different.
-        """
-
-        # Compute a real number - note that abs ensures that the result is
-        # the same when multiplying by -1 so that we work in PSL(2,C), not
-        # SL(2,C).
-        key_value = abs(m[0,0]) / self.epsilon
-
-        # Round to get an integer key
-        first_key = key_value.round()
-
-        # Compute how close the real number is to an integer
-        diff = key_value - first_key
-        if diff > 0.25:
-            # Another way of computing the same matrix could give a result
-            # rounding to the next higher integer, so add as potential
-            # key.
-            return [ first_key, first_key + 1 ]
-        if diff < -0.25:
-            # Analogoue.
-            return [ first_key, first_key - 1]
-        
-        return [ first_key ]
-
-    def add(self, tet_and_matrix):
-        tet, m = tet_and_matrix
-
-        # Compute potential keys
-        keys = self.compute_keys(m)
-        for key in keys:
-            # Look for tiles under that key
-            for tile in self.tiles.get(key, []):
-                # Check that tiles are for the same matrix
-                if are_psl_matrices_close(tile.m, m, epsilon = self.epsilon):
-                    # Add tetrahedron to that tile
-                    return tile.add(tet)
-
-        # No tile yet for this PSL(2,C)-matrix. Add one - using only
-        # one key, so that we don't have to update two tiles when adding
-        # a new tetrahedron to an exisiting tile.
-        self.tiles.setdefault(keys[0], []).append(Tile(tet_and_matrix))
-        return True
-
-def find_tets_and_matrices_intersecting_tube(geodesic_info, radius):
-    """
-    Find all pieces forming the tube of radius about the closed geodesic.
-
-    The input is an instance of GeodesicInfo and the radius. The output
-    is a list of pairs (tet, matrix) encodes the translate of the tetrahedron
-    with index tet in the fundamental domain by matrix (in coordinates where
-    the geodesic goes from 0 to infty).
-
-    In other words, we take a piece of the tube in H^3 covering the tube
-    about the closed geodesic in the manifold once and return all translates
-    of tetrahedra intersecting the tube.
-    """
-
-    # The result as TetAndMatrixSet
-    visited = TetAndMatrixSet()
-
-    # (tet, matrix) pairs for which we still need to check whether they
-    # intersect the geodesic
-    pending_tets_and_matrices = [
-        find_tet_and_matrix_intersecting_geodesic(geodesic_info) ]
-
-    while pending_tets_and_matrices:
-        # Pick next pair to check
-        tet_and_matrix = pending_tets_and_matrices.pop(0)
-        # If not visited already
-        if visited.add(tet_and_matrix):
-            tet, m = tet_and_matrix
-            tet_generators_info = geodesic_info.generators_info[tet]
-            
-            # Compute the vertices of the translate of the tetrahedron
-            vertices = [ sl2c_action_on_boundary(m, v)
-                         for v in geodesic_info.tet_to_vertices[tet] ]
-
-            # For each face
+            best_f = None
+            best_d = 1e64
             for f in range(4):
-                # The three vertices of the face
-                face_vertices = vertices[f+1:] + vertices[:f]
+                if f != last_f:
+                    face_vertices = vertices[f+1:] + vertices[:f]
+
+                    d = dist_triangle_and_std_geodesic(face_vertices)
+                    if d == 0:
+                        return tet, self.canonical_matrix(m)
+                    if d < best_d:
+                        best_f = f
+                        best_d = d
+
+            # Now traverse face best_f.
+            tet_generators_info = self.generators_info[tet]
+
+            # Find which generator corresponds to traversing that
+            # face
+            g = tet_generators_info['generators'][best_f]
+            if g != 0:
+                m = m * self.generator_matrices_and_inverses[g]
+        
+            # Find neighboring tetrahedron
+            tet = tet_generators_info['neighbors'][best_f]
                 
-                d = dist_triangle_and_std_geodesic(face_vertices)
+            last_f = tet_generators_info['gluings'][best_f][best_f]
 
-                # Check whether face is intersecting tube
-                if d < radius:
-                    # If yes, traverse the face
-                    new_tet = tet_generators_info['neighbors'][f]
-                    g = tet_generators_info['generators'][f]
-                    if g != 0:
-                        # Use geodesic_info.canonical_matrix to
-                        # cover tube about closed geodesic in 
-                        # manifold only once
-                        new_m = geodesic_info.canonical_matrix(
-                            m * geodesic_info.generator_matrices_and_inverses[g])
-                    else:
-                        new_m = m
+        # Geodesic is too far away from fundamental domain or
+        # the algorithm failed for some other reason. Give up.
+        raise FindingTetrahedronGeodesicError(_max_steps)
 
-                    # Add as pending tet
-                    pending_tets_and_matrices.append((new_tet, new_m))
+    def find_tets_and_matrices_intersecting_tube(self, radius):
+        """
+        Find all pieces forming the tube of radius about the closed geodesic.
 
-    return visited.values()
+        The input is an instance of GeodesicInfo and the radius. The output
+        is a list of pairs (tet, matrix) encodes the translate of the tetrahedron
+        with index tet in the fundamental domain by matrix (in coordinates where
+        the geodesic goes from 0 to infty).
+
+        In other words, we take a piece of the tube in H^3 covering the tube
+        about the closed geodesic in the manifold once and return all translates
+        of tetrahedra intersecting the tube.
+        """
+
+        # The result as TetAndMatrixSet
+        visited = TetAndMatrixSet()
+
+        # (tet, matrix) pairs for which we still need to check whether they
+        # intersect the geodesic
+        pending_tets_and_matrices = [ self.first_tet_and_matrix ]
+
+        while pending_tets_and_matrices:
+            # Pick next pair to check
+            tet_and_matrix = pending_tets_and_matrices.pop(0)
+            # If not visited already
+            if visited.add(tet_and_matrix):
+                tet, m = tet_and_matrix
+                tet_generators_info = self.generators_info[tet]
+            
+                # Compute the vertices of the translate of the tetrahedron
+                vertices = self.images_of_vertices_of_tetrahedron(tet, m)
+
+                # For each face
+                for f in range(4):
+                    # The three vertices of the face
+                    face_vertices = vertices[f+1:] + vertices[:f]
+                
+                    d = dist_triangle_and_std_geodesic(face_vertices)
+
+                    # Check whether face is intersecting tube
+                    if d < radius:
+                        # If yes, traverse the face
+                        new_tet = tet_generators_info['neighbors'][f]
+                        g = tet_generators_info['generators'][f]
+                        if g != 0:
+                            # Use self.canonical_matrix to
+                            # cover tube about closed geodesic in 
+                            # manifold only once
+                            new_m = self.canonical_matrix(
+                                m * self.generator_matrices_and_inverses[g])
+                        else:
+                            new_m = m
+
+                        # Add as pending tet
+                        pending_tets_and_matrices.append((new_tet, new_m))
+
+        return visited.values()
 
 def geodesic_R13_head_and_tail_from_tet_and_matrix(
                                         geodesic_info, tet_and_matrix):
@@ -437,17 +324,10 @@ def geodesic_R13_head_and_tail_from_tet_and_matrix(
     in the respective tetrahedron.
     """
 
-    tet, matrix = tet_and_matrix
+    tet, m = tet_and_matrix
     
     # Compute the vertices of face 3 of the translate of tetrahedron
-    face_vertices = [ sl2c_action_on_boundary(matrix, v)
-                      for v in geodesic_info.tet_to_vertices[tet][:3] ]
-
-    # Now compute the vertices of face 3 of the same tetrahedron, but
-    # how they are placed in H^3 by IdealRayTracingData
-    z = geodesic_info.shapes[tet]
-    w = z.sqrt() + (z - 1).sqrt()
-    face_vertices_shader = [ w, 1/w, -1 / w ]
+    face_vertices = geodesic_info.images_of_vertices_of_tetrahedron(tet, m)
 
     # Imagine the transformation taking the first triple of vertices
     # the second triple of vertices. Use this transform to translate
@@ -459,7 +339,7 @@ def geodesic_R13_head_and_tail_from_tet_and_matrix(
                  face_vertices[1],
                  face_vertices[2],
                  fixed_point),
-                face_vertices_shader))
+                geodesic_info.tet_to_shader_vertices[tet][:3]))
         for fixed_point in geodesic_info.fixed_points ]
 
 def find_tets_and_R13_heads_and_tails_for_tube(geodesic_info, radius):
@@ -474,8 +354,9 @@ def find_tets_and_R13_heads_and_tails_for_tube(geodesic_info, radius):
     using the same coordinates that IdealRaytracingData uses for its
     tetrahedra.
     """
-    tets_and_matrices = find_tets_and_matrices_intersecting_tube(
-        geodesic_info, radius)
+    tets_and_matrices = (
+        geodesic_info.find_tets_and_matrices_intersecting_tube(
+            radius))
     
     return [
         (tet_and_matrix[0],
@@ -514,3 +395,12 @@ def pack_tets_and_R13_heads_and_tails_for_shader(
     indices.append(len(heads))
 
     return heads, tails, indices
+
+def _shader_vertices(z):
+    """
+    Matches how IdealRayTracingData places the vertices of a tetrahedron in H^3.
+    """
+    w = z.sqrt() + (z - 1).sqrt()
+    return [ w, 1/w, -1/w, -w ]
+
+

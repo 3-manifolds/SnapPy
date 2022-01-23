@@ -219,7 +219,8 @@ typedef enum
  *  parity telling whether it preserves or reverses orientation, a topology
  *  telling whether it's a circle or a mirrored interval, and a multiplicity
  *  telling how many distinct geodesics have that complex length, parity and
- *  topology.  Finally, the matrix of some fundamental group element realizing
+ *  topology.  Finally, the matrix of some fundamental group element (and,
+ *  optionally, the corresponding word in the original generators) realizing
  *  this geodesic is given.
  */
 
@@ -230,6 +231,7 @@ typedef struct
     Orbifold1       topology;
     int             multiplicity;
     O31Matrix       matrix;
+    int             *word;     /* Added MG 2022-01-24 */
 } MultiLength;
 
 
@@ -1946,7 +1948,7 @@ extern void length_spectrum(    WEPolyhedron    *polyhedron,
  *  Please length_spectrum.c for details.
  */
 
-extern void free_length_spectrum(MultiLength *spectrum);
+extern void free_length_spectrum(MultiLength *spectrum, int num_lengths);
 /**<
  *  Deallocates the memory used to store the length spectrum.
  */

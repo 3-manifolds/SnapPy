@@ -1405,21 +1405,39 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
         return ListOnePerLine(result)
     
-    def length_spectrum(self, cutoff=1.0, full_rigor=True):
+    def length_spectrum(self,
+                        cutoff=1.0,
+                        full_rigor=True,
+                        grouped = True,
+                        include_words = False):
         """
-        M.length_spectrum(cutoff=1.0)
-
         Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
+
+        Here's a quick example:
+
+        >>> L = Manifold("m004").length_spectrum(1.1, include_words = True)
+        >>> L # doctest: +NUMERIC6
+        mult length                           topology      parity
+        1    1.087070144995739 - 1.722768449870090*I circle        orientation-preserving
+        1    1.087070144995739 + 1.722768449870090*I circle        orientation-preserving
+        >>> L[0]['word']
+        'a'
+
         """
-        args = (cutoff, full_rigor)
+        args = (cutoff, full_rigor, grouped, include_words)
         try:
             return self._cache.lookup('length_spectrum', *args)
         except KeyError:
             pass
-        D = self.dirichlet_domain()
-        return self._cache.save(D.length_spectrum_dicts(*args),
-                                'length_spectrum', *args)
+        D = self.dirichlet_domain(include_words = include_words)
+        return self._cache.save(
+            D.length_spectrum_dicts(
+                cutoff_length = cutoff,
+                full_rigor = full_rigor,
+                grouped = grouped),
+            'length_spectrum',
+            *args)
         
     def drill(self, which_curve, max_segments=6):
         """

@@ -267,6 +267,7 @@ cdef class CDirichletDomain(object):
         """
         cdef int num_lengths
         cdef MultiLength* geodesics
+        cdef int* c_word
 
         length_spectrum(self.c_dirichlet_domain,
                         Object2Real(cutoff_length),
@@ -281,16 +282,20 @@ cdef class CDirichletDomain(object):
             length = Complex2Number(geodesics[n].length)
             its_matrix = matrix([[self._number_(Real2Number(<Real>geodesics[n].matrix[i][j]))
                                       for j in range(4)] for i in range(4)] )
-            spectrum.append(
-               LengthSpectrumInfo(
-                  length=self._number_(length),
-                  parity=MatrixParity[geodesics[n].parity],
-                  topology=Orbifold1[geodesics[n].topology],
-                  multiplicity=geodesics[n].multiplicity,
-                  matrix = its_matrix
-                  )
-               )
-        free_length_spectrum(geodesics)
+            d = {                   
+                "length" : self._number_(length),
+                "parity" : MatrixParity[geodesics[n].parity],
+                "topology" : Orbifold1[geodesics[n].topology],
+                "multiplicity" :  geodesics[n].multiplicity,
+                "matrix" : its_matrix }
+
+            c_word = geodesics[n].word
+            if c_word:
+                d['word'] = c_word_as_string(
+                    c_word, self.c_num_generators, verbose_form = False)
+
+            spectrum.append(LengthSpectrumInfo(**d))
+        free_length_spectrum(geodesics, num_lengths)
         return LengthSpectrum(spectrum)
 
     def vertex_list(self, details = False):

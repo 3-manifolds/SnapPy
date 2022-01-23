@@ -12,7 +12,7 @@
  *                              MultiLength     **spectrum,
  *                              int             *num_lengths);
  *
- *      void free_length_spectrum(MultiLength *spectrum);
+ *      void free_length_spectrum(MultiLength *spectrum, int num_lengths);
  *
  *  length_spectrum() takes the following inputs:
  *
@@ -565,10 +565,16 @@ void length_spectrum(
 
 
 void free_length_spectrum(
-    MultiLength *spectrum)
+    MultiLength *spectrum, int num_lengths)
 {
+    int i;
+
     if (spectrum != NULL)
+    {
+        for (i = 0; i < num_lengths; i++)
+            my_free(spectrum[i].word);
         my_free(spectrum);
+    }
 }
 
 
@@ -1816,6 +1822,7 @@ static void copy_lengths(
                 multilength_array[*num_lengths].topology        = geodesic_list[i]->topology;
                 multilength_array[*num_lengths].multiplicity    = 1;
                 o31_copy(multilength_array[*num_lengths].matrix, geodesic_list[i]->g);
+                multilength_array[*num_lengths].word            = copy_group_word(geodesic_list[i]->g_word);
 
                 /*
                  *  If the manifold or orbifold is nonorientable, the sign

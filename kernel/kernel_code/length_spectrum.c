@@ -351,6 +351,13 @@ typedef struct Tile
     O31Matrix       g;
 
     /*
+     *  Added by MG 2022-01-24.  A word (as null-terminated list of
+     *  integers) in the (original) generators corresponding to g.
+     */
+
+    int             *g_word;
+
+    /*
      *  Added by MC 2011-10-16.  This is an estimate of the accuracy
      *  of the entries in g.
      */
@@ -433,7 +440,6 @@ static void         compress_geodesic_list(Tile **geodesic_list, int *num_good_g
 static Boolean      is_manifold_orientable(WEPolyhedron *polyhedron);
 static void         copy_lengths(Tile **geodesic_list, int num_good_geodesics, MultiLength **spectrum, int *num_lengths, Boolean multiplicities, Boolean manifold_is_orientable, Boolean grouped);
 static void         free_tiling(Tile *root);
-
 
 void length_spectrum(
     WEPolyhedron    *polyhedron,
@@ -628,6 +634,14 @@ static void tile(
 
     identity = NEW_STRUCT(Tile);
     o31_copy(identity->g, O31_identity);
+
+    if (polyhedron->face_list_begin.next->group_element_word) {
+        identity->g_word = NEW_ARRAY(1, int);
+        identity->g_word[0] = 0;
+    } else {
+        identity->g_word = NULL;
+    }
+
     identity->length    = Zero;
     identity->parity    = orientation_preserving;
     identity->topology  = orbifold1_unknown;
@@ -696,6 +710,10 @@ static void tile(
              *  Compute the neighbor's group element and key value.
              */
             o31_product(tile->g, *face->group_element, nbr->g);
+
+            nbr->g_word = concat_group_words(
+                tile->g_word, face->group_element_word);
+
             /* MC 2011-10-16: we multiply the accuracy by the number of
                flops needed to compute a coefficient of the product. */
             nbr->accuracy = 5.0*tile->accuracy;
@@ -1913,10 +1931,13 @@ static void free_tiling(
             subtree_stack = subtree->right_child;
         }
 
+        my_free(subtree->g_word);
+
         /*
          *  Free the subtree's root node.
          */
         my_free(subtree);
     }
 }
+
 #include "end_namespace.h"

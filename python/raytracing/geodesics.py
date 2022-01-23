@@ -2,6 +2,20 @@ from .geodesic import GeodesicInfo
 
 class Geodesics:
     def __init__(self, manifold, words):
+        """
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("o9_00000")
+        >>> g = Geodesics(M, ["b", "c"])
+        >>> g.set_radius_and_update(0.3)
+        >>> b = g.get_uniform_bindings()
+        >>> len(b['geodesics.geodesicHeads'][1])
+        31
+        >>> len(b['geodesics.geodesicOffsets'][1])
+        10
+        """
+
+
         self.geodesic_infos = [
             GeodesicInfo(manifold, word)
             for word in words ]

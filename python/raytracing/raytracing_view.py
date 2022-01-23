@@ -4,7 +4,7 @@ from .hyperboloid_utilities import *
 from .ideal_raytracing_data import *
 from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
-from .geodesic import *
+from .geodesics import Geodesics
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
@@ -136,7 +136,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
                                 (0.025 if trig_type == 'finite' else 0.04)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
-            'perspectiveType' : ['bool', False]
+            'perspectiveType' : ['bool', False],
+            'geodesicTubeRadius' : ['float', 0.02]
             }
 
         if cohomology_class:
@@ -153,13 +154,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.manifold = manifold
 
         self._unguarded_initialize_raytracing_data()
-        self._initialize_geodesic_data()
 
-        self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
+        self.geodesics = Geodesics(manifold, geodesics)
+
+        self._update_geodesic_data()
 
         compile_time_constants = _merge_dicts(
             self.raytracing_data.get_compile_time_constants(),
-            self.geodesics_compile_time_constants)
+            self.geodesics.get_compile_time_constants())
 
         shader_source, uniform_block_names_sizes_and_offsets = (
             shaders.get_triangulation_shader_source_and_ubo_descriptors(
@@ -321,36 +323,11 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 dir, -dist),
             speed)
 
-    def _initialize_geodesic_data(self):
-        if self.geodesics:
-            if len(self.geodesics) > 1:
-                raise Exception(
-                    "Drawing more than one geodesic is not yet supported.")
-            geodesic_info = GeodesicInfo(self.manifold, self.geodesics[0])
-
-            RF = self.manifold.tetrahedra_shapes('rect')[0].real().parent()
-            radius = RF(0.02)
-
-            tets_and_endpoints = (
-                geodesic_info.compute_tets_and_R13_endpoints_for_tube(radius))
-
-            heads, tails, offsets = (
-                pack_tets_and_R13_heads_and_tails_for_shader(
-                    geodesic_info, tets_and_endpoints))
-
-            radiusParam = (radius/2).cosh()**2 / 2
-
-            self.geodesics_compile_time_constants = {
-                b'##num_geodesic_segments##' : len(heads) }
-            self.geodesics_uniform_bindings = {
-                'geodesics.geodesicHeads' : ('vec4[]', heads),
-                'geodesics.geodesicTails' : ('vec4[]', tails),
-                'geodesics.geodesicOffsets' : ('int[]', offsets),
-                'geodesicTubeRadiusParam' : ('float', radiusParam) }
-        else:
-            self.geodesics_compile_time_constants = {
-                b'##num_geodesic_segments##' : 0 }
-            self.geodesics_uniform_bindings = {}
+    def _update_geodesic_data(self):
+        self.geodesics.set_radius_and_update(
+            self.ui_parameter_dict['geodesicTubeRadius'][1])
+        self.geodesics_uniform_bindings = (
+            self.geodesics.get_uniform_bindings())
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

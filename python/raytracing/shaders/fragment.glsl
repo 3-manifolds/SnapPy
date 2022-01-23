@@ -122,10 +122,11 @@ layout (std140) uniform geodesics
 {
     vec4 geodesicTails[##num_geodesic_segments##];
     vec4 geodesicHeads[##num_geodesic_segments##];
+    int geodesicIndex[##num_geodesic_segments##];
+    float geodesicTubeRadiusParam[##num_geodesic_segments##];
     int geodesicOffsets[##num_tets## + 1];
 };
 
-uniform float geodesicTubeRadiusParam;
 #endif
 
 uniform float horosphereScales[4 * ##num_tets##];
@@ -755,7 +756,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         vec2 params = distParamsForTubeIntersection(
             ray_hit.ray,
             endpointsForGeodesic(index),
-            geodesicTubeRadiusParam,
+            geodesicTubeRadiusParam[index],
             0.0);
 
         if (params.x < smallest_p) {
@@ -1016,7 +1017,10 @@ material_params(RayHit ray_hit)
 
 #if ##num_geodesic_segments## > 0
     if (ray_hit.object_type == object_type_geodesic_tube) {
-        result.diffuse = vec3(0.3,0.3,0.9);
+        int index = geodesicIndex[ray_hit.object_index];
+
+        result.diffuse = hsv2rgb(vec3(float(index) * 0.32 + 0.1, 1.0, 1.0));
+
         result.ambient = 0.5 * result.diffuse;
     }
 #endif

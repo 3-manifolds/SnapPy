@@ -43,9 +43,11 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
          { 'margulisTubeTails': 0,
            'margulisTubeHeads' : 64 * num_tets}),
         ('geodesics',
-         (16 + 16) * num_geodesic_segments + 16 * (num_tets + 1),
+         (16 + 16 + 16 + 16) * num_geodesic_segments + 16 * (num_tets + 1),
          { 'geodesicTails': 0,
            'geodesicHeads': 16 * num_geodesic_segments,
-           'geodesicOffsets': (16 + 16) * num_geodesic_segments }) ]
+           'geodesicIndex': (16 + 16) * num_geodesic_segments,
+           'geodesicTubeRadiusParam': (16 + 16 + 16) * num_geodesic_segments,
+           'geodesicOffsets': (16 + 16 + 16 + 16) * num_geodesic_segments }) ]
     
     return src, uniform_block_names_sizes_and_offsets

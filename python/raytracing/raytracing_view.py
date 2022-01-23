@@ -97,6 +97,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                  *args,
                  **kwargs):
 
+        SimpleImageShaderWidget.__init__(
+            self, master,
+            *args, **kwargs)
+
         self.trig_type = trig_type
 
         # The view can be driven in two modes:
@@ -151,29 +155,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 raise Exception(
                     "Expected cohomology_class when given cohomology_basis")
 
+        self.compile_time_constants = {}
+
         self.manifold = manifold
 
         self._unguarded_initialize_raytracing_data()
 
         self.geodesics = Geodesics(manifold, geodesics)
-
         self._update_geodesic_data()
-
-        compile_time_constants = _merge_dicts(
-            self.raytracing_data.get_compile_time_constants(),
-            self.geodesics.get_compile_time_constants())
-
-        shader_source, uniform_block_names_sizes_and_offsets = (
-            shaders.get_triangulation_shader_source_and_ubo_descriptors(
-                compile_time_constants))
-
-        SimpleImageShaderWidget.__init__(
-            self, master,
-            *args, **kwargs)
-
-        self.set_fragment_shader_source(
-            shader_source,
-            uniform_block_names_sizes_and_offsets)
 
         # Use distance view for now
         self.view = 1
@@ -328,6 +317,25 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.ui_parameter_dict['geodesicTubeRadius'][1])
         self.geodesics_uniform_bindings = (
             self.geodesics.get_uniform_bindings())
+        self._update_shader()
+
+    def _update_shader(self):
+        compile_time_constants = _merge_dicts(
+            self.raytracing_data.get_compile_time_constants(),
+            self.geodesics.get_compile_time_constants())
+
+        if compile_time_constants == self.compile_time_constants:
+            return
+
+        self.compile_time_constants = compile_time_constants
+
+        shader_source, uniform_block_names_sizes_and_offsets = (
+            shaders.get_triangulation_shader_source_and_ubo_descriptors(
+                compile_time_constants))
+
+        self.set_fragment_shader_source(
+            shader_source,
+            uniform_block_names_sizes_and_offsets)
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

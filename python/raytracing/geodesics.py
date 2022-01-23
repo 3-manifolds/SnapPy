@@ -74,5 +74,10 @@ class Geodesics:
             'geodesics.geodesicOffsets' : ('int[]', self.data_offsets) }
     
     def get_compile_time_constants(self):
+        if self.data_heads:
+            num = max(100, len(self.data_heads))
+        else:
+            num = 0
+
         return {
-            b'##num_geodesic_segments##' : len(self.data_heads) }
+            b'##num_geodesic_segments##' : num }

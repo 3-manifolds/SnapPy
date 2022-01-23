@@ -19,7 +19,7 @@ class InsideViewer(ttk.Frame):
                  weights = None,
                  cohomology_basis = None,
                  cohomology_class = None,
-                 geodesics = None,
+                 geodesics = [],
                  main_window = None):
         ttk.Frame.__init__(self, master)
         self.main_window = main_window

@@ -60,14 +60,32 @@ int* concat_group_words(
     if (word1 == NULL)
         return NULL;
 
+    /*
+     * Look at last letter of first word.
+     */
     word0_last = word0 + length_of_group_word(word0) - 1;
+
+    /*
+     * Eat last letter of first word and first letter of second word
+     * while one is the inverse (the negative) of the other.
+     */
     while (word0 <= word0_last && *word0_last == -*word1) {
         word0_last--; word1++;
     }
 
-    prod = NEW_ARRAY(word0_last - word0 + length_of_group_word(word1) + 2, int);
+    /*
+     * Allocate memory for result.
+     *
+     * Note that word0_last points to the byte before word0 if word0
+     * is empty (or was completely cancelled).
+     */
+    prod = NEW_ARRAY((word0_last - word0 + 1) + length_of_group_word(word1) + 1,
+                     int);
+
+    /*
+     * Copy each word into result.
+     */
     pos = prod;
-    
     while (word0 <= word0_last)
         *(pos++) = *(word0++);
 
@@ -89,11 +107,21 @@ int* invert_group_word(
     if (word == NULL)
         return NULL;
 
+    /*
+     * Allocate memory for result.
+     */
     l = length_of_group_word(word);
     inv = NEW_ARRAY(l + 1, int);
+
+    /*
+     * Fill the result backwards starting with null-terminator.
+     */
     back = inv + l;
     *(back--) = 0;
 
+    /*
+     * Copy into result backward.
+     */
     while (*word != 0)
         *(back--) = -*(word++);
 
@@ -110,7 +138,14 @@ int * copy_group_word(
         return NULL;
     }
 
+    /*
+     * Allocate memory for result.
+     */
     new_word = NEW_ARRAY(length_of_group_word(word) + 1, int);
+
+    /*
+     * And copy into it.
+     */
     pos = new_word;
     while (*word != 0)
         *(pos++) = *(word++);

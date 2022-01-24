@@ -675,6 +675,7 @@ cdef Real Object2Real(obj):
     cdef char* c_string
     try:
         string = obj.as_string() if isinstance(obj, Number) else str(obj)
+        string = string.replace(' ', '')
         float(string)
     except:
         raise ValueError('Cannot convert %s to a Real.'%type(obj))

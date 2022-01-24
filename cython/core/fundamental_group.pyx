@@ -249,7 +249,7 @@ cdef class CFundamentalGroup(object):
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp=0, as_int_list = False, verbose_form = False):
+    def meridian(self, int which_cusp=0, as_int_list = False):
         """
         Returns a word representing a conjugate of the current
         meridian for the given cusp.  Guaranteed to commute with the
@@ -272,9 +272,9 @@ cdef class CFundamentalGroup(object):
             return c_word_as_string(
                fg_get_meridian(self.c_group_presentation, which_cusp),
                self.num_generators(),
-               verbose_form)
+               verbose_form = False)
 
-    def longitude(self, int which_cusp=0, as_int_list = False, verbose_form = False):
+    def longitude(self, int which_cusp=0, as_int_list = False):
         """
         Returns a word representing a conjugate of the current
         longitude for the given cusp.  Guaranteed to commute with the
@@ -298,7 +298,7 @@ cdef class CFundamentalGroup(object):
             return c_word_as_string(
                fg_get_longitude(self.c_group_presentation, which_cusp),
                self.num_generators(),
-               verbose_form)
+               verbose_form = False)
 
     def peripheral_curves(self, as_int_list = False):
         """

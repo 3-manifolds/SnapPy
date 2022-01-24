@@ -799,8 +799,12 @@ class DualCurveInfo(Info):
     
 class LengthSpectrumInfo(Info):
     def __repr__(self):
-        return '%-4d %-32s %-14s%s'%(
-            self.multiplicity, self.length, self.topology, self.parity )
+        if 'word' in self:
+            return '%-4d %-32s %-14s%s %s'%(
+                self.multiplicity, self.length, self.topology, self.parity, self.word )
+        else:
+            return '%-4d %-32s %-14s%s'%(
+                self.multiplicity, self.length, self.topology, self.parity )
 
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
@@ -815,8 +819,12 @@ class NormalSurfaceInfo(Info):
     
 class LengthSpectrum(list):
     def __repr__(self):
-        base = ['%-4s %-32s %-12s  %s'%
-                ('mult', 'length', 'topology', 'parity')]
+        if len(self) > 0 and 'word' in self[0]:
+            base = ['%-4s %-32s %-12s  %s %s'%
+                    ('mult', 'length', 'topology', 'parity', 'word')]
+        else:
+            base = ['%-4s %-32s %-12s  %s'%
+                    ('mult', 'length', 'topology', 'parity')]
         return '\n'.join(base + [repr(s) for s in self])
 
 class ListOnePerLine(list):

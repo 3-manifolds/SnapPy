@@ -590,12 +590,14 @@ cdef class CDirichletDomain(object):
         Group elements which pair the faces of this DirichletDomain
         as words in the original generators:
 
-        >>> M = Manifold('s345')
+        >>> M = Manifold('m006')
         >>> G = M.fundamental_group()
-        >>> matrices = [ G.O31('aa'), G.O31('bb'), G.O31('ab') ]
-        >>> D = DirichletDomain(O31_generators = matrices, include_words=True)
-        >>> 'CabaBAc' in D.pairing_words()
-        True
+        >>> matrices = [ G.O31('bb'), G.O31('aa') ]
+        >>> D = DirichletDomain(O31_generators = matrices,
+        ...                     maximize_injectivity_radius = False,
+        ...                     include_words=True)
+        >>> sorted(D.pairing_words()) #doctest: +ELLIPSIS
+        ['A', ...]
 
         Requires that DirichletDomain was computed with
         include_words = True.

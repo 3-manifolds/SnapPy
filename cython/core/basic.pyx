@@ -820,17 +820,26 @@ LengthSpectrumFormatStringWithWord = (
 
 class LengthSpectrumInfo(Info):
     def __repr__(self):
+        lenStr = "%12.9f" % self.length.real()
+        absImag = abs(self.length.imag())
+        if absImag > 1e-9:
+            if self.length.imag() > 0:
+                lenStr += " + "
+            else:
+                lenStr += " - "
+            lenStr += "%12.9f*I" % absImag
+
         if 'word' in self:
             return LengthSpectrumFormatStringWithWord % (
                 self.multiplicity,
-                self.length,
+                lenStr,
                 self.topology,
                 self.parity,
                 self.word)
         else:
             return LengthSpectrumFormatString % (
                 self.multiplicity,
-                self.length,
+                lenStr,
                 self.topology,
                 self.parity )
 
@@ -849,10 +858,10 @@ class LengthSpectrum(list):
     def __repr__(self):
         if len(self) > 0 and 'word' in self[0]:
             base = LengthSpectrumFormatStringWithWord % (
-                'mult', 'length', 'topology', 'parity', 'word')
+                'mult', ' length', 'topology', 'parity', 'word')
         else:
             base = LengthSpectrumFormatString % (
-                'mult', 'length', 'topology', 'parity')
+                'mult', ' length', 'topology', 'parity')
         return '\n'.join([base] + [repr(s) for s in self])
 
 class ListOnePerLine(list):

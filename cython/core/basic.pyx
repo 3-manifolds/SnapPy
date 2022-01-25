@@ -801,14 +801,38 @@ class DualCurveInfo(Info):
     _obsolete = {'complete length' : 'complete_length',
                  'filled length' : 'filled_length'}
     
+def _StrLongestLen(l):
+    return str(max(len(e) for e in l))
+
+LengthSpectrumFormatStringBase = (
+    '%-4s '                                   # Multiplicity
+    '%-32s '                                  # Length
+    '%-' + _StrLongestLen(Orbifold1) + 's ')  # Topology
+
+LengthSpectrumFormatString = (
+    LengthSpectrumFormatStringBase +
+    '%s')                                     # Parity
+
+LengthSpectrumFormatStringWithWord = (
+    LengthSpectrumFormatStringBase +
+    '%-' + _StrLongestLen(MatrixParity) +'s ' # Parity
+    '%s')                                     # Word
+
 class LengthSpectrumInfo(Info):
     def __repr__(self):
         if 'word' in self:
-            return '%-4d %-32s %-14s%s %s'%(
-                self.multiplicity, self.length, self.topology, self.parity, self.word )
+            return LengthSpectrumFormatStringWithWord % (
+                self.multiplicity,
+                self.length,
+                self.topology,
+                self.parity,
+                self.word)
         else:
-            return '%-4d %-32s %-14s%s'%(
-                self.multiplicity, self.length, self.topology, self.parity )
+            return LengthSpectrumFormatString % (
+                self.multiplicity,
+                self.length,
+                self.topology,
+                self.parity )
 
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
@@ -824,12 +848,12 @@ class NormalSurfaceInfo(Info):
 class LengthSpectrum(list):
     def __repr__(self):
         if len(self) > 0 and 'word' in self[0]:
-            base = ['%-4s %-32s %-12s  %s %s'%
-                    ('mult', 'length', 'topology', 'parity', 'word')]
+            base = LengthSpectrumFormatStringWithWord % (
+                'mult', 'length', 'topology', 'parity', 'word')
         else:
-            base = ['%-4s %-32s %-12s  %s'%
-                    ('mult', 'length', 'topology', 'parity')]
-        return '\n'.join(base + [repr(s) for s in self])
+            base = LengthSpectrumFormatString % (
+                'mult', 'length', 'topology', 'parity')
+        return '\n'.join([base] + [repr(s) for s in self])
 
 class ListOnePerLine(list):
     def __repr__(self):

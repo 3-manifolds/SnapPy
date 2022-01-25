@@ -717,9 +717,6 @@ static void tile(
              */
             o31_product(tile->g, *face->group_element, nbr->g);
 
-            nbr->g_word = concat_group_words(
-                tile->g_word, face->group_element_word);
-
             /* MC 2011-10-16: we multiply the accuracy by the number of
                flops needed to compute a coefficient of the product. */
             nbr->accuracy = 5.0*tile->accuracy;
@@ -735,6 +732,9 @@ static void tile(
             if (nbr->g[0][0] < cosh_tiling_radius
              && already_on_tree(*tiling, nbr) == FALSE)
             {
+                nbr->g_word = concat_group_words(
+                    tile->g_word, face->group_element_word);
+
                 nbr->length     = complex_length_o31(nbr->g);
                 nbr->parity     = gl4R_determinant(nbr->g) > 0.0 ?
                                     orientation_preserving :

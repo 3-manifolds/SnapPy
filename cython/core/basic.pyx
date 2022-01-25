@@ -675,6 +675,9 @@ cdef Real Object2Real(obj):
     cdef char* c_string
     try:
         string = obj.as_string() if isinstance(obj, Number) else str(obj)
+        # Pari idiosyncratically formats small and large numbers as,
+        # e.g., "1.0 E-10" (note the space before "E").
+        # Remove it - otherwise it cannott be parsed.
         string = string.replace(' ', '')
         float(string)
     except:

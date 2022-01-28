@@ -87,6 +87,10 @@ class UniformDictController:
             self.scalar_type = 'bool'
             if not (index is None and component_index is None):
                 raise Exception("int/float uniform does not support index")
+        elif self.uniform_type == 'bool[]':
+            self.scalar_type = 'bool'
+            if index is None or not component_index is None:
+                raise Exception("Need to specify index for bool[] uniform")
         else:
             raise Exception("Unsupported uniform type %s" % self.uniform_type)
 
@@ -118,6 +122,8 @@ class UniformDictController:
                 self.uniform_dict[self.key][1][self.index][self.component_index])
         if self.uniform_type == 'bool':
             return bool(self.uniform_dict[self.key][1])
+        if self.uniform_type == 'bool[]':
+            return bool(self.uniform_dict[self.key][1][self.index])
 
     def set_value(self, value):
         if self.uniform_type == 'int':
@@ -131,6 +137,8 @@ class UniformDictController:
                 float(value))
         elif self.uniform_type == 'bool':
             self.uniform_dict[self.key][1] = bool(value)
+        elif self.uniform_type == 'bool[]':
+            self.uniform_dict[self.key][1][self.index] = bool(value)
 
     def update_scale(self):
         if self.scale:

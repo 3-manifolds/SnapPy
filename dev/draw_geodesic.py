@@ -3,15 +3,15 @@ def main():
 
     M = Manifold("m015")
 
-    word = 'aBBAAAAAAbaaaaaabbA'
+    #word0 = 'aBBAAAAAAbaaaaaabbA'
     
     #word = 'bAAAbaaaB'
 
-    # word = 'aaab'
+    word0 = 'aaab'
 
-    #word = 'b'
+    word1 = 'b'
 
-    gui = M.inside_view(geodesics = [ word ])
+    gui = M.inside_view(geodesics = [ word0, word1 ])
     gui.mainloop()
 
 if __name__ == '__main__':

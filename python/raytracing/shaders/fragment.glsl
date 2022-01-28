@@ -73,6 +73,8 @@ uniform int face_color_indices[4 * ##num_tets##];
 uniform int edge_color_indices[6 * ##num_tets##];
 uniform int vertex_color_indices[4 * ##num_tets##];
 
+uniform bool desaturate_edges = false;
+
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
@@ -985,7 +987,10 @@ material_params(RayHit ray_hit)
         //using num_tets = num_edges
 
 #if COLOR_SCHEME == 1
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_edges), 1.0, 1.0));
+        result.diffuse = hsv2rgb(
+            vec3(float(color_index)/float(num_edges),
+                 desaturate_edges ? 0.24 : 1.0,
+                 1.0));
 #else
         result.diffuse =
             vec3(0.5, 0.5, 0.5)
@@ -1019,7 +1024,20 @@ material_params(RayHit ray_hit)
     if (ray_hit.object_type == object_type_geodesic_tube) {
         int index = geodesicIndex[ray_hit.object_index];
 
-        result.diffuse = hsv2rgb(vec3(float(index) * 0.32 + 0.1, 1.0, 1.0));
+        // The user wants to switch geodesics off and on while
+        // their colors stay stable.
+        //
+        // Thus, we cannot divide the color circle equally.
+        //
+        // Instead, we multiply the index by the golden angle
+        //          pi * (3 - sqrt(5)) radians
+        // so that no geodesics hit the same color.
+        //
+        // For hsv2rgb, we need to divide by 2 * pi:
+        //
+        float goldenAngleBy2Pi = 0.3819660112501051;
+
+        result.diffuse = hsv2rgb(vec3(float(index) * goldenAngleBy2Pi + 0.1, 1.0, 1.0));
 
         result.ambient = 0.5 * result.diffuse;
     }

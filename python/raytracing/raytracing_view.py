@@ -113,7 +113,6 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.weights = weights
         self.cohomology_basis = cohomology_basis
-        self.geodesics = geodesics
 
         has_weights = bool(weights or cohomology_class)
 
@@ -131,7 +130,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'lightFalloff' : ['float', 1.65],
             'brightness' : ['float', 1.9],
 
-            'showElevation' : ['bool', False]
+            'showElevation' : ['bool', False],
+            'desaturate_edges' : ['bool', False]
             }
 
         self.ui_parameter_dict = {
@@ -141,7 +141,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                                 (0.025 if trig_type == 'finite' else 0.04)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'perspectiveType' : ['bool', False],
-            'geodesicTubeRadius' : ['float', 0.02]
+            'geodesicTubeRadii' : ['float[]', []],
+            'geodesicTubeEnables' : ['bool[]', []]
             }
 
         if cohomology_class:
@@ -161,8 +162,19 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self._unguarded_initialize_raytracing_data()
 
-        self.geodesics = Geodesics(manifold, geodesics)
-        self._update_geodesic_data()
+        if self.trig_type == 'finite':
+            # Geodesics in finite triangulations are not yet
+            # supported.
+            self.geodesics = None
+            self.geodesics_uniform_bindings = {}
+        else:
+            self.geodesics = Geodesics(manifold, geodesics)
+            self.resize_geodesic_params(enable = True)
+            self._update_geodesic_data()
+
+        self.geodesics_disabled_edges = False
+        if geodesics:
+            self.disable_edges_for_geodesics()
 
         self._update_shader()
 
@@ -314,9 +326,18 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 dir, -dist),
             speed)
 
+    def resize_geodesic_params(self, enable = False):
+        num = len(self.geodesics.geodesic_infos) - len(self.ui_parameter_dict['geodesicTubeRadii'][1])
+        self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
+        self.ui_parameter_dict['geodesicTubeEnables'][1] += num * [ enable ]
+
+    def enable_geodesic(self, index):
+        self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
+        
     def _update_geodesic_data(self):
-        self.geodesics.set_radius_and_update(
-            self.ui_parameter_dict['geodesicTubeRadius'][1])
+        self.geodesics.set_enables_and_radii_and_update(
+            self.ui_parameter_dict['geodesicTubeEnables'][1],
+            self.ui_parameter_dict['geodesicTubeRadii'][1])
         self.geodesics_uniform_bindings = (
             self.geodesics.get_uniform_bindings())
 
@@ -325,10 +346,33 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self._update_shader()
         self.redraw_if_initialized()
 
+    def disable_edges_for_geodesics(self):
+        # Only do once
+        if self.geodesics_disabled_edges:
+            return False
+
+        self.geodesics_disabled_edges = True
+        
+        self.ui_uniform_dict['desaturate_edges'][1] = True
+        self.ui_parameter_dict['edgeTubeRadius'][1] = 0.0
+        self.ui_parameter_dict['insphere_scale'][1] = 0.0
+
+        self._initialize_raytracing_data()
+
+        return True
+        
     def _update_shader(self):
+        if self.geodesics:
+            geodesic_compile_time_constants = (
+                self.geodesics.get_compile_time_constants())
+        else:
+            geodesic_compile_time_constants = {
+                b'##num_geodesic_segments##' : 0
+            }
+        
         compile_time_constants = _merge_dicts(
             self.raytracing_data.get_compile_time_constants(),
-            self.geodesics.get_compile_time_constants())
+            geodesic_compile_time_constants)
 
         if compile_time_constants == self.compile_time_constants:
             return

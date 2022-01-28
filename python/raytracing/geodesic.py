@@ -144,6 +144,10 @@ class GeodesicInfo:
         self.eigenvalue0 = m[0,0]
         self.eigenvalue1 = m[1,1]
 
+        self.complex_length = (self.eigenvalue0 ** 2).log()
+        if self.complex_length.real() < 0:
+            self.complex_length = -self.complex_length
+
         # Type for complex numbers
         CF = trace.parent()
         # The endpoints of the geodesic. Using large number for infty.
@@ -163,7 +167,9 @@ class GeodesicInfo:
         tet, face, matrix = self.initial_tet_face_and_matrix
         self.pending_pieces = [ PendingPiece(0, (tet, matrix)) ]
         self.visited = TetAndMatrixSet()
-        self.pieces = [ ]
+        self.tube_pieces = [ ]
+
+        self.geodesic_pieces = None
 
     def normalize_matrix(self, m):
         """
@@ -302,12 +308,13 @@ class GeodesicInfo:
             # If not visited already
             if self.visited.add(tet_and_matrix):
                 tet, m = tet_and_matrix
+
                 tet_generators_info = self.generators_info[tet]
                 
                 # Compute the vertices of the translate of the tetrahedron
                 vertices = self.images_of_vertices_of_tetrahedron(tet, m)
 
-                self.pieces.append(
+                self.tube_pieces.append(
                     (pending_piece.d,
                      (tet, self.transfer_endpoints(tet, vertices))))
 
@@ -402,13 +409,43 @@ class GeodesicInfo:
         self.cache_pieces_for_tube(radius)
 
         result = []
-        for d, tets_and_R13_endpoints in self.pieces:
+        for d, tets_and_R13_endpoints in self.tube_pieces:
             if d > radius:
                 break
             result.append(tets_and_R13_endpoints)
 
         return result
 
+    def __eq__(self, other):
+        if not self.has_same_complex_length(other):
+            return False
+
+        tet, (endpoint0, endpoint1) = (
+            self.compute_tets_and_R13_endpoints_for_geodesic()[0])
+        for other_tet, other_endpoints in (
+                other.compute_tets_and_R13_endpoints_for_geodesic()):
+            if tet == other_tet:
+                for other_endpoint in other_endpoints:
+                    if _are_points_equal(endpoint0, other_endpoint, 1e-5):
+                        return True
+        return False
+                
+    def compute_tets_and_R13_endpoints_for_geodesic(self):
+        if self.geodesic_pieces is None:
+            self.geodesic_pieces = (
+                self.compute_tets_and_R13_endpoints_for_tube(1e-3))
+        return self.geodesic_pieces
+
+    def has_same_complex_length(self, other):
+        diff = self.complex_length - other.complex_length
+        if abs(diff.real()) > 1e-5:
+            return False
+
+        return abs(diff.exp() - 1) < 1e-5
+
+def _are_points_equal(a, b, epsilon):
+    return all(abs(x-y) < epsilon for x, y in zip(a,b))
+    
 def pack_tets_and_R13_heads_and_tails_for_shader(
                                 geodesic_info, tets_and_heads_and_tails):
     """

@@ -33,6 +33,9 @@ class FiniteRaytracingData(RaytracingData):
     @staticmethod
     def from_triangulation(triangulation, weights = None):
 
+        if not _within_sage:
+            raise Exception("Only supported within SageMath :(")
+        
         hyperbolic_structure = compute_approx_hyperbolic_structure_orb(triangulation)
         hyperbolic_structure.pick_exact_and_var_edges()
         hyperbolic_structure = polish_approx_hyperbolic_structure(

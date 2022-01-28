@@ -23,6 +23,14 @@ class FindingTetrahedronGeodesicError(RuntimeError):
                 '(after %d steps).' % self.max_steps)
 
 class PendingPiece:
+    """
+    Stores index of tetrahedron and matrix and the distance d of the image
+    of the tetrahedron under the matrix to the hyperbolic line from 0
+    to infinity.
+
+    Operator < overloaded to sort by distance.
+    """
+
     def __init__(self, d, tet_and_matrix):
         self.d = d
         self.tet_and_matrix = tet_and_matrix
@@ -147,12 +155,13 @@ class GeodesicInfo:
         # geodesic up.
         self.signed_half_length = abs(self.eigenvalue0).log()
 
+        self.initial_tet_face_and_matrix = (
+            self.find_tet_face_and_matrix_intersecting_geodesic())
+        
         # Store index of a tetrahedron and matrix such that the image
         # of the tetrahedron under that matrix intersects the geodesic.
-        self.pending_pieces = [
-            PendingPiece(
-                0,
-                self.find_tet_and_matrix_intersecting_geodesic()) ]
+        tet, face, matrix = self.initial_tet_face_and_matrix
+        self.pending_pieces = [ PendingPiece(0, (tet, matrix)) ]
         self.visited = TetAndMatrixSet()
         self.pieces = [ ]
 
@@ -210,7 +219,7 @@ class GeodesicInfo:
         return [ sl2c_action_on_boundary(m, v)
                  for v in self.tet_to_vertices[tet] ]
 
-    def find_tet_and_matrix_intersecting_geodesic(self):
+    def find_tet_face_and_matrix_intersecting_geodesic(self):
         """
         Find a pair (tet, matrix) such that the image of the
         tetrahedron with index tet (in the fundamental domain) under
@@ -244,7 +253,7 @@ class GeodesicInfo:
                     d = dist_triangle_and_std_geodesic(face_vertices)
 
                     if d < 1e-9:
-                        return tet, self.canonical_matrix(m)
+                        return tet, f, self.canonical_matrix(m)
                     if d < best_d:
                         best_f = f
                         best_d = d
@@ -283,18 +292,18 @@ class GeodesicInfo:
         of tetrahedra intersecting the tube.
         """
 
-        # (tet, matrix) pairs for which we still need to check whether they
-        # intersect the geodesic
+        # PendingPiece's (essentially (tet, matrix) pairs) for which we
+        # still need to check whether they intersect the geodesic
 
         while self.pending_pieces[0].d < radius:
-            # Pick next pair to check
+            # Pick PendingPiece closest to geodesic.
             pending_piece = heapq.heappop(self.pending_pieces)
             tet_and_matrix = pending_piece.tet_and_matrix
             # If not visited already
             if self.visited.add(tet_and_matrix):
                 tet, m = tet_and_matrix
                 tet_generators_info = self.generators_info[tet]
-            
+                
                 # Compute the vertices of the translate of the tetrahedron
                 vertices = self.images_of_vertices_of_tetrahedron(tet, m)
 

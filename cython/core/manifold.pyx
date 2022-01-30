@@ -1418,9 +1418,9 @@ cdef class Manifold(Triangulation):
 
         >>> L = Manifold("m004").length_spectrum(1.1, include_words = True)
         >>> L
-        mult  length                          topology     parity                 word
-        1     1.087070145 -  1.722768450*I    circle       orientation-preserving a
-        1     1.087070145 +  1.722768450*I    circle       orientation-preserving bC
+        mult  length                                  topology     parity word
+        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
+        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
 
         Access just the length:
        

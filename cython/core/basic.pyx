@@ -806,7 +806,7 @@ def _StrLongestLen(l):
 
 LengthSpectrumFormatStringBase = (
     '%-4s '                                   # Multiplicity
-    '%-32s '                                  # Length
+    '%-40s '                                  # Length
     '%-' + _StrLongestLen(Orbifold1) + 's ')  # Topology
 
 LengthSpectrumFormatString = (
@@ -815,33 +815,35 @@ LengthSpectrumFormatString = (
 
 LengthSpectrumFormatStringWithWord = (
     LengthSpectrumFormatStringBase +
-    '%-' + _StrLongestLen(MatrixParity) +'s ' # Parity
+    '%-6s '                                   # Parity
     '%s')                                     # Word
+
+ShortMatrixParity = { MatrixParity[0] : '-', MatrixParity[1] : '+' }
 
 class LengthSpectrumInfo(Info):
     def __repr__(self):
-        lenStr = "%12.9f" % self.length.real()
+        lenStr = "%17.14f" % self.length.real()
         absImag = abs(self.length.imag())
         if absImag > 1e-9:
             if self.length.imag() > 0:
                 lenStr += " + "
             else:
                 lenStr += " - "
-            lenStr += "%12.9f*I" % absImag
+            lenStr += "%17.14f*I" % absImag
 
         if 'word' in self:
             return LengthSpectrumFormatStringWithWord % (
                 self.multiplicity,
                 lenStr,
                 self.topology,
-                self.parity,
+                ShortMatrixParity[self.parity],
                 self.word)
         else:
             return LengthSpectrumFormatString % (
                 self.multiplicity,
                 lenStr,
                 self.topology,
-                self.parity )
+                ShortMatrixParity[self.parity] )
 
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}

@@ -321,7 +321,12 @@ class Number(Number_baseclass):
         if accuracy:
             # Trick PARI into rounding to the correct number of digits.
             # Simulates the printf %.Nf format, where N is the accuracy.
-            int_part = gen.truncate().abs()
+            try:
+                int_part = gen.truncate().abs()
+            except PariError:
+                # Happens if gen holds large number.
+                # Setting to 1 so that we display something.
+                int_part = 1
             if int_part == 0:
                 # Deal with zeros to the right of the decimal point.
                 try:

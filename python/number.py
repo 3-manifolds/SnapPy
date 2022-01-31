@@ -6,7 +6,7 @@ from .sage_helper import _within_sage
 from .pari import *
 import re
 
-strip_zeros = re.compile(r'(.*\..*?[0-9]{1})0*$')
+strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
 left_zeros = re.compile(r'0\.0*')
 
 if _within_sage:
@@ -341,10 +341,9 @@ class Number(Number_baseclass):
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
             result = str(gen)
-            try:
-                result = strip_zeros.findall(result)[0]
-            except IndexError:
-                pass
+            m = strip_zeros.match(result)
+            if m:
+                result = m.group(1) + m.group(2)
             pari.set_real_precision(old_precision)
         return result
 

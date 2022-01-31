@@ -163,6 +163,31 @@ else:  # We are not in Sage
         >>> y
         2.500000000000000000000000000000000000000000000000000000000000
 
+        >>> Number("1.0e20", precision = 53)
+        1.000000000000000 E20
+        >>> Number("1.0e20", precision = 53, accuracy = 0)
+        1.0 E20
+        >>> Number("1.0e20", precision = 53, accuracy = 3)
+        1.000 E20
+        >>> Number("1.23456", precision = 53)
+        1.234560000000000
+        >>> Number("1.23456", precision = 53, accuracy = 0)
+        1.23456
+        >>> Number("1.23456", precision = 53, accuracy = 4)
+        1.2346
+        >>> Number("0.01", precision = 53)
+        0.010000000000000
+        >>> Number("0.01", precision = 53, accuracy = 0)
+        0.01
+        >>> Number("0.01", precision = 53, accuracy = 3)
+        0.010
+        >>> Number("3.0123e-20", precision = 53)
+        3.01230000000000 E-20
+        >>> Number("3.0123e-20", precision = 53, accuracy = 0)
+        3.0123 E-20
+        >>> Number("3.0123e-20", precision = 53, accuracy = 3)
+        3.01 E-20
+
         """
         _cache = {}
 

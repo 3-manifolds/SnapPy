@@ -129,6 +129,16 @@ except getopt.GetoptError:
     verbose, quick, windows = False, False, False
 
 modules += [numeric_output_checker.run_doctests]
+
+if not _within_sage:
+    def number_doctester(verbose):
+        original_accuracy = snappy.number.Number._accuracy_for_testing
+        snappy.number.Number._accuracy_for_testing = None
+        ans = doctest_modules([snappy.number], verbose)
+        snappy.number.Number._accuracy_for_testing = original_accuracy
+        return ans
+    modules += [number_doctester]
+
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
             snappy_doctester,
             snap_doctester,

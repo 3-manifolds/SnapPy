@@ -111,6 +111,11 @@ def ptolemy_doctester(verbose):
     return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
+verbose = False
+quick = False
+windows = False
+use_modernopengl = True
+
 try:
     useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
     optlist, args = getopt.getopt(
@@ -118,15 +123,19 @@ try:
         'ivqws',
         ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
     opts = [o[0] for o in optlist]
-    verbose = '-v' in opts or '--verbose' in opts
-    quick = '-q' in opts or '--quick' in opts
-    windows = '-w' in opts or '--windows' in opts
-    DocTestParser.use_modernopengl = False
-    use_modernopengl = not ('-s' in opts or '--skip-modern-opengl' in opts)
+    if '-v' in opts or '--verbose' in opts:
+        verbose = True
+    if '-q' in opts or '--quick' in opts:
+        quick = True
+    if '-w' in opts or '--windows' in opts:
+        windows = True
+    if '-s' in opts or '--skip-modern-opengl' in opts:
+        use_modernopengl = False
 
 except getopt.GetoptError:
     print("Could not parse arguments")
-    verbose, quick, windows = False, False, False
+
+DocTestParser.use_modernopengl = use_modernopengl
 
 modules += [numeric_output_checker.run_doctests]
 

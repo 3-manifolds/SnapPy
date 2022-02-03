@@ -26,12 +26,12 @@ class GeodesicsWindow(tkinter.Toplevel):
             length_frame, text = "Add up to length", command=self.add_length_spectrum)
         self.length_button.grid(row = 0, column = 0)
 
-        length_var = tkinter.StringVar(value="1.0")
+        self.length_var = tkinter.StringVar(value=1.0)
 
         self.length_box = ttk.Spinbox(
             length_frame,
             from_=0.2, to=20.0, increment=0.2,
-            textvariable = length_var,
+            textvariable = self.length_var,
             width = 4)
         self.length_box.grid(row = 0, column = 1)
 

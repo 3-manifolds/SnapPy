@@ -111,32 +111,6 @@ def ptolemy_doctester(verbose):
     return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
-verbose = False
-quick = False
-windows = False
-use_modernopengl = True
-
-try:
-    useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
-    optlist, args = getopt.getopt(
-        useful_args,
-        'ivqws',
-        ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
-    opts = [o[0] for o in optlist]
-    if '-v' in opts or '--verbose' in opts:
-        verbose = True
-    if '-q' in opts or '--quick' in opts:
-        quick = True
-    if '-w' in opts or '--windows' in opts:
-        windows = True
-    if '-s' in opts or '--skip-modern-opengl' in opts:
-        use_modernopengl = False
-
-except getopt.GetoptError:
-    print("Could not parse arguments")
-
-DocTestParser.use_modernopengl = use_modernopengl
-
 modules += [numeric_output_checker.run_doctests]
 
 if not _within_sage:
@@ -171,7 +145,7 @@ else:
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
-def graphics_failures(verbose):
+def graphics_failures(verbose, windows, use_modernopengl):
     if _within_sage:
         use_sage_field_conversion()
     if cyopengl_works():
@@ -204,11 +178,13 @@ def graphics_failures(verbose):
         use_snappy_field_conversion()
     return result
 
-def runtests():
-    global quick
-    global modules
-    global verbose
-    global windows
+def runtests(verbose = False,
+             quick = False,
+             windows = False,
+             use_modernopengl = True):
+
+    DocTestParser.use_modernopengl = use_modernopengl
+    
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -222,7 +198,41 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    return result.failed + graphics_failures(verbose=verbose)
+
+    num_graphics_failures =  graphics_failures(
+        verbose=verbose,
+        windows = windows,
+        use_modernopengl = use_modernopengl) 
+    
+    return result.failed + num_graphics_failures
 
 if __name__ == '__main__':
-    sys.exit(runtests())
+
+    verbose = False
+    quick = False
+    windows = False
+    use_modernopengl = True
+    
+    try:
+        useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
+        optlist, args = getopt.getopt(
+            useful_args,
+            'ivqws',
+            ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
+        opts = [o[0] for o in optlist]
+        if '-v' in opts or '--verbose' in opts:
+            verbose = True
+        if '-q' in opts or '--quick' in opts:
+            quick = True
+        if '-w' in opts or '--windows' in opts:
+            windows = True
+        if '-s' in opts or '--skip-modern-opengl' in opts:
+            use_modernopengl = False
+
+    except getopt.GetoptError:
+        print("Could not parse arguments")
+
+    sys.exit(runtests(verbose = verbose,
+                      quick = quick,
+                      windows = windows,
+                      use_modernopengl = use_modernopengl))

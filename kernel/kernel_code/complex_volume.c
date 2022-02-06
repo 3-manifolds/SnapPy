@@ -127,7 +127,7 @@
  * ideal simplices.
  *
  * For a precise mathematical definition, see "The developing map of a
- * represenation" in the above paper.
+ * representation" in the above paper.
  *
  * We can we can change the representation so that an internal vertex
  * of the manifold is mapped to an ideal point. A horosphere around
@@ -371,7 +371,7 @@ Complex complex_volume(
 
     if (filled_manifold->orientability != oriented_manifold)
     {
-        /* filld manifold is not orientable */
+        /* filled manifold is not orientable */
         if (err_msg != NULL)
             *err_msg = "Manifold is not oriented";
 
@@ -758,8 +758,8 @@ Triangulation* ordered_triangulation(
      * the three new tetrahedra at the place of the tetrahedron
      * two_to_three was called with.
      * The tetrahedra on which a 2-3 move was performed appear at the
-     * begining of the linked list, the tetrahedra which still need to
-     * be processed appear at the begining. tet points to the last
+     * beginning of the linked list, the tetrahedra which still need to
+     * be processed appear at the beginning. tet points to the last
      * tetrahedron in the linked list on which a 2-3 move was already
      * performed.
      */
@@ -1141,7 +1141,7 @@ static void order_triangulation_after_2_3(
 
 
 /* this reorders the vertices in tet
- * the place taken orignally by vertex v will be taken by vertex p(v)
+ * the place taken originally by vertex v will be taken by vertex p(v)
  * after applying reorder_tetrahedron */
 
 void reorder_tetrahedron(

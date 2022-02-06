@@ -3034,7 +3034,7 @@ static Boolean simplify_one_word_presentations(
 
                     /*
                      *    Make sure the new_word is inserted
-                     *    at the correct positon.
+                     *    at the correct position.
                      *    JRW  28 Feb 2002
                      */
                         /*    Cbbaa -> bbaaC    */
@@ -4340,7 +4340,7 @@ static void cancel_handles(
     remove_word(group, word);
 
     /*
-     *  Remove all occurences of the generator from all other words.
+     *  Remove all occurrences of the generator from all other words.
      *  Note that even if a word becomes empty, it is *not* deleted,
      *  because empty words have geometrical significance in the 
      *  pseudo-Heegaard diagram.  For example, S^2 X S^1 has a presentation
@@ -4577,7 +4577,7 @@ FuncResult fg_word_to_matrix(
     /*
      *  Alan Reid and Craig Hodgson have pointed out that sometimes one
      *  wants to look at the trace of a product of generators in SL(2,C)
-     *  (not just PSL(2,C)).  To accomodate this, fg_word_to_matrix() now
+     *  (not just PSL(2,C)).  To accommodate this, fg_word_to_matrix() now
      *  computes the value of a word not only as an O31Matrix, but also
      *  as a MoebiusTransformation, taking care to do the inversions and
      *  matrix multiplications in SL(2,C).

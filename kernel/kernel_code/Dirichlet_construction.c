@@ -634,7 +634,7 @@ static FuncResult intersect_with_halfspaces(
      *  if fixes the midpoint M of the segment S connecting the origin
      *  to f0(origin).  Furthermore, the plane P which passes through
      *  M and is orthogonal to S will be taken to itself (setwise, but
-     *  probably not pointwise).  Consider the possibilites for the
+     *  probably not pointwise).  Consider the possibilities for the
      *  action of f0 on P.
      *
      *  Case 1.  f0 preserves the orientation of hyperbolic 3-space, and
@@ -789,7 +789,7 @@ static FuncResult slice_with_hyperplane(
         return func_OK;
 
     /*
-     *  Introduce a new vertex whereever an edge crosses the plane P'.
+     *  Introduce a new vertex wherever an edge crosses the plane P'.
      *  Such edges can be recognized by the fact that one endpoint
      *  has which_side_of_plane == +1 while the other has
      *  which_side_of_plane == -1.
@@ -797,7 +797,7 @@ static FuncResult slice_with_hyperplane(
     cut_edges(polyhedron);
 
     /*
-     *  Introduce a new edge whereever a face crosses the plane P'.
+     *  Introduce a new edge wherever a face crosses the plane P'.
      *  If any face has more than two 0-vertices (as might occur
      *  due to roundoff error) return func_failed.
      */
@@ -2596,7 +2596,7 @@ static FuncResult pare_mated_face(
      *              if (beta cuts off V)
      *                  add faces determined by beta and its inverse
      *                      to the polyhedron
-     *                  if roundoff-related errors occured
+     *                  if roundoff-related errors occurred
      *                      return func_failed
      *                  otherwise
      *                      set *face_was_pared to TRUE
@@ -2748,8 +2748,8 @@ static FuncResult pare_mateless_face(
      *  mate has been entirely cut off by other group elements.
      *  (Well, almost entirely cut off.  A 1-dimensional subset might
      *  still remain, but no 2-dimensional subset.)  In the following
-     *  diagram, the plane of the nonexistant mate is shown by a line
-     *  of stars.  (By the "plane of the nonexistant mate", we mean the
+     *  diagram, the plane of the nonexistent mate is shown by a line
+     *  of stars.  (By the "plane of the nonexistent mate", we mean the
      *  image of the plane of face under the action of the inverse of
      *  face->group_element.)
      *
@@ -2831,7 +2831,7 @@ static FuncResult pare_mateless_face(
      *              if (beta cuts off V)
      *                  add faces determined by beta and its inverse
      *                      to the polyhedron
-     *                  if roundoff-related errors occured
+     *                  if roundoff-related errors occurred
      *                      return func_failed
      *                  otherwise
      *                      set *face_was_pared to TRUE
@@ -3035,8 +3035,8 @@ static void count_cells(
     WEFace      *face;
 
     /*
-     *  The counts were intialized in new_WEPolyhedron(),
-     *  but we'll reinitialize them here just for good form.
+     *  The counts were initialized in new_WEPolyhedron(),
+     *  but we will reinitialize them here just for good form.
      */
 
     polyhedron->num_vertices    = 0;

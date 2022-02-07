@@ -1230,7 +1230,7 @@ static void cone_face_to_center(
      *  The new edges will be numbered and oriented as illustrated
      *  below for the case old_num_sides == 6.  All radial edges
      *  will be directed inwards towards the central vertex, and will
-     *  inherit the index from the preceeding (i.e. immediately
+     *  inherit the index from the preceding (i.e. immediately
      *  counterclockwise) side edge.  The faces are then numbered in
      *  the obvious way, i.e. face i is incident to both radial_edge[i]
      *  and side_edge[i].
@@ -1584,7 +1584,7 @@ static void solid_angles(
      *
      *      solid angle = (sum of incident dihedral angles) - (n - 2)pi
      *
-     *  Computationally, the plan is to first initialze the solid angle
+     *  Computationally, the plan is to first initialize the solid angle
      *  at each vertex to 2pi, then add in (dihedral angle - pi) for each
      *  incident edge.
      */
@@ -2107,7 +2107,7 @@ static void face_distances(
     WEPolyhedron    *polyhedron)
 {
     /*
-     *  Comute the distance from the origin to the face plane.
+     *  Compute the distance from the origin to the face plane.
      *  The point closest to the origin may or may not lie on the face itself.
      *
      *  The first column of the group_element gives the image of the
@@ -2654,7 +2654,7 @@ static void compute_spine_radius(
     Boolean         union_is_3_ball;
 
     /*
-     *  Intialize all edge_class->removed flags to FALSE.
+     *  Initialize all edge_class->removed flags to FALSE.
      */
 
     for (   edge_class = polyhedron->edge_class_begin.next;

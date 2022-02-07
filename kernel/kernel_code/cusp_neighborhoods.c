@@ -364,8 +364,8 @@ static void                 cull_duplicate_horoballs(Cusp *cusp, CuspNbhdHorobal
  *  Conceptually, the CuspNeighborhoods structure stores cross sections
  *  of a manifold's cusps, and also keeps a Triangulation dual to the
  *  corresponding Ford complex.  In the present implementation, the
- *  information about the cross sections is stored entriely within the
- *  copy of the triangulation (specifically, in the Cusp's displacment,
+ *  information about the cross sections is stored entirely within the
+ *  copy of the triangulation (specifically, in the Cusp's displacement,
  *  displacement_exp and reach fields, the EdgeClass's intercusp_distance
  *  field, and the Triangulation's max_reach field).
  *
@@ -919,8 +919,8 @@ static void compute_one_intercusp_distance(
      *  opposite edges of an ideal tetrahedron.
      *
      *  Proof.  Consider the line segment which minimizes the distance
-     *  between the two opposite edges.  If it weren't perpendicular to
-     *  each edge, then a shorter line segement could be found.  QED
+     *  between the two opposite edges.  If it were not perpendicular to
+     *  each edge, then a shorter line segment could be found.  QED
      *
      *  Definition.  The "midpoint" of an edge of an ideal tetrahedron is
      *  the point where the edge intersects the unique common perpendicular
@@ -2626,7 +2626,7 @@ static CuspNbhdHoroballList *get_full_horoball_list(
      *  background lemmas.
      *
      *  Lemma 1.  For each horoball H, there is (a lift of) an edge
-     *  of the canonical cell decompostion which connects H to some
+     *  of the canonical cell decomposition which connects H to some
      *  larger horoball H'.
      *
      *  Proof.  The horoball H is surrounded by (lifts of) 2-cells
@@ -3097,7 +3097,7 @@ static Boolean face_contains_useful_edge(
 {
     /*
      *  Note:  We may assume that the face f has no vertices at the point
-     *  at infinity in upper half space.  The reason is that the intial
+     *  at infinity in upper half space.  The reason is that the initial
      *  tetrahedra have neighbor_found[] == TRUE for their side faces, and
      *  get_full_horoball_list() calls us only if neighbor_found[f] is FALSE.
      */

@@ -167,11 +167,11 @@
  *  (To be completely rigorous, one takes the other relation, say
  *  bcddca, conjugates it to bring "c" to the outside, cddcab, and
  *  then multiplies to get (abbdbab(c^-1))(cddcab) = abbdbabddcab.
- *  One continues in this way until all occurences of "c" have been
+ *  One continues in this way until all occurrences of "c" have been
  *  eliminated from all relations except the original c = abbdbab.)
  *  Then define a new presentation which is just like the old one
  *  except that (1) the generator "c" has been eliminated, and
- *  (2) the relation c = abbdbab has been elminated.  To prove the
+ *  (2) the relation c = abbdbab has been eliminated.  To prove the
  *  old and new presentations are equivalent, define a map from
  *  one to the other by  a->a, b->b, c->abbdbab, d->d, ... .
  *  Clearly this map is onto, and clearly it maps the normal closure
@@ -1408,8 +1408,8 @@ static Boolean remove_zero_factors(
             while (factor->next->power == 0)
             {
                 /*
-                 *  If this Factor is the only one on the ciruclar linked
-                 *  list, eliminite it and leave the CyclicWord empty.
+                 *  If this Factor is the only one on the circular linked
+                 *  list, eliminate it and leave the CyclicWord empty.
                  */
                 if (factor->next == factor)
                 {

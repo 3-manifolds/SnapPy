@@ -83,7 +83,7 @@
  *      Subdivide each bigon in the 2-skeleton by introducing a line
  *      segment connecting the finite vertices at the "midpoints"
  *      of its two edges.  Subdivide each triangle in the 2-skeleton
- *      by introducing three line segements connecting the finite
+ *      by introducing three line segments connecting the finite
  *      vertices at the "midpoints" of the triangle's edges.
  *
  *  subdividing the 3-skeleton

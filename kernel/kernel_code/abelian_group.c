@@ -109,8 +109,8 @@ void expand_abelian_group(
 
         /*
          *  Consider each potential prime divisor p of m.
-         *  (We "accidently" consider composite divisors as well,
-         *  but the wasted effort shouldn't be too significant.)
+         *  (We "accidentally" consider composite divisors as well,
+         *  but the wasted effort should not be too significant.)
          */
         for (p = 2; m > 1L; p++)
         {

@@ -105,8 +105,8 @@
  * It is similar to canonical_retriangulation and replaces the given
  * triangulation (which has to be a subdivision of the canonical cell
  * decomposition) with the canonical retriangulation.
- * However, instead of doing numerical comparisions of tilt, it takes an array
- * of booleans indicating which faces are opaque. Four consecutive entires
+ * However, instead of doing numerical comparisons of tilt, it takes an array
+ * of booleans indicating which faces are opaque. Four consecutive entries
  * correspond to the four faces of one tetrahedron. Thus, the length has to
  * be 4 times the number of tetrahedra.
  * Matthias Goerner 11/30/14

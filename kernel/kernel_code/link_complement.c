@@ -105,7 +105,7 @@
  *      overstrand to the north pole, rather than connecting the
  *      understrand to the south pole.
  *
- *  So . . . you should draw all the 2-cells of the above types whereever
+ *  So . . . you should draw all the 2-cells of the above types wherever
  *  they make sense.  (I'm hoping your understanding of what "makes sense"
  *  is clearer than any longwinded explanation I could provide.)
  *
@@ -277,7 +277,7 @@ Triangulation *triangulate_link_complement(
         return NULL;
 
     /*
-     *  Ingore empty projections.
+     *  Ignore empty projections.
      */
     if (aLinkProjection->num_components == 0)
         return NULL;

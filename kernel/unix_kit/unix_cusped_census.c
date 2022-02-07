@@ -43,7 +43,7 @@
 #define FILE6n  ":CuspedCensusData:terse6n.bin"
 #define FILE7o  ":CuspedCensusData:terse7o.bin"
 #define FILE7n  ":CuspedCensusData:terse7n.bin"
-#elif defined(USE_FHS)  /* for unix Filesystem Heirarchy Standard */
+#elif defined(USE_FHS)  /* for unix Filesystem Hierarchy Standard */
 #define FILE5   "/usr/share/snappea/CuspedCensusData/terse5.bin"
 #define FILE6o  "/usr/share/snappea/CuspedCensusData/terse6o.bin"
 #define FILE6n  "/usr/share/snappea/CuspedCensusData/terse6n.bin"

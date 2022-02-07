@@ -211,7 +211,7 @@ Boolean no_zero_entries_in_Ptolemy_index(Ptolemy_index p) {
 
 /*****************************************************************************/
 
-/* other auxillary functions needed for manifolds */
+/* other auxiliary functions needed for manifolds */
 
 int number_of_edges(Triangulation *manifold) {
     int number = 0;

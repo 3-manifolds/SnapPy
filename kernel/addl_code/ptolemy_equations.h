@@ -15,7 +15,7 @@
    triangulation when computing pSL(N,C) representations. 
 
    If the triangulation is ordered, all the signs are positive and
-   the identification is described in Definiton 5.2.
+   the identification is described in Definition 5.2.
    Generally, the signs are as described in Definition 5.9.
    
    obstruction_class is an element e in C^2(M, \partial M) representing
@@ -47,10 +47,10 @@ void get_ptolemy_equations_identified_face_classes(
 
 /* We can change a decoration by multiplying a coset of a cusp by a
    diagonal matrix. Let's let a diagonal matrix SL(n,C) with diagonal
-   entries 1 1 ... z 1 ... 1 1/z (z at positon j) act on cusp i. It
+   entries 1 1 ... z 1 ... 1 1/z (z at position j) act on cusp i. It
    changes some Ptolemy coordinate c_p_t by some power z^n.
    This is expressed in the following matrix as the entry in row
-   labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i. */
+   labeled c_p_t and the column labeled diagonal_entry_j_on_cusp_i. */
 
 void get_ptolemy_equations_action_by_decoration_change(
     Triangulation *manfiold, int N, Integer_matrix_with_explanations *m);

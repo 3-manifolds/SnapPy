@@ -37,11 +37,11 @@ Jeff
 --------------------------------------------------------------*/
 /*  The old sendable format used ASCII characters in the range 'a'-'z'. */
 /*  This worked great for encoding census manifolds, which don't come   */
-/*  anwhere close to the inherent 25 tetrahedrdon limit, even when      */
+/*  anywhere close to the inherent 25 tetrahedron limit, even when      */
 /*  canonized.  But Jim Hoste's enumeration of knots through            */
 /*  16 crossings will almost certainly require larger triangulations.   */
-/*  To accomodate them, I'm providing an option to use the range of     */
-/*  characters '!' through "~".  This will accomodate up to             */
+/*  To accommodate them, I'm providing an option to use the range of    */
+/*  characters '!' through "~".  This will accommodate up to            */
 /*  93 tetrahedra, which is the best we can do with ASCII.              */
 
 /*  #define BIG_SENDABLE 1 to use a  '!'-based system, which will       */

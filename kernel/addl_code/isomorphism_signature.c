@@ -463,7 +463,7 @@ char* get_isomorphism_signature(
 
 // For the triangulation data tri, glue tetrahedron tet_index to
 // tetrahedron other_tet_index along face face of the first tetrahedron
-// with permuation p.
+// with permutation p.
 
 static void tetrahedron_join_to(
     TriangulationData *tri,

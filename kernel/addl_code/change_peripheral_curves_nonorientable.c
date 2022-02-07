@@ -45,9 +45,9 @@ FuncResult change_peripheral_curves_nonorientable(
      * When flipping a meridian, we also need to transfer peripheral curves
      * of the corresponding cusp to the other sheet of the orientation double
      * cover of each cusp when flipping the meridian. Otherwise, the
-     * intersection number of the merdian and longitude would change its sign to
-     * -1, which would break some algorithms, e.g., the computation of the cusp
-     * matrices of an isomorphism between two triangulations.
+     * intersection number of the meridian and longitude would change its sign
+     * to -1, which would break some algorithms, e.g., the computation of the
+     * cusp matrices of an isomorphism between two triangulations.
      */
 
     Boolean     *change_orientation;
@@ -137,7 +137,7 @@ FuncResult change_peripheral_curves_nonorientable(
                     - new_change_matrices[cusp->index][i][M];
             
             /*
-             * Flip the merdian's Dehn filling coefficient.
+             * Flip the meridian's Dehn filling coefficient.
              */
 
             cusp->m = - cusp->m;
@@ -147,7 +147,7 @@ FuncResult change_peripheral_curves_nonorientable(
              * We need to apply complex conjugation because we transfered
              * the curves to a different sheet.
              * We need to negate because we flipped the meridian.
-             * So, the net effect is to flip the sign of the merdian.
+             * So, the net effect is to flip the sign of the meridian.
              */
             
             cusp->cusp_shape[initial].real =
@@ -189,7 +189,7 @@ FuncResult change_peripheral_curves_nonorientable(
                 for (j = 0; j < 4; j++) {
                
                     /*
-                     * Transfer merdian between sheets and flip sign.
+                     * Transfer meridian between sheets and flip sign.
                      */
      
                     r = tet->curve[M][right_handed][i][j];

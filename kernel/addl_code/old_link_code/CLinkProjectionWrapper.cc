@@ -166,7 +166,7 @@ void CLinkProjectionWrapper::ReadOldFileFormat(
 	}
 
 	//	Read the edge and vertex information.
-	//	(Use "assignment supression" to ignore the fourth number in each row.)
+	//	(Use "assignment suppression" to ignore the fourth number in each row.)
 	for (i = 0; i < itsNumEdges; i++)
 	{
 		fscanf(fp, "%d%d%d%*d%d", &theIndex, &theHPosition, &theVPosition, &theNextIndex);

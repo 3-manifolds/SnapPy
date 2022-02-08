@@ -677,11 +677,11 @@ cdef Real Object2Real(obj):
         string = obj.as_string() if isinstance(obj, Number) else str(obj)
         # Pari idiosyncratically formats small and large numbers as,
         # e.g., "1.0 E-10" (note the space before "E").
-        # Remove it - otherwise it cannott be parsed.
+        # Remove it - otherwise it cannot be parsed.
         string = string.replace(' ', '')
         float(string)
     except:
-        raise ValueError('Cannot convert %s to a Real.'%type(obj))
+        raise ValueError('Cannot convert %s to a Real.' % type(obj))
     string = to_byte_str(string)
     c_string = string
     return Real_from_string(c_string)

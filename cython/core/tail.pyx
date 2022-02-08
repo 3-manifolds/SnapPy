@@ -557,26 +557,27 @@ class ObsCensusKnots(Census):
             return self.__class__(n.indices(self.length))
         else:
             total = 0
-            for m in range(2,8):
-                if total + census_knot_numbers[m] <= n :
+            for m in range(2, 8):
+                if total + census_knot_numbers[m] <= n:
                     total += census_knot_numbers[m]
                     continue
                 else:
-                    name = 'K%s_%s'%(m, n - total + 1)
+                    name = 'K%s_%s' % (m, n - total + 1)
                     break
             if name:
-                tarpath =  'CensusKnots/%s'%name
+                tarpath = 'CensusKnots/%s' % name
                 try:
                     filedata = self.Census_Knots.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
-                except: 
-                    raise IOError, "The census knot %s was not found."%name
-                result =  Triangulation('empty')
+                except:
+                    raise IOError("The census knot %s was not found." % name)
+                result = Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
                 return result.with_hyperbolic_structure()
             else:
                 raise IndexError('There are only 201 census knots.')
+
 
 class ObsLinkExteriors(Census):
     """

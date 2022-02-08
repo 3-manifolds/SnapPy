@@ -102,10 +102,6 @@ class IdealRaytracingData(RaytracingData):
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
-        # For debugging! Delete!
-        r.c = c
-
-        r._add_horotriangle_heights()
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
@@ -124,10 +120,6 @@ class IdealRaytracingData(RaytracingData):
     def __init__(self, mcomplex, snappy_manifold):
         super(IdealRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
-
-    def _add_horotriangle_heights(self):
-        for tet in self.mcomplex.Tetrahedra:
-            tet.horotriangle_heights = _compute_horotriangle_heights(tet)
 
     def _add_O13_matrices_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -264,10 +256,6 @@ class IdealRaytracingData(RaytracingData):
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
             for tet in self.mcomplex.Tetrahedra ]
 
-        horotriangleHeights = [
-            tet.horotriangle_heights
-            for tet in self.mcomplex.Tetrahedra ]
-
         horosphere_scales = [
             tet.R13_horosphere_scales[V]
             for tet in self.mcomplex.Tetrahedra
@@ -337,7 +325,6 @@ class IdealRaytracingData(RaytracingData):
         d['cuspTranslations'] = ('mat2[]', cusp_translations)
         d['logAdjustments'] = ('vec2[]', logAdjustments)
         d['cuspTriangleVertexPositions'] = ('mat3x2[]', cuspTriangleVertexPositions)
-        d['horotriangleHeights'] = ('vec3[]', horotriangleHeights)
         d['matLogs'] = ('mat2[]', mat_logs)
         d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
         d['isNonGeometric'] = ('bool', isNonGeometric)
@@ -452,17 +439,6 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
                              for z in vertex_positions ]
 
     return log_z0, vertex_positions
-
-def _compute_horotriangle_heights(tet):
-    z  = tet.ShapeParameters[t3m.E01]
-    CF = z.parent()
-
-    z0 = CF(0)
-    z1 = CF(1)
-    z2 = z
-    return [ height_euclidean_triangle(z0, z1, z2),
-             height_euclidean_triangle(z1, z2, z0),
-             height_euclidean_triangle(z2, z0, z1) ]
 
 def _compute_R13_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]

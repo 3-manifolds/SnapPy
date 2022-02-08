@@ -133,13 +133,6 @@ layout (std140) uniform geodesics
 
 uniform float horosphereScales[4 * ##num_tets##];
 
-// Heights of the Euclidean triangle obtained when intersecting
-// horosphere with tetrahedron.
-// There are four horospheres about the four edges of the tetrahedron,
-// giving four triangles but they are all similar, so storing only
-// one per tet.
-uniform vec3 horotriangleHeights[##num_tets##];
-
 // cosh(r)^2 where r is the radius of the sphere
 // about the center of the tetrahedron.
 uniform float insphereRadiusParams[##num_tets##];

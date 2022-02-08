@@ -896,11 +896,13 @@ class Isometry(object):
             l0 = '%d -> %d' % (i, images[i])
             l1, l2 = format_two_by_two(maps[i])
             L = max(len(l0), len(l1), len(l2))
-            line0.append( l0.ljust(L) )
-            line1.append( l1.ljust(L) )
-            line2.append( l2.ljust(L) )
+            line0.append(l0.ljust(L))
+            line1.append(l1.ljust(L))
+            line2.append(l2.ljust(L))
         line3 = 'Extends to link' if self.extends_to_link() else 'Does not extend to link'
-        return '\n'.join(['  '.join(line0), '  '.join(line1), '  '.join(line2), line3])
+        return '\n'.join('  '.join(l).strip()
+                         for l in [line0, line1, line2, line3])
+
 
 cdef IsometryListToIsometries(IsometryList *isometries):
     cdef int n, c, i, j, c_cusp_image

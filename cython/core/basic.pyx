@@ -900,8 +900,8 @@ class Isometry(object):
             line1.append(l1.ljust(L))
             line2.append(l2.ljust(L))
         line3 = 'Extends to link' if self.extends_to_link() else 'Does not extend to link'
-        return '\n'.join('  '.join(l).strip()
-                         for l in [line0, line1, line2, line3])
+        return '\n'.join(['  '.join(l).strip()
+                          for l in [line0, line1, line2]] + [line3])
 
 
 cdef IsometryListToIsometries(IsometryList *isometries):

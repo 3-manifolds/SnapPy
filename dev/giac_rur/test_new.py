@@ -2,7 +2,8 @@ from giacpy import libgiac
 import snappy
 from sage.all import QQ, ZZ, PolynomialRing, NumberField, matrix
 
-def polynomial_eval_eqn( (a,b,c), zs):
+def polynomial_eval_eqn(abc, zs):
+    a, b, c = abc
     # Note that RHS is not just c.
     LHS, RHS = 1, (-1)**c
     for i, z in enumerate(zs):

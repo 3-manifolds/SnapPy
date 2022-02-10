@@ -74,9 +74,9 @@ cdef pickle_triangulation(c_Triangulation *tri):
         if M != 0.0 or L != 0.0:
             is_complete = 0
         if M != floor(M) or L != floor(L):
-            raise ValueError, 'Manifold must be pickled with _to_string.'
+            raise ValueError('Manifold must be pickled with _to_string.')
         if M < -128 or M > 127 or L < -128 or L > 127:
-            raise ValueError, 'Manifold must be pickled with _to_string.'
+            raise ValueError('Manifold must be pickled with _to_string.')
     buf[0] |= is_complete
     result += buf[:i+2]
     if not is_complete:
@@ -224,7 +224,7 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
                     cusps[i].m = <Real>M
                     cusps[i].l = <Real>L
         else:
-            raise RuntimeError, 'Failed to allocate memory for cusps'
+            raise RuntimeError('Failed to allocate memory for cusps')
     tri_data.cusp_data = cusps
 
     # Use malloc (not mymalloc) to allocate memory for the tetrahedra
@@ -232,7 +232,7 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     tets = <c_TetrahedronData*>malloc(num_tets*sizeof(c_TetrahedronData))
     if tets == NULL:
         free(cusps)
-        raise RuntimeError, 'Failed to allocate memory for tets.'
+        raise RuntimeError('Failed to allocate memory for tets.')
     for i in range(tri_data.num_tetrahedra):
         n = unpickle_tetrahedron_data(&tets[i], tri_pickle, n, p[0])
     tri_data.tetrahedron_data = tets

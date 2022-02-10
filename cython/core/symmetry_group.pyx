@@ -288,7 +288,7 @@ cdef class SymmetryGroup(object):
         """
         cdef int prod
         order = self.order()
-        for x in [i,j]:
+        for x in [i, j]:
             if not (0 <= x < order):
                 raise ValueError('The symmetry group has only %d '
                                  'elements.' % order)
@@ -302,7 +302,7 @@ cdef class SymmetryGroup(object):
         >>> S = Manifold('s959').symmetry_group()
         >>> isoms = S.isometries()
         >>> isoms[8]
-        0 -> 1   1 -> 0 
+        0 -> 1   1 -> 0
         [-1 -1]  [ 0  1]
         [ 1  0]  [-1 -1]
         Does not extend to link

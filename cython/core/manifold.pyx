@@ -1506,7 +1506,7 @@ cdef class Manifold(Triangulation):
         >>> N = Manifold('m129')
         >>> isoms = M.is_isometric_to(N, return_isometries = True)
         >>> isoms[6]  # Includes action on cusps
-        0 -> 1  1 -> 0 
+        0 -> 1  1 -> 0
         [1  2]  [-1 -2]
         [0 -1]  [ 0  1]
         Extends to link
@@ -1516,7 +1516,7 @@ cdef class Manifold(Triangulation):
         give the image of the meridian and longitude respectively.  In
         the above example, the meridian of cusp 0 is sent to the
         meridian of cusp 1.
-        
+
         Note: The answer True is rigorous, but the answer False may
         not be as there could be numerical errors resulting in finding
         an incorrect canonical triangulation.

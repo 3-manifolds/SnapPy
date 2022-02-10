@@ -13,7 +13,8 @@ def log_infinity_norm(matrix):
 def to_matrix_gens(group):
     return [group.SL2C(g).change_ring(CC) for g in group.generators()]
 
-def compare_matrix( (A, B) ):
+def compare_matrix(AB):
+    A, B = AB
     diff0, diff1 = A-B, A+B
     return float(min(log_infinity_norm(diff0), log_infinity_norm(diff1)))
 

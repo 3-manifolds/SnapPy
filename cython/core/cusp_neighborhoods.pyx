@@ -70,7 +70,7 @@ cdef class CCuspNeighborhood(object):
         else:
             raise IndexError('The specified cusp (%s) does not '
                              'exist.'%which_cusp)
-        
+
     def num_cusps(self):
         """
         Return the number of cusps.
@@ -150,15 +150,15 @@ cdef class CCuspNeighborhood(object):
 
     def get_tie(self, which_cusp):
         """
-        Return True if the specified cusp is a member of the tied group. 
-        The displacements of the tied cusps are all the same.        
+        Return True if the specified cusp is a member of the tied group.
+        The displacements of the tied cusps are all the same.
         """
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_tie(self.c_cusp_neighborhood, N)
 
     def set_tie(self, which_cusp, new_tie):
         """
-        Mark the specified cusp as a member of the tied group. 
+        Mark the specified cusp as a member of the tied group.
         """
         N = self.check_index(which_cusp)
         set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
@@ -196,7 +196,7 @@ cdef class CCuspNeighborhood(object):
         """
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.
-        
+
         If the high_precision flag is set to the default value False, these
         are Python complexes and floats.  Otherwise they are SnapPy Numbers.
         """
@@ -248,7 +248,7 @@ cdef class CCuspNeighborhood(object):
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                pair = ( 
+                pair = (
                     self._number_(Complex2Number(segment.endpoint[0])),
                     self._number_(Complex2Number(segment.endpoint[1])) )
             else:
@@ -286,7 +286,7 @@ cdef class CCuspNeighborhood(object):
             indices = (segment.start_index,
                        segment.middle_index,
                        segment.end_index)
-            result.append({'endpoints' : endpoints, 'indices' : indices})
+            result.append({'endpoints': endpoints, 'indices': indices})
         free_cusp_neighborhood_segment_list(segment_list)
         return result
 
@@ -303,10 +303,11 @@ cdef class CCuspNeighborhood(object):
         which_cusp = self.check_index(which_cusp)
         if HoroballViewer:
             return ViewerWindow(HoroballViewer, self, which_cusp=which_cusp,
-                cutoff=cutoff, title='Cusp neighborhood%s of %s'%(
+                cutoff=cutoff, title='Cusp neighborhood%s of %s' % (
                     's' if self.num_cusps() > 1 else '', self.manifold_name))
         else:
             raise RuntimeError('The HoroballViewer class was not imported.')
+
 
 class CuspNeighborhood(CCuspNeighborhood):
     """

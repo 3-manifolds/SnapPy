@@ -1,12 +1,13 @@
-
 # Fundamental Groups
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
 # Helper functions for manipulating fg. words
 
+
 def inverse_list_word(word):
-    return [ -x for x in word[::-1] ]
+    return [-x for x in word[::-1]]
+
 
 def reduce_list_word(word):
     """
@@ -20,6 +21,7 @@ def reduce_list_word(word):
             result.append(letter)
     return result
 
+
 cdef c_word_as_int_list(int *word):
     cdef int n = 0
     word_list = []
@@ -27,6 +29,7 @@ cdef c_word_as_int_list(int *word):
         word_list.append(word[n])
         n += 1
     return word_list
+
 
 cdef int *c_word_from_list(word_list):
     cdef int *c_word
@@ -38,6 +41,7 @@ cdef int *c_word_from_list(word_list):
         c_word[n] = word_list[n]
     c_word[length] = 0
     return c_word
+
 
 cdef int_to_gen_string(int g, int num_generators, verbose_form):
     if num_generators <=26:
@@ -52,11 +56,13 @@ cdef int_to_gen_string(int g, int num_generators, verbose_form):
             ans = 'x' if g > 0 else 'X'
             return ans + '%d' % abs(g)
 
+
 def _letter_seperator(verbose_form):
     if verbose_form:
         return '*'
     else:
         return ''
+
 
 cdef c_word_as_string(int *word, int num_generators, verbose_form):
     cdef int n = 0
@@ -69,18 +75,19 @@ cdef c_word_as_string(int *word, int num_generators, verbose_form):
         n += 1
     return _letter_seperator(verbose_form).join(word_list)
 
+
 def word_as_list(word, int num_generators):
     if not isinstance(word, basestring):
         raise TypeError('Words must be represented '
                         'as Python strings.')
     word_list = []
     if num_generators > 26:
-        for prefix, number in re.findall('([xX])(\d+)', word):
+        for prefix, number in re.findall(r'([xX])(\d+)', word):
             g = int(number)
             if not (0 < g and g <= num_generators):
                 raise ValueError('The word contains a non-generator.')
             if prefix.islower():
-                word_list.append( g)
+                word_list.append(g)
             else:
                 word_list.append(-g)
     else:
@@ -122,10 +129,9 @@ cdef class CFundamentalGroup(object):
         free_group_presentation(self.c_group_presentation)
 
     def __repr__(self):
-        return 'Generators:\n   %s\nRelators:\n   %s'%(
+        return 'Generators:\n   %s\nRelators:\n   %s' % (
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
-
 
     def num_generators(self):
         """
@@ -138,7 +144,7 @@ cdef class CFundamentalGroup(object):
         Return the number of generators for the presentation.
         """
         return fg_get_num_relations(self.c_group_presentation)
-                            
+
     def num_original_generators(self):
         """
         Return the number of geometric generators (before simplification).
@@ -171,7 +177,7 @@ cdef class CFundamentalGroup(object):
         instructions for expressing the current generators in terms of
         the original ones.  This is sometimes much more concise, though
         the format is somewhat obscure.  See the source code of this
-        function in SnapPy.pyx for details. 
+        function in SnapPy.pyx for details.
         """
         moves = self._word_moves()
         if raw_form:
@@ -188,28 +194,26 @@ cdef class CFundamentalGroup(object):
                 # word is the expression of the new generator in terms
                 # of the old ones
                 word, moves = moves[:n], moves[n+1:]
-                words.append( reduce_list_word(''.join(
-                    [words[g] if g > 0 else inverse_list_word(words[-g])
-                     for g in word]
-                    )))
+                words.append(reduce_list_word(''.join(
+                    words[g] if g > 0 else inverse_list_word(words[-g])
+                    for g in word)))
             else:
                 b = moves.pop(0)
                 if a == b:  # generator removed
                     words[a] = words[-1]
                     words = words[:-1]
-                elif a == -b: # invert generator
+                elif a == -b:  # invert generator
                     words[a] = inverse_list_word(words[a])
-                else: #handle slide
+                else:  # handle slide
                     A, B = words[abs(a)], words[abs(b)]
-                    if a*b < 0:
+                    if a * b < 0:
                         B = inverse_list_word(B)
-                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A ) 
-
+                    words[abs(a)] = reduce_list_word(A + B if a > 0 else B + A)
         return [
             _letter_seperator(verbose_form).join(
                 int_to_gen_string(g, n, verbose_form)
                 for g in word)
-            for word in words[1:] ]
+            for word in words[1:]]
 
     def _word_moves(self):
         cdef int *c_moves
@@ -217,21 +221,21 @@ cdef class CFundamentalGroup(object):
         moves = c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
         return moves
-        
+
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
         """
         n = self.num_generators()
-        return [ int_to_gen_string(i, n, verbose_form = False)
-                 for i in range(1, 1+n) ]
+        return [int_to_gen_string(i, n, verbose_form=False)
+                for i in range(1, 1 + n)]
 
-    def relators(self, verbose_form = False, as_int_list = False):
+    def relators(self, verbose_form=False, as_int_list=False):
         """
         Return a list of words representing the relators in the presentation.
 
         If the optional argument verbose_form is True, then the
-        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".  
+        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".
         """
         cdef int n
         cdef int *relation
@@ -249,7 +253,7 @@ cdef class CFundamentalGroup(object):
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp=0, as_int_list = False):
+    def meridian(self, int which_cusp=0, as_int_list=False):
         """
         Returns a word representing a conjugate of the current
         meridian for the given cusp.  Guaranteed to commute with the
@@ -284,7 +288,7 @@ cdef class CFundamentalGroup(object):
         >>> G = Manifold('m004').fundamental_group()
         >>> G.longitude(0)
         'aBAbABab'
-        >>> G.longitude()   # shortcut for the above.  
+        >>> G.longitude()   # shortcut for the above.
         'aBAbABab'
         """
         which_cusp = valid_index(
@@ -352,7 +356,7 @@ cdef class CFundamentalGroup(object):
         return F/rels
 
     def character_variety_vars_and_polys(self, as_ideal=False):
-        """ 
+        """
         Returns a list of variables and a list polynomials where the
         polynomials generate the ideal defining the SL(2, C) character
         variety of this group.  Each variables is of the form "Tw" where
@@ -365,12 +369,12 @@ cdef class CFundamentalGroup(object):
         >>> vars
         [Ta, Tb, Tab]
         >>> polys    # doctest: +NORMALIZE_WHITESPACE
-        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta, 
+        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta,
          Ta^2 - Tab*Tb*Ta + (Tb^2 + (Tab^2 - 4))]
-         
+
         When used inside Sage, you can ask for the answer as a proper
         ideal::
-      
+
           sage: M = Manifold('m003')
           sage: G = M.fundamental_group()
           sage: I = G.character_variety_vars_and_polys(as_ideal=True)
@@ -417,7 +421,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         Returns (M,O,L) where M = SL2C(word), O = O31(word), and L is
         the complex length.
         """
-        cdef MoebiusTransformation M 
+        cdef MoebiusTransformation M
         cdef O31Matrix O
         cdef int *c_word
         cdef c_FuncResult result
@@ -461,6 +465,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         """
         return self._matrices(word)[2]
 
+
 class HolonomyGroup(CHolonomyGroup):
     """
     A HolonomyGroup is a FundamentalGroup with added structure
@@ -487,6 +492,7 @@ class HolonomyGroup(CHolonomyGroup):
     @classmethod
     def use_field_conversion(cls, func):
         number.use_field_conversion(func)
+
 
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)

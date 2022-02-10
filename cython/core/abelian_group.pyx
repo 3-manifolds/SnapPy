@@ -1,5 +1,6 @@
 # Abelian Groups
 
+
 cdef class AbelianGroup(object):
     """
     An AbelianGroup object represents a finitely generated abelian group,
@@ -27,14 +28,14 @@ cdef class AbelianGroup(object):
     cdef divisors
     # Backwards compatibility hack, part 1.
     cdef public coefficients
-    
+
     def __init__(self, presentation=None, elementary_divisors=[]):
         if presentation is not None:
             self.divisors = smith_form(presentation)
         else:
             try:
                 self.divisors = list(elementary_divisors)
-            except:
+            except TypeError, ValueError:
                 raise ValueError('Elementary divisors must be given '
                                  'as a sequence.')
         int_types = [int, long]
@@ -49,7 +50,7 @@ cdef class AbelianGroup(object):
                    'The elementary divisors must form a divisibility chain\n'
 
         # So that the group is determined entirely by self.divisors
-        # we don't allow '1' as a divisor.  
+        # we don't allow '1' as a divisor.
         self.divisors = [n for n in self.divisors if n != 1]
         # Backwards compatibility hack, part 2.
         self.coefficients = self.divisors
@@ -63,7 +64,7 @@ cdef class AbelianGroup(object):
 
     def __len__(self):
         return len(self.divisors)
-    
+
     def __getitem__(self, i):
         return self.divisors[i]
 
@@ -78,7 +79,7 @@ cdef class AbelianGroup(object):
         True
         """
         return (AbelianGroup, (None, self.elementary_divisors()))
-    
+
     def __richcmp__(AbelianGroup self, AbelianGroup other, op):
         if op == 0:
             return self.divisors < other.elementary_divisors()
@@ -94,7 +95,7 @@ cdef class AbelianGroup(object):
             return self.divisors >= other.elementary_divisors()
         else:
             return NotImplemented
-        
+
     def __call__(self):
         return self
 
@@ -115,21 +116,24 @@ cdef class AbelianGroup(object):
         The rank of the maximal free abelian subgroup.
         """
         return len([n for n in self.divisors if n == 0])
+
     def order(self):
         """
         The order of the group.  Returns the string 'infinite' if the
-        group is infinite.        
+        group is infinite.
         """
         det = 1
         for c in self.divisors:
             det = det * c
         return 'infinite' if det == 0 else det
 
+
 cdef class PresentationMatrix(object):
     """
     A sparse representation of the presentation matrix of an abelian group.
     """
     cdef rows, cols, _row_support, _col_support, _entries, _units, dead_columns
+
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
@@ -186,7 +190,7 @@ cdef class PresentationMatrix(object):
             self._col_support[j] = set([i])
         # set the value
         self._entries[ij] = value
-    
+
     def __getitem__(self, ij):
         return self._entries.get(ij, 0)
 
@@ -207,11 +211,9 @@ cdef class PresentationMatrix(object):
         """
         Return the full matrix, including dead columns, as a list of lists.
         """
-        return [
-            [self._entries.get((i,j), 0) for j in xrange(self.cols)]
-            for i in xrange(self.rows)]
+        return [[self._entries.get((i, j), 0) for j in xrange(self.cols)]
+                for i in xrange(self.rows)]
 
-    
     def simplify(self):
         """
         If any entry is a unit, eliminate the corresponding generator.
@@ -220,7 +222,7 @@ cdef class PresentationMatrix(object):
         """
         cdef temp, m, i, j, k, l
         while len(self._units) > 0:
-            for i,j in self._units: break 
+            for i,j in self._units: break
             col_support = [k for k in self._col_support[j] if k != i] + [i]
             row_entries = [(l, self._entries.get((i,l), 0))
                            for l in self._row_support[i]]
@@ -234,18 +236,17 @@ cdef class PresentationMatrix(object):
                     temp = self._entries.get(kl, 0)
                     self._set(kl, temp - m*a_il )
             self.dead_columns.add(j)
-    
+
     def simplified_matrix(self):
         """
         Return the simplified presentation as a matrix.
         """
         self.simplify()
         columns = [j for j in xrange(self.cols) if j not in self.dead_columns]
-        rows = [i for i in xrange(self.rows) if self._row_support.get(i,None)]
-        if len(rows) == 0:
-            presentation = [ [0 for j in columns] ]
+        rows = [i for i in xrange(self.rows) if self._row_support.get(i, None)]
+        if not rows:
+            presentation = [[0 for j in columns]]
         else:
-            presentation = [ [self._entries.get((i,j), 0) for j in columns]
-                             for i in rows ]
+            presentation = [[self._entries.get((i, j), 0) for j in columns]
+                            for i in rows]
         return matrix(presentation)
-

@@ -15,7 +15,7 @@
 # such that the normal coordinates for the peripheral curves are assumed
 # to be in the interval [-128, 127].  Also the Dehn filling coefficients
 # must be integers in that interval.  If these conditions do not hold
-# then the _to_string method can be used as an alternative. 
+# then the _to_string method can be used as an alternative.
 #
 # Note that the byte sequences produced by pickle_triangulation
 # are very likely to contain null bytes, so care must be taken
@@ -83,7 +83,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
         # Add the Dehn filling coefficients
         for j in range(num_cusps):
             # The quad double library doesn't support casting qd_real to char.
-            M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l 
+            M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l
             filling[0] = <signed char>M
             filling[1] = <signed char>L
             result += filling[:2]

@@ -1,5 +1,6 @@
 # Dirichlet Domains
 
+
 cdef (WEPolyhedron*, int) get_generators_from_bytes(
     data_bytes, double vertex_epsilon,
     displacement, centroid_at_origin,
@@ -14,7 +15,7 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
                          '"% Generators"')
     nums = []
     for line in data[1:]:
-        nums +=  line.split()
+        nums += line.split()
     num_gens = int(nums[0])
     nums.pop(0)
 
@@ -47,15 +48,15 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
     else:
         raise ValueError('The amount of data given is not consistent '
                          'with %d O31 or SL2C matrices.' % num_gens)
- 
+
     if not O31_determinants_OK(generators, num_gens, det_error_epsilon):
         raise ValueError('The data given do not have the '
                          'right determinants.')
-        
+
     cdef WEPolyhedron *dirichlet_domain
     cdef double c_displacement[3]
     for n from 0 <= n < 3:
-        c_displacement[n] = <double>displacement[n] 
+        c_displacement[n] = <double>displacement[n]
     dirichlet_domain = Dirichlet_from_generators_with_displacement(
         generators, num_gens, c_displacement, vertex_epsilon,
         Dirichlet_keep_going, maximize_injectivity_radius,
@@ -84,7 +85,7 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
                             'right determinants.')
     cdef double c_displacement[3]
     for n from 0 <= n < 3:
-        c_displacement[n] = <double>displacement[n] 
+        c_displacement[n] = <double>displacement[n]
     c_dirichlet_domain = Dirichlet_from_generators_with_displacement(
         generators, num_gens, c_displacement, vertex_epsilon,
         Dirichlet_keep_going, maximize_injectivity_radius,
@@ -105,7 +106,7 @@ cdef class CDirichletDomain(object):
     def use_field_conversion(cls, func):
         number.use_field_conversion(func)
 
-    def __cinit__(self, 
+    def __cinit__(self,
                   Manifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,
                   displacement=[0.0, 0.0, 0.0],
@@ -134,7 +135,7 @@ cdef class CDirichletDomain(object):
                     centroid_at_origin, maximize_injectivity_radius,
                     include_words))
             self.manifold_name = manifold_name
-        elif O31_generators != None:
+        elif O31_generators is not None:
             self.c_num_generators = len(O31_generators)
             self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
                 O31_generators, vertex_epsilon, displacement,
@@ -147,7 +148,7 @@ cdef class CDirichletDomain(object):
             if manifold.c_triangulation is NULL:
                 raise ValueError('The Triangulation is empty.')
             for n from 0 <= n < 3:
-                c_displacement[n] = <double>displacement[n] 
+                c_displacement[n] = <double>displacement[n]
             copy_triangulation(manifold.c_triangulation,
                                &self.c_triangulation)
             self.c_num_generators = self.c_triangulation.num_generators
@@ -225,7 +226,7 @@ cdef class CDirichletDomain(object):
 
     def spine_radius(self):
         """
-        Return the infimum of the radii (measured from the origin) of all 
+        Return the infimum of the radii (measured from the origin) of all
         spines dual to the Dirichlet domain.
         """
         radius = Real2Number(self.c_dirichlet_domain.spine_radius)
@@ -252,8 +253,8 @@ cdef class CDirichletDomain(object):
         2
         >>> lengths[0].matrix in D.pairing_matrices()
         True
-        
-        If the flag 'grouped' is False, then each geodesic is returned as 
+
+        If the flag 'grouped' is False, then each geodesic is returned as
         a separate item rather than collating by (length, parity, topology).
         If the flag 'multiplicities' is False, then the geodesics *are*
         collated but the multiplicity of each item is set to 0.
@@ -282,23 +283,22 @@ cdef class CDirichletDomain(object):
             length = Complex2Number(geodesics[n].length)
             its_matrix = matrix([[self._number_(Real2Number(<Real>geodesics[n].matrix[i][j]))
                                       for j in range(4)] for i in range(4)] )
-            d = {                   
-                "length" : self._number_(length),
-                "parity" : MatrixParity[geodesics[n].parity],
-                "topology" : Orbifold1[geodesics[n].topology],
-                "multiplicity" :  geodesics[n].multiplicity,
-                "matrix" : its_matrix }
+            d = {"length": self._number_(length),
+                 "parity": MatrixParity[geodesics[n].parity],
+                 "topology": Orbifold1[geodesics[n].topology],
+                 "multiplicity": geodesics[n].multiplicity,
+                 "matrix": its_matrix}
 
             c_word = geodesics[n].word
             if c_word:
                 d['word'] = c_word_as_string(
-                    c_word, self.c_num_generators, verbose_form = False)
+                    c_word, self.c_num_generators, verbose_form=False)
 
             spectrum.append(LengthSpectrumInfo(**d))
         free_length_spectrum(geodesics, num_lengths)
         return LengthSpectrum(spectrum)
 
-    def vertex_list(self, details = False):
+    def vertex_list(self, details=False):
         """
         Return a list of the coordinates of the vertices.  These are
         the three space coordinates of a point in the time=1 slice of
@@ -350,7 +350,7 @@ cdef class CDirichletDomain(object):
         Returns dictionary from WEVertex pointer to index of vertex.
         """
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
-        
+
         result = { }
         index = 0
         vertex = vertex.next
@@ -365,7 +365,7 @@ cdef class CDirichletDomain(object):
         Returns dictionary from WEEdge pointer to index of edge.
         """
         cdef WEEdge *edge = &self.c_dirichlet_domain.edge_list_begin
-        
+
         result = { }
         index = 0
         edge = edge.next
@@ -428,7 +428,7 @@ cdef class CDirichletDomain(object):
                 side = left if edge.f[left] == face else right
                 end = tip if side == left else tail
                 vertex = edge.v[end]
-                vertices.append(tuple( 
+                vertices.append(tuple(
                     self._number_(Real2Number(<Real>vertex.x[i]))
                     for i in range(1,4) ))
                 vertex_indices.append(
@@ -437,18 +437,18 @@ cdef class CDirichletDomain(object):
                     edge_to_index[<size_t>(edge)])
                 edge_orientations.append(
                     +1 if side == left else -1)
-                
+
                 neighbor = edge.neighbor[side]
                 edge_image_indices.append(
                     edge_to_index[<size_t>neighbor])
-                
+
                 neighbor_end = end
                 if not edge.preserves_direction[side]:
                     neighbor_end = tail if end == tip else tip
 
                 vertex_image_indices.append(
                     vertex_to_index[<size_t>(neighbor.v[neighbor_end])])
-                
+
                 # get the next edge
                 edge = edge.e[end][side]
                 if edge == face.some_edge:
@@ -495,7 +495,7 @@ cdef class CDirichletDomain(object):
                 })
 
             edge = edge.next
-            
+
         return edges
 
     def view(self):
@@ -606,10 +606,10 @@ cdef class CDirichletDomain(object):
 
         cdef WEFace* face
         cdef int* c_word
-        
+
         if self.c_dirichlet_domain == NULL:
             raise ValueError('The Dirichlet Domain was not computed.')
-        
+
         words = []
 
         face = self.c_dirichlet_domain.face_list_begin.next
@@ -619,7 +619,7 @@ cdef class CDirichletDomain(object):
             if c_word == NULL:
                 raise ValueError('The Dirichlet Domain was computed without '
                                  'include_words = True.')
-            
+
             words.append(
                 c_word_as_string(
                     c_word, self.c_num_generators, verbose_form = False))
@@ -671,21 +671,21 @@ cdef class CDirichletDomain(object):
         Arguments can be given to modify the model produced:
 
         * model='klein' - (alt. 'poincare') the model of HH^3 to use.
-          
+
         * cutout=False - remove the interior of each face
-          
+
         * shrink_factor=0.9 - the fraction to cut out of each face
-          
+
         * cuttoff_radius=0.9 - maximum rescaling for projection into Poincare model
-          
+
         * num_subdivision=3 - number of times to subdivide for the Poincare model
 
         For printing domains in the Poincare model, cutoff_radius is critical for avoiding
         infinitely thin cusps, which cannot be printed.
-        
+
         This can take a long time for finely subdivided domains. So we call UI_callback
         every so often if it is not None.
-        
+
         >>> D = Manifold('m004').dirichlet_domain()
         >>> D.export_stl('fig-eight-klein.stl')     #doctest: +SKIP
         >>> D.export_stl('fig-eight-poincare.stl', model='poincare')     #doctest: +SKIP
@@ -700,18 +700,18 @@ cdef class CDirichletDomain(object):
 
 class DirichletDomain(CDirichletDomain):
     """
-    A DirichletDomain object represents a Dirichlet Domain of 
+    A DirichletDomain object represents a Dirichlet Domain of
     a hyperbolic manifold, typically centered at a point which
     is a local maximum of injectivity radius.  It will have ideal
     vertices if the manifold is not closed.
-    
+
     Instantiate as M.dirichlet_domain() where M is a Manifold to
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
-    
+
     Other options can be provided to customize the computation, with
     the default values shown here
-    
+
     >>> M = Manifold('m003(3,-4)')
     >>> M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
     40 finite vertices, 0 ideal vertices; 60 edges; 22 faces
@@ -737,5 +737,5 @@ class DirichletDomain(CDirichletDomain):
 
 
 def _unpickle_dirichlet_domain(string, name):
-    return DirichletDomain(generator_bytes=string.encode('ascii'), manifold_name=name)
-
+    return DirichletDomain(generator_bytes=string.encode('ascii'),
+                           manifold_name=name)

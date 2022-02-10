@@ -1,6 +1,17 @@
 # Python modules
-import os, sys, operator, types, re, gzip, struct, tempfile
-import tarfile, atexit, math, string, time
+import os
+import sys
+import operator
+import types
+import re
+import gzip
+import struct
+import tempfile
+import tarfile
+import atexit
+import math
+import string
+import time
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -20,10 +31,10 @@ try:
     from sage.modules.free_module_element import vector
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
-except:
+except ImportError:
     pass
 
-## SnapPy components
+# SnapPy components
 import spherogram
 from .manifolds import __path__ as manifold_paths
 from . import database
@@ -37,7 +48,7 @@ from .export_stl import stl
 from .exceptions import SnapPeaFatalError
 try:
     from plink import LinkEditor, LinkManager
-except:
+except ImportError:
     LinkEditor, LinkManager = None, None
 try:
     from .gui import ViewerWindow
@@ -60,15 +71,17 @@ try:
 except ImportError:
     asksaveasfile = None
 
+
 # This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+cdef public UCS2_hack(char *string, Py_ssize_t length, char *errors):
     return string
+
 
 def valid_index(i, n, format_str):
     """
     Returns (x)range(n)[i] or raises a nicely formatted IndexError
     using format_str.
-    
+
     This does several things for us::
         * avoid that cython happily converts a float to an int, so a call
           such as M.dehn_fill((1,0), 0.6) would succeed.
@@ -76,7 +89,7 @@ def valid_index(i, n, format_str):
         * checks that i is in the right range
         * supports Sage and numpy Integers: they are not python int's but
           have __index__ (see PEP 357)
-    
+
     It is faster than reimplementing these behaviors.
     """
 
@@ -135,17 +148,18 @@ class SimpleVector(object):
 
 from . import number
 
+
 # A very basic matrix class
 class SimpleMatrix(number.SupportsMultiplicationByNumber):
     """
     A very simple matrix class that wraps a list of lists.  It has
     two indices and can print itself.  Nothing more.
     """
-    def __init__(self, list_of_lists, ring = None):
+    def __init__(self, list_of_lists, ring=None):
 
         if isinstance(list_of_lists, SimpleMatrix):
             list_of_lists = list_of_lists.data
-        if not ring is None:
+        if ring is not None:
             self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
         else:
             # XXX
@@ -198,7 +212,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
                       for row
                       in (self.data[i] if type(i) == slice else [ self.data[i] ]) ])
             if i < 0 or j < 0:
-                raise TypeError("Simple matrices don't have negative indices.") 
+                raise TypeError("Simple matrices don't have negative indices.")
             return self.data[i][j]
 
         if type(key) == slice:
@@ -215,7 +229,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
         i, j = key
         if i < 0 or j < 0:
-            raise TypeError("Simple matrices don't have negative indices.") 
+            raise TypeError("Simple matrices don't have negative indices.")
 
         return key
 
@@ -226,6 +240,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def _noalgebra(self, other):
         raise TypeError('To do matrix algebra, please install numpy '
                         'or run SnapPy in Sage.')
+
     def entries(self):
         return [x for row in self.data for x in row]
 
@@ -266,7 +281,6 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
                              for j in range(self.shape[1])])
 
-
     def __truediv__(self, other):
         if isinstance(other, RawNumber):
             return SimpleMatrix(
@@ -289,6 +303,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
     __add__ = __sub__ = __inv__ = _noalgebra
 
+
 if not _within_sage:
     matrix = SimpleMatrix
     vector = SimpleVector
@@ -297,20 +312,26 @@ if not _within_sage:
 if python_major_version == 2:
     def to_str(s):
         return s
+
     def bytearray_to_bytes(x):
         return str(x)
+
 if python_major_version == 3:
     basestring = unicode = str
+
     def to_str(s):
         return s.decode()
+
     def bytearray_to_bytes(x):
         return bytes(x)
+
 
 def to_byte_str(s):
     return s.encode('utf-8') if type(s) != bytes else s
 
+
 # Types of covering spaces
-cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
+cover_types = {1: "irregular", 2: "regular", 3: "cyclic"}
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
@@ -339,7 +360,7 @@ def set_test_flag(int value):
     global SnapPy_test_flag
     old = SnapPy_test_flag
     SnapPy_test_flag = value
-    return old 
+    return old
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef public void uFatalError(const_char_ptr function,
@@ -350,7 +371,7 @@ cdef public void uFatalError(const_char_ptr function,
         raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                                 'defined in %s.c.'%(function, file))
 
-# Global variables used for interrupt processing 
+# Global variables used for interrupt processing
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
@@ -416,7 +437,7 @@ cdef public void uAbortMemoryFull():
     sys.stderr.write('Out of memory.\n')
     sys.exit(2)
 
-cdef public int uQuery(const_char_ptr  message, 
+cdef public int uQuery(const_char_ptr  message,
                        const_int       num_responses,
                        const_char_ptr  responses[],
                        const_int       default_response):
@@ -433,7 +454,7 @@ def cy_eval(s):
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
-            M = sage_matrix(M) 
+            M = sage_matrix(M)
         m, n = M.nrows(), M.ncols()
         result = M.elementary_divisors(algorithm='pari')
     else:
@@ -520,11 +541,12 @@ cdef convert_and_free_integer_matrix(
         if c_matrix.explain_column[i]:
             explain_column.append(to_str(c_matrix.explain_column[i]))
         else:
-            explain_column.append(None)	   
+            explain_column.append(None)
 
     free_integer_matrix_with_explanations(c_matrix)
 
     return python_matrix, explain_row, explain_column
+
 
 class MatrixWithExplanations(object):
 
@@ -537,7 +559,7 @@ class MatrixWithExplanations(object):
     def __add__(self, other):
 
         assert self.explain_columns == other.explain_columns, (
-	    "matrices with different columns")
+            "matrices with different columns")
 
         if isinstance(self.matrix, SimpleMatrix):
             newMatrix = SimpleMatrix(self.matrix.data + other.matrix.data)
@@ -545,44 +567,43 @@ class MatrixWithExplanations(object):
             newMatrix = self.matrix.stack(other.matrix)
         else:
             raise ValueError('Matrix type in MatrixWithExplanations '
-	                     'not supported')
+                             'not supported')
 
-        return MatrixWithExplanations(
-	    newMatrix,
-	    self.explain_rows+other.explain_rows,
-            self.explain_columns)
+        return MatrixWithExplanations(newMatrix,
+                                      self.explain_rows+other.explain_rows,
+                                      self.explain_columns)
 
-    def __repr__(self, _type_str = "MatrixWithExplanations"):
+    def __repr__(self, _type_str="MatrixWithExplanations"):
 
         def format_explain_list(l):
             if len(l) <= 6:
                 return repr(l)
-            
+
             return "[ %s, ..., %s]" % (
                 ', '.join(map(repr,l[:3])),
                 ', '.join(map(repr,l[-3:])))
-                
 
         return (
             "%s(\n"
             "  %s,\n"
             "  explain_columns = %s,\n"
             "  explain_rows = %s)") % (
-	                      _type_str,
+                              _type_str,
                               '\n  '.join(repr(self.matrix).split('\n')),
                               format_explain_list(self.explain_columns),
                               format_explain_list(self.explain_rows))
 
+
 class NeumannZagierTypeEquations(MatrixWithExplanations):
 
     def __init__(self, mat, explain_rows, explain_columns):
-        MatrixWithExplanations.__init__(self, 
-	                                mat, explain_rows, explain_columns)
+        MatrixWithExplanations.__init__(self,
+                                        mat, explain_rows, explain_columns)
 
     def __repr__(self):
         return MatrixWithExplanations.__repr__(self,
-	                                       "NeumannZagierTypeEquations")
-					 
+                                               "NeumannZagierTypeEquations")
+
     def __add__(self, other):
         mat = MatrixWithExplanations.__add__(self, other)
 
@@ -591,13 +612,15 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
 from .number import Number as RawNumber
 
+
 # Conversions between various numerical types.
 IF HIGH_PRECISION:
     class Number(RawNumber):
-        _default_precision=212
+        _default_precision = 212
 ELSE:
     class Number(RawNumber):
-        _default_precision=53
+        _default_precision = 53
+
 
 cdef Real2gen_direct(Real R):
     """
@@ -615,11 +638,12 @@ cdef Real2gen_direct(Real R):
         cdef int i
         # The value of a qd_real is the sum of the values of its four doubles.
         cdef result = pari._real_coerced_to_bits_prec(qd[0], 256)
-        for i in range(1,4):
+        for i in range(1, 4):
             result += pari._real_coerced_to_bits_prec(qd[i], 256)
         return result
     ELSE:              # Real = double
         return pari(R)
+
 
 cdef Real2gen_string(Real R):
     """
@@ -628,16 +652,20 @@ cdef Real2gen_string(Real R):
     """
     return pari(real_to_string(R))
 
+
 # C type for a function of Real returning an object
 ctypedef object (*func_real_to_obj)(Real)
+
 
 # Convert Real to gen in an appropriate manner for this environment
 cdef func_real_to_obj Real2gen
 
-if hasattr(pari, '_real_coerced_to_bits_prec'): # Cypari
+
+if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
     Real2gen = Real2gen_direct
 else:
     Real2gen = Real2gen_string
+
 
 cdef Complex2gen(Complex C):
     """
@@ -647,20 +675,24 @@ cdef Complex2gen(Complex C):
     cdef imag_part = Real2gen(C.imag)
     return pari.complex(real_part, imag_part)
 
+
 cdef RealImag2gen(Real R, Real I):
-        return pari.complex(Real2gen(R), Real2gen(I))
+    return pari.complex(Real2gen(R), Real2gen(I))
+
 
 cdef Complex2complex(Complex C):
     """
     Convert a Complex to a python complex.
     """
-    return complex( float(<double>C.real), float(<double>C.imag) )
+    return complex(float(<double>C.real), float(<double>C.imag))
+
 
 cdef Real2float(Real R):
     """
     Convert a Real to a python float.
     """
     return float(<double>R)
+
 
 cdef Complex complex2Complex(complex z):
     """
@@ -671,6 +703,7 @@ cdef Complex complex2Complex(complex z):
     result.imag = <Real>z.imag
     return result
 
+
 cdef Real Object2Real(obj):
     cdef char* c_string
     try:
@@ -680,11 +713,12 @@ cdef Real Object2Real(obj):
         # Remove it - otherwise it cannot be parsed.
         string = string.replace(' ', '')
         float(string)
-    except:
+    except TypeError, ValueError:
         raise ValueError('Cannot convert %s to a Real.' % type(obj))
     string = to_byte_str(string)
     c_string = string
     return Real_from_string(c_string)
+
 
 cdef Complex Object2Complex(obj):
     cdef Real real, imag
@@ -706,16 +740,16 @@ cdef Complex Object2Complex(obj):
     result.real = real
     result.imag = imag
     return result
-             
-    
+
 
 cdef double Real2double(Real R):
     cdef double* quad = <double *>&R
     return quad[0]
 
+
 cdef Complex gen2Complex(g):
     cdef Complex result
-    IF HIGH_PRECISION: # Real = qd_real; 212 bits of precision
+    IF HIGH_PRECISION:  # Real = qd_real; 212 bits of precision
         cdef py_string
         cdef char* c_string
         cdef Real real_part, imag_part
@@ -723,7 +757,7 @@ cdef Complex gen2Complex(g):
 
         py_string = to_byte_str(str(g.real()).replace(' E','E')) # save a reference
         c_string = py_string
-        real_part = <Real>c_string 
+        real_part = <Real>c_string
         py_string = to_byte_str(str(g.imag()).replace(' E','E')) # save a reference
         c_string = py_string
         imag_part = <Real>c_string
@@ -734,12 +768,12 @@ cdef Complex gen2Complex(g):
         result.real, result.imag = g.real(), g.imag()
     return result
 
-#IF HIGH_PRECISION:
+# IF HIGH_PRECISION:
 cdef Real2Number(Real R):
     return Number(Real2gen(R))
 cdef Complex2Number(Complex C):
     return Number(Complex2gen(C))
-#ELSE:
+# ELSE:
 #    cdef Real2Number(Real R):
 #        return Number(R)
 #    cdef Complex2Number(Complex C):
@@ -770,13 +804,17 @@ class Info(dict):
                 pass
         super(Info, self).__init__(content)
         self.__dict__.update(kwargs)
+
     def _immutable(self, *args):
         raise AttributeError('Info objects are immutable.')
+
     def keys(self):
         return self.__dict__.keys()
+
     __setattr__ = __delattr__ = __setitem__ = __delitem__ = _immutable
     pop = popitem = clear = update = _immutable
     _obsolete = {}
+
 
 class CuspInfo(Info):
     def __repr__(self):
@@ -791,18 +829,21 @@ class CuspInfo(Info):
             return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s'%
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
-                 'holonomy precision' : 'holonomy_accuracy', 
+                 'holonomy precision' : 'holonomy_accuracy',
                  'shape precision'    : 'shape_accuracy'}
-    
+
+
 class DualCurveInfo(Info):
     def __repr__(self):
         return ('%3d: %s curve of length %s'%
                 (self.index, MatrixParity[self.parity], self.filled_length))
     _obsolete = {'complete length' : 'complete_length',
                  'filled length' : 'filled_length'}
-    
+
+
 def _StrLongestLen(l):
     return str(max(len(e) for e in l))
+
 
 LengthSpectrumFormatStringBase = (
     '%-4s '                                   # Multiplicity
@@ -818,6 +859,7 @@ LengthSpectrumFormatStringWithWord = (
     '%-' + _StrLongestLen(MatrixParity) +'s ' # Parity
     '%s')                                     # Word
 
+
 class LengthSpectrumInfo(Info):
     def __repr__(self):
         if 'word' in self:
@@ -832,19 +874,23 @@ class LengthSpectrumInfo(Info):
                 self.multiplicity,
                 self.length,
                 self.topology,
-                self.parity )
+                self.parity)
+
 
 class ShapeInfo(Info):
-    _obsolete = {'precision' : 'accuracies'}
+    _obsolete = {'precision': 'accuracies'}
+
     def __repr__(self):
         return repr(self.__dict__)
+
 
 class NormalSurfaceInfo(Info):
     def __repr__(self):
         orient = 'Orientable' if self.orientable else 'Non-orientable'
         sided = 'two-sided' if self.two_sided else 'one-sided'
         return '%s %s with euler = %s' % (orient, sided, self.euler)
-    
+
+
 class LengthSpectrum(list):
     def __repr__(self):
         if len(self) > 0 and 'word' in self[0]:
@@ -855,10 +901,11 @@ class LengthSpectrum(list):
                 'mult', 'length', 'topology', 'parity')
         return '\n'.join([base] + [repr(s) for s in self])
 
+
 class ListOnePerLine(list):
     def __repr__(self):
         return '[' + ',\n '.join([repr(s) for s in self]) + ']'
-    
+
 # Isometry
 
 def format_two_by_two(mat):
@@ -867,7 +914,8 @@ def format_two_by_two(mat):
     w1 = max(len(b), len(d))
     return ('[' + a.rjust(w0) + ' ' + b.rjust(w1) + ']',
             '[' + c.rjust(w0) + ' ' + d.rjust(w1) + ']')
-    
+
+
 class Isometry(object):
     """
     Represents an isometry from one manifold to another.
@@ -978,6 +1026,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     M.set_name(T.name())
     M._cover_info = T._cover_info
     return M
+
 
 def Triangulation_from_Manifold(Manifold M):
     cdef c_Triangulation *c_triangulation

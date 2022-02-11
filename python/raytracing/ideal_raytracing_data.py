@@ -236,19 +236,8 @@ class IdealRaytracingData(RaytracingData):
                                    self.snappy_manifold.cusp_info()):
             self._add_log_holonomies_to_cusp(cusp, shapes)
 
-    def _check_consistency(self):
-        for tet in self.mcomplex.Tetrahedra:
-            for F in t3m.TwoSubsimplices:
-                for V in t3m.ZeroSubsimplices:
-                    if V & F:
-                        v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
-                        v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
-                        err = R13_dot(v0, v1)
-                        if err > 1e-10 or err < -1e-10:
-                            print("PROBLEM")
-
     def get_uniform_bindings(self):
-        # self._check_consistency()
+        # _check_consistency(self.mcomplex)
 
         d = super(IdealRaytracingData, self).get_uniform_bindings()
 
@@ -488,4 +477,14 @@ def _compute_margulis_tube_ends(tet, vertex):
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
-    
+def _check_consistency(mcomplex):
+    for tet in mcomplex.Tetrahedra:
+        for F in t3m.TwoSubsimplices:
+            for V in t3m.ZeroSubsimplices:
+                if V & F:
+                    v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
+                    v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
+                    err = R13_dot(v0, v1)
+                    if err > 1e-10 or err < -1e-10:
+                        print("PROBLEM", v0, v1)
+

@@ -133,10 +133,10 @@ class SimpleVector(object):
         l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
         return SimpleVector([x / l for x in self.data])
 
-from .number import SupportsMultiplicationByNumber
+from . import number
 
 # A very basic matrix class
-class SimpleMatrix(SupportsMultiplicationByNumber):
+class SimpleMatrix(number.SupportsMultiplicationByNumber):
     """
     A very simple matrix class that wraps a list of lists.  It has
     two indices and can print itself.  Nothing more.

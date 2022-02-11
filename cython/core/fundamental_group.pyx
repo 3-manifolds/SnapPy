@@ -479,14 +479,14 @@ class HolonomyGroup(CHolonomyGroup):
 
     Instantiate via M.fundamental_group(), where M is a Manifold.
     """
+
     @staticmethod
-    def _number_(number):
-        return number
+    def _number_(n):
+        return number.NumberToNativeNumber(n)
 
     @classmethod
     def use_field_conversion(cls, func):
-        cls._number_ = staticmethod(func)
+        number.use_field_conversions(func)
 
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
-    HolonomyGroup.use_field_conversion(lambda n : n.sage())

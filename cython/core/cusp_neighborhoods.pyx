@@ -7,12 +7,12 @@ cdef class CCuspNeighborhood(object):
     cdef original_indices
 
     @staticmethod
-    def _number_(number):
-        return number
+    def _number_(n):
+        return number.NumberToNativeNumber(n)
 
     @classmethod
     def use_field_conversion(cls, func):
-        cls._number_ = staticmethod(func)
+        number.use_field_conversions(func)
 
     def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:

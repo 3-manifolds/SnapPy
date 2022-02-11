@@ -67,8 +67,8 @@ cdef class Manifold(Triangulation):
             do_Dehn_filling(self.c_triangulation)
 
     @staticmethod
-    def _number_(number):
-        return number
+    def _number_(n):
+        return number.NumberToNativeNumber(n)
 
     @classmethod
     def use_field_conversion(cls, func):
@@ -109,12 +109,7 @@ cdef class Manifold(Triangulation):
             sage: parent(M.volume())
             Real Field with 64 bits of precision
         """
-        if func == 'sage':
-            cls._number_ = staticmethod(lambda n : n.sage())
-        elif func == 'snappy':
-            cls._number_ = staticmethod(lambda n : n)
-        else:
-            cls._number_ = staticmethod(func)
+        number.use_field_conversions(func)
 
     def init_hyperbolic_structure(self, force_recompute = False):
         if not self.c_triangulation:
@@ -439,7 +434,6 @@ cdef class Manifold(Triangulation):
             pass
 
         result = HolonomyGroup(self, *args)
-        result.use_field_conversion(self._number_)
         return self._cache.save(result, 'fundamental_group', *args)
 
     def symmetry_group(self, of_link=False):

@@ -98,12 +98,12 @@ cdef class CDirichletDomain(object):
     cdef int c_num_generators
 
     @staticmethod
-    def _number_(number):
-        return number
+    def _number_(n):
+        return number.NumberToNativeNumber(n)
 
     @classmethod
     def use_field_conversion(cls, func):
-        cls._number_ = staticmethod(func)
+        number.use_field_conversions(func)
 
     def __cinit__(self, 
                   Manifold manifold=None,

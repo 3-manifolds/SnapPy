@@ -38,7 +38,7 @@ class Perm4Basic:
 
     def __init__(self, init, sign=1):
         self.dict = {}
-        if len(init) == 4:
+        if isinstance(init, Perm4Basic) or len(init) == 4:
             for i in range(4):
                 self.dict[i] = init[i]
         else:
@@ -184,6 +184,9 @@ class Perm4():
         if isinstance(init, int):
             self._index = init
             self._tuple = S4_tuples[init]
+        elif isinstance(init, Perm4):
+            self._index = init._index
+            self._tuple = init._tuple
         elif len(init) == 4:
             self._tuple = tuple(init[i] for i in range(4))
             self._index = perm_tuple_to_index[self._tuple]
@@ -303,7 +306,7 @@ class Perm4():
 inverse_by_index = {k:Perm4(v) for k, v in index_of_inverse_by_index.items()}
 mult_table_by_index = {k:Perm4(v) for k, v in index_mult_table_by_index.items()}
 
-__all__ = [Perm4, inv]
+__all__ = ["Perm4", "inv"]
 
 if __name__ == '__main__':
     import doctest

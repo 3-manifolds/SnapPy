@@ -610,38 +610,38 @@ for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
 Number.argument = Number.arg
 
 def use_field_conversion(func):
-    global NumberToNativeNumber
+    global number_to_native_number
 
     if func == 'sage':
-        def NumberToNativeNumber(n):
+        def number_to_native_number(n):
             """
             Converts a SnapPy number to the corresponding SageMath type.
 
-            In general snappy.number.NumberToNativeNumber converts a SnapPy number to
+            In general snappy.number.number_to_native_number converts a SnapPy number to
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
             However, this behavior can be overriden by
             snappy.number.use_field_conversion which replaces
-            NumberToNativeNumber.
+            number_to_native_number.
             """
             return n.sage()
     elif func == 'snappy':
-        def NumberToNativeNumber(n):
+        def number_to_native_number(n):
             """
             Simply returns the given SnapPy number.
 
-            In general snappy.number.NumberToNativeNumber converts a SnapPy number to
+            In general snappy.number.number_to_native_number converts a SnapPy number to
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
             However, this behavior can be overriden by
             snappy.number.use_field_conversion which replaces
-            NumberToNativeNumber.
+            number_to_native_number.
             """
             return n
     else:
-        NumberToNativeNumber = func
+        number_to_native_number = func
 
 if _within_sage:
     use_field_conversion('sage')

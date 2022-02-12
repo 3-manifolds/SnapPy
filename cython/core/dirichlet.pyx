@@ -99,7 +99,7 @@ cdef class CDirichletDomain(object):
 
     @staticmethod
     def _number_(n):
-        return number.NumberToNativeNumber(n)
+        return number.number_to_native_number(n)
 
     @classmethod
     def use_field_conversion(cls, func):

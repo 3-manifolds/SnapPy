@@ -43,10 +43,6 @@ def snap_doctester(verbose):
     return snappy.snap.test.run_doctests(verbose, print_info=False)
 snap_doctester.__name__ = 'snappy.snap'
 
-def snappy_doctester(verbose):
-    return doctest_modules([snappy], verbose)
-snappy_doctester.__name__ = 'snappy'
-
 def snappy_database_doctester(verbose):
     # snappy_manifolds's tests is still relying on
     # SnapPy Number's _accuracy_for_testing.
@@ -62,19 +58,6 @@ def snappy_database_doctester(verbose):
 
     return ans
 snappy_database_doctester.__name__ = 'snappy.database'
-
-raytracing_modules = [
-    snappy.raytracing.cohomology_fractal,
-    snappy.raytracing.geodesic,
-    snappy.raytracing.geodesics,
-    snappy.raytracing.ideal_raytracing_data,
-    snappy.raytracing.upper_halfspace_utilities
-]
-
-def raytracing_doctester(verbose):
-    return doctest_modules(raytracing_modules, verbose)
-
-raytracing_doctester.__name__ = 'snappy.raytracing'
 
 def spherogram_doctester(verbose):
     ans = spherogram.test.run_doctests(verbose, print_info=False)
@@ -96,15 +79,20 @@ ptolemy_doctester.__name__ = 'snappy.ptolemy'
 modules += [numeric_output_checker.run_doctests]
 
 if not _within_sage:
-    def number_doctester(verbose):
-        return doctest_modules([snappy.number], verbose)
-    modules += [number_doctester]
+    modules.append(snappy.number)
 
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy_database_doctester,
-            snappy_doctester,
+modules += [snappy.SnapPy,
+            snappy.SnapPyHP,
+            snappy_database_doctester,
+            snappy,
             snap_doctester,
-            raytracing_doctester,
-            ptolemy_doctester, spherogram_doctester]
+            snappy.raytracing.cohomology_fractal,
+            snappy.raytracing.geodesic,
+            snappy.raytracing.geodesics,
+            snappy.raytracing.ideal_raytracing_data,
+            snappy.raytracing.upper_halfspace_utilities,
+            ptolemy_doctester,
+            spherogram_doctester]
 
 def snappy_verify_doctester(verbose):
     return snappy.verify.test.run_doctests(verbose, print_info=False)

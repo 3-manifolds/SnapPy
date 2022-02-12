@@ -330,7 +330,7 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
         return verify.triangulation_dependent_cusp_area_matrix(
             manifold, verified = verified, bits_prec = bits_prec)
 
-    raise RuntimeError("method passed to cusp_area_matrix must be "
+    raise ValueError("method passed to cusp_area_matrix must be "
                        "'trigDependent', 'trigDependentTryCanonize', "
                        "or 'maximal'.")
 
@@ -405,7 +405,7 @@ def cusp_areas(manifold, policy = 'unbiased',
 
     """
     if policy not in ['unbiased', 'greedy']:
-        raise RuntimeError("policy passed to cusp_areas must be 'unbiased' "
+        raise ValueError("policy passed to cusp_areas must be 'unbiased' "
                            "or 'greedy'.")
 
     m = manifold.cusp_area_matrix(

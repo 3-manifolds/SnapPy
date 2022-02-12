@@ -17,19 +17,6 @@ from snappy import numeric_output_checker
 modules = []
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
-# To make the floating point tests work on different platforms/compilers
-snappy.number.Number._accuracy_for_testing = 8
-
-def use_snappy_field_conversion():
-    snappy.number.use_field_conversion('snappy')
-
-def use_sage_field_conversion():
-    import sage.all
-    snappy.number.use_field_conversion('sage')
-
-# If in Sage, undo some output conversions to make the docstrings work:
-if _within_sage:
-    use_snappy_field_conversion()
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -52,33 +39,29 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
-if _within_sage:
-    def snap_doctester(verbose):
-        use_sage_field_conversion()
-        ans = snappy.snap.test.run_doctests(verbose, print_info=False)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snap_doctester(verbose):
-        return snappy.snap.test.run_doctests(verbose, print_info=False)
-
+def snap_doctester(verbose):
+    return snappy.snap.test.run_doctests(verbose, print_info=False)
 snap_doctester.__name__ = 'snappy.snap'
 
-if _within_sage:
-    def snappy_doctester(verbose):
-        use_sage_field_conversion()
-        ans = doctest_modules([snappy], verbose)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snappy_doctester(verbose):
-        original_accuracy = snappy.number.Number._accuracy_for_testing
-        snappy.number.Number._accuracy_for_testing = None
-        ans = doctest_modules([snappy], verbose)
-        snappy.number.Number._accuracy_for_testing = original_accuracy
-        return ans
-
+def snappy_doctester(verbose):
+    return doctest_modules([snappy], verbose)
 snappy_doctester.__name__ = 'snappy'
+
+def snappy_database_doctester(verbose):
+    # snappy_manifolds's tests is still relying on
+    # SnapPy Number's _accuracy_for_testing.
+    #
+    # Switch to snappy conversion until snappy_manifolds is
+    # is updated.
+    snappy.number.use_field_conversion('snappy')
+    snappy.number.Number._accuracy_for_testing = 8
+    ans = doctest_modules([snappy.database], verbose)
+    snappy.number.Number._accuracy_for_testing = None
+    if _within_sage:
+        snappy.number.use_field_conversion('sage')
+
+    return ans
+snappy_database_doctester.__name__ = 'snappy.database'
 
 raytracing_modules = [
     snappy.raytracing.cohomology_fractal,
@@ -88,21 +71,22 @@ raytracing_modules = [
     snappy.raytracing.upper_halfspace_utilities
 ]
 
-if _within_sage:
-    def raytracing_doctester(verbose):
-        use_sage_field_conversion()
-        ans = doctest_modules(raytracing_modules, verbose)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def raytracing_doctester(verbose):
-        ans = doctest_modules(raytracing_modules, verbose)
-        return ans
+def raytracing_doctester(verbose):
+    return doctest_modules(raytracing_modules, verbose)
 
 raytracing_doctester.__name__ = 'snappy.raytracing'
 
 def spherogram_doctester(verbose):
-    return spherogram.test.run_doctests(verbose, print_info=False)
+    ans = spherogram.test.run_doctests(verbose, print_info=False)
+
+    # Spherogram's testing is switching to SnapPy numbers and
+    # setting their accuracy.
+    # Switch back to Sage types until Spherogram has been updated.
+    snappy.number.Number._accuracy_for_testing = None
+    if _within_sage:
+        snappy.number.use_field_conversion('sage')
+
+    return ans
 spherogram_doctester.__name__ = 'spherogram'
 
 def ptolemy_doctester(verbose):
@@ -113,39 +97,22 @@ modules += [numeric_output_checker.run_doctests]
 
 if not _within_sage:
     def number_doctester(verbose):
-        original_accuracy = snappy.number.Number._accuracy_for_testing
-        snappy.number.Number._accuracy_for_testing = None
-        ans = doctest_modules([snappy.number], verbose)
-        snappy.number.Number._accuracy_for_testing = original_accuracy
-        return ans
+        return doctest_modules([snappy.number], verbose)
     modules += [number_doctester]
 
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
+modules += [snappy.SnapPy, snappy.SnapPyHP, snappy_database_doctester,
             snappy_doctester,
             snap_doctester,
             raytracing_doctester,
             ptolemy_doctester, spherogram_doctester]
 
-if _within_sage:
-    def snappy_verify_doctester(verbose):
-        use_sage_field_conversion()
-        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snappy_verify_doctester(verbose):
-        old_accuracy = snappy.number.Number._accuracy_for_testing
-        snappy.number.Number._accuracy_for_testing = None
-        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
-        snappy.number.Number._accuracy_for_testing = old_accuracy
-        return ans
+def snappy_verify_doctester(verbose):
+    return snappy.verify.test.run_doctests(verbose, print_info=False)
 
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
 def graphics_failures(verbose, windows, use_modernopengl):
-    if _within_sage:
-        use_sage_field_conversion()
     if cyopengl_works():
         print("Testing graphics ...")
         import snappy.CyOpenGL
@@ -172,8 +139,6 @@ def graphics_failures(verbose, windows, use_modernopengl):
     else:
         print("***Warning***: CyOpenGL not installed, so not tested")
         result = 0
-    if _within_sage:
-        use_snappy_field_conversion()
     return result
 
 def runtests(verbose = False,

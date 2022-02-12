@@ -1188,7 +1188,7 @@ cdef class Triangulation(object):
         >>> M = Manifold('m015')
         >>> cs = M.chern_simons()
         >>> M.reverse_orientation()
-        >>> round(abs(cs + M.chern_simons()), 15)
+        >>> abs(cs + M.chern_simons()) # doctest: +NUMERIC9
         0.0
         """
         if not self.is_orientable():

@@ -109,7 +109,7 @@ cdef class Manifold(Triangulation):
             sage: parent(M.volume())
             Real Field with 64 bits of precision
         """
-        number.use_field_conversions(func)
+        number.use_field_conversion(func)
 
     def init_hyperbolic_structure(self, force_recompute = False):
         if not self.c_triangulation:

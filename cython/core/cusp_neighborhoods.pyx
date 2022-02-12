@@ -12,7 +12,7 @@ cdef class CCuspNeighborhood(object):
 
     @classmethod
     def use_field_conversion(cls, func):
-        number.use_field_conversions(func)
+        number.use_field_conversion(func)
 
     def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:

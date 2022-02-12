@@ -21,13 +21,11 @@ snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.number.Number._accuracy_for_testing = 8
 
 def use_snappy_field_conversion():
-    snappy.Manifold.use_field_conversion('snappy')
-    snappy.ManifoldHP.use_field_conversion('snappy')
+    snappy.number.use_field_conversion('snappy')
 
 def use_sage_field_conversion():
     import sage.all
-    snappy.Manifold.use_field_conversion('sage')
-    snappy.ManifoldHP.use_field_conversion('sage')
+    snappy.number.use_field_conversion('sage')
 
 # If in Sage, undo some output conversions to make the docstrings work:
 if _within_sage:

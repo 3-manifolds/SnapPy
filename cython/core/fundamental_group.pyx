@@ -486,7 +486,7 @@ class HolonomyGroup(CHolonomyGroup):
 
     @classmethod
     def use_field_conversion(cls, func):
-        number.use_field_conversions(func)
+        number.use_field_conversion(func)
 
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)

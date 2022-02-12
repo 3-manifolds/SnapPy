@@ -112,7 +112,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
 # Testing code for get_triangulation
 def get_triangulation_tester():
     """
-    >>> get_triangulation_tester()
+    >>> get_triangulation_tester() # doctest: +NUMERIC6
     L13n9331(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     m003(0,0) 2.02988321 Z/5 + Z
     m004(0,0) 2.02988321 Z

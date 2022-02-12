@@ -244,7 +244,7 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('7_4')
         >>> seed = M._to_string()
         >>> N = Manifold(seed)
-        >>> N.volume()
+        >>> N.volume() # doctest: +NUMERIC6
         5.13794120
         """
         Triangulation._from_string(self, string)
@@ -297,7 +297,7 @@ cdef class Manifold(Triangulation):
         
         >>> M = Manifold('s000')
         >>> CN = M.cusp_neighborhood()
-        >>> CN.volume()
+        >>> CN.volume() # doctest: +NUMERIC6
         0.32475953
         >>> len(CN.horoballs(0.01))
         178
@@ -411,7 +411,7 @@ cdef class Manifold(Triangulation):
            aaabABBAb
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
-        >>> G.SL2C('baaBA')
+        >>> G.SL2C('baaBA') # doctest: +NUMERIC6
         [ 2.50000000 - 2.59807621*I -6.06217783 - 0.50000000*I]
         [ 0.86602540 - 2.50000000*I -4.00000000 + 1.73205081*I]
 
@@ -551,13 +551,13 @@ cdef class Manifold(Triangulation):
 
           sage: f = G.GQuotients(PSL(2,7))[1]
           sage: N2 = M.cover(f)
-          sage: N2.volume()/M.volume()
+          sage: N2.volume()/M.volume() # doctest: +NUMERIC9
           8.00000000
 
         Or maybe we want larger cover coming from the kernel of this::
 
           sage: N3 = M.cover(f.Kernel())
-          sage: N3.volume()/M.volume()
+          sage: N3.volume()/M.volume() # doctest: +NUMERIC9
           168.00000000
 
         Check the homology against what Gap computes directly::
@@ -773,7 +773,7 @@ cdef class Manifold(Triangulation):
         Returns the Chern-Simons invariant of the manifold, if it is known.
 
         >>> M = Manifold('m015')
-        >>> M.chern_simons()
+        >>> M.chern_simons() # doctest: +NUMERIC6
         -0.15320413
 
         The return value has an extra attribute, accuracy, which
@@ -791,10 +791,10 @@ cdef class Manifold(Triangulation):
         manifold so as to initialize SnapPea's internals.  For instance,
 
         >>> M = Manifold('5_2')
-        >>> M.chern_simons()
+        >>> M.chern_simons() # doctest: +NUMERIC6
         -0.15320413
         >>> M.dehn_fill( (1,2) )
-        >>> M.chern_simons()
+        >>> M.chern_simons() # doctest: +NUMERIC6
         0.07731787
 
         works, but will fail with 'Chern-Simons invariant not
@@ -842,7 +842,7 @@ cdef class Manifold(Triangulation):
         normalize the triangle.
 
         >>> M = Manifold('m015')
-        >>> M.tetrahedra_shapes(part='rect')
+        >>> M.tetrahedra_shapes(part='rect') # doctest: +NUMERIC6
         [0.66235898 + 0.56227951*I, 0.66235898 + 0.56227951*I, 0.66235898 + 0.56227951*I]
         >>> M.tetrahedra_shapes() #doctest:+SKIP
         [{'accuracies': (11, 11, 12, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I},
@@ -1074,9 +1074,9 @@ cdef class Manifold(Triangulation):
         To get more detailed information about the cusp, we do
 
         >>> c = M.cusp_info(0)
-        >>> c.shape
+        >>> c.shape # doctest: +NUMERIC6
         0.11044502 + 0.94677098*I
-        >>> c.modulus
+        >>> c.modulus# doctest: +NUMERIC6
         -0.12155872 + 1.04204128*I
         >>> sorted(c.keys())
         ['filling', 'holonomies', 'holonomy_accuracy', 'index', 'is_complete', 'modulus', 'shape', 'shape_accuracy', 'topology']
@@ -1089,7 +1089,7 @@ cdef class Manifold(Triangulation):
         For cusps that are filled, one instead cares about the
         holonomies:
         
-        >>> M.cusp_info(-1)['holonomies']
+        >>> M.cusp_info(-1)['holonomies'] # doctest: +NUMERIC6
         (-0.59883089 + 1.09812548*I, 0.89824633 + 1.49440443*I)
 
         The complex numbers returned for the shape and for the two
@@ -1098,7 +1098,7 @@ cdef class Manifold(Triangulation):
         
         You can also get information about multiple cusps at once:
 
-        >>> M.cusp_info()
+        >>> M.cusp_info() # doctest: +NUMERIC6
         [Cusp 0 : complete torus cusp of shape 0.11044502 + 0.94677098*I,
          Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0),
          Cusp 2 : torus cusp with Dehn filling coefficients (M, L) = (3.0, 2.0)]
@@ -1243,15 +1243,15 @@ cdef class Manifold(Triangulation):
           shortest curves the longitudes.  
 
           >>> M = Manifold('5_2')
-          >>> M.cusp_info('shape')
+          >>> M.cusp_info('shape') # doctest: +NUMERIC6
           [-2.49024467 + 2.97944707*I]
           >>> cob = M.set_peripheral_curves('shortest', return_matrices=True)
-          >>> M.cusp_info('shape')
+          >>> M.cusp_info('shape') # doctest: +NUMERIC6
           [-0.49024467 + 2.97944707*I]
           >>> cob
           [[[1, 0], [-2, 1]]]
           >>> M.set_peripheral_curves(cob)
-          >>> M.cusp_info('shape')
+          >>> M.cusp_info('shape') # doctest: +NUMERIC6
           [-2.49024467 + 2.97944707*I]
 
           You can also make just the meridians as short as 
@@ -1348,7 +1348,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> curves = M.dual_curves()
-        >>> curves
+        >>> curves # doctest: +NUMERIC6
         [  0: orientation-preserving curve of length 0.56239915 - 2.81543089*I,
            1: orientation-preserving curve of length 1.12479830 + 0.65232354*I,
            2: orientation-preserving curve of length 1.26080402 + 1.97804689*I,
@@ -1371,7 +1371,7 @@ cdef class Manifold(Triangulation):
         can be changed by specifying the optional argument
         max_segments
 
-        >>> M.dual_curves(max_segments=2)
+        >>> M.dual_curves(max_segments=2) # doctest: +NUMERIC6
         [  0: orientation-preserving curve of length 0.56239915 - 2.81543089*I]
         """
         cdef int i, num_curves
@@ -1703,7 +1703,7 @@ cdef class Manifold(Triangulation):
 
         >>> pieces = M.split(S); pieces
         [K14n26039.a(0,0)(0,0), K14n26039.b(0,0)]
-        >>> pieces[0].volume()
+        >>> pieces[0].volume() # doctest: +NUMERIC6
         3.66386238
         >>> pieces[1].fundamental_group().relators()
         ['aabbb']
@@ -1711,7 +1711,7 @@ cdef class Manifold(Triangulation):
         You can also specify a surface by its index.
 
         >>> M = Manifold('L10n111') 
-        >>> max( P.volume() for P in M.split(0) )
+        >>> max( P.volume() for P in M.split(0) ) # doctest: +NUMERIC6
         5.33348957
         """
         cdef NormalSurfaceList *surfaces

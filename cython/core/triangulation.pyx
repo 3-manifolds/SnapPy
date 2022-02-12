@@ -574,7 +574,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
-        >>> N.volume()
+        >>> N.volume() # doctest: +NUMERIC6
         2.02988321
         """
         return Manifold_from_Triangulation(self)

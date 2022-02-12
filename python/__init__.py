@@ -119,9 +119,6 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'pari', 'twister', ]
 
 from .sage_helper import _within_sage
-if _within_sage:
-    Manifold.use_field_conversion('sage')
-    ManifoldHP.use_field_conversion('sage')
 
 from . import snap
 snap.add_methods(Manifold)

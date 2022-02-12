@@ -695,7 +695,8 @@ cdef class Manifold(Triangulation):
         printing the volume, the result is rounded to 1 more than this
         number of digits.
 
-        >>> M.volume().accuracy in (10, 63) # Low precision, High precision
+        >>> vol, accuracy = M.volume(accuracy = True)
+        >>> accuracy in (10, 63) # Low precision, High precision
         True
 
         Inside SageMath, verified computation of the volume of a
@@ -768,7 +769,7 @@ cdef class Manifold(Triangulation):
             set_CS_value(self.c_triangulation, cs_value)
         return result
 
-    def chern_simons(self):
+    def chern_simons(self, accuracy = False):
         """
         Returns the Chern-Simons invariant of the manifold, if it is known.
 
@@ -779,7 +780,8 @@ cdef class Manifold(Triangulation):
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.chern_simons().accuracy in (8, 9, 56) # Low and High precision
+        >>> cs, accuracy = M.chern_simons(accuracy = True)
+        >>> accuracy in (8, 9, 56) # Low and High precision
         True
 
         By default, when the manifold has at least one cusp, Zickert's
@@ -801,7 +803,12 @@ cdef class Manifold(Triangulation):
         currently known' if the first call to chern_simons is not
         made.
         """
-        return self._number_(self._chern_simons())
+
+        cs = self._chern_simons()
+        if accuracy:
+            return (self._number_(cs), cs.accuracy)
+        else:
+            return self._number_(cs)
             
     def without_hyperbolic_structure(self):
         """

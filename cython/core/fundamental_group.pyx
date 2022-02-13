@@ -484,9 +484,5 @@ class HolonomyGroup(CHolonomyGroup):
     def _number_(n):
         return number.number_to_native_number(n)
 
-    @classmethod
-    def use_field_conversion(cls, func):
-        number.use_field_conversion(func)
-
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)

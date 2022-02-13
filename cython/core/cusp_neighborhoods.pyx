@@ -10,10 +10,6 @@ cdef class CCuspNeighborhood(object):
     def _number_(n):
         return number.number_to_native_number(n)
 
-    @classmethod
-    def use_field_conversion(cls, func):
-        number.use_field_conversion(func)
-
     def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')

@@ -74,6 +74,9 @@ cdef class Manifold(Triangulation):
     def use_field_conversion(cls, func):
         """
         A class method for specifying a numerical conversion function.
+        This method is deprecated: SnapPy will automatically use 
+        SageMath number types or its own SnapPy number type depending on
+        whether SageMath is available or not.
 
         SnapPy includes its own number type, snappy.Number, which can
         represent floating point real or complex numbers of varying

@@ -101,10 +101,6 @@ cdef class CDirichletDomain(object):
     def _number_(n):
         return number.number_to_native_number(n)
 
-    @classmethod
-    def use_field_conversion(cls, func):
-        number.use_field_conversion(func)
-
     def __cinit__(self, 
                   Manifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,

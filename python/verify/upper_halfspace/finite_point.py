@@ -3,7 +3,7 @@ from ...sage_helper import _within_sage
 if _within_sage:
     import sage.all
     from sage.all import matrix, sqrt
-    from sage.functions.hyperbolic import arccosh
+    from sage.rings.real_mpfi import is_RealIntervalFieldElement
 
 from .extended_matrix import ExtendedMatrix
 
@@ -157,8 +157,22 @@ class FinitePoint(object):
 
         r = 1 + (((self.t - other.t) ** 2 + _abs_sqr(self.z - other.z))/
                  (2 * self.t * other.t))
+
+        # Due to rounding-errors, we can get a value that is just slightly
+        # smaller than 1, even though we know that this is mathematically
+        # impossible. This can cause taking arccosh later to fail.
+        #
+        # To avoid this failure, make sure the result is at least 1 - or
+        # in the interval case, ensure that the interval does not contain
+        # values below 1.
+        #
         RIF = r.parent()
-        return r.intersection(RIF(1,sage.all.Infinity))
+        if _within_sage:
+            if is_RealIntervalFieldElement(r):
+                return r.intersection(RIF(1,sage.all.Infinity))
+        if r < 1.0:
+            return RIF(1.0)
+        return r
                  
     def dist(self, other):
         """
@@ -174,7 +188,7 @@ class FinitePoint(object):
 
         # Note: SageMath 8.1 doesn't compute arccosh correctly for a
         # complex interval, but at least it does so for a real interval.
-        return arccosh(self.cosh_dist(other))
+        return self.cosh_dist(other).arccosh()
     
     def __repr__(self):
         return 'FinitePoint(%r, %r)' % (self.z, self.t)

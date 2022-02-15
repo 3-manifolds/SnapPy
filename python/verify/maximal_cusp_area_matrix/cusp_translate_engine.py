@@ -26,7 +26,7 @@ class CuspTranslateEngine(object):
         v = self._matrix * vector([z.real(), z.imag()])
         for e in v:
             if not (e.absolute_diameter() < 0.5):
-                raise Exception("Too large interval")
+                raise RuntimeError("Too large interval encountered when tiling. Increasing the precision should fix this.")
         return v
 
     def _canonical_translates(self, z):

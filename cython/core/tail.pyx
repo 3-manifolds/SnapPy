@@ -771,4 +771,3 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
     tri_name = to_byte_str('unnamed link')
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
-

@@ -520,7 +520,7 @@ cdef convert_and_free_integer_matrix(
         if c_matrix.explain_column[i]:
             explain_column.append(to_str(c_matrix.explain_column[i]))
         else:
-            explain_column.append(None)	   
+            explain_column.append(None)
 
     free_integer_matrix_with_explanations(c_matrix)
 
@@ -537,7 +537,7 @@ class MatrixWithExplanations(object):
     def __add__(self, other):
 
         assert self.explain_columns == other.explain_columns, (
-	    "matrices with different columns")
+            "matrices with different columns")
 
         if isinstance(self.matrix, SimpleMatrix):
             newMatrix = SimpleMatrix(self.matrix.data + other.matrix.data)
@@ -545,11 +545,11 @@ class MatrixWithExplanations(object):
             newMatrix = self.matrix.stack(other.matrix)
         else:
             raise ValueError('Matrix type in MatrixWithExplanations '
-	                     'not supported')
+                             'not supported')
 
         return MatrixWithExplanations(
-	    newMatrix,
-	    self.explain_rows+other.explain_rows,
+            newMatrix,
+            self.explain_rows+other.explain_rows,
             self.explain_columns)
 
     def __repr__(self, _type_str = "MatrixWithExplanations"):
@@ -568,7 +568,7 @@ class MatrixWithExplanations(object):
             "  %s,\n"
             "  explain_columns = %s,\n"
             "  explain_rows = %s)") % (
-	                      _type_str,
+                              _type_str,
                               '\n  '.join(repr(self.matrix).split('\n')),
                               format_explain_list(self.explain_columns),
                               format_explain_list(self.explain_rows))
@@ -577,12 +577,12 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
     def __init__(self, mat, explain_rows, explain_columns):
         MatrixWithExplanations.__init__(self, 
-	                                mat, explain_rows, explain_columns)
+                                        mat, explain_rows, explain_columns)
 
     def __repr__(self):
         return MatrixWithExplanations.__repr__(self,
-	                                       "NeumannZagierTypeEquations")
-					 
+                                               "NeumannZagierTypeEquations")
+
     def __add__(self, other):
         mat = MatrixWithExplanations.__add__(self, other)
 

@@ -147,9 +147,10 @@ cdef class Manifold(Triangulation):
 
     def _canonical_retriangulation(self, opacities = None):
         """
-	If this triangulation is a subdivision of the canonical cell
+        If this triangulation is a subdivision of the canonical cell
         decomposition, return the canonical retriangulation as Triangulation.
-	Warning: Many operations on a SnapPy Triangulation will remove the
+
+        Warning: Many operations on a SnapPy Triangulation will remove the
         finite vertices or change the triangulation so it is no longer the
         canonical retriangulation.
         By default, the algorithm numerically checks that the tilts are close
@@ -157,7 +158,7 @@ cdef class Manifold(Triangulation):
         But it can also be passed an explicit list of 4 * num_tetrahedra bool's
         (one per face of each tet) that mark the opaque faces.
 
-	For example, m412's canonical cell decomposition consists of a single
+        For example, m412's canonical cell decomposition consists of a single
         cube. The canonical retriangulation thus has 12 simplices.
 
         >>> M = Manifold("m412")
@@ -1624,7 +1625,7 @@ cdef class Manifold(Triangulation):
         cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen
         cdef Complex c0, c1, c2, c3
         cdef int neighbor0_idx, neighbor1_idx, neighbor2_idx, neighbor3_idx
-        cdef int perm0, perm1, perm2, perm3	
+        cdef int perm0, perm1, perm2, perm3
 
         ans = []
         for i in range(self.num_tetrahedra()):

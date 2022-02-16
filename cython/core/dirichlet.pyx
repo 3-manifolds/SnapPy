@@ -734,4 +734,3 @@ class DirichletDomain(CDirichletDomain):
 
 def _unpickle_dirichlet_domain(string, name):
     return DirichletDomain(generator_bytes=string.encode('ascii'), manifold_name=name)
-

@@ -140,7 +140,7 @@ class IdealRaytracingData(RaytracingData):
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
-                V: complex_to_R13_light_vector(z)
+                V: complex_to_R13_light_vector(z, self.RF)
                 for V, z in tet.complex_vertices.items() }
 
     def _add_R13_planes_to_faces(self):

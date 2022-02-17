@@ -39,7 +39,7 @@ def unit_time_vector_to_O13_hyperbolic_translation(v):
                 return 1
         return 0
 
-    v1 = [1 + v[0]] + v[1:]
+    v1 = [1 + v[0], v[1], v[2], v[3]]
 
     return matrix(
         [[ x * y / (1 + v[0]) + diag(i, j)
@@ -136,15 +136,16 @@ def O13_z_rotation(angle):
          [ 0.0,  -s,   c, 0.0],
          [ 0.0, 0.0, 0.0, 1.0]])
 
-def complex_to_R13_light_vector(z):
+def complex_to_R13_light_vector(z, RF):
     """
     Takes a point in C union { Infinity } regarded as boundary of the
-    upper half space model of H^3. Returns the corresponding ideal
-    point as light-vector in the 1,3-hyperboloid model.
+    upper half space model of H^3 and a real field type (used when
+    point is at Infinity). Returns the corresponding ideal point as
+    light-vector in the 1,3-hyperboloid model.
     """
 
     if z == Infinity:
-        return [ 1.0, 1.0, 0.0, 0.0 ]
+        return [ RF(1.0), RF(1.0), RF(0.0), RF(0.0) ]
 
     z_re = z.real()
     z_im = z.imag()
@@ -153,10 +154,10 @@ def complex_to_R13_light_vector(z):
 
     RF = z_re.parent()
 
-    return [ RF(1.0),
-             (z_abs_sqr - 1) / denom,
-             2 * z_re / denom,
-             2 * z_im / denom ]
+    return vector([ RF(1.0),
+                    (z_abs_sqr - 1) / denom,
+                    2 * z_re / denom,
+                    2 * z_im / denom ])
 
 def complex_and_height_to_R13_time_vector(z, t):
     """
@@ -181,10 +182,11 @@ def complex_and_height_to_R13_time_vector(z, t):
     RF = z_re.parent()
 
     return R13_normalise(
-        [ RF(1.0),
-          klein_factor * poincare[0],
-          klein_factor * poincare[1],
-          klein_factor * poincare[2] ])          
+        vector(
+            [ RF(1.0),
+              klein_factor * poincare[0],
+              klein_factor * poincare[1],
+              klein_factor * poincare[2] ]))
 
 def R13_time_vector_to_upper_halfspace(v):
     """
@@ -225,7 +227,7 @@ def R13_normalise(v, sign = 0):
 
     denom = d.sqrt()
 
-    return [ v[i] / denom for i in range(4) ]
+    return v / denom
 
 def _is_row_sane(r):
     for c in r:
@@ -242,7 +244,7 @@ def _orthonormalize_row(row, other_rows, row_sign):
         result = [ c - s * other_c
                    for c, other_c in zip(result, other_row) ]
     try:
-        result = R13_normalise(result, sign = row_sign)
+        result = R13_normalise(vector(result), sign = row_sign)
     except ValueError:
         return None
     if not _is_row_sane(result):
@@ -320,8 +322,8 @@ def R13_plane_from_R13_light_vectors(light_vectors):
 
     light_vectors = [ (-a, b, c, d) for a, b, c, d in light_vectors ]
     return R13_normalise(
-        [ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
-          for j in range(4) ])
+        vector([ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
+          for j in range(4) ]))
 
 def make_tet_planes(tet_vert_positions):
     """

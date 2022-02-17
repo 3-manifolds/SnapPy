@@ -148,6 +148,8 @@ class GeodesicInfo:
         if self.complex_length.real() < 0:
             self.complex_length = -self.complex_length
 
+        self.RF = trace.real().parent()
+
         # Type for complex numbers
         CF = trace.parent()
         # The endpoints of the geodesic. Using large number for infty.
@@ -182,13 +184,13 @@ class GeodesicInfo:
     def canonical_matrix(self, m):
         """
         When tracing a geodesic or developing the tube about a geodesic,
-        we want to work in the quotient space (t^Z) \ H^3 where t is the
+        we want to work in the quotient space (t^Z) \\ H^3 where t is the
         matrix corresponding to the closed geodesic (in coordinates where
         the geodesic goes from 0 to infty).
 
         In particular, we want to regard two matrices m and m' as the same
         if m' = t^i m for some i as the image of a point or simplex under m
-        and m', respectively, are the same in (t^Z) \ H^3.
+        and m', respectively, are the same in (t^Z) \\ H^3.
 
         Given a matrix m, this method picks a canonical representative
         among { ... t^-2 * m, t^-1 * m, m, t * m, t^2 * M ... }.
@@ -354,7 +356,8 @@ class GeodesicInfo:
                      vertices[1],
                      vertices[2],
                      fixed_point),
-                    self.tet_to_shader_vertices[tet][:3]))
+                    self.tet_to_shader_vertices[tet][:3]),
+                self.RF)
             for fixed_point in self.fixed_points ]
 
     def compute_tets_and_R13_endpoints_for_tube(self, radius):
@@ -372,24 +375,7 @@ class GeodesicInfo:
         >>> g = GeodesicInfo(M, "a")
         >>> t = g.compute_tets_and_R13_endpoints_for_tube(0.1)
         >>> t # doctest: +NUMERIC6
-        [(0,
-          [[1.000000000000000,
-            0.459458976327570,
-            0.858506950258797,
-            -0.227735077292370],
-           [1.000000000000000,
-            -0.45945897632757,
-            -0.858506950258797,
-            -0.227735077292371]]),
-         (1,
-          [[1.000000000000000,
-            -0.858506950258796,
-            -0.227735077292370,
-            -0.459458976327570],
-           [1.000000000000000,
-            0.858506950258796,
-            -0.227735077292371,
-            0.45945897632757]])]
+        [(0, [(1.00000000000000, 0.459458976327569, 0.858506950258797, -0.227735077292371), (1.00000000000000, -0.459458976327569, -0.858506950258797, -0.227735077292371)]), (1, [(1.00000000000000, -0.858506950258796, -0.227735077292370, -0.459458976327570), (1.00000000000000, 0.858506950258796, -0.227735077292371, 0.459458976327570)])]
         >>> len(g.compute_tets_and_R13_endpoints_for_tube(0.5))
         8
         >>> t == g.compute_tets_and_R13_endpoints_for_tube(0.4)

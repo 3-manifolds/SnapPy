@@ -10,13 +10,9 @@ __all__ = ['FundamentalPolyhedronEngine']
 
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import sqrt, matrix, prod
+    from sage.all import matrix, prod
 else:
-    import math
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
+    from .utilities import Matrix2x2 as matrix
 
     def prod(L, initial=None):
         if initial:
@@ -26,7 +22,6 @@ else:
         else:
             return 1
 
-    from .utilities import Matrix2x2 as matrix
 
 _VerticesInFace = {
     F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
@@ -271,7 +266,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             z = tet.ShapeParameters[perm.image(simplex.E01)]
             # Complex field
             CF = z.parent()
-            sqrt_z = sqrt(z)
+            sqrt_z = z.sqrt()
             sqrt_z_inv = CF(1) / sqrt_z
 
             candidate = {
@@ -338,7 +333,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             if g > 0:
                 m = _compute_pairing_matrix(pairings[0])
                 if normalize_matrices:
-                    m = m / sqrt(m.det())
+                    m = m / m.det().sqrt()
                 self.mcomplex.GeneratorMatrices[ g] = m
                 self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 

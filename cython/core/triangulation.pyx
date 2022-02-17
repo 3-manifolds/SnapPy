@@ -1093,7 +1093,7 @@ cdef class Triangulation(object):
 
         num_cusps = self.num_cusps()
 
-        if which_cusp != None:
+        if which_cusp is not None:
             which_cusp = valid_index(
                 which_cusp, num_cusps,
                 'The specified cusp (%s) does not exist.')
@@ -1157,7 +1157,7 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        if data_spec == None:
+        if data_spec is None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
@@ -2597,14 +2597,14 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
 
-        if which_cusp != None:
+        if which_cusp is not None:
             which_cusp = valid_index(
                 which_cusp, self.num_cusps(),
                 'The specified cusp (%s) does not exist.')
 
         self._cache.clear(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
-            if which_cusp != None:
+            if which_cusp is not None:
                 raise ValueError("You must apply 'fillings' to all "
                                  "of the cusps.")
             install_current_curve_bases(self.c_triangulation)
@@ -2622,7 +2622,7 @@ cdef class Triangulation(object):
                 return cobs
             else:
                 peripheral_curves(self.c_triangulation)
-        elif which_cusp != None:
+        elif which_cusp is not None:
             meridian, longitude = peripheral_data
             a, b = meridian
             c, d = longitude

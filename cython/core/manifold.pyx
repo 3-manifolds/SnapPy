@@ -622,7 +622,7 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s'%solution_type)
-        IF HIGH_PRECISION == True:
+        IF HIGH_PRECISION is True:
             # must provide a start value to get the correct precision
             result = sum(
                 [z.volume() for z in self._get_tetrahedra_shapes('filled')],
@@ -869,14 +869,14 @@ cdef class Manifold(Triangulation):
                                        fixed_alignment=fixed_alignment,
                                        bits_prec=bits_prec, dec_prec=dec_prec,
                                        intervals=intervals)[::2]
-            if part != None:
+            if part is not None:
                 return result
             else:
                 return ListOnePerLine(result)
 
         result = []
         if bits_prec or dec_prec:
-            if fixed_alignment == False:
+            if fixed_alignment is False:
                 raise ValueError(
                     'High precision shapes must be computed '
                     'in the fixed alignment')
@@ -932,7 +932,7 @@ cdef class Manifold(Triangulation):
                                  accuracies=(None,None,None,None))
                        for z in engine.certified_shapes ]
 
-        if part != None:
+        if part is not None:
             try:
                return [a[part] for a in result]
             except KeyError:
@@ -1140,7 +1140,7 @@ cdef class Manifold(Triangulation):
             return verify.compute_cusp_shapes(self, verified = verified,
                                               bits_prec = bits_prec)
 
-        if data_spec == None:
+        if data_spec is None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
         # Need to check that data_spec has string type or unicode type
@@ -1292,7 +1292,7 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
 
-        if which_cusp != None:
+        if which_cusp is not None:
             which_cusp = valid_index(
                 which_cusp, self.num_cusps(),
                 'The specified cusp (%s) does not exist.')
@@ -1324,7 +1324,7 @@ cdef class Manifold(Triangulation):
                 return cobs
 
         elif peripheral_data == 'shortest':
-            if which_cusp != None:
+            if which_cusp is not None:
                 raise ValueError("You must apply 'shortest' to all "
                                  "of the cusps.")
             if return_matrices:

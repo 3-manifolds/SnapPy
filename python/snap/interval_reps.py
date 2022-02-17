@@ -4,30 +4,11 @@ specifically elements of Sage's ComplexIntervalField.  Also contains
 some utility functions for dealing with such representations.
 """
 
-from . import polished_reps
+from .polished_reps import ManifoldGroup
 from .fundamental_polyhedron import *
-
-def matrix_difference_norm(A, B):
-    B = B.change_ring(A.base_ring())
-    return max([abs(a - b) for a,b in zip(A.list(), B.list())])
 
 def diameter(A):
     return max(x.diameter() for x in A.list())
-
-def contains_zero(A):
-    return all(x.contains_zero() for x in A.list())
-
-def contains_one(A):
-    return contains_zero(A - 1)
-
-def contains_plus_minus_one(A):
-    return contains_one(A) or contains_one(-A)
-
-def could_be_equal_numbers(x, y):
-    return (x - y).contains_zero()
-
-def could_be_equal(A, B):
-    return contains_zero(A - B)
 
 def holonomy_from_shape_intervals(manifold, shape_intervals,
                                   fundamental_group_args = [], lift_to_SL2 = True):
@@ -62,8 +43,8 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     f = FundamentalPolyhedronEngine.from_manifold_and_shapes(
         M, shape_intervals, normalize_matrices = True)
     mats = f.matrices_for_presentation(G, match_kernel = True)
-    PG = polished_reps.ManifoldGroup(G.generators(), G.relators(),
-                                     G.peripheral_curves(), mats)
+    PG = ManifoldGroup(G.generators(), G.relators(),
+                       G.peripheral_curves(), mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()
     return PG

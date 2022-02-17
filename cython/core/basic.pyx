@@ -105,13 +105,16 @@ class SimpleVector(object):
             self.type = type(0)
             self.shape = (0,)
 
+    def __len__(self):
+        return len(self.data)
+
     def __iter__(self):
         return self.data.__iter__()
 
     def __repr__(self):
         str_vector = [str(x) for x in self.data]
         size = max(len(x) for x in str_vector)
-        return '[%s]' % ', '.join('% *s' % (size, x) for x in str_vector)
+        return '(%s)' % ', '.join('% *s' % (size, x) for x in str_vector)
 
     def __getitem__(self, key):
         if key < 0:
@@ -132,6 +135,9 @@ class SimpleVector(object):
     def normalized(self):
         l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
         return SimpleVector([x / l for x in self.data])
+
+    def __truediv__(self, other):
+        return SimpleVector([ x / other for x in self.data])
 
 from . import number
 

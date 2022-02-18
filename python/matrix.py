@@ -1,8 +1,8 @@
 from .sage_helper import _within_sage
 
-from . number import Number as RawNumber
+from . import number
 
-class SimpleVector(object):
+class SimpleVector(number.SupportsMultiplicationByNumber):
     def __init__(self, list_of_values):
         self.data = list_of_values
         try:
@@ -43,10 +43,39 @@ class SimpleVector(object):
         l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
         return SimpleVector([x / l for x in self.data])
 
+    def __add__(self, other):
+        if isinstance(other, SimpleVector):
+            if self.shape[0] != other.shape[0]:
+                raise ValueError(
+                    'Cannot add vector of length %d and vector of '
+                    'length %d.' % (self.shape[0], other.shape[0]))
+            return SimpleVector(
+                [a + b for a, b in zip(self.data, other.data)])
+
+        return ValueError(
+            'SimpleVector only supports addition for another '
+            'SimpleVector. Given type was %r.' % type(other))
+
+    def __sub__(self, other):
+        if isinstance(other, SimpleVector):
+            if self.shape[0] != other.shape[0]:
+                raise ValueError(
+                    'Cannot add vector of length %d and vector of '
+                    'length %d.' % (self.shape[0], other.shape[0]))
+            return SimpleVector(
+                [a - b for a, b in zip(self.data, other.data)])
+
+        return ValueError(
+            'SimpleVector only supports addition for another '
+            'SimpleVector. Given type was %r.' % type(other))
+
+    # Implements SupportsMultiplicationByNumber
+    def _multiply_by_scalar(self, other):
+        return SimpleVector(
+            [ other * e for e in self.data])
+    
     def __truediv__(self, other):
         return SimpleVector([ x / other for x in self.data])
-
-from . import number
 
 # A very basic matrix class
 class SimpleMatrix(number.SupportsMultiplicationByNumber):
@@ -166,6 +195,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
             [ [ -x for x in row ]
               for row in self.data ])
 
+    # Implements SupportsMultiplicationByNumber
     def _multiply_by_scalar(self, other):
         return SimpleMatrix(
             [[ other * e for e in row ]
@@ -174,19 +204,27 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def __mul__(self, other):
         if isinstance(other, SimpleMatrix):
             if self.shape[1] != other.shape[0]:
-                raise ValueError('Cannot multiply matrices where number of columns of one does not match number of rows of the other')
+                raise ValueError(
+                    'Cannot multiply matrices with %d columns by matrix '
+                    'with %d rows.' % (self.shape[1], other.shape[0]))
             return SimpleMatrix(
-                [[ sum(self.data[i][j] * other.data[j][k] for j in range(self.shape[1]))
+                [[ sum(self.data[i][j] * other.data[j][k]
+                       for j in range(self.shape[1]))
                    for k in range(other.shape[1]) ]
                  for i in range(self.shape[0])])
 
         if isinstance(other, SimpleVector):
             if self.shape[1] != other.shape[0]:
-                raise ValueError('Cannot multiply matrix where number of columns of one does not match dimension of vector')
+                raise ValueError(
+                    'Cannot multiply matrix with %d columns by vector of '
+                    'length %d.' % (self.shape[1], other.shape[0]))
             return SimpleVector(
-                [ sum(self.data[i][j] * other.data[j] for j in range(self.shape[1]))
+                [ sum(self.data[i][j] * other.data[j]
+                      for j in range(self.shape[1]))
                   for i in range(self.shape[0])])
-        raise TypeError('Only SimpleMatrix*SimpleMatrix and SimpleMatrix*SimpleVector multiplication supported')
+        raise TypeError(
+            'SimpleMatrix only supports multiplication by another '
+            'SimpleMatrix or SimpleVector. Given type was %r.' % type(other))
 
     def transpose(self):
         return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
@@ -194,7 +232,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
 
     def __truediv__(self, other):
-        if isinstance(other, RawNumber):
+        if isinstance(other, number.Number):
             return SimpleMatrix(
                 [[ d / other for d in row ]
                  for row in self.data])

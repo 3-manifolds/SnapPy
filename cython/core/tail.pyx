@@ -661,8 +661,8 @@ class ObsMorwenLinks(Census):
     def __init__(self, num_components, num_crossings = None):
         if num_components < 0:
             return
-        
-        crossings = range(4, 15) if num_crossings == None else [num_crossings]
+
+        crossings = range(4, 15) if num_crossings is None else [num_crossings]
         files = []
         for c in crossings:
             n = left_pad_string('%d' % c, 2, '0')

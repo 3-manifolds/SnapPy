@@ -130,7 +130,7 @@ cdef class CDirichletDomain(object):
                     centroid_at_origin, maximize_injectivity_radius,
                     include_words))
             self.manifold_name = manifold_name
-        elif O31_generators != None:
+        elif O31_generators is not None:
             self.c_num_generators = len(O31_generators)
             self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
                 O31_generators, vertex_epsilon, displacement,

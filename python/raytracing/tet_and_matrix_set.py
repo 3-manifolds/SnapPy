@@ -29,7 +29,9 @@ class TetAndMatrixSet:
         # Compute a real number - note that abs ensures that the result is
         # the same when multiplying by -1 so that we work in PSL(2,C), not
         # SL(2,C).
-        key_value = abs(m[0,0]) / self.epsilon
+        z = m[0,0]
+        RF = z.real().parent()
+        key_value = abs(m[0,0]) / RF(self.epsilon)
 
         # Round to get an integer key
         first_key = key_value.round()

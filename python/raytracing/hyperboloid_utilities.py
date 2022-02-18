@@ -1,7 +1,5 @@
 from snappy.SnapPy import matrix, vector
 
-from math import cos, sin, cosh, sinh, sqrt
-
 from snappy.snap.kernel_structures import Infinity
 
 """
@@ -55,7 +53,7 @@ def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     """
 
     return unit_time_vector_to_O13_hyperbolic_translation(
-        [ cosh(d)] + [ sinh(d) * x for x in v])
+        [ d.cosh()] + [ d.sinh() * x for x in v])
 
 def _basis_vectors_sl2c(CF):
     return [ matrix([[ 1 , 0 ],
@@ -102,39 +100,39 @@ def O13_x_rotation(angle):
     by angle (in radians).
     """
 
-    c = cos(angle)
-    s = sin(angle)
+    c = angle.cos()
+    s = angle.sin()
     return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0, 1.0, 0.0, 0.0],
-         [ 0.0, 0.0,   c,   s],
-         [ 0.0, 0.0,  -s,   c]])
+        [[ 1, 0, 0, 0],
+         [ 0, 1, 0, 0],
+         [ 0, 0,   c,   s],
+         [ 0, 0,  -s,   c]], ring = angle.parent())
 
 def O13_y_rotation(angle):
     """
     SO(1,3)-matrix corresponding to a rotation about the y-Axis
     by angle (in radians).
     """
-    c = cos(angle)
-    s = sin(angle)
+    c = angle.cos()
+    s = angle.sin()
     return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0,   c, 0.0,  -s],
-         [ 0.0, 0.0, 1.0, 0.0],
-         [ 0.0,   s, 0.0,   c]])
+        [[ 1, 0, 0, 0],
+         [ 0,   c, 0,  -s],
+         [ 0, 0, 1, 0],
+         [ 0,   s, 0,   c]], ring = angle.parent())
 
 def O13_z_rotation(angle):
     """
     SO(1,3)-matrix corresponding to a rotation about the z-Axis
     by angle (in radians).
     """
-    c = cos(angle)
-    s = sin(angle)
+    c = angle.cos()
+    s = angle.sin()
     return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0,   c,   s, 0.0],
-         [ 0.0,  -s,   c, 0.0],
-         [ 0.0, 0.0, 0.0, 1.0]])
+        [[ 1, 0, 0, 0],
+         [ 0,   c,   s, 0],
+         [ 0,  -s,   c, 0],
+         [ 0, 0, 0, 1]], ring = angle.parent())
 
 def complex_to_R13_light_vector(z, RF):
     """
@@ -145,7 +143,7 @@ def complex_to_R13_light_vector(z, RF):
     """
 
     if z == Infinity:
-        return [ RF(1.0), RF(1.0), RF(0.0), RF(0.0) ]
+        return [ RF(1), RF(1), RF(0), RF(0) ]
 
     z_re = z.real()
     z_im = z.imag()
@@ -154,7 +152,7 @@ def complex_to_R13_light_vector(z, RF):
 
     RF = z_re.parent()
 
-    return vector([ RF(1.0),
+    return vector([ RF(1),
                     (z_abs_sqr - 1) / denom,
                     2 * z_re / denom,
                     2 * z_im / denom ])
@@ -183,7 +181,7 @@ def complex_and_height_to_R13_time_vector(z, t):
 
     return R13_normalise(
         vector(
-            [ RF(1.0),
+            [ RF(1),
               klein_factor * poincare[0],
               klein_factor * poincare[1],
               klein_factor * poincare[2] ]))
@@ -199,7 +197,7 @@ def R13_time_vector_to_upper_halfspace(v):
 
     klein = [ v[1] / v[0], v[2] / v[0], v[3] / v[0] ]
     klein_sqr = sum([x**2 for x in klein])
-    poincare_factor = 1.0 / (1.0 + sqrt(1.0 - klein_sqr))
+    poincare_factor = 1.0 / (1.0 + (1.0 - klein_sqr).sqrt())
     a, b, c = [ x * poincare_factor for x in klein ]
 
     denom = (a - 1.0) ** 2 + b ** 2 + c ** 2

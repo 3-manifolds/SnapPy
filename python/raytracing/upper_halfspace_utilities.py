@@ -141,9 +141,6 @@ def are_psl_matrices_close(m1, m2, epsilon = 1e-5):
         are_sl_matrices_close(m1,  m2, epsilon) or 
         are_sl_matrices_close(m1, -m2, epsilon))
 
-def _coshd(x):
-    return (x.exp() + (-x).exp()) / 2
-
 def _weight_for_circumcenter(i, side_lengths):
     """
     Given the index i of a vertex the side lengths of a Euclidean triangle,

@@ -171,6 +171,13 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
             self.type = type(0)
             self.shape = (0,0)
 
+    @staticmethod
+    def identity(ring, n = 0):
+        return SimpleMatrix(
+            [[ 1 if i == j else 0
+               for i in range(n) ]
+             for j in range(n) ], ring)
+
     def __iter__(self):
         return self.data.__iter__()
 

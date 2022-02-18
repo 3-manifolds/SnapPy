@@ -12,29 +12,6 @@ from snappy.CyOpenGL import SimpleImageShaderWidget
 from snappy.SnapPy import vector, matrix
 
 import math
-
-# We could use
-#
-# from ..sage_helper import _within_sage
-#
-# but then dev/GLSLManifoldInsideView.py cannot be used for
-# debugging anymore.
-
-try:
-    import sage.all
-    _within_sage = True
-except:
-    _within_sage = False
-    import decorator
-
-if _within_sage:
-    from sage.all import RealField, ComplexField
-    RF = RealField()
-    CF = ComplexField()
-else:
-    from snappy.number import Number as RF
-    from snappy.number import Number as CF
-
 __all__ = ['RaytracingView', 'NonorientableUnsupportedError']
 
 class NonorientableUnsupportedError(RuntimeError):
@@ -255,6 +232,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def compute_translation_and_inverse_from_pick_point(
                 self, size, frag_coord, depth):
 
+        RF = self.raytracing_data.RF
+        
         # Depth value emitted by shader is tanh(distance from camera)
 
         # Limit the maximal depth for orbiting to avoid numeric issues
@@ -290,7 +269,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                         RF( foo               + depth * (foo - 1.0))]))
 
             # Distance of rayEnd from origin
-            dist = math.acosh(rayEnd[0])
+            dist = rayEnd[0].arccosh()
             # Direction from origin to rayEnd
             dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
         else:
@@ -298,9 +277,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             scaled_y = fov_scale * y
 
             # Camera is assumed to be at origin.
-            dist = math.atanh(depth)
+            dist = RF(depth).arctanh()
             # Reimplemented from get_ray_eye_space
-            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1.0)])
+            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1)])
 
         # Normalize direction
         dir = dir.normalized()
@@ -309,7 +288,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         #
         # Do this by using a concentric circle in the Poincare disk
         # model
-        poincare_dist = math.tanh(dist / 2.0)
+        poincare_dist = (dist / 2).tanh()
         hyp_circumference_up_to_constant = (
             poincare_dist / (1.0 - poincare_dist * poincare_dist))
 

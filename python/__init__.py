@@ -575,6 +575,24 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
+from . import drilling
+
+Manifold._experimental_drill_word = drilling.drill_word
+Manifold._experimental_drill_words = drilling.drill_words
+
+import functools
+
+@functools.wraps(drilling.drill_word)
+def drill_word_hp(*args, **kwargs):
+    return drilling.drill_word(*args, **kwargs).high_precision()
+
+@functools.wraps(drilling.drill_words)
+def drill_words_hp(*args, **kwargs):
+    return drilling.drill_words(*args, **kwargs).high_precision()
+
+ManifoldHP._experimental_drill_word = drill_word_hp
+ManifoldHP._experimental_drill_words = drill_words_hp
+
 try:
     from .gui import ViewerWindow
     from .raytracing.inside_viewer import InsideViewer

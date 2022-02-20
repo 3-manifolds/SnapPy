@@ -760,7 +760,7 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
         P.crossings[i].component[<int>KLPStrandX] = cr_dict['Xcomponent']
         P.crossings[i].component[<int>KLPStrandY] = cr_dict['Ycomponent']
 
-    c_triangulation = triangulate_link_complement(&P, remove_finite_vertices);
+    c_triangulation = triangulate_link_complement(&P, remove_finite_vertices)
     free(P.crossings)
 
     if c_triangulation == NULL:

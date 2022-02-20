@@ -143,7 +143,7 @@ def complex_to_R13_light_vector(z, RF):
     """
 
     if z == Infinity:
-        return [ RF(1), RF(1), RF(0), RF(0) ]
+        return vector([ RF(1), RF(1), RF(0), RF(0) ])
 
     z_re = z.real()
     z_im = z.imag()

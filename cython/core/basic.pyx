@@ -1,6 +1,17 @@
 # Python modules
-import os, sys, operator, types, re, gzip, struct, tempfile
-import tarfile, atexit, math, string, time
+import os
+import sys
+import operator
+import types
+import re
+import gzip
+import struct
+import tempfile
+import tarfile
+import atexit
+import math
+import string
+import time
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -18,7 +29,7 @@ try:
     from sage.interfaces.magma import is_MagmaElement
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
-except:
+except ImportError:
     pass
 
 from .matrix import matrix, vector, SimpleMatrix
@@ -38,7 +49,7 @@ from .export_stl import stl
 from .exceptions import SnapPeaFatalError
 try:
     from plink import LinkEditor, LinkManager
-except:
+except ImportError:
     LinkEditor, LinkManager = None, None
 try:
     from .gui import ViewerWindow

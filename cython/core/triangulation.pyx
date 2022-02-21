@@ -517,7 +517,7 @@ cdef class Triangulation(object):
         return result
 
     def _three_to_two(self, tet_num, edge_index):
-        """
+        r"""
         Perform a 3-2 move which removes a given 3-valent edge.
 
         The edge is specified by giving the index of one of the tetrahedra which
@@ -1440,7 +1440,7 @@ cdef class Triangulation(object):
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
 
-        if not equation_type in ['all',
+        if equation_type not in ['all',
                                      'non_peripheral',
                                          'edge', 'face', 'internal',
                                      'peripheral',
@@ -2362,8 +2362,7 @@ cdef class Triangulation(object):
                 permutation_rep = f.FormatHomForSnapPea().sage()
 
             # Not a useful GAP or MAGMA object, so let's try.
-            elif not False in [is_PermutationGroupElement(p)
-                               for p in permutation_rep]:
+            elif all(is_PermutationGroupElement(p) for p in permutation_rep):
                 permutation_rep = [ [x - 1 for x in perm.domain()]
                                    for perm in permutation_rep ]
 

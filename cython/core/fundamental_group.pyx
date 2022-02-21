@@ -69,13 +69,14 @@ cdef c_word_as_string(int *word, int num_generators, verbose_form):
         n += 1
     return _letter_seperator(verbose_form).join(word_list)
 
+
 def word_as_list(word, int num_generators):
     if not isinstance(word, basestring):
         raise TypeError('Words must be represented '
                         'as Python strings.')
     word_list = []
     if num_generators > 26:
-        for prefix, number in re.findall('([xX])(\d+)', word):
+        for prefix, number in re.findall(r'([xX])(\d+)', word):
             g = int(number)
             if not (0 < g and g <= num_generators):
                 raise ValueError('The word contains a non-generator.')

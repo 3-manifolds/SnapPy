@@ -60,9 +60,22 @@ def rational_univariate_representation(ideal):
 
     """
     R = ideal.ring()
-    vars = list(R.gens())
+
+    # A "feature" introduced in Sage-9.4 is that
+    # ideal.gens() vs R.gens()
+    # returns
+    # a <class 'sage.rings.polynomial.multi_polynomial_sequence.PolynomialSequence_generic’>
+    # vs a
+    # <class 'sage.rings.polynomial.multi_polynomial_libsingular.MPolynomial_libsingular’>
+    # so that giac(_) turns the variable x into x vs sageVARx.
+    #
+    # And giving "gbasis([x],[sageVARx],rur)" instead of "gbasis([x],[x],rur)" doesn't
+    # produce the desired result...
+    #
+    # Thus, we have the following work-around:
+    good_vars = R.ideal(R.gens()).gens()
     J = giac(ideal.gens())
-    rur = J.gbasis(vars, 'rur')
+    rur = J.gbasis(good_vars, 'rur')
     # Yikes: giacpy_sage vs the giac interface give different types.
     # So using repr.
     if repr(rur[0]) != 'rur':
@@ -97,7 +110,7 @@ def rational_univariate_representation(ideal):
 
         denom = toK(rur[3])
         rep = [toK(f)/denom for f in rur[4:]]
-        sub_dict = dict(zip(vars, rep))
+        sub_dict = dict(zip(R.gens(), rep))
         assert all(g.subs(sub_dict) == 0 for g in ideal.gens())
         ans.append((K, sub_dict, e))
 

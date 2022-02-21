@@ -91,12 +91,12 @@ def has_value(v, values):
     RIF = RealIntervalField(212)
 
     for value in values:
-        if abs(RIF(v.imag()) - RIF(value.imag())) < 1e-20:
+        if abs(RIF(v.imag()) - RIF(value.imag())) < RIF(1e-20):
             r = (RIF(v.real()) - RIF(value.real())) / RIF(pi**2/2)
 
             is_int, k = r.is_int()
             if is_int:
-                if abs(r - k) < 1e-20:
+                if abs(r - k) < RIF(1e-20):
                     return True
     return False
 

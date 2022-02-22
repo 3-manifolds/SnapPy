@@ -784,7 +784,7 @@ class SnapPeaGUITriangulationSymmetryGroupPane(SnapPeaGUITriangulationDataPane):
     
     def UpdateMainDisplay(self):
 
-        if self.symmetry_group['manifold'] != None:
+        if self.symmetry_group['manifold'] is not None:
             self.manifold_group.set(repr(self.symmetry_group['manifold']))
             if self.owner.triangulation.is_orientable() == 1:
                 if self.symmetry_group['manifold'].is_amphicheiral() == 1:
@@ -797,7 +797,7 @@ class SnapPeaGUITriangulationSymmetryGroupPane(SnapPeaGUITriangulationDataPane):
             self.manifold_group.set('-')
             self.manifold_chirality.set('')
 
-        if self.symmetry_group['link'] != None:
+        if self.symmetry_group['link'] is not None:
             self.link_group.set(repr(self.symmetry_group['link']))
             if self.owner.triangulation.is_orientable() == 1:
                 if self.symmetry_group['link'].is_amphicheiral() == 1:
@@ -902,7 +902,7 @@ class SnapPeaGUITriangulationSymmetryGroupPane(SnapPeaGUITriangulationDataPane):
 
     def UpdateDetails(self):
     
-        if (self.symmetry_group['manifold'] != None and
+        if (self.symmetry_group['manifold'] is not None and
             self.symmetry_group['manifold'].is_full_group):
             
             self.commutator_text_manifold.set(
@@ -924,7 +924,7 @@ class SnapPeaGUITriangulationSymmetryGroupPane(SnapPeaGUITriangulationDataPane):
             self.presentation_text_manifold.set('-')
     
     
-        if (self.symmetry_group['link'] != None and
+        if (self.symmetry_group['link'] is not None and
             self.symmetry_group['link'].is_full_group):
             
             self.commutator_text_link.set(
@@ -1110,8 +1110,8 @@ class SnapPeaGUITriangulationDirichletPane(SnapPeaGUITriangulationDataPane):
         self.text.delete(1.0, END)
         self.text.insert(END, theDirichletDomain.off())
         self.text.component('text').configure(state=DISABLED)
-        
-        if self.face_pairings_text != None:
+
+        if self.face_pairings_text is not None:
             self.face_pairings_text.component('text').configure(state=NORMAL)
             self.face_pairings_text.delete(1.0, END)
             theFacePairings = theDirichletDomain.face_pairings()

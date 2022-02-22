@@ -3,6 +3,7 @@
 from math import sqrt
 DT_alphabet = '_abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
+
 class Vertex:
     """
     A vertex in a PL link diagram.
@@ -14,7 +15,7 @@ class Vertex:
         self.out_arrow = None
 
     def __repr__(self):
-        return '(%d,%d)'%(self.x, self.y)
+        return '(%d,%d)' % (self.x, self.y)
 
     def __eq__(self, other):
         """
@@ -27,18 +28,19 @@ class Vertex:
         return self.x, self.y
 
     def is_endpoint(self):
+        return self.in_arrow is None or self.out_arrow is None
 
-        return self.in_arrow == None or self.out_arrow == None
-    
     def is_isolated(self):
-        return self.in_arrow == None and self.out_arrow == None
+        return self.in_arrow is None and self.out_arrow is None
 
     def reverse(self):
         self.in_arrow, self.out_arrow = self.out_arrow, self.in_arrow
 
     def update_arrows(self):
-        if self.in_arrow: self.in_arrow.vectorize()
-        if self.out_arrow: self.out_arrow.vectorize()
+        if self.in_arrow:
+            self.in_arrow.vectorize()
+        if self.out_arrow:
+            self.out_arrow.vectorize()
 
     def erase(self):
         """
@@ -131,17 +133,11 @@ class Crossing:
         """
         Crossings are equivalent if they involve the same arrows.
         """
-        if self.over in other and self.under in other:
-            return True
-        else:
-            return False
-        
+        return self.over in other and self.under in other
+
     def __contains__(self, arrow):
-        if arrow == None or arrow == self.over or arrow == self.under:
-            return True
-        else:
-            return False
-        
+        return arrow is None or arrow == self.over or arrow == self.under
+
     def locate(self):
         t = self.over ^ self.under
         if t:
@@ -289,20 +285,20 @@ class LinkProjection:
         """
         Returns a list of lists of arrows, one per component of the diagram.
         """
-        pool = [v.out_arrow  for v in self.Vertices if not v.is_endpoint()]
-        pool += [v.out_arrow for v in self.Vertices if v.in_arrow == None]
+        pool = [v.out_arrow for v in self.Vertices if not v.is_endpoint()]
+        pool += [v.out_arrow for v in self.Vertices if v.in_arrow is None]
         result = []
-        while len(pool):
+        while pool:
             first_arrow = pool.pop()
-            if first_arrow == None:
+            if first_arrow is None:
                 continue
             component = [first_arrow]
             while component[-1].end != component[0].start:
-                next = component[-1].end.out_arrow
-                if next == None:
+                nxt = component[-1].end.out_arrow
+                if nxt is None:
                     break
-                pool.remove(next)
-                component.append(next)
+                pool.remove(nxt)
+                component.append(nxt)
             result.append(component)
         if include_isolated_vertices:
             for vertex in [v for v in self.Vertices if v.is_isolated()]:
@@ -418,11 +414,11 @@ class LinkProjection:
             chunks.append(odd_count)
             # Check for crossings shared with unfinished components.
             odd_shared = [c for c in self.Crossings if
-                          c.hit1 != None and
-                          c.hit1%2 == 1 and 
+                          c.hit1 is not None and
+                          c.hit1 % 2 and 
                           c.comp1 != c.comp2 and 
                           c.comp2 in components]
-            if len(odd_shared) > 0:
+            if odd_shared:
                 # Choose the next component, by Morwen's rules:
                 # Use the component containing the partner of the
                 # first odd-numbered crossing that is shared with

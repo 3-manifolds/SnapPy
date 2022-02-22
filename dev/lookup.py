@@ -11,6 +11,7 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
 
+
 class ManifoldTable:
     """
     Iterator for cusped manifolds in an sqlite3 table of manifolds.
@@ -276,7 +277,7 @@ NonorientableClosedDB = ManifoldTable(table='nonorientable_closed_view')
 def test_census_database():
     L = OrientableCuspedDB
     for M in CensusKnots():
-        print M, L.identify(M)
+        print(M, L.identify(M))
 
 def SmallHTWKnots():
     for census in [ AlternatingKnotExteriors(), NonalternatingKnotExteriors()]:
@@ -296,14 +297,15 @@ def test_link_database():
         for M in census:
             if M.volume() > 0.5:
                 N = db.identify(M)
-                if N == None:
+                if N is None:
                     missing.append(M)
             else:
                 non_hyp.append(M)
 
             count += 1
 
-        print count, len(db.find('cusps=1', limit=Nonw)), missing, len(non_hyp), non_hyp
+        print(count, len(db.find('cusps=1', limit=Nonw)), missing, len(non_hyp), non_hyp)
+
 
 def manifolds_match(M, N):
     isoms = M.is_isometric_to(N, True)
@@ -313,6 +315,7 @@ def manifolds_match(M, N):
             if [m for m in i.cusp_maps() if m.tolist() != [[1,0],[0,1]]] == []:
                 return True
     return False
+
 
 def test():
     import re
@@ -327,7 +330,8 @@ def test():
             G, H = M.fundamental_group(), N.fundamental_group()
             if (G.relators() != H.relators() or
                 G.peripheral_curves() != H.peripheral_curves()):
-                print M
+                print(M)
+
 
 if __name__ == '__main__':
     test()

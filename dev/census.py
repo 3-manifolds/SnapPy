@@ -131,12 +131,12 @@ def are_isometric(M, N, hash_fns=None, certify=False):
     Manifolds are tested for isometry if the first hash
     function agrees; further hash functions are used
     when kernel fails or if reports False and
-    certify is True.  
+    certify is True.
     """
     if not (appears_hyperbolic(M) and appears_hyperbolic(N)):
         raise ValueError("One of the manifolds is not hyperbolic")
 
-    if hash_fns == None:
+    if hash_fns is None:
         hash_fns = basic_hashes
 
     if hash_fns(M) != hash_fns(N):
@@ -149,14 +149,15 @@ def are_isometric(M, N, hash_fns=None, certify=False):
     except RuntimeError:
         ans = None
 
-    if certify and ans == False:
+    if certify and ans is False:
         ans = None
 
-    if ans == None:
+    if ans is None:
         if hash_fns.can_distinguish(M, N):
             return False
-        
+
     return ans
+
 
 def find_hyperbolic_manifold_in_list(M, manifolds, hash_fns=None, certify=False, ignore_errors=False):
     if len(manifolds) == 0:
@@ -172,10 +173,10 @@ def find_hyperbolic_manifold_in_list(M, manifolds, hash_fns=None, certify=False,
 
         if ans is None:
             isom_error = True
-                
+
     if isom_error and not ignore_errors:
         raise RuntimeError("SnapPea failed to determine whether the manifolds are isometric.")
-    
+
     return None
 
 #-----------------------------------------------
@@ -226,14 +227,14 @@ class ManifoldRecognizer():
     collection of manifolds.
 
     Manifolds can be add dynamically and searching
-    the initial list of manifolds is lazy.  
+    the initial list of manifolds is lazy.
     """
     def __init__(self, init_manifolds=None, hash_fns=None):
         self.obj_hashes = ObjectsByHashes()
         self.init_manifolds = init_manifolds if init_manifolds else []
         self.init_manifold_iter = iter(init_manifolds)
         self.init_manifolds_left = len(init_manifolds)
-        if hash_fns == None:
+        if hash_fns is None:
             hash_fns = basic_hashes
         self.hash = hash_fns
 
@@ -243,7 +244,7 @@ class ManifoldRecognizer():
         init_all_added = self.init_manifolds_left == 0
         M = find_hyperbolic_manifold_in_list(manifold, manifolds, self.hash,
                                              certify=init_all_added, ignore_errors=not init_all_added) 
-        if M == None and not init_all_added:
+        if M is None and not init_all_added:
             self.add_init_manifolds_until_hash(h)
             return self.find(manifold)
         return M
@@ -272,8 +273,8 @@ class ManifoldRecognizer():
     def basic_hash_collisions(self):
         return sum( [list(mflds) for h, mflds in self.obj_hashes if len(mflds) > 1], [])
 
-    def full_hash_collisions(self, hash_fns = None):
-        if hash_fns == None:
+    def full_hash_collisions(self, hash_fns=None):
+        if hash_fns is None:
             hash_fns = self.hash
         h = HashFunctions([hash_fns.combined_hash])
         obj_h = ObjectsByHashes( [ (M, h(M)) for M in self.basic_hash_collisions()] )

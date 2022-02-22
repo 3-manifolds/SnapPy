@@ -47,9 +47,27 @@ VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
                 V2:(0,0,1,0), V3:(0,0,0,1)}
 
 
+def edge_and_arrow(edge_or_arrow):
+    """
+    Given and edge or an arrow, returns the corresponding compatible
+    (edge, arrow) pair.
+    """
+    if isinstance(edge_or_arrow, Edge):
+        edge = edge_or_arrow
+        arrow = Arrow(edge.Corners[0].Subsimplex,
+                  LeftFace[edge.Corners[0].Subsimplex],
+                  edge.Corners[0].Tetrahedron)
+    else:
+        if not isinstance(edge_or_arrow, Arrow):
+            raise ValueError('Input edge_or_arrow is neither')
+        arrow = edge_or_arrow.copy()
+        edge = arrow.axis()
+    return edge, arrow
+
 
 class Insanity(Exception):
     pass
+
 
 class Mcomplex:
     """
@@ -474,22 +492,57 @@ class Mcomplex:
         except IOError:
             pass
 
-#
 # Simplification Moves
 #
-# The simplification moves require that the list of edge classes be
-# up to date.  Edge classes are recomputed as part of each move.  The
+# The simplification moves require that the list of edge classes be up
+# to date.  Edge classes are recomputed as part of each move.  The
 # vertex classes are not used, nor are they updated, by these moves.
 
-# Subdivide the face given by a 2-subsimplex of a Tetrahedron.
-#
-    def two_to_three(self, two_subsimplex, tet):
-        a = Arrow(PickAnEdge[two_subsimplex], two_subsimplex, tet)
+    def _face_permits_two_to_three(self, a, b):
+        S, T = a.Tetrahedron, b.Tetrahedron
+        if S is None:
+            return False, 'Tetrahedron not attached to face'
+        if S == T:
+            return False, 'Two tetrahedra are the same'
+        return True, None
+
+    def _two_to_three_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def two_to_three(self, face_or_arrow, tet=None,
+                     return_arrow=False, must_succeed=False,
+                     unsafe_mode=False):
+        """
+        Perform a 2-to-3 Pachner move on the face specified by
+        (face_or_arrow, tet), replacing the two tetrahedra with three
+        tetrahedra around an edge.
+
+        Returns ``True`` or ``False`` depending on whether the
+        requested move succeeded.  When ``must_succeed`` is ``True``,
+        it instead raises an exception if the requested move is
+        topologically impossible.
+
+        When ``unsafe_mode`` is ``True`` it does not rebuild the edge
+        classes; in any mode, it does not rebuild the vertex classes.
+        """
+
+        if isinstance(face_or_arrow, Arrow):
+            assert tet is None
+            arrow = face_or_arrow
+            a = arrow.copy()
+        else:
+            arrow = None
+            a = Arrow(PickAnEdge[face_or_arrow], face_or_arrow, tet)
+
+        a = a.copy()
         b = a.glued()
-        if b.Tetrahedron == None:
-            return 0
-        if a.Tetrahedron == b.Tetrahedron:
-            return 0
+        if not unsafe_mode:
+            possible, reason = self._face_permits_two_to_three(a, b)
+            if not possible:
+                if must_succeed:
+                    raise ValueError(reason)
+                return False
+        a_orig = a.copy()
         new = self.new_arrows(3)
         for i in range(3):
             new[i].glue(new[(i+1)%3])
@@ -499,85 +552,151 @@ class Mcomplex:
             c.reverse().glue(b.glued())
             a.rotate(-1)
             b.rotate(1)
+        for c in new:
+            c.reverse()
+            c.opposite()
+        self._two_to_three_move_hook(a_orig, new)
         self.delete_tet(a.Tetrahedron)
         self.delete_tet(b.Tetrahedron)
-        self.build_edge_classes()
+        if not unsafe_mode:
+            self.build_edge_classes()
         if VERBOSE:
             print('2->3')
             print(self.EdgeValences)
-#     return self
-        return 1
+        if return_arrow:
+            return new[1].north_head().get_arrow()
+        else:
+            return True
 
-# Replaces the star of an edge of valence 3 by two tetrahedra.
-# Returns 0 if the edge is a boundary edge.
-#
-    def three_to_two(self, edge):
+    def _edge_permits_three_to_two(self, edge):
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 3 or not edge.distinct():
-            return 0
-        a = Arrow(edge.Corners[0].Subsimplex,
-                  LeftFace[edge.Corners[0].Subsimplex],
-                  edge.Corners[0].Tetrahedron)
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 3:
+            return False, 'Edge has valence %d not 3' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        return True, None
+
+    def _three_to_two_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def three_to_two(self, edge_or_arrow, return_arrow=False,
+                     must_succeed=False, unsafe_mode=False):
+        """
+        Replaces the star of an edge of valence 3 by two tetrahedra.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
+        if not unsafe_mode:
+            possible, reason = self._edge_permits_three_to_two(edge)
+            if not possible:
+                if must_succeed:
+                    raise ValueError(reason)
+                return False
+
+        a_orig = a.copy()
         b = self.new_arrow()
         c = self.new_arrow()
         b.glue(c)
+        b_orig = b.copy()
         b.reverse()
+        b_to_return = b.copy()
         for i in range(3):
             b.glue(a.opposite().glued())
             c.glue(a.reverse().glued())
             b.rotate(-1)
             c.rotate(1)
             a.reverse().opposite().next()
-        for corner in edge.Corners:
-            self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
+
+        self._three_to_two_move_hook(a_orig, (b_orig, b, c))
+        if unsafe_mode:
+            tet0  = a_orig.Tetrahedron
+            tet1  = a_orig.next().Tetrahedron
+            tet2  = a_orig.next().Tetrahedron
+            self.delete_tet(tet0)
+            self.delete_tet(tet1)
+            self.delete_tet(tet2)
+        else:
+            for corner in edge.Corners:
+                self.delete_tet(corner.Tetrahedron)
+        if not unsafe_mode:
+            self.build_edge_classes()
         if VERBOSE:
             print('3->2')
             print(self.EdgeValences)
-        return 1
+        if return_arrow:
+            return b_to_return
+        return True
 
-# Flatten the star of an edge of valence 2 to eliminate two tetrahedra.
-# Returns 1 on success, 0 if the move cannot be performed.
-#
-    def two_to_zero(self, edge):
+    def _arrow_permits_two_to_zero(self, arrow):
+        edge = arrow.axis()
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 2 or not edge.distinct():
-            return 0
-        a = Arrow(edge.Corners[0].Subsimplex,
-                  LeftFace[edge.Corners[0].Subsimplex],
-                  edge.Corners[0].Tetrahedron)
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 2:
+            return False, 'Edge has valence %d not 2' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        if arrow.equator() == arrow.glued().equator():
+            return False, 'Edges opposite the valence 2 edge are the same'
+        # You'd think we should exclude the following, but bizarrely
+        # everything is fine when this happens, which is quite
+        # frequently in some settings.
+        #
+        # T0 = edge.Corners[0].Tetrahedron
+        # T1 = edge.Corners[1].Tetrahedron
+        # if (T0 in T0.Neighbor.values()) or (T1 in T1.Neighbor.values()):
+        #    return False, 'One tet is glued to itself'
+        return True, None
+
+
+    def _two_to_zero_hook(self, old_arrow):
+        pass
+
+    def two_to_zero(self, edge_or_arrow, must_succeed=False, unsafe_mode=False):
+        """
+        Flatten the star of an edge of valence 2 to eliminate two
+        tetrahedra.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
         b = a.glued()
 
-        # This move cannot  be done if the two edges opposite to the valence 2
-        # edge are glued together.
-        if a.Tetrahedron.Class[comp(a.Edge)] == b.Tetrahedron.Class[comp(b.Edge)]:
-            return 0
+        possible, reason = self._arrow_permits_two_to_zero(a)
+        if not possible:
+            if must_succeed:
+                raise ValueError(reason)
+            return False
+
+        self._two_to_zero_hook(a)
         a.opposite().glued().reverse().glue(b.opposite().glued())
         a.reverse().glued().reverse().glue(b.reverse().glued())
 
         for corner in edge.Corners:
             self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
-        if VERBOSE:
-            print('2->0')
-            print(self.EdgeValences)
-        return 1
+        if not unsafe_mode:
+            self.build_edge_classes()
+            if VERBOSE:
+                print('2->0')
+                print(self.EdgeValences)
+        return True
 
-# Blow up two adjacent faces into a pair of tetrahedra.
-# The faces are specified by passing an arrow specifying the first face
-# and an integer n.  The second face is obtained by reversing the
-# arrow and applying next() n times.  Thus there are n faces between
-# the two that are involved in the blow up.  Returns 1 on success,
-# 0 if the move cannot be performed.
-#
     def zero_to_two(self, arrow1, gap):
+        """
+        Blow up two adjacent faces into a pair of tetrahedra.  The
+        faces are specified by passing an arrow specifying the first
+        face and an integer n.  The second face is obtained by
+        reversing the arrow and applying next() n times.  Thus there
+        are n faces between the two that are involved in the blow up.
+        Returns ``True`` on success, ``False`` if the move cannot be
+        performed.
+        """
         arrow2 = arrow1.copy().reverse()
         count = 0
         while count < gap:
             if arrow2.next() == None:
-                return 0
+                return False
             count = count + 1
         # Do we *also* need the old test, which was
         # b.Tetrahedron == arrow1.Tetrahedron ?
@@ -598,33 +717,43 @@ class Mcomplex:
         if VERBOSE:
             print('0->2')
             print(self.EdgeValences)
-        return 1
+        return True
 
-# Replace an edge of valence 4 by another diagonal of the octahedron
-# formed by the star of the edge.  There are two choices for this
-# diagonal.  If you care which one is used then pass an arrow
-# representing the edge of valence four.  The head of the arrow will
-# be an endpoint of the new diagonal.  If you don't care, just pass an
-# edge.  The choice of diagonal will then be made randomly.  Returns 1
-# on success, 0 if the move cannot be performed.
-#
-    def four_to_four(self, edge_or_arrow):
-        if edge_or_arrow.__class__ == Edge:
-            edge = edge_or_arrow
-            a = Arrow(edge.Corners[0].Subsimplex,
-                      LeftFace[edge.Corners[0].Subsimplex],
-                      edge.Corners[0].Tetrahedron)
-            if random.randint(0,1) == 0:
-                a.reverse()
-        if edge_or_arrow.__class__ == Arrow:
-            a = edge_or_arrow
-            edge = a.Tetrahedron.Class[a.Edge]
-
+    def _edge_permits_four_to_four(self, edge):
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 4 or not edge.distinct():
-            return 0
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 4:
+            return False, 'Edge has valence %d not 4' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        return True, None
+
+    def _four_to_four_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def four_to_four(self, edge_or_arrow, must_succeed=False, unsafe_mode=False):
+        """
+        Replace an edge of valence 4 by another diagonal of the
+        octahedron formed by the star of the edge.  There are two
+        choices for this diagonal.  If you care which one is used then
+        pass an arrow representing the edge of valence four.  The head
+        of the arrow will be an endpoint of the new diagonal.  If you
+        don't care, just pass an edge.  The choice of diagonal will
+        then be made randomly.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
+        a_orig = a.copy()
+
+        possible, reason = self._edge_permits_four_to_four(edge)
+        if not possible:
+            if must_succeed:
+                raise ValueError(reason)
+            return False
+
         c = self.new_arrows(4)
+        c_orig = [x.copy() for x in c]
         for i in range(4):
             c[i].glue( c[(i+1)%4] )
         b = a.glued().reverse()
@@ -638,72 +767,133 @@ class Mcomplex:
         c[1].reverse().glue(b.rotate(1).glued())
         c[2].reverse().glue(b.rotate(1).glued())
         c[3].reverse().glue(a.rotate(-1).glued())
+
+        self._four_to_four_move_hook(a_orig, c_orig)
         for corner in edge.Corners:
             self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
-        if VERBOSE:
-            print('4->4')
-            print(self.EdgeValences)
-        return 1
+
+        if not unsafe_mode:
+            self.build_edge_classes()
+            if VERBOSE:
+                print('4->4')
+                print(self.EdgeValences)
+
+        return True
+
+    def attack_valence_one(self):
+        """
+        Modify the triangulation near a valence 1 edge, creating a
+        valence 2 edge that can likely be eliminated, reducing the
+        number of tetrahedra by one.
+        """
+        if len(self) == 1:
+            return False
+        for e in self.Edges:
+            if e.valence() == 1:
+                corner = e.Corners[0]
+                tet = corner.Tetrahedron
+                sub = corner.Subsimplex
+                other_faces = [face for face in TwoSubsimplices
+                               if not is_subset(sub, face)]
+                assert len(other_faces) == 2
+                face = other_faces[0]
+                self.two_to_three(face, tet, must_succeed=True)
+                return True
+        return False
 
     def eliminate_valence_two(self):
-        did_simplify  = 0
-        progress = 1
+        """
+        Perform a single ``two_to_zero`` move on a valence 2 edge, if
+        any such is possible.
+        """
+        did_simplify = False
+        progress = True
         while progress:
-            progress = 0
+            progress = False
             for edge in self.Edges:
                 if edge.valence() == 2:
                     if self.two_to_zero(edge):
-                        progress, did_simplify = 1, 1
+                        progress, did_simplify = True, True
                         break
         return did_simplify
 
     def eliminate_valence_three(self):
-        did_simplify = 0
-        progress = 1
+        """
+        Perform a single ``three_to_two`` move on a valence 3 edge, if
+        any such is possible.
+        """
+        did_simplify = False
+        progress = True
         while progress:
-            progress = 0
+            progress = False
             for edge in self.Edges:
                 if edge.valence() == 3:
                     if self.three_to_two(edge):
-                        progress, did_simplify = 1, 1
+                        progress, did_simplify = True, True
                         break
         return did_simplify
 
     def easy_simplify(self):
-        did_simplify  = 0
-        progress = 1
+        """
+        Perform moves eliminating edges of valence 1, 2, and 3,
+        monotonically reducing the number of tetrahedra until no
+        further such moves are possible.  Returns whether or not the
+        number of tetrahedra was reduced.
+
+        >>> M = Mcomplex('zLALvwvMwLzzAQPQQkbcbeijmoomvwuvust'
+        ...              'wwytxtyxyahkswpmakguadppmrssxbkoxsi')
+        >>> M.easy_simplify()
+        True
+        >>> len(M)
+        1
+        >>> M.rebuild(); M.isosig()
+        'bkaagj'
+        """
+
+        init_tet = len(self)
+        progress = True
         while progress:
-            progress = 0
-            if self.eliminate_valence_two():
-                progress, did_simplify = 1, 1
-            if self.eliminate_valence_three():
-                progress, did_simplify = 1, 1
-        return did_simplify
+            curr_tet = len(self)
+            while self.attack_valence_one():
+                pass
+            while self.eliminate_valence_two() | self.eliminate_valence_three():
+                pass
+            progress = len(self) < curr_tet
+
+        return len(self) < init_tet
 
     def jiggle(self):
-        tries = []
-        for edge in self.Edges:
-            if edge.valence() == 4 and edge.IntOrBdry == 'int':
-                tries.append(edge)
-        if len(tries) == 0:
-            return 0
-        return self.four_to_four(tries[random.randint(0,len(tries) - 1)])
+        """
+        Do a random ``four_to_four`` move if one is possible.
+        """
+        fours = [edge for edge in self.Edges
+                 if edge.valence() == 4 and edge.IntOrBdry == 'int']
+        if len(fours) == 0:
+            return False
+        return self.four_to_four(random.choice(fours))
 
     JIGGLE_LIMIT = 6
 
-    def simplify(self):
-        did_simplify = 0
-        count = 0
-        while count < self.JIGGLE_LIMIT:
-            if self.easy_simplify():
-                did_simplify = 1
-            else:
-                count = count + 1
-            if self.jiggle() == 0:
+    def simplify(self, jiggle_limit=None):
+        """
+        Try to simplify the triangulation using only moves that do not
+        increase the total number of tetrahedra, using a combination
+        of ``jiggle`` and ``easy_simplify``.
+
+        When ``jiggle_limit`` is ``None``, it defaults to
+        ``self.JIGGLE_LIMIT`` which is typically 6.
+        """
+
+        if jiggle_limit is None:
+            jiggle_limit = self.JIGGLE_LIMIT
+
+        init_tet = len(self)
+        for j in range(jiggle_limit):
+            self.easy_simplify()
+            if not self.jiggle():
                 break
         self.eliminate_valence_two()
-        return did_simplify
+        return len(self) < init_tet
 
     BLOW_UP_MULTIPLE = 6
 

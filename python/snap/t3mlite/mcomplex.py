@@ -46,15 +46,18 @@ Shift = {E01:(-1,1,0), E02:(1,0,-1), E21:(0,-1,1),
 VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
                 V2:(0,0,1,0), V3:(0,0,0,1)}
 
-# An Mcomplex is a union of tetrahedra with faces identified in pairs.
-# The edges (vertices) are equivalence classes under the induced equivalence
-# relation on the set of edges (vertices) of the tetrahedra.
+
 
 class Insanity(Exception):
     pass
 
 class Mcomplex:
     """
+    An Mcomplex is a union of tetrahedra with faces identified in
+    pairs.  The edges (vertices) are equivalence classes under the
+    induced equivalence relation on the set of edges (vertices) of the
+    tetrahedra.
+
     >>> T = Mcomplex([Tetrahedron()])
     >>> len(T), len(T.Vertices)
     (1, 4)
@@ -91,7 +94,7 @@ class Mcomplex:
         self.AlmostNormalSurfaces = []
         self.build()
 
-    def copy(self, base_arrow = None):
+    def copy(self, base_arrow=None):
         new_tets = []
         new_to_old = {}
         old_to_new = {}
@@ -106,11 +109,11 @@ class Mcomplex:
                                old_to_new[new_to_old[new_tet].Neighbor[face]],
                                new_to_old[new_tet].Gluing[face].tuple())
         if base_arrow == None:
-            return Mcomplex(new_tets)
+            return self.__class__(new_tets)
         else:
             new_arrow = base_arrow.copy()
             new_arrow.Tetrahedron = old_to_new[base_arrow.Tetrahedron]
-            return (Mcomplex(new_tets), new_arrow)
+            return (self.__class__(new_tets), new_arrow)
 
     def build(self):
         for i in range(len(self.Tetrahedra)):
@@ -138,13 +141,15 @@ class Mcomplex:
     def add_tet(self, tet):
         self.Tetrahedra.append(tet)
 
-# Remove the face, edge and vertex classes of a tetrahedron.  This
-# should destroy the faces, edges and vertices that meet the
-# tetrahedron.  A call to build_face_classes, build_edge_classes or
-# build_vertex_classes will then rebuild the neighborhood without
-# having to rebuild the whole manifold.  #
 
     def clear_tet(self,tet):
+        """
+        Remove the face, edge and vertex classes of a tetrahedron.
+        This should destroy the faces, edges and vertices that meet
+        the tetrahedron.  A call to build_face_classes,
+        build_edge_classes or build_vertex_classes will then rebuild
+        the neighborhood without having to rebuild the whole manifold.
+        """
         for two_subsimplex in TwoSubsimplices:
             face = tet.Class[two_subsimplex]
             if not face == None:
@@ -153,6 +158,7 @@ class Mcomplex:
                 self.Faces.remove(face)
             except ValueError:
                 pass
+
         for one_subsimplex in OneSubsimplices:
             edge = tet.Class[one_subsimplex]
             if not edge == None:
@@ -161,6 +167,7 @@ class Mcomplex:
                 self.Edges.remove(edge)
             except ValueError:
                 pass
+
         for zero_subsimplex in ZeroSubsimplices:
             vertex = tet.Class[zero_subsimplex]
             if not vertex == None:
@@ -170,27 +177,24 @@ class Mcomplex:
             except ValueError:
                 pass
 
-# Clear a tetrahedron, then remove it from the Tetrahedron list.
-#
     def delete_tet(self, tet):
+        """
+        Clear a tetrahedron, then remove it from the Tetrahedron list.
+        """
         self.clear_tet(tet)
         tet.erase()
         self.Tetrahedra.remove(tet)
 
-# Add one new tetrahedron and return one of its arrows.
-
     def new_arrow(self):
+        """
+        Add one new tetrahedron and return one of its arrows.
+        """
         tet = Tetrahedron()
         self.add_tet(tet)
         return Arrow(E01,F3,tet)
 
-# Or, add a whole bunch of them.
-#
     def new_arrows(self,n):
         return [self.new_arrow() for i in range(n)]
-
-# Below two methods added June, 22 1999 by NMD
-# Sometimes we might want to add tets without arrows
 
     def new_tet(self):
         tet = Tetrahedron()
@@ -200,19 +204,40 @@ class Mcomplex:
     def new_tets(self,n):
         return [self.new_tet() for i in range(n)]
 
-# len(M) returns the number of tetrahedra
-#
+    def _triangulation_data(self):
+        ans = []
+        # We don't assume that the indices of the Tetraheda are equal
+        # to range(len(self))
+        tet_to_index = {T:i for i, T in enumerate(self.Tetrahedra)}
+        for T in self.Tetrahedra:
+            neighbors, perms = [], []
+            for v in TwoSubsimplices:
+                if T.Neighbor[v] is None:
+                    neighbor, perm = None, None
+                else:
+                    neighbor = tet_to_index[T.Neighbor[v]]
+                    perm = T.Gluing[v].tuple()
+                neighbors.append(neighbor)
+                perms.append(perm)
+            ans.append((neighbors, perms))
+        return ans
+
     def __len__(self):
+        """
+        Return the number of tetrahedra
+        """
         return len(self.Tetrahedra)
 
-# M[i] refers to the ith Tetrahedron of the mcomplex M.
-#
     def __getitem__(self, index):
+        """
+        M[i] refers to the ith Tetrahedron of the mcomplex M.
+        """
         return self.Tetrahedra[index]
 
-# M.info() describes the Mcomplex.
-#
     def info(self, out=sys.stdout):
+        """
+        M.info() describes the Mcomplex.
+        """
         try:
             out.write( "Mcomplex with %d Tetrahedra\n\n" % len(self) )
             for tet in self.Tetrahedra:
@@ -223,9 +248,10 @@ class Mcomplex:
         except IOError:
             pass
 
-# Construct the edge classes and compute valences.
-#
     def build_edge_classes(self):
+        """
+        Construct the edge classes and compute valences.
+        """
         for tet in self.Tetrahedra:
             for one_subsimplex in OneSubsimplices:
                 if ( tet.Class[one_subsimplex] == None ):
@@ -271,8 +297,6 @@ class Mcomplex:
         for i in range(len(self.Edges)):
             self.Edges[i].Index = i
 
-# Construct the vertices.
-#
     def build_vertex_classes(self):
         for tet in self.Tetrahedra:
             for zero_subsimplex in ZeroSubsimplices:
@@ -297,11 +321,12 @@ class Mcomplex:
                                      tet.Gluing[two_subsimplex].image(zero_subsimplex),
                                      tet.Neighbor[two_subsimplex])
 
-# Construct the 1-skeleton, i.e. record which edges are connected to
-# which vertices.  This assumes that Edges and Vertices have already been
-# built.
-#
     def build_one_skeleton(self):
+        """
+        Construct the 1-skeleton, i.e. record which edges are
+        connected to which vertices.  This assumes that Edges and Vertices
+        have already been built.
+        """
         for edge in self.Edges:
             tet = edge.Corners[0].Tetrahedron
             one_subsimplex = edge.Corners[0].Subsimplex
@@ -317,8 +342,10 @@ class Mcomplex:
             if vertex.IntOrBdry == '':
                 vertex.IntOrBdry = 'int'
 
-#Construct the faces.
     def build_face_classes(self):
+        """
+        Construct the faces.
+        """
         for tet in self.Tetrahedra:
             for two_subsimplex in TwoSubsimplices:
                 if ( tet.Class[two_subsimplex] == None ):
@@ -337,17 +364,15 @@ class Mcomplex:
         for i in range(len(self.Faces)):
             self.Faces[i].Index = i
 
-#
-# Orientation
-#
-# The simplification moves below assume that the Mcomplex is oriented.
-# Yes, oriented, not just orientable.  An Mcomplex has been oriented if
-# all of the gluing permutations are odd.  The orient method walks through
-# the manifold reorienting tetrahedra to try to get all of the gluing
-# permutations to be odd.  Returns 1 on success, 0 if the manifold is
-# not orientable.
-#
     def orient(self):
+        """
+        The simplification moves below assume that the Mcomplex is oriented.
+        Yes, oriented, not just orientable.  An Mcomplex has been oriented if
+        all of the gluing permutations are odd.  The orient method walks through
+        the manifold reorienting tetrahedra to try to get all of the gluing
+        permutations to be odd.  Returns True on success, False if the manifold is
+        not orientable.
+        """
         for tet in self.Tetrahedra:
             tet.Checked = 0
         self.walk_and_orient(self[0], 1)
@@ -356,8 +381,8 @@ class Mcomplex:
             for two_subsimplex in TwoSubsimplices:
                 if (not tet.Neighbor[two_subsimplex] == None
                         and tet.Gluing[two_subsimplex].sign() == 0):
-                    return 0
-        return 1
+                    return False
+        return True
 
     def walk_and_orient(self, tet, sign):
         if tet.Checked == 1:
@@ -369,11 +394,10 @@ class Mcomplex:
             if not tet.Neighbor[ssimp] == None:
                 self.walk_and_orient(tet.Neighbor[ssimp], tet.Gluing[ssimp].sign())
 
-# Normal Surfaces
-#
-#  NOTE:  convention is that the ordered quads are (Q03, Q13, Q23).
-
     def build_matrix(self):
+        """
+        Convention is that the ordered quads are (Q03, Q13, Q23).
+        """
         int_edges = [edge for edge in self.Edges if edge.IntOrBdry == 'int']
         self.QuadMatrix = linalg.Matrix(len(int_edges), 3*len(self))
         for edge in int_edges:
@@ -393,6 +417,9 @@ class Mcomplex:
 
     def find_normal_surfaces(self, modp=0, print_progress=False,
                              algorithm='FXrays'):
+        """
+        Convention is that the ordered quads are (Q03, Q13, Q23).
+        """
         self.NormalSurfaces = []
         self.build_matrix()
         if algorithm == 'FXrays':
@@ -428,9 +455,6 @@ class Mcomplex:
                 self.NormalSurfaces.append(SpunSurface(self, coeff_vector))
             else:
                 self.NormalSurfaces.append(Surface(self, coeff_vector))
-
-
-# We need find_almost_normal_surfaces()
 
     def normal_surface_info(self, out=sys.stdout):
         try:

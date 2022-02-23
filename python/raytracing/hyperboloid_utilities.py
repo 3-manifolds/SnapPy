@@ -175,7 +175,7 @@ def complex_and_height_to_R13_time_vector(z, t):
                  (2 * z_im) / denom ]
 
     poincare_rsqr = sum([x**2 for x in poincare])
-    klein_factor = 2.0 / (1 + poincare_rsqr)
+    klein_factor = 2 / (1 + poincare_rsqr)
 
     RF = z_re.parent()
 

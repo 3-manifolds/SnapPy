@@ -200,7 +200,7 @@ class PtolemyVariety(object):
         # Only invoked for N >= 4
         for var in self.variables:
             if var[0:2] == 'c_':
-                if not var in self.canonical_representative:
+                if var not in self.canonical_representative:
                     self.canonical_representative[var] = (+1, 0, var)
 
         self.variables_with_non_zero_condition = [ "t" ] + self.variables
@@ -473,12 +473,12 @@ class PtolemyVariety(object):
                          dir,
                          '%02d_tetrahedra' % tets])
 
-    def _solution_file_url(self, data_url = None, rur = False):
+    def _solution_file_url(self, data_url=None, rur=False):
 
         if data_url is None:
             from . import DATA_URL as data_url
 
-        if not '://' in data_url:
+        if '://' not in data_url:
             # No schema in url, assume file
             if not data_url[0] == '/':
                 data_url = '/' + data_url

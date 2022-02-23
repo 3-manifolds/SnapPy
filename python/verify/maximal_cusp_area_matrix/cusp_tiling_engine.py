@@ -298,7 +298,7 @@ class CuspTilingEngine(McomplexEngine):
             cusp_triangle = pending_cusp_triangles.pop()
             tet_index, V, m = cusp_triangle
             key = (tet_index, V)
-            if not key in processed_cusp_triangles:
+            if key not in processed_cusp_triangles:
                 processed_cusp_triangles.add(key)
                 tet = self.mcomplex.Tetrahedra[tet_index]
                 
@@ -321,7 +321,7 @@ class CuspTilingEngine(McomplexEngine):
         for tile, pending_vertices in unprocessed_vertices:
             for vertex in pending_vertices:
                 # Compute horosphere heights
-                if not vertex in tile.vertices_at_infinity:
+                if vertex not in tile.vertices_at_infinity:
                     self.account_horosphere_height(
                         tile, vertex)
 

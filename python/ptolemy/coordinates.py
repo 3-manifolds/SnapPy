@@ -657,7 +657,7 @@ class PtolemyCoordinates(dict):
         key = 'long_%d_%d%d' % (tet, v0, v1)
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -700,7 +700,7 @@ class PtolemyCoordinates(dict):
         key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -744,7 +744,7 @@ class PtolemyCoordinates(dict):
         key = 'short'
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
             
             # Get N
             N = self.N()
@@ -1206,7 +1206,7 @@ class Flattenings(dict):
         cvol = vol + cs * pari('I')
 
         if with_modulo:
-            if not self._evenN in [2, 6]:
+            if self._evenN not in [2, 6]:
                 raise Exception("Unknown torsion")
 
             return cvol, m * pari('I')
@@ -1251,9 +1251,9 @@ class Flattenings(dict):
 
         some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
-        if not variable_name in ['z', 'zp', 'zpp']:
+        if variable_name not in ['z', 'zp', 'zpp']:
             raise Exception("Variable not z, zp, or, zpp")
-        if not len(index) == 4:
+        if len(index) != 4:
             raise Exception("Not 4 indices")
         N = sum([int(x) for x in index]) + 2
 
@@ -1542,7 +1542,7 @@ class CrossRatios(dict):
         key = 'long_edge'
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
             
             # Get N
             N = self.N()
@@ -1576,7 +1576,7 @@ class CrossRatios(dict):
         key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -1644,7 +1644,7 @@ class CrossRatios(dict):
         key = 'short_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not key in self._edge_cache:
+        if key not in self._edge_cache:
 
             edge = [ _kronecker_delta(v0, i) +
                      _kronecker_delta(v1, i)   for i in range(4) ]
@@ -1738,9 +1738,9 @@ class CrossRatios(dict):
 
         some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
-        if not variable_name in ['z', 'zp', 'zpp']:
+        if variable_name not in ['z', 'zp', 'zpp']:
             raise Exception("Variable not z, zp, or, zpp")
-        if not len(index) == 4:
+        if len(index) != 4:
             raise Exception("Not 4 indices")
         N = sum([int(x) for x in index]) + 2
         
@@ -1782,7 +1782,7 @@ class CrossRatios(dict):
 
         num_tetrahedra = self.num_tetrahedra()
 
-        if not self.N() == 2:
+        if self.N() != 2:
             raise Exception(
                 "Cross ratios need to come from a PSL(2,C) representation")
 
@@ -1833,9 +1833,9 @@ class CrossRatios(dict):
 
         for key, value in self.items():
            variable_name, index, tet_index = key.split('_')
-           if not variable_name in ['z', 'zp', 'zpp']:
+           if variable_name not in ['z', 'zp', 'zpp']:
                raise Exception("Variable not z, zp, or, zpp")
-           if not len(index) == 4:
+           if len(index) != 4:
                raise Exception("Not 4 indices")
 
            # The key in the auxiliary dictionary
@@ -1845,7 +1845,7 @@ class CrossRatios(dict):
            old_value = d.setdefault(short_key, value)
 
            if epsilon is None:
-               if not value == old_value:
+               if value != old_value:
                    return False
            else:
                if (value - old_value).abs() > epsilon:
@@ -1916,7 +1916,7 @@ class CrossRatios(dict):
 
             return True
 
-        if not self.N() == 3:
+        if self.N() != 3:
             raise Exception("PU(2,1)-representations only allowed for N = 3")
 
         if not self._is_numerical:
@@ -2264,7 +2264,7 @@ def _H(N, k, x):
     """
 
     def _entry(i, j):
-        if not i == j:
+        if i != j:
             return 0
         if i < k:
             return x

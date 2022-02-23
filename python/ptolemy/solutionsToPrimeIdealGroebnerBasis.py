@@ -131,8 +131,8 @@ def extensions_and_assignments(polys):
             # So we can just take the following difference:
 
             value = Polynomial.from_variable_name(var) - poly
-            assert not var in value.variables()
-            assert not var in assignments
+            assert var not in value.variables()
+            assert var not in assignments
             assignments[var] = value
 
         else:
@@ -141,6 +141,7 @@ def extensions_and_assignments(polys):
             extension_vars.append(var)
 
     return extensions, assignments
+
 
 def update_assignments_and_merge(assignments, d):
 

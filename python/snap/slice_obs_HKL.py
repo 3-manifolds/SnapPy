@@ -463,7 +463,7 @@ def alex_poly_of_induced_rep(p, knot_exterior, A, chi):
     d0, d1 = C.differential(0), C.differential(1)
     B1 = d0.column_space()
     Z1 = d1.right_kernel()
-    cocycle = [z for z in Z1.basis() if not z in B1][0]
+    cocycle = [z for z in Z1.basis() if z not in B1][0]
     alpha = induced_rep_from_twisted_cocycle(p, rho, chi, cocycle)
     ans = twisted_alexander_polynomial(alpha, reduced=True)
     assert poly_involution(ans) == ans

@@ -99,8 +99,19 @@ def write_SnapPea_file(mcomplex, fileobject):
             else:
                 out("-1 ")
         out("\n")
-        for i in range(4):
-            out("0 0 0 0  0 0 0 0   0 0 0 0   0 0 0 0\n")
+        if hasattr(tet, 'PeripheralCurves'):
+            for curve in tet.PeripheralCurves:
+                for sheet in curve:
+                    for v in ZeroSubsimplices:
+                        for f in TwoSubsimplices:
+                            out("%d " % sheet[v][f])
+                        if v == V3:
+                            out("\n")
+                        else:
+                            out("  ")
+        else:
+            for i in range(4):
+                out("0 0 0 0  0 0 0 0   0 0 0 0   0 0 0 0\n")
         out("0.0 0.0\n\n")
 
 

@@ -258,6 +258,7 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
     else:
         return R.ideal(rels)
 
+
 def apoly(manifold, rational_coeff=False, method='sage'):
     """
     Computes the SL(2, C) version of the A-polynomial starting from
@@ -273,7 +274,7 @@ def apoly(manifold, rational_coeff=False, method='sage'):
     """
     I = extended_ptolemy_equations(manifold)
     R = I.ring()
-    if rational_coeff == False:
+    if rational_coeff is False:
         F = GF(31991)
         R = R.change_ring(F)
         I = I.change_ring(R)
@@ -286,6 +287,7 @@ def apoly(manifold, rational_coeff=False, method='sage'):
         return I_m2.eliminate('{' + repr(to_elim)[1:-1] + '}').to_sage()
     else:
         raise ValueError("method flag should be in ['sage', 'M2']")
+
 
 def sample_apoly_points_via_giac_rur(manifold, n):
     import giac_rur

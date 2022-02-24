@@ -39,4 +39,4 @@ class Vertex:
         sum = 12
         for edge in self.Edges:
             sum = sum - 6 + edge.valence()
-        return sum/12
+        return sum//12

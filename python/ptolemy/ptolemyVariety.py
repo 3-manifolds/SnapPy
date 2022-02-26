@@ -21,7 +21,7 @@ try:
 except ImportError:
     _within_sage = False
 
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from urllib.request import quote as urlquote
 from urllib.error import HTTPError
 
@@ -894,7 +894,9 @@ def _retrieve_url(url):
         sigalrm_handler = None
         if hasattr(signal, 'SIGALRM'):
             sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
-        s = urlopen(url)
+        r = Request(url,
+                    headers = {'User-Agent': 'Wget/1.20.3'})
+        s = urlopen(r)
 
     except HTTPError as e:
         if e.code in [404, 406]:

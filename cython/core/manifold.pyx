@@ -387,6 +387,7 @@ cdef class Manifold(Triangulation):
                    simplify_presentation = True,
                    fillings_may_affect_generators = True,
                    minimize_number_of_generators = True,
+                   minimize_shortest_relation = True,
                    try_hard_to_shorten_relators = True):
         """
         Return a HolonomyGroup representing the fundamental group of
@@ -424,7 +425,8 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty.')
 
         args = (simplify_presentation, fillings_may_affect_generators,
-                minimize_number_of_generators, try_hard_to_shorten_relators)
+                minimize_number_of_generators, minimize_shortest_relation,
+                    try_hard_to_shorten_relators)
         try:
             return self._cache.lookup('fundamental_group', *args)
         except KeyError:

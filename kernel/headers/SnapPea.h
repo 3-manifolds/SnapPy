@@ -1419,6 +1419,7 @@ extern GroupPresentation *fundamental_group(
                     Boolean         simplify_presentation,
                     Boolean         fillings_may_affect_generators,
                     Boolean         minimize_number_of_generators,
+                    Boolean         minimize_shortest_relation,
                     Boolean         try_hard_to_shorten_relators);
 
 /**<

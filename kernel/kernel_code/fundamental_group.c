@@ -8,6 +8,7 @@
  *                  Boolean         simplify_presentation,
  *                  Boolean         fillings_may_affect_generators,
  *                  Boolean         minimize_number_of_generators,
+ *                  Boolean         minimize_shortest_relation,
  *                  Boolean         try_hard_to_shorten_relators);
  *
  *      int     fg_get_num_generators   (GroupPresentation  *group);
@@ -374,6 +375,13 @@ struct GroupPresentation
     Boolean     minimize_number_of_generators;
 
     /*
+     * If minimize_shortest_relation is TRUE, simplify_presentation() will
+     * find the handle slide which makes the shortest relation as short as
+     * possible.
+     */
+    Boolean    minimize_shortest_relation;
+
+    /*
      *  If try_hard_to_shorten_relators is TRUE,
      *  simplify_presentation() will try to reduce the length of the
      *  relations by inserting one relation into another.  In general,
@@ -414,7 +422,7 @@ static Boolean              word_length_two(GroupPresentation *group);
 static Boolean              try_handle_slides(GroupPresentation *group);
 static Boolean              substring_occurs_in_group(GroupPresentation *group, int a, int b);
 static Boolean              substring_occurs_in_word(CyclicWord *word, int a, int b);
-static Boolean              handle_slide_improves_presentation(GroupPresentation *group, int a, int b);
+static Boolean              handle_slide_improves_presentation(GroupPresentation *group, int a, int b, int *shortest);
 static void                 evaluate_handle_slide_in_group(GroupPresentation *group, int a, int b, int *shortest_nonempty_relation_before, int *shortest_nonempty_relation_after, int *change_in_total_length, int *change_in_num_runs);
 static void                 evaluate_handle_slide_on_word(CyclicWord *word, int a, int b, int *shortest_nonempty_relation_before, int *shortest_nonempty_relation_after, int *change_in_total_length, int *change_in_num_runs);
 static int                  compute_delta_length(CyclicWord *word, int a, int b);
@@ -494,6 +502,7 @@ GroupPresentation *fundamental_group(
     Boolean         simplify_presentation,
     Boolean         fillings_may_affect_generators,
     Boolean         minimize_number_of_generators,
+    Boolean         minimize_shortest_relation,
     Boolean         try_hard_to_shorten_relators)
 {
 
@@ -516,7 +525,8 @@ GroupPresentation *fundamental_group(
     group->simplify_presentation            = simplify_presentation;
     group->fillings_may_affect_generators   = fillings_may_affect_generators;
     group->minimize_number_of_generators    = minimize_number_of_generators;
-    group->try_hard_to_shorten_relators   = try_hard_to_shorten_relators;
+    group->minimize_shortest_relation      = minimize_shortest_relation;
+    group->try_hard_to_shorten_relators     = try_hard_to_shorten_relators;
 
     /*
      *  Simplify the group presentation if requested to do so.
@@ -1717,8 +1727,12 @@ static Boolean try_handle_slides(
      *  potential handle slides to consider.
      */
 
-    int                 a,
-                        b;
+    int     a,
+      	    b,
+	    best_a = 0,
+	    best_b = 0,
+	    shortest = INT_MAX,
+	    new_shortest;
 
     /*
      *  Abuse notation and let "ab" be a generic entry in the above table.
@@ -1739,14 +1753,29 @@ static Boolean try_handle_slides(
                 continue;
 
             if (substring_occurs_in_group(group, a, b) == TRUE
-             && handle_slide_improves_presentation(group, a, b) == TRUE)
+		&& handle_slide_improves_presentation(group, a, b, &new_shortest) == TRUE)
             {
-                handle_slide(group, a, b);
-                return TRUE;
-            }
+		if (group->minimize_shortest_relation) {
+		    if (new_shortest < shortest)
+		    {
+		        best_a = a;
+			best_b = b;
+			shortest = new_shortest;
+		    }
+		}
+		else
+		{
+		    handle_slide(group, a, b);
+		    return TRUE;
+		}
+	    }
         }
     }
-
+    if (best_a != 0)
+        {
+	    handle_slide(group, best_a, best_b);
+	    return TRUE;
+	}
     return FALSE;
 }
 
@@ -1806,7 +1835,8 @@ static Boolean substring_occurs_in_word(
 static Boolean handle_slide_improves_presentation(
     GroupPresentation   *group,
     int                 a,
-    int                 b)
+    int                 b,
+    int                 *shortest)
 {
     /*
      *  We want to evaluate the effect of the handle slide "ab".
@@ -1860,6 +1890,8 @@ static Boolean handle_slide_improves_presentation(
 
     if (group->minimize_number_of_generators == TRUE)
     {
+        if (shortest != NULL)
+	    *shortest = shortest_nonempty_relation_after;
         if (shortest_nonempty_relation_after
           < shortest_nonempty_relation_before)
             return TRUE;

@@ -2249,6 +2249,7 @@ cdef class Triangulation(object):
                           simplify_presentation = True,
                           fillings_may_affect_generators = True,
                           minimize_number_of_generators = True,
+                          minimize_shortest_relation = True,
                           try_hard_to_shorten_relators = True):
         """
         Returns a FundamentalGroup object representing the fundamental
@@ -2508,7 +2509,7 @@ cdef class Triangulation(object):
         num_cusps = self.num_cusps()
         c_triangulation = self.c_triangulation
         c_group_presentation = fundamental_group(c_triangulation,
-                                             True, True, True, True)
+                                             True, True, True, True, True)
         num_generators = fg_get_num_generators(c_group_presentation)
         num_relators = fg_get_num_relations(c_group_presentation)
         num_orig_gens = fg_get_num_orig_gens(c_group_presentation)

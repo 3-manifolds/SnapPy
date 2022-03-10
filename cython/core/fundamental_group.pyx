@@ -75,8 +75,8 @@ cdef class CFundamentalGroup(object):
                   simplify_presentation = True,
                   fillings_may_affect_generators = True,
                   minimize_number_of_generators = True,
-                  minimize_shortest_relation = True,
-                  try_hard_to_shorten_relators = True):
+                  try_hard_to_shorten_relators = True,
+                  minimize_shortest_relation = False):
         if triangulation.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         copy_triangulation(triangulation.c_triangulation,
@@ -86,8 +86,8 @@ cdef class CFundamentalGroup(object):
             simplify_presentation,
             fillings_may_affect_generators,
             minimize_number_of_generators,
-            minimize_shortest_relation,
-            try_hard_to_shorten_relators)
+            try_hard_to_shorten_relators,
+            minimize_shortest_relation)
         self.num_cusps = triangulation.num_cusps()
 
     def __dealloc__(self):

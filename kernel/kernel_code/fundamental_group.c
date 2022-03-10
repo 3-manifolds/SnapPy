@@ -8,8 +8,8 @@
  *                  Boolean         simplify_presentation,
  *                  Boolean         fillings_may_affect_generators,
  *                  Boolean         minimize_number_of_generators,
- *                  Boolean         minimize_shortest_relation,
- *                  Boolean         try_hard_to_shorten_relators);
+ *                  Boolean         try_hard_to_shorten_relators,
+ *                  Boolean         minimize_shortest_relation);
  *
  *      int     fg_get_num_generators   (GroupPresentation  *group);
  *      int     fg_get_num_orig_gens    (GroupPresentation  *group);
@@ -375,13 +375,6 @@ struct GroupPresentation
     Boolean     minimize_number_of_generators;
 
     /*
-     * If minimize_shortest_relation is TRUE, simplify_presentation() will
-     * find the handle slide which makes the shortest relation as short as
-     * possible.
-     */
-    Boolean    minimize_shortest_relation;
-
-    /*
      *  If try_hard_to_shorten_relators is TRUE,
      *  simplify_presentation() will try to reduce the length of the
      *  relations by inserting one relation into another.  In general,
@@ -389,6 +382,14 @@ struct GroupPresentation
      *  presentations. If it's FALSE, it does the opposite.
      */
     Boolean    try_hard_to_shorten_relators;
+
+    /*
+     * If minimize_shortest_relation is TRUE, simplify_presentation() will
+     * find the handle slide which makes the shortest relation as short as
+     * possible.
+     */
+    Boolean    minimize_shortest_relation;
+
 };
 
 
@@ -502,8 +503,8 @@ GroupPresentation *fundamental_group(
     Boolean         simplify_presentation,
     Boolean         fillings_may_affect_generators,
     Boolean         minimize_number_of_generators,
-    Boolean         minimize_shortest_relation,
-    Boolean         try_hard_to_shorten_relators)
+    Boolean         try_hard_to_shorten_relators,
+    Boolean         minimize_shortest_relation)
 {
 
     GroupPresentation   *group;
@@ -525,8 +526,8 @@ GroupPresentation *fundamental_group(
     group->simplify_presentation            = simplify_presentation;
     group->fillings_may_affect_generators   = fillings_may_affect_generators;
     group->minimize_number_of_generators    = minimize_number_of_generators;
-    group->minimize_shortest_relation      = minimize_shortest_relation;
     group->try_hard_to_shorten_relators     = try_hard_to_shorten_relators;
+    group->minimize_shortest_relation      = minimize_shortest_relation;
 
     /*
      *  Simplify the group presentation if requested to do so.

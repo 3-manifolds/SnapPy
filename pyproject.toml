@@ -1,3 +1,0 @@
-[build-system]
-requires = ["setuptools", "wheel", "cython", "sphinx"]
-build-backend = "setuptools.build_meta"

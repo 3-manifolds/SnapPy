@@ -1,4 +1,5 @@
 from .cache import SnapPyCache
+from low_index import SimsTree, SimsNode
 
 cdef class Triangulation(object):
     """
@@ -2417,6 +2418,8 @@ cdef class Triangulation(object):
         cdef RepresentationIntoSn* rep
         cdef c_Triangulation* cover
         cdef Triangulation T
+        cdef tree
+        cdef node
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -2425,9 +2428,15 @@ cdef class Triangulation(object):
             method = None
 
         if method:
-            if not _within_sage:
-                raise RuntimeError('Only the default method of finding '
-                                   'subgroups is available, as you are '
+            if method == 'low_index':
+                G = self.fundamental_group(minimize_shortest_relation=True)
+                tree = SimsTree(G.num_generators(), degree, G.relators(),
+                                num_long_relators=self.num_cusps())
+                return [self.cover(node.permutation_rep()) for node in tree.list()
+                        if node.degree == degree]
+            if not _within_sage and method in ('gap', 'magma'):
+                raise RuntimeError('The gap and magma methods for finding '
+                                   'subgroups are not available, as you are '
                                    'not using Sage.')
             if method == 'gap':
                 G = gap(self.fundamental_group())
@@ -2439,7 +2448,6 @@ cdef class Triangulation(object):
                 return [self.cover(H)
                         for H in G.LowIndexSubgroups('<%d, %d>' %
                                                      (degree, degree))]
-
         if cover_type == 'all':
             reps = find_representations(self.c_triangulation,
                                         degree,

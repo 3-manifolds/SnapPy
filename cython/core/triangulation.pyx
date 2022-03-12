@@ -2250,7 +2250,7 @@ cdef class Triangulation(object):
                           simplify_presentation = True,
                           fillings_may_affect_generators = True,
                           minimize_number_of_generators = True,
-                          minimize_shortest_relation = True,
+                          minimize_shortest_relation = False,
                           try_hard_to_shorten_relators = True):
         """
         Returns a FundamentalGroup object representing the fundamental

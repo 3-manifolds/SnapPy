@@ -15,6 +15,7 @@ from .face import Face
 from .edge import Edge
 from .vertex import Vertex
 from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
+from .perm4 import Perm4, inv
 from . import files
 from . import linalg
 from . import homology
@@ -45,15 +46,36 @@ Shift = {E01:(-1,1,0), E02:(1,0,-1), E21:(0,-1,1),
 VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
                 V2:(0,0,1,0), V3:(0,0,0,1)}
 
-# An Mcomplex is a union of tetrahedra with faces identified in pairs.
-# The edges (vertices) are equivalence classes under the induced equivalence
-# relation on the set of edges (vertices) of the tetrahedra.
+
+def edge_and_arrow(edge_or_arrow):
+    """
+    Given and edge or an arrow, returns the corresponding compatible
+    (edge, arrow) pair.
+    """
+    if isinstance(edge_or_arrow, Edge):
+        edge = edge_or_arrow
+        arrow = Arrow(edge.Corners[0].Subsimplex,
+                  LeftFace[edge.Corners[0].Subsimplex],
+                  edge.Corners[0].Tetrahedron)
+    else:
+        if not isinstance(edge_or_arrow, Arrow):
+            raise ValueError('Input edge_or_arrow is neither')
+        arrow = edge_or_arrow.copy()
+        edge = arrow.axis()
+    return edge, arrow
+
 
 class Insanity(Exception):
     pass
 
+
 class Mcomplex:
     """
+    An Mcomplex is a union of tetrahedra with faces identified in
+    pairs.  The edges (vertices) are equivalence classes under the
+    induced equivalence relation on the set of edges (vertices) of the
+    tetrahedra.
+
     >>> T = Mcomplex([Tetrahedron()])
     >>> len(T), len(T.Vertices)
     (1, 4)
@@ -90,7 +112,7 @@ class Mcomplex:
         self.AlmostNormalSurfaces = []
         self.build()
 
-    def copy(self, base_arrow = None):
+    def copy(self, base_arrow=None):
         new_tets = []
         new_to_old = {}
         old_to_new = {}
@@ -105,11 +127,11 @@ class Mcomplex:
                                old_to_new[new_to_old[new_tet].Neighbor[face]],
                                new_to_old[new_tet].Gluing[face].tuple())
         if base_arrow == None:
-            return Mcomplex(new_tets)
+            return self.__class__(new_tets)
         else:
             new_arrow = base_arrow.copy()
             new_arrow.Tetrahedron = old_to_new[base_arrow.Tetrahedron]
-            return (Mcomplex(new_tets), new_arrow)
+            return (self.__class__(new_tets), new_arrow)
 
     def build(self):
         for i in range(len(self.Tetrahedra)):
@@ -137,13 +159,15 @@ class Mcomplex:
     def add_tet(self, tet):
         self.Tetrahedra.append(tet)
 
-# Remove the face, edge and vertex classes of a tetrahedron.  This
-# should destroy the faces, edges and vertices that meet the
-# tetrahedron.  A call to build_face_classes, build_edge_classes or
-# build_vertex_classes will then rebuild the neighborhood without
-# having to rebuild the whole manifold.  #
 
     def clear_tet(self,tet):
+        """
+        Remove the face, edge and vertex classes of a tetrahedron.
+        This should destroy the faces, edges and vertices that meet
+        the tetrahedron.  A call to build_face_classes,
+        build_edge_classes or build_vertex_classes will then rebuild
+        the neighborhood without having to rebuild the whole manifold.
+        """
         for two_subsimplex in TwoSubsimplices:
             face = tet.Class[two_subsimplex]
             if not face == None:
@@ -152,6 +176,7 @@ class Mcomplex:
                 self.Faces.remove(face)
             except ValueError:
                 pass
+
         for one_subsimplex in OneSubsimplices:
             edge = tet.Class[one_subsimplex]
             if not edge == None:
@@ -160,6 +185,7 @@ class Mcomplex:
                 self.Edges.remove(edge)
             except ValueError:
                 pass
+
         for zero_subsimplex in ZeroSubsimplices:
             vertex = tet.Class[zero_subsimplex]
             if not vertex == None:
@@ -169,27 +195,24 @@ class Mcomplex:
             except ValueError:
                 pass
 
-# Clear a tetrahedron, then remove it from the Tetrahedron list.
-#
     def delete_tet(self, tet):
+        """
+        Clear a tetrahedron, then remove it from the Tetrahedron list.
+        """
         self.clear_tet(tet)
         tet.erase()
         self.Tetrahedra.remove(tet)
 
-# Add one new tetrahedron and return one of its arrows.
-
     def new_arrow(self):
+        """
+        Add one new tetrahedron and return one of its arrows.
+        """
         tet = Tetrahedron()
         self.add_tet(tet)
         return Arrow(E01,F3,tet)
 
-# Or, add a whole bunch of them.
-#
     def new_arrows(self,n):
         return [self.new_arrow() for i in range(n)]
-
-# Below two methods added June, 22 1999 by NMD
-# Sometimes we might want to add tets without arrows
 
     def new_tet(self):
         tet = Tetrahedron()
@@ -199,19 +222,40 @@ class Mcomplex:
     def new_tets(self,n):
         return [self.new_tet() for i in range(n)]
 
-# len(M) returns the number of tetrahedra
-#
+    def _triangulation_data(self):
+        ans = []
+        # We don't assume that the indices of the Tetraheda are equal
+        # to range(len(self))
+        tet_to_index = {T:i for i, T in enumerate(self.Tetrahedra)}
+        for T in self.Tetrahedra:
+            neighbors, perms = [], []
+            for v in TwoSubsimplices:
+                if T.Neighbor[v] is None:
+                    neighbor, perm = None, None
+                else:
+                    neighbor = tet_to_index[T.Neighbor[v]]
+                    perm = T.Gluing[v].tuple()
+                neighbors.append(neighbor)
+                perms.append(perm)
+            ans.append((neighbors, perms))
+        return ans
+
     def __len__(self):
+        """
+        Return the number of tetrahedra
+        """
         return len(self.Tetrahedra)
 
-# M[i] refers to the ith Tetrahedron of the mcomplex M.
-#
     def __getitem__(self, index):
+        """
+        M[i] refers to the ith Tetrahedron of the mcomplex M.
+        """
         return self.Tetrahedra[index]
 
-# M.info() describes the Mcomplex.
-#
     def info(self, out=sys.stdout):
+        """
+        M.info() describes the Mcomplex.
+        """
         try:
             out.write( "Mcomplex with %d Tetrahedra\n\n" % len(self) )
             for tet in self.Tetrahedra:
@@ -222,9 +266,10 @@ class Mcomplex:
         except IOError:
             pass
 
-# Construct the edge classes and compute valences.
-#
     def build_edge_classes(self):
+        """
+        Construct the edge classes and compute valences.
+        """
         for tet in self.Tetrahedra:
             for one_subsimplex in OneSubsimplices:
                 if ( tet.Class[one_subsimplex] == None ):
@@ -270,8 +315,6 @@ class Mcomplex:
         for i in range(len(self.Edges)):
             self.Edges[i].Index = i
 
-# Construct the vertices.
-#
     def build_vertex_classes(self):
         for tet in self.Tetrahedra:
             for zero_subsimplex in ZeroSubsimplices:
@@ -296,11 +339,12 @@ class Mcomplex:
                                      tet.Gluing[two_subsimplex].image(zero_subsimplex),
                                      tet.Neighbor[two_subsimplex])
 
-# Construct the 1-skeleton, i.e. record which edges are connected to
-# which vertices.  This assumes that Edges and Vertices have already been
-# built.
-#
     def build_one_skeleton(self):
+        """
+        Construct the 1-skeleton, i.e. record which edges are
+        connected to which vertices.  This assumes that Edges and Vertices
+        have already been built.
+        """
         for edge in self.Edges:
             tet = edge.Corners[0].Tetrahedron
             one_subsimplex = edge.Corners[0].Subsimplex
@@ -316,8 +360,10 @@ class Mcomplex:
             if vertex.IntOrBdry == '':
                 vertex.IntOrBdry = 'int'
 
-#Construct the faces.
     def build_face_classes(self):
+        """
+        Construct the faces.
+        """
         for tet in self.Tetrahedra:
             for two_subsimplex in TwoSubsimplices:
                 if ( tet.Class[two_subsimplex] == None ):
@@ -336,17 +382,15 @@ class Mcomplex:
         for i in range(len(self.Faces)):
             self.Faces[i].Index = i
 
-#
-# Orientation
-#
-# The simplification moves below assume that the Mcomplex is oriented.
-# Yes, oriented, not just orientable.  An Mcomplex has been oriented if
-# all of the gluing permutations are odd.  The orient method walks through
-# the manifold reorienting tetrahedra to try to get all of the gluing
-# permutations to be odd.  Returns 1 on success, 0 if the manifold is
-# not orientable.
-#
     def orient(self):
+        """
+        The simplification moves below assume that the Mcomplex is oriented.
+        Yes, oriented, not just orientable.  An Mcomplex has been oriented if
+        all of the gluing permutations are odd.  The orient method walks through
+        the manifold reorienting tetrahedra to try to get all of the gluing
+        permutations to be odd.  Returns True on success, False if the manifold is
+        not orientable.
+        """
         for tet in self.Tetrahedra:
             tet.Checked = 0
         self.walk_and_orient(self[0], 1)
@@ -355,8 +399,8 @@ class Mcomplex:
             for two_subsimplex in TwoSubsimplices:
                 if (not tet.Neighbor[two_subsimplex] == None
                         and tet.Gluing[two_subsimplex].sign() == 0):
-                    return 0
-        return 1
+                    return False
+        return True
 
     def walk_and_orient(self, tet, sign):
         if tet.Checked == 1:
@@ -368,11 +412,10 @@ class Mcomplex:
             if not tet.Neighbor[ssimp] == None:
                 self.walk_and_orient(tet.Neighbor[ssimp], tet.Gluing[ssimp].sign())
 
-# Normal Surfaces
-#
-#  NOTE:  convention is that the ordered quads are (Q03, Q13, Q23).
-
     def build_matrix(self):
+        """
+        Convention is that the ordered quads are (Q03, Q13, Q23).
+        """
         int_edges = [edge for edge in self.Edges if edge.IntOrBdry == 'int']
         self.QuadMatrix = linalg.Matrix(len(int_edges), 3*len(self))
         for edge in int_edges:
@@ -392,6 +435,9 @@ class Mcomplex:
 
     def find_normal_surfaces(self, modp=0, print_progress=False,
                              algorithm='FXrays'):
+        """
+        Convention is that the ordered quads are (Q03, Q13, Q23).
+        """
         self.NormalSurfaces = []
         self.build_matrix()
         if algorithm == 'FXrays':
@@ -428,9 +474,6 @@ class Mcomplex:
             else:
                 self.NormalSurfaces.append(Surface(self, coeff_vector))
 
-
-# We need find_almost_normal_surfaces()
-
     def normal_surface_info(self, out=sys.stdout):
         try:
             for surface in self.NormalSurfaces:
@@ -449,22 +492,58 @@ class Mcomplex:
         except IOError:
             pass
 
-#
-# Simplification Moves
-#
-# The simplification moves require that the list of edge classes be
-# up to date.  Edge classes are recomputed as part of each move.  The
-# vertex classes are not used, nor are they updated, by these moves.
+    # Simplification Moves
+    #
+    # The simplification moves require that the list of edge classes
+    # be up to date.  Edge classes are recomputed as part of each
+    # move.  The vertex classes are not used, nor are they updated, by
+    # these moves, with the exception of randomize.
 
-# Subdivide the face given by a 2-subsimplex of a Tetrahedron.
-#
-    def two_to_three(self, two_subsimplex, tet):
-        a = Arrow(PickAnEdge[two_subsimplex], two_subsimplex, tet)
+    def _face_permits_two_to_three(self, a, b):
+        S, T = a.Tetrahedron, b.Tetrahedron
+        if S is None:
+            return False, 'Tetrahedron not attached to face'
+        if S == T:
+            return False, 'Two tetrahedra are the same'
+        return True, None
+
+    def _two_to_three_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def two_to_three(self, face_or_arrow, tet=None,
+                     return_arrow=False, must_succeed=False,
+                     unsafe_mode=False):
+        """
+        Perform a 2-to-3 Pachner move on the face specified by
+        (face_or_arrow, tet), replacing the two tetrahedra with three
+        tetrahedra around an edge.
+
+        Returns ``True`` or ``False`` depending on whether the
+        requested move succeeded.  When ``must_succeed`` is ``True``,
+        it instead raises an exception if the requested move is
+        topologically impossible.
+
+        When ``unsafe_mode`` is ``True`` it does not rebuild the edge
+        classes; in any mode, it does not rebuild the vertex classes.
+        """
+
+        if isinstance(face_or_arrow, Arrow):
+            assert tet is None
+            arrow = face_or_arrow
+            a = arrow.copy()
+        else:
+            arrow = None
+            a = Arrow(PickAnEdge[face_or_arrow], face_or_arrow, tet)
+
+        a = a.copy()
         b = a.glued()
-        if b.Tetrahedron == None:
-            return 0
-        if a.Tetrahedron == b.Tetrahedron:
-            return 0
+        if not unsafe_mode:
+            possible, reason = self._face_permits_two_to_three(a, b)
+            if not possible:
+                if must_succeed:
+                    raise ValueError(reason)
+                return False
+        a_orig = a.copy()
         new = self.new_arrows(3)
         for i in range(3):
             new[i].glue(new[(i+1)%3])
@@ -474,85 +553,151 @@ class Mcomplex:
             c.reverse().glue(b.glued())
             a.rotate(-1)
             b.rotate(1)
+        for c in new:
+            c.reverse()
+            c.opposite()
+        self._two_to_three_move_hook(a_orig, new)
         self.delete_tet(a.Tetrahedron)
         self.delete_tet(b.Tetrahedron)
-        self.build_edge_classes()
+        if not unsafe_mode:
+            self.build_edge_classes()
         if VERBOSE:
             print('2->3')
             print(self.EdgeValences)
-#     return self
-        return 1
+        if return_arrow:
+            return new[1].north_head().get_arrow()
+        else:
+            return True
 
-# Replaces the star of an edge of valence 3 by two tetrahedra.
-# Returns 0 if the edge is a boundary edge.
-#
-    def three_to_two(self, edge):
+    def _edge_permits_three_to_two(self, edge):
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 3 or not edge.distinct():
-            return 0
-        a = Arrow(edge.Corners[0].Subsimplex,
-                  LeftFace[edge.Corners[0].Subsimplex],
-                  edge.Corners[0].Tetrahedron)
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 3:
+            return False, 'Edge has valence %d not 3' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        return True, None
+
+    def _three_to_two_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def three_to_two(self, edge_or_arrow, return_arrow=False,
+                     must_succeed=False, unsafe_mode=False):
+        """
+        Replaces the star of an edge of valence 3 by two tetrahedra.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
+        if not unsafe_mode:
+            possible, reason = self._edge_permits_three_to_two(edge)
+            if not possible:
+                if must_succeed:
+                    raise ValueError(reason)
+                return False
+
+        a_orig = a.copy()
         b = self.new_arrow()
         c = self.new_arrow()
         b.glue(c)
+        b_orig = b.copy()
         b.reverse()
+        b_to_return = b.copy()
         for i in range(3):
             b.glue(a.opposite().glued())
             c.glue(a.reverse().glued())
             b.rotate(-1)
             c.rotate(1)
             a.reverse().opposite().next()
-        for corner in edge.Corners:
-            self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
+
+        self._three_to_two_move_hook(a_orig, (b_orig, b, c))
+        if unsafe_mode:
+            tet0  = a_orig.Tetrahedron
+            tet1  = a_orig.next().Tetrahedron
+            tet2  = a_orig.next().Tetrahedron
+            self.delete_tet(tet0)
+            self.delete_tet(tet1)
+            self.delete_tet(tet2)
+        else:
+            for corner in edge.Corners:
+                self.delete_tet(corner.Tetrahedron)
+        if not unsafe_mode:
+            self.build_edge_classes()
         if VERBOSE:
             print('3->2')
             print(self.EdgeValences)
-        return 1
+        if return_arrow:
+            return b_to_return
+        return True
 
-# Flatten the star of an edge of valence 2 to eliminate two tetrahedra.
-# Returns 1 on success, 0 if the move cannot be performed.
-#
-    def two_to_zero(self, edge):
+    def _arrow_permits_two_to_zero(self, arrow):
+        edge = arrow.axis()
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 2 or not edge.distinct():
-            return 0
-        a = Arrow(edge.Corners[0].Subsimplex,
-                  LeftFace[edge.Corners[0].Subsimplex],
-                  edge.Corners[0].Tetrahedron)
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 2:
+            return False, 'Edge has valence %d not 2' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        if arrow.equator() == arrow.glued().equator():
+            return False, 'Edges opposite the valence 2 edge are the same'
+        # You'd think we should exclude the following, but bizarrely
+        # everything is fine when this happens, which is quite
+        # frequently in some settings.
+        #
+        # T0 = edge.Corners[0].Tetrahedron
+        # T1 = edge.Corners[1].Tetrahedron
+        # if (T0 in T0.Neighbor.values()) or (T1 in T1.Neighbor.values()):
+        #    return False, 'One tet is glued to itself'
+        return True, None
+
+
+    def _two_to_zero_hook(self, old_arrow):
+        pass
+
+    def two_to_zero(self, edge_or_arrow, must_succeed=False, unsafe_mode=False):
+        """
+        Flatten the star of an edge of valence 2 to eliminate two
+        tetrahedra.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
         b = a.glued()
 
-        # This move cannot  be done if the two edges opposite to the valence 2
-        # edge are glued together.
-        if a.Tetrahedron.Class[comp(a.Edge)] == b.Tetrahedron.Class[comp(b.Edge)]:
-            return 0
+        possible, reason = self._arrow_permits_two_to_zero(a)
+        if not possible:
+            if must_succeed:
+                raise ValueError(reason)
+            return False
+
+        self._two_to_zero_hook(a)
         a.opposite().glued().reverse().glue(b.opposite().glued())
         a.reverse().glued().reverse().glue(b.reverse().glued())
 
         for corner in edge.Corners:
             self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
-        if VERBOSE:
-            print('2->0')
-            print(self.EdgeValences)
-        return 1
+        if not unsafe_mode:
+            self.build_edge_classes()
+            if VERBOSE:
+                print('2->0')
+                print(self.EdgeValences)
+        return True
 
-# Blow up two adjacent faces into a pair of tetrahedra.
-# The faces are specified by passing an arrow specifying the first face
-# and an integer n.  The second face is obtained by reversing the
-# arrow and applying next() n times.  Thus there are n faces between
-# the two that are involved in the blow up.  Returns 1 on success,
-# 0 if the move cannot be performed.
-#
     def zero_to_two(self, arrow1, gap):
+        """
+        Blow up two adjacent faces into a pair of tetrahedra.  The
+        faces are specified by passing an arrow specifying the first
+        face and an integer n.  The second face is obtained by
+        reversing the arrow and applying next() n times.  Thus there
+        are n faces between the two that are involved in the blow up.
+        Returns ``True`` on success, ``False`` if the move cannot be
+        performed.
+        """
         arrow2 = arrow1.copy().reverse()
         count = 0
         while count < gap:
             if arrow2.next() == None:
-                return 0
+                return False
             count = count + 1
         # Do we *also* need the old test, which was
         # b.Tetrahedron == arrow1.Tetrahedron ?
@@ -573,33 +718,43 @@ class Mcomplex:
         if VERBOSE:
             print('0->2')
             print(self.EdgeValences)
-        return 1
+        return True
 
-# Replace an edge of valence 4 by another diagonal of the octahedron
-# formed by the star of the edge.  There are two choices for this
-# diagonal.  If you care which one is used then pass an arrow
-# representing the edge of valence four.  The head of the arrow will
-# be an endpoint of the new diagonal.  If you don't care, just pass an
-# edge.  The choice of diagonal will then be made randomly.  Returns 1
-# on success, 0 if the move cannot be performed.
-#
-    def four_to_four(self, edge_or_arrow):
-        if edge_or_arrow.__class__ == Edge:
-            edge = edge_or_arrow
-            a = Arrow(edge.Corners[0].Subsimplex,
-                      LeftFace[edge.Corners[0].Subsimplex],
-                      edge.Corners[0].Tetrahedron)
-            if random.randint(0,1) == 0:
-                a.reverse()
-        if edge_or_arrow.__class__ == Arrow:
-            a = edge_or_arrow
-            edge = a.Tetrahedron.Class[a.Edge]
-
+    def _edge_permits_four_to_four(self, edge):
         if not edge.IntOrBdry == 'int':
-            return 0
-        if edge.valence() != 4 or not edge.distinct():
-            return 0
+            return False, 'Cannot do move on exterior edge'
+        if edge.valence() != 4:
+            return False, 'Edge has valence %d not 4' % edge.valence()
+        if not edge.distinct():
+            return False, 'Tets around edge are not distinct'
+        return True, None
+
+    def _four_to_four_move_hook(self, old_arrow, new_arrows):
+        pass
+
+    def four_to_four(self, edge_or_arrow, must_succeed=False, unsafe_mode=False):
+        """
+        Replace an edge of valence 4 by another diagonal of the
+        octahedron formed by the star of the edge.  There are two
+        choices for this diagonal.  If you care which one is used then
+        pass an arrow representing the edge of valence four.  The head
+        of the arrow will be an endpoint of the new diagonal.  If you
+        don't care, just pass an edge.  The choice of diagonal will
+        then be made randomly.
+
+        Options and return value are the same as ``two_to_three``.
+        """
+        edge, a = edge_and_arrow(edge_or_arrow)
+        a_orig = a.copy()
+
+        possible, reason = self._edge_permits_four_to_four(edge)
+        if not possible:
+            if must_succeed:
+                raise ValueError(reason)
+            return False
+
         c = self.new_arrows(4)
+        c_orig = [x.copy() for x in c]
         for i in range(4):
             c[i].glue( c[(i+1)%4] )
         b = a.glued().reverse()
@@ -613,76 +768,138 @@ class Mcomplex:
         c[1].reverse().glue(b.rotate(1).glued())
         c[2].reverse().glue(b.rotate(1).glued())
         c[3].reverse().glue(a.rotate(-1).glued())
+
+        self._four_to_four_move_hook(a_orig, c_orig)
         for corner in edge.Corners:
             self.delete_tet(corner.Tetrahedron)
-        self.build_edge_classes()
-        if VERBOSE:
-            print('4->4')
-            print(self.EdgeValences)
-        return 1
+
+        if not unsafe_mode:
+            self.build_edge_classes()
+            if VERBOSE:
+                print('4->4')
+                print(self.EdgeValences)
+
+        return True
+
+    def attack_valence_one(self):
+        """
+        Modify the triangulation near a valence 1 edge, creating a
+        valence 2 edge that can likely be eliminated, reducing the
+        number of tetrahedra by one.
+        """
+        if len(self) == 1:
+            return False
+        for e in self.Edges:
+            if e.valence() == 1:
+                corner = e.Corners[0]
+                tet = corner.Tetrahedron
+                sub = corner.Subsimplex
+                other_faces = [face for face in TwoSubsimplices
+                               if not is_subset(sub, face)]
+                assert len(other_faces) == 2
+                face = other_faces[0]
+                self.two_to_three(face, tet, must_succeed=True)
+                return True
+        return False
 
     def eliminate_valence_two(self):
-        did_simplify  = 0
-        progress = 1
+        """
+        Perform a single ``two_to_zero`` move on a valence 2 edge, if
+        any such is possible.
+        """
+        did_simplify = False
+        progress = True
         while progress:
-            progress = 0
+            progress = False
             for edge in self.Edges:
                 if edge.valence() == 2:
                     if self.two_to_zero(edge):
-                        progress, did_simplify = 1, 1
+                        progress, did_simplify = True, True
                         break
         return did_simplify
 
     def eliminate_valence_three(self):
-        did_simplify = 0
-        progress = 1
+        """
+        Perform a single ``three_to_two`` move on a valence 3 edge, if
+        any such is possible.
+        """
+        did_simplify = False
+        progress = True
         while progress:
-            progress = 0
+            progress = False
             for edge in self.Edges:
                 if edge.valence() == 3:
                     if self.three_to_two(edge):
-                        progress, did_simplify = 1, 1
+                        progress, did_simplify = True, True
                         break
         return did_simplify
 
     def easy_simplify(self):
-        did_simplify  = 0
-        progress = 1
+        """
+        Perform moves eliminating edges of valence 1, 2, and 3,
+        monotonically reducing the number of tetrahedra until no
+        further such moves are possible.  Returns whether or not the
+        number of tetrahedra was reduced.
+
+        >>> M = Mcomplex('zLALvwvMwLzzAQPQQkbcbeijmoomvwuvust'
+        ...              'wwytxtyxyahkswpmakguadppmrssxbkoxsi')
+        >>> M.easy_simplify()
+        True
+        >>> len(M)
+        1
+        >>> M.rebuild(); M.isosig()
+        'bkaagj'
+        """
+
+        init_tet = len(self)
+        progress = True
         while progress:
-            progress = 0
-            if self.eliminate_valence_two():
-                progress, did_simplify = 1, 1
-            if self.eliminate_valence_three():
-                progress, did_simplify = 1, 1
-        return did_simplify
+            curr_tet = len(self)
+            while self.attack_valence_one():
+                pass
+            while self.eliminate_valence_two() | self.eliminate_valence_three():
+                pass
+            progress = len(self) < curr_tet
+
+        return len(self) < init_tet
 
     def jiggle(self):
-        tries = []
-        for edge in self.Edges:
-            if edge.valence() == 4 and edge.IntOrBdry == 'int':
-                tries.append(edge)
-        if len(tries) == 0:
-            return 0
-        return self.four_to_four(tries[random.randint(0,len(tries) - 1)])
+        """
+        Do a random ``four_to_four`` move if one is possible.
+        """
+        fours = [edge for edge in self.Edges
+                 if edge.valence() == 4 and edge.IntOrBdry == 'int']
+        if len(fours) == 0:
+            return False
+        return self.four_to_four(random.choice(fours))
 
     JIGGLE_LIMIT = 6
 
-    def simplify(self):
-        did_simplify = 0
-        count = 0
-        while count < self.JIGGLE_LIMIT:
-            if self.easy_simplify():
-                did_simplify = 1
-            else:
-                count = count + 1
-            if self.jiggle() == 0:
+    def simplify(self, jiggle_limit=None):
+        """
+        Try to simplify the triangulation using only moves that do not
+        increase the total number of tetrahedra, using a combination
+        of ``jiggle`` and ``easy_simplify``.
+
+        When ``jiggle_limit`` is ``None``, it defaults to
+        ``self.JIGGLE_LIMIT`` which is typically 6.
+        """
+
+        if jiggle_limit is None:
+            jiggle_limit = self.JIGGLE_LIMIT
+
+        init_tet = len(self)
+        for j in range(jiggle_limit):
+            self.easy_simplify()
+            if not self.jiggle():
                 break
         self.eliminate_valence_two()
-        return did_simplify
+        return len(self) < init_tet
 
-    BLOW_UP_MULTIPLE = 6
-
-    def blowup(self,n):
+    def blowup(self, n):
+        """
+        Do ``n`` randomly chosen ``two_to_three`` moves.
+        """
         for i in range(n):
             rand_tet = self[ random.randint(0, len(self) - 1) ]
             rand_face = TwoSubsimplices[random.randint(0,3)]
@@ -690,10 +907,12 @@ class Mcomplex:
             self.eliminate_valence_two()
         return len(self)
 
-# Create n edges of valence 2 in random places, removing valence
-# 3 edges whenever they appear.
-#
-    def blowup2(self,n):
+    def blowup2(self, n):
+        """
+        Create ``n`` edges of valence 2 in random places, removing valence
+        3 edges whenever they appear.
+        """
+
         for i in range(n):
             rand_edge = self.Edges[ random.randint(0, len(self.Edges) - 1) ]
             j = random.randint(0, len(rand_edge.Corners) - 1)
@@ -706,19 +925,32 @@ class Mcomplex:
             self.eliminate_valence_three()
         return len(self)
 
-    def randomize(self):
-        self.blowup(self.BLOW_UP_MULTIPLE * len(self))
+    BLOW_UP_MULTIPLE = 6
+
+    def randomize(self, blow_up_multiple=None):
+        """
+        Do ``blow_up_multiple`` times the current number of tetrahedra
+        random ``two_to_three`` moves, and then ``simplify``.
+
+        If ``blow_up_multiple`` is ``None``, it defaults to
+        ``self.BLOW_UP_MULTIPLE`` which is typically 6.
+
+        Unlike the other simplification methods, this one rebuilds the
+        vertices.
+        """
+        if blow_up_multiple is None:
+            blow_up_multiple = self.BLOW_UP_MULTIPLE
+        self.blowup(blow_up_multiple * len(self))
         self.simplify()
         self.rebuild()
         return len(self)
 
-# Boundary Modifications:
-#
-# Find a boundary face adjoining a given boundary face.
-# Given an Arrow representing a boundary face, return the Arrow
-# representing the boundary face that shares the Arrow's Edge.
-#
     def bdry_neighbor(self, arrow):
+        """
+        Find a boundary face adjoining a given boundary face.
+        Given an Arrow representing a boundary face, return the Arrow
+        representing the boundary face that shares the Arrow's Edge.
+        """
         if arrow.next() != None:
             raise Insanity("That boundary face is not on the boundary!")
         edge = arrow.Tetrahedron.Class[arrow.Edge]
@@ -727,9 +959,10 @@ class Mcomplex:
         else:
             return edge.LeftBdryArrow
 
-# Adds a "fan" of n tetrahedra onto a boundary edge and rebuilds.
-#
     def add_fan(self, edge, n):
+        """
+        Adds a fan of ``n`` tetrahedra onto a boundary edge and rebuilds.
+        """
         if not edge.IntOrBdry == 'bdry':
             return 0
         a = edge.LeftBdryArrow
@@ -745,27 +978,30 @@ class Mcomplex:
         self.rebuild()
         return 1
 
-# The following method subdivides the star of an edge e.  If the
-# edge has an embedded star then this operation first subdivides the
-# edge, producing one new vertex and two new edges.  Next each
-# tetrahedron which meets the edge is divided into two tetrahedra
-# along a face which is the join of the new vertex to the edge
-# opposite to e.  The edge e must not be self-adjacent in any
-# 2-simplex for this operation to be possible.  However, it is
-# allowed for a tetrahedron to have two opposite edges identified
-# to e.  In this case the tetrahedron is split into four
-# tetrahedra, forming the join of two segments of length 2.  In
-# order to deal with this situation we work our way around the edge
-# making the identifications as we go.  The first time that we
-# encounter a corner of a certain tetrahedron it gets split into two.
-# Those two are glued into place and may be encountered later in the
-# process, at which time each of them get split in two.
-#
-# Returns an arrow associated to the "top half" of the original edge
-# and the "first" tetrahedron adjacent to that edge, or 0 if the edge
-# is self-adjacent.
-
     def split_star(self,edge):
+        """
+        Subdivides the star of an edge e.  If the edge has an embedded
+        star then this operation first subdivides the edge, producing
+        one new vertex and two new edges.  Next each tetrahedron which
+        meets the edge is divided into two tetrahedra along a face
+        which is the join of the new vertex to the edge opposite to e.
+        The edge e must not be self-adjacent in any 2-simplex for this
+        operation to be possible.  However, it is allowed for a
+        tetrahedron to have two opposite edges identified to e.  In
+        this case the tetrahedron is split into four tetrahedra,
+        forming the join of two segments of length 2.  In order to
+        deal with this situation we work our way around the edge
+        making the identifications as we go.  The first time that we
+        encounter a corner of a certain tetrahedron it gets split into
+        two.  Those two are glued into place and may be encountered
+        later in the process, at which time each of them get split in
+        two.
+
+        Returns an arrow associated to the "top half" of the original edge
+        and the "first" tetrahedron adjacent to that edge, or 0 if the edge
+        is self-adjacent.
+        """
+
         if edge.selfadjacent():
             return 0
         # Collect the garbage as we go -- some of the new tets may
@@ -839,16 +1075,16 @@ class Mcomplex:
         self.rebuild()
         return first_top
 
-# If an edge joins distinct vertices and has an embedded open star then
-# the following method will smash each 3-simplex in the star down to a
-# 2-simplex, and smash the edge to a vertex, reducing the number of
-# vertices by 1.  Returns 1 on success, 0 on failure.
-
     def smash_star(self, edge):
-        if not edge.distinct():
-            return 0
-        if edge.Vertices[0] == edge.Vertices[1]:
-            return 0
+        """
+        If an edge joins distinct vertices and has an embedded open
+        star then the following method will smash each 3-simplex in
+        the star down to a 2-simplex, and smash the edge to a vertex,
+        reducing the number of vertices by 1.  Returns ``True`` on
+        success, ``False`` on failure.
+        """
+        if not edge.distinct() or edge.Vertices[0] == edge.Vertices[1]:
+            return False
         start = edge.get_arrow()
         a = start.copy()
         garbage = []
@@ -863,21 +1099,39 @@ class Mcomplex:
         for tet in garbage:
             self.delete_tet(tet)
         self.rebuild()
-        return 1
+        return True
 
-    # Functions below added by NMD June 22, 1999.
+    def smash_all_edges(self):
+        """
+        Collapse edges to reduce the number of vertices as much as
+        possible. Returns whether the number of vertices has been
+        reduced to one.
+        """
+        success = True
+        while len(self.Vertices) > 1 and success:
+            success = False
+            edges = sorted(self.Edges, key=lambda E:E.valence(), reverse=True)
+            edges = self.Edges
+            for edge in edges:
+                if self.smash_star(edge):
+                    success = True
+                    break
 
-    # The following method takes an arrow and replaces its star with
-    # other_complex attaching that complex via top_arrows and
-    # bottom_arrows where: Let a be the arrow defining the same
-    # directed edge as arrow which is the ith such arrow counting
-    # around the star.   Then a.glued() is glued to top_arrow[i]
-    # and a.reverse().glued() is glued to bottom_arrow[i].
-
-    # NOTE:  If it fails, you need to delete any tets that you were
-    # trying to add.   I will later change things...
+        return len(self.Vertices) == 1
 
     def replace_star(self, arrow, top_arrows, bottom_arrows):
+        """
+        This method takes an arrow and replaces its star with
+        other_complex attaching that complex via top_arrows and
+        bottom_arrows where: Let a be the arrow defining the same
+        directed edge as arrow which is the ith such arrow counting
+        around the star.  Then a.glued() is glued to top_arrow[i] and
+        a.reverse().glued() is glued to bottom_arrow[i].
+
+        NOTE:  If it fails, you need to delete any tets that you were
+        trying to add.
+        """
+
         edge = arrow.Tetrahedron.Class[arrow.Edge]
         a = arrow.copy().opposite()
 
@@ -889,7 +1143,7 @@ class Mcomplex:
         if len(top_arrows) != valence or len(bottom_arrows) != valence:
             return None
 
-        #  Attach other_complex to manifold replace star of arrow
+        # Attach other_complex to manifold replace star of arrow
         #
         # It's important that we do things incrementally as follows in
         # case two outside faces of the star are glued together.
@@ -900,7 +1154,7 @@ class Mcomplex:
             bottom_arrows[i].glue(a.glued())
             a.reverse()
 
-            # now advance a to represent the same edge but in the next
+            # Now advance a to represent the same edge but in the next
             # tetrahedra in the star.
             a.opposite()
             a.next()
@@ -915,21 +1169,20 @@ class Mcomplex:
         self.build_edge_classes()
         self.orient()
 
-        return 1
-
-    #---end method: replace star-------------------------
-
-    # The following method adds the suspension of a triangulation of a polygon
-    # to self.Tetrahedra and returns
-    #
-    # (top_arrows, bottom_arrows)
-    #
-    # Currently the choice of triangulation of the
-    # polygon is one that is the cone over an edge.  Probably this
-    # should be generalized.  top_arrows and bottom arrows are for
-    # gluing in this complex via the method
+        return True
 
     def suspension_of_polygon(self, num_sides_of_polygon):
+        """
+        This method adds the suspension of a triangulation of a
+        polygon to self.Tetrahedra and returns::
+
+          (top_arrows, bottom_arrows)
+
+        Currently the choice of triangulation of the polygon is one
+        that is the cone over an edge.  Probably this should be
+        generalized.  top_arrows and bottom arrows are for gluing in
+        this complex via the method ``replace_star``.
+        """
         top_tets = self.new_tets(num_sides_of_polygon - 2)
         bottom_tets = self.new_tets(num_sides_of_polygon - 2)
         n = len(top_tets)
@@ -1002,16 +1255,42 @@ class Mcomplex:
         return self.snappy_triangulation().with_hyperbolic_structure()
 
     def isosig(self):
-        return snappy.Triangulation(self._snappea_file_contents(),
-                                    remove_finite_vertices=False).triangulation_isosig(decorated=False)
+        contents = self._snappea_file_contents()
+        T = snappy.Triangulation(contents, remove_finite_vertices=False)
+        return T.triangulation_isosig(decorated=False)
 
     def regina_triangulation(self):
+        """
+        >>> M = Mcomplex('K14n1234')
+        >>> try:
+        ...     T = M.regina_triangulation()
+        ...     assert M.isosig() == T.isoSig()
+        ... except ImportError:
+        ...     pass
+        """
         try:
             import regina
         except ImportError:
             raise ImportError('Regina module not available')
-        data = self._snappea_file_contents()
-        return regina.NTriangulation(self.snappy_triangulation()._to_string())
+
+        T = regina.Triangulation3()
+        regina_tets = {tet:T.newTetrahedron() for tet in self}
+        self.rebuild()
+        for face in self.Faces:
+            if face.IntOrBdry == 'int':
+                corner = face.Corners[0]
+                tet0 = corner.Tetrahedron
+                face0 = corner.Subsimplex
+                tet1 = tet0.Neighbor[face0]
+                perm = tet0.Gluing[face0]
+
+                r_tet0 = regina_tets[tet0]
+                r_tet1 = regina_tets[tet1]
+                r_face = FaceIndex[face0]
+                r_perm = regina.Perm4(*perm.tuple())
+                r_tet0.join(r_face, r_tet1, r_perm)
+
+        return T
 
     def boundary_maps(self):
         """
@@ -1025,14 +1304,15 @@ class Mcomplex:
         return homology.boundary_maps(self)
 
 
-# Takes a list where the ith element represents the glueing data
-# for the ith tetraherda:
-#
-#  ( [Neighbors], [Glueings] )
-#
-# and creates the corresponding Mcomplex
-
 def tets_from_data(fake_tets):
+    """
+    Takes a list where the ith element represents the gluing data
+    for the ith tetraherda::
+
+      ( [Neighbors], [Glueings] )
+
+    and creates the corresponding glued Tetraherda.
+    """
     fake_tets = fake_tets
     num_tets = len(fake_tets)
     tets = [Tetrahedron() for i in range(num_tets)]

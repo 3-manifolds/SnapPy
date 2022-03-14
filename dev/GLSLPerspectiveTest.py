@@ -43,9 +43,10 @@ void main()
     }}
 """
 
+
 class PerspectiveTester:
     def __init__(self, window=None):
-        if window == None:
+        if window is None:
             window = Tk_.toplevel(Tk_._default_root)
         self.window = window
         window.grid_rowconfigure(0, weight=1)

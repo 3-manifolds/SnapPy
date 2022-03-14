@@ -45,19 +45,35 @@ from os.path import getmtime, exists
 get_default_compiler = setuptools.distutils.ccompiler.get_default_compiler
 from glob import glob
 
-# We do not want to build a fati macOS package; build only for this CPU.
 if sys.platform == 'darwin':
-    if platform.machine() == 'arm64':
-        os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-arm64'
-        os.environ['ARCHFLAGS'] = '-arch arm64'
-    elif platform.machine() == 'x86_64':
-        os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-x86_64'
-        os.environ['ARCHFLAGS'] = '-arch x86_64'
-    else:
-        print('%s is an unrecognized CPU type'%platform.machine())
-        sys.exit(1)
     macOS_compile_args = []
     macOS_link_args = []
+    if sysconfig.get_platform().endswith('universal2'):
+        # If archflags is set, check that caller is not requesting a
+        # universal2 wheel, but otherwise get out of their way.
+        if 'ARCHFLAGS' in os.environ:
+            arches = os.environ['ARCHFLAGS']
+            req_arch_x86 = arches.find('x86_64') > -1
+            req_arch_arm = arches.find('arm') > -1
+            if req_arch_x86 and req_arch_arm:
+                print('Sorry, we do not support building universal2 binaries directly.')
+                sys.exit(1)
+            macos_arch = 'arm64' if req_arch_arm else 'x86_64'
+        else:
+            macos_arch = platform.machine()
+            os.environ['ARCHFLAGS'] = '-arch ' + macos_arch
+
+        if '_PYTHON_HOST_PLATFORM' not in os.environ:
+            python_host_platforms = {'x86_64':'macosx-10.9-x86_64',
+                                     'arm64': 'macosx-11-arm64'}
+            os.environ['_PYTHON_HOST_PLATFORM'] = python_host_platforms[macos_arch]
+
+        macos_targets = {'x86_64':'10.9', 'arm64': '11'}
+        os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_targets[macos_arch]
+
+    else:
+        macos_arch = sysconfig.get_platform().split('-')[-1]
+            
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
@@ -375,8 +391,12 @@ if sys.platform == 'win32' and cc == 'msvc':
     # hp_extra_compile_args += ['/DDEBUG', '/Zi',
     #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
 else:
-    if platform.machine() == 'x86_64':
+    if sys.platform == 'darwin':
+        if macos_arch == 'x86_64':
+            hp_extra_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
+    elif platform.machine() == 'x86_64':
         hp_extra_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
+
 
 # SnapPyHP depends implicitly on the source for the main kernel, so we
 # we delete certain object files to force distutils to rebuild them.

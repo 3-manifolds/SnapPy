@@ -4,6 +4,7 @@ from .hyperboloid_utilities import *
 from .ideal_raytracing_data import *
 from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
+from .geodesics import Geodesics
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
@@ -11,29 +12,6 @@ from snappy.CyOpenGL import SimpleImageShaderWidget
 from snappy.SnapPy import vector, matrix
 
 import math
-
-# We could use
-#
-# from ..sage_helper import _within_sage
-#
-# but then dev/GLSLManifoldInsideView.py cannot be used for
-# debugging anymore.
-
-try:
-    import sage.all
-    _within_sage = True
-except:
-    _within_sage = False
-    import decorator
-
-if _within_sage:
-    from sage.all import RealField, ComplexField
-    RF = RealField()
-    CF = ComplexField()
-else:
-    from snappy.number import Number as RF
-    from snappy.number import Number as CF
-
 __all__ = ['RaytracingView', 'NonorientableUnsupportedError']
 
 class NonorientableUnsupportedError(RuntimeError):
@@ -91,9 +69,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                  weights,          # Weights for tet faces
                  cohomology_basis, # Each entry are weights for the tet faces
                  cohomology_class, # Number for each entry in basis specifying superposition
+                 geodesics,
                  master,
                  *args,
                  **kwargs):
+
+        SimpleImageShaderWidget.__init__(
+            self, master,
+            *args, **kwargs)
 
         self.trig_type = trig_type
 
@@ -124,16 +107,19 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'lightFalloff' : ['float', 1.65],
             'brightness' : ['float', 1.9],
 
-            'showElevation' : ['bool', False]
+            'showElevation' : ['bool', False],
+            'desaturate_edges' : ['bool', False]
             }
 
         self.ui_parameter_dict = {
             'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
-                                (0.05 if trig_type == 'finite' else 0.08)],
+                                (0.025 if trig_type == 'finite' else 0.04)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
-            'perspectiveType' : ['bool', False]
+            'perspectiveType' : ['bool', False],
+            'geodesicTubeRadii' : ['float[]', []],
+            'geodesicTubeEnables' : ['bool[]', []]
             }
 
         if cohomology_class:
@@ -147,21 +133,27 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 raise Exception(
                     "Expected cohomology_class when given cohomology_basis")
 
+        self.compile_time_constants = {}
+
         self.manifold = manifold
 
         self._unguarded_initialize_raytracing_data()
 
-        self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
+        if self.trig_type == 'finite':
+            # Geodesics in finite triangulations are not yet
+            # supported.
+            self.geodesics = None
+            self.geodesics_uniform_bindings = {}
+        else:
+            self.geodesics = Geodesics(manifold, geodesics)
+            self.resize_geodesic_params(enable = True)
+            self._update_geodesic_data()
 
-        shader_source, uniform_block_names_sizes_and_offsets = (
-            shaders.get_triangulation_shader_source_and_ubo_descriptors(
-                    self.raytracing_data.get_compile_time_constants()))
+        self.geodesics_disabled_edges = False
+        if geodesics:
+            self.disable_edges_for_geodesics()
 
-        SimpleImageShaderWidget.__init__(
-            self, master,
-            shader_source,
-            uniform_block_names_sizes_and_offsets,
-            *args, **kwargs)
+        self._update_shader()
 
         # Use distance view for now
         self.view = 1
@@ -176,6 +168,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         result = _merge_dicts(
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
+            self.geodesics_uniform_bindings,
             {
                 'currentWeight' : ('float', current_weight),
                 'screenResolution' : ('vec2', [width, height]),
@@ -183,7 +176,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'edgeTubeRadiusParam' :
-                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0),
+                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1]) ** 2 / 2.0),
                 'vertexSphereRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1])),
                 'perspectiveType' :
@@ -239,6 +232,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def compute_translation_and_inverse_from_pick_point(
                 self, size, frag_coord, depth):
 
+        RF = self.raytracing_data.RF
+        
         # Depth value emitted by shader is tanh(distance from camera)
 
         # Limit the maximal depth for orbiting to avoid numeric issues
@@ -274,7 +269,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                         RF( foo               + depth * (foo - 1.0))]))
 
             # Distance of rayEnd from origin
-            dist = math.acosh(rayEnd[0])
+            dist = rayEnd[0].arccosh()
             # Direction from origin to rayEnd
             dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
         else:
@@ -282,9 +277,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             scaled_y = fov_scale * y
 
             # Camera is assumed to be at origin.
-            dist = math.atanh(depth)
+            dist = RF(depth).arctanh()
             # Reimplemented from get_ray_eye_space
-            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1.0)])
+            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1)])
 
         # Normalize direction
         dir = dir.normalized()
@@ -293,7 +288,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         #
         # Do this by using a concentric circle in the Poincare disk
         # model
-        poincare_dist = math.tanh(dist / 2.0)
+        poincare_dist = (dist / 2).tanh()
         hyp_circumference_up_to_constant = (
             poincare_dist / (1.0 - poincare_dist * poincare_dist))
 
@@ -309,6 +304,67 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             unit_3_vector_and_distance_to_O13_hyperbolic_translation(
                 dir, -dist),
             speed)
+
+    def resize_geodesic_params(self, enable = False):
+        num = len(self.geodesics.geodesic_infos) - len(self.ui_parameter_dict['geodesicTubeRadii'][1])
+        self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
+        self.ui_parameter_dict['geodesicTubeEnables'][1] += num * [ enable ]
+
+    def enable_geodesic(self, index):
+        self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
+        
+    def _update_geodesic_data(self):
+        self.geodesics.set_enables_and_radii_and_update(
+            self.ui_parameter_dict['geodesicTubeEnables'][1],
+            self.ui_parameter_dict['geodesicTubeRadii'][1])
+        self.geodesics_uniform_bindings = (
+            self.geodesics.get_uniform_bindings())
+
+    def update_geodesic_data_and_redraw(self):
+        self._update_geodesic_data()
+        self._update_shader()
+        self.redraw_if_initialized()
+
+    def disable_edges_for_geodesics(self):
+        # Only do once
+        if self.geodesics_disabled_edges:
+            return False
+
+        self.geodesics_disabled_edges = True
+        
+        self.ui_uniform_dict['desaturate_edges'][1] = True
+        self.ui_parameter_dict['edgeTubeRadius'][1] = 0.0
+        self.ui_parameter_dict['insphere_scale'][1] = 0.0
+
+        self._initialize_raytracing_data()
+
+        return True
+        
+    def _update_shader(self):
+        if self.geodesics:
+            geodesic_compile_time_constants = (
+                self.geodesics.get_compile_time_constants())
+        else:
+            geodesic_compile_time_constants = {
+                b'##num_geodesic_segments##' : 0
+            }
+        
+        compile_time_constants = _merge_dicts(
+            self.raytracing_data.get_compile_time_constants(),
+            geodesic_compile_time_constants)
+
+        if compile_time_constants == self.compile_time_constants:
+            return
+
+        self.compile_time_constants = compile_time_constants
+
+        shader_source, uniform_block_names_sizes_and_offsets = (
+            shaders.get_triangulation_shader_source_and_ubo_descriptors(
+                compile_time_constants))
+
+        self.set_fragment_shader_source(
+            shader_source,
+            uniform_block_names_sizes_and_offsets)
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

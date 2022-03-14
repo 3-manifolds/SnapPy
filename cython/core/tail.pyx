@@ -112,7 +112,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
 # Testing code for get_triangulation
 def get_triangulation_tester():
     """
-    >>> get_triangulation_tester()
+    >>> get_triangulation_tester() # doctest: +NUMERIC6
     L13n9331(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     m003(0,0) 2.02988321 Z/5 + Z
     m004(0,0) 2.02988321 Z
@@ -557,26 +557,27 @@ class ObsCensusKnots(Census):
             return self.__class__(n.indices(self.length))
         else:
             total = 0
-            for m in range(2,8):
-                if total + census_knot_numbers[m] <= n :
+            for m in range(2, 8):
+                if total + census_knot_numbers[m] <= n:
                     total += census_knot_numbers[m]
                     continue
                 else:
-                    name = 'K%s_%s'%(m, n - total + 1)
+                    name = 'K%s_%s' % (m, n - total + 1)
                     break
             if name:
-                tarpath =  'CensusKnots/%s'%name
+                tarpath = 'CensusKnots/%s' % name
                 try:
                     filedata = self.Census_Knots.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
-                except: 
-                    raise IOError, "The census knot %s was not found."%name
-                result =  Triangulation('empty')
+                except:
+                    raise IOError("The census knot %s was not found." % name)
+                result = Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
                 return result.with_hyperbolic_structure()
             else:
                 raise IndexError('There are only 201 census knots.')
+
 
 class ObsLinkExteriors(Census):
     """
@@ -660,8 +661,8 @@ class ObsMorwenLinks(Census):
     def __init__(self, num_components, num_crossings = None):
         if num_components < 0:
             return
-        
-        crossings = range(4, 15) if num_crossings == None else [num_crossings]
+
+        crossings = range(4, 15) if num_crossings is None else [num_crossings]
         files = []
         for c in crossings:
             n = left_pad_string('%d' % c, 2, '0')
@@ -759,7 +760,7 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
         P.crossings[i].component[<int>KLPStrandX] = cr_dict['Xcomponent']
         P.crossings[i].component[<int>KLPStrandY] = cr_dict['Ycomponent']
 
-    c_triangulation = triangulate_link_complement(&P, remove_finite_vertices);
+    c_triangulation = triangulate_link_complement(&P, remove_finite_vertices)
     free(P.crossings)
 
     if c_triangulation == NULL:
@@ -770,4 +771,3 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
     tri_name = to_byte_str('unnamed link')
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
-

@@ -2,12 +2,11 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from .simplex import *
-from .tetrahedron import *
+from .simplex import SubsimplexName
 
 # A Corner is a "subsimplex in a tetrahedron".
 
@@ -18,6 +17,5 @@ class Corner:
         self.Subsimplex = subsimplex
 
     def __repr__(self):
-        return ('<'+SubsimplexName[self.Subsimplex]+ ' of '+ 
+        return ('<'+SubsimplexName[self.Subsimplex]+ ' of '+
                 str(self.Tetrahedron) + '>')
-

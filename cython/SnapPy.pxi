@@ -190,6 +190,7 @@ cdef extern from "SnapPea.h":
         c_Orbifold1 topology
         int multiplicity
         O31Matrix matrix
+        int *word
     ctypedef struct CuspNbhdHoroball:
         Complex center
         Real radius
@@ -378,6 +379,7 @@ cdef extern from "winged_edge.h":
         WEEdge *some_edge
         WEFace *mate
         O31Matrix *group_element
+        int *group_element_word
         Real dist
         O31Vector closest_point
         Boolean to_be_removed
@@ -546,9 +548,9 @@ cdef extern from "SnapPea.h":
     extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list) except *
     extern WEPolyhedron *Dirichlet(c_Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
-    extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius, Boolean include_words) except *
     extern WEPolyhedron *Dirichlet_from_generators(O31Matrix generators[], int num_generators, double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
-    extern WEPolyhedron *Dirichlet_from_generators_with_displacement(O31Matrix generators[], int num_generators, double displacement[3], double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern WEPolyhedron *Dirichlet_from_generators_with_displacement(O31Matrix generators[], int num_generators, double displacement[3], double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius, Boolean include_words) except *
     extern void change_basepoint(WEPolyhedron **polyhedron, c_Triangulation *manifold, O31Matrix *generators, int num_generators, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
     extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain) except *
     extern void set_identity_matrix(O31Matrix position) except *
@@ -616,7 +618,7 @@ cdef extern from "SnapPea.h":
     extern void free_isometry_list(IsometryList *isometry_list) except *
     extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1) except *
     extern void length_spectrum(WEPolyhedron *polyhedron, Real cutoff_length, Boolean full_rigor, Boolean multiplicities, Boolean grouped, Real user_radius, MultiLength **spectrum, int *num_lengths) except *
-    extern void free_length_spectrum(MultiLength *spectrum) except *
+    extern void free_length_spectrum(MultiLength *spectrum, int num_lengths) except *
     extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection, Boolean remove_extra_vertices) except *
     extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B) except *
     extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A) except *

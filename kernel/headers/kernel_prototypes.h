@@ -1178,6 +1178,30 @@ extern Real birectangular_tetrahedron_volume(
  *  article.  Please see volume.c for a citation to Vinberg's article.
  */
 
+
+/************************************************************************/
+/*                                                                      */
+/*                               words.c                                */
+/*                                                                      */
+/************************************************************************/
+
+extern int *invert_group_word(int *word);
+/**<
+ *  Reverses order and flips signs of a null-terminated array of integers.
+ */
+
+extern int *concat_group_words(int *word0, int *word1);
+/**<
+ *  The result is the concatenation of the two words (encoded as null-terminated
+ *  array) after removing the last letter of the first word and first latter of
+ *  the second word for as long as one is the negative of the other.
+ */
+
+extern int *copy_group_word(int *word);
+/**<
+ *  Make copy of null-terminated array.
+ */
+
 #include "end_namespace.h"
 
 #endif

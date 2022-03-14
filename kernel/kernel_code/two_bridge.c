@@ -122,9 +122,9 @@
  *  copy of the article handy, I will show you how to construct the
  *  key illustration for yourself.  The given 2-bridge knot or link is
  *  positioned on the surface of a tall rectangular box (with slight
- *  deviations to accomodate the crossings, just as ordinary planar
+ *  deviations to accommodate the crossings, just as ordinary planar
  *  projections of knots allow slight deviations from the plane to
- *  accomodate the crossings).  To draw the box in this text-only
+ *  accommodate the crossings).  To draw the box in this text-only
  *  file, I have cut it open.
  *
  *       column  column  column  column
@@ -182,7 +182,7 @@
  *  of the tall, narrow box.  The squares attached at the
  *  top and bottom of the diagram will be the top and bottom
  *  of the rectangular box.  The dashes in the diagram
- *  (i.e. the charaters '/', '\', '|' and '-') represent
+ *  (i.e. the characters '/', '\', '|' and '-') represent
  *  the path of the knot or link.  The dots (i.e. the
  *  characters '.') indicate edges of the box where the
  *  knot or link does not pass.
@@ -938,7 +938,7 @@ static Boolean at_top_of_box(
      *  In setting *p and *q, we must account for two things:
      *
      *  (1) The double crossing at the top of the box,
-     *      which either addes twice the denominator to
+     *      which either adds twice the denominator to
      *      the numerator, or vice versa.
      *
      *  (2) The way the two arcs are attached to the
@@ -1245,8 +1245,8 @@ static Boolean left_handed_crossing(
      *  the top surface of the old level will glue to the bottom
      *  surface of the new level as illustrated below.
      *
-     *  For greater clarity, the illustration supresses the diagonals
-     *  on the top surface of the new level and and bottom surface of the
+     *  For greater clarity, the illustration suppresses the diagonals
+     *  on the top surface of the new level and bottom surface of the
      *  old level.  They are irrelevant to the present gluing.
      *
      *  Each double square in the illustration is really a tetrahedron

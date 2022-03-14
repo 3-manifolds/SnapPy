@@ -652,7 +652,7 @@ Triangulation *triangulate_punctured_torus_bundle(
      *  the LR_factors is the monodromy of the bundle, expressed relative
      *  to the basis (u[i], v[i]).
      *
-     *  The algorithm is easily modified to accomodate negative
+     *  The algorithm is easily modified to accommodate negative
      *  determinant and/or trace.
      *
      *  If the determinant is to be negative, then when i + 1 = 0 (mod n)
@@ -665,7 +665,7 @@ Triangulation *triangulate_punctured_torus_bundle(
      *  trace and the determinant are negative, we can do them in either
      *  order.  They have the desired effect on the monodromy matrix.
      *  For example, if both the determinant and the trace are to be
-     *  negative, the forumla for (u[n] v[n]) becomes
+     *  negative, the formula for (u[n] v[n]) becomes
      *
      *                                  (  product   ) ( 0  1 ) (-1  0 )
      *  ( u[n] v[n] )  =  ( u[0] v[0] ) (   of all   ) (      ) (      )

@@ -11,22 +11,33 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, datetime
-from distutils.util import get_platform
+import sys, os, datetime, sysconfig, platform
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 def build_lib_dir():
+    if sys.platform == 'darwin':
+        target = sysconfig.get_platform().split('-')[-1]
+        machine = platform.machine()
+        # Check if we're cross-compiling.  If so, module must already
+        # have been built for the host architecture.
+        if target != machine:
+            python_platform = {'x86_64':'macosx-10.9-x86_64',
+                               'arm64': 'macosx-11-arm64'}[machine]
+        else:
+            python_platform = sysconfig.get_platform()
+
+    else:
+        python_platform = sysconfig.get_platform()
+
+    v0, v1 = sys.version_info[:2]
     return os.path.join(
         '..',
         'build',
-        'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
-            platform=get_platform(),
-            version_info=sys.version_info)
-        )
-    
+        f'lib.{python_platform}-{v0}.{v1}')
+
 sys.path.insert(0, os.path.abspath(build_lib_dir()))
 
 import snappy

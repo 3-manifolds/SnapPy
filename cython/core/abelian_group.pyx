@@ -234,7 +234,7 @@ cdef class PresentationMatrix(object):
                     temp = self._entries.get(kl, 0)
                     self._set(kl, temp - m*a_il )
             self.dead_columns.add(j)
-    
+
     def simplified_matrix(self):
         """
         Return the simplified presentation as a matrix.
@@ -248,4 +248,3 @@ cdef class PresentationMatrix(object):
             presentation = [ [self._entries.get((i,j), 0) for j in columns]
                              for i in rows ]
         return matrix(presentation)
-

@@ -2,16 +2,26 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
 from .simplex import *
-from .tetrahedron import *
-from .corner import *
-from .arrow import *
-from .perm4 import *
+from .corner import Corner
+from .arrow import Arrow
+from .perm4 import Perm4
 import sys
+
+# A table used for _add_corner, equivalent to:
+# other_arrow = arrow.copy().opposite()
+# tail, head = other_arrow.tail(), other_arrow.head()
+
+_edge_add_corner_dict = dict()
+for edge, face in EdgeFacePairs:
+    other_arrow = Arrow(edge, face, None).opposite()
+    _edge_add_corner_dict[edge, face] = other_arrow.tail(), other_arrow.head()
+
+
 
 # An edge has an initial and terminal vertex, but these are determined
 # arbitrarily when the 1-skeleton is constructed.
@@ -23,9 +33,9 @@ class Edge:
         self.Name = ''
         self.IntOrBdry = ''         # value: '', 'int' or 'bdry'
         self.Corners = []           # Corners of type "1-simplex in Tetrahedron"
-        self.Vertices = []          # pairs: (initial Vertex, terminal Vertex) 
+        self.Vertices = []          # pairs: (initial Vertex, terminal Vertex)
         self.LeftBdryArrow = None   # Arrows representing the two boundary faces,
-        self.RightBdryArrow = None  # if this is a boundary edge. 
+        self.RightBdryArrow = None  # if this is a boundary edge.
         self._edge_orient_cache = dict()
 
     def __repr__(self):
@@ -57,7 +67,7 @@ class Edge:
             a.next()
             if i > 0 and (i +1) % 3 == 0 and i != (self.valence()-1):
                 s = s + "\n\t"
-        out.write(s + '\n')            
+        out.write(s + '\n')
 
     def valence(self):
         return len(self.Corners)
@@ -79,9 +89,9 @@ class Edge:
             for one_subsimplex in AdjacentEdges[corner.Subsimplex]:
                 if corner.Tetrahedron.Class[one_subsimplex] is self:
                     return 1
-        return 0 
+        return 0
 
-# Return 1 if two opposite edges of a 3-simplex are identified to 
+# Return 1 if two opposite edges of a 3-simplex are identified to
 # the edge.
     def self_opposite(self):
         count = 0
@@ -93,7 +103,7 @@ class Edge:
 # Remove all references to self from adjoining Tetrahedra and Vertices
     def erase(self):
         for corner in self.Corners:
-            corner.Tetrahedron.Class[corner.Subsimplex] = None 
+            corner.Tetrahedron.Class[corner.Subsimplex] = None
         for vertex in self.Vertices:
             try:
                 vertex.Edges.remove(self)
@@ -155,7 +165,9 @@ class Edge:
         Used by Mcomplex.build_edge_classes
         """
         self.Corners.append(Corner(arrow.Tetrahedron, arrow.Edge))
-        other_arrow = arrow.copy().opposite()
-        tail, head = other_arrow.tail(), other_arrow.head()
-        self._edge_orient_cache[(arrow.Tetrahedron, tail, head)] = 1
-        self._edge_orient_cache[(arrow.Tetrahedron, head, tail)] = -1
+        # Next line equivalent to:
+        # other_arrow = arrow.copy().opposite()
+        # tail, head = other_arrow.tail(), other_arrow.head()
+        tail, head = _edge_add_corner_dict[arrow.Edge, arrow.Face]
+        self._edge_orient_cache[arrow.Tetrahedron, tail, head] = 1
+        self._edge_orient_cache[arrow.Tetrahedron, head, tail] = -1

@@ -65,6 +65,14 @@ typedef struct matrix_pair
     O31Matrix           m[2];
 
     /**
+     *  (Optional) words in the original generators corresponding to the matrices.
+     *
+     *  Added by MG 2022-01-24
+     */
+
+    int                *m_word[2];
+
+    /**
      *  height is the hyperbolic cosine of the distance either matrix
      *  translates the origin (1, 0, 0, 0) of hyperbolic space.
      *  height == m[0][0][0] == m[1][0][0].

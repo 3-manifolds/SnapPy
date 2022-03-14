@@ -96,6 +96,7 @@ def big_test():
 
 
 def run_doctests(verbose=False, print_info=True):
+    from snappy.snap.t3mlite import perm4
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
     from snappy.snap.t3mlite import mcomplex
@@ -110,6 +111,7 @@ def run_doctests(verbose=False, print_info=True):
     from snappy.snap.peripheral import peripheral
 
     modules = [
+        perm4,
         mcomplex,
         linalg,
         spun,

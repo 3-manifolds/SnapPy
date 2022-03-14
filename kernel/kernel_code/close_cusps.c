@@ -418,7 +418,7 @@ static void simplify_cusps(
      *  It calls two other functions:
      *
      *  fold_boundary() folds together adjacent boundary
-     *  triangles whereever possible, as explained in the proofs
+     *  triangles wherever possible, as explained in the proofs
      *  at the top of this file.  It is guaranteed to reduce the
      *  triangulation of each boundary component to at most six
      *  triangles.
@@ -784,7 +784,7 @@ static Boolean two_to_two(
 
     /*
      *  If require_distinct_edges is TRUE, check the EdgeClasses.
-     *  (See comment preceeding this function.)
+     *  (See comment preceding this function.)
      *  further_simplification() can make progress iff e_class[2] != e_class[3].
      */
     if (require_distinct_edges == TRUE

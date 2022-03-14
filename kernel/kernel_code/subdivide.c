@@ -19,7 +19,7 @@
  *
  *  Note:  subdivide() has a subtle dependence on the implementation
  *  of orient().  The first Tetrahedron on the new Triangulation's
- *  tet list has the correct orientation, and orient() must propogate
+ *  tet list has the correct orientation, and orient() must propagate
  *  that orientation to all the other Tetrahedra.
  *
  *  The function subdivide() subdivides each Tetrahedron of a

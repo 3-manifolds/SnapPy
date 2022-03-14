@@ -119,10 +119,6 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'pari', 'twister', ]
 
 from .sage_helper import _within_sage
-if _within_sage:
-    to_sage = lambda n : n.sage()
-    Manifold.use_field_conversion(to_sage)
-    ManifoldHP.use_field_conversion(to_sage)
 
 from . import snap
 snap.add_methods(Manifold)
@@ -334,7 +330,7 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
         return verify.triangulation_dependent_cusp_area_matrix(
             manifold, verified = verified, bits_prec = bits_prec)
 
-    raise RuntimeError("method passed to cusp_area_matrix must be "
+    raise ValueError("method passed to cusp_area_matrix must be "
                        "'trigDependent', 'trigDependentTryCanonize', "
                        "or 'maximal'.")
 
@@ -409,7 +405,7 @@ def cusp_areas(manifold, policy = 'unbiased',
 
     """
     if policy not in ['unbiased', 'greedy']:
-        raise RuntimeError("policy passed to cusp_areas must be 'unbiased' "
+        raise ValueError("policy passed to cusp_areas must be 'unbiased' "
                            "or 'greedy'.")
 
     m = manifold.cusp_area_matrix(
@@ -588,7 +584,7 @@ except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
 
-def manifold_inside_view(self, cohomology_class = None):
+def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     """
     Show raytraced inside view of hyperbolic manifold:
 
@@ -631,7 +627,8 @@ def manifold_inside_view(self, cohomology_class = None):
         title = "Inside view of %s" % self.name(),
         weights = weights,
         cohomology_basis = cohomology_basis,
-        cohomology_class = cohomology_class)
+        cohomology_class = cohomology_class,
+        geodesics = geodesics)
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

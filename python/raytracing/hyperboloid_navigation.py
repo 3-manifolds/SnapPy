@@ -1,5 +1,4 @@
 from .hyperboloid_utilities import *
-import math
 import time
 import sys
 import tempfile
@@ -8,28 +7,34 @@ import png
 __all__ = ['HyperboloidNavigation']
 
 def _move_left(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [ -1.0,  0.0,  0.0 ], trans_amount) # a
+        [ RF(-1), RF(0), RF(0) ], trans_amount) # a
 
 def _move_right(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [ +1.0,  0.0,  0.0 ], trans_amount) # d
+        [ RF(+1),  RF(0),  RF(0) ], trans_amount) # d
 
 def _move_up(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  0.0, +1.0,  0.0 ], trans_amount) # e
+        [  RF(0), RF(+1),  RF(0) ], trans_amount) # e
 
 def _move_down(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  0.0, -1.0,  0.0 ], trans_amount) # c
+        [  RF(0), RF(-1),  RF(0) ], trans_amount) # c
 
 def _move_forward(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  0.0,  0.0, -1.0 ], trans_amount) # w
+        [  RF(0),  RF(0), RF(-1) ], trans_amount) # w
 
 def _move_backward(rot_amount, trans_amount):
+    RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  0.0,  0.0, +1.0 ], trans_amount) # s
+        [  RF(0),  RF(0), RF(+1) ], trans_amount) # s
 
 def _turn_left(rot_amount, trans_amount):
     return O13_y_rotation(-rot_amount)
@@ -230,10 +235,7 @@ class HyperboloidNavigation:
         t = time.time()
 
         # Compute the matrix to update the view
-        m = matrix([[1.0,0.0,0.0,0.0],
-                    [0.0,1.0,0.0,0.0],
-                    [0.0,0.0,1.0,0.0],
-                    [0.0,0.0,0.0,1.0]])
+        m = matrix.identity(self.raytracing_data.RF, 4)
 
         # Is there any key event that needs processing so we need to
         # redraw.
@@ -283,10 +285,11 @@ class HyperboloidNavigation:
 
             # If there is key press time we need to account for
             if not dT is None:
+                RF = m.base_ring()
                 # Compute effect on view matrix
                 m = m * self.keymapping[k](
-                    dT * self.navigation_dict['rotationVelocity'][1],
-                    dT * self.navigation_dict['translationVelocity'][1])
+                    RF(dT * self.navigation_dict['rotationVelocity'][1]),
+                    RF(dT * self.navigation_dict['translationVelocity'][1]))
                 any_key = True
 
         if not any_key:
@@ -432,10 +435,7 @@ class HyperboloidNavigation:
         self.last_mouse_pos = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
 
-        self.orbit_rotation = matrix([[1.0,0.0,0.0,0.0],
-                                      [0.0,1.0,0.0,0.0],
-                                      [0.0,0.0,1.0,0.0],
-                                      [0.0,0.0,0.0,1.0]])
+        self.orbit_rotation = matrix.identity(self.raytracing_data.RF, 4)
 
         self.mouse_mode = 'orbit'
 
@@ -444,8 +444,10 @@ class HyperboloidNavigation:
             delta_x = event.x - self.last_mouse_pos[0]
             delta_y = event.y - self.last_mouse_pos[1]
 
-            angle_x = delta_x * self.orbit_speed * 0.01
-            angle_y = delta_y * self.orbit_speed * 0.01
+            RF = self.raytracing_data.RF
+            
+            angle_x = RF(delta_x * self.orbit_speed * 0.01)
+            angle_y = RF(delta_y * self.orbit_speed * 0.01)
 
             m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
             self.orbit_rotation = self.orbit_rotation * m
@@ -456,24 +458,31 @@ class HyperboloidNavigation:
 
             self.last_mouse_pos = (event.x, event.y)
         elif self.mouse_mode == 'move':
-            delta_x = event.x - self.mouse_pos_when_pressed[0]
-            delta_y = event.y - self.mouse_pos_when_pressed[1]
+            RF = self.raytracing_data.RF
+            
+            delta_x = RF(event.x - self.mouse_pos_when_pressed[0])
+            delta_y = RF(event.y - self.mouse_pos_when_pressed[1])
 
-            amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
+            amt = (delta_x ** 2 + delta_y ** 2).sqrt()
 
             if amt == 0:
                 self.view_state = self.view_state_when_pressed
             else:
                 m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-                    [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
+                    [-delta_x / amt, delta_y / amt, RF(0)], amt * RF(0.01))
 
                 self.view_state = self.raytracing_data.update_view_state(
                     self.view_state_when_pressed, m)
         elif self.mouse_mode == 'rotate':
+            RF = self.raytracing_data.RF
+
             delta_x = event.x - self.mouse_pos_when_pressed[0]
             delta_y = event.y - self.mouse_pos_when_pressed[1]
 
-            m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
+            angle_x = RF(-delta_x * 0.01)
+            angle_y = RF(-delta_y * 0.01)
+            
+            m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
 
             self.view_state = self.raytracing_data.update_view_state(
                 self.view_state, m)

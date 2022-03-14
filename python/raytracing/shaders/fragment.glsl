@@ -73,6 +73,8 @@ uniform int face_color_indices[4 * ##num_tets##];
 uniform int edge_color_indices[6 * ##num_tets##];
 uniform int vertex_color_indices[4 * ##num_tets##];
 
+uniform bool desaturate_edges = false;
+
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
@@ -117,14 +119,19 @@ layout (std140) uniform MargulisTubes
 };
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 
-uniform float horosphereScales[4 * ##num_tets##];
+#if ##num_geodesic_segments## > 0
+layout (std140) uniform geodesics
+{
+    vec4 geodesicTails[##num_geodesic_segments##];
+    vec4 geodesicHeads[##num_geodesic_segments##];
+    int geodesicIndex[##num_geodesic_segments##];
+    float geodesicTubeRadiusParam[##num_geodesic_segments##];
+    int geodesicOffsets[##num_tets## + 1];
+};
 
-// Heights of the Euclidean triangle obtained when intersecting
-// horosphere with tetrahedron.
-// There are four horospheres about the four edges of the tetrahedron,
-// giving four triangles but they are all similar, so storing only
-// one per tet.
-uniform vec3 horotriangleHeights[##num_tets##];
+#endif
+
+uniform float horosphereScales[4 * ##num_tets##];
 
 // cosh(r)^2 where r is the radius of the sphere
 // about the center of the tetrahedron.
@@ -233,6 +240,7 @@ const int object_type_vertex_sphere       = 7;
 const int object_type_margulis_tube       = 8;
 const int object_type_elevation_enter     = 9;
 const int object_type_elevation_exit      = 10;
+const int object_type_geodesic_tube       = 11;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -281,7 +289,8 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_margulis_tube ||
         ray_hit.object_type == object_type_edge_fan ||
         ray_hit.object_type == object_type_elevation_enter ||
-        ray_hit.object_type == object_type_elevation_exit;
+        ray_hit.object_type == object_type_elevation_exit ||
+        ray_hit.object_type == object_type_geodesic_tube;
 }
 
 // Advances ray by distance atanh(p).
@@ -375,17 +384,44 @@ distParamsForHorosphereIntersection(Ray ray,
 
 // Intersection with cylinder about the geodesic with the two given
 // (light-like) endpoints.
-// tubeRadiusParam is cosh(radius/2)^2/2.
+// tubeRadiusParam is cosh(radius)^2/2.
 // This function can detect intersections of the ray that happen
 // some distance before the start point of the ray. To use this feature,
 // set minDistParam to a negative value, namely to tanh(-distance),
 // where distance is how far back we want to track the ray.
 vec2
 distParamsForTubeIntersection(Ray ray,
-                             vec4[2] endpoints,
-                             float tubeRadiusParam,
-                             float minDistParam)
+                              vec4[2] endpoints,
+                              float tubeRadiusParam,
+                              float minDistParam)
 {
+    // The points p (with R13Dot(p,p) = -1) on a tube about a
+    // geodesic are given by
+    //
+    //     -tubeRadiusParam * R13Dot(endpoints[0], endpoints[1])
+    //           = R13Dot(endpoints[0],p) * R13Dot(endpoints[1],p)
+    //
+    // To see this, note that the isometries of the tube about
+    // the geodesic act on the like-like endpoints by multiplying
+    // them by s and 1/s, respectively, where s > 0. It is easy
+    // to check that the equation is invariant under this action.
+    //
+    // To compute the tubeRadiusParam in terms of the tube radius,
+    // place the endpoints at (1,-1,0,0) and (1,1,0,0) and p at
+    // (cosh(radius),0,sinh(radius),0). We obtain
+    //
+    //      tubeRadiusParam = cosh(radius)^2/2
+    //
+    // The ray is parameterized by
+    //
+    //      p = p0 / sqrt(-R13Dot(p0, p0))
+    //
+    // where
+    //     p0 = ray.point + t * ray.dir.
+    //
+    // Putting p into the above equation and multiplying by
+    // -R13Dot(p0, p0), we obtain a quadratic equation we can solve for.
+
     float start0Dot = R13Dot(endpoints[0], ray.point);
     float dir0Dot   = R13Dot(endpoints[0], ray.dir);
     float start1Dot = R13Dot(endpoints[1], ray.point);
@@ -470,6 +506,17 @@ horosphereEqn(int index)
 {
     return horosphereScales[index] * R13Vertices[index];
 }
+
+#if ##num_geodesic_segments## > 0
+// The two endpoints of a geodesic
+vec4[2]
+endpointsForGeodesic(int index)
+{
+    return vec4[](geodesicTails[index],
+                  geodesicHeads[index]);
+}
+#endif
+
 #endif
 
 vec4
@@ -496,7 +543,16 @@ normalForRayHit(RayHit ray_hit)
             ray_hit.ray.point,
             endpointsForMargulisTube(index));
     }
-#endif    
+
+#if ##num_geodesic_segments## > 0
+    if (ray_hit.object_type == object_type_geodesic_tube) {
+        return normalForTube(
+            ray_hit.ray.point,
+            endpointsForGeodesic(ray_hit.object_index));
+    }
+#endif
+
+#endif
     
     if(ray_hit.object_type == object_type_edge_fan ||
        ray_hit.object_type == object_type_elevation_enter ||
@@ -687,9 +743,28 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
+#if ##num_geodesic_segments## > 0
+    for (int index = geodesicOffsets[ray_hit.tet_num];
+         index < geodesicOffsets[ray_hit.tet_num + 1];
+         index++) {
+
+        vec2 params = distParamsForTubeIntersection(
+            ray_hit.ray,
+            endpointsForGeodesic(index),
+            geodesicTubeRadiusParam[index],
+            0.0);
+
+        if (params.x < smallest_p) {
+            smallest_p = params.x;
+            ray_hit.object_type = object_type_geodesic_tube;
+            ray_hit.object_index = index;
+        }
+    }
 #endif
 
-    if (edgeTubeRadiusParam > 0.50001) {
+#endif
+
+    if (edgeTubeRadiusParam > 0.500001) {
 
 #if ##finiteTrig##
         float backDistParam = 0.0;
@@ -905,7 +980,10 @@ material_params(RayHit ray_hit)
         //using num_tets = num_edges
 
 #if COLOR_SCHEME == 1
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_edges), 1.0, 1.0));
+        result.diffuse = hsv2rgb(
+            vec3(float(color_index)/float(num_edges),
+                 desaturate_edges ? 0.24 : 1.0,
+                 1.0));
 #else
         result.diffuse =
             vec3(0.5, 0.5, 0.5)
@@ -934,6 +1012,29 @@ material_params(RayHit ray_hit)
         result.diffuse = vec3(0.7,0.3,0.3);
         result.ambient = 0.5 * result.diffuse;
     }
+
+#if ##num_geodesic_segments## > 0
+    if (ray_hit.object_type == object_type_geodesic_tube) {
+        int index = geodesicIndex[ray_hit.object_index];
+
+        // The user wants to switch geodesics off and on while
+        // their colors stay stable.
+        //
+        // Thus, we cannot divide the color circle equally.
+        //
+        // Instead, we multiply the index by the golden angle
+        //          pi * (3 - sqrt(5)) radians
+        // so that no geodesics hit the same color.
+        //
+        // For hsv2rgb, we need to divide by 2 * pi:
+        //
+        float goldenAngleBy2Pi = 0.3819660112501051;
+
+        result.diffuse = hsv2rgb(vec3(float(index) * goldenAngleBy2Pi + 0.1, 1.0, 1.0));
+
+        result.ambient = 0.5 * result.diffuse;
+    }
+#endif
 
     return result;
 }

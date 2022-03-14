@@ -102,10 +102,6 @@ class IdealRaytracingData(RaytracingData):
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
-        # For debugging! Delete!
-        r.c = c
-
-        r._add_horotriangle_heights()
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
@@ -124,10 +120,6 @@ class IdealRaytracingData(RaytracingData):
     def __init__(self, mcomplex, snappy_manifold):
         super(IdealRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
-
-    def _add_horotriangle_heights(self):
-        for tet in self.mcomplex.Tetrahedra:
-            tet.horotriangle_heights = _compute_horotriangle_heights(tet)
 
     def _add_O13_matrices_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -148,7 +140,7 @@ class IdealRaytracingData(RaytracingData):
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
-                V: complex_to_R13_light_vector(z)
+                V: complex_to_R13_light_vector(z, self.RF)
                 for V, z in tet.complex_vertices.items() }
 
     def _add_R13_planes_to_faces(self):
@@ -244,28 +236,13 @@ class IdealRaytracingData(RaytracingData):
                                    self.snappy_manifold.cusp_info()):
             self._add_log_holonomies_to_cusp(cusp, shapes)
 
-    def _check_consistency(self):
-        for tet in self.mcomplex.Tetrahedra:
-            for F in t3m.TwoSubsimplices:
-                for V in t3m.ZeroSubsimplices:
-                    if V & F:
-                        v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
-                        v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
-                        err = R13_dot(v0, v1)
-                        if err > 1e-10 or err < -1e-10:
-                            print("PROBLEM")
-
     def get_uniform_bindings(self):
-        # self._check_consistency()
+        # _check_consistency(self.mcomplex)
 
         d = super(IdealRaytracingData, self).get_uniform_bindings()
 
         orientations = [
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
-            for tet in self.mcomplex.Tetrahedra ]
-
-        horotriangleHeights = [
-            tet.horotriangle_heights
             for tet in self.mcomplex.Tetrahedra ]
 
         horosphere_scales = [
@@ -337,7 +314,6 @@ class IdealRaytracingData(RaytracingData):
         d['cuspTranslations'] = ('mat2[]', cusp_translations)
         d['logAdjustments'] = ('vec2[]', logAdjustments)
         d['cuspTriangleVertexPositions'] = ('mat3x2[]', cuspTriangleVertexPositions)
-        d['horotriangleHeights'] = ('vec3[]', horotriangleHeights)
         d['matLogs'] = ('mat2[]', mat_logs)
         d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
         d['isNonGeometric'] = ('bool', isNonGeometric)
@@ -453,17 +429,6 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
     return log_z0, vertex_positions
 
-def _compute_horotriangle_heights(tet):
-    z  = tet.ShapeParameters[t3m.E01]
-    CF = z.parent()
-
-    z0 = CF(0)
-    z1 = CF(1)
-    z2 = z
-    return [ height_euclidean_triangle(z0, z1, z2),
-             height_euclidean_triangle(z1, z2, z0),
-             height_euclidean_triangle(z2, z0, z1) ]
-
 def _compute_R13_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
@@ -512,4 +477,14 @@ def _compute_margulis_tube_ends(tet, vertex):
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
-    
+def _check_consistency(mcomplex):
+    for tet in mcomplex.Tetrahedra:
+        for F in t3m.TwoSubsimplices:
+            for V in t3m.ZeroSubsimplices:
+                if V & F:
+                    v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
+                    v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
+                    err = R13_dot(v0, v1)
+                    if err > 1e-10 or err < -1e-10:
+                        print("PROBLEM", v0, v1)
+

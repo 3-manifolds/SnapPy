@@ -161,7 +161,7 @@ static void         make_cube(WEPolyhedron *polyhedron);
 static FuncResult   slice_polyhedron(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
 static FuncResult   intersect_with_halfspaces(WEPolyhedron *polyhedron, MatrixPair *matrix_pair);
 static Boolean      same_image_of_origin(O31Matrix m0, O31Matrix m1);
-static FuncResult   slice_with_hyperplane(WEPolyhedron *polyhedron, O31Matrix m, WEFace **new_face);
+static FuncResult   slice_with_hyperplane(WEPolyhedron *polyhedron, O31Matrix m, int *word, WEFace **new_face);
 static FuncResult   compute_normal_to_Dirichlet_plane(O31Matrix m, O31Vector normal_vector);
 static void         compute_vertex_to_hyperplane_distances(WEPolyhedron *polyhedron, O31Vector normal_vector);
 static Boolean      positive_vertices_exist(WEPolyhedron *polyhedron);
@@ -176,21 +176,20 @@ static void         compute_all_products(WEPolyhedron *polyhedron, MatrixPairLis
 static void         poly_to_current_list(WEPolyhedron *polyhedron, MatrixPairList *current_list);
 static void         current_list_to_product_tree(MatrixPairList *current_list, MatrixPair  **product_tree);
 static Boolean      already_on_product_tree(O31Matrix product, MatrixPair *product_tree);
-static void         add_to_product_tree(O31Matrix product, MatrixPair **product_tree);
+static void         add_to_product_tree(O31Matrix product, int * product_word, MatrixPair **product_tree);
 static void         product_tree_to_product_list(MatrixPair  *product_tree, MatrixPairList *product_list);
 static void         append_tree_to_list(MatrixPair *product_tree, MatrixPair *list_end);
 static FuncResult   check_faces(WEPolyhedron *polyhedron);
 static FuncResult   pare_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
 static FuncResult   pare_mated_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
 static FuncResult   pare_mateless_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
-static FuncResult   try_this_alpha(O31Matrix *alpha, WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
+static FuncResult   try_this_alpha(O31Matrix *alpha, int *alpha_word, WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
 static void         count_cells(WEPolyhedron *polyhedron);
 static void         sort_faces(WEPolyhedron *polyhedron);
 static int          compare_face_distance(const void *ptr1, const void *ptr2);
 static Boolean      verify_faces(WEPolyhedron *polyhedron);
 static FuncResult   verify_group(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
 static void         rewrite_gen_list(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
-
 
 WEPolyhedron *compute_Dirichlet_domain(
     MatrixPairList  *gen_list,
@@ -535,6 +534,7 @@ static void make_cube(
         initial_faces[i]->some_edge     = initial_edges[fdata[i]];
         initial_faces[i]->mate          = NULL;
         initial_faces[i]->group_element = NULL;
+        initial_faces[i]->group_element_word = NULL;
     }
 }
 
@@ -634,7 +634,7 @@ static FuncResult intersect_with_halfspaces(
      *  if fixes the midpoint M of the segment S connecting the origin
      *  to f0(origin).  Furthermore, the plane P which passes through
      *  M and is orthogonal to S will be taken to itself (setwise, but
-     *  probably not pointwise).  Consider the possibilites for the
+     *  probably not pointwise).  Consider the possibilities for the
      *  action of f0 on P.
      *
      *  Case 1.  f0 preserves the orientation of hyperbolic 3-space, and
@@ -678,7 +678,7 @@ static FuncResult intersect_with_halfspaces(
          *  please see the generic case below.
          */
 
-        if (slice_with_hyperplane(polyhedron, matrix_pair->m[0], &new_face[0]) == func_failed)
+        if (slice_with_hyperplane(polyhedron, matrix_pair->m[0], matrix_pair->m_word[0], &new_face[0]) == func_failed)
             return func_failed;
 
         if (new_face[0] != NULL)
@@ -695,7 +695,7 @@ static FuncResult intersect_with_halfspaces(
      *  func_failed.
      */
     for (i = 0; i < 2; i++)
-        if (slice_with_hyperplane(polyhedron, matrix_pair->m[i], &new_face[i]) == func_failed)
+        if (slice_with_hyperplane(polyhedron, matrix_pair->m[i], matrix_pair->m_word[i], &new_face[i]) == func_failed)
             return func_failed;
 
     /*
@@ -731,11 +731,10 @@ static Boolean same_image_of_origin(
     return TRUE;
 }
 
-
-
 static FuncResult slice_with_hyperplane(
     WEPolyhedron    *polyhedron,
     O31Matrix       m,
+    int             *word,
     WEFace          **new_face)
 {
     /*
@@ -790,7 +789,7 @@ static FuncResult slice_with_hyperplane(
         return func_OK;
 
     /*
-     *  Introduce a new vertex whereever an edge crosses the plane P'.
+     *  Introduce a new vertex wherever an edge crosses the plane P'.
      *  Such edges can be recognized by the fact that one endpoint
      *  has which_side_of_plane == +1 while the other has
      *  which_side_of_plane == -1.
@@ -798,7 +797,7 @@ static FuncResult slice_with_hyperplane(
     cut_edges(polyhedron);
 
     /*
-     *  Introduce a new edge whereever a face crosses the plane P'.
+     *  Introduce a new edge wherever a face crosses the plane P'.
      *  If any face has more than two 0-vertices (as might occur
      *  due to roundoff error) return func_failed.
      */
@@ -872,6 +871,7 @@ static FuncResult slice_with_hyperplane(
      */
     (*new_face)->group_element = NEW_STRUCT(O31Matrix);
     o31_copy(*(*new_face)->group_element, m);
+    (*new_face)->group_element_word = copy_group_word(word);
 
     /*
      *  Throw away the vertices, edges and faces which are no longer
@@ -1435,6 +1435,7 @@ FuncResult cut_face_if_necessary(
          */
         new_face->mate          = NULL;
         new_face->group_element = NULL;
+        new_face->group_element_word = NULL;
 
         /*
          *  If face has a mate, we can no longer guarantee that it's a subset
@@ -1450,6 +1451,8 @@ FuncResult cut_face_if_necessary(
 
         new_face->group_element = NEW_STRUCT(O31Matrix);
         o31_copy(*new_face->group_element, *face->group_element);
+
+        new_face->group_element_word = copy_group_word(face->group_element_word);
     }
 
     /*
@@ -1844,6 +1847,8 @@ static void install_new_face(
              */
             if (face->group_element != NULL)
                 my_free(face->group_element);
+            if (face->group_element_word != NULL)
+                my_free(face->group_element_word);
 
             /*
              *  Remove the face from the doubly-linked list.  First set
@@ -2097,6 +2102,9 @@ static void poly_to_current_list(
             matrix_pair = NEW_STRUCT(MatrixPair);
             o31_copy(matrix_pair->m[0], *face->group_element);
             o31_invert(matrix_pair->m[0], matrix_pair->m[1]);
+            matrix_pair->m_word[0] = copy_group_word(face->group_element_word);
+            matrix_pair->m_word[1] = invert_group_word(face->group_element_word);
+
             matrix_pair->height = matrix_pair->m[0][0][0];
             INSERT_BEFORE(matrix_pair, &current_list->end);
 
@@ -2116,6 +2124,7 @@ static void current_list_to_product_tree(
     int             i,
                     j;
     O31Matrix       product;
+    int             *product_word;
 
     /*
      *  Initialize the product_tree to NULL.
@@ -2152,8 +2161,13 @@ static void current_list_to_product_tree(
 		    o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product);
 
                     if (already_on_product_tree(product, *product_tree) == FALSE)
+                    {
+                        product_word = concat_group_words(
+                            matrix_pair_a->m_word[i],
+                            matrix_pair_b->m_word[j]);
 
-                        add_to_product_tree(product, product_tree);
+                        add_to_product_tree(product, product_word, product_tree);
+                    }
                 }
 }
 
@@ -2226,6 +2240,7 @@ static Boolean already_on_product_tree(
 
 static void add_to_product_tree(
     O31Matrix   product,
+    int         *product_word,
     MatrixPair  **product_tree)
 {
     MatrixPair  **home;
@@ -2254,6 +2269,10 @@ static void add_to_product_tree(
     (*home) = NEW_STRUCT(MatrixPair);
     o31_copy((*home)->m[0], product);
     o31_invert((*home)->m[0], (*home)->m[1]);
+
+    (*home)->m_word[0] = product_word;
+    (*home)->m_word[1] = invert_group_word(product_word);
+
     (*home)->height = (*home)->m[0][0][0];
     (*home)->left_child     = NULL;
     (*home)->right_child    = NULL;
@@ -2577,7 +2596,7 @@ static FuncResult pare_mated_face(
      *              if (beta cuts off V)
      *                  add faces determined by beta and its inverse
      *                      to the polyhedron
-     *                  if roundoff-related errors occured
+     *                  if roundoff-related errors occurred
      *                      return func_failed
      *                  otherwise
      *                      set *face_was_pared to TRUE
@@ -2641,6 +2660,7 @@ static FuncResult pare_mated_face(
 
     WEEdge      *edge;
     O31Matrix   *alpha;
+    int         *alpha_word;
 
     /*
      *  Consider each neighbor of face->mate.
@@ -2659,9 +2679,15 @@ static FuncResult pare_mated_face(
          *  Find the element alpha defined above.
          */
         if (edge->f[left] == face->mate)
+        {
             alpha = edge->f[right]->group_element;
+            alpha_word = edge->f[right]->group_element_word;
+        }
         else
-            alpha = edge->f[left] ->group_element;
+        {
+            alpha = edge->f[left]->group_element;
+            alpha_word = edge->f[left]->group_element_word;
+        }
 
         /*
          *  Check whether this alpha defines a beta which cuts a vertex off
@@ -2671,7 +2697,7 @@ static FuncResult pare_mated_face(
          *  If topological problems due to roundoff error are
          *  encountered, return func_failed.
          */
-        if (try_this_alpha(alpha, face, polyhedron, face_was_pared) == func_failed)
+        if (try_this_alpha(alpha, alpha_word, face, polyhedron, face_was_pared) == func_failed)
             return func_failed;
 
         /*
@@ -2722,8 +2748,8 @@ static FuncResult pare_mateless_face(
      *  mate has been entirely cut off by other group elements.
      *  (Well, almost entirely cut off.  A 1-dimensional subset might
      *  still remain, but no 2-dimensional subset.)  In the following
-     *  diagram, the plane of the nonexistant mate is shown by a line
-     *  of stars.  (By the "plane of the nonexistant mate", we mean the
+     *  diagram, the plane of the nonexistent mate is shown by a line
+     *  of stars.  (By the "plane of the nonexistent mate", we mean the
      *  image of the plane of face under the action of the inverse of
      *  face->group_element.)
      *
@@ -2805,7 +2831,7 @@ static FuncResult pare_mateless_face(
      *              if (beta cuts off V)
      *                  add faces determined by beta and its inverse
      *                      to the polyhedron
-     *                  if roundoff-related errors occured
+     *                  if roundoff-related errors occurred
      *                      return func_failed
      *                  otherwise
      *                      set *face_was_pared to TRUE
@@ -2816,6 +2842,7 @@ static FuncResult pare_mateless_face(
 
     WEFace      *face1;
     O31Matrix   *alpha;
+    int         *alpha_word;
 
     /*
      *  Consider each face1 of the polyhedron.
@@ -2828,6 +2855,7 @@ static FuncResult pare_mateless_face(
          *  Find alpha.
          */
         alpha = face1->group_element;
+        alpha_word = face1->group_element_word;
 
         /*
          *  Check whether this alpha defines a beta which cuts a vertex off
@@ -2837,7 +2865,7 @@ static FuncResult pare_mateless_face(
          *  If topological problems due to roundoff error are
          *  encountered, return func_failed.
          */
-        if (try_this_alpha(alpha, face, polyhedron, face_was_pared) == func_failed)
+        if (try_this_alpha(alpha, alpha_word, face, polyhedron, face_was_pared) == func_failed)
             return func_failed;
 
         /*
@@ -2857,9 +2885,9 @@ static FuncResult pare_mateless_face(
     return func_failed;
 }
 
-
 static FuncResult try_this_alpha(
     O31Matrix       *alpha,
+    int             *alpha_word,
     WEFace          *face,
     WEPolyhedron    *polyhedron,
     Boolean         *face_was_pared)
@@ -2885,6 +2913,8 @@ static FuncResult try_this_alpha(
     O31Matrix   beta;
     O31Vector   normal;
     MatrixPair  matrix_pair;
+
+    int i;
 
     /*
      *  Compute beta = (group_element)(alpha) as explained in the
@@ -2934,6 +2964,11 @@ static FuncResult try_this_alpha(
             o31_copy(matrix_pair.m[0], beta);
             o31_invert(matrix_pair.m[0], matrix_pair.m[1]);
 
+            matrix_pair.m_word[0] =
+                concat_group_words(face->group_element_word, alpha_word);
+            matrix_pair.m_word[1] =
+                invert_group_word(matrix_pair.m_word[0]);
+
             /*
              *  The other fields in matrix_pair aren't needed here.
              */
@@ -2947,7 +2982,14 @@ static FuncResult try_this_alpha(
              *  return func_failed.
              */
             if (intersect_with_halfspaces(polyhedron, &matrix_pair) == func_failed)
+            {
+                for (i = 0; i < 2; i++)
+                    my_free(matrix_pair.m_word[i]);
                 return func_failed;
+            }
+
+            for (i = 0; i < 2; i++)
+                my_free(matrix_pair.m_word[i]);
 
             /*
              *  We've modified the polyhedron,
@@ -2993,8 +3035,8 @@ static void count_cells(
     WEFace      *face;
 
     /*
-     *  The counts were intialized in new_WEPolyhedron(),
-     *  but we'll reinitialize them here just for good form.
+     *  The counts were initialized in new_WEPolyhedron(),
+     *  but we will reinitialize them here just for good form.
      */
 
     polyhedron->num_vertices    = 0;
@@ -3286,6 +3328,13 @@ static void rewrite_gen_list(
     new_matrix_pair = NEW_STRUCT(MatrixPair);
     o31_copy(new_matrix_pair->m[0], O31_identity);
     o31_copy(new_matrix_pair->m[1], O31_identity);
+
+    new_matrix_pair->m_word[0]=NEW_ARRAY(1, int);
+    new_matrix_pair->m_word[0][0] = 0;
+
+    new_matrix_pair->m_word[1]=NEW_ARRAY(1, int);
+    new_matrix_pair->m_word[1][0] = 0;
+
     new_matrix_pair->height = 1.0;
     INSERT_BEFORE(new_matrix_pair, &gen_list->end);
 
@@ -3321,6 +3370,10 @@ static void rewrite_gen_list(
             new_matrix_pair = NEW_STRUCT(MatrixPair);
             o31_copy(new_matrix_pair->m[0], *face->group_element);
             o31_copy(new_matrix_pair->m[1], *mate->group_element);
+
+            new_matrix_pair->m_word[0] = copy_group_word(face->group_element_word);
+            new_matrix_pair->m_word[1] = copy_group_word(mate->group_element_word);
+
             new_matrix_pair->height = (*face->group_element)[0][0];
             INSERT_BEFORE(new_matrix_pair, &gen_list->end);
 
@@ -3328,4 +3381,5 @@ static void rewrite_gen_list(
             mate->copied = TRUE;
         }
 }
+
 #include "end_namespace.h"

@@ -1,5 +1,6 @@
 import tkinter, math, sys, time
 from tkinter import ttk
+from . import gui_utilities
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
@@ -19,6 +20,7 @@ class InsideViewer(ttk.Frame):
                  weights = None,
                  cohomology_basis = None,
                  cohomology_class = None,
+                 geodesics = [],
                  main_window = None):
         ttk.Frame.__init__(self, master)
         self.main_window = main_window
@@ -27,7 +29,11 @@ class InsideViewer(ttk.Frame):
         self.has_weights = bool(weights or cohomology_class)
 
         main_frame = self.create_frame_with_main_widget(
-            self, manifold, weights, cohomology_basis, cohomology_class)
+            self,
+            manifold,
+            weights, cohomology_basis, cohomology_class,
+            geodesics)
+            
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
         row = 0
         self.notebook = ttk.Notebook(self)
@@ -46,6 +52,9 @@ class InsideViewer(ttk.Frame):
 
         self.notebook.add(self.create_skeleton_frame(self),
                           text = 'Skeleton')
+
+        self.notebook.add(self.create_geodesics_frame(self),
+                          text = 'Geodesics')
 
         self.notebook.add(self.create_quality_frame(self),
                           text = 'Quality')
@@ -272,6 +281,7 @@ class InsideViewer(ttk.Frame):
         frame.columnconfigure(2, weight = 0)
 
         row = 0
+        
         UniformDictController.create_horizontal_scale(
             frame,
             self.widget.ui_uniform_dict,
@@ -282,30 +292,64 @@ class InsideViewer(ttk.Frame):
             right_end = 0.35,
             update_function = self.widget.redraw_if_initialized,
             format_string = '%.3f')
-
         row += 1
-        UniformDictController.create_horizontal_scale(
-            frame,
-            self.widget.ui_parameter_dict,
-            key = 'insphere_scale',
-            title = 'Insphere scale',
-            row = row,
-            left_end = 0.0,
-            right_end = 1.25,
-            update_function = self.widget.recompute_raytracing_data_and_redraw,
-            format_string = '%.2f')
 
+        self.insphereScaleController = (
+            UniformDictController.create_horizontal_scale(
+                frame,
+                self.widget.ui_parameter_dict,
+                key = 'insphere_scale',
+                title = 'Insphere scale',
+                row = row,
+                left_end = 0.0,
+                right_end = 1.25,
+                update_function = self.widget.recompute_raytracing_data_and_redraw,
+                format_string = '%.2f'))
         row += 1
-        UniformDictController.create_horizontal_scale(
+
+        self.edgeTubeRadiusController = (
+            UniformDictController.create_horizontal_scale(
+                frame,
+                self.widget.ui_parameter_dict,
+                key = 'edgeTubeRadius',
+                title = 'Edge thickness',
+                row = row,
+                left_end = 0.0,
+                right_end = 0.2,
+                update_function = self.widget.redraw_if_initialized))
+        row += 1
+
+        label = ttk.Label(frame, text = "Edge colors", padding = gui_utilities.label_pad)
+        label.grid(row = row, column = 0)
+        self.edgeColorController = UniformDictController.create_checkbox(
             frame,
-            self.widget.ui_parameter_dict,
-            key = 'edgeTubeRadius',
-            title = 'Edge thickness',
+            self.widget.ui_uniform_dict,
+            key = 'desaturate_edges',
+            text = 'desaturate',
             row = row,
-            left_end = 0.0,
-            right_end = 0.5,
+            column = 1,
             update_function = self.widget.redraw_if_initialized)
+        row += 1
+        
+        return frame
 
+    def create_geodesics_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+
+        button = ttk.Button(
+            frame,
+            text = "Select geodesics",
+            takefocus  = 0,
+            command = self.show_geodesics_window)
+        button.grid(row = row, column = 2,
+                    sticky = tkinter.NE)
+        
         return frame
 
     def create_quality_frame(self, parent):
@@ -451,7 +495,8 @@ class InsideViewer(ttk.Frame):
                                       manifold,
                                       weights,
                                       cohomology_basis,
-                                      cohomology_class):
+                                      cohomology_class,
+                                      geodesics):
         frame = ttk.Frame(parent)
 
         column = 0
@@ -462,6 +507,7 @@ class InsideViewer(ttk.Frame):
             weights = weights,
             cohomology_basis = cohomology_basis,
             cohomology_class = cohomology_class,
+            geodesics = geodesics,
             master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
@@ -509,10 +555,20 @@ class InsideViewer(ttk.Frame):
         except AttributeError:
             pass
 
+    def show_geodesics_window(self):
+        from .geodesicsWindow import GeodesicsWindow
+
+        w = GeodesicsWindow(self)
+        
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:
             filling_controller.update()
 
+    def update_edge_and_insphere_controllers(self):
+        self.edgeTubeRadiusController.update()
+        self.edgeColorController.update()
+        self.insphereScaleController.update()
+            
     def _fillings_from_manifold(self):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]

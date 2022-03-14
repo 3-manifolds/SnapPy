@@ -219,7 +219,8 @@ typedef enum
  *  parity telling whether it preserves or reverses orientation, a topology
  *  telling whether it's a circle or a mirrored interval, and a multiplicity
  *  telling how many distinct geodesics have that complex length, parity and
- *  topology.  Finally, the matrix of some fundamental group element realizing
+ *  topology.  Finally, the matrix of some fundamental group element (and,
+ *  optionally, the corresponding word in the original generators) realizing
  *  this geodesic is given.
  */
 
@@ -230,6 +231,7 @@ typedef struct
     Orbifold1       topology;
     int             multiplicity;
     O31Matrix       matrix;
+    int             *word;     /* Added MG 2022-01-24 */
 } MultiLength;
 
 
@@ -1190,7 +1192,8 @@ extern WEPolyhedron *Dirichlet_with_displacement(
                 double                  vertex_epsilon,
                 Boolean                 centroid_at_origin,
                 DirichletInteractivity  interactivity,
-                Boolean                 maximize_injectivity_radius);
+                Boolean                 maximize_injectivity_radius,
+                Boolean                 include_words);
 /**<
  *  Like Dirichlet(), only allows an arbitrary displacement
  *  of the basepoint.  The displacement is in tangent space
@@ -1198,6 +1201,8 @@ extern WEPolyhedron *Dirichlet_with_displacement(
  *  Reasonable displacements are to the order of 0.1.
  *  Large displacements are possible, but degrade the numerical
  *  accuracy of the resulting Dirichlet domain.
+ *
+ *  include_words added by MG 2022-01-24.
  */
 
 extern WEPolyhedron *Dirichlet_from_generators(
@@ -1217,10 +1222,13 @@ extern WEPolyhedron *Dirichlet_from_generators_with_displacement(
                 double                  displacement[3],
                 double                  vertex_epsilon,
                 DirichletInteractivity  interactivity,
-                Boolean                 maximize_injectivity_radius);
+                Boolean                 maximize_injectivity_radius,
+                Boolean                 include_words);
 /**<
  *  Combines the functionality of Dirichlet_with_displacement() and
  *  Dirichlet_from_generators().
+ *
+ *  include_words added by MG 2022-01-24.
  */
 
 
@@ -1941,7 +1949,7 @@ extern void length_spectrum(    WEPolyhedron    *polyhedron,
  *  Please length_spectrum.c for details.
  */
 
-extern void free_length_spectrum(MultiLength *spectrum);
+extern void free_length_spectrum(MultiLength *spectrum, int num_lengths);
 /**<
  *  Deallocates the memory used to store the length spectrum.
  */

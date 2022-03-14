@@ -154,8 +154,9 @@ def sign_app():
                 sign(os.path.join(dirpath, name))
     sign(app)
 
-def do_release(python, dmg_name):
-    freshen_SnapPy(python)
+def do_release(python, dmg_name, freshen=True):
+    if freshen:
+        freshen_SnapPy(python)
     build_app(python)
     cleanup_app(python)
     sign_app()
@@ -171,5 +172,6 @@ if __name__ == '__main__':
             python3 = nmd_python_dir + '/py310/bin/python'
         else:
             python3 = APP_PYTHON
-        do_release(python3, "SnapPy")
+        freshen = '--no-freshen' not in sys.argv
+        do_release(python3, "SnapPy", freshen)
 

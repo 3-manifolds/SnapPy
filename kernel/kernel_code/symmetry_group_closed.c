@@ -229,7 +229,7 @@ static FuncResult compute_symmetry_group_using_polyhedron(
             num_lengths, spectrum, &num_merged_lengths, &merged_spectrum)
      == func_failed)
     {
-        free_length_spectrum(spectrum);
+        free_length_spectrum(spectrum, num_lengths);
         return(compute_symmetry_group_without_polyhedron(
             manifold, symmetry_group, symmetric_triangulation, is_full_group));
     }
@@ -237,7 +237,7 @@ static FuncResult compute_symmetry_group_using_polyhedron(
     /*
      *  We no longer need the original, unmerged spectrum.
      */
-    free_length_spectrum(spectrum);
+    free_length_spectrum(spectrum, num_lengths);
     spectrum    = NULL;
     num_lengths = 0;
 
@@ -355,7 +355,7 @@ static void compute_length_spectrum(
          */
         if (*spectrum != NULL)
         {
-            free_length_spectrum(*spectrum);
+            free_length_spectrum(*spectrum, *num_lengths);
             *spectrum       = NULL;
             *num_lengths    = 0;
         }

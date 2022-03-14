@@ -84,4 +84,6 @@ if __name__ == '__main__':
         sandbox.execute(install_cmd + [module])
 
     for module in args.modules:
+        if module.endswith('.whl'):
+            module = os.path.basename(module).split('-')[0]
         sandbox.execute(['python', '-m', module + '.test'])

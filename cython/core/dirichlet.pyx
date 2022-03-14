@@ -1,9 +1,13 @@
 # Dirichlet Domains
 
-cdef WEPolyhedron* get_generators_from_bytes(
+cdef (WEPolyhedron*, int) get_generators_from_bytes(
     data_bytes, double vertex_epsilon,
     displacement, centroid_at_origin,
-    maximize_injectivity_radius)except*:
+    maximize_injectivity_radius,
+    include_words)except*:
+
+    cdef int num_gens
+
     data = data_bytes.split(b'\n')
     if data[0].strip() != b'% Generators':
         raise ValueError('The generator data does not start with '
@@ -53,15 +57,18 @@ cdef WEPolyhedron* get_generators_from_bytes(
     for n from 0 <= n < 3:
         c_displacement[n] = <double>displacement[n] 
     dirichlet_domain = Dirichlet_from_generators_with_displacement(
-        generators, num_gens, c_displacement, vertex_epsilon,                                            Dirichlet_keep_going, maximize_injectivity_radius)
+        generators, num_gens, c_displacement, vertex_epsilon,
+        Dirichlet_keep_going, maximize_injectivity_radius,
+        include_words)
     free(generators)
-    return dirichlet_domain
+    return dirichlet_domain, num_gens
 
 cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     matrices,
     double vertex_epsilon,
     displacement, centroid_at_origin,
-    maximize_injectivity_radius)except*:
+    maximize_injectivity_radius,
+    include_words)except*:
 
     cdef WEPolyhedron* c_dirichlet_domain
     cdef O31Matrix* generators
@@ -79,21 +86,20 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     for n from 0 <= n < 3:
         c_displacement[n] = <double>displacement[n] 
     c_dirichlet_domain = Dirichlet_from_generators_with_displacement(
-        generators, num_gens, c_displacement, vertex_epsilon,                                            Dirichlet_keep_going, maximize_injectivity_radius)
+        generators, num_gens, c_displacement, vertex_epsilon,
+        Dirichlet_keep_going, maximize_injectivity_radius,
+        include_words)
     free(generators)
     return c_dirichlet_domain
 
 cdef class CDirichletDomain(object):
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
+    cdef int c_num_generators
 
     @staticmethod
-    def _number_(number):
-        return number
-
-    @classmethod
-    def use_field_conversion(cls, func):
-        cls._number_ = staticmethod(func)
+    def _number_(n):
+        return number.number_to_native_number(n)
 
     def __cinit__(self, 
                   Manifold manifold=None,
@@ -101,6 +107,7 @@ cdef class CDirichletDomain(object):
                   displacement=[0.0, 0.0, 0.0],
                   centroid_at_origin=True,
                   maximize_injectivity_radius=True,
+                  include_words = False,
                   str generator_file='',
                   bytes generator_bytes=b'',
                   O31_generators=None,
@@ -110,19 +117,25 @@ cdef class CDirichletDomain(object):
         if generator_file != '':
             with open(generator_file, mode='rb') as input_file:
                 data = input_file.read()
-            self.c_dirichlet_domain = get_generators_from_bytes(
-                data, vertex_epsilon, displacement,
-                centroid_at_origin, maximize_injectivity_radius)
+            self.c_dirichlet_domain, self.c_num_generators = (
+                get_generators_from_bytes(
+                    data, vertex_epsilon, displacement,
+                    centroid_at_origin, maximize_injectivity_radius,
+                    include_words))
             self.manifold_name = generator_file
         elif generator_bytes != b'':
-            self.c_dirichlet_domain = get_generators_from_bytes(
-                generator_bytes, vertex_epsilon, displacement,
-                centroid_at_origin, maximize_injectivity_radius)
+            self.c_dirichlet_domain, self.c_num_generators = (
+                get_generators_from_bytes(
+                    generator_bytes, vertex_epsilon, displacement,
+                    centroid_at_origin, maximize_injectivity_radius,
+                    include_words))
             self.manifold_name = manifold_name
-        elif O31_generators != None:
+        elif O31_generators is not None:
+            self.c_num_generators = len(O31_generators)
             self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
                 O31_generators, vertex_epsilon, displacement,
-                centroid_at_origin, maximize_injectivity_radius)
+                centroid_at_origin, maximize_injectivity_radius,
+                include_words)
             self.manifold_name = manifold_name
         else:
             if manifold is None:
@@ -133,13 +146,15 @@ cdef class CDirichletDomain(object):
                 c_displacement[n] = <double>displacement[n] 
             copy_triangulation(manifold.c_triangulation,
                                &self.c_triangulation)
+            self.c_num_generators = self.c_triangulation.num_generators
             self.c_dirichlet_domain = Dirichlet_with_displacement(
                 self.c_triangulation,
                 c_displacement,
                 vertex_epsilon,
                 centroid_at_origin,
                 Dirichlet_keep_going,
-                maximize_injectivity_radius )
+                maximize_injectivity_radius,
+                include_words)
             self.manifold_name = manifold.name()
         if self.c_dirichlet_domain == NULL:
             raise RuntimeError('The Dirichlet construction failed.')
@@ -248,6 +263,7 @@ cdef class CDirichletDomain(object):
         """
         cdef int num_lengths
         cdef MultiLength* geodesics
+        cdef int* c_word
 
         length_spectrum(self.c_dirichlet_domain,
                         Object2Real(cutoff_length),
@@ -262,16 +278,20 @@ cdef class CDirichletDomain(object):
             length = Complex2Number(geodesics[n].length)
             its_matrix = matrix([[self._number_(Real2Number(<Real>geodesics[n].matrix[i][j]))
                                       for j in range(4)] for i in range(4)] )
-            spectrum.append(
-               LengthSpectrumInfo(
-                  length=self._number_(length),
-                  parity=MatrixParity[geodesics[n].parity],
-                  topology=Orbifold1[geodesics[n].topology],
-                  multiplicity=geodesics[n].multiplicity,
-                  matrix = its_matrix
-                  )
-               )
-        free_length_spectrum(geodesics)
+            d = {                   
+                "length" : self._number_(length),
+                "parity" : MatrixParity[geodesics[n].parity],
+                "topology" : Orbifold1[geodesics[n].topology],
+                "multiplicity" :  geodesics[n].multiplicity,
+                "matrix" : its_matrix }
+
+            c_word = geodesics[n].word
+            if c_word:
+                d['word'] = c_word_as_string(
+                    c_word, self.c_num_generators, verbose_form = False)
+
+            spectrum.append(LengthSpectrumInfo(**d))
+        free_length_spectrum(geodesics, num_lengths)
         return LengthSpectrum(spectrum)
 
     def vertex_list(self, details = False):
@@ -566,6 +586,44 @@ cdef class CDirichletDomain(object):
             face = face.next
         return matrices
 
+    def pairing_words(self):
+        """
+        Group elements which pair the faces of this DirichletDomain
+        as words in the original generators:
+
+        >>> M = Manifold('m004')
+        >>> D = M.dirichlet_domain(include_words = True)
+        >>> sorted(D.pairing_words()) #doctest: +ELLIPSIS
+        ['A', ...]
+
+        Requires that DirichletDomain was computed with
+        include_words = True.
+        """
+
+        cdef WEFace* face
+        cdef int* c_word
+        
+        if self.c_dirichlet_domain == NULL:
+            raise ValueError('The Dirichlet Domain was not computed.')
+        
+        words = []
+
+        face = self.c_dirichlet_domain.face_list_begin.next
+        while face != &self.c_dirichlet_domain.face_list_end:
+            c_word = face.group_element_word
+
+            if c_word == NULL:
+                raise ValueError('The Dirichlet Domain was computed without '
+                                 'include_words = True.')
+            
+            words.append(
+                c_word_as_string(
+                    c_word, self.c_num_generators, verbose_form = False))
+
+            face = face.next
+
+        return words
+
     def _to_string(self):
         matrices = self.pairing_matrices()
         result = '%% Generators\n%s\n'%len(matrices)
@@ -658,9 +716,21 @@ class DirichletDomain(CDirichletDomain):
     generators for the group, in SnapPea's "% Generator" format, via
 
        D = DirichletDomain(generator_file='test.gens')
+
+    Or from matrices:
+
+    >>> G = Manifold('m004').fundamental_group(False)
+    >>> matrices = [ G.O31('a'), G.O31('b'), G.O31('c') ] # Note: some of the matrices contain (near) 0 entries and thus this tests that Object2Real converts small numbers fromatted by pari as "1.0 E-10" (note the pace before "E") correctly when not in SageMath.
+    >>> DirichletDomain(O31_generators = matrices,
+    ...                 maximize_injectivity_radius = False)
+    8 finite vertices, 2 ideal vertices; 20 edges; 12 faces
+
+    The group elements for the face-pairings of the Dirichlet domain
+    can be given as words in the original generators by setting
+    include_words = True.
+
     """
 
 
 def _unpickle_dirichlet_domain(string, name):
     return DirichletDomain(generator_bytes=string.encode('ascii'), manifold_name=name)
-

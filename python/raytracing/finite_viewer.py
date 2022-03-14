@@ -385,6 +385,7 @@ class FiniteViewer(ttk.Frame):
             weights = weights,
             cohomology_basis = cohomology_basis,
             cohomology_class = cohomology_class,
+            geodesics = [],
             master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)

@@ -6,7 +6,7 @@ from .sage_helper import _within_sage
 from .pari import *
 import re
 
-strip_zeros = re.compile(r'(.*\..*?[0-9]{1})0*$')
+strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
 left_zeros = re.compile(r'0\.0*')
 
 if _within_sage:
@@ -162,6 +162,31 @@ else:  # We are not in Sage
         >>> y = x.parent()(2.5)
         >>> y
         2.500000000000000000000000000000000000000000000000000000000000
+
+        >>> Number("1.0e20", precision = 53)
+        1.000000000000000 E20
+        >>> Number("1.0e20", precision = 53, accuracy = 0)
+        1.0 E20
+        >>> Number("1.0e20", precision = 53, accuracy = 3)
+        1.000 E20
+        >>> Number("1.23456", precision = 53)
+        1.234560000000000
+        >>> Number("1.23456", precision = 53, accuracy = 0)
+        1.23456
+        >>> Number("1.23456", precision = 53, accuracy = 4)
+        1.2346
+        >>> Number("0.01", precision = 53)
+        0.010000000000000
+        >>> Number("0.01", precision = 53, accuracy = 0)
+        0.01
+        >>> Number("0.01", precision = 53, accuracy = 3)
+        0.010
+        >>> Number("3.0123e-20", precision = 53)
+        3.01230000000000 E-20
+        >>> Number("3.0123e-20", precision = 53, accuracy = 0)
+        3.0123 E-20
+        >>> Number("3.0123e-20", precision = 53, accuracy = 3)
+        3.01 E-20
 
         """
         _cache = {}
@@ -321,7 +346,12 @@ class Number(Number_baseclass):
         if accuracy:
             # Trick PARI into rounding to the correct number of digits.
             # Simulates the printf %.Nf format, where N is the accuracy.
-            int_part = gen.truncate().abs()
+            try:
+                int_part = gen.truncate().abs()
+            except PariError:
+                # Happens if gen holds large number.
+                # Setting to 1 so that we display something.
+                int_part = 1
             if int_part == 0:
                 # Deal with zeros to the right of the decimal point.
                 try:
@@ -341,10 +371,9 @@ class Number(Number_baseclass):
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
             result = str(gen)
-            try:
-                result = strip_zeros.findall(result)[0]
-            except IndexError:
-                pass
+            m = strip_zeros.match(result)
+            if m:
+                result = m.group(1) + m.group(2)
             pari.set_real_precision(old_precision)
         return result
 
@@ -579,3 +608,43 @@ for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
     setattr(Number, 'arc' + trig, getattr(Number, 'a' + trig))
 
 Number.argument = Number.arg
+
+def use_field_conversion(func):
+    global number_to_native_number
+
+    if func == 'sage':
+        def number_to_native_number(n):
+            """
+            Converts a SnapPy number to the corresponding SageMath type.
+
+            In general snappy.number.number_to_native_number converts a SnapPy number to
+            the corresponding SageMath type (when in SageMath) or just returns
+            the SnapPy number itself (when SageMath is not available).
+
+            However, this behavior can be overriden by
+            snappy.number.use_field_conversion which replaces
+            number_to_native_number.
+            """
+            return n.sage()
+    elif func == 'snappy':
+        def number_to_native_number(n):
+            """
+            Simply returns the given SnapPy number.
+
+            In general snappy.number.number_to_native_number converts a SnapPy number to
+            the corresponding SageMath type (when in SageMath) or just returns
+            the SnapPy number itself (when SageMath is not available).
+
+            However, this behavior can be overriden by
+            snappy.number.use_field_conversion which replaces
+            number_to_native_number.
+            """
+            return n
+    else:
+        number_to_native_number = func
+
+if _within_sage:
+    use_field_conversion('sage')
+else:
+    use_field_conversion('snappy')
+

@@ -1,6 +1,17 @@
 # Python modules
-import os, sys, operator, types, re, gzip, struct, tempfile
-import tarfile, atexit, math, string, time
+import os
+import sys
+import operator
+import types
+import re
+import gzip
+import struct
+import tempfile
+import tarfile
+import atexit
+import math
+import string
+import time
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -16,12 +27,13 @@ try:
     from sage.interfaces.gap import is_GapElement
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
-    from sage.matrix.constructor import matrix
-    from sage.modules.free_module_element import vector
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
-except:
+except ImportError:
     pass
+
+from .matrix import matrix, vector, SimpleMatrix
+from . import number
 
 ## SnapPy components
 import spherogram
@@ -37,7 +49,7 @@ from .export_stl import stl
 from .exceptions import SnapPeaFatalError
 try:
     from plink import LinkEditor, LinkManager
-except:
+except ImportError:
     LinkEditor, LinkManager = None, None
 try:
     from .gui import ViewerWindow
@@ -94,199 +106,6 @@ class MsgIO(object):
         self.flush = sys.stdout.flush()
 
 msg_stream = MsgIO()
-
-class SimpleVector(object):
-    def __init__(self, list_of_values):
-        self.data = list_of_values
-        try:
-            self.type = type(self.data[0])
-            self.shape = (len(list_of_values),)
-        except IndexError:
-            self.type = type(0)
-            self.shape = (0,)
-
-    def __iter__(self):
-        return self.data.__iter__()
-
-    def __repr__(self):
-        str_vector = [str(x) for x in self.data]
-        size = max(len(x) for x in str_vector)
-        return '[%s]' % ', '.join('% *s' % (size, x) for x in str_vector)
-
-    def __getitem__(self, key):
-        if key < 0:
-            raise TypeError("Simple vectors don't have negative indices.")
-        return self.data[key]
-
-    def __setitem__(self, key, value):
-        if key < 0:
-            raise TypeError("Simple vectors don't have negative indices.")
-        self.data[key] = value
-
-    def entries(self):
-        return [ x for x in self.data ]
-
-    def list(self):
-        return self.entries()
-
-    def normalized(self):
-        l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
-        return SimpleVector([x / l for x in self.data])
-
-from .number import SupportsMultiplicationByNumber
-
-# A very basic matrix class
-class SimpleMatrix(SupportsMultiplicationByNumber):
-    """
-    A very simple matrix class that wraps a list of lists.  It has
-    two indices and can print itself.  Nothing more.
-    """
-    def __init__(self, list_of_lists, ring = None):
-
-        if isinstance(list_of_lists, SimpleMatrix):
-            list_of_lists = list_of_lists.data
-        if not ring is None:
-            self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
-        else:
-            # XXX
-            # We should really copy the data here since otherwise we might
-            # get really weird aliasing effects, i.e.,
-            # >>> m = SimpleMatrix([[1]])
-            # >>> m2 = SimpleMatrix(m)
-            # >>> m[0,0] = 2
-            # >>> m2[0,0]
-            # 2
-            self.data = list_of_lists
-        try:
-            self.type = type(self.data[0][0])
-            self.shape = (len(list_of_lists), len(list_of_lists[0]))
-        except IndexError:
-            # Shouldn't we just plainly fail if we are given garbage?
-            self.type = type(0)
-            self.shape = (0,0)
-
-    def __iter__(self):
-        return self.data.__iter__()
-
-    def __repr__(self):
-        str_matrix = [[str(x) for x in row] for row in self.data]
-        size = max([max([len(x) for x in row]) for row in str_matrix])
-        str_rows = []
-        for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
-            str_rows.append('[' + ' '.join(str_row) + ']')
-        result = '\n'.join(str_rows)
-        return result
-
-    def __str__(self):
-        str_matrix = [[str(x) for x in row] for row in self.data]
-        size = max([max([len(x) for x in row]) for row in str_matrix])
-        str_rows = []
-        for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
-            str_rows.append(' [' + ' '.join(str_row) + ']')
-        result = '\n'.join(str_rows)
-        result = '[' + ('\n'.join(str_rows))[1:] + ']'
-        return result
-
-    def __getitem__(self, key):
-        if type(key) == tuple:
-            i, j = key
-            if type(i) == slice or type(j) == slice:
-                return SimpleMatrix(
-                    [ (row[j] if type(j) == slice else [row[j]])
-                      for row
-                      in (self.data[i] if type(i) == slice else [ self.data[i] ]) ])
-            if i < 0 or j < 0:
-                raise TypeError("Simple matrices don't have negative indices.") 
-            return self.data[i][j]
-
-        if type(key) == slice:
-            return SimpleMatrix(self.data[key])
-
-        if key < 0:
-            raise TypeError("Simple matrices don't have negative indices.")
-
-        return self.data[key]
-
-    def _check_indices(self, key):
-        if type(key) != tuple:
-            raise TypeError("Can only set an entry, not a row of a simple matrix.")
-
-        i, j = key
-        if i < 0 or j < 0:
-            raise TypeError("Simple matrices don't have negative indices.") 
-
-        return key
-
-    def __setitem__(self, key, value):
-        i, j = self._check_indices(key)
-        self.data[i][j] = value
-
-    def _noalgebra(self, other):
-        raise TypeError('To do matrix algebra, please install numpy '
-                        'or run SnapPy in Sage.')
-    def entries(self):
-        return [x for row in self.data for x in row]
-
-    def list(self):
-        return self.entries()
-
-    def dimensions(self):
-        return self.shape
-
-    def _multiply_by_scalar(self, other):
-        return SimpleMatrix(
-            [[ other * e for e in row ]
-             for row in self.data ])
-
-    def __mul__(self, other):
-        if isinstance(other, SimpleMatrix):
-            if self.shape[1] != other.shape[0]:
-                raise ValueError('Cannot multiply matrices where number of columns of one does not match number of rows of the other')
-            return SimpleMatrix(
-                [[ sum(self.data[i][j] * other.data[j][k] for j in range(self.shape[1]))
-                   for k in range(other.shape[1]) ]
-                 for i in range(self.shape[0])])
-
-        if isinstance(other, SimpleVector):
-            if self.shape[1] != other.shape[0]:
-                raise ValueError('Cannot multiply matrix where number of columns of one does not match dimension of vector')
-            return SimpleVector(
-                [ sum(self.data[i][j] * other.data[j] for j in range(self.shape[1]))
-                  for i in range(self.shape[0])])
-        raise TypeError('Only SimpleMatrix*SimpleMatrix and SimpleMatrix*SimpleVector multiplication supported')
-
-    def transpose(self):
-        return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
-                             for j in range(self.shape[1])])
-
-
-    def __truediv__(self, other):
-        if isinstance(other, RawNumber):
-            return SimpleMatrix(
-                [[ d / other for d in row ]
-                 for row in self.data])
-        raise TypeError("SimpleMatrix / SimpleMatrix not supported")
-
-    # For python 2.x backwards compatibility.
-    __div__ = __truediv__
-
-    def det(self):
-        if self.shape == (2, 2):
-            return (
-                  self.data[0][0] * self.data[1][1]
-                - self.data[0][1] * self.data[1][0])
-        raise TypeError("SimpleMatrix determinant supported only for 2x2")
-
-    def __eq__(self, other):
-        return self.data == other.data
-
-    __add__ = __sub__ = __inv__ = _noalgebra
-
-if not _within_sage:
-    matrix = SimpleMatrix
-    vector = SimpleVector
 
 # Uniform string testing for Python 2 and 3.
 if python_major_version == 2:
@@ -515,7 +334,7 @@ cdef convert_and_free_integer_matrix(
         if c_matrix.explain_column[i]:
             explain_column.append(to_str(c_matrix.explain_column[i]))
         else:
-            explain_column.append(None)	   
+            explain_column.append(None)
 
     free_integer_matrix_with_explanations(c_matrix)
 
@@ -532,7 +351,7 @@ class MatrixWithExplanations(object):
     def __add__(self, other):
 
         assert self.explain_columns == other.explain_columns, (
-	    "matrices with different columns")
+            "matrices with different columns")
 
         if isinstance(self.matrix, SimpleMatrix):
             newMatrix = SimpleMatrix(self.matrix.data + other.matrix.data)
@@ -540,11 +359,11 @@ class MatrixWithExplanations(object):
             newMatrix = self.matrix.stack(other.matrix)
         else:
             raise ValueError('Matrix type in MatrixWithExplanations '
-	                     'not supported')
+                             'not supported')
 
         return MatrixWithExplanations(
-	    newMatrix,
-	    self.explain_rows+other.explain_rows,
+            newMatrix,
+            self.explain_rows+other.explain_rows,
             self.explain_columns)
 
     def __repr__(self, _type_str = "MatrixWithExplanations"):
@@ -563,7 +382,7 @@ class MatrixWithExplanations(object):
             "  %s,\n"
             "  explain_columns = %s,\n"
             "  explain_rows = %s)") % (
-	                      _type_str,
+                              _type_str,
                               '\n  '.join(repr(self.matrix).split('\n')),
                               format_explain_list(self.explain_columns),
                               format_explain_list(self.explain_rows))
@@ -572,12 +391,12 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
     def __init__(self, mat, explain_rows, explain_columns):
         MatrixWithExplanations.__init__(self, 
-	                                mat, explain_rows, explain_columns)
+                                        mat, explain_rows, explain_columns)
 
     def __repr__(self):
         return MatrixWithExplanations.__repr__(self,
-	                                       "NeumannZagierTypeEquations")
-					 
+                                               "NeumannZagierTypeEquations")
+
     def __add__(self, other):
         mat = MatrixWithExplanations.__add__(self, other)
 
@@ -670,9 +489,13 @@ cdef Real Object2Real(obj):
     cdef char* c_string
     try:
         string = obj.as_string() if isinstance(obj, Number) else str(obj)
+        # Pari idiosyncratically formats small and large numbers as,
+        # e.g., "1.0 E-10" (note the space before "E").
+        # Remove it - otherwise it cannot be parsed.
+        string = string.replace(' ', '')
         float(string)
     except:
-        raise ValueError('Cannot convert %s to a Real.'%type(obj))
+        raise ValueError('Cannot convert %s to a Real.' % type(obj))
     string = to_byte_str(string)
     c_string = string
     return Real_from_string(c_string)
@@ -792,10 +615,49 @@ class DualCurveInfo(Info):
     _obsolete = {'complete length' : 'complete_length',
                  'filled length' : 'filled_length'}
     
+def _StrLongestLen(l):
+    return str(max(len(e) for e in l))
+
+LengthSpectrumFormatStringBase = (
+    '%-4s '                                   # Multiplicity
+    '%-40s '                                  # Length
+    '%-' + _StrLongestLen(Orbifold1) + 's ')  # Topology
+
+LengthSpectrumFormatString = (
+    LengthSpectrumFormatStringBase +
+    '%s')                                     # Parity
+
+LengthSpectrumFormatStringWithWord = (
+    LengthSpectrumFormatStringBase +
+    '%-6s '                                   # Parity
+    '%s')                                     # Word
+
+ShortMatrixParity = { MatrixParity[0] : '-', MatrixParity[1] : '+' }
+
 class LengthSpectrumInfo(Info):
     def __repr__(self):
-        return '%-4d %-32s %-14s%s'%(
-            self.multiplicity, self.length, self.topology, self.parity )
+        lenStr = "%17.14f" % self.length.real()
+        absImag = abs(self.length.imag())
+        if absImag > 1e-9:
+            if self.length.imag() > 0:
+                lenStr += " + "
+            else:
+                lenStr += " - "
+            lenStr += "%17.14f*I" % absImag
+
+        if 'word' in self:
+            return LengthSpectrumFormatStringWithWord % (
+                self.multiplicity,
+                lenStr,
+                self.topology,
+                ShortMatrixParity[self.parity],
+                self.word)
+        else:
+            return LengthSpectrumFormatString % (
+                self.multiplicity,
+                lenStr,
+                self.topology,
+                ShortMatrixParity[self.parity] )
 
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
@@ -810,9 +672,13 @@ class NormalSurfaceInfo(Info):
     
 class LengthSpectrum(list):
     def __repr__(self):
-        base = ['%-4s %-32s %-12s  %s'%
-                ('mult', 'length', 'topology', 'parity')]
-        return '\n'.join(base + [repr(s) for s in self])
+        if len(self) > 0 and 'word' in self[0]:
+            base = LengthSpectrumFormatStringWithWord % (
+                'mult', ' length', 'topology', 'parity', 'word')
+        else:
+            base = LengthSpectrumFormatString % (
+                'mult', ' length', 'topology', 'parity')
+        return '\n'.join([base] + [repr(s) for s in self])
 
 class ListOnePerLine(list):
     def __repr__(self):
@@ -855,11 +721,13 @@ class Isometry(object):
             l0 = '%d -> %d' % (i, images[i])
             l1, l2 = format_two_by_two(maps[i])
             L = max(len(l0), len(l1), len(l2))
-            line0.append( l0.ljust(L) )
-            line1.append( l1.ljust(L) )
-            line2.append( l2.ljust(L) )
+            line0.append(l0.ljust(L))
+            line1.append(l1.ljust(L))
+            line2.append(l2.ljust(L))
         line3 = 'Extends to link' if self.extends_to_link() else 'Does not extend to link'
-        return '\n'.join(['  '.join(line0), '  '.join(line1), '  '.join(line2), line3])
+        return '\n'.join(['  '.join(l).strip()
+                          for l in [line0, line1, line2]] + [line3])
+
 
 cdef IsometryListToIsometries(IsometryList *isometries):
     cdef int n, c, i, j, c_cusp_image

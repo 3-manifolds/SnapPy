@@ -5,8 +5,11 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test
 import snappy.ptolemy.test
-import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.cohomology_fractal
+import snappy.raytracing.geodesic
+import snappy.raytracing.geodesics
+import snappy.raytracing.ideal_raytracing_data
+import snappy.raytracing.upper_halfspace_utilities
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -14,21 +17,6 @@ from snappy import numeric_output_checker
 modules = []
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
-# To make the floating point tests work on different platforms/compilers
-snappy.number.Number._accuracy_for_testing = 8
-
-def use_snappy_field_conversion():
-    snappy.Manifold.use_field_conversion('snappy')
-    snappy.ManifoldHP.use_field_conversion('snappy')
-
-def use_sage_field_conversion():
-    import sage.all
-    snappy.Manifold.use_field_conversion('sage')
-    snappy.ManifoldHP.use_field_conversion('sage')
-
-# If in Sage, undo some output conversions to make the docstrings work:
-if _within_sage:
-    use_snappy_field_conversion()
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -51,113 +39,68 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
-if _within_sage:
-    def snap_doctester(verbose):
-        use_sage_field_conversion()
-        ans = snappy.snap.test.run_doctests(verbose, print_info=False)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snap_doctester(verbose):
-        return snappy.snap.test.run_doctests(verbose, print_info=False)
-
+def snap_doctester(verbose):
+    return snappy.snap.test.run_doctests(verbose, print_info=False)
 snap_doctester.__name__ = 'snappy.snap'
 
-if _within_sage:
-    def snappy_doctester(verbose):
-        use_sage_field_conversion()
-        ans = doctest_modules([snappy], verbose)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snappy_doctester(verbose):
-        original_accuracy = snappy.number.Number._accuracy_for_testing
-        snappy.number.Number._accuracy_for_testing = None
-        ans = doctest_modules([snappy], verbose)
-        snappy.number.Number._accuracy_for_testing = original_accuracy
-        return ans
+def snappy_database_doctester(verbose):
+    # snappy_manifolds's tests is still relying on
+    # SnapPy Number's _accuracy_for_testing.
+    #
+    # Switch to snappy conversion until snappy_manifolds is
+    # is updated.
+    snappy.number.use_field_conversion('snappy')
+    snappy.number.Number._accuracy_for_testing = 8
+    ans = doctest_modules([snappy.database], verbose)
+    snappy.number.Number._accuracy_for_testing = None
+    if _within_sage:
+        snappy.number.use_field_conversion('sage')
 
-snappy_doctester.__name__ = 'snappy'
-
-if _within_sage:
-    def raytracing_data_doctester(verbose):
-        use_sage_field_conversion()
-        ans = doctest_modules([snappy.raytracing.ideal_raytracing_data],
-                              verbose)
-        use_snappy_field_conversion()
-        return ans
-    def cohomology_fractal_doctester(verbose):
-        use_sage_field_conversion()
-        ans = doctest_modules([snappy.raytracing.cohomology_fractal],
-                              verbose)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def raytracing_data_doctester(verbose):
-        ans = doctest_modules([snappy.raytracing.ideal_raytracing_data],
-                              verbose)
-        return ans
-    def cohomology_fractal_doctester(verbose):
-        ans = doctest_modules([snappy.raytracing.cohomology_fractal],
-                              verbose)
-        return ans
-    
-raytracing_data_doctester.__name__ = 'snappy.raytracing.ideal_raytracing_data'
-cohomology_fractal_doctester.__name__ = 'snappy.raytracing.chomology_fractal'
+    return ans
+snappy_database_doctester.__name__ = 'snappy.database'
 
 def spherogram_doctester(verbose):
-    return spherogram.test.run_doctests(verbose, print_info=False)
+    ans = spherogram.test.run_doctests(verbose, print_info=False)
+
+    # Spherogram's testing is switching to SnapPy numbers and
+    # setting their accuracy.
+    # Switch back to Sage types until Spherogram has been updated.
+    snappy.number.Number._accuracy_for_testing = None
+    if _within_sage:
+        snappy.number.use_field_conversion('sage')
+
+    return ans
 spherogram_doctester.__name__ = 'spherogram'
 
 def ptolemy_doctester(verbose):
     return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
-try:
-    useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
-    optlist, args = getopt.getopt(
-        useful_args,
-        'ivqws',
-        ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
-    opts = [o[0] for o in optlist]
-    verbose = '-v' in opts or '--verbose' in opts
-    quick = '-q' in opts or '--quick' in opts
-    windows = '-w' in opts or '--windows' in opts
-    DocTestParser.use_modernopengl = False
-    use_modernopengl = not ('-s' in opts or '--skip-modern-opengl' in opts)
-
-except getopt.GetoptError:
-    print("Could not parse arguments")
-    verbose, quick, windows = False, False, False
-
 modules += [numeric_output_checker.run_doctests]
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
-            snappy_doctester,
-            snap_doctester,
-            raytracing_data_doctester,
-            cohomology_fractal_doctester,
-            ptolemy_doctester, spherogram_doctester]
 
-if _within_sage:
-    def snappy_verify_doctester(verbose):
-        use_sage_field_conversion()
-        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
-        use_snappy_field_conversion()
-        return ans
-else:
-    def snappy_verify_doctester(verbose):
-        old_accuracy = snappy.number.Number._accuracy_for_testing
-        snappy.number.Number._accuracy_for_testing = None
-        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
-        snappy.number.Number._accuracy_for_testing = old_accuracy
-        return ans
+if not _within_sage:
+    modules.append(snappy.number)
+
+modules += [snappy.SnapPy,
+            snappy.SnapPyHP,
+            snappy_database_doctester,
+            snappy,
+            snap_doctester,
+            snappy.raytracing.cohomology_fractal,
+            snappy.raytracing.geodesic,
+            snappy.raytracing.geodesics,
+            snappy.raytracing.ideal_raytracing_data,
+            snappy.raytracing.upper_halfspace_utilities,
+            ptolemy_doctester,
+            spherogram_doctester]
+
+def snappy_verify_doctester(verbose):
+    return snappy.verify.test.run_doctests(verbose, print_info=False)
 
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
-def graphics_failures(verbose):
-    if _within_sage:
-        use_sage_field_conversion()
+def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():
         print("Testing graphics ...")
         import snappy.CyOpenGL
@@ -184,15 +127,15 @@ def graphics_failures(verbose):
     else:
         print("***Warning***: CyOpenGL not installed, so not tested")
         result = 0
-    if _within_sage:
-        use_snappy_field_conversion()
     return result
 
-def runtests():
-    global quick
-    global modules
-    global verbose
-    global windows
+def runtests(verbose = False,
+             quick = False,
+             windows = False,
+             use_modernopengl = True):
+
+    DocTestParser.use_modernopengl = use_modernopengl
+    
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -206,7 +149,41 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    return result.failed + graphics_failures(verbose=verbose)
+
+    num_graphics_failures =  graphics_failures(
+        verbose=verbose,
+        windows = windows,
+        use_modernopengl = use_modernopengl) 
+    
+    return result.failed + num_graphics_failures
 
 if __name__ == '__main__':
-    sys.exit(runtests())
+
+    verbose = False
+    quick = False
+    windows = False
+    use_modernopengl = True
+    
+    try:
+        useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
+        optlist, args = getopt.getopt(
+            useful_args,
+            'ivqws',
+            ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
+        opts = [o[0] for o in optlist]
+        if '-v' in opts or '--verbose' in opts:
+            verbose = True
+        if '-q' in opts or '--quick' in opts:
+            quick = True
+        if '-w' in opts or '--windows' in opts:
+            windows = True
+        if '-s' in opts or '--skip-modern-opengl' in opts:
+            use_modernopengl = False
+
+    except getopt.GetoptError:
+        print("Could not parse arguments")
+
+    sys.exit(runtests(verbose = verbose,
+                      quick = quick,
+                      windows = windows,
+                      use_modernopengl = use_modernopengl))

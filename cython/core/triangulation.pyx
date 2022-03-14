@@ -99,7 +99,7 @@ cdef class Triangulation(object):
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
             if self.c_triangulation == NULL:
-                raise RuntimeError, 'An empty triangulation was generated.'
+                raise RuntimeError('An empty triangulation was generated.')
         elif spec is None:
             self.get_from_new_plink()
 
@@ -108,7 +108,7 @@ cdef class Triangulation(object):
 
     cdef get_from_new_plink(self, file_name=None):
         if LinkEditor is None:
-            raise RuntimeError, 'PLink was not imported.'
+            raise RuntimeError('PLink was not imported.')
         self.LE = LinkEditor(no_arcs=True,
                              callback=_plink_callback,
                              cb_menu='Send to SnapPy',
@@ -393,7 +393,7 @@ cdef class Triangulation(object):
         'cyclic'
         """
         if self.is_orientable():
-            raise ValueError, 'The Triangulation is already orientable.'
+            raise ValueError('The Triangulation is already orientable.')
 
         cdef c_Triangulation* cover_c_triangulation = NULL
         cdef Triangulation new_tri
@@ -440,13 +440,14 @@ cdef class Triangulation(object):
     def randomize(self, blowup_multiple=4, passes_at_fours=6):
         """
         Perform random Pachner moves on the underlying triangulation,
-        including some intial 3 -> 2 moves that increase the number of
+        including some initial 3 -> 2 moves that increase the number of
         tetrahedra by blowup_multiple.
 
         >>> M = Triangulation('Braid:[1,2,-3,-3,1,2]')
         >>> M.randomize()
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            return
         randomize_triangulation_with_options(self.c_triangulation, passes_at_fours, blowup_multiple)
         self._cache.clear(message='randomize')
 
@@ -472,7 +473,7 @@ cdef class Triangulation(object):
 
         It also does random 4 -> 4 moves in hopes of setting up a
         simplfication.  The argument passes_at_fours is the number of
-        times it goes through the valence-4 edges without progress 
+        times it goes through the valence-4 edges without progress
         before giving up.
 
         """
@@ -517,7 +518,7 @@ cdef class Triangulation(object):
         return result
 
     def _three_to_two(self, tet_num, edge_index):
-        """
+        r"""
         Perform a 3-2 move which removes a given 3-valent edge.
 
         The edge is specified by giving the index of one of the tetrahedra which
@@ -527,16 +528,16 @@ cdef class Triangulation(object):
         If specified edge is not 3-valent or the three adjacent tetrahedra are
         not distinct, the function does nothing and returns a non-zero value.
 
-                 1     
-                /|\    
-               / | \   
+                 1
+                /|\
+               / | \
               2  5  1
-             /   |   \  
-            2--0-|----3 
+             /   |   \
+            2--0-|----3
              \   |   /
-              4  |  3  
-               \ | /   
-                \|/    
+              4  |  3
+               \ | /
+                \|/
                  0
         """
         cdef c_FuncResult result
@@ -574,7 +575,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
-        >>> N.volume()
+        >>> N.volume() # doctest: +NUMERIC6
         2.02988321
         """
         return Manifold_from_Triangulation(self)
@@ -604,7 +605,7 @@ cdef class Triangulation(object):
                 self.save(filename)
                 return
 
-        raise ValueError, 'Please specify a file name.'
+        raise ValueError('Please specify a file name.')
 
     def save(self, file_name=None):
         """
@@ -615,7 +616,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        if file_name == None:
+        if file_name is None:
             self._empty_save()
         else:
             b_file_name = to_byte_str(file_name)
@@ -1093,7 +1094,7 @@ cdef class Triangulation(object):
 
         num_cusps = self.num_cusps()
 
-        if which_cusp != None:
+        if which_cusp is not None:
             which_cusp = valid_index(
                 which_cusp, num_cusps,
                 'The specified cusp (%s) does not exist.')
@@ -1157,7 +1158,7 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        if data_spec == None:
+        if data_spec is None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
@@ -1188,7 +1189,7 @@ cdef class Triangulation(object):
         >>> M = Manifold('m015')
         >>> cs = M.chern_simons()
         >>> M.reverse_orientation()
-        >>> round(abs(cs + M.chern_simons()), 15)
+        >>> abs(cs + M.chern_simons()) # doctest: +NUMERIC9
         0.0
         """
         if not self.is_orientable():
@@ -1267,21 +1268,21 @@ cdef class Triangulation(object):
         >>> F = M._unsimplified_filled_triangulation(method='layered')
         >>> F.num_tetrahedra(), F._num_fake_cusps()
         (60, 7)
-	>>> F.simplify(); F.num_tetrahedra() < 15
-	True
-	>>> M = Triangulation('K8n1(1,0)')
-	>>> F = M._unsimplified_filled_triangulation(method='layered_and_marked')
-	>>> F.num_tetrahedra() > 2
-	True
+        >>> F.simplify(); F.num_tetrahedra() < 15
+        True
+        >>> M = Triangulation('K8n1(1,0)')
+        >>> F = M._unsimplified_filled_triangulation(method='layered_and_marked')
+        >>> F.num_tetrahedra() > 2
+        True
 
-	You can determine which tets are the cores, and remove the
-	marks to allow unrestricted simplification.
+        You can determine which tets are the cores, and remove the
+        marks to allow unrestricted simplification.
 
-	>>> any(F._marked_tetrahedra(clear_marks=True))
-	True
-	>>> F.simplify()
-	>>> F.num_tetrahedra() <= 2
-	True
+        >>> any(F._marked_tetrahedra(clear_marks=True))
+        True
+        >>> F.simplify()
+        >>> F.num_tetrahedra() <= 2
+        True
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -1440,7 +1441,7 @@ cdef class Triangulation(object):
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
 
-        if not equation_type in ['all',
+        if equation_type not in ['all',
                                      'non_peripheral',
                                          'edge', 'face', 'internal',
                                      'peripheral',
@@ -1670,7 +1671,7 @@ cdef class Triangulation(object):
         """
         Boundary map C_1 -> C_0 in cellular homology represented as matrix.
         This will compute the homology of the cell complex obtained when
-	gluing together the tetrahedra and not of the cusped manifold.
+        gluing together the tetrahedra and not of the cusped manifold.
 
         Also see _ptolemy_equations_boundary_map_3.
         """
@@ -2363,8 +2364,7 @@ cdef class Triangulation(object):
                 permutation_rep = f.FormatHomForSnapPea().sage()
 
             # Not a useful GAP or MAGMA object, so let's try.
-            elif not False in [is_PermutationGroupElement(p)
-                               for p in permutation_rep]:
+            elif all(is_PermutationGroupElement(p) for p in permutation_rep):
                 permutation_rep = [ [x - 1 for x in perm.domain()]
                                    for perm in permutation_rep ]
 
@@ -2605,14 +2605,14 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
 
-        if which_cusp != None:
+        if which_cusp is not None:
             which_cusp = valid_index(
                 which_cusp, self.num_cusps(),
                 'The specified cusp (%s) does not exist.')
 
         self._cache.clear(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
-            if which_cusp != None:
+            if which_cusp is not None:
                 raise ValueError("You must apply 'fillings' to all "
                                  "of the cusps.")
             install_current_curve_bases(self.c_triangulation)
@@ -2630,7 +2630,7 @@ cdef class Triangulation(object):
                 return cobs
             else:
                 peripheral_curves(self.c_triangulation)
-        elif which_cusp != None:
+        elif which_cusp is not None:
             meridian, longitude = peripheral_data
             a, b = meridian
             c, d = longitude
@@ -2792,8 +2792,8 @@ cdef class Triangulation(object):
           >>> G = Triangulation('dLQacccjsnk_BaRsB')
           >>> E.isomorphisms_to(G)[0]
           0 -> 0
-          [1 0] 
-          [0 1] 
+          [1 0]
+          [0 1]
           Extends to link
 
         If you do not care about the indexing of the cusps when using a

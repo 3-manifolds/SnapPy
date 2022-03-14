@@ -10,13 +10,9 @@ __all__ = ['FundamentalPolyhedronEngine']
 
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import sqrt, matrix, prod
+    from sage.all import matrix, prod
 else:
-    import math
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
+    from .utilities import Matrix2x2 as matrix
 
     def prod(L, initial=None):
         if initial:
@@ -26,7 +22,6 @@ else:
         else:
             return 1
 
-    from .utilities import Matrix2x2 as matrix
 
 _VerticesInFace = {
     F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
@@ -240,11 +235,11 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         tet = self.mcomplex.ChooseGenInitialTet
 
         z = tet.ShapeParameters[simplex.E01]
-        NumericField = z.parent()
+        CF = z.parent()
 
         return { simplex.V0 : Infinity,
-                 simplex.V1 : NumericField(0),
-                 simplex.V2 : NumericField(1),
+                 simplex.V1 : CF(0),
+                 simplex.V2 : CF(1),
                  simplex.V3 : z }
 
     def init_vertices_kernel(self):
@@ -253,27 +248,40 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         made by the SnapPea kernel.
         """
 
+        # Note that initial_tetrahedron in choose_generators.c picks
+        # the initial tetrahedron and best edge in a purely combinatorial way -
+        # and doesn't use shapes to assign 0 and Infinity to the ends of
+        # the edges.
+        #
+        # Hence, the code below can't be tricked into picking a different
+        # permutation by setting the unverified shapes stored in the
+        # kernel Triangulation (to some non-sensical values). It would fail
+        # instead.
+        
         tet = self.mcomplex.ChooseGenInitialTet
+
+        candidates = []
 
         for perm in Perm4.A4():
             z = tet.ShapeParameters[perm.image(simplex.E01)]
-            NumericField = z.parent()
-            one = NumericField(1)
-            minus_one = NumericField(-1)
-            sqrt_z = sqrt(z)
-            sqrt_z_inv = one / sqrt_z
+            # Complex field
+            CF = z.parent()
+            sqrt_z = z.sqrt()
+            sqrt_z_inv = CF(1) / sqrt_z
 
-            for sign in [one, minus_one]:
-                candidates = {
-                    perm.image(simplex.V0) : NumericField(0),
-                    perm.image(simplex.V1) : Infinity,
-                    perm.image(simplex.V2) : sign * sqrt_z,
-                    perm.image(simplex.V3) : sign * sqrt_z_inv
-                }
+            candidate = {
+                perm.image(simplex.V0) : Infinity,
+                perm.image(simplex.V1) : CF(0),
+                perm.image(simplex.V2) : sqrt_z_inv,
+                perm.image(simplex.V3) : sqrt_z
+            }
 
-                if _are_vertices_close_to_kernel(
-                            candidates, tet.SnapPeaIdealVertices):
-                    return candidates
+            if _are_vertices_close_to_kernel(
+                    candidate, tet.SnapPeaIdealVertices):
+                candidates.append(candidate)
+
+        if len(candidates) == 1:
+            return candidates[0]
 
         raise Exception(
             "Could not match vertices to vertices from SnapPea kernel")
@@ -325,7 +333,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             if g > 0:
                 m = _compute_pairing_matrix(pairings[0])
                 if normalize_matrices:
-                    m = m / sqrt(m.det())
+                    m = m / m.det().sqrt()
                 self.mcomplex.GeneratorMatrices[ g] = m
                 self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 
@@ -367,12 +375,12 @@ def _diff_to_kernel(value, snappeaValue):
 
     Cast to our numeric type so that we can compare.
     """
-    NumericField = value.parent()
-    return value - NumericField(snappeaValue)
+    CF = value.parent()
+    return value - CF(snappeaValue)
 
 def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
-    NumericField = value.parent()
-    return abs(_diff_to_kernel(value, snappeaValue)) < NumericField(error)
+    CF = value.parent()
+    return abs(_diff_to_kernel(value, snappeaValue)) < CF(error)
 
 def _is_vertex_close_to_kernel(vertex, snappeaVertex):
     if vertex == Infinity or snappeaVertex == Infinity:

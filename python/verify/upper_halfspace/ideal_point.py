@@ -18,7 +18,7 @@ from ...sage_helper import _within_sage
 
 if _within_sage:
     import sage.all
-    from sage.all import matrix, prod, sqrt, log
+    from sage.all import matrix
 
 from .finite_point import *
 from .extended_matrix import *
@@ -117,15 +117,15 @@ def compute_midpoint_two_horospheres_from_triangle(
     la, lb  = intersectionLengths
 
     if a == Infinity:
-        return _compute_midpoint_helper(b, c, sqrt(lb / la))
+        return _compute_midpoint_helper(b, c, (lb / la).sqrt())
     if b == Infinity:
-        return _compute_midpoint_helper(a, c, sqrt(la / lb))
+        return _compute_midpoint_helper(a, c, (la / lb).sqrt())
 
     (b, c), inv_sl_matrix = (
         _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(
             idealPoints))
 
-    transformedMidpoint = _compute_midpoint_helper(b, c, sqrt(lb / la))
+    transformedMidpoint = _compute_midpoint_helper(b, c, (lb / la).sqrt())
     
     return _translate(transformedMidpoint, inv_sl_matrix)
     
@@ -220,19 +220,17 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
     # a + b + c
     length_total   = sum(lengths)
     # a * b * c
-    length_product = prod(lengths)
+    length_product = lengths[0] * lengths[1] * lengths[2]
 
-    # - a + b + c, a - b + c, a + b - c
-    terms = [ - lengths[0] + lengths[1] + lengths[2],
-                lengths[0] - lengths[1] + lengths[2],
-                lengths[0] + lengths[1] - lengths[2] ]
-    
     # (-a + b + c) * (a - b + c) * (a + b - c)
-    terms_product = prod(terms)
+    terms_product = (
+        (- lengths[0] + lengths[1] + lengths[2]) *
+        (  lengths[0] - lengths[1] + lengths[2]) *
+        (  lengths[0] + lengths[1] - lengths[2]))
 
     # Compute circumradius R of Euclidean triangle using
     # a * b * c / (4 * A) and Heron's formula.
-    return length_product / sqrt(terms_product * length_total)
+    return length_product / (terms_product * length_total).sqrt()
 
 ################################################################################
 #
@@ -283,7 +281,7 @@ def _compute_midpoint_helper(b, c, offset):
 def _compute_incenter_of_triangle_with_one_point_at_infinity(nonInfPoints):
     a, b = nonInfPoints
     RIF = a.real().parent()
-    return FinitePoint((a + b) / 2, abs(a - b) * sqrt(RIF(3)) / 2)
+    return FinitePoint((a + b) / 2, abs(a - b) * RIF(3).sqrt() / 2)
 
 def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     """
@@ -304,25 +302,23 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # a + b + c
     length_total   = sum(lengths)
     # a * b * c
-    length_product = prod(lengths)
+    length_product = lengths[0] * lengths[1] * lengths[2]
 
-    # - a + b + c, a - b + c, a + b - c
-    terms = [ - lengths[0] + lengths[1] + lengths[2],
-                lengths[0] - lengths[1] + lengths[2],
-                lengths[0] + lengths[1] - lengths[2] ]
-    
     # (-a + b + c) * (a - b + c) * (a + b - c)
-    terms_product = prod(terms)
+    terms_product = (
+        ( - lengths[0] + lengths[1] + lengths[2]) *
+        (   lengths[0] - lengths[1] + lengths[2]) *
+        (   lengths[0] + lengths[1] - lengths[2]))
 
     # Heron's formula gives us the area as of the Euclidean triangle as
     # A = sqrt(length_total * terms_product / 16) = r * length_total / 2
     # Thus, we can compute the inradius r as:
     inRadiusSqr  = terms_product / length_total / 4
-    inRadius     = sqrt(inRadiusSqr)
+    inRadius     = inRadiusSqr.sqrt()
     
     # The circumradius R of the Euclidean triangle is given by
     # a * b * c / (4 * A), so we can compute it as:
-    circumRadius = length_product / sqrt(terms_product * length_total)
+    circumRadius = length_product / (terms_product * length_total).sqrt()
     
     # Euler's formula gives us the distance d between the incenter and the
     # circumcenter is given d^2 = R^2 - 2 * r * R.
@@ -336,18 +332,18 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # of the Euclidean center of the inscribed sphere is given by Pythagoras
     # h^2 + d^2 = (r + R)^2, so h = r^2 + 4 * r * R
     eHeightSqr   = inRadiusSqr + 4 * inRadius * circumRadius
-    eHeight      = sqrt(eHeightSqr)
+    eHeight      = eHeightSqr.sqrt()
 
     # Next, we compute the Euclidean height of hyperbolic center of the
     # inscribed sphere
     # We use the geometric mean of the Euclidean heights of the lowest and
     # highest point of the inscribed sphere
     # sqrt( (h + r) * (h - r))
-    height       = sqrt( eHeightSqr - inRadiusSqr )
+    height       = ( eHeightSqr - inRadiusSqr ).sqrt()
 
     # Taking the logarithm of the ratio of these two highest gives the 
     # hyperbolic diameter of the inscribed sphere.
-    radius       = log( (eHeight + inRadius) / (eHeight - inRadius) ) / 2
+    radius       = ( (eHeight + inRadius) / (eHeight - inRadius) ).log() / 2
 
     # The barycentric coordinates of the circumcenter are simply a : b : c.
     incenter = sum([ pt * l

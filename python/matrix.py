@@ -257,7 +257,32 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def __eq__(self, other):
         return self.data == other.data
 
-    __add__ = __sub__ = __inv__ = _noalgebra
+    def __add__(self, other):
+        if not isinstance(other, SimpleMatrix):
+            raise TypeError("SimpleMatrix can only be added to SimpleMatrix.")
+        if not self.shape == other.shape:
+            raise ValueError(
+                "Trying to add a %dx%d matrix to a %dx%d matrix" % (
+                    other.shape[0], other.shape[1],
+                    self.shape[0], self.shape[1]))
+        return SimpleMatrix([[ e0 + e1
+                               for e0, e1 in zip(row0, row1) ]
+                             for row0, row1 in zip(self.data, other.data)])
+
+    def __sub__(self, other):
+        if not isinstance(other, SimpleMatrix):
+            raise TypeError(
+                "SimpleMatrix can only be subtracted from SimpleMatrix.")
+        if not self.shape == other.shape:
+            raise ValueError(
+                "Trying to subtract a %dx%d matrix from a %dx%d matrix" % (
+                    other.shape[0], other.shape[1],
+                    self.shape[0], self.shape[1]))
+        return SimpleMatrix([[ e0 - e1
+                               for e0, e1 in zip(row0, row1) ]
+                             for row0, row1 in zip(self.data, other.data)])
+
+    __inv__ = _noalgebra
 
 if _within_sage:
     from sage.matrix.constructor import matrix

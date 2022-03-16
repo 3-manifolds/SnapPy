@@ -325,7 +325,11 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         """
 
-        self.mcomplex.GeneratorMatrices = { }
+        z = self.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01]
+        CF = z.parent()
+
+        self.mcomplex.GeneratorMatrices = { 0 : matrix([[CF(1), CF(0)],
+                                                        [CF(0), CF(1)]]) }
 
         for g, pairings in self.mcomplex.Generators.items():
             # We compute the matrix for the generator and its inverse at the

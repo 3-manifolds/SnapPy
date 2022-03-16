@@ -98,7 +98,7 @@ class RaytracingData(McomplexEngine):
             tet = self.mcomplex.Tetrahedra[tet_num]
 
             amount, F = max(
-                [ (R13_dot(pos, tet.R13_planes[F]), F)
+                [ (r13_dot(pos, tet.R13_planes[F]), F)
                   for F in t3m.TwoSubsimplices ])
 
             if F == entry_F:

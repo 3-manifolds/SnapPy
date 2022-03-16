@@ -3,6 +3,8 @@ from snappy import Triangulation
 
 from snappy.SnapPy import matrix, vector
 
+from snappy.upper_halfspace import pgl2c_to_o13
+
 # We could use
 #
 # from ..sage_helper import _within_sage
@@ -70,7 +72,7 @@ class FiniteRaytracingData(RaytracingData):
         
         def _compute_vertex(tet, perm):
             m = tet.permutahedron_matrices[perm]
-            return GL2C_to_O13(_adjoint(m)) * c
+            return pgl2c_to_o13(_adjoint(m)) * c
 
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
@@ -85,7 +87,7 @@ class FiniteRaytracingData(RaytracingData):
 
         def _compute_edge_ends(tet, perm):
             m = tet.permutahedron_matrices[perm]
-            return [ GL2C_to_O13(_adjoint(m)) * c for c in cs ]
+            return [ pgl2c_to_o13(_adjoint(m)) * c for c in cs ]
 
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_edge_ends = {
@@ -101,7 +103,7 @@ class FiniteRaytracingData(RaytracingData):
 
         def _compute_plane(tet, perm):
             m = tet.permutahedron_matrices[perm]
-            v = c * GL2C_to_O13(m)
+            v = c * pgl2c_to_o13(m)
             return vector([-v[0], v[1], v[2], v[3]])
 
         for tet in self.mcomplex.Tetrahedra:
@@ -125,7 +127,7 @@ class FiniteRaytracingData(RaytracingData):
                         v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
                         v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
 
-                        if abs(R13_dot(v0, v1) - (-1.0)) > 1e-6:
+                        if abs(r13_dot(v0, v1) - (-1.0)) > 1e-6:
                             print("Inconsistency ", tet.Index, F)
                             print(v0)
                             print(v1)
@@ -182,7 +184,7 @@ def _compute_face_pairing(tet, F):
     other_tet = tet.Neighbor[F]
     other_m = other_tet.permutahedron_matrices[other_tet_perm.tuple()]
     
-    return GL2C_to_O13(_adjoint(other_m) * m)
+    return pgl2c_to_o13(_adjoint(other_m) * m)
 
 def _adjoint(m):
     return matrix([[ m[1,1],-m[0,1]],

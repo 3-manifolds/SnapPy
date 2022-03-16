@@ -414,7 +414,7 @@ def _check_consistency(d):
 #                        print("Bad plane equation")
 
     for i in range(len(planes)):
-        if abs(R13_dot(planes[i], planes[i]) - 1) > 1e-10:
+        if abs(r13_dot(planes[i], planes[i]) - 1) > 1e-10:
             print("Plane vec not normalized")
 
         plane = [-x for x in planes[i]]

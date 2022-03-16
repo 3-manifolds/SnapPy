@@ -7,6 +7,9 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
+from ..upper_halfspace import pgl2c_to_o13
+from ..upper_halfspace.ideal_point import ideal_point_to_r13
+
 from .hyperboloid_utilities import *
 
 from .raytracing_data import *
@@ -140,7 +143,7 @@ class IdealRaytracingData(RaytracingData):
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
-                V: complex_to_R13_light_vector(z, self.RF)
+                V: ideal_point_to_r13(z, self.RF)
                 for V, z in tet.complex_vertices.items() }
 
     def _add_R13_planes_to_faces(self):
@@ -160,7 +163,7 @@ class IdealRaytracingData(RaytracingData):
 
         horosphere_point = _compute_R13_point_on_horosphere_for_vertex(tet, V)
         
-        return - 1.0 / (R13_dot(tet.R13_vertices[V], horosphere_point)
+        return - 1.0 / (r13_dot(tet.R13_vertices[V], horosphere_point)
                           * area.sqrt())
 
     def _add_R13_horosphere_scales_to_vertices(self):
@@ -395,7 +398,7 @@ def _pgl2_matrix_for_face(tet, F):
     return m2 * _adjoint(m1)
 
 def _o13_matrix_for_face(tet, F):
-    return GL2C_to_O13(_pgl2_matrix_for_face(tet, F))
+    return pgl2c_to_o13(_pgl2_matrix_for_face(tet, F))
 
 def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
@@ -466,8 +469,8 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
     return (
-        GL2C_to_O13(         std_to_tet * cusp_to_std),
-        GL2C_to_O13(_adjoint(std_to_tet * cusp_to_std)))
+        pgl2c_to_o13(         std_to_tet * cusp_to_std),
+        pgl2c_to_o13(_adjoint(std_to_tet * cusp_to_std)))
 
 def _compute_margulis_tube_ends(tet, vertex):
     
@@ -484,7 +487,7 @@ def _check_consistency(mcomplex):
                 if V & F:
                     v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
                     v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
-                    err = R13_dot(v0, v1)
+                    err = r13_dot(v0, v1)
                     if err > 1e-10 or err < -1e-10:
                         print("PROBLEM", v0, v1)
 

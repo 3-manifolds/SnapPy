@@ -1,6 +1,7 @@
-from .hyperboloid_utilities import complex_to_R13_light_vector
 from .upper_halfspace_utilities import *
 from .tet_and_matrix_set import TetAndMatrixSet
+
+from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
 from ..matrix import matrix
 
@@ -352,7 +353,7 @@ class GeodesicInfo:
         # the second triple of vertices. Use this transform to translate
         # the endpoints 0 and infty of the geodesic. Convert to R13.
         return [
-            complex_to_R13_light_vector(
+            ideal_point_to_r13(
                 transfer_fourth_point(
                     (vertices[0],
                      vertices[1],

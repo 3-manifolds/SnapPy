@@ -36,7 +36,7 @@ snappy_path, dir_name = os.path.split(dev_path)
 
 sys.path.append(os.path.join(snappy_path, 'python'))
 
-from raytracing.finite_viewer import *
+from snappy.raytracing.finite_viewer import *
 
 def run_perf_test(): 
     gui = finiteViewer(Manifold("m004(3,2)").filled_triangulation())

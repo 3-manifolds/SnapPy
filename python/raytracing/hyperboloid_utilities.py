@@ -311,7 +311,7 @@ def matrix3_det(m):
             - m[0][0] * m[1][2] * m[2][1]
             - m[0][1] * m[1][0] * m[2][2])
 
-def R13_plane_from_R13_light_vectors(light_vectors):
+def unnormalised_R13_plane_from_R13_light_vectors(light_vectors):
     """
     Given three light-like vectors, returns the normal to the plane
     spanned by the corresponding ideal points in the 1,3-hyperboloid
@@ -319,9 +319,13 @@ def R13_plane_from_R13_light_vectors(light_vectors):
     """
 
     light_vectors = [ (-a, b, c, d) for a, b, c, d in light_vectors ]
+    return vector(
+        [ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
+          for j in range(4) ])
+
+def R13_plane_from_R13_light_vectors(light_vectors):
     return R13_normalise(
-        vector([ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
-          for j in range(4) ]))
+        unnormalised_R13_plane_from_R13_light_vectors(light_vectors))
 
 def make_tet_planes(tet_vert_positions):
     """

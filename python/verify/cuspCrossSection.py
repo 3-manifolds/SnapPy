@@ -559,13 +559,16 @@ class CuspCrossSectionBase(McomplexEngine):
         in standard form by scaling the cusp neighborhoods down if necessary.
         """
 
+        z = self.mcomplex.Tetrahedra[0].ShapeParameters[t3m.simplex.E01]
+        RF = z.real().parent()
+        
         # For each cusp, save the scaling factors for all triangles so that
         # we can later take the minimum to scale each cusp.
         if allow_scaling_up:
             area_scales = [ [] for v in self.mcomplex.Vertices ]
         else:
             # Add 1 so that we never scale the cusp area up, just down.
-            area_scales = [ [1] for v in self.mcomplex.Vertices ]
+            area_scales = [ [RF(1)] for v in self.mcomplex.Vertices ]
 
         for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
@@ -581,7 +584,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 vertex = tet.Class[zeroSubsimplex]
                 # Remember it
                 area_scales[vertex.Index].append(area_scale)
-                
+
         # Compute scale per cusp as sqrt of the minimum of all area scales
         # of all triangles in that cusp
         scales = [ sqrt(interval_aware_min(s)) for s in area_scales ]

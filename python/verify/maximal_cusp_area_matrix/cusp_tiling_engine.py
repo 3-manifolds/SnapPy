@@ -1,4 +1,5 @@
 from ...sage_helper import _within_sage
+from ...math_basics import correct_max
 
 from ...snap.kernel_structures import *
 from ...snap.fundamental_polyhedron import *
@@ -7,7 +8,6 @@ from ...snap.t3mlite import simplex
 from ...snap import t3mlite as t3m
 
 from ..cuspCrossSection import ComplexCuspCrossSection
-from ..mathHelpers import interval_aware_max
 from ..upper_halfspace.ideal_point import *
 from ..interval_tree import *
 
@@ -348,7 +348,7 @@ class CuspTilingEngine(McomplexEngine):
 
         cusp = vertex.SubsimplexIndexInManifold
 
-        self.max_horosphere_height_for_cusp[cusp] = interval_aware_max(
+        self.max_horosphere_height_for_cusp[cusp] = correct_max(
             [self.max_horosphere_height_for_cusp[cusp], horosphere_height])
 
     def record_unglued_generator(self, tile, g):

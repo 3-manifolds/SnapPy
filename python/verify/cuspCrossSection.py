@@ -51,7 +51,7 @@ from ..snap import t3mlite as t3m
 from ..snap.kernel_structures import *
 from ..snap.mcomplex_base import *
 
-from .mathHelpers import interval_aware_min
+from ..math_basics import correct_min
 from .exceptions import *
 
 __all__ = [
@@ -587,7 +587,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         # Compute scale per cusp as sqrt of the minimum of all area scales
         # of all triangles in that cusp
-        scales = [ sqrt(interval_aware_min(s)) for s in area_scales ]
+        scales = [ sqrt(correct_min(s)) for s in area_scales ]
 
         self.scale_cusps(scales)
 
@@ -623,7 +623,7 @@ class CuspCrossSectionBase(McomplexEngine):
         compute the exp of the smallest (hyperbolic) distance of the
         two cusp neighborhoods measured along all the given edges.
         """
-        return interval_aware_min(
+        return correct_min(
             [ ComplexCuspCrossSection._exp_distance_edge(edge)
               for edge in edges])
 

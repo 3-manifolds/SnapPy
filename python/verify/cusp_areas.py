@@ -1,12 +1,10 @@
 from ..sage_helper import _within_sage
-from .mathHelpers import interval_aware_min
+from ..math_basics import correct_min, is_RealIntervalFieldElement
 
 __all__ = ['unbiased_cusp_areas_from_cusp_area_matrix',
            'greedy_cusp_areas_from_cusp_area_matrix']
 
 if _within_sage:
-    from sage.rings.real_mpfi import is_RealIntervalFieldElement
-
     # python's sqrt only work for floats
     # They would fail or convert to float losing precision
     from sage.all import sqrt
@@ -42,10 +40,9 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
 
     """
 
-    if _within_sage:
-        if is_RealIntervalFieldElement(cusp_area_matrix[0, 0]):
-            return _verified_unbiased_cusp_areas_from_cusp_area_matrix(
-                cusp_area_matrix)
+    if is_RealIntervalFieldElement(cusp_area_matrix[0, 0]):
+        return _verified_unbiased_cusp_areas_from_cusp_area_matrix(
+            cusp_area_matrix)
 
     return _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
                                                 cusp_area_matrix)
@@ -80,7 +77,7 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
                      for j in range(i) ]
         self_stopper = sqrt(cusp_area_matrix[sigma[i], sigma[i]])
 
-        result[sigma[i]] = interval_aware_min(stoppers + [ self_stopper ])
+        result[sigma[i]] = correct_min(stoppers + [ self_stopper ])
 
     return result
 

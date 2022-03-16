@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage, sage_method
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ..shapes import compute_hyperbolic_shapes
-from ..mathHelpers import interval_aware_min
+from ...math_basics import correct_min
 from .cusp_tiling_engine import *
 
 if _within_sage:
@@ -92,7 +92,7 @@ def triangulation_dependent_cusp_area_matrix(
             i, j = j, i
         result = areas[i] * areas[j]
         if (i, j) in c._edge_dict:
-            result *= interval_aware_min(
+            result *= correct_min(
                 [ RIF(1), ComplexCuspCrossSection._exp_distance_of_edges(
                         c._edge_dict[(i,j)])]) ** 2
         return result

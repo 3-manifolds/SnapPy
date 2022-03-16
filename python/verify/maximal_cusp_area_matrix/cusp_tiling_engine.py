@@ -101,8 +101,6 @@ class CuspTilingEngine(McomplexEngine):
 
     class UngluedGenerator(object):
         def __init__(self, tile, g, height_upper_bound):
-            if height_upper_bound.is_NaN():
-                raise Exception("Something is wrong", height_upper_bound)
             self.tile = tile
             self.g = g
             self.height_upper_bound = height_upper_bound
@@ -336,16 +334,20 @@ class CuspTilingEngine(McomplexEngine):
             self.process_next_unglued_generator()
 
     def upper_bound_for_height_of_unglued_generator(self, tile, g):
-        return max(
-            [ tile.height_of_face(corner).upper()
-              for (corner, other_corner), perm in self.mcomplex.Generators[g] ])
-    
+        heights = [
+            tile.height_of_face(corner).upper()
+            for (corner, other_corner), perm in self.mcomplex.Generators[g] ]
+        for height in heights:
+            if height.is_NaN():
+                raise Exception("Encountered NaN while computing height")
+        return max(heights)
+
     def account_horosphere_height(self, tile, vertex):
         horosphere_height = tile.height_of_horosphere(vertex,
                                                       is_at_infinity = False)
 
         cusp = vertex.SubsimplexIndexInManifold
-        
+
         self.max_horosphere_height_for_cusp[cusp] = interval_aware_max(
             [self.max_horosphere_height_for_cusp[cusp], horosphere_height])
 

@@ -4,24 +4,16 @@ from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices, simplex
 from .t3mlite import Corner, Perm4
 from .t3mlite import V0, V1, V2, V3
+from ..math_basics import prod
 from functools import reduce
 
 __all__ = ['FundamentalPolyhedronEngine']
 
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import matrix, prod
+    from sage.all import matrix
 else:
     from .utilities import Matrix2x2 as matrix
-
-    def prod(L, initial=None):
-        if initial:
-            return reduce(lambda x, y : x*y, L, initial)
-        elif L:
-            return reduce(lambda x, y : x*y, L)
-        else:
-            return 1
-
 
 _VerticesInFace = {
     F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]

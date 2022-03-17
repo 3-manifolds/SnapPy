@@ -18,6 +18,7 @@ implementation of the == operator.
 
 import operator
 from functools import reduce
+from ..math_basics import prod
 from ..sage_helper import _within_sage, sage_method, SageNotAvailable
 
 __all__ = ['find_shapes_as_complex_sqrt_lin_combinations',
@@ -658,17 +659,15 @@ class _FactorizedSqrtLinCombination(object):
             # and k is the set of r_{i,j}
             
             # Take the product of all r_{i,j} after converting to intervals
-            prod = reduce(
-                operator.mul,
-                [_to_RIF(t, RIF, self._embed_cache) for t in k],
-                RIF(1))
+            pr = prod([_to_RIF(t, RIF, self._embed_cache) for t in k],
+                      RIF(1))
 
             # Raise exception if interval isn't positive
-            if not prod > 0:
+            if not pr > 0:
                 raise _SqrtException()
 
             # Return interval for term
-            return prod.sqrt() * _to_RIF(v, RIF, self._embed_cache)
+            return pr.sqrt() * _to_RIF(v, RIF, self._embed_cache)
 
         # Sum over all terms
         return sum([eval_term(k, v) for k, v in self._dict.items()], RIF(0))
@@ -734,12 +733,12 @@ class _FactorizedSqrtLinCombination(object):
                 #
                 # If sqrt(r) appears in both terms, it becomes
                 # sqrt(r) * sqrt(r) = r and is multiplied into the coefficient
-                # (this is done by _prod(k1 & k2)).
+                # (this is done by prod(k1 & k2), _One).
                 # A sqrt(r) appearing only appearing in one term survives
                 # (k1^k2)
 
                 k = k1 ^ k2
-                v = v1 * v2 * _prod(k1 & k2)
+                v = v1 * v2 * prod(k1 & k2, _One)
                 d[k] = d.get(k, 0) + v
         return _FactorizedSqrtLinCombination(
             d, embed_cache = _get_embed_cache(self, other))
@@ -854,13 +853,6 @@ def _firstfirst(iterable):
     for i in iterable:
         for j in i:
             return j
-
-def _prod(s):
-    """
-    The product of the elements in s. Returns Sage Integer(1)
-    when s is empty.
-    """
-    return reduce(operator.mul, s, _One)
 
 def _filter_zero(d):
     """

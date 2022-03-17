@@ -8,6 +8,7 @@ import os, sys, re, string, tempfile
 from itertools import product, chain
 from functools import reduce
 from ..sage_helper import _within_sage
+from ..math_basics import prod
 from ..pari import pari
 
 from .fundamental_polyhedron import *
@@ -25,13 +26,6 @@ else:
     from ..number import Number
     def identity(A):
         return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
-    def prod(L, initial=None):
-        if initial:
-            return reduce(lambda x, y : x*y, L, initial)
-        elif L:
-            return reduce(lambda x, y : x*y, L)
-        else:
-            return 1
     abelian_group_elt = lambda v: v
 
 #----------------------------------------------------------------

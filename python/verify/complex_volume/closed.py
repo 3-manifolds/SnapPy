@@ -1,9 +1,10 @@
 from ...sage_helper import _within_sage, sage_method
+from ...math_basics import prod
 
 from ...snap import peripheral
 
 if _within_sage:
-    from sage.all import pi, xgcd, prod
+    from sage.all import pi, xgcd
     import sage.all
 
 from .adjust_torsion import *

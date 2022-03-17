@@ -1,6 +1,3 @@
-import operator
-import functools
-
 # Dependency on pari for:
 # * from_pari_fraction_and_number_field
 # * evaluate_at_root
@@ -10,6 +7,7 @@ import functools
 
 from ..sage_helper import _within_sage
 from ..pari import Gen, pari
+from ..math_basics import prod
 if _within_sage:
     from sage.rings.integer import Integer
 
@@ -292,7 +290,7 @@ class RUR(object):
 
             return pari(p)
 
-        return _prod(
+        return prod(
             [ evaluate_poly(p) ** e for p, e in self._polymod_exponent_pairs ])
 
     def multiply_terms(self):
@@ -414,7 +412,7 @@ class RUR(object):
         return self._filtered_terms( -1)
 
     def _multiply_terms(self, sgn):
-        return _prod([ p ** abs(e) for p, e in self._filtered_terms(sgn) ])
+        return prod([ p ** abs(e) for p, e in self._filtered_terms(sgn) ])
 
     def _numerator(self):
         return self._multiply_terms( +1)
@@ -455,7 +453,7 @@ class RUR(object):
             for p, e in result:
                 assert e <= 0
 
-            return _prod([ p ** -e for p, e in result if e < 0 ])
+            return prod([ p ** -e for p, e in result if e < 0 ])
 
         self_expand = term_to_expand_fraction_by( self._denominator_terms())
         other_expand = term_to_expand_fraction_by(other._denominator_terms())
@@ -547,7 +545,3 @@ class RUR(object):
             return self._is_zero()
 
         return (self / other)._is_one()
-
-
-def _prod(iterable):
-    return functools.reduce(operator.mul, iterable, 1)

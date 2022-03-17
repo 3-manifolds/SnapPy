@@ -3,6 +3,7 @@ import doctest, inspect, os, sys, getopt, collections
 import snappy
 import snappy.snap.test
 import spherogram.test
+import snappy.matrix
 import snappy.verify.test
 import snappy.ptolemy.test
 import snappy.raytracing.cohomology_fractal
@@ -86,6 +87,7 @@ modules += [snappy.SnapPy,
             snappy_database_doctester,
             snappy,
             snap_doctester,
+            snappy.matrix,
             snappy.raytracing.cohomology_fractal,
             snappy.raytracing.geodesic,
             snappy.raytracing.geodesics,

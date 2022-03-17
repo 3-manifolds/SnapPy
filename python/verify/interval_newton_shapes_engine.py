@@ -1,19 +1,11 @@
+from ..matrix import matrix, vector, mat_solve
 from .. import snap
-from ..sage_helper import _within_sage, SageNotAvailable
+from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
-    from sage.modules.free_module_element import vector
     from ..pari import prec_dec_to_bits
-    from sage.matrix.constructor import block_matrix
-    try:
-        from sage.matrix.constructor import MatrixFactory
-        matrix = MatrixFactory()
-    except ImportError:
-        # MatrixFactory was removed as of Sage 8.3.
-        # See https://trac.sagemath.org/ticket/25061
-        from sage.matrix.constructor import matrix
 
 __all__ = ['IntervalNewtonShapesEngine']
 
@@ -81,155 +73,6 @@ class IntervalNewtonShapesEngine:
         (0.662358978622373012981? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I)
 
     """
-
-    @staticmethod
-    def mat_solve(m, v):
-        """
-        Given a matrix m and a vector v of (complex) intervals, returns
-        the vector a such that v = m * a preserving interval
-        arithmetics: if m' is a matrix with values in the intervals of m and 
-        v' is a vector with values in the intervals of v, then the intervals
-        of the result a returned by this method are guaranteed to contain
-        the entries of m'^-1 * v'.
-
-        Sage already provides a method for inverting matrices. However, it
-        has a flaw and fails inverting interval matrices even though the
-        interval determinant is far from containing zero (it returns
-        unusable matrices with entries (-inf, inf).
-
-        Our implementation improves on this by swapping rows to avoid
-        diagonal entries close to zero during Gaussian elimination.
-
-        Setup a complex interval for example::
-        
-            sage: RIF = RealIntervalField(80)
-            sage: CIF = ComplexIntervalField(80)
-            sage: fuzzy_four = CIF(RIF(3.9999,4.0001),RIF(-0.0001,0.0001))
-
-        Construct a matrix/vector with complex interval coefficients. One entry
-        is a complex interval with non-zero diameter::
-
-            sage: m = matrix(CIF,
-            ...      [  [ fuzzy_four, 3, 2, 3],
-            ...         [          2, 3, 6, 2],
-            ...         [          2, 4, 1, 6],
-            ...         [          3, 2,-5, 2]])
-            sage: v = vector(CIF, [fuzzy_four, 2, 0 ,1])
-       
-        Now compute the solutions a to v = m * a::
-
-            sage: a = IntervalNewtonShapesEngine.mat_solve(m, v)
-            sage: a  # doctest: +ELLIPSIS
-            (1.5...? + 0.000?*I, -1.2...? + 0.000?*I, 0.34...? + 0.0000?*I, 0.24...? + 0.000?*I)
-            sage: m * a  # doctest: +ELLIPSIS
-            (4.0...? + 0.00?*I, 2.0...? + 0.00?*I, 0.0...? + 0.00?*I, 1.00? + 0.00?*I)
-
-        The product actually contains the vector v, we check entry wise::
- 
-            sage: [s in t for s, t in zip(v, m * a)]
-            [True, True, True, True]
-
-        """
-
-        # m = matrix(QQ,[[4,3,2,3],[2,3,6,2],[2,4,1,6],[3,2,-5,2]])
-        # v = vector(QQ,[4,2,0,1])
-
-        # For illustration, we use the following example of a matrix and
-        # vector (which for simplicity are not intervals here):
-        #
-        #      [ 4  3  2  3]
-        #  m = [ 2  3  6  2]       v = (4, 2, 0, 1)
-        #      [ 2  4  1  6]
-        #      [ 3  2 -5  2]
-        #
-
-        # Create a block matrix of the form
-        # [ 4  3  2  3| 4]
-        # [ 2  3  6  2| 2]
-        # [ 2  4  1  6| 0]
-        # [ 3  2 -5  2| 1]
-
-        m1 = block_matrix([[m,v.column()]])
-
-        # Iterate through the rows to apply row operations resulting
-        # in the left part being the identity matrix.
-        # After the i-th iteration the first i column will 
-
-        # For example, after the first iteration (i = 0), we get
-        # [    1   3/4   1/2   3/4|    1]
-        # [    0   3/2     5   1/2|    0]
-        # [    0   5/2     0   9/2|   -2]
-        # [    0  -1/4 -13/2  -1/4|   -2]
-
-        # For example, after the second iteration (i = 1), we get
-        # [    1     0   1/2  -3/5|  8/5]
-        # [    0     1     0   9/5| -4/5]
-        # [    0     0     5 -11/5|  6/5]
-        # [    0     0 -13/2   1/5|-11/5]
-
-        for i in range(len(v)):
-
-            # Assume i = 2, then we have the above matrix at the start
-            # of the iteration.
-
-            # We look for the largest absolute value in the i-th column on or
-            # below the diagonal and its index. In our example, the value
-            # occurs in the last row, so max_index = 1 because -11/2 is
-            # occurring at the spot one under the diagonal.
-            #
-            # Because we have intervals as input, we look for the interval
-            # with the largest infimum of the absolute value.
-            
-            max_index, max_val = max(enumerate(m1.column(i)[i:]),
-                                     key = lambda x:x[1].abs().lower())
-
-            if max_val.contains_zero():
-                raise ZeroDivisionError
-
-            # For numerical stability, swap rows to avoid diagonal entries
-            # that are close to zero. The results are still correct without
-            # this swapping of rows but the intervals would be less narrow.
-            
-            # In the above example, we swap the last two rows:
-            # [    1     0   1/2  -3/5|  8/5]
-            # [    0     1     0   9/5| -4/5]
-            # [    0     0 -13/2   1/5|-11/5]
-            # [    0     0     5 -11/5|  6/5]
-            
-            if max_index != 0:
-                m1[max_index+i], m1[i] = m1[i], m1[max_index+i]
-
-            # Divide the i-th row so that its i-th coefficient becomes 1
-            # [    1     0   1/2  -3/5|  8/5]
-            # [    0     1     0   9/5| -4/5]
-            # [    0     0     1 -2/65|22/65]
-            # [    0     0     5 -11/5|  6/5]
-            
-            m1[i] /= m1[i][i]
-
-            # Subtract multiples of the current row to make the i-th
-            # entries of all other rows zero.
-
-            # [      1       0       0  -38/65|  93/65]
-            # [      0       1       0     9/5|   -4/5]
-            # [      0       0       1   -2/65|  22/65]
-            # [      0       0       0 -133/65| -32/65]
-
-            for j in range(len(v)):
-                if i != j:
-                    m1[j] -= m1[j][i] * m1[i]
-
-
-        # After iterations, we have
-        # [       1        0        0        0|    11/7]
-        # [       0        1        0        0|-164/133]
-        # [       0        0        1        0|  46/133]
-        # [       0        0        0        1|  32/133]
-
-        # Return the last column
-        # (11/7, -164/133, 46/133, 32/133)
-
-        return m1.column(-1)
 
     @staticmethod
     def log_gluing_LHSs(equations, shapes):
@@ -442,8 +285,7 @@ class IntervalNewtonShapesEngine:
             equations, shape_intervals)
     
         return (  point_in_intervals
-                - IntervalNewtonShapesEngine.mat_solve(derivatives,
-                                                       interval_value_at_point))
+                - mat_solve(derivatives, interval_value_at_point))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -543,7 +385,8 @@ class IntervalNewtonShapesEngine:
             IntervalNewtonShapesEngine.interval_vector_is_contained_in(
                 new_shapes, shape_intervals),
             new_shapes)
-        
+
+    @sage_method
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
         Initializes the IntervalNewtonShapesEngine given an orientable SnapPy
@@ -575,7 +418,7 @@ class IntervalNewtonShapesEngine:
             sage: IntervalNewtonShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
             Traceback (most recent call last):
             ...
-            Exception: Manifold needs to be orientable
+            ValueError: Manifold needs to be orientable
 
 
         Or some non-hyperbolic manifolds::
@@ -587,17 +430,13 @@ class IntervalNewtonShapesEngine:
 
         """
 
-        # Require sage
-        if not _within_sage:
-            raise SageNotAvailable("Sorry, the verify module can only be used within Sage")
-
         # Convert to precision in bits if necessary
         if dec_prec:
             self.prec = prec_dec_to_bits(dec_prec)
         elif bits_prec:
             self.prec = bits_prec
         else:
-            raise Exception("Need dec_prec or bits_prec")
+            raise ValueError("Need dec_prec or bits_prec")
 
         # Setup interval types of desired precision
         self.CIF = ComplexIntervalField(self.prec)
@@ -605,7 +444,7 @@ class IntervalNewtonShapesEngine:
 
         # Verify that manifold is orientable
         if not M.is_orientable():
-            raise Exception("Manifold needs to be orientable")
+            raise ValueError("Manifold needs to be orientable")
 
         # Initialize the shape intervals, they have zero length
         self.initial_shapes = vector(

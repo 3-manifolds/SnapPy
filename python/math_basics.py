@@ -5,12 +5,23 @@ import operator
 
 __all__ = [ 'prod',
             'is_RealIntervalFieldElement',
+            'is_Interval',
             'correct_min',
             'corred_max' ]
 
 if _within_sage:
     from sage.all import prod
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
+    from sage.rings.complex_interval_field import is_ComplexIntervalField
+
+    def is_Interval(x):
+        """
+        Returns True is x is either a real or complex interval as constructed
+        with RealIntervalField or ComplexIntervalField, respectively.
+        """
+
+        return is_RealIntervalFieldElement(x) or is_ComplexIntervalField(x.parent())
+
 else:
     def prod(L, initial = None):
         """
@@ -32,6 +43,9 @@ else:
 
         # We do not support interval arithmetic outside of SnapPy,
         # so always return False.
+        return False
+
+    def is_Interval(x):
         return False
 
 def correct_min(l):

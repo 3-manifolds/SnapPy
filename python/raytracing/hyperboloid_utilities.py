@@ -1,6 +1,7 @@
 from snappy.SnapPy import matrix, vector
 
-from snappy.hyperboloid import r13_dot
+from snappy.hyperboloid import (
+    r13_dot, unit_time_vector_to_o13_hyperbolic_translation)
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -20,30 +21,6 @@ Encoding:
 - matrices are either SnapPy matrices or SageMath matrices.
 """
 
-def unit_time_vector_to_O13_hyperbolic_translation(v):
-    """
-    Takes a point (time-like vector) in the hyperboloid model
-    and returns the O13-matrix corresponding to the hyperbolic
-    translation moving the origin to that point (that is, the
-    translation fixing the geodesic between the origin and the
-    point and introducing no rotation about that geodesic).
-    """
-
-    def diag(i, j):
-        if i == j:
-            if i == 0:
-                return -1
-            else:
-                return 1
-        return 0
-
-    v1 = [1 + v[0], v[1], v[2], v[3]]
-
-    return matrix(
-        [[ x * y / (1 + v[0]) + diag(i, j)
-           for i, x in enumerate(v1) ]
-         for j, y in enumerate(v1) ])
-
 def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     """
     Takes a 3-vector in the unit tangent space at the origin of the
@@ -52,7 +29,7 @@ def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     the given direction by the given distance.
     """
 
-    return unit_time_vector_to_O13_hyperbolic_translation(
+    return unit_time_vector_to_o13_hyperbolic_translation(
         [ d.cosh()] + [ d.sinh() * x for x in v])
 
 def O13_x_rotation(angle):

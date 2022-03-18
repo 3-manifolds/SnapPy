@@ -1,7 +1,8 @@
 from snappy.SnapPy import matrix, vector
 
-from snappy.hyperboloid import (
-    r13_dot, unit_time_vector_to_o13_hyperbolic_translation)
+from snappy.hyperboloid import (r13_dot,
+                                unit_time_vector_to_o13_hyperbolic_translation,
+                                unnormalised_plane_eqn_from_r13_points)
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -120,14 +121,6 @@ def R13_time_vector_to_upper_halfspace(v):
                                       2.0 * c / denom,
              (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
 
-def remove_column(m, k):
-    """
-    Removes k-th column from 4x4-matrix m.
-    """
-
-    return [ [ m[i][j] for j in range(4) if j != k ]
-             for i in range(3) ]
-
 def R13_normalise(v, sign = 0):
     dot = r13_dot(v,v)
     if sign == 0:
@@ -186,29 +179,8 @@ def O13_orthonormalize(m):
         result.append(_orthonormalize_row_sane(row, id_row, result, sign))
     return matrix(result, ring=ring)
 
-def matrix3_det(m):
-    return (  m[0][0] * m[1][1] * m[2][2]
-            + m[0][1] * m[1][2] * m[2][0]
-            + m[0][2] * m[1][0] * m[2][1]
-            - m[0][2] * m[1][1] * m[2][0]
-            - m[0][0] * m[1][2] * m[2][1]
-            - m[0][1] * m[1][0] * m[2][2])
-
-def unnormalised_R13_plane_from_R13_light_vectors(light_vectors):
-    """
-    Given three light-like vectors, returns the normal to the plane
-    spanned by the corresponding ideal points in the 1,3-hyperboloid
-    model.
-    """
-
-    light_vectors = [ (-a, b, c, d) for a, b, c, d in light_vectors ]
-    return vector(
-        [ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
-          for j in range(4) ])
-
-def R13_plane_from_R13_light_vectors(light_vectors):
-    return R13_normalise(
-        unnormalised_R13_plane_from_R13_light_vectors(light_vectors))
+def R13_plane_from_R13_light_vectors(pts):
+    return R13_normalise(unnormalised_plane_eqn_from_r13_points(pts))
 
 def make_tet_planes(tet_vert_positions):
     """

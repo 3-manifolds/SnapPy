@@ -1,7 +1,6 @@
-from ..matrix import matrix
+from ..matrix import vector, matrix
 
 """
-
 hyperboloid contains methods relating to the hyperboloid model
 
           { (t, x, y, z) : -t^2 + x^2 + y^2 + z^2 = -1, t > 0 }
@@ -19,6 +18,13 @@ native float type).
 
 Similarly, O13-matrices are represented as matrices as constructed with
 snappy.matrix.matrix(...) from a real type.
+
+Note that we mostly follow the SnapPea kernel conventions, except that
+we call the same matrices O13 rather than O31. This reads better given
+that the signature is -+++: O13 reflects that is the first entry in a
+vector or column in matrix that has the special role corresponding to
+the time component or being a time-like vector, respectively.
+
 """
 
 def r13_dot(u, v):
@@ -77,3 +83,32 @@ def unit_time_vector_to_o13_hyperbolic_translation(v):
 
     return matrix(m)
 
+def unnormalised_plane_eqn_from_r13_points(pts):
+    """
+    Given three (finite or ideal) points in the hyperboloid model
+    (that is time-like or light-like vectors), compute the space-like
+    vector x such that the plane defined by x * y = 0 contains the
+    three given points.
+    """
+
+    return vector([  _det_shifted_matrix3(pts, 0),
+                     _det_shifted_matrix3(pts, 1),
+                   - _det_shifted_matrix3(pts, 2),
+                     _det_shifted_matrix3(pts, 3)])
+
+def _det_shifted_matrix3(m, i):
+    """
+    Computes determinant of 3x3 matrix obtained by picking
+    3 rows from the given 3x4 matrix m.
+    """
+    
+    i0 = (i+1) % 4
+    i1 = (i+2) % 4
+    i2 = (i+3) % 4
+
+    return (  m[0][i0] * m[1][i1] * m[2][i2]
+            + m[0][i1] * m[1][i2] * m[2][i0]
+            + m[0][i2] * m[1][i0] * m[2][i1]
+            - m[0][i2] * m[1][i1] * m[2][i0]
+            - m[0][i0] * m[1][i2] * m[2][i1]
+            - m[0][i1] * m[1][i0] * m[2][i2])

@@ -254,6 +254,13 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
                 - self.data[0][1] * self.data[1][0])
         raise TypeError("SimpleMatrix determinant supported only for 2x2")
 
+    def trace(self):
+        num_rows, num_cols = self.shape
+        if num_rows != num_cols:
+            raise ValueError("Trace of non-square %dx%d matrix" % self.shape)
+        return sum(self.data[i][i]
+                   for i in range(num_rows))
+
     def __eq__(self, other):
         return self.data == other.data
 

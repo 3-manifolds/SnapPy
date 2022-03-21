@@ -393,7 +393,7 @@ def twisted_alexander_polynomial(alpha, reduced=False):
     assert len(rels) == len(gens) - 1 and epsilon.range().rank() == 1
 
     # Want the first variable to be homologically nontrivial
-    i0 = [i for i, g in enumerate(gens) if epsilon(g) != 0][0]
+    i0 = next(i for i, g in enumerate(gens) if epsilon(g) != 0)
     gens = gens[i0:] + gens[:i0]
 
     # Boundary maps for chain complex
@@ -463,7 +463,7 @@ def alex_poly_of_induced_rep(p, knot_exterior, A, chi):
     d0, d1 = C.differential(0), C.differential(1)
     B1 = d0.column_space()
     Z1 = d1.right_kernel()
-    cocycle = [z for z in Z1.basis() if not z in B1][0]
+    cocycle = next(z for z in Z1.basis() if z not in B1)
     alpha = induced_rep_from_twisted_cocycle(p, rho, chi, cocycle)
     ans = twisted_alexander_polynomial(alpha, reduced=True)
     assert poly_involution(ans) == ans

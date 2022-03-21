@@ -97,7 +97,7 @@ class Geodesics:
 
         for i, other in enumerate(self.geodesic_infos):
             if other == geodesic_info:
-                if not word in other.words:
+                if word not in other.words:
                     other.words.append(word)
                 return i
 

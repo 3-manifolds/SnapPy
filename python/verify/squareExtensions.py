@@ -774,7 +774,7 @@ class _FactorizedSqrtLinCombination(object):
             dict( (k, v) for k, v in d.items() if term in k ),
             embed_cache = self._embed_cache)
         right = _FactorizedSqrtLinCombination(
-            dict( (k, v) for k, v in d.items() if not term in k),
+            dict( (k, v) for k, v in d.items() if term not in k),
             embed_cache = self._embed_cache)
 
         # Check left^2 - right^2 == 0

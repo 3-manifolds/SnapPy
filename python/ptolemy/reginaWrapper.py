@@ -648,8 +648,8 @@ class NTriangulationForPtolemy(NTriangulation):
         non_generator_triangles = self.maximalForestInDualSkeleton()
 
         # All other triangles are
-        generator_triangles = [ triangle for triangle in self.getTriangles()
-                                if not triangle in non_generator_triangles ]
+        generator_triangles = [triangle for triangle in self.getTriangles()
+                               if triangle not in non_generator_triangles]
 
         def get_neighbors(tet):
             """
@@ -673,7 +673,7 @@ class NTriangulationForPtolemy(NTriangulation):
             """
             # Get corresponding triangle
             triangle = tet.getTriangle(face)
-            if not triangle in generator_triangles:
+            if triangle not in generator_triangles:
                 # Not a generator, return 0
                 return 0
             # Get the index of the generator, first generator is indexed 1

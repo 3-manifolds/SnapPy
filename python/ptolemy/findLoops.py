@@ -263,7 +263,7 @@ def _compute_point_to_shortest_path(point_identification_dict, origin,
                 
                 # If the end point of this edge does not have a path
                 # yet or the new path is shorter.
-                if (not new_end_point in d
+                if (new_end_point not in d
                     or _penalty_of_path(new_path, penalties) <
                                _penalty_of_path(d[new_end_point], penalties)):
                     new_paths.update(

@@ -16,8 +16,9 @@ def check_certified_intervals():
             if not abs(interval.center() - z) < 1e-10:
                 raise Exception
 
-            if not z in interval:
+            if z not in interval:
                 raise Exception
+
 
 def generate_test_with_shapes_engine(module, engine):
     def result(verbose):

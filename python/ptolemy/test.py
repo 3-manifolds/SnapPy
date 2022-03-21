@@ -79,8 +79,7 @@ def check_volumes(complex_volumes, baseline_complex_volumes,
     # check that every base line volume appears in computed volumes
     for cvol1 in baseline_complex_volumes:
 
-        if not True in [
-            is_close(cvol1, cvol2) for cvol2 in complex_volumes]:
+        if not any(is_close(cvol1, cvol2) for cvol2 in complex_volumes):
             print("Missing base line volume:", cvol1)
 
             print("Volumes:")
@@ -91,10 +90,10 @@ def check_volumes(complex_volumes, baseline_complex_volumes,
 
     # check that every computed volume is a base line volume
     for cvol2 in complex_volumes:
-        if not True in [
-            is_close(cvol1, cvol2) for cvol1 in baseline_complex_volumes]:
+        if not any(is_close(cvol1, cvol2)
+                   for cvol1 in baseline_complex_volumes):
             print("Extra volume:", cvol2)
-            
+
             print("Volumes:")
             for i in complex_volumes:
                 print("     ", i)
@@ -728,16 +727,15 @@ def test_induced_representation():
     number_psl2 = 0
 
     for component in solutions__sl3_c0:
-        is_induced_from_psl2 = [ z.is_induced_from_psl2(epsilon = 1e-80)
-                    for z in component.cross_ratios_numerical() ]
-        if True in is_induced_from_psl2:
+        is_induced_from_psl2 = [z.is_induced_from_psl2(epsilon=1e-80)
+                                for z in component.cross_ratios_numerical()]
+        if any(is_induced_from_psl2):
             number_psl2 += 1
-            assert not False in is_induced_from_psl2, (
-                "Mixed up is_induced_from_psl2")
+            assert all(is_induced_from_psl2), "Mixed up is_induced_from_psl2"
 
     assert number_psl2 == 1, (
         "Only one component can come from psl2 (numerically)")
-            
+
     # Check that induced_representation for sl3 throws error
     got_exception = False
     try:

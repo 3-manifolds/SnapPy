@@ -26,8 +26,8 @@ def decomposition_from_components(text):
 
     params, body = processFileBase.extract_parameters_and_body_from_section(
         decomposition)
-    
-    if not "TYPE" in params.keys():
+
+    if "TYPE" not in params.keys():
         raise Exception("No TYPE given for IDEAL=COMPONENTS")
 
     type = params["TYPE"].strip()
@@ -47,14 +47,15 @@ def remove_optional_quotes(s):
         assert s[0] == s[-1]
         return s[1:-1]
     return s
-    
+
+
 def process_component(py_eval, manifold_thunk, variables,
                       component):
 
     params, body = processFileBase.extract_parameters_and_body_from_section(
         component)
 
-    if not "DIMENSION" in params.keys():
+    if "DIMENSION" not in params.keys():
         raise Exception("No DIMENSION for COMPONENT of IDEAL=COMPONENTS")
 
     dimension = int(params["DIMENSION"].strip())
@@ -124,7 +125,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
         polys = [ Polynomial.parse_string(p)
                   for p in body.replace('\n', ' ').split(',') ]
 
-        if not 'TERM=ORDER' in params.keys():
+        if 'TERM=ORDER' not in params.keys():
             raise Exception("No term order given for Groebner basis")
 
         term_order = params["TERM=ORDER"].strip().lower()

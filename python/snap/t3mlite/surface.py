@@ -126,7 +126,7 @@ class Surface:
         indices of those edges for which the Surface contains an edge-linking
         annulus (and hence has an obvious compression).
         """
-        if not self in manifold.NormalSurfaces:
+        if self not in manifold.NormalSurfaces:
             raise ValueError('That manifold does not contain the Surface!')
         linked_edges = []
         for edge in manifold.Edges:
@@ -152,7 +152,8 @@ class Surface:
                 weight = "  Quad Type  Q%d3, weight %d" % (self.Quadtypes[i], quad_weight)
             else:
                 weight = "No quads"
-            out.write(weight  + "\n")
+            out.write(weight + "\n")
+
 
 class ClosedSurface(Surface):
 

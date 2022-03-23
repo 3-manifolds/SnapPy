@@ -37,7 +37,7 @@ class PendingPiece:
     def __init__(self, d, tet_and_matrix):
         self.d = d
         self.tet_and_matrix = tet_and_matrix
-        
+
     def __lt__(self, other):
         return self.d < other.d
 
@@ -139,7 +139,7 @@ class GeodesicInfo:
             for tet_generators_info in self.generators_info ]
 
         m = self.normalize_matrix(self.original_matrix)
-        
+
         # The matrix fixing the geodesic in the coordinates where the
         # endpoints are at infty and zero is of the form
         # [ self.eigenvalue0,                0 ]
@@ -166,7 +166,7 @@ class GeodesicInfo:
 
         self.initial_tet_face_and_matrix = (
             self.find_tet_face_and_matrix_intersecting_geodesic())
-        
+
         # Store index of a tetrahedron and matrix such that the image
         # of the tetrahedron under that matrix intersects the geodesic.
         tet, face, matrix = self.initial_tet_face_and_matrix
@@ -203,7 +203,7 @@ class GeodesicInfo:
         # either the geodesic or disjoint from the geodesic - and hence
         # not mapping 0 or infty to either 0 or infty. Thus, we can assume
         # that m[0,0] is never 0.
-        
+
         # Note that the real part of the log of top left entry of
         # t^i * m is
         # real(log(m[0,0] * self.eigenvalue0 ^ i)) =
@@ -211,11 +211,11 @@ class GeodesicInfo:
         #
         # Thus, there is always a unique i such that this value is
         # in the interval [-self.signed_half_length, self.signed_half_length).
-        
+
         # We will now compute this i.
 
         p = abs(m[0,0]).log()
-        
+
         # Unique i
         steps = -(p / self.signed_half_length).round()
         if steps == 0:
@@ -237,7 +237,7 @@ class GeodesicInfo:
         that matrix intersects the geodesic (in coordinates where the
         geodesic goes from 0 to infty).
         """
-    
+
         # We start with (tetrahedron, matrix) = (0, Identity) and iterate
         # the following procedure:
         #
@@ -277,10 +277,10 @@ class GeodesicInfo:
             g = tet_generators_info['generators'][best_f]
             if g != 0:
                 m = m * self.generator_matrices_and_inverses[g]
-        
+
             # Find neighboring tetrahedron
             tet = tet_generators_info['neighbors'][best_f]
-                
+
             # Record through which face of the neighboring tet it was
             # entered
             last_f = tet_generators_info['gluings'][best_f][best_f]
@@ -315,7 +315,7 @@ class GeodesicInfo:
                 tet, m = tet_and_matrix
 
                 tet_generators_info = self.generators_info[tet]
-                
+
                 # Compute the vertices of the translate of the tetrahedron
                 vertices = self.images_of_vertices_of_tetrahedron(tet, m)
 
@@ -327,7 +327,7 @@ class GeodesicInfo:
                 for f in range(4):
                     # The three vertices of the face
                     face_vertices = vertices[f+1:] + vertices[:f]
-                
+
                     d = dist_triangle_and_std_geodesic(face_vertices)
 
                     # If yes, traverse the face
@@ -335,7 +335,7 @@ class GeodesicInfo:
                     g = tet_generators_info['generators'][f]
                     if g != 0:
                         # Use self.canonical_matrix to
-                        # cover tube about closed geodesic in 
+                        # cover tube about closed geodesic in
                         # manifold only once
                         new_m = self.canonical_matrix(
                             m * self.generator_matrices_and_inverses[g])
@@ -418,7 +418,7 @@ class GeodesicInfo:
                     if _are_points_equal(endpoint0, other_endpoint, 1e-5):
                         return True
         return False
-                
+
     def compute_tets_and_R13_endpoints_for_geodesic(self):
         if self.geodesic_pieces is None:
             self.geodesic_pieces = (
@@ -434,7 +434,7 @@ class GeodesicInfo:
 
 def _are_points_equal(a, b, epsilon):
     return all(abs(x-y) < epsilon for x, y in zip(a,b))
-    
+
 def pack_tets_and_R13_heads_and_tails_for_shader(
                                 geodesic_info, tets_and_heads_and_tails):
     """
@@ -449,7 +449,7 @@ def pack_tets_and_R13_heads_and_tails_for_shader(
 
     tet_to_heads_and_tails = [
         [] for tet in range(geodesic_info.num_tetrahedra) ]
-    
+
     for tet, head_and_tail in tets_and_heads_and_tails:
         tet_to_heads_and_tails[tet].append(head_and_tail)
 

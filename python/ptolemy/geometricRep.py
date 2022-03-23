@@ -54,7 +54,7 @@ def retrieve_geometric_solution(M, N = 2,
 
     """
 
-    
+
     return compute_geometric_solution(M, N, numerical = numerical,
                                       engine = 'retrieve',
                                       prefer_rur = prefer_rur,

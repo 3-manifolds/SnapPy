@@ -46,7 +46,7 @@ class TetAndMatrixSet:
         if diff < -0.25:
             # Analogoue.
             return [ first_key, first_key - 1]
-        
+
         return [ first_key ]
 
     def add(self, tet_and_matrix):

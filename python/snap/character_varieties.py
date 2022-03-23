@@ -67,7 +67,7 @@ class TracePolynomialRing(object):
         poly_vars = list(gens) + list(combinations(gens, 2))
         poly_vars += list(combinations(gens, 3))
         self.var_names = ['T' + ''.join(v) for v in poly_vars]
-        
+
     def __call__(self, poly):
         return pari(poly)
 
@@ -78,7 +78,7 @@ class Word(object):
     capital letters standing for inverses. ex: 'abAB'. The string is
     contained in the 'letters' attribute of the class.
     """
-    
+
     def __init__(self,letters):
         """Creates a Word from a string, automatically reduces"""
         if isinstance(letters, Word):
@@ -320,7 +320,7 @@ def character_variety(gens, rels=None):
     gens = [Word(gen) for gen in gens]
     rels = [Word(R) for R in rels]
     ring = TracePolynomialRing([g.letters for g in gens])
-    
+
     #Type 1
     triples = list(combinations(gens,3))
     pairsoftriples = list(combinations_with_replacement(triples,2))
@@ -366,4 +366,4 @@ if __name__ == "__main__":
    current_module = sys.modules[__name__]
    doctest_modules([current_module])
 
-   
+

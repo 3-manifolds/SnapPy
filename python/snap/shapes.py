@@ -32,7 +32,7 @@ def eval_gluing_equation(eqn, shapes):
     for i , z in enumerate(shapes):
         ans = ans * ( z**int(a[i])   *  (1 - z) ** int(b[i]) )
     return ans
-       
+
 def gluing_equation_errors(eqns, shapes):
     return [eval_gluing_equation(eqn, shapes) - 1 for eqn in eqns]
 

@@ -60,7 +60,7 @@ def apply_Moebius(m, z):
     if z == Infinity:
         return m[0,0] / m[1,0]
     return (m[0,0] * z + m[0,1]) / (m[1,0] * z + m[1,1])
-    
+
 def cross_ratio(z0, z1, z2, z3):
     """
     Computes the cross ratio (according to SnapPea conventions) of
@@ -72,7 +72,7 @@ def cross_ratio(z0, z1, z2, z3):
 
     """
 
-    return ((_diff_1_if_inf(z2, z0) * _diff_1_if_inf(z3, z1)) / 
+    return ((_diff_1_if_inf(z2, z0) * _diff_1_if_inf(z3, z1)) /
             (_diff_1_if_inf(z2, z1) * _diff_1_if_inf(z3, z0)))
 
 def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
@@ -107,7 +107,7 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
 
     transformedMidpoint = _compute_midpoint_helper(
         b, c, offset)
-    
+
     return _translate(transformedMidpoint, inv_sl_matrix)
 
 def compute_midpoint_two_horospheres_from_triangle(
@@ -126,9 +126,9 @@ def compute_midpoint_two_horospheres_from_triangle(
             idealPoints))
 
     transformedMidpoint = _compute_midpoint_helper(b, c, (lb / la).sqrt())
-    
+
     return _translate(transformedMidpoint, inv_sl_matrix)
-    
+
 def compute_incenter_of_triangle(idealPoints):
     """
     Computes incenter of the triangle spanned by three ideal points::
@@ -166,7 +166,7 @@ def compute_inradius_and_incenter(idealPoints):
         sage: compute_inradius_and_incenter([z0, z1, z2, z3])
         (0.29186158033099?, FinitePoint(0.771123016231387? + 0.2791850380434060?*I, 0.94311979279000?))
     """
-    
+
     if not len(idealPoints) == 4:
         raise Exception("Expected 4 ideal points.")
 
@@ -199,7 +199,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
         5.000000025000000?
 
     """
-    
+
     if Infinity in idealPoints:
         for idealPoint in idealPoints:
             if idealPoint != Infinity:
@@ -291,7 +291,7 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
 
     if not len(nonInfPoints) == 3:
         raise Exception("Expects three non-infinite points.")
-    
+
     # Pts contains three complex numbers spanning the ideal tetrahedron
     # together with infinity.
 
@@ -315,11 +315,11 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # Thus, we can compute the inradius r as:
     inRadiusSqr  = terms_product / length_total / 4
     inRadius     = inRadiusSqr.sqrt()
-    
+
     # The circumradius R of the Euclidean triangle is given by
     # a * b * c / (4 * A), so we can compute it as:
     circumRadius = length_product / (terms_product * length_total).sqrt()
-    
+
     # Euler's formula gives us the distance d between the incenter and the
     # circumcenter is given d^2 = R^2 - 2 * r * R.
     # We obtain a Euclidean right triangle formed by the in- and circumcenter
@@ -341,7 +341,7 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # sqrt( (h + r) * (h - r))
     height       = ( eHeightSqr - inRadiusSqr ).sqrt()
 
-    # Taking the logarithm of the ratio of these two highest gives the 
+    # Taking the logarithm of the ratio of these two highest gives the
     # hyperbolic diameter of the inscribed sphere.
     radius       = ( (eHeight + inRadius) / (eHeight - inRadius) ).log() / 2
 
@@ -393,7 +393,7 @@ class _IdealPointTester(object):
 
     def run_tests(self):
         from sage.all import RIF, CIF
-        
+
         bias = RIF(1.5)
 
         triangle = [ CIF(0), Infinity, CIF(1) ]

@@ -46,7 +46,7 @@ def find_section(text, name):
 
     if not isinstance(text, str):
         text = text.decode('ascii')
-        
+
     return [ s.strip()
              for regex in regexs
              for s in re.findall(regex, text, re.DOTALL) ]
@@ -108,7 +108,7 @@ def remove_outer_square_brackets(text):
     return text[1:-1]
 
 def remove_optional_outer_square_brackets(text):
-    
+
     if text[0] == '[':
         return remove_outer_square_brackets(text)
 
@@ -154,16 +154,16 @@ def get_manifold_thunk(text):
             from snappy import Manifold
 
             return Manifold(triangulation_text)
-        
+
         if ('<?xml' in triangulation_text and
-            '<reginadata' in triangulation_text and 
+            '<reginadata' in triangulation_text and
             '<packet' in triangulation_text):
 
             from reginaWrapper import NTriangulationForPtolemy
 
             return NTriangulationForPtolemy.from_xml(triangulation_text)
 
-        raise Exception("Triangulation format not supported: %s..." % 
+        raise Exception("Triangulation format not supported: %s..." %
                         triangulation_text[:20])
 
     return get_manifold

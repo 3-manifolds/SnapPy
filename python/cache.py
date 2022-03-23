@@ -10,18 +10,18 @@ class SnapPyCache(dict):
     """
     debug = False
     _clear = dict.clear
-    
+
     def save(self, answer, method_name, *args, **kwargs):
         self[(method_name, args, tuple(kwargs.items()))] = answer
         return answer
-        
+
     def lookup(self, method_name, *args, **kwargs):
         return self[(method_name, args, tuple(kwargs.items()))]
 
     def clear(self, key=None, message=''):
         if self.debug:
             print('_clear_cache: %s'%message)
-        if key is None: 
+        if key is None:
             self._clear()
         else:
             self.pop(key)

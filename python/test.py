@@ -137,7 +137,7 @@ def runtests(verbose = False,
              use_modernopengl = True):
 
     DocTestParser.use_modernopengl = use_modernopengl
-    
+
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -155,8 +155,8 @@ def runtests(verbose = False,
     num_graphics_failures =  graphics_failures(
         verbose=verbose,
         windows = windows,
-        use_modernopengl = use_modernopengl) 
-    
+        use_modernopengl = use_modernopengl)
+
     return result.failed + num_graphics_failures
 
 if __name__ == '__main__':
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     quick = False
     windows = False
     use_modernopengl = True
-    
+
     try:
         useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
         optlist, args = getopt.getopt(

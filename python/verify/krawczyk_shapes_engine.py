@@ -149,7 +149,7 @@ class KrawczykShapesEngine:
 
             # Take log of the entire product
             gluing_LHSs.append(prod.log())
-    
+
         return vector(BaseField, gluing_LHSs)
 
     def log_gluing_LHS_derivatives(self, shapes):
@@ -177,12 +177,12 @@ class KrawczykShapesEngine:
         BaseField = shapes[0].parent()
         zero = BaseField(0)
         one  = BaseField(1)
-        
+
         # 1 /    z for each shape z
         shape_inverses           = [ one / shape         for shape in shapes ]
 
         # 1 / (1-z) for each shape z
-        one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ] 
+        one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ]
 
         gluing_LHS_derivatives = []
         for A, B, c in self.equations:
@@ -198,9 +198,9 @@ class KrawczykShapesEngine:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
 
                 row.append( derivative )
-            
+
             gluing_LHS_derivatives.append(row)
-    
+
         return matrix(BaseField, gluing_LHS_derivatives)
 
     def log_gluing_LHS_derivatives_sparse(self, shapes):
@@ -215,7 +215,7 @@ class KrawczykShapesEngine:
         BaseField = shapes[0].parent()
         zero = BaseField(0)
         one  = BaseField(1)
-        
+
         gluing_LHS_derivatives = []
 
         # For each shape z
@@ -234,7 +234,7 @@ class KrawczykShapesEngine:
                 column.append((r, derivative))
             gluing_LHS_derivatives.append(column)
         return gluing_LHS_derivatives
-    
+
     @staticmethod
     def matrix_times_sparse(m, sparse_m):
         """
@@ -307,7 +307,7 @@ class KrawczykShapesEngine:
         # Compute c * df([z])
         p = KrawczykShapesEngine.matrix_times_sparse(
             self.approx_inverse, derivative)
-        
+
         # Compute Id - c * df([z])
         diff = self.identity - p
 
@@ -419,7 +419,7 @@ class KrawczykShapesEngine:
         # Initialize the shape intervals, they have zero length
         self.initial_shapes = vector(
             [self.CIF(shape) for shape in initial_shapes])
-        
+
         # Get an independent set of gluing equations from snap
         self.equations = snap.shapes.enough_gluing_equations(M)
         self._make_sparse_equations()
@@ -475,7 +475,7 @@ class KrawczykShapesEngine:
         certified_shapes.
         Set verbose = True for printing additional information.
         """
-        
+
         # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes
 

@@ -13,7 +13,7 @@ class ZeroDimensionalComponent(Component):
     def __init__(self, l, p = None):
         self.dimension = 0
         super(ZeroDimensionalComponent, self).__init__(l)
-    
+
 
 class NonZeroDimensionalComponent(Component):
     """
@@ -25,7 +25,7 @@ class NonZeroDimensionalComponent(Component):
     def __init__(self, witnesses = [],
                  dimension = 'unknown', free_variables = None, genus = None,
                  p = None):
-        
+
         if not p is None:
             self.dimension = p.dimension
             self.free_variables = p.free_variables
@@ -79,7 +79,7 @@ class NonZeroDimensionalComponent(Component):
                 p.text(base_str)
 
 def _test():
-    
+
     """
 
     >>> a = NonZeroDimensionalComponent(dimension = 1, free_variables='x')

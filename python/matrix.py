@@ -159,7 +159,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
                       for row
                       in (self.data[i] if type(i) == slice else [ self.data[i] ]) ])
             if i < 0 or j < 0:
-                raise TypeError("Simple matrices don't have negative indices.") 
+                raise TypeError("Simple matrices don't have negative indices.")
             return self.data[i][j]
 
         if type(key) == slice:
@@ -176,7 +176,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
         i, j = key
         if i < 0 or j < 0:
-            raise TypeError("Simple matrices don't have negative indices.") 
+            raise TypeError("Simple matrices don't have negative indices.")
 
         return key
 

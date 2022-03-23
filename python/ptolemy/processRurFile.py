@@ -52,7 +52,7 @@ def _process_rur_component(text, py_eval, manifold_thunk):
                 raise Exception("Unrecognized key %s" % key)
         else:
             body += line + "\n"
-   
+
     if dimension is None:
         return NonZeroDimensionalComponent()
     if dimension > 0:
@@ -87,7 +87,7 @@ def parse_maple_like_rur(text):
                  for assignment in assignments_text.split(',')])
 
 def parse_rs_rur(text, variables):
-    
+
     m = re.match(r'\[([^,\]]+),\s*([^,\]]+),\s*\[([^\]]+)\]\s*,\s*\[\s*\]\s*\]',
                  text, re.DOTALL)
 
@@ -102,21 +102,21 @@ def parse_rs_rur(text, variables):
     denominator = pari(denominator_str.replace(var, 'x'))
     numerators = [ pari(numerator_str.replace(var, 'x'))
                    for numerator_str in numerators_str.split(',') ]
-    
+
     fracs = [
         RUR( [ (  numerator.Mod(extension),  1),
                (denominator.Mod(extension), -1) ] )
         for numerator in numerators ]
 
     return dict(list(zip(variables, fracs)) + [('1', RUR.from_int(1))])
-    
+
 def _find_var_of_poly(text):
     return re.search(r'[_A-Za-z][_A-Za-z0-9]*',text).group(0)
 
 def _parse_assignment(text, poly):
     var, expression = re.match(r'\s*([_A-Za-z][_A-Za-z0-9]*)\s*=\s*(.*)$',
                                text).groups()
-    
+
     return (
         var,
         RUR.from_pari_fraction_and_number_field(pari(expression), poly))

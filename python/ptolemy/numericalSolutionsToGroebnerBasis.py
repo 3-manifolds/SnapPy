@@ -43,10 +43,10 @@ class PariPolynomialAndVariables:
 def numerical_solutions(polys):
 
     # Divide out lowest power variables
-    polysReduced = [ poly.factor_out_variables() for poly in polys ] 
+    polysReduced = [ poly.factor_out_variables() for poly in polys ]
 
     # Filter out 0
-    polysFiltered = [ poly 
+    polysFiltered = [ poly
                       for poly in polysReduced
                       if (not poly.is_constant()) or poly.get_constant() == 0 ]
 
@@ -58,16 +58,16 @@ def numerical_solutions(polys):
 
     polysAndVars = [
         PariPolynomialAndVariables(poly) for poly in polysFiltered ]
-        
+
     solutions = _numerical_solutions_recursion(polysAndVars, { })
 
     number_variables = (
         len(
             set(sum(
                 [poly.variables() for poly in polys],[ ]))))
-    
+
     return [
-        solution if len(solution) == number_variables 
+        solution if len(solution) == number_variables
         else NonZeroDimensionalComponent()
         for solution in solutions]
 
@@ -91,7 +91,7 @@ def _numerical_solutions_recursion(polysAndVars, solutionDict):
     if not univariatePoly is None:
         variable = univariatePoly.get_variable_if_univariate()
         variableDicts = [ ]
-        
+
         for solution in univariatePoly.get_roots():
 
             newSolutionDict = solutionDict.copy()

@@ -162,7 +162,7 @@ class IdealRaytracingData(RaytracingData):
             return 0.0
 
         horosphere_point = _compute_R13_point_on_horosphere_for_vertex(tet, V)
-        
+
         return - 1.0 / (r13_dot(tet.R13_vertices[V], horosphere_point)
                           * area.sqrt())
 
@@ -181,7 +181,7 @@ class IdealRaytracingData(RaytracingData):
     def _add_cusp_to_tet_matrices(self):
         for tet in self.mcomplex.Tetrahedra:
             m = [ (V, _compute_cusp_to_tet_and_inverse_matrices(tet, V, i))
-                  for i, V in enumerate(t3m.ZeroSubsimplices) ]  
+                  for i, V in enumerate(t3m.ZeroSubsimplices) ]
             tet.cusp_to_tet_matrices = {
                 V : m1 for V, (m1, m2) in m }
             tet.tet_to_cusp_matrices = {
@@ -212,10 +212,10 @@ class IdealRaytracingData(RaytracingData):
                     for shape, expo
                     in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
                 for j in range(2) ]
-            
+
         a, c = m_param.real(), m_param.imag()
         b, d = l_param.real(), l_param.imag()
-        
+
         det = a*d - b * c
         cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
 
@@ -256,17 +256,17 @@ class IdealRaytracingData(RaytracingData):
         margulisTubeTails = [
             tet.margulisTubeEnds[V][0]
             for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices ]            
+            for V in t3m.ZeroSubsimplices ]
 
         margulisTubeHeads = [
             tet.margulisTubeEnds[V][1]
             for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices ]            
+            for V in t3m.ZeroSubsimplices ]
 
         margulisTubeRadiusParams = [
             tet.Class[V].margulisTubeRadiusParam
             for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices ]            
+            for V in t3m.ZeroSubsimplices ]
 
         cusp_to_tet_matrices = [
             tet.cusp_to_tet_matrices[V]
@@ -365,7 +365,7 @@ class NonGeometricRaytracingData(McomplexEngine):
         return (boost, tet_num, weight)
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0], 
+                          m = matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
@@ -376,7 +376,7 @@ class NonGeometricRaytracingData(McomplexEngine):
 def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
     l = z1   - z0
     m = zinf - z1
-        
+
     return matrix([[ l * zinf, m * z0 ],
                    [ l,        m      ]])
 
@@ -391,10 +391,10 @@ def _pgl2_matrix_for_face(tet, F):
         other_tet.complex_vertices[gluing.image(V)]
         for V in t3m.ZeroSubsimplices
         if V & F ]
-        
+
     m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
     m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
-    
+
     return m2 * _adjoint(m1)
 
 def _o13_matrix_for_face(tet, F):
@@ -420,7 +420,7 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
         # Inverting matrix here since SageMath screws up :(
         translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
-    
+
         vertex_positions = [ translations_to_ml * complex_to_pair(z)
                              for z in vertex_positions ]
 
@@ -437,12 +437,12 @@ def _compute_R13_point_on_horosphere_for_vertex(tet, V0):
 
     cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
     pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
-    
+
     pts[1] = 1.0 / (pts[1] - pts[0])
     pts[2] = 1.0 / (pts[2] - pts[0])
 
     base_length = abs(pts[2] - pts[1])
-    
+
     horosphere_height = cusp_length / base_length
 
     return complex_and_height_to_R13_time_vector(pts[0], horosphere_height)
@@ -460,7 +460,7 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
 
     cusp_vertices = [ trig.vertex_positions[vertex | v]
                       for v in otherVerts ]
-    
+
     if not tet.Class[vertex].is_complete:
         z0 = cusp_vertices[0]
         cusp_vertices = [ z / z0 for z in cusp_vertices ]
@@ -473,10 +473,10 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
         pgl2c_to_o13(_adjoint(std_to_tet * cusp_to_std)))
 
 def _compute_margulis_tube_ends(tet, vertex):
-    
+
     if tet.Class[vertex].is_complete:
         return [(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0)]
-    
+
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 

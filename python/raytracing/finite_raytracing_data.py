@@ -22,7 +22,7 @@ except:
 if _within_sage:
     from snappy.dev.vericlosed import compute_approx_hyperbolic_structure_orb
     from snappy.dev.vericlosed.polishApproxHyperbolicStructure import *
-    
+
     from snappy.dev.vericlosed.truncatedComplex import *
 
 from .hyperboloid_utilities import *
@@ -37,7 +37,7 @@ class FiniteRaytracingData(RaytracingData):
 
         if not _within_sage:
             raise Exception("Only supported within SageMath :(")
-        
+
         hyperbolic_structure = compute_approx_hyperbolic_structure_orb(triangulation)
         hyperbolic_structure.pick_exact_and_var_edges()
         hyperbolic_structure = polish_approx_hyperbolic_structure(
@@ -69,7 +69,7 @@ class FiniteRaytracingData(RaytracingData):
 
     def _compute_tet_vertices(self):
         c = vector(self.RF, [1, 0, 0, 0])
-        
+
         def _compute_vertex(tet, perm):
             m = tet.permutahedron_matrices[perm]
             return pgl2c_to_o13(_adjoint(m)) * c
@@ -179,11 +179,11 @@ _face_to_perm = {
 def _compute_face_pairing(tet, F):
     tet_perm = _face_to_perm[F]
     m = tet.permutahedron_matrices[tet_perm.tuple()]
-    
+
     other_tet_perm = tet.Gluing[F] * tet_perm
     other_tet = tet.Neighbor[F]
     other_m = other_tet.permutahedron_matrices[other_tet_perm.tuple()]
-    
+
     return pgl2c_to_o13(_adjoint(other_m) * m)
 
 def _adjoint(m):

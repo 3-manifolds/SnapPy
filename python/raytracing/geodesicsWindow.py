@@ -7,7 +7,7 @@ class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
-        
+
         tkinter.Toplevel.__init__(
             self,
             master = inside_viewer,
@@ -18,10 +18,10 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.frame = ttk.Frame(self)
         self.frame.pack(expand = True, fill = tkinter.BOTH)
         self.frame.columnconfigure(0, weight = 1)
-        
+
         length_frame = ttk.Frame(self.frame)
         length_frame.grid(row = 0, column = 0)
-        
+
         self.length_button = ttk.Button(
             length_frame, text = "Add up to length", command=self.add_length_spectrum)
         self.length_button.grid(row = 0, column = 0)
@@ -41,15 +41,15 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.word_entry = ttk.Entry(
             length_frame)
         self.word_entry.grid(row = 0, column = 3)
-        
+
         self.geodesics_frame = None
-        
+
         self.populate_geodesics_frame()
-        
+
     def populate_geodesics_frame(self):
         if not self.geodesics_frame is None:
             self.geodesics_frame.destroy()
-        
+
         self.geodesics_frame = ttk.Frame(self.frame)
         self.geodesics_frame.grid(row = 1, column = 0, sticky = tkinter.NSEW)
 
@@ -81,7 +81,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         l.grid(row = row, column = radius_column)
 
         row += 1
-        
+
         for geodesic in self.raytracing_view.geodesics.geodesics_sorted_by_length():
             UniformDictController.create_checkbox(
                 self.geodesics_frame,
@@ -121,18 +121,18 @@ class GeodesicsWindow(tkinter.Toplevel):
             float(self.length_box.get()))
 
         self.raytracing_view.resize_geodesic_params()
-        
+
         self.populate_geodesics_frame()
 
     def add_word(self):
         index = self.raytracing_view.geodesics.add_word(
             self.word_entry.get())
-        
+
         self.raytracing_view.resize_geodesic_params()
         self.raytracing_view.enable_geodesic(index)
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
-            
+
         self.raytracing_view.update_geodesic_data_and_redraw()
 
         self.populate_geodesics_frame()

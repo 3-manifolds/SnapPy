@@ -48,7 +48,7 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
                                                 cusp_area_matrix)
 
 def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
-    
+
     """
 
         sage: from sage.all import matrix, RIF
@@ -71,7 +71,7 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
 
     # Cusp permutation given in Cayley notation
     sigma = first_cusps + [ i for i in range(num_cusps) if i not in first_cusps ]
-    
+
     for i in range(num_cusps):
         stoppers = [ cusp_area_matrix[sigma[i], sigma[j]] / result[sigma[j]]
                      for j in range(i) ]
@@ -133,7 +133,7 @@ def _verified_unbiased_cusp_areas_from_cusp_area_matrix(
     num_cusps = cusp_area_matrix.dimensions()[0]
 
     result = num_cusps * [ None ]
-    
+
     while None in result:
         stoppers = _find_stoppers(cusp_area_matrix, result)
 

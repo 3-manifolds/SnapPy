@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
@@ -17,11 +17,11 @@ import os, sys, re
 # gluing data for the ith pair of tetrahedra is given by the ith pair
 # of lines like:
 #
-#      2    5    1   34 
+#      2    5    1   34
 #   3120 0321 0132 0132
 
 def read_SnapPea_file(file_name=None, data = None):
-    if data is None: 
+    if data is None:
         data = open(file_name).read().decode('ascii')
     count = 0
 

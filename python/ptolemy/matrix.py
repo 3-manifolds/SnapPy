@@ -83,9 +83,9 @@ def is_matrix_zero(m):
 def matrix_transpose(m):
     if len(m) == 0:
         return []
-    
+
     return [[m[r][c] for r in range(len(m))]
-            for c in range(len(m[0]))]            
+            for c in range(len(m[0]))]
 
 
 def simultaneous_smith_normal_form(in1, in2):
@@ -102,7 +102,7 @@ def simultaneous_smith_normal_form(in1, in2):
 
     # d1 d2 are m and n in new system
     # next three are coordinate changes in groups
-        
+
     return (u1, matrix_mult(v1, u2), v2,
             d1, d2)
 
@@ -136,7 +136,7 @@ def _pari_to_internal(m):
     if num_cols == 0:
         return []
     num_rows = len(m[0])
-    
+
     def convert(p):
         d = int(p.denominator())
         n = int(p.numerator())
@@ -152,7 +152,7 @@ def _internal_to_pari(m):
     if num_rows == 0:
         return pari.matrix(0,0)
     num_cols = len(m[0])
-    
+
     return pari.matrix(
         num_rows,num_cols,
         [i for row in m for i in row])
@@ -175,7 +175,7 @@ def _expand_square_matrix(m, num_cols_rows):
 
 def _identity_matrix(s):
     return _expand_square_matrix([],s)
-    
+
 def _get_only_non_zero_entry_in_col(m, col):
     entry = None
     for row in m:
@@ -202,7 +202,7 @@ def _split_matrix_bottom_zero_rows(m):
     for number_top_rows in range(len(m), -1, -1):
         if not row_is_zero(m, number_top_rows - 1):
             break
-    
+
     return m[:number_top_rows], m[number_top_rows:]
 
 def matrix_inverse(m):
@@ -229,16 +229,16 @@ def _smith_normal_form_with_inverse(m):
 
 def _bottom_row_stable_smith_normal_form(m):
     m_up, m_down = _split_matrix_bottom_zero_rows(m)
-    
+
     if len(m_up) == 0:
         return (_identity_matrix(len(m)),
                 _identity_matrix(len(m[0])),
                 m)
-    
+
     u_upleft, v, d_up = _smith_normal_form_with_inverse(m_up)
 
     return (_expand_square_matrix(u_upleft, len(m_down)),
-            v, 
+            v,
             d_up + m_down)
 
 def _change_coordinates(u, v, m):
@@ -279,13 +279,13 @@ def get_independent_rows(rows, explain_rows,
         raise Exception("Could not find enough independent rows")
 
     return result
-        
+
 def _get_independent_rows_recursive(row_explain_pairs,
                                     length,
                                     desired_determinant,
                                     selected_rows,
                                     selected_explains):
-    
+
     if len(selected_rows) == length:
         if desired_determinant is None:
             return selected_explains

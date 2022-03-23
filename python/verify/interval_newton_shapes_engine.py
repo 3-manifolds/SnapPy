@@ -140,7 +140,7 @@ class IntervalNewtonShapesEngine:
 
             # Take log of the entire product
             gluing_LHSs.append(prod.log())
-    
+
         return vector(BaseField, gluing_LHSs)
 
     @staticmethod
@@ -170,12 +170,12 @@ class IntervalNewtonShapesEngine:
         BaseField = shapes[0].parent()
         zero = BaseField(0)
         one  = BaseField(1)
-        
+
         # 1 /    z for each shape z
         shape_inverses           = [ one / shape         for shape in shapes ]
 
         # 1 / (1-z) for each shape z
-        one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ] 
+        one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ]
 
         gluing_LHS_derivatives = []
         for A, B, c in equations:
@@ -191,9 +191,9 @@ class IntervalNewtonShapesEngine:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
 
                 row.append( derivative )
-            
+
             gluing_LHS_derivatives.append(row)
-    
+
         return matrix(BaseField, gluing_LHS_derivatives)
 
     @staticmethod
@@ -279,11 +279,11 @@ class IntervalNewtonShapesEngine:
         if interval_value_at_point is None:
             interval_value_at_point = IntervalNewtonShapesEngine.log_gluing_LHSs(
                 equations, point_in_intervals)
-    
+
         # Compute (DF)(z)
         derivatives = IntervalNewtonShapesEngine.log_gluing_LHS_derivatives(
             equations, shape_intervals)
-    
+
         return (  point_in_intervals
                 - mat_solve(derivatives, interval_value_at_point))
 
@@ -464,7 +464,7 @@ class IntervalNewtonShapesEngine:
         certified_shapes.
         Set verbose = True for printing additional information.
         """
-        
+
         # In the equation for the Newton interval iteration
         #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
         #

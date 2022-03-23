@@ -55,7 +55,7 @@ def _unprotected_volume_from_shape(z):
     # the interval for the imaginary part of z contains zero if and only if
     # the imaginary part of 1-z contains zero, so the same branch cut is chosen
     # for (1-z).arg() and z.polylog(2).
-    
+
     return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
 
 def _volume_from_shape(z):
@@ -75,10 +75,10 @@ def _volume_from_shape(z):
             # Thus, we convert to ComplexBallField here since the arblib
             # supports a verified interval polylog (albeit giving an interval
             # that seems to be 300 times larger than necessary).
-            
+
             CBF = ComplexBallField(CIF.precision())
             RIF = RealIntervalField(CIF.precision())
-    
+
             return RIF(_unprotected_volume_from_shape(CBF(z)))
         else:
             z = Number(z)
@@ -87,7 +87,7 @@ def _volume_from_shape(z):
     # have to explicitly give a precision to dilog, otherwise you lose
     # precision.
     return z.volume()
-    
+
 def compute_volume(manifold, verified, bits_prec = None):
     """
     Computes the volume of the given manifold. If verified is used,
@@ -111,7 +111,7 @@ def compute_volume(manifold, verified, bits_prec = None):
     # equations.
     shape_intervals = manifold.tetrahedra_shapes(
         'rect', bits_prec = bits_prec, intervals = verified)
-    
+
     if verified:
         # If requested, check it is a valid hyperbolic structure
         verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(

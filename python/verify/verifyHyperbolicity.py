@@ -79,7 +79,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     logZp  = [ (1 / (1 - z)).log() for z in shape_intervals ]
     logZpp = [ ((z - 1) / z).log() for z in shape_intervals ]
 
-    # A list 
+    # A list
     #    log(z_0) log(z'_0) log(z''_0) log(z_1) log(z'_1) log (z''_1) ...
     logs = [ z for triple in zip(logZ, logZp, logZpp) for z in triple ]
 
@@ -113,7 +113,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
             raise exceptions.EdgeEquationLogLiftNumericalVerifyError(
                 LHSs[LHS_index])
         LHS_index += 1
-        
+
     # Then there are one, respectively, two equations per cusp
     for cusp_index in range(n_cusps):
 

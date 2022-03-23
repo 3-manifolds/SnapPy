@@ -105,7 +105,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     # are not verified to have the imaginary part between -pi and pi.
     logZ         =    w0 - my_pi * p * sage.all.I
     logOneMinusZ = - (w1 - my_pi * q * sage.all.I)
-    
+
     # Neumann's formula for the complex volume is
     #
     # (1) R(z; p, q) =   Li_2(  z) + ( term1 + term2) / 2 - pi^2/6

@@ -249,7 +249,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         # permutation by setting the unverified shapes stored in the
         # kernel Triangulation (to some non-sensical values). It would fail
         # instead.
-        
+
         tet = self.mcomplex.ChooseGenInitialTet
 
         candidates = []
@@ -521,7 +521,7 @@ def _matrix_L1_distance_to_kernel(m, snappeaM):
 
 def _negate_matrix_to_match_kernel(m, snappeaM):
     diff_plus  = _matrix_L1_distance_to_kernel(m,  snappeaM)
-    
+
     diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 
     # Note that from an interval perspective, (not diff_plus < diff_minus)
@@ -546,14 +546,14 @@ def _negate_matrices_to_match_kernel(matrices, G):
 
 def _compute_pairing_matrix(pairing):
     (inCorner, outCorner), perm = pairing
-    
+
     inTriple  = []
     outTriple = []
-    
+
     for v in simplex.ZeroSubsimplices:
         if simplex.is_subset(v, inCorner.Subsimplex):
             inTriple.append(inCorner.Tetrahedron.Class[v].IdealPoint)
             outTriple.append(outCorner.Tetrahedron.Class[perm.image(v)].IdealPoint)
-            
+
     return _matrix_taking_triple_to_triple(outTriple, inTriple)
 

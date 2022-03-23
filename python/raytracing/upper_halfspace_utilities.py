@@ -26,7 +26,7 @@ def sl2c_action_on_boundary(m, z):
         # Type for holding complex numbers
         CF = denom.parent()
         return CF(1.0e64)
-    
+
     return num / denom
 
 def cross_ratio(z0, z1, z2, z3):
@@ -81,7 +81,7 @@ def fixed_points_of_psl2c_matrix(m):
     Given a matrix acting on the upper halfspace H^3, compute the
     two fixed points as complex numbers on the boundary of H^3.
     """
-    
+
     # We need to solve for
     #    (m[0,0] * z + m[0,1]) / (m[1,0] * z +m[1,1]) = z
     # which gives a quadratic equation a * z^2 + b * z + c = 0 where
@@ -107,7 +107,7 @@ def psl2c_matrix_taking_two_points_to_infty_and_zero(z0, z1):
     denom = 1 / (z1 - z0)
     m = matrix([[  1,      -z0 ],
                 [  0, (z1 - z0)]])
-    
+
     gl2c_matrix = rotation_matrix * m
 
     return gl2c_matrix / gl2c_matrix.det().sqrt()
@@ -138,7 +138,7 @@ def are_psl_matrices_close(m1, m2, epsilon = 1e-5):
     and multiplying by -Identity.
     """
     return (
-        are_sl_matrices_close(m1,  m2, epsilon) or 
+        are_sl_matrices_close(m1,  m2, epsilon) or
         are_sl_matrices_close(m1, -m2, epsilon))
 
 def _weight_for_circumcenter(i, side_lengths):
@@ -263,7 +263,7 @@ def _dist_triangle_and_std_geodesic_interior_hit(verts):
 
     # Applying this to compute the distance between (a,b) and (-a,b) which
     # is twice the distance from p to L.
-    return (1 + 2 * (a/b) ** 2).arccosh() / 2    
+    return (1 + 2 * (a/b) ** 2).arccosh() / 2
 
 def dist_triangle_and_std_geodesic(verts):
     """

@@ -25,7 +25,7 @@ def _compute_holonomy(manifold, shapes):
     zp  = [ (1 / (1 - z)) for z in shapes ]
     zpp = [ ((z - 1) / z) for z in shapes ]
 
-    # A list 
+    # A list
     #    log(z_0) log(z'_0) log(z''_0) log(z_1) log(z'_1) log (z''_1) ...
     cross_ratios = [ z for triple in zip(shapes, zp, zpp) for z in triple ]
 
@@ -160,5 +160,5 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     # between -pi^2/4 and pi^2/4.
     return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
 
-                
+
 

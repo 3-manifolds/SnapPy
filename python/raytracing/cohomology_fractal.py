@@ -33,14 +33,14 @@ def value_for_face_class(weights, face_class):
     by the ptolemy module, extract the weight for that face_class and
     perform consistency check.
     """
-    
+
     sgn, power, repr0, repr1 = face_class
 
     # Weight for one representative of face class
     val0 = weights[face_var_name_to_index(repr0)]
     # Weight for other representative of face class
     val1 = weights[face_var_name_to_index(repr1)]
-    
+
     # Check weights match
     if abs(val0 - sgn * val1) > 1e-6:
         raise ValueError("Weights for identified faces do not match")
@@ -176,7 +176,7 @@ def compute_weights_basis_class(trig, cohomology_class):
         basis = rational_cohomology_basis(trig)
         if len(as_list) == len(basis):
             return None, basis, as_list
-        
+
         raise ValueError(
             ("Expected array of length %d or %d either assigning one number "
              "for each basis vector of the second rational cohomology group "

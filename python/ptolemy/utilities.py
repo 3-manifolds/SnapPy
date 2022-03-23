@@ -48,7 +48,7 @@ def break_long_lines(text, line_length = 76):
 
     def process_line(line):
         line_without, ending_backslash = split_ending_backslash(line)
-        
+
         return ('\\\n'.join(_break_line_iterator(line_without, line_length)) +
                 ending_backslash)
 
@@ -187,7 +187,7 @@ def _flatten(l, depth = 1):
     return result
 
 class MethodMappingList(list):
-    
+
     """
     Like a list but allows calling a method on it means that it is called
     for all its elements.
@@ -213,7 +213,7 @@ class MethodMappingList(list):
         super(MethodMappingList, self).__init__(l)
 
     def __call__(self, *args, **kwargs):
-        
+
         return type(self)([elt(*args, **kwargs) for elt in self],
                           p = self)
 
@@ -235,4 +235,4 @@ def _test():
     """
 
     pass
-    
+

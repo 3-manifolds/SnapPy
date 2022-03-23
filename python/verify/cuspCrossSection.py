@@ -9,7 +9,7 @@
 # 02/22/15 Major rewrite and checked into SnapPy repository:
 #                    handle any number of cusps,
 #                    agnostic of type of numbers for shape,
-#                    support non-orientable manifolds, 
+#                    support non-orientable manifolds,
 #                    refactoring and cleanup
 # - Matthias Goerner
 #
@@ -107,7 +107,7 @@ class RealHoroTriangle:
         self.area = L * L * z_left.imag() / 2
 
         # Below is the usual formula for circumradius
-        self.circumradius = a * b * c / (4 * self.area)  
+        self.circumradius = a * b * c / (4 * self.area)
 
     def rescale(self, t):
         "Rescales the triangle by a Euclidean dilation"
@@ -149,7 +149,7 @@ _pick_an_edge_for_vertex_and_face = {
     if t3m.simplex.is_subset(vertex, face)
 }
 
-class ComplexHoroTriangle: 
+class ComplexHoroTriangle:
     """
     A horosphere cross section in the corner of an ideal tetrahedron.
     The sides of the triangle correspond to faces of the tetrahedron.
@@ -165,7 +165,7 @@ class ComplexHoroTriangle:
                          right_side  : - L / z_right }
         absL = abs(L)
         self.area = absL * absL * z_left.imag() / 2
-        
+
         self._real_lengths_cache = None
 
     def get_real_lengths(self):
@@ -208,7 +208,7 @@ class ComplexHoroTriangle:
         for i in range(3):
             if edge == vertex_link[i][1]:
                 break
-            
+
         # Now go through the triples starting with the one for
         # which we have given the vertex position
         for j in range(3):
@@ -315,7 +315,7 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         Returns (other tet, other face, other vertex).
         """
-        gluing = tetrahedron.Gluing[face] 
+        gluing = tetrahedron.Gluing[face]
         return tetrahedron.Neighbor[face], gluing.image(face), gluing.image(vertex)
 
     @staticmethod
@@ -408,7 +408,7 @@ class CuspCrossSectionBase(McomplexEngine):
         for edge in self.mcomplex.Edges:
             # The exact value when evaluating the edge equation
             val = 1
-            
+
             # Iterate through edge embeddings
             for tet, perm in edge.embeddings():
                 # Accumulate shapes of the edge exactly
@@ -436,7 +436,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
             # Iterate through edge embeddings
             for tet, perm in edge.embeddings():
-                
+
                 shape = CuspCrossSectionBase._shape_for_edge_embedding(
                     tet, perm)
 
@@ -446,7 +446,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
                 # Note that this is true for z in R, R < 0 as well,
                 # but then it would fail for 1 - 1/z or 1 / (1-z)
-                
+
                 if not (log_shape.imag() > 0):
                     raise ShapePositiveImaginaryPartNumericalVerifyError(
                         numerical_shape)
@@ -495,11 +495,11 @@ class CuspCrossSectionBase(McomplexEngine):
 
         # First, we check whether the center of the circumcenter of the
         # triangle containing 0, 1, and z is contained within the triangle.
-        
+
         # If the center is outside of the triangle, the Euclidean height of the
         # horosphere is that of the highest point of the three arcs between
         # 0, 1, and z.
-        # The height is half of the length e of the longest edge of the 
+        # The height is half of the length e of the longest edge of the
         # triangle.
         # Given that the Euclidean area of the triangle is given by
         # A = Im(z) / 2, its hyperbolic area is
@@ -528,11 +528,11 @@ class CuspCrossSectionBase(McomplexEngine):
         # we just were not able to prove it. The area we compute is a lower
         # bound in any case. Thus, the function is not guaranteed to compute
         # the maximal area, just a lower bound for it.
-                
+
         # Now cover the case that the center of the triangle is within the
         # triangle.
 
-        # The Euclidean area of the above triangle is given by 
+        # The Euclidean area of the above triangle is given by
         #    A = Im(z) / 2
         # and its Euclidean side lengths are given by
         #    a = 1, b = abs(z), and c = abs(z - 1).
@@ -550,7 +550,7 @@ class CuspCrossSectionBase(McomplexEngine):
         #
         #    A / r^2 = A / (a * b * c / (4 * A))^2 = 16 * A^3 / (a * b * c)^2
         #            = 2 * Im(z)^3 / (abs(z) * abs(z-1)) ^ 2
-        
+
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
     def ensure_std_form(self, allow_scaling_up = False):
@@ -561,7 +561,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         z = self.mcomplex.Tetrahedra[0].ShapeParameters[t3m.simplex.E01]
         RF = z.real().parent()
-        
+
         # For each cusp, save the scaling factors for all triangles so that
         # we can later take the minimum to scale each cusp.
         if allow_scaling_up:
@@ -686,7 +686,7 @@ class CuspCrossSectionBase(McomplexEngine):
                     # Scale the one cusp
                     ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                         scale)
-        
+
         # Now check for the pairs of two distinct cusps that the corresponding
         # neighborhoods do not bump into each other - at least when measured
         # along the edges of the triangulation
@@ -842,7 +842,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         for cusp_info in manifold.cusp_info():
             if not cusp_info['complete?']:
                 raise IncompleteCuspError(manifold)
-        
+
         m = t3m.Mcomplex(manifold)
 
         t = TransferKernelStructuresEngine(m, manifold)
@@ -873,7 +873,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
             R_w = tet.horotriangles[w].circumradius
             ans += c_w * R_w
         return ans
-    
+
     @staticmethod
     def _face_tilt(face):
         """
@@ -908,7 +908,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
             return 4 * corner.Tetrahedron.Index + face_index
 
         tilts = (4 * len(self.mcomplex.Tetrahedra)) * [ None ]
-        
+
         # For each face of the triangulation
         for face in self.mcomplex.Faces:
             for corner in face.Corners:
@@ -1112,7 +1112,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         Compute the translations corresponding to the merdian and longitude of
         the given cusp.
         """
-        
+
         m, l = vertex.Translations
         return m / l * abs(l), abs(l)
 
@@ -1121,7 +1121,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         Compute the translations corresponding to the meridian and longitude
         for each cusp.
         """
-        
+
         self.compute_translations()
         return [ ComplexCuspCrossSection._get_normalized_translations(vertex)
                  for vertex in self.mcomplex.Vertices ]
@@ -1161,7 +1161,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         """
         for cusp in self.mcomplex.Vertices:
             self._add_one_cusp_vertex_positions(cusp)
-        
+
     def _add_one_cusp_vertex_positions(self, cusp):
         """
         Procedure is similar to _add_one_cusp_cross_section
@@ -1187,18 +1187,18 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 if not (tet1.Index, vert1) in visited:
                     edge0 = _pick_an_edge_for_vertex_and_face[vert0, face0]
                     edge1 = tet0.Gluing[face0].image(edge0)
-                    
+
                     tet1.horotriangles[vert1].add_vertex_positions(
                         vert1,
                         edge1,
                         tet0.horotriangles[vert0].vertex_positions[edge0])
-                    
+
                     active.append( (tet1, vert1) )
                     visited.add((tet1.Index, vert1))
 
     def _debug_show_horotriangles(self, cusp = 0):
         from sage.all import line, real, imag
-        
+
         self.add_vertex_positions_to_horotriangles()
 
         return sum(
@@ -1212,7 +1212,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     def _debug_show_lifted_horotriangles(self, cusp = 0):
         from sage.all import line, real, imag
-        
+
         self.add_vertex_positions_to_horotriangles()
 
         return sum(
@@ -1235,7 +1235,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         triangulation to mark whether the corresponding cusp is
         complete or not.
         """
-        
+
         # For each cusp
         for cusp, cusp_info in zip(self.mcomplex.Vertices,
                                    self.manifold.cusp_info()):
@@ -1299,18 +1299,18 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
                 edge1 = tet0.Gluing[face0].image(edge0)
-                
+
                 # Get horotriangle and the complex vertex position and
                 # edge length
                 trig0 = tet0.horotriangles[vert0]
                 l0 = trig0.lengths[face0]
                 p0 = trig0.vertex_positions[edge0]
-            
+
                 # And for neighbor
                 trig1 = tet1.horotriangles[vert1]
                 l1 = trig1.lengths[face1]
                 p1 = trig1.vertex_positions[edge1]
-                
+
                 # Parameter for similarity
                 z = - l1 / l0
                 yield (abs(z - 1), z, p0, p1)
@@ -1337,7 +1337,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         for cusp in self.mcomplex.Vertices:
             self._lift_one_cusp_vertex_positions(cusp)
-            
+
     def _lift_one_cusp_vertex_positions(self, cusp):
         # Pick first triangle to develop
         corner0 = cusp.Corners[0]
@@ -1394,7 +1394,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         for cusp in self.mcomplex.Vertices:
             if not cusp.is_complete:
                 ComplexCuspCrossSection._move_lifted_vertex_positions_cusp(cusp)
-        
+
     @staticmethod
     def _move_lifted_vertex_positions_cusp(cusp):
         corner0 = cusp.Corners[0]
@@ -1413,4 +1413,4 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 for edge, position in trig.lifted_vertex_positions.items()
             }
 
-    
+

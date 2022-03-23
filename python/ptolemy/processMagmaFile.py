@@ -9,12 +9,12 @@ import sys
 import tempfile
 import subprocess
 import shutil
-        
+
 ###############################################################################
 # functions
 
 def decomposition_from_magma(text):
-    
+
     py_eval = processFileBase.get_py_eval(text)
     manifold_thunk = processFileBase.get_manifold_thunk(text)
 
@@ -35,11 +35,11 @@ def decomposition_from_magma(text):
         raise ValueError(
             "File not recognized as magma output "
             "(missing primary decomposition or radical decomposition)")
-    
+
     # Remove "\" at the wrapped lines
     decomposition = utilities.join_long_lines_deleting_whitespace(
         decomposition)
-    
+
     # Remove outer square brackets
     decomposition = processFileBase.remove_outer_square_brackets(decomposition)
 
@@ -84,7 +84,7 @@ def decomposition_from_magma(text):
 
         witnesses_txts = processFileBase.find_section(
             witnesses_txt, "WITNESS")
-        
+
         witnesses = [
             _parse_ideal_groebner_basis(
                 utilities.join_long_lines_deleting_whitespace(t).strip(),
@@ -93,7 +93,7 @@ def decomposition_from_magma(text):
 
         return _parse_ideal_groebner_basis(comp, py_eval, manifold_thunk,
                                            free_vars, witnesses, genus)
-        
+
     return utilities.MethodMappingList(
         [ process_match(i, comp, free_vars, witnesses, genus_txt)
           for i, (comp, free_vars, witnesses, genus_txt)
@@ -113,7 +113,7 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
         r"\s*Groebner basis:\n"
         r"\s*?\[([^\[\]]*)\]$",
         text)
-        
+
     if not match:
         raise ValueError("Parsing error in component of "
                          "decomposition: %s" % text)
@@ -123,17 +123,17 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
         var_str,
         dimension_str, prime_str,
         variety_str, size_str,
-        
+
         poly_strs                                      ) = match.groups()
-        
+
     dimension = int(dimension_str)
-        
+
     if dimension == 0:
         polys = [ Polynomial.parse_string(p)
                   for p in poly_strs.replace('\n',' ').split(',') ]
     else:
         polys = []
-            
+
     order_str = post_order_str if post_order_str else pre_order_str
     if not order_str:
         raise ValueError("Could not parse order in decomposition")

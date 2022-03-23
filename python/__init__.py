@@ -26,7 +26,7 @@ set_rand_seed(int(time.time()))
 
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
-    
+
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
@@ -168,7 +168,7 @@ def canonical_retriangulation(
             verbose = verbose)
     else:
         return manifold._canonical_retriangulation()
-    
+
 Manifold.canonical_retriangulation = canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical_retriangulation
 
@@ -231,7 +231,7 @@ def isometry_signature(
 
     if not retrig:
         return None
-    
+
     return retrig.triangulation_isosig(decorated = of_link,
                                        ignore_cusp_ordering = True,
                                        ignore_curve_orientations = True)
@@ -569,7 +569,7 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
         raise Exception("Arbitrary precision for complex volume only "
                         "supported for verified computations and cusped "
                         "manifolds.")
-    
+
     return manifold._complex_volume()
 
 Manifold.complex_volume = complex_volume
@@ -608,12 +608,12 @@ def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     - A weight for each face of each tetrahedron.
 
     """
-    
+
     if InsideViewer is None:
         raise RuntimeError("Raytraced inside view not imported; "
         "Tk or CyOpenGL is probably missing "
         "(original error : %s)" % _importErrorRaytracing)
-    
+
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
@@ -688,7 +688,7 @@ def all_translations(self, verified = False, bits_prec = None):
 
     is not verified to correspond to disjoint cusp neighborhoods.
     """
-        
+
     if verified or bits_prec:
         # Use the implementation in verify.cuspTranslations that uses
         # tetrahedra_shapes and ComplexCuspNeighborhood
@@ -801,7 +801,7 @@ The module defines the following classes:
 
 """%(', '.join(database_objects), ', '.join(link_objects))
 
-# Add easy way to get the version info 
+# Add easy way to get the version info
 from .version import version as release_info
 
 def version():

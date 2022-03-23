@@ -92,7 +92,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     # Use interval arithmetics to verify hyperbolicity
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         M, shapes)
-    
+
     # Normalize cusp area. This is not needed when only 1 cusp
     if M.num_cusps() > 1:
         c.normalize_cusps()
@@ -193,11 +193,11 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
         # Tilt is negative, return True
         if sign < 0:
             return True
-        
+
         # Tilt is zero, return False
         if sign == 0:
             return False
-        
+
         # Tilt is positive, raise exception
         if sign > 0:
             raise exceptions.TiltProvenPositiveNumericalVerifyError(interval)
@@ -210,13 +210,13 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # The format is opacity of face 0, 1, 2, 3 of the first tetrahedron,
     # ... of second tetrahedron, ...
     opacities = (4 * len(c.mcomplex.Tetrahedra)) * [ None ]
-    
+
     # For each face of the triangulation
     for face in c.mcomplex.Faces:
         opacity = get_opacity(face.Tilt)
         for corner in face.Corners:
             opacities[index_of_face_corner(corner)] = opacity
-    
+
     if None in opacities:
         raise Exception("Mismatch with opacities")
 
@@ -254,11 +254,11 @@ def _retrying_high_precision_canonize(M):
     """
     # Make a copy of the manifold
     Mcopy = M.copy()
-    
+
     # Try with the given precision first
     if _retrying_canonize(Mcopy):
         return Mcopy
-        
+
     # Then try with high precision.
     Mhp = M.high_precision()
     if _retrying_canonize(Mhp):
@@ -276,7 +276,7 @@ def verified_canonical_retriangulation(
     interval_bits_precs = default_interval_bits_precs,
     exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
     verbose = False):
-    
+
     """
     Given some triangulation of a cusped (possibly non-orientable) manifold ``M``,
     return its canonical retriangulation. Return ``None`` if it could not certify
@@ -367,7 +367,7 @@ def verified_canonical_retriangulation(
     # This is the "outer" retry loop: it catches those verification
     # failures that can probably be fixed by taking a different
     # triangulation
-    
+
     tries_penalty_left = _max_tries_verify_penalty
 
     while tries_penalty_left > 0:
@@ -383,11 +383,11 @@ def verified_canonical_retriangulation(
                 M, interval_bits_precs, exact_bits_prec_and_degrees,
                 verbose)
 
-        except (ZeroDivisionError, 
+        except (ZeroDivisionError,
                 exceptions.TiltProvenPositiveNumericalVerifyError,
                 exceptions.EdgeEquationExactVerifyError) as e:
 
-            # These three exceptions are probably raised due to the 
+            # These three exceptions are probably raised due to the
             # SnapPea kernel failures:
             # - flat tetrahedra in the proto-canonical triangulation
             # - this provably not being the proto-canonical triangulation
@@ -433,7 +433,7 @@ def verified_canonical_retriangulation(
                 print("Next step: Give up.")
 
             return None
-        
+
     return None
 
 def _verified_canonical_retriangulation(
@@ -515,7 +515,7 @@ _known_canonical_retriangulations = [
     ('m004', '\x02\x0e\x01\x01\x01-\x1b\x87'),
     ('m412', '\x0c\x80\xac\xff\x07\x05\x07\t\n\t\x08\t\n\x0b\x0b\n\x0b\xe4\xe4\xe4\xe4\xe4\xe1\xe1\xe1\xe1\xe1\xe1\xe1\xe1'),
     ('m137', '\x12\x00\xb0\xfa\xaf\x0f\x04\t\x0b\x08\x07\x07\n\x0c\x0e\r\n\x0f\x0f\r\x11\x11\x10\x10\x11\xb4\xe4\xe1\xe1\xe1\xb4\xe1\xe1\xb1\xe1\xb4\xe4\xe4\xe1\xb1\xe1\xe1\xb4\xe1') ]
-    
+
 def _test_against_known_canonical_retriangulations():
     from snappy import Manifold
     for name, bytes_ in _known_canonical_retriangulations:

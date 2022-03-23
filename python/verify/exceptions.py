@@ -116,7 +116,7 @@ class EdgeEquationExactVerifyError(ExactVerifyError,
 
     def __init__(self, value):
         self.value = value
-        
+
     def __str__(self):
         return ('Verification of a polynomial edge equation using exact '
                 'arithmetic failed: %r == 1' % self.value)
@@ -129,7 +129,7 @@ class EdgeEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
     """
     def __init__(self, value):
         self.value = value
-        
+
     def __str__(self):
         return ('Numerical verification that logarthmic edge equation has '
                 'small error failed: %r == 2 Pi I' % self.value)
@@ -155,7 +155,7 @@ class CuspEquationExactVerifyError(ExactVerifyError,
 
     def __init__(self, value, expected_value):
         self.value = value
-        
+
     def __str__(self):
         return ('Verification of a polynomial cusp equation using exact '
                 'arithmetic failed: %r == 1' % self.value)
@@ -169,7 +169,7 @@ class CuspEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
     def __init__(self, value, expected_value):
         self.value = value
         self.expected_value = expected_value
-        
+
     def __str__(self):
         return ('Numerical verification that logarthmic cusp equation has '
                 'small error failed: '
@@ -190,7 +190,7 @@ class CuspDevelopmentExactVerifyError(ExactVerifyError,
     Euclidean Horotriangles to form a Euclidean Horotorus for a cusp failed
     using exact arithmetic.
     """
-    
+
     def __init__(self, value1, value2):
         self.value1 = value1
         self.value2 = value2

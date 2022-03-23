@@ -33,7 +33,7 @@ class InsideViewer(ttk.Frame):
             manifold,
             weights, cohomology_basis, cohomology_class,
             geodesics)
-            
+
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
         row = 0
         self.notebook = ttk.Notebook(self)
@@ -151,7 +151,7 @@ class InsideViewer(ttk.Frame):
             update_function = self.checkbox_update,
             text = "Elevation",
             row = row, column = 1)
-        
+
         return frame
 
     def create_cusp_areas_frame(self, parent):
@@ -281,7 +281,7 @@ class InsideViewer(ttk.Frame):
         frame.columnconfigure(2, weight = 0)
 
         row = 0
-        
+
         UniformDictController.create_horizontal_scale(
             frame,
             self.widget.ui_uniform_dict,
@@ -330,7 +330,7 @@ class InsideViewer(ttk.Frame):
             column = 1,
             update_function = self.widget.redraw_if_initialized)
         row += 1
-        
+
         return frame
 
     def create_geodesics_frame(self, parent):
@@ -349,7 +349,7 @@ class InsideViewer(ttk.Frame):
             command = self.show_geodesics_window)
         button.grid(row = row, column = 2,
                     sticky = tkinter.NE)
-        
+
         return frame
 
     def create_quality_frame(self, parent):
@@ -559,7 +559,7 @@ class InsideViewer(ttk.Frame):
         from .geodesicsWindow import GeodesicsWindow
 
         w = GeodesicsWindow(self)
-        
+
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:
             filling_controller.update()
@@ -568,7 +568,7 @@ class InsideViewer(ttk.Frame):
         self.edgeTubeRadiusController.update()
         self.edgeColorController.update()
         self.insphereScaleController.update()
-            
+
     def _fillings_from_manifold(self):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]
@@ -639,7 +639,7 @@ class InsideViewer(ttk.Frame):
 
     def build_menus(self):
         pass
-    
+
     def test(self):
         X = 100
         self.widget.event_generate('<Button-1>', x=X, y=300, warp=True)

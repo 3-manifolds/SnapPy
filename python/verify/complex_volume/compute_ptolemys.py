@@ -84,5 +84,5 @@ def lifted_ptolemys_from_cross_section(cusp_cross_section,
 
             # Save Ptolemy coordinate in dictionary
             result[_ptolemy_coordinate_key(tet.Index, e)] = ptolemy
-            
+
     return result

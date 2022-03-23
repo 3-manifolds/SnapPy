@@ -11,8 +11,8 @@ if sys.version > '3':
 #######################################################
 ### Public Definitions of Monomial and Polynomial class
 
-# The coefficients of a polynomial can be any type, the 
-# policy for mixed coefficients is defined in 
+# The coefficients of a polynomial can be any type, the
+# policy for mixed coefficients is defined in
 # _storage_type_policy and _operator_type_policy.
 
 ### Definition of Monomial Class
@@ -71,8 +71,8 @@ class Monomial(object):
         e.g., "+ 3 * x".
         """
 
-        v = [     var if expo == 1 
-             else "%s^%s" % (var, expo) 
+        v = [     var if expo == 1
+             else "%s^%s" % (var, expo)
              for var, expo in self._vars]
 
         coefficient_sign, coefficient_str = (
@@ -87,9 +87,9 @@ class Monomial(object):
             return coefficient_sign + " " + sign_less_str
 
         return sign_less_str
-        
+
     def get_coefficient(self):
-        """Return the coefficient.""" 
+        """Return the coefficient."""
         return self._coefficient
 
     def coefficient_type(self):
@@ -129,10 +129,10 @@ class Monomial(object):
         return Monomial(coefficient, var_dict)
 
     def __pow__(self, other):
-        
+
         assert isinstance(other, int)
         assert other >= 0
-        
+
         if other == 0:
             return Monomial.constant_monomial(1)
         if other == 1:
@@ -140,7 +140,7 @@ class Monomial(object):
         if other % 2 == 1:
             return self * (self ** (other-1))
         return (self * self) ** (other//2)
-        
+
     def __neg__(self):
         """Negate this monomial."""
         return Monomial(-self._coefficient, self._vars)
@@ -180,7 +180,7 @@ class Monomial(object):
 
         vars = [(var, expo - d[var]) for var, expo in self._vars]
         vars = tuple([(var, expo) for var, expo in vars if expo > 0])
-        
+
         return Monomial(self.get_coefficient(), vars)
 
 
@@ -319,7 +319,7 @@ class Polynomial(object):
         if isinstance(other, Polynomial):
             assert other.is_constant()
             other = other.get_constant()
-        
+
         assert isinstance(other, int)
         assert other >= 0
         if other == 0:
@@ -332,15 +332,15 @@ class Polynomial(object):
 
     def __mul__(self, other):
         monomials = []
-        
+
         for m in self._monomials:
             for n in other._monomials:
                 monomials.append(m * n)
-                
+
         return Polynomial(tuple(monomials))
 
     def __mod__(self, other):
-        
+
         assert isinstance(other, Polynomial)
         assert self.is_univariate()
         assert other.is_univariate()
@@ -354,7 +354,7 @@ class Polynomial(object):
             Fraction(1,1) / other.leading_coefficient())
 
         variable = other.variables()[0]
-        assert ((not other.variables()) 
+        assert ((not other.variables())
                 or other.variables()[0] == variable)
 
         rest = self
@@ -393,7 +393,7 @@ class Polynomial(object):
         return Polynomial(tuple(
                 [monomial.convert_coefficient(conversion_function)
                  for monomial in self._monomials]))
-    
+
     def substitute(self, d):
         """ 
         Take a dictionary mapping variable name -> polynomial and
@@ -410,7 +410,7 @@ class Polynomial(object):
 
         if skip_computation:
             return self
-        
+
         def substitute_monomial(monomial):
             vars = monomial.get_vars()
             new_vars = []
@@ -431,7 +431,7 @@ class Polynomial(object):
 
         return sum([substitute_monomial(monomial)
                      for monomial in self._monomials], Polynomial(()))
-                                    
+
     def variables(self):
         """Return a list of all variables in the polynomial."""
         all_variables = [monomial.variables() for monomial in self._monomials]
@@ -532,7 +532,7 @@ class Polynomial(object):
         return self._monomials
 
     def factor_out_variables(self):
-        
+
         if self._monomials == ():
             return self
 
@@ -579,7 +579,7 @@ def parse_int_or_fraction(s):
     if m:
         frac, rest = m.groups()
         return Fraction(frac), rest
-    
+
     return parse_int_coefficient(s)
 
 def parenthesis_coefficient_method(i):
@@ -616,7 +616,7 @@ def uncomparable_print_coefficient_method(i):
 def _storage_type_policy(type_a, type_b):
     assert isinstance(type_a, type)
     assert isinstance(type_b, type)
-    
+
     if type_a in [int, long]:
         return type_b
     if type_b in [int, long]:
@@ -646,7 +646,7 @@ def _operator_type_policy(obj_a, obj_b, op = operator.add):
 
         print(obj_a, obj_b)
         print(type(obj_a), type(obj_b))
-    
+
         raise Exception("In _operatore_type_policy, cannot apply operator")
 
 ### Definitions of parsable operators and their precedence
@@ -675,7 +675,7 @@ def _coefficient_is_non_trivial(c):
 
     if isinstance(c, Polynomial):
         return c._monomials
-    
+
     return not c == 0
 
 def _parse_variable(s):
@@ -697,7 +697,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
     # Has there been an operand since the opening parenthesis
     # e.g. parse things like "(+ x)"
-    no_operand_since_opening_parenthesis = [ True ] 
+    no_operand_since_opening_parenthesis = [ True ]
 
     def debug_print(s):
         print("=" * 75)
@@ -711,16 +711,16 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
     def eval_preceding_operators_on_stack(operator = None):
         while operator_stack:
             top_operator = operator_stack[-1]
-            
+
             # stop if the top operator is "("
             if top_operator == '(':
                 return
-            
+
             # or if the top operator is not preceding
             if (_operator_precedence[top_operator] <
                 _operator_precedence[operator]):
                 return
-            
+
             top_operator = operator_stack.pop()
             r = operand_stack.pop()
             l = operand_stack.pop()
@@ -753,7 +753,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
         # onto the operand stack as to emulate parsing "(0 + 3)"
 
         next_char, rest = s[0], s[1:]
-        
+
         if next_char in list(_operators.keys()):
             operator = next_char
             eval_preceding_operators_on_stack(operator)
@@ -791,7 +791,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
         s = process_next_token(s)
 
     # finish any remaining operators on the stack
-    # debug_print(s)        
+    # debug_print(s)
     eval_preceding_operators_on_stack(None)
     # debug_print(s)
 
@@ -807,7 +807,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
     assert (len(operand_stack) == 1
             or (
                 len(operand_stack) == 2 and
-                operand_stack[0] == Polynomial())) 
+                operand_stack[0] == Polynomial()))
 
     return operand_stack[-1]
 

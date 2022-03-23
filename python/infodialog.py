@@ -14,7 +14,7 @@ class InfoDialog(Dialog):
         self.style = ttk.Style(master)
         self.image = Tk_.PhotoImage(file=icon_file)
         Dialog.__init__(self, master, title=title)
-        
+
     def body(self, master):
         self.resizable(False, False)
         box = ttk.Frame(self)
@@ -39,7 +39,7 @@ class InfoDialog(Dialog):
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
         box.pack()
-        
+
 about_snappy_text = """
 For information on how to use SnapPy, please see the Help menu.
 

@@ -50,7 +50,7 @@ the decoration is the lexicographically first one.
 """
 import re, string
 
-# Used between the base isosig and the decorated version. 
+# Used between the base isosig and the decorated version.
 separator = '_'
 
 # Pattern matching decorated isosigs
@@ -60,7 +60,7 @@ separator_pat = '[%s]{1}'%separator
 base64_opt_pat = r'([a-zA-Z0-9\+\-]*)'
 isosig_pattern = re.compile(base64_pat + separator_pat + base64_opt_pat + '$')
 
-# We store lists of integers as base64 strings.  
+# We store lists of integers as base64 strings.
 
 base64_letters = string.ascii_letters + '0123456789+-'
 base64_lower = string.ascii_lowercase + '01234+'
@@ -86,8 +86,8 @@ def encode_nonnegative_int(x):
     return ''.join([int_to_letter[b] for b in six_bits])
 
 def decode_nonnegative_int(s):
-    return sum( letter_to_int[a] << 6*i for i, a in enumerate(s)) 
-    
+    return sum( letter_to_int[a] << 6*i for i, a in enumerate(s))
+
 def encode_int(x):
     """
     Encodes an integer in the range [-2**90 + 1, 2**90 - 1] with a "stop"
@@ -190,7 +190,7 @@ def pack_matrices_applying_flips(matrices, flips):
     packs all the matrices into one array, column-major.
     """
     result = []
-    
+
     for matrix, flip in zip(matrices, flips):
         for col in range(2):
             for row in range(2):
@@ -204,13 +204,13 @@ def supress_minus_zero(x):
     return x
 
 # main two functions
-    
+
 def decorated_isosig(manifold, triangulation_class,
                      ignore_cusp_ordering = False,
                      ignore_curve_orientations = False):
 
     isosig = manifold.triangulation_isosig(decorated = False)
-    
+
     # Do not decorate if no cusps
     if manifold.num_cusps() == 0:
         return isosig
@@ -220,7 +220,7 @@ def decorated_isosig(manifold, triangulation_class,
 
     # in Python3 range is an iterator
     trivial_perm = list(range(manifold.num_cusps()))
-    
+
     min_encoded = None
     min_perm = None
     min_flips = None
@@ -298,7 +298,7 @@ def set_peripheral_from_decoration(manifold, decoration):
         manifold.reverse_orientation()
         cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
     manifold.set_peripheral_curves(cobs)
- 
+
 # Testing code
 
 
@@ -326,11 +326,11 @@ asymmetric = ['v3372', 't10397', 't10448', 't11289', 't11581',
 
 def main_test():
     import snappy
-    censuses = [snappy.OrientableClosedCensus[:100], 
+    censuses = [snappy.OrientableClosedCensus[:100],
                 snappy.OrientableCuspedCensus(filter='tets<7'),
                 snappy.NonorientableClosedCensus,
                 snappy.NonorientableCuspedCensus,
-                snappy.CensusKnots(), 
+                snappy.CensusKnots(),
                 snappy.HTLinkExteriors(filter='cusps>3 and volume<14'),
                 [snappy.Manifold(name) for name in asymmetric]]
     tests = 0
@@ -387,14 +387,14 @@ def test_link_invariant():
     # All the links only differ in orientation of complement or components,
     # should get the same isometry_signature
     assert len(set(isometry_signatures)) == 1
-        
+
     M = snappy.Manifold(isometry_signatures[0])
     N = snappy.Manifold(M.isometry_signature(of_link = True))
 
     # Instantiating a manifold from its decorated isometry_signature should
     # eventually yield to a fixed point
     assert same_peripheral_curves(M, N)
-     
+
     # More sanity checks
     assert isometry_signatures[0] == M.isometry_signature(of_link = True)
     assert isometry_signatures[0] == N.isometry_signature(of_link = True)
@@ -402,7 +402,7 @@ def test_link_invariant():
     for mfd in mfds:
         assert mfd.is_isometric_to(M, True)[0].extends_to_link()
         assert mfd.is_isometric_to(N, True)[0].extends_to_link()
-    
+
     print("Tested that decorated isometry_signature is a link invariant")
 
 def helper_are_isometric(M, N):
@@ -430,9 +430,9 @@ def helper_test_by_dehn_filling(M):
                     ignore_curve_orientations = ignore_curve_orientations)
             N = Manifold(isosig)
             N_filled = N.filled_triangulation()
-            
+
             helper_are_isometric(M, N)
-    
+
 
 def test_by_dehn_filling():
     import random
@@ -451,13 +451,13 @@ def test_by_dehn_filling():
                                 (14,-15), (17, -18)]
                     M.dehn_fill(fillings[random.randint(0, len(fillings) - 1)],
                                 c)
-        
+
             if 'positive' in M.solution_type():
                 count += 1
                 helper_test_by_dehn_filling(M)
 
     print("Tested %d randomly Dehn filled manifolds" % count)
-    
+
 if __name__ == '__main__':
     test_integer_list_encoder()
     main_test()

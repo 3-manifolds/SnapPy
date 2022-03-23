@@ -16,7 +16,7 @@ class CuspTranslateEngine(object):
         b = t1.real()
         c = t0.imag()
         d = t1.imag()
-        
+
         det = a * d - b * c
 
         self._matrix = matrix([[ d / det, -b / det],
@@ -36,7 +36,7 @@ class CuspTranslateEngine(object):
 
         v = self._to_vec(z)
         integer_ranges = [ round_to_nearest_integers(i) for i in v ]
-        
+
         for i in integer_ranges[0]:
             for j in integer_ranges[1]:
                 yield z - i * self.t0 - j * self.t1

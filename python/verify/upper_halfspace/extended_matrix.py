@@ -75,7 +75,7 @@ class ExtendedMatrix(object):
                                  "ExtendedMatrix.")
             return m.matrix
         return m
-        
+
     @staticmethod
     def get_orientation_sign(m):
         """

@@ -13,7 +13,7 @@ _triangulation_shader_source = None
 def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
 
     global _triangulation_shader_source
-    
+
     if _triangulation_shader_source is None:
         path = os.path.join(_base_path[0], 'fragment.glsl')
         _triangulation_shader_source = open(path, 'rb').read()
@@ -49,5 +49,5 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
            'geodesicIndex': (16 + 16) * num_geodesic_segments,
            'geodesicTubeRadiusParam': (16 + 16 + 16) * num_geodesic_segments,
            'geodesicOffsets': (16 + 16 + 16 + 16) * num_geodesic_segments }) ]
-    
+
     return src, uniform_block_names_sizes_and_offsets

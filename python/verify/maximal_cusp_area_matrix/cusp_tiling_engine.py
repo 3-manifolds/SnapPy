@@ -60,7 +60,7 @@ class CuspTilingEngine(McomplexEngine):
             idealPoints = [ self._ideal_point(corner.Tetrahedron, v)
                             for v in vertices ]
             return Euclidean_height_of_hyperbolic_triangle(idealPoints)
-        
+
         def _horo_intersection_data(self, vertex, is_at_infinity):
             corner = vertex.Corners[0]
             v0 = corner.Subsimplex
@@ -120,11 +120,11 @@ class CuspTilingEngine(McomplexEngine):
 
         cusp_areas = c.cusp_areas()
         translations = [ vertex.Translations for vertex in m.Vertices ]
-        
+
         t = TransferKernelStructuresEngine(m, snappyManifold)
         t.choose_and_transfer_generators(
             compute_corners = True, centroid_at_origin = False)
-        
+
         f = FundamentalPolyhedronEngine(m)
         f.unglue()
 
@@ -196,7 +196,7 @@ class CuspTilingEngine(McomplexEngine):
         translated_center1 = e.translate_to_match(center1, center2)
         if not translated_center1:
             return False
-        
+
         dist = translated_center1.dist(center2)
 
         if dist < self.baseTetInRadius:
@@ -227,11 +227,11 @@ class CuspTilingEngine(McomplexEngine):
             self.intervalTree.insert(key, tile)
 
         return tile
-        
+
     def unglued_generators_and_vertices_for_tile(self, tile):
         unglued_generators = []
         unglued_vertices = set(self.mcomplex.Vertices)
-        
+
         for g, gen_m in sorted(self.mcomplex.GeneratorMatrices.items()):
             other_m = tile.matrix * gen_m
             other_tile = self.find_tile(other_m)
@@ -271,13 +271,13 @@ class CuspTilingEngine(McomplexEngine):
         m = matrix.identity(CIF, 2)
 
         corner = self.vertex_at_infinity.Corners[0]
-        
+
         return (corner.Tetrahedron.Index, corner.Subsimplex, m)
 
     def get_neighboring_cusp_triangles(self, cusp_triangle):
         tet_index, V, m = cusp_triangle
         tet = self.original_mcomplex.Tetrahedra[tet_index]
-        
+
         for F in simplex.TwoSubsimplices:
             if simplex.is_subset(V, F):
                 yield( (tet.Neighbor[F].Index,
@@ -299,7 +299,7 @@ class CuspTilingEngine(McomplexEngine):
             if key not in processed_cusp_triangles:
                 processed_cusp_triangles.add(key)
                 tet = self.mcomplex.Tetrahedra[tet_index]
-                
+
                 tile = self.find_tile(m)
                 if not tile:
                     tile = self.create_tile(m)
@@ -366,7 +366,7 @@ class CuspTilingEngine(McomplexEngine):
              self.mcomplex.GeneratorMatrices[unglued_generator.g])
         if not self.find_tile(m):
             tile = self.create_tile(m)
-            
+
             unglued_generators, unglued_vertices = (
                 self.unglued_generators_and_vertices_for_tile(tile))
 

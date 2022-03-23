@@ -2,7 +2,7 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
@@ -21,7 +21,7 @@ class Tetrahedron:
         self.Checked  = 0                     # flag
 
     def __repr__(self):
-        if self.Index != -1: 
+        if self.Index != -1:
             return ( 'tet'+ str(self.Index) )
         else:
             return '< floating tetrahedron ' + ' at ' + str(id(self)) + '>'
@@ -60,7 +60,7 @@ class Tetrahedron:
         neighbors_subsimplex = self.Gluing[two_subsimplex].image(two_subsimplex)
         self.Neighbor[two_subsimplex] = None
         self.Gluing[two_subsimplex] = None
-        if (neighbor.Neighbor and 
+        if (neighbor.Neighbor and
                 neighbor.Neighbor[neighbors_subsimplex] == self):
             neighbor.Neighbor[neighbors_subsimplex] = None
             neighbor.Gluing[neighbors_subsimplex] = None
@@ -86,7 +86,7 @@ class Tetrahedron:
 
         out.write("\t%s\n" % ([self.Gluing.get(s) for s in TwoSubsimplices]))
 
-        out.write("\tVertices: " + repr(self.Class[V0]) 
+        out.write("\tVertices: " + repr(self.Class[V0])
                                  + repr(self.Class[V1])
                                  + repr(self.Class[V2])
                                  + repr(self.Class[V3]) + '\n')
@@ -99,7 +99,7 @@ class Tetrahedron:
             out.write("\tEdges: " + s + '\n')
             s = ""
             for edge in OneSubsimplices[3:]:
-                s = (s + "%s : %-10s   " % 
+                s = (s + "%s : %-10s   " %
                      (SubsimplexName[edge], self.Class[edge]))
             out.write("\t       " + s + '\n')
 

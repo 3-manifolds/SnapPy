@@ -982,7 +982,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     raise IncompleteCuspError(manifold)
 
         if not manifold.is_orientable():
-            raise RuntimeError("Non-orientable")
+            raise ValueError("Non-orientable")
 
         m = t3m.Mcomplex(manifold)
 

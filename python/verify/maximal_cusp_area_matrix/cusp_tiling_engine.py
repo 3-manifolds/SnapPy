@@ -6,6 +6,7 @@ from ...snap.fundamental_polyhedron import *
 from ...snap.mcomplex_base import *
 from ...snap.t3mlite import simplex
 from ...snap import t3mlite as t3m
+from ...exceptions import InsufficientPrecisionError
 
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ..upper_halfspace.ideal_point import *
@@ -83,7 +84,10 @@ class CuspTilingEngine(McomplexEngine):
         def height_of_horosphere(self, vertex, is_at_infinity):
 
             if is_at_infinity ^ (vertex in self.vertices_at_infinity):
-                raise Exception("Error")
+                raise Exception("An inconsistency was encountered showing "
+                                "that there is a bug in the code. Please "
+                                "report the example leading to this "
+                                "exception.")
 
             pts, cusp_length = self._horo_intersection_data(vertex, is_at_infinity)
 
@@ -204,10 +208,11 @@ class CuspTilingEngine(McomplexEngine):
         if dist > self.baseTetInRadius:
             return False
 
-        raise Exception(
-            "Distance between two given centers of tiles cannot be verified "
-            "to be small enough to be the same or large enough to be two different "
-            "tiles")
+        raise InsufficientPrecisionError(
+            "When tiling, it could not be decided whether two given tiles are "
+            "the same since the distance between their respective center "
+            "cannot be verified to be either small or large enough. This can "
+            "be avoided by increasing the precision.")
 
     def find_tile(self, m):
         center = self.baseTetInCenter.translate_PGL(m)
@@ -339,7 +344,10 @@ class CuspTilingEngine(McomplexEngine):
             for (corner, other_corner), perm in self.mcomplex.Generators[g] ]
         for height in heights:
             if height.is_NaN():
-                raise Exception("Encountered NaN while computing height")
+                raise InsufficientPrecisionError(
+                    "A NaN occured when computing the height of a triangle "
+                    "face. This can most likely be avoided by increasing the "
+                    "precision.")
         return max(heights)
 
     def account_horosphere_height(self, tile, vertex):

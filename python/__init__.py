@@ -8,7 +8,7 @@ from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,
                      AlternatingKnotExteriors, NonalternatingKnotExteriors,
                      pari)
-from .exceptions import SnapPeaFatalError
+from .exceptions import SnapPeaFatalError, InsufficientPrecisionError
 from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP

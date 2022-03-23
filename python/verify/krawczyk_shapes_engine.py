@@ -1,5 +1,5 @@
 from snappy import snap
-from snappy.sage_helper import _within_sage, SageNotAvailable
+from snappy.sage_helper import _within_sage, sage_method
 
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
@@ -353,6 +353,7 @@ class KrawczykShapesEngine:
 
         return vector([a.union(b) for a, b in zip(vecA, vecB)])
 
+    @sage_method
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
         Initializes the KrawczykShapesEngine given an orientable SnapPy
@@ -395,10 +396,6 @@ class KrawczykShapesEngine:
             RuntimeError: Could not certify shape intervals, either there are degenerate shapes or the precision must be increased.
 
         """
-
-        # Require sage
-        if not _within_sage:
-            raise SageNotAvailable("Sorry, the verify module can only be used within Sage")
 
         # Convert to precision in bits if necessary
         if dec_prec:

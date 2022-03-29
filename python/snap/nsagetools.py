@@ -303,6 +303,8 @@ def alexander_polynomial_basic(G, phi):
     M = matrix(P, [[ convert_laurent_to_poly(p, minexp, P) for p in row]
                    for row in M])
     alex_poly = gcd(M.minors(G.num_generators() - 1))
+    if alex_poly == 0:
+        return alex_poly
     # Normalize it
     return convert_laurent_to_poly(alex_poly, minimum_exponents( [alex_poly] ), P)
 

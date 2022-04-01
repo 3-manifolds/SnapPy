@@ -73,7 +73,7 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
 class R13LineWithMatrix:
     """
     A line in the hyperboloid model together with a O(1,3)-matrix fixing
-    the line (set-wise) and the trace of the corresponding PSL(2,C)-matrix.
+    the line (set-wise).
     """
     def __init__(self,
                  r13_line : R13Line,
@@ -85,7 +85,7 @@ class R13LineWithMatrix:
     def from_psl2c_matrix(m):
         """
         Given a loxodromic PSL(2,C)-matrix m, returns the line (together
-        with trace of m and the O(1,3)-matrix corresponding to m) fixed by m in
+        with the O(1,3)-matrix corresponding to m) fixed by m in
         the hyperboloid model.
         """
         

@@ -33,11 +33,29 @@ def sample_line(line_with_matrix : R13LineWithMatrix):
     return line.points[0] + p * line.points[1]
 
 @dataclass
+class LiftedTetrahedron:
+    """
+    Represents the lift of a tetrahedron in a manifold to the hyperboloid
+    model.
+
+    That is, if a tetrahedron (as part of the fundamental domain) was assigned
+    vertices by calling add_r13_geometry, then the vertices of a
+    LiftedTetrahedron l will be given by l.o13_matrices * tet.R13_vertices[v]
+    where v in snappy.snap.t3mlite.simplex.ZeroSubsimplices.
+    """
+
+    tet : Tetrahedron
+
+    # An O(1,3)-matrix - since this might be a SageMath class or a
+    # SimpleMatrix, just using Any as type annotation.
+    o13_matrix : Any
+
+@dataclass
 class GeodesicInfo:
     """
     Information needed to trace a closed geodesic through a triangulation
-    given as snappy.snap.t3mlite.Mcomplex prepared with
-    compute_mcomplex_with_r13_geometry.
+    given as snappy.snap.t3mlite.Mcomplex with geometric structure added
+    by add_r13_geometry.
 
     The basic information consists of a line in the hyperboloid model
     that is a lift of the closed geodesic and a start and end point on or
@@ -79,6 +97,9 @@ class GeodesicInfo:
     mcomplex : Mcomplex
 
     # A point on or near the line corresponding to the closed geodesic.
+    
+    # It is a light-like R13-vector. Using Any as type annotation because
+    # this might be a SimpleVector or SageMath type.
     unnormalised_start_point : Any
     # Optional: image of the point under the matrix corresponding to
     # the closed geodesic and fixing the given line (set-wise).
@@ -98,7 +119,7 @@ class GeodesicInfo:
     # (in the fundamental domain) and an O(1,3)-matrix and is the
     # image of this tetrahedron under the matrix.
     # domain and a O(1,3)-matrix that needs to be applied
-    tets_and_matrices : Sequence[Tuple[Tetrahedron, Any]] = ()
+    lifted_tetrahedra : Sequence[LiftedTetrahedron] = ()
     # Output of find_tet_or_core_curve: if not None, the geodesic
     # corresponds to the core curve for this cusp.
     core_curve_cusp : Optional[Vertex] = None
@@ -124,7 +145,7 @@ class GeodesicInfo:
         """
 
         self.tet = None
-        self.tets_and_matrices = ()
+        self.lifted_tetrahedra = ()
         self.core_curve_cusp = None
         self.core_curve_direction = 0
 
@@ -144,7 +165,7 @@ class GeodesicInfo:
         tet, faces, cusp_curve_vertex = self._graph_trace(self.mcomplex.baseTet)
 
         # Do some verification work for the above information to fill
-        # self.tet, self.tets_and_matrices and self.core_curve_cusp.
+        # self.tet, self.lifted_tetrahedra and self.core_curve_cusp.
 
         if cusp_curve_vertex:
             # Verify that the the geodesic is really the core curve and
@@ -166,7 +187,7 @@ class GeodesicInfo:
 
             # Signal to the client that we can start with this tetrahedron
             # when developing a tube about the geodesic.
-            self.tets_and_matrices = [ (tet, id_matrix) ]
+            self.lifted_tetrahedra = [ LiftedTetrahedron(tet, id_matrix) ]
             return
 
         if len(faces) == 1:
@@ -203,9 +224,10 @@ class GeodesicInfo:
                             "problem.")
 
             # Returns the two (lifted) tetrahedra.
-            self.tets_and_matrices = [
-                (tet, id_matrix),
-                (other_tet, other_tet.O13_matrices[other_face]) ]
+            self.lifted_tetrahedra = [
+                LiftedTetrahedron(tet, id_matrix),
+                LiftedTetrahedron(other_tet,
+                                  other_tet.O13_matrices[other_face]) ]
             return
 
         raise InsufficientPrecisionError(

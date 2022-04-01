@@ -2,8 +2,8 @@ from . import constants
 from . import exceptions
 from . import epsilons
 from .line import distance_r13_lines, R13Line, R13LineWithMatrix
-from .geodesic_info import GeodesicInfo
-from .quotient_space import balance_end_points_of_line, ZQuotientTetAndMatrixSet
+from .geodesic_info import GeodesicInfo, LiftedTetrahedron
+from .quotient_space import balance_end_points_of_line, ZQuotientLiftedTetrahedronSet
 
 from ..hyperboloid import ( # type: ignore
     r13_dot,
@@ -11,16 +11,37 @@ from ..hyperboloid import ( # type: ignore
     time_r13_normalise,
     space_r13_normalise,
     distance_unit_time_r13_points)
-from ..snap.t3mlite import simplex, Mcomplex # type: ignore
+from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 import heapq
+from dataclasses import dataclass
 
-from typing import Sequence
+from typing import Sequence, Any
 
 def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
+    """
+    A GeodesicTube can only be built from an Mcomplex if add_r13_geometry
+    and this function (add_structure_necessary_for_tube) was called.
+
+    This function adds R13Line objects for the edges of the tetrahedra.
+    It also adds a bounding plane for each edge of each face of each
+    tetrahedron. Such a bounding plane is perpendicular to the plane supporting
+    the face and intersects the plane in an edge of face. That is, the
+    bounding planes for a face cut out the triangle in the plane supporting
+    the face.
+
+    This information is used to compute the distance (or at least a lower bound
+    for the distance) of a hyperbolic line L to a (triangular) face of a
+    tetrahedron.
+
+    In particular, we can check whether both endpoints of L fall "outside" of
+    one of the bounding planes. In that case, the point of the triangle
+    closest to the line is on edge corresponding to the bounding plane.
+    """
+
     for tet in mcomplex.Tetrahedra:
         tet.R13_edges = {
             e: R13Line([tet.R13_vertices[simplex.Head[e]],
@@ -31,38 +52,121 @@ def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
                   for e in _face_to_edges[f] }
             for f in simplex.TwoSubsimplices }
 
-class GeodesicTubePiece:
+class _PendingPiece:
     """
-    Stores index of tetrahedron and matrix and the distance d of the image
-    of the tetrahedron under the matrix to the hyperbolic line from 0
-    to infinity.
+    A lifted tetrahedron that still needs to be processed by GeodesicTube
+    together with the face through which this lifted tetrahedron was
+    reached.
 
-    Operator < overloaded to sort by lower bound of distance.
+    The lifted tetrahedron lives in the quotient space of the hyperboloid
+    model by (powers of) the matrix corresponding to the closed geodesic,
+    see ZQuotientLiftedTetrahedronSet.
+
+    The algorithm in GeodesicTube might add the same lifted tetrahedron
+    multiple times to the queue of pending pieces as there are four
+    neighboring lifted tetrahedra from which this lifted tetrahedron can
+    be reached.
+
+    Let L be the line (in the quotient space) about which we develop the
+    geodesic tube. lower_bound is a lower bound on the distance between
+    L and the face through which this lifted tetrahedron was reached.
+    Note that lower_bound might be larger than the distance between L and
+    this lifted tetrahedron (which is the minimum of all distances between
+    L and any of the faces of this lifted tetrahedron).
+
+    The < operator is overloaded so that the piece with the lowest
+    lower_bound will be picked up next by a priority queue.
+
+    If pieces are processed in this order, then the lower_bound of the
+    next piece will actually be a lower bound for the distance between L
+    and the lifted tetrahedron (with other pending pieces for the same
+    lifted tetrahedron having higher values for lower_bound and thus
+    being further down the queue).
     """
 
     def __init__(self,
-                 lower_bound_distance,
-                 tet_and_matrix,
-                 line_in_tet_coords : R13Line):
-        self.lower_bound_distance = lower_bound_distance
-        self.tet_and_matrix = tet_and_matrix
-        self.line_in_tet_coords = line_in_tet_coords
+                 lifted_tetrahedron : LiftedTetrahedron,
+                 lower_bound,
+                 entry_cell : int = simplex.T):
+        self.lifted_tetrahedron = lifted_tetrahedron
+        self.lower_bound = lower_bound
 
-        if is_RealIntervalFieldElement(lower_bound_distance):
-            if lower_bound_distance.is_NaN():
+        # Either element of simplex.ZeroSubsimplices (if piece was reached
+        # through another piece) or simplex.T (if this pending piece was
+        # used to start tiling).
+        self.entry_cell = entry_cell
+
+        if is_RealIntervalFieldElement(lower_bound):
+            # For convenience, lower_bound is an interval but it is only
+            # the left value of the interval that is relevant and that we
+            # should use: A < B can be False for two intervals even
+            # when A's left value is lower than B's left value.
+            if lower_bound.is_NaN():
                 raise InsufficientPrecisionError(
                     "A NaN was encountered while developing a tube about a "
                     "geodesic. "
                     "Increasing the precision will probably fix this.")
 
-            self._key = lower_bound_distance.lower()
+            self._key = lower_bound.lower()
         else:
-            self._key = lower_bound_distance
+            self._key = lower_bound
 
     def __lt__(self, other):
         return self._key < other._key
 
+@dataclass
+class GeodesicTubePiece:
+    """
+    A class for the pieces produced by GeodesicTube to cover a tube T about
+    the given geodesic of the given radius r in the given manifold.
+
+    Such a piece is encoded as a tetrahedron and a line L in the
+    hyperboloiod model. Imagine that tetrahedron as part of the
+    fundamental domain and intersect it with a tube about L with
+    radius r. The images of these intersections in the manifold
+    cover T. Because we error on the side of rather adding than dropping
+    a piece when using interval arithmetic, the union of the images might not
+    be exactly T but a superset. A piece also stores a lower bound for the
+    distance between its tetrahedron in the fundamental domain and L.
+
+    In other words, GeodesicTube produces a piece for each tetrahedron
+    in the fundamental domain and each lift of the closed geodesic
+    to the hyperboloid model for which the above distance is less than r
+    (or more accurately, could not be proven to be greater than r).
+
+    When using verified computation, lower_bound is an interval for
+    convenience, even though only the left value of the interval is
+    relevant.
+    """
+
+    tet : Tetrahedron
+    lifted_geodesic : R13Line
+
+    # A number or interval (even though only left value is relevant)
+    # bounding the distance between tet and lifted_geodesic from
+    # below
+    lower_bound : Any
+
 class GeodesicTube:
+    """
+    Computes all GeodesicPiece's needed to cover a tube about the
+    given closed geodesic in the given manifold. The geodesic cannot be
+    a core curve of a filled cusp.
+    
+    A GeodesicTube is constructed from a triangulation with a suitable
+    geometric structure and a suitable GeodesicInfo object.
+
+    To add the necessary geometric structure to a triangulation, call
+    add_r13_geometry and add_structures_necessary_for_tube.
+
+    The GeodesicInfo object needs to be constructed with a line and
+    GeodesicInfo.find_tet_or_core_curve be called on it.
+    
+    Calling GeodesicInfo.add_pieces_for_radius will then add the
+    necessary pieces to GeodesicInfo.pieces to cover the tube of the
+    given radius.
+    """
+
     def __init__(self, mcomplex : Mcomplex, geodesic : GeodesicInfo):
         self.mcomplex = mcomplex
 
@@ -70,35 +174,91 @@ class GeodesicTube:
             raise ValueError(
                 "GeodesicTube expected GeodesicInfo with line set to start "
                 "developing a tube about the geodesic.")
-        
-        if not geodesic.tets_and_matrices:
+
+        if not geodesic.lifted_tetrahedra:
             raise ValueError(
-                "GeodesicTube expected GeodesicInfo with tets_and_matrices "
+                "GeodesicTube expected GeodesicInfo with lifted_tetrahedra "
                 "set to start developing a tube about the geodesic.")
 
-        self.line : R13Line = geodesic.line.r13_line
+        self._line : R13Line = geodesic.line.r13_line
 
-        self.pending_pieces = [
-            GeodesicTubePiece(
-                mcomplex.RF(0),
-                tet_and_matrix,
-                self.line.transformed(o13_inverse(tet_and_matrix[1])))
-            for tet_and_matrix in geodesic.tets_and_matrices ]
-        self.tube_pieces : Sequence[GeodesicTubePiece] = [ ]
+        # The pending pieces as priority queue - that is, a python list
+        # but we use heapq to access it.
+        self._pending_pieces : Sequence[_PendingPiece] = []
 
-        self.visited_tets_and_matrices = ZQuotientTetAndMatrixSet(
+        # Start tiling the tube about the geodesic with the lifted
+        # tetrahedra computed with GeodesicInfo.find_tet_or_core_curve.
+        #
+        # Note that that method guarantees that at least one of the
+        # lifted tetrahedra it intersects the above line. Thus, the tiling
+        # is seeded correctly. That is, we cannot fail in the following way:
+        # assume that the given lifted tetrahedra are far away from the given
+        # line. Then the algorithm below thinks we are done, before we
+        # even started properly tiling - and we obviously get an incomplete
+        # result.
+        #
+        for lifted_tetrahedron in geodesic.lifted_tetrahedra:
+            heapq.heappush(
+                self._pending_pieces,
+                _PendingPiece(lifted_tetrahedron, mcomplex.RF(0)))
+
+        # Initialize data structure recording which lifted tetrahedra have
+        # already been visited and been added to the result while tiling
+        # the quotient space.
+        self._visited_lifted_tetrahedra = ZQuotientLiftedTetrahedronSet(
             mcomplex,
             balance_end_points_of_line(
                 geodesic.line,
                 geodesic.unnormalised_start_point))
 
-    def add_next_piece(self):
-        while True:
-            pending_piece = heapq.heappop(self.pending_pieces)
-            if self.visited_tets_and_matrices.add(pending_piece.tet_and_matrix):
-                break
+        # The resulting pieces needed to cover the tube.
+        self.pieces : Sequence[GeodesicTubePiece] = [ ]
 
-        tet, m = pending_piece.tet_and_matrix
+    def add_pieces_for_radius(self, r):
+        """
+        Ensures that all pieces needed to cover a tube up to radius
+        r are stored in GeodesicTube.pieces.
+        """
+        
+        while not self.covered_radius() > r:
+            self._add_next_piece()
+
+    def covered_radius(self):
+        """
+        The pieces in GeodesicTube.pieces cover a tube of radius at least
+        the value returned by this function.
+
+        Note that, for convenience, an interval is returned even though
+        only the left value is relevant.
+        """
+        return self._pending_pieces[0].lower_bound
+
+    def _add_next_piece(self):
+        """
+        Finds the pending piece "closest" to the lifted closed geodesic,
+        adds it to the result and marks the neighboring lifted tetrahedra
+        to the pending queue.
+
+        Here, "closest" is not quite precise because we pick the piece
+        with the lowest lower bound for the distance. Also recall that the
+        distance of a pending piece is the distance between the lifted
+        geodesic L and the entry cell of the lifted tetrahedron, not between
+        L and the lifted tetrahedron itself.
+
+        So the right picture to have in mind is: imagine the 2-skeleton
+        of the triangulation in the quotient space intersecting the boundary
+        of a geodesic tube. As the geodesic tube grows, the intersection
+        sweeps through the 2-skeleton. The pending pieces will be processed in
+        the order the faces of the 2-skeleton are encountered during the
+        sweep.
+        """
+
+        # Find "closest" pieces not yet visited
+        while True:
+            pending_piece = heapq.heappop(self._pending_pieces)
+            if self._visited_lifted_tetrahedra.add(
+                    pending_piece.lifted_tetrahedron):
+                break
 
         if self.mcomplex.verified:
             epsilon = 0
@@ -106,38 +266,58 @@ class GeodesicTube:
             epsilon = epsilons.compute_tube_injectivity_radius_epsilon(
                 self.mcomplex.RF)
 
+        tet = pending_piece.lifted_tetrahedron.tet
+        m = pending_piece.lifted_tetrahedron.o13_matrix
+
+        # Imagine the fixed lift of the given geodesic and how it
+        # relates to the lifted tetrahedron which is the image of
+        # the tetrahedron in the fundamental domain under the matrix.
+        #
+        # Applying the inverse matrix moves the tetrahedron back into
+        # the fundamental domain and thus we obtain the line we want
+        # to record in GeodesicTubePiece.
+        #
+        lifted_geodesic = self._line.transformed(o13_inverse(m))
+
+        # Check that this line is not intersecting a core curve.
         for v in simplex.ZeroSubsimplices:
             core_curve = tet.core_curves.get(v, None)
             if core_curve:
                 d = distance_r13_lines(
                     core_curve.r13_line,
-                    self.line)
+                    lifted_geodesic)
                 if not d > epsilon:
                     raise exceptions.GeodesicCloseToCoreCurve()
 
-        self.tube_pieces.append(pending_piece)
+        # Emit GeodesicTubePiece
+        self.pieces.append(
+            GeodesicTubePiece(
+                tet = tet,
+                lifted_geodesic = lifted_geodesic,
+                lower_bound = pending_piece.lower_bound))
 
-        for f in simplex.TwoSubsimplices:
-            d = lower_bound_for_distance_line_to_tet_face(
-                pending_piece.line_in_tet_coords,
-                tet, f,
-                self.mcomplex.verified)
-
-            new_tet = tet.Neighbor[f]
-            new_m = m * new_tet.O13_matrices[tet.Gluing[f].image(f)]
-
+        # For all faces ...
+        for f, new_tet in tet.Neighbor.items():
+            # ... except the one that was used to reach this lifted tetrahedron
+            if f == pending_piece.entry_cell:
+                continue
+            entry_face = tet.Gluing[f].image(f)
             heapq.heappush(
-                self.pending_pieces,
-                GeodesicTubePiece(
-                    d,
-                    (new_tet, new_m),
-                    self.line.transformed(o13_inverse(new_m))))
-
-    def add_pieces_to_cover(self):
-        while not self.pending_pieces[0].lower_bound_distance > 0:
-            self.add_next_piece()
-
-        return self.pending_pieces[0].lower_bound_distance
+                self._pending_pieces,
+                _PendingPiece(
+                    LiftedTetrahedron(
+                        new_tet,
+                        # Inverse of tet.O13_matrices[f]
+                        m * new_tet.O13_matrices[entry_face]),
+                    # Distance of this face to lifted geodesic
+                    # (equal to distance of face entry_face of
+                    # new_tet)
+                    lower_bound_for_distance_line_to_tet_face(
+                        lifted_geodesic,
+                        tet,
+                        f,
+                        self.mcomplex.verified),
+                    entry_cell = entry_face))
 
 def make_r13_unit_tangent_vector(direction, point):
     s = r13_dot(direction, point)
@@ -210,7 +390,7 @@ if __name__ == '__main__':
 
     print("============================")
         
-    for p in g.tube_pieces:
+    for p in g.pieces:
         print(p.lower_bound_distance)
 
     print("Injectivity radius:", inj)

@@ -8,7 +8,7 @@ __all__ = ['floor_as_intergers', 'SpatialDict']
 def floor_as_integers(x) -> Sequence[int]:
     """
     Computes floor of a number or interval, returning a list of integers
-    if floor is ambiguous.
+    if evaluating floor is ambiguous.
 
         sage: floor_as_integers(RIF(1.8, 1.9))
         [1]
@@ -52,7 +52,7 @@ class _Entry:
 
     The implementation of SpatialDict has the same instance of _Entry
     stored for multiple keys so that updating the value for all keys
-    can be done by only changing the _Entry.value.
+    can be done by assigning the new value to _Entry.value only once.
     """
     def __init__(self, value):
         self.value = value

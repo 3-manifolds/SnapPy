@@ -1,5 +1,6 @@
 from .spatial_dict import SpatialDict, floor_as_integers
 from .line import R13Line, R13LineWithMatrix
+from .geodesic_info import LiftedTetrahedron
 
 from ..hyperboloid import ( # type: ignore
     r13_dot, o13_inverse, distance_unit_time_r13_points)
@@ -14,21 +15,20 @@ def balance_end_points_of_line(line_with_matrix : R13LineWithMatrix,
               for endpoint in line_with_matrix.r13_line.points]),
         line_with_matrix.o13_matrix)
 
-class ZQuotientTetAndMatrixSet:
+class ZQuotientLiftedTetrahedronSet:
     def __init__(self,
                  mcomplex : Mcomplex,
                  line_with_matrix : R13LineWithMatrix):
         self._dict = _ZQuotientDict(mcomplex, line_with_matrix)
         self._mcomplex = mcomplex
 
-    def add(self, tet_and_matrix):
-        tet, m = tet_and_matrix
+    def add(self, lifted_tetrahedron : LiftedTetrahedron):
         tets = self._dict.setdefault(
-            m * self._mcomplex.R13_baseTetInCenter,
+            lifted_tetrahedron.o13_matrix * self._mcomplex.R13_baseTetInCenter,
             set())
-        if tet in tets:
+        if lifted_tetrahedron.tet in tets:
             return False
-        tets.add(tet)
+        tets.add(lifted_tetrahedron.tet)
         return True
 
 class _ZQuotientDict(SpatialDict):

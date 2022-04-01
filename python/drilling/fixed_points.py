@@ -8,13 +8,14 @@ __all__ = ['r13_fixed_points_of_psl2c_matrix']
 def r13_fixed_points_of_psl2c_matrix(m):
     """
     Given a PSL(2,C)-matrix m acting on the upper halfspace model,
-    computes the corresponding (idal) fixed points as light-like
+    computes the corresponding (ideal) fixed points as light-like
     vectors in the hyperboloid model.
     """
 
     # Note that a division by zero occurs in (the unguarded
     # version of this function) _r13_fixed_points_of_psl2c_matrix
-    # if m[1,0] is zero - which we can avoid by conjugating m.
+    # if m[1,0] is zero - which we can avoid by conjugating m with
+    # a fixed matrix t.
 
     # To decide whether to conjugate, we compare m[1,0] with
     # the value m[1,0] has after conjugating.

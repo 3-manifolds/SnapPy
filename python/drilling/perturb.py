@@ -45,6 +45,8 @@ def compute_lower_bound_injectivity_radius(
     add_structures_necessary_for_tube(mcomplex)
 
     tubes = [ GeodesicTube(mcomplex, g) for g in geodesics ]
+    for tube in tubes:
+        tube.add_pieces_for_radius(r = 0)
 
     return compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex, tubes)
@@ -59,10 +61,9 @@ def compute_lower_bound_injectivity_radius_from_tubes(
 
     tet_to_lines : list[list[R13Line]] = [[] for tet in mcomplex.Tetrahedra]
     for tube in tubes:
-        d = tube.add_pieces_to_cover()
-        distances.append(d)
-        for p in tube.tube_pieces:
-            tet_to_lines[p.tet_and_matrix[0].Index].append(p.line_in_tet_coords)
+        distances.append(tube.covered_radius())
+        for p in tube.pieces:
+            tet_to_lines[p.tet.Index].append(p.lifted_geodesic)
 
     for tet in mcomplex.Tetrahedra:
         for curve in tet.core_curves.values():

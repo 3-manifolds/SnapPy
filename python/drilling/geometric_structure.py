@@ -287,6 +287,9 @@ def _develop_core_curve_cusp(
             pending_tet_verts.append(
                 (new_tet, new_vertex, new_core_curve))
 
+# Depending on whether we are using SnapPy inside SageMath or not, we
+# use different python classes to represent numbers, vectors and matrices.
+# Thus, using Any as type annotation for now :(
 def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
     """
     Given outside-facing normals for the four faces of a

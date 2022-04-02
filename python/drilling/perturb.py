@@ -15,7 +15,7 @@ from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore
 from ..math_basics import correct_min # type: ignore
 
-from typing import Sequence
+from typing import Sequence, List
 
 def perturb_geodesics(
         mcomplex : Mcomplex,
@@ -59,7 +59,7 @@ def compute_lower_bound_injectivity_radius_from_tubes(
 
     distances = []
 
-    tet_to_lines = [[] for tet in mcomplex.Tetrahedra] # : list[list[R13Line]]
+    tet_to_lines : List[List[R13Line]] = [[] for tet in mcomplex.Tetrahedra]
     for tube in tubes:
         distances.append(tube.covered_radius())
         for p in tube.pieces:

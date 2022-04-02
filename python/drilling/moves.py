@@ -9,12 +9,12 @@ from ..snap.t3mlite import simplex, Perm4, Tetrahedron # type: ignore
 from ..matrix import matrix # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
-from typing import Sequence, Optional, Union, Tuple
+from typing import Sequence, Optional, Union, Tuple, List, Dict, Mapping
 
 __all__ = ['one_four_move', 'two_three_move']
 
 def one_four_move(given_pieces : Sequence[GeodesicPiece],
-                  start_pieces, # : list[GeodesicPiece],
+                  start_pieces : Dict[int, GeodesicPiece],
                   verified : bool) -> Sequence[GeodesicPiece]:
 
     tet : Tetrahedron = given_pieces[0].tet
@@ -62,7 +62,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     id_matrix = matrix.identity(ring = RF, n = 4)
 
     for f0, new_tet0 in new_tets.items():
-        new_tet0.geodesic_pieces = [] # : list[GeodesicPieces] = []
+        new_tet0.geodesic_pieces : List[GeodesicPiece] = []
         v0 = simplex.comp(f0)
         new_tet0.R13_vertices = { v0 : new_point }
         new_tet0.post_drill_infos = {
@@ -188,7 +188,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     return new_pieces
 
 def two_three_move(given_pieces : Sequence[GeodesicPiece],
-                   start_pieces, # : list[GeodesicPiece],
+                   start_pieces : Dict[int, GeodesicPiece],
                    verified : bool) -> Sequence[GeodesicPiece]:
     """
     piece is assumed to go from a vertex to opposite face.
@@ -440,14 +440,14 @@ _swap_perms = { (f0, f1) : _swap_perm(i, j)
 
 def _retrace_geodesic_piece(
         index : int,
-        tets, # : Union[dict[int,Tetrahedron], Sequence[Tetrahedron]],
+        tets : Union[Mapping[int,Tetrahedron], Sequence[Tetrahedron]],
         tet : Tetrahedron,
         face : int,
         dimension_end_cell : int,
         start_point,
         end_point,
         trace_direction : int,
-        start_pieces, # : list[GeodesicPiece],
+        start_pieces : Dict[int, GeodesicPiece],
         verified : bool,
         allowed_end_corners : Optional[Sequence[Tuple[Tetrahedron, int]]] = None):
 
@@ -460,7 +460,7 @@ def _retrace_geodesic_piece(
     direction = end_point - start_point
 
     # Result
-    pieces = [] # : list[GeodesicPiece] = []
+    pieces : List[GeodesicPiece] = []
 
     # Parameterizes ray. That is, we are start_point + param * direction.
     param = RF(0)

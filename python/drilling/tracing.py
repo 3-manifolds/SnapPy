@@ -208,7 +208,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
         epsilon = epsilons.compute_epsilon(RF)
 
     # Result
-    pieces = [ ] # : list[GeodesicPiece] = [ ]
+    pieces : List[GeodesicPiece] = [ ]
 
     # Parameterizes ray. That is, we are start_point + param * direction.
     param = RF(0)

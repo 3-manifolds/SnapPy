@@ -15,6 +15,7 @@ from ..drilling.cusps import (
 from ..drilling.peripheral_curves import install_all_peripheral_curves
 
 from ..snap.t3mlite import Mcomplex, simplex
+from ..exceptions import InsufficientPrecisionError
 
 from ..drilling.debug import *
 

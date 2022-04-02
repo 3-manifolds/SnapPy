@@ -5,7 +5,7 @@ from .debug import *
 
 from ..snap.t3mlite import Mcomplex, Tetrahedron
 
-from typing import Sequence
+from typing import Sequence, Dict
 
 def traverse_geodesics_to_subdivide(
         mcomplex : Mcomplex,
@@ -60,7 +60,7 @@ def find_all_tetrahedra(tet):
 
 def traverse_geodesic_to_subdivide(
         start_piece : GeodesicPiece,
-        start_pieces, # : dict[int, GeodesicPiece],
+        start_pieces : Dict[int, GeodesicPiece],
         verified : bool) -> GeodesicPiece:
     
     check_consistency_2(start_piece)

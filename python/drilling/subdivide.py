@@ -60,7 +60,7 @@ def find_all_tetrahedra(tet):
 
 def traverse_geodesic_to_subdivide(
         start_piece : GeodesicPiece,
-        start_pieces : dict[int, GeodesicPiece],
+        start_pieces, # : dict[int, GeodesicPiece],
         verified : bool) -> GeodesicPiece:
     
     check_consistency_2(start_piece)

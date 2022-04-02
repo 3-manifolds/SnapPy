@@ -59,7 +59,7 @@ def compute_lower_bound_injectivity_radius_from_tubes(
 
     distances = []
 
-    tet_to_lines : list[list[R13Line]] = [[] for tet in mcomplex.Tetrahedra]
+    tet_to_lines = [[] for tet in mcomplex.Tetrahedra] # : list[list[R13Line]]
     for tube in tubes:
         distances.append(tube.covered_radius())
         for p in tube.pieces:

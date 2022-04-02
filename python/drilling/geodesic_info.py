@@ -9,7 +9,6 @@ from ..snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import matrix # type: ignore
 
-from dataclasses import dataclass
 from typing import Tuple, Sequence, Optional, Any
 
 def sample_line(line_with_matrix : R13LineWithMatrix):
@@ -32,7 +31,7 @@ def sample_line(line_with_matrix : R13LineWithMatrix):
 
     return line.points[0] + p * line.points[1]
 
-@dataclass
+# @dataclass
 class LiftedTetrahedron:
     """
     Represents the lift of a tetrahedron in a manifold to the hyperboloid
@@ -44,13 +43,15 @@ class LiftedTetrahedron:
     where v in snappy.snap.t3mlite.simplex.ZeroSubsimplices.
     """
 
-    tet : Tetrahedron
+    def __init__(self,
+                 tet : Tetrahedron,
+                 # An O(1,3)-matrix - since this might be a SageMath class or a
+                 # SimpleMatrix, just using Any as type annotation.
+                 o13_matrix):
+        self.tet = tet
+        self.o13_matrix = o13_matrix
 
-    # An O(1,3)-matrix - since this might be a SageMath class or a
-    # SimpleMatrix, just using Any as type annotation.
-    o13_matrix : Any
-
-@dataclass
+# @dataclass
 class GeodesicInfo:
     """
     Information needed to trace a closed geodesic through a triangulation
@@ -93,44 +94,61 @@ class GeodesicInfo:
     performing verified computations.
     """
 
-    # The triangulation
-    mcomplex : Mcomplex
+    def __init__(self,
+                 # The triangulation
+                 mcomplex : Mcomplex,
 
-    # A point on or near the line corresponding to the closed geodesic.
-    
-    # It is a light-like R13-vector. Using Any as type annotation because
-    # this might be a SimpleVector or SageMath type.
-    unnormalised_start_point : Any
-    # Optional: image of the point under the matrix corresponding to
-    # the closed geodesic and fixing the given line (set-wise).
-    unnormalised_end_point : Optional[Any] = None
-    # Line corresponding to the closed geodesic with matrix.
-    # Must be given if we want to detect whether this geodesic
-    # is a core curve.
-    line : Optional[R13LineWithMatrix] = None
+                 # A point on or near the line corresponding to the closed geodesic.
+                 
+                 # It is a light-like R13-vector. Using Any as type annotation because
+                 # this might be a SimpleVector or SageMath type.
+                 unnormalised_start_point : Any,
+                 
+                 # Optional: image of the point under the matrix corresponding to
+                 # the closed geodesic and fixing the given line (set-wise).
+                 unnormalised_end_point : Optional[Any] = None,
+                 
+                 # Line corresponding to the closed geodesic with matrix.
+                 # Must be given if we want to detect whether this geodesic
+                 # is a core curve.
+                 line : Optional[R13LineWithMatrix] = None,
 
-    # Output of find_tet_or_core_curve: if not None, the start point
-    # is guaranteed to be in this tetrahedron (as part of the
-    # fundamental domain).
-    tet : Optional[Tetrahedron] = None
-    # Output of find_tet_or_core_curve: if non-empty, the start point
-    # is guaranteed to be in the union of the lifted tetrahedra.
-    # A lifted tetrahedron is encoded as a pair of a tetrahedron
-    # (in the fundamental domain) and an O(1,3)-matrix and is the
-    # image of this tetrahedron under the matrix.
-    # domain and a O(1,3)-matrix that needs to be applied
-    lifted_tetrahedra : Sequence[LiftedTetrahedron] = ()
-    # Output of find_tet_or_core_curve: if not None, the geodesic
-    # corresponds to the core curve for this cusp.
-    core_curve_cusp : Optional[Vertex] = None
-    # Output of find_tet_or_core_corve: sign (+1/-1) indicating whether
-    # the given geodesic and the core curve run parallel or
-    # anti-parallel.
-    core_curve_direction : int = 0
+                 # Output of find_tet_or_core_curve: if not None, the start point
+                 # is guaranteed to be in this tetrahedron (as part of the
+                 # fundamental domain).
+                 tet : Optional[Tetrahedron] = None,
+                 
+                 # Output of find_tet_or_core_curve: if non-empty, the start point
+                 # is guaranteed to be in the union of the lifted tetrahedra.
+                 # A lifted tetrahedron is encoded as a pair of a tetrahedron
+                 # (in the fundamental domain) and an O(1,3)-matrix and is the
+                 # image of this tetrahedron under the matrix.
+                 # domain and a O(1,3)-matrix that needs to be applied
+                 
+                 lifted_tetrahedra : Sequence[LiftedTetrahedron] = (),
+                 
+                 # Output of find_tet_or_core_curve: if not None, the geodesic
+                 # corresponds to the core curve for this cusp.
+                 core_curve_cusp : Optional[Vertex] = None,
+                 
+                 # Output of find_tet_or_core_corve: sign (+1/-1) indicating whether
+                 # the given geodesic and the core curve run parallel or
+                 # anti-parallel.
+                 core_curve_direction : int = 0,
 
-    # Field filled by client to indicate which index the cusp resulting
-    # from drilling this geodesic is supposed to have.
-    index : Optional[int] = None
+                 # Field filled by client to indicate which index the cusp resulting
+                 # from drilling this geodesic is supposed to have.
+                 index : Optional[int] = None):
+
+        self.mcomplex = mcomplex
+        self.unnormalised_start_point = unnormalised_start_point
+        self.unnormalised_end_point = unnormalised_end_point
+        self.line = line
+        self.tet = tet
+        self.lifted_tetrahedra = lifted_tetrahedra
+        self.core_curve_cusp = core_curve_cusp
+        self.core_curve_direction = core_curve_direction
+        self.index = index
 
     def find_tet_or_core_curve(self) -> None:
         """

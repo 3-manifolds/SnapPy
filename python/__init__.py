@@ -575,7 +575,7 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
-if False:
+if True:
 
     from . import drilling
 

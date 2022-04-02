@@ -2,10 +2,9 @@ from .geodesic_info import GeodesicInfo
 
 from ..snap.t3mlite import Mcomplex, simplex
 
-from dataclasses import dataclass
 from typing import Tuple, Optional, Sequence
 
-@dataclass
+# @dataclass
 class CuspPostDrillInfo:
     """
     Information carried around to be applied after drilling
@@ -14,11 +13,21 @@ class CuspPostDrillInfo:
     a core curve.
     """
 
-    index : Optional[int] = None
+    def __init__(self,
+                 index : Optional[int] = None,
+                 filling : Tuple[int, int] = (0, 0),
+                 peripheral_matrix : Optional[Tuple[Tuple[int,int],Tuple[int,int]]] = None):
+        self.index = index
+        self.filling = filling
+        self.peripheral_matrix = peripheral_matrix
 
-    filling : Tuple[int, int] = (0, 0)
-
-    peripheral_matrix : Optional[Tuple[Tuple[int,int],Tuple[int,int]]] = None
+    def __eq__(self, other):
+        """
+        Used for debugging.
+        """
+        return (self.index == self.index and
+                self.filling == self.filling and
+                self.peripheral_matrix == self.peripheral_matrix)
 
 def index_geodesics_and_add_post_drill_infos(
         geodesics : Sequence[GeodesicInfo],

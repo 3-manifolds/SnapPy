@@ -17,7 +17,6 @@ from ..math_basics import is_RealIntervalFieldElement # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 import heapq
-from dataclasses import dataclass
 
 from typing import Sequence, Any
 
@@ -114,7 +113,7 @@ class _PendingPiece:
     def __lt__(self, other):
         return self._key < other._key
 
-@dataclass
+# @dataclass
 class GeodesicTubePiece:
     """
     A class for the pieces produced by GeodesicTube to cover a tube T about
@@ -139,13 +138,16 @@ class GeodesicTubePiece:
     relevant.
     """
 
-    tet : Tetrahedron
-    lifted_geodesic : R13Line
-
-    # A number or interval (even though only left value is relevant)
-    # bounding the distance between tet and lifted_geodesic from
-    # below
-    lower_bound : Any
+    def __init__(self,
+                 tet : Tetrahedron,
+                 lifted_geodesic : R13Line,
+                 # A number or interval (even though only left value is relevant)
+                 # bounding the distance between tet and lifted_geodesic from
+                 # below
+                 lower_bound):
+        self.tet = tet
+        self.lifted_geodesic = lifted_geodesic
+        self.lower_bound = lower_bound
 
 class GeodesicTube:
     """

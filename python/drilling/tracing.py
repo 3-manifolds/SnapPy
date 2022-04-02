@@ -9,7 +9,7 @@ from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..hyperboloid import r13_dot # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
-from typing import Sequence, Optional
+from typing import Sequence, Optional, List
 
 class Endpoint:
     """
@@ -183,6 +183,10 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     If geodesic.line is set, it also checks that the geodesic is not
     too close to a core curve.
     """
+
+    if geodesic.tet is None:
+        raise ValueError(
+            "Expected geodesic with tetrahedron to start tracing.")
 
     # start_point and direction forming the ray we are tracing.
     # Note that we apply the face-pairing matrices to the ray when we go

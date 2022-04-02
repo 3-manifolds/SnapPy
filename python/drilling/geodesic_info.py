@@ -185,7 +185,7 @@ class GeodesicInfo:
         # Do some verification work for the above information to fill
         # self.tet, self.lifted_tetrahedra and self.core_curve_cusp.
 
-        if cusp_curve_vertex:
+        if not cusp_curve_vertex is None:
             # Verify that the the geodesic is really the core curve and
             # determine whether the geodesic and core curve or parallel
             # or anti-parallel.
@@ -255,7 +255,9 @@ class GeodesicInfo:
 
     def _graph_trace(
             self,
-            tet : Tetrahedron) -> Tuple[Tetrahedron, Sequence[int], Vertex]:
+            tet : Tetrahedron) -> Tuple[Tetrahedron,
+                                        Sequence[int],
+                                        Optional[int]]:
         """
         Walk from tetrahedron to tetrahedron (transforming start point and
         the other data) to capture the start point in a tetrahedron.
@@ -354,7 +356,7 @@ class GeodesicInfo:
             self,
             tet : Tetrahedron,
             entry_cell : int,
-            epsilon) -> Vertex:
+            epsilon) -> Optional[int]:
         """
         Check that the lift of the geodesic is close to the lifts of the core
         curves at the vertices of the tetrahedron adjacent to entry_cell

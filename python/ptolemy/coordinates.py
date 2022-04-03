@@ -35,7 +35,7 @@ class RelationViolationError(Exception):
         self.value = value
         self.epsilon = epsilon
         self.comment = comment
-    
+
     def __str__(self):
         r = self.comment + " is violated, "
         r += "difference is %s" % self.value
@@ -58,7 +58,7 @@ class NotPU21Representation:
 
     def __bool__(self):
         return False
-    
+
     __nonzero__ = __bool__ # backwards compatibility python 2x
 
 class NumericalMethodError(Exception):
@@ -80,7 +80,7 @@ def _check_relation(value, epsilon, comment):
     else:
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
-    
+
 class PtolemyCoordinates(dict):
     """
     Represents a solution of a Ptolemy variety as python dictionary.
@@ -172,7 +172,7 @@ class PtolemyCoordinates(dict):
     >>> normalized - normalized.round() < 1e-9
     True
     """
-        
+
     def __init__(self, d, is_numerical = True, py_eval_section = None,
                  manifold_thunk = lambda : None,
                  non_trivial_generalized_obstruction_class = False):
@@ -198,13 +198,13 @@ class PtolemyCoordinates(dict):
         # Caches the matrices that label the short and long edges
         # of the truncated simplices building the manifold
         self._edge_cache = {}
-        
+
         # Caches the images of a fundamental group generator
         self._matrix_cache = []
         self._inverse_matrix_cache = []
 
         super(PtolemyCoordinates, self).__init__(processed_dict)
-        
+
     def __repr__(self):
         dict_repr = dict.__repr__(self)
         return "PtolemyCoordinates(%s, is_numerical = %r, ...)" % (
@@ -249,14 +249,14 @@ class PtolemyCoordinates(dict):
         modifies the Ptolemy relation to 
         """
         N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
-        return has_obstruction        
+        return has_obstruction
 
     def number_field(self):
         """
         For an exact solution, return the number_field spanned by the
         Ptolemy coordinates. If number_field is Q, return None.
         """
-        
+
         if self._is_numerical:
             raise ExactMethodError("number_field")
 
@@ -284,7 +284,7 @@ class PtolemyCoordinates(dict):
         >>> numerical_solution = numerical_solutions[0]
         >>> value = numerical_solution['c_1110_0']
         """
-        
+
         if self._is_numerical:
             return self
         return ZeroDimensionalComponent(
@@ -306,7 +306,7 @@ class PtolemyCoordinates(dict):
 
         This conversion might lead to very large coefficients.
         """
-        
+
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.to_PUR),
             is_numerical = self._is_numerical,
@@ -315,7 +315,7 @@ class PtolemyCoordinates(dict):
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_terms_in_RUR(self):
-        
+
         """
         If a Ptolemy coordinate is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms and
@@ -347,13 +347,13 @@ class PtolemyCoordinates(dict):
         factorised.
 
         """
-        
+
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
             is_numerical = self._is_numerical,
             manifold_thunk = self._manifold_thunk,
             non_trivial_generalized_obstruction_class = (
-                self._non_trivial_generalized_obstruction_class))    
+                self._non_trivial_generalized_obstruction_class))
 
     def cross_ratios(self):
         """
@@ -410,7 +410,7 @@ class PtolemyCoordinates(dict):
         Turn exact solutions into numerical and then compute cross ratios.
         See numerical() and cross_ratios().
         """
-        
+
         if self._is_numerical:
             return self.cross_ratios()
         else:
@@ -445,7 +445,7 @@ class PtolemyCoordinates(dict):
             for i in range(1000):
                 try:
                     # get the dictionary containing flattenings
-                    # and the evenN that describes in what 
+                    # and the evenN that describes in what
                     # flavor of the Extended Bloch group the result lives in
                     d, evenN = _ptolemy_to_cross_ratio(
                         self,
@@ -496,7 +496,7 @@ class PtolemyCoordinates(dict):
         See numerical(). If drop_negative_vols = True is given as optional
         argument, only return complex volumes with non-negative real part.
         """
-        
+
         if self._is_numerical:
             return self.flattenings_numerical().complex_volume(
                 with_modulo = with_modulo)
@@ -559,7 +559,7 @@ class PtolemyCoordinates(dict):
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
         http://arxiv.org/abs/1207.6711
         """
-        
+
         # Integral points that are indices of Ptolemy coordinates
         pt_v0_v0 = [ a + 2 * _kronecker_delta(v0, i)
                           for i, a in enumerate(pt) ]
@@ -586,7 +586,7 @@ class PtolemyCoordinates(dict):
 
         # The epsilon permutation sign from Definition 10.1 of
         # Garoufalidis, Goerner, Zickert:
-        # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         # http://arxiv.org/abs/1207.6711
         s = PtolemyCoordinates._three_perm_sign(v0, v1, v2)
 
@@ -632,7 +632,7 @@ class PtolemyCoordinates(dict):
 
         # Get N
         N = self.N()
-        
+
         return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
 
     def long_edge(self, tet, v0, v1, v2):
@@ -707,10 +707,10 @@ class PtolemyCoordinates(dict):
 
             # Start with identity
             m = self._get_identity_matrix()
-            
+
             # Compute the product in equation 10.4
             for a0, a1, a2 in utilities.triples_with_fixed_sum_iterator(N - 2):
-                
+
                 # Get integral point for diamond coordinate
                 pt = [ a1 * _kronecker_delta(v0, i) +
                        a2 * _kronecker_delta(v1, i) +
@@ -745,7 +745,7 @@ class PtolemyCoordinates(dict):
 
         # Fill cache if necessary
         if key not in self._edge_cache:
-            
+
             # Get N
             N = self.N()
 
@@ -762,7 +762,7 @@ class PtolemyCoordinates(dict):
         # fundamental group generators and their inverses
 
         if self._matrix_cache and self._inverse_matrix_cache:
-            return 
+            return
 
         # Compute all the matrices for the generators and there inverses
         # The short edges of the doubly truncated simplices are all identities
@@ -836,17 +836,17 @@ class PtolemyCoordinates(dict):
                 m2 = self.long_edge(tet,v[1],v[0],v[2])
                 self._testing_assert_identity(
                     matrix.matrix_mult(m1, m2))
-                
+
             # Check triangle for each vertex
             for v in [(0,1,2,3), (1,2,3,0), (2,3,0,1), (3,0,1,2)]:
                 m1 = self.middle_edge(tet, v[0], v[1], v[2])
                 m2 = self.middle_edge(tet, v[0], v[2], v[3])
                 m3 = self.middle_edge(tet, v[0], v[3], v[1])
-                
+
                 self._testing_assert_identity(
                     matrix.matrix_mult(
                         m1, matrix.matrix_mult(m2, m3)))
-                
+
             # Check hexagon for each face
             for v in [(0,1,2), (0,1,3), (0,2,3), (1,2,3)]:
                 m1 = self.middle_edge(tet,v[0],v[1],v[2])
@@ -935,7 +935,7 @@ class PtolemyCoordinates(dict):
                 s1 = self._get_obstruction_variable(1, tet)
                 s2 = self._get_obstruction_variable(2, tet)
                 s3 = self._get_obstruction_variable(3, tet)
-                    
+
                 rel = (  s0 * s1 * get_ptolemy_coordinate((1,1,0,0))
                                  * get_ptolemy_coordinate((0,0,1,1))
                        - s0 * s2 * get_ptolemy_coordinate((1,0,1,0))
@@ -1004,7 +1004,7 @@ class Flattenings(dict):
         f['zp_xxxx_y']   is (w1, z', q)
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
-        
+
     def __init__(self, d, manifold_thunk = lambda : None, evenN = 2):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
@@ -1095,11 +1095,11 @@ class Flattenings(dict):
         extra_cols = len(all_equations[0]) - len(all_equations)
 
         d = [d_mat[r][r + extra_cols] for r in range(len(d_mat))]
-        
+
         # errors to the gluing equations and flattening condition
         # when using the logarithms without adding p * pi * i as complex
         # numbers
-        errors = matrix.matrix_mult_vector(all_equations, 
+        errors = matrix.matrix_mult_vector(all_equations,
                                            log_all_cross_ratios)
 
         # divide by pi * i and turn into integers
@@ -1121,7 +1121,7 @@ class Flattenings(dict):
 
         flattenings = matrix.matrix_mult_vector(v, flattenings_in_other_basis)
 
-        assert (matrix.matrix_mult_vector(all_equations, flattenings) == 
+        assert (matrix.matrix_mult_vector(all_equations, flattenings) ==
                 [-x for x in int_errors])
 
         keys = sum([ ['z_0000_%d' % i,
@@ -1129,7 +1129,7 @@ class Flattenings(dict):
                       'zpp_0000_%d' % i] for i in range(num_tets)],[])
 
         Mcopy = M.copy()
-        
+
         return Flattenings(
             dict([ (k, (log + PiI * p, z, p))
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
@@ -1157,13 +1157,13 @@ class Flattenings(dict):
         if not key_z[:2] == 'z_':
             raise Exception("Need to be called with cross ratio variable z_....")
         key_zp = 'zp_' + key_z[2:]
-        
+
         w,  z,  p = self[key_z]
         wp, zp, q_canonical_branch_cut = self[key_zp]
 
         # Note that the q in l(z;p,q) and in Definition 3.1 are different if
         # z is on the real axis and > 1!!!
-        # Thus we need to compute the q again here according to the formula 
+        # Thus we need to compute the q again here according to the formula
         # for l(z;p,q)
 
         pari_z = _convert_to_pari_float(z)
@@ -1275,7 +1275,7 @@ class Flattenings(dict):
                 epsilon,
                 "Gluing equation %s" % rows[row])
 
-class CrossRatios(dict): 
+class CrossRatios(dict):
     """
     Represents assigned shape parameters/cross ratios as
     dictionary. The cross ratios are according to SnapPy convention, so we
@@ -1294,7 +1294,7 @@ class CrossRatios(dict):
     Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
     http://arxiv.org/abs/1207.6711
     """
-    
+
     def __init__(self, d, is_numerical = True, manifold_thunk = None):
         super(CrossRatios, self).__init__(d)
         self._is_numerical = is_numerical
@@ -1303,7 +1303,7 @@ class CrossRatios(dict):
         # Caches the matrices that label the short and long edges
         # of the truncated simplices building the manifold
         self._edge_cache = {}
-        
+
         # Caches the images of a fundamental group generator
         self._matrix_cache = []
         self._inverse_matrix_cache = []
@@ -1327,7 +1327,7 @@ class CrossRatios(dict):
             d['z_0000_%d' % i] = shape
             d['zp_0000_%d' % i] = 1 / (1 - shape)
             d['zpp_0000_%d' % i] = 1 - 1 / shape
-        
+
         return CrossRatios(d, is_numerical = True,
                            manifold_thunk = lambda M = M: M)
 
@@ -1374,7 +1374,7 @@ class CrossRatios(dict):
         Turn exact solutions into numerical solutions using pari. Similar to
         numerical() of PtolemyCoordinates. See help(ptolemy.PtolemyCoordinates)
         for example.
-        """        
+        """
         if self._is_numerical:
             return self
         return ZeroDimensionalComponent([
@@ -1383,7 +1383,7 @@ class CrossRatios(dict):
             for d in _to_numerical(self) ])
 
     def to_PUR(self):
-        
+
         """
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
@@ -1411,7 +1411,7 @@ class CrossRatios(dict):
         This loses information about how the numerator and denominator are
         factorised.
         """
-        
+
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_terms),
             is_numerical = self._is_numerical,
@@ -1430,7 +1430,7 @@ class CrossRatios(dict):
         factorised.
 
         """
-        
+
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
             is_numerical = self._is_numerical,
@@ -1486,7 +1486,7 @@ class CrossRatios(dict):
 
         if tuple(edge) in [(1,0,1,0), (0,1,0,1)]:
             return self['zp' + postfix]
-        
+
         if tuple(edge) in [(1,0,0,1), (0,1,1,0)]:
             return self['zpp' + postfix]
 
@@ -1519,7 +1519,7 @@ class CrossRatios(dict):
 
         # Get N
         N = self.N()
-        
+
         return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
 
     def long_edge(self, tet, v0, v1, v2):
@@ -1537,23 +1537,23 @@ class CrossRatios(dict):
         
         The resulting matrix is given as a python list of lists.
         """
-        
+
         # Key for cache
         key = 'long_edge'
 
         # Fill cache if necessary
         if key not in self._edge_cache:
-            
+
             # Get N
             N = self.N()
-            
+
             # It is just the counter diagonal matrix
             m = [ [ _kronecker_delta(i+j, N-1) for i in range(N) ]
                   for j in range(N)]
 
             # Set in cache
             self._edge_cache[key] = m
-            
+
         return self._edge_cache[key]
 
     def middle_edge(self, tet, v0, v1, v2):
@@ -1592,7 +1592,7 @@ class CrossRatios(dict):
                 prod1 = self._get_identity_matrix()
                 for i in range(1, N - k + 1):
                     prod1 = matrix.matrix_mult(prod1, _X(N, i, 1))
-                    
+
                 # Compute second product
                 prod2 = self._get_identity_matrix()
                 for i in range(1, N - k):
@@ -1618,10 +1618,10 @@ class CrossRatios(dict):
                     for j in range(N) ]
 
             m = matrix.matrix_mult(m, dpm)
-                
+
             # Set in cache
             self._edge_cache[key] = m
-            
+
         return self._edge_cache[key]
 
     def short_edge(self, tet, v0, v1, v2):
@@ -1667,7 +1667,7 @@ class CrossRatios(dict):
                 cross_ratio = self._shape_at_tet_point_and_edge(tet, pt, edge)
 
                 # Multiply result with the H matrix
-                
+
                 # Note that the sgn is different from the paper
                 # because we are using SnapPy conventions for
                 # cross ratios here
@@ -1684,7 +1684,7 @@ class CrossRatios(dict):
         # fundamental group generators and their inverses
 
         if self._matrix_cache and self._inverse_matrix_cache:
-            return 
+            return
 
         # Compute all the matrices for the generators and there inverses
         # The long edges of the doubly truncated simplex are all unit
@@ -1743,7 +1743,7 @@ class CrossRatios(dict):
         if len(index) != 4:
             raise Exception("Not 4 indices")
         N = sum([int(x) for x in index]) + 2
-        
+
         matrix_with_explanations = M.gluing_equations_pgl(
             N, equation_type = 'all')
 
@@ -1796,11 +1796,11 @@ class CrossRatios(dict):
               for v in ['z', 'zp', 'zpp']
               for t in range(num_tetrahedra)
               for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
-        
+
         return CrossRatios(d,
                            is_numerical = self._is_numerical,
                            manifold_thunk = self._manifold_thunk)
-                           
+
 
     def is_real(self, epsilon):
 
@@ -1809,7 +1809,7 @@ class CrossRatios(dict):
         part < epsilon where epsilon is given as argument).
         This means that the corresponding representation is in PSL(N,R).
         """
-        
+
         if not self._is_numerical:
             raise NumericalMethodError("is_real")
 
@@ -1923,7 +1923,7 @@ class CrossRatios(dict):
             raise NumericalMethodError("is_pu_2_1_representation")
 
         for t in range(self.num_tetrahedra()):
-            
+
             m0 = mainCondition("z_1000_%d" % t, "z_0100_%d" % t,
                                "z_0010_%d" % t, "z_0001_%d" % t)
             if not m0: return m0
@@ -1957,7 +1957,7 @@ class CrossRatios(dict):
             if not t3: return t3
 
         return True
-           
+
     def is_geometric(self, epsilon = 1e-6):
         """
         Returns true if all shapes corresponding to this solution have positive
@@ -2043,7 +2043,7 @@ def _ptolemy_to_cross_ratio(solution_dict,
                                     branch_factor, evenN)
             wpp = _compute_flattening(c1100, c0011, c1010, c0101,
                                     branch_factor, evenN)
-            
+
             return [
                 ('z'   + variable_end, make_triple(w  ,z  )),
                 ('zp'  + variable_end, make_triple(wp ,zp )),
@@ -2054,10 +2054,10 @@ def _ptolemy_to_cross_ratio(solution_dict,
                 ('z'   + variable_end, z),
                 ('zp'  + variable_end, zp),
                 ('zpp' + variable_end, zpp) ]
-                
+
     return dict(
-        sum([compute_cross_ratios_and_flattenings(tet,index) 
-             for tet in range(num_tets) 
+        sum([compute_cross_ratios_and_flattenings(tet,index)
+             for tet in range(num_tets)
              for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
             [])), evenN
 
@@ -2066,27 +2066,27 @@ def _num_tetrahedra(solution_dict):
                   for key in solution_dict.keys() ] ) + 1
 
 def _N_for_shapes(solution_dict):
-    
+
     def get_N(key):
         m = re.match(r'zp{0,2}_(\d{4})_\d+$', key)
         if not m:
             raise Exception("Not a valid shape key: '%s'" % key)
         return sum([int(char) for char in m.group(1)]) + 2
-    
+
     l = [ get_N(key) for key in solution_dict.keys() ]
     if not len(set(l)) == 1:
         raise Exception("Shape keys for different N")
-    
+
     return l[0]
 
 def _N_and_has_obstruction_for_ptolemys(solution_dict):
-    
+
     def get_N(key):
         m = re.match(r'c_(\d{4})_\d+$', key)
         if not m:
             raise Exception("Not a valid Ptolemy key: '%s'" % key)
         return sum([int(char) for char in m.group(1)])
-    
+
     has_obstruction = False
 
     l = set()
@@ -2104,7 +2104,7 @@ def _N_and_has_obstruction_for_ptolemys(solution_dict):
 
 def _get_number_field(d):
     for value in d.values():
-        
+
         if isinstance(value, RUR):
             nf = value.number_field()
             if nf:
@@ -2124,7 +2124,7 @@ def _evaluate_at_root(p, root):
         return p.evaluate_at_root(root)
 
     return p
-            
+
 def _to_numerical(d):
 
     number_field = _get_number_field(d)
@@ -2139,9 +2139,9 @@ def _to_numerical(d):
     def evaluate_all_for_root(root):
 
         def evaluate_key_for_root(key, value):
-    
+
             v = _evaluate_at_root(value, root)
-        
+
             if key[:2] == 'z_':
                 z   = v
                 zp  = 1 / (1 - z)
@@ -2162,12 +2162,12 @@ def _to_numerical(d):
     return [ evaluate_all_for_root(root) for root in roots ]
 
 def _apply_to_RURs(d, RUR_method):
-    
+
     def _apply_to_RUR(v):
         if isinstance(v, RUR):
             return RUR_method(v)
         return v
-    
+
     return dict( [ (k, _apply_to_RUR(v)) for  k, v in d.items() ] )
 
 
@@ -2175,9 +2175,9 @@ def _convert_to_pari_float(z):
 
     if type(z) == Gen and z.type() in ['t_INT', 't_FRAC']:
         return z * pari('1.0')
-    
+
     return pari(z)
- 
+
 def _compute_flattening(a, b, c, d, branch_factor, N = 2):
 
     PiMinusEpsilon = pari(3.141592)
@@ -2221,9 +2221,9 @@ def _L_function(zpq_triple, evenN = 2):
             - Pi2 / 6)
 
 def _volume(z):
-    
+
     z = _convert_to_pari_float(z)
-    
+
     return (1-z).arg() * z.abs().log() + _dilog(z).imag()
 
 def _kronecker_delta(i, j):

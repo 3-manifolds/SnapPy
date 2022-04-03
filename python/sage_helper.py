@@ -121,7 +121,7 @@ class DocTestParser(doctest.DocTestParser):
                  DocTestParser.use_modernopengl)
              else '#doctest: +SKIP'),
             string)[0]
-        
+
         if DocTestParser.use_sage:
             string = re.subn(r'(\n\s*)sage:|(\A\s*)sage:',
                              r'\g<1>>>>',

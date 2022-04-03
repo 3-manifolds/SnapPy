@@ -14,7 +14,7 @@ def my_rnfequation(base_poly, extension_poly):
 
     # Example: base_poly t^2 + 1, extension_poly s^3 + t
 
-    base_vars = base_poly.variables()  
+    base_vars = base_poly.variables()
     assert len(base_vars) == 1
     base_var = base_vars[0]                                 # would be y
     base_degree = base_poly.degree()                        # would be 2
@@ -30,18 +30,18 @@ def my_rnfequation(base_poly, extension_poly):
     # total degree
     total_degree = base_degree * extension_degree
 
-    # If the extension_poly does not contain base_var, e.g., 
+    # If the extension_poly does not contain base_var, e.g.,
     # s^2 + 1 and t^2 - 2, then we know that neither s nor t will
     # generate the entire field, so skip k = 0
     start_k = 0 if base_var in extension_vars else -1
-    
+
     # Try different k to find a generator for the total field
     for k in range(start_k, -100, -1):
-        
+
         # Use x = s + k * t as potential generator
 
         x = (  Polynomial.from_variable_name(extension_var)
-                   + Polynomial.constant_polynomial(k) * 
+                   + Polynomial.constant_polynomial(k) *
                      Polynomial.from_variable_name(base_var))
 
         # Holds the i-th power of x in the reduced form
@@ -63,8 +63,8 @@ def my_rnfequation(base_poly, extension_poly):
                              base_var, base_degree,
                              extension_var, extension_degree))
 
-            # Compute next power 
-            
+            # Compute next power
+
             power_of_x = (
                 _reduced_polynomial(
                     _reduced_polynomial(power_of_x * x,
@@ -98,9 +98,9 @@ def my_rnfequation(base_poly, extension_poly):
                 matrix.matrix_mult_vector(
                     mat_inv_t,
                     [0, 1] + (total_degree - 2) * [0]))
-            
+
             return new_poly, old_var_in_new_var, k
-    
+
     raise Exception("Should not get here")
 
 def _row_to_poly(row):
@@ -121,7 +121,7 @@ def _poly_to_row(poly, base_var, base_degree, extension_var, extension_degree):
     return row
 
 def _reduced_polynomial(poly, mod_pol, mod_var, mod_degree):
-    
+
     def degree_of_monomial(m):
         vars = dict(m.get_vars())
         return vars.get(mod_var, 0)

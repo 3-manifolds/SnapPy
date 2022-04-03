@@ -26,7 +26,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
 
     hyperbolic, shapes = snappy_manifold.verify_hyperbolicity(
         bits_prec = bits_prec)
-    
+
     if not hyperbolic:
         raise Exception("Could not compute shape intervals for: "
                         "triangulation does not hyperbolic structure or "
@@ -105,7 +105,7 @@ def _to_matrix(m):
     from snappy.SnapPy import matrix
 
     return matrix(m)
-        
+
 def _doctest():
     import doctest
     doctest.testmod()

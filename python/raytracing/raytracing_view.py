@@ -220,7 +220,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 areas = self.ui_parameter_dict['cuspAreas'][1],
                 insphere_scale = self.ui_parameter_dict['insphere_scale'][1],
                 weights = weights)
-        
+
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
@@ -233,7 +233,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 self, size, frag_coord, depth):
 
         RF = self.raytracing_data.RF
-        
+
         # Depth value emitted by shader is tanh(distance from camera)
 
         # Limit the maximal depth for orbiting to avoid numeric issues
@@ -312,7 +312,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
     def enable_geodesic(self, index):
         self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
-        
+
     def _update_geodesic_data(self):
         self.geodesics.set_enables_and_radii_and_update(
             self.ui_parameter_dict['geodesicTubeEnables'][1],
@@ -331,7 +331,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             return False
 
         self.geodesics_disabled_edges = True
-        
+
         self.ui_uniform_dict['desaturate_edges'][1] = True
         self.ui_parameter_dict['edgeTubeRadius'][1] = 0.0
         self.ui_parameter_dict['insphere_scale'][1] = 0.0
@@ -339,7 +339,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self._initialize_raytracing_data()
 
         return True
-        
+
     def _update_shader(self):
         if self.geodesics:
             geodesic_compile_time_constants = (
@@ -348,7 +348,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             geodesic_compile_time_constants = {
                 b'##num_geodesic_segments##' : 0
             }
-        
+
         compile_time_constants = _merge_dicts(
             self.raytracing_data.get_compile_time_constants(),
             geodesic_compile_time_constants)

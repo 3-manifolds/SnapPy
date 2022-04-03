@@ -13,7 +13,7 @@ _move_to_three = {
     t3m.F0 : t3m.Perm4((3,0,1,2)),
     t3m.F1 : t3m.Perm4((0,3,1,2)),
     t3m.F2 : t3m.Perm4((0,1,3,2)),
-    t3m.F3 : t3m.Perm4((0,1,2,3))    
+    t3m.F3 : t3m.Perm4((0,1,2,3))
 }
 
 _move_from_three = {
@@ -29,7 +29,7 @@ def _compute_adjustment_for_face(face):
     F       = canonical_corner.Subsimplex
     gluing  = tet.Gluing[F]
     other_F = gluing.image(F)
-    
+
     return -2 * _perm_for_q_tet(F, gluing)[0] * (-1) ** t3m.FaceIndex[other_F]
 
 def _compute_adjustment(mcomplex):
@@ -78,7 +78,7 @@ def normalize_by_pi_square_over_two(z):
 
     # Round to integer
     q = (z.real().center() / pi_square_over_two.center()).round()
-    
+
     # Subtract multiple of pi^2/6
     return z - q * pi_square_over_two
 

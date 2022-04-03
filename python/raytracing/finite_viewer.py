@@ -33,7 +33,7 @@ class FiniteViewer(ttk.Frame):
 
         self.notebook.add(self.create_cusp_areas_frame(self),
                           text = 'Cusp areas')
-        
+
         self.notebook.add(self.create_fillings_frame(self),
                           text = 'Fillings')
 
@@ -104,7 +104,7 @@ class FiniteViewer(ttk.Frame):
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
             row += 1
-            
+
         frame.rowconfigure(row, weight = 1)
 
         UniformDictController.create_checkbox(
@@ -133,7 +133,7 @@ class FiniteViewer(ttk.Frame):
         row = 0
 
         self.filling_controllers = []
-        
+
         for i in range(self.widget.manifold.num_cusps()):
             self.filling_controllers.append(
                 UniformDictController.create_horizontal_scale(
@@ -175,7 +175,7 @@ class FiniteViewer(ttk.Frame):
         subframe.columnconfigure(1, weight = 0)
         subframe.columnconfigure(2, weight = 0)
         subframe.columnconfigure(3, weight = 1)
-        
+
         recompute_button = ttk.Button(
             subframe, text = "Recompute hyp. structure",
             command = self.recompute_hyperbolic_structure)
@@ -440,9 +440,9 @@ class FiniteViewer(ttk.Frame):
     def _fillings_from_manifold(self):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]
-                   for d 
+                   for d
                    in self.widget.manifold.cusp_info() ] ]
-    
+
     def pull_fillings_from_manifold(self):
         self.filling_dict['fillings'] = self._fillings_from_manifold()
         self.update_filling_sliders()
@@ -455,7 +455,7 @@ class FiniteViewer(ttk.Frame):
 
         self.widget.recompute_raytracing_data_and_redraw()
         # self.update_volume_label()
-        
+
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
@@ -463,7 +463,7 @@ class FiniteViewer(ttk.Frame):
         self.widget.manifold.init_hyperbolic_structure(
             force_recompute = True)
         self.widget.recompute_raytracing_data_and_redraw()
-        
+
         # Should we reset the view state since it might
         # be corrupted?
         # O13_orthonormalize seems stable enough now that
@@ -495,7 +495,7 @@ _solution_type_text = [
     'flat',
     'degenerate',
     'degenerate',
-    'degenerate']    
+    'degenerate']
 
 def _maximal_cusp_area(mfd):
     # Hack to prevent doctest failure M.browse() where
@@ -550,7 +550,7 @@ class PerfTest:
         self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0
-        
+
         self.widget.report_time_callback = self.report_time
 
         self.widget.after(250, self.redraw)
@@ -561,7 +561,7 @@ class PerfTest:
 
     def report_time(self, t):
         self.total_time += t
-        
+
     def redraw(self):
         self.current_iteration += 1
         if self.current_iteration == self.num_iterations:
@@ -571,11 +571,11 @@ class PerfTest:
 
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
             self.widget.view_state, self.m)
-        
+
         self.widget.redraw_if_initialized()
         self.widget.after(250, self.redraw)
-        
-def run_perf_test(): 
+
+def run_perf_test():
     from snappy import Manifold
 
     gui = FiniteViewer(Manifold("m004(3,2)"))

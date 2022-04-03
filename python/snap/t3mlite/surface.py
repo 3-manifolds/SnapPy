@@ -1,7 +1,7 @@
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
-#   This program is distributed under the terms of the 
+#   This program is distributed under the terms of the
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
@@ -56,7 +56,7 @@ QuadWeights = (Vector((1,0,0)), Vector((0,1,0)), Vector((0,0,1)) )
 
 WeightVector = Vector([1,1,1])
 
-TypeVector = Vector([0,1,2]) 
+TypeVector = Vector([0,1,2])
 
 # Used for converting normal surface into tetrahedron edge-shift data.
 # QuadShift[k] is the shifts induced by quad Qk3 along edges (E03, E13, E23).
@@ -134,7 +134,7 @@ class Surface:
             for corner in edge.Corners:
                 quad = DisjointQuad[corner.Subsimplex]
                 if ( self.Coefficients[corner.Tetrahedron.Index] == 0 or
-                     self.Quadtypes[corner.Tetrahedron.Index] != quad ): 
+                     self.Quadtypes[corner.Tetrahedron.Index] != quad ):
                     is_linked = 0
                     break
             if is_linked:
@@ -249,7 +249,7 @@ class ClosedSurface(Surface):
         x = A.solve(b)
         # Subtract off as many vertex links as possible.
         for vertex in manifold.Vertices:
-            vert_vec = vertex.IncidenceVector 
+            vert_vec = vertex.IncidenceVector
             m = min([x[i] for i, w in enumerate(vert_vec) if w])
             x -= Vector(m*vert_vec)
 
@@ -380,9 +380,9 @@ class ClosedSurface(Surface):
                 out.write("  doesn't bound subcomplex\n")
         else:
             out.write("Almost-normal surface #%d of Euler characteristic %d\n"
-                      % (manifold.AlmostNormalSurfaces.index(self), 
+                      % (manifold.AlmostNormalSurfaces.index(self),
                          self.EulerCharacteristic))
-        out.write('\n') 
+        out.write('\n')
         for i in range(self.Size):
             quad_weight = self.Coefficients[i]
             if quad_weight == -1:
@@ -393,15 +393,15 @@ class ClosedSurface(Surface):
                 weight = "No quads"
             out.write("  In tetrahedron %s :  %s\n" %
                       (manifold.Tetrahedra[i], weight))
-            out.write("\tTri weights V0: %d V1: %d V2 : %d V3 : %d\n" 
-                      % (self.get_weight(i, V0), 
-                         self.get_weight(i, V1), 
+            out.write("\tTri weights V0: %d V1: %d V2 : %d V3 : %d\n"
+                      % (self.get_weight(i, V0),
+                         self.get_weight(i, V1),
                          self.get_weight(i, V2),
                          self.get_weight(i, V3)))
-            out.write('\n') 
+            out.write('\n')
 
         for i in range(len(self.EdgeWeights)):
-            out.write("  Edge %s has weight %d\n" 
+            out.write("  Edge %s has weight %d\n"
                       % (manifold.Edges[i], self.EdgeWeights[i]))
 
     def casson_split(self, manifold):
@@ -506,15 +506,15 @@ class ClosedSurfaceInCusped(ClosedSurface):
 
             out.write("  In tet %s :  %s\n" %
                       (manifold.Tetrahedra[i], weight))
-            out.write("\tTri weights V0: %d V1: %d V2 : %d V3 : %d\n" 
-                      % (self.get_weight(i, V0), 
-                         self.get_weight(i, V1), 
+            out.write("\tTri weights V0: %d V1: %d V2 : %d V3 : %d\n"
+                      % (self.get_weight(i, V0),
+                         self.get_weight(i, V1),
                          self.get_weight(i, V2),
                          self.get_weight(i, V3)))
-            out.write('\n') 
+            out.write('\n')
 
         for i in range(len(self.EdgeWeights)):
-            out.write("  Edge %s has weight %d\n" 
+            out.write("  Edge %s has weight %d\n"
                       % (manifold.Edges[i], self.EdgeWeights[i]))
 
 

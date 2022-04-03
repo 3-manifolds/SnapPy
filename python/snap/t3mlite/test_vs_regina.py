@@ -1,4 +1,4 @@
-from __future__ import print_function 
+from __future__ import print_function
 import snappy, regina
 import snappy.snap.t3mlite as t3m
 import snappy.snap.t3mlite.spun as spun

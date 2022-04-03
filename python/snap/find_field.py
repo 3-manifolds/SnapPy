@@ -25,7 +25,7 @@ def acceptable_error(poly, z, a, portion_bad):
     2^-(portion_bad*z.prec())
     """
     return error(poly, z, a) <= floor(portion_bad*z.prec())
-    
+
 def best_algdep_factor(z, degree):
     if hasattr(z, 'algebraic_dependency'): # Sage >= 8.0
         return z.algebraic_dependency(degree)
@@ -61,7 +61,7 @@ class ApproximateAlgebraicNumber(object):
             defining_function = lambda prec: ComplexField(prec)(x)
         self.f = defining_function
         self._min_poly = None
-        
+
     def __repr__(self):
         return  '<ApproxAN: %s>' % CDF(self(100))
 
@@ -118,7 +118,7 @@ class ApproximateAlgebraicNumber(object):
 
     def can_express(self, a, prec=None):
         return self.express(a, prec) is not None
-            
+
     def number_field(self):
         p = self._min_poly
         if p is None:
@@ -209,7 +209,7 @@ class ListOfApproximateAlgebraicNumbers(object):
     @cached_method
     def __call__(self, prec):
         return self.f(prec)
-                 
+
     @cached_method
     def __getitem__(self, index):
         def f(n):
@@ -313,11 +313,11 @@ class ListOfApproximateAlgebraicNumbers(object):
                                 return None
                             found, z = True, w
                             break
-                                
+
                 if not found:
                     message("Bailing: Couldn't find primitive element for larger field")
                     return None
-                    
+
         field = z.number_field()
         exact_elts = [field(exact_elt) for exact_elt in exact_elts]
         return field, z, exact_elts
@@ -325,7 +325,7 @@ class ListOfApproximateAlgebraicNumbers(object):
     def find_field(self, prec, degree, optimize=False, verbosity = False):
 
         # Adding verbosity for now to debug potential problems
-        
+
         # We always need the unoptimized generator
         if self._field[False] is None:
             self._field[False] = self._find_field_uncached(prec, degree,
@@ -362,10 +362,10 @@ class ListOfApproximateAlgebraicNumbers(object):
             raise ValueError("Not right number of values to form 2x2 matrices")
         K, z, ans = self._field[optimize]
         return z, [matrix(K, 2, 2, ans[n:n+4]) for n in range(0, len(ans), 4)]
-        
-
-    
 
 
-    
-        
+
+
+
+
+

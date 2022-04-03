@@ -34,7 +34,7 @@ def cusp_translations_for_manifold(manifold, verified, areas = None,
         # Remark: If verified, RF(area) will result in intervals of
         # length 0.
         c.normalize_cusps([RF(area) for area in areas])
-        
+
         if check_std_form:
             # If so desired, make neighborhoods a bit smaller if necessary
             # so that they are "proven" to be in standard form.
@@ -61,7 +61,7 @@ def cusp_translations_for_neighborhood(neighborhood,
     # Use the proto-canonical triangulation corresponding to the given
     # neighborhood and use Proposition 1 from cusp_neighborhoods.c to compute
     # the cusp areas
-    
+
     manifold = neighborhood.manifold()
     areas = [ neighborhood.volume(i) * 2 for i in range(manifold.num_cusps()) ]
 

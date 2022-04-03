@@ -10,8 +10,8 @@ def contains_ideal_components(text):
     return "IDEAL=COMPONENTS=BEGIN" in text
 
 def decomposition_from_components(text):
-    
-    
+
+
     py_eval = processFileBase.get_py_eval(text)
     manifold_thunk = processFileBase.get_manifold_thunk(text)
 
@@ -80,7 +80,7 @@ def process_component(py_eval, manifold_thunk, variables,
             witnesses = process_witnesses(
                 py_eval, manifold_thunk, witnesses_sections[0], dimension,
                 variables)
-        
+
         # process Groebner Basis ???, add to NonZeroDimensionalComponent ???
 
         return NonZeroDimensionalComponent(
@@ -90,7 +90,7 @@ def process_component(py_eval, manifold_thunk, variables,
 
 def process_witnesses(py_eval, manifold_thunk, witnesses_section, for_dimension,
                       variables):
-    
+
     return [ process_solutions_provider(
             py_eval, manifold_thunk, witness_section, for_dimension, variables)
              for witness_section
@@ -121,7 +121,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
 
         body = processFileBase.remove_optional_outer_square_brackets(
             utilities.join_long_lines_deleting_whitespace(body))
-        
+
         polys = [ Polynomial.parse_string(p)
                   for p in body.replace('\n', ' ').split(',') ]
 
@@ -129,7 +129,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
             raise Exception("No term order given for Groebner basis")
 
         term_order = params["TERM=ORDER"].strip().lower()
-        
+
         return PtolemyVarietyPrimeIdealGroebnerBasis(
             polys = polys,
             term_order = term_order,
@@ -151,7 +151,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
                 is_numerical = False,
                 py_eval_section = py_eval,
                 manifold_thunk = manifold_thunk))
-    
+
     raise Exception("No parsable solution type given: %s..." % text[:100])
 
 class SolutionContainer():

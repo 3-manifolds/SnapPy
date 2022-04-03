@@ -21,10 +21,10 @@ class PtolemyObstructionClass(object):
     PtolemyObstructionClass(s_0_0 - 1, s_1_0 - 1, s_2_0 - 1, s_3_0 - 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
     PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
     """
-    
+
     def __init__(self, manifold, index, H2_element, explain_basis,
                  identified_face_classes):
-        
+
         self._manifold = manifold
         self._index = index
         self._H2_element = H2_element
@@ -37,7 +37,7 @@ class PtolemyObstructionClass(object):
         self.identified_variables = (
             [ H2_element_entry_to_identified_variable(entry, variable)
               for entry, variable in zip(H2_element, explain_basis)]
-            + 
+            +
             [ (+1, 0, var1, var2)
               for sign, power, var1, var2 in self._identified_face_classes])
 

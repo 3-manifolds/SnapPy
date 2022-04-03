@@ -133,7 +133,7 @@ def get_generalized_ptolemy_obstruction_classes(manifold, N):
                                                N = N, manifold = manifold)
             for index, H2_element
             in enumerate(filtered_H2_elements)]
-    
+
 
 def get_obstruction_classes(manifold, N):
 
@@ -167,7 +167,7 @@ class PtolemyVarietyList(list):
         return MethodMappingList(
             [ p.compute_solutions(*args, **kwargs)
               for p in self ])
-        
+
 
 def get_ptolemy_variety(manifold, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
@@ -322,12 +322,12 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
         ...
 
     """
-    
+
     if hasattr(manifold, 'cusp_info'):
         if False in manifold.cusp_info('is_complete'):
             raise Exception("Dehn fillings not supported by Ptolemy variety")
-    
-    # Typing M.ptolemy_variety(N = 3, 1) into sage makes 
+
+    # Typing M.ptolemy_variety(N = 3, 1) into sage makes
     # N have type sage.rings.integer.Integer
     N = int(N)
 
@@ -360,7 +360,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
             manifold, N)
         list_obstruction_classes = True
     else:
-        # New mode: 
+        # New mode:
         if N == 2:
             # N = 2 uses Z/2-obstruction class (so that we can compute
             # complex volume)
@@ -374,7 +374,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
         # List all obstruction classes
         if obstruction_class == 'all':
             list_obstruction_classes = True
-            
+
     # Give a list of all obstruction classes
     if list_obstruction_classes:
         return PtolemyVarietyList([
@@ -383,7 +383,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
                 simplify = simplify,
                 eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
             for obstruction_class in obstruction_classes])
-    
+
     # Otherwise try to interpret obstruction_class as an index
     try:
         obstruction_class = obstruction_classes[int(obstruction_class)]

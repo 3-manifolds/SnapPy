@@ -94,7 +94,7 @@ def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_fact
     """
     if shrink_factor < 0 or shrink_factor > 1:
         raise ValueError('shrink_factor must be between 0 and 1.')
-    
+
     if model == 'klein' and cutout:
         output = klein_cutout_stl(face_dicts, shrink_factor=shrink_factor)
     elif model == 'klein' and not cutout:
@@ -105,7 +105,7 @@ def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_fact
         output = poincare_stl(face_dicts, num_subdivisions=num_subdivisions, cutoff_radius=cutoff_radius)
     else:
         raise ValueError('Unknown model. Known models: \'klein\' and \'poincare\'.')
-    
+
     yield 'solid\n'
     for triangle in output:
         yield facet_stl(triangle)

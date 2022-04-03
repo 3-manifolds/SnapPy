@@ -33,7 +33,7 @@ class PtolemyGeneralizedObstructionClass(object):
        ...
     AssertionError: PtolemyGeneralizedObstructionClass not in kernel of d2
     """
-    
+
     def __init__(self, H2_class, index = None, N = None, manifold = None):
 
         self.H2_class = H2_class
@@ -67,7 +67,7 @@ class PtolemyGeneralizedObstructionClass(object):
                 N)), ("PtolemyGeneralizedObstructionClass not in kernel of "
                       "d2")
 
-    def _is_non_trivial(self, N):        
+    def _is_non_trivial(self, N):
         for h in self.H2_class:
             if h % N != 0:
                 return True

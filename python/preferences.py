@@ -23,10 +23,10 @@ class Preferences:
         self.cache_prefs()
         self.find_prefs()
         self.read_prefs()
-        
+
     def __getitem__(self, x):
         return self.prefs_dict[x]
-    
+
     def __setitem__(self, x, y):
         self.prefs_dict[x] = y
 
@@ -46,7 +46,7 @@ class Preferences:
     def current_font_tuple(self):
         font = self.current_font_dict()
         style = '%s %s'%(font['weight'], font['slant'])
-        return (font['family'], font['size'], style) 
+        return (font['family'], font['size'], style)
 
     def find_prefs(self):
         if sys.platform == 'darwin':
@@ -92,7 +92,7 @@ class Preferences:
         self.apply_prefs()
 
     def changed(self):
-        return [key for key in self.cache.keys() if 
+        return [key for key in self.cache.keys() if
                 self.cache[key] != self.prefs_dict[key]]
 
     # Override this in a subclass.
@@ -131,7 +131,7 @@ class PreferenceDialog(Dialog):
         cutoff = self.cutoff.get()
         try:
             float(cutoff)
-            self.prefs['cusp_cutoff'] = cutoff 
+            self.prefs['cusp_cutoff'] = cutoff
         except ValueError:
             showerror('Invalid input',
                       'Please enter a number for the cutoff.')
@@ -187,7 +187,7 @@ class PreferenceDialog(Dialog):
         font_list.config(yscrollcommand=font_scroller.set)
         font_scroller.grid(row=0, column=1, sticky=Tk_.N + Tk_.S, pady=(20,30))
         list_frame.grid(rowspan=6, column=0)
-        
+
         label = ttk.Label(self.font_frame, text='Size: ')
         label.grid(row=0, column=1, sticky=Tk_.E, pady=(20,0))
         self.font_sizer = sizer = Spinbox(font_frame, from_=10, to_=36, width=4,
@@ -246,13 +246,13 @@ class PreferenceDialog(Dialog):
             self.font_sizer.insert(0, str(size))
         self.font_list.selection_set(self.current_family)
         style = '%s %s'%(self.font_weight.get(), self.font_slant.get())
-        return (family, size, style.strip()) 
+        return (family, size, style.strip())
 
     def set_font_sample(self, event=None):
         new_font = self.get_font()
         self.prefs['font'] = new_font
         self.sample.tag_config('all', justify=Tk_.CENTER,
-                               font=new_font) 
+                               font=new_font)
 
     def build_shell_pane(self, master):
         groupBG = self.style.groupBG

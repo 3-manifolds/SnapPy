@@ -26,11 +26,11 @@ class MatrixBase(object):
 
     def __len__(self):
         return 2
-    
+
     def _pari_(self):
         # force left multiplication by Numbers to use rmul
         raise PariError
-    
+
     def base_ring(self):
         """If a base ring was set when initializing the matrix, then this
         method will return that ring.  Otherwise, the base ring is a
@@ -50,7 +50,7 @@ class MatrixBase(object):
     def list(self):
         #Override this
         return []
-        
+
 class Vector2(MatrixBase):
     """A 2-dimensional vector whose entries are snappy Numbers."""
     def __init__(self, *args):
@@ -61,11 +61,11 @@ class Vector2(MatrixBase):
             self._base_ring = None
             number = Number
         if len(args) == 1:
-            args = args[0]    
+            args = args[0]
         if len(args) == 2:
             self.x, self.y = [number(t) for t in args]
         else:
-            raise ValueError('Invalid initialization for a Vector2.') 
+            raise ValueError('Invalid initialization for a Vector2.')
 
     def __getitem__(self, index):
         if index == 0:
@@ -74,7 +74,7 @@ class Vector2(MatrixBase):
             return self.y
         else:
             raise IndexError('Invalid Vector2 index.')
-        
+
     def __repr__(self):
         entries = [str(e) for e in self.list()]
         size = max(map(len, entries))
@@ -87,7 +87,7 @@ class Vector2(MatrixBase):
     def __sub__(self, other):
         return Vector2(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, other):        
+    def __mul__(self, other):
         if isinstance(other, Matrix2x2):
             return Vector2(self.x * other.a + self.y * other.c,
                            self.x * other.b + self.y * other.d)
@@ -99,7 +99,7 @@ class Vector2(MatrixBase):
             except:
                 return NotImplemented
 
-    def __rmul__(self, other):        
+    def __rmul__(self, other):
         return Vector2(self.x * other, self.y * other)
 
     def __div__(self, other):
@@ -107,7 +107,7 @@ class Vector2(MatrixBase):
 
     def __truediv__(self, other):
         return Vector2(self.x / other, self.y / other)
-    
+
     def __neg__(self):
         return Vector2(-self.x, -self.y)
 
@@ -116,7 +116,7 @@ class Vector2(MatrixBase):
 
     def sage(self):
         return sage_vector([self.x.sage(), self.y.sage()])
-    
+
     def norm(self, p=2):
         if p == 1:
             return self.x.abs() + self.y.abs()
@@ -125,7 +125,7 @@ class Vector2(MatrixBase):
             return ((self.x*self.x).abs() + (self.y*self.y).abs()).sqrt()
         elif p == Infinity:
             return max(self.x.abs(), self.y.abs())
-        
+
 class Matrix2x2(MatrixBase):
     """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
@@ -136,11 +136,11 @@ class Matrix2x2(MatrixBase):
             self._base_ring = None
             number = Number
         if len(args) == 1:
-            args = tuple(chain(*args[0]))    
+            args = tuple(chain(*args[0]))
         if len(args) == 4:
             self.a, self.b, self.c, self.d = [number(x) for x in args]
         else:
-            raise ValueError('Invalid initialization for a Matrix2x2.') 
+            raise ValueError('Invalid initialization for a Matrix2x2.')
 
     def __repr__(self):
         entries = [str(e) for e in self.list()]
@@ -161,7 +161,7 @@ class Matrix2x2(MatrixBase):
             elif i == 1:
                 return self.c if j == 0 else self.d
         raise IndexError('Invalid 2x2 matrix index.')
-            
+
     def __add__(self, other):
         return Matrix2x2(self.a + other.a,
                          self.b + other.b,
@@ -210,7 +210,7 @@ class Matrix2x2(MatrixBase):
 
     def __neg__(self):
         return Matrix2x2(-self.a, -self.b, -self.c, -self.d)
-    
+
     def __invert__(self):
         try:
             D = 1/self.det()
@@ -225,7 +225,7 @@ class Matrix2x2(MatrixBase):
         return self.a * self.d - self.b * self.c
 
     det = determinant
-    
+
     def trace(self):
         return self.a + self.d
 
@@ -247,7 +247,7 @@ class Matrix2x2(MatrixBase):
             return max(self.a.abs() + self.b.abs(), self.c.abs() + self.d.abs())
         elif p == 2:
             return max([x.abs() for x in self.eigenvalues()])
-        
+
     def list(self):
         return [self.a, self.b, self.c, self.d]
 
@@ -257,7 +257,7 @@ class Matrix2x2(MatrixBase):
 
     def sage(self):
         return sage_matrix(2, 2, [x.sage() for x in self.list()])
-    
+
 def indexset(n):
     """The orders of the non-zero bits in the binary expansion of n."""
     i = 0

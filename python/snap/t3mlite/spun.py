@@ -40,7 +40,7 @@ def normalize_slope(slope):
     """
     a, b = weak_normalize_slope(slope)
     if a == b == 0:
-        return (0, 0) 
+        return (0, 0)
     if a < 0:
         a, b = -a, -b
     elif a == 0 and b < 0:
@@ -95,7 +95,7 @@ class SpunSurface:
     `[DG] <http://arxiv.org/abs/1102.4588>`_.  The quad types
     are numbered 0, 1, 2; the "None" quad type means a
     tetrahedron contains no quads at all.  
-    """ 
+    """
     def __init__(self, manifold, quad_vector=None, quad_types=None, index=None):
         self._manifold = manifold
         self._index=index
@@ -194,14 +194,14 @@ class SpunNormalSurfaceEquations:
 
 
 # The following methods get monkey patched into the manifold
-# classes.  
+# classes.
 
 def _normal_surface_equations(self):
     name = '_normal_surface_equations'
     if name not in self._cache:
         eqns = SpunNormalSurfaceEquations(self)
         self._cache[name] = SpunNormalSurfaceEquations(self)
-    return self._cache[name] 
+    return self._cache[name]
 
 def normal_surfaces(self, algorithm='FXrays'):
     """

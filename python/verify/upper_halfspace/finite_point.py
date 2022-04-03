@@ -62,7 +62,7 @@ class FinitePoint(object):
             FinitePoint(1.4500000000000000? + 0.50000000000000000?*I, 0.75000000000000000?)
 
         """
-        
+
         return self._translate(m, normalize_matrix = False)
 
     def translate_PGL(self, m):
@@ -96,7 +96,7 @@ class FinitePoint(object):
         #    (a*z + b) * (c*z + d) + a * c * t  + t * j
         #  ----------------------------------------------
         #                                 2
-        #            | c * (z + t*j) + d | 
+        #            | c * (z + t*j) + d |
 
         if isinstance(m, ExtendedMatrix):
             mat = m.matrix
@@ -110,7 +110,7 @@ class FinitePoint(object):
 
         if normalize_matrix:
             mat = mat / sqrt(mat.det())
-            
+
         # a * z + b
         az_b  = mat[0,0] * z + mat[0,1]
         # c * z + d
@@ -121,12 +121,12 @@ class FinitePoint(object):
         # | c * z + d + c * t * j | ^2 =
         # | c * z + d| ^ 2 + |c * t|^2
         denom = _abs_sqr(cz_d) + _abs_sqr(mat[1,0] * self.t)
-        
+
         num   = ( az_b * cz_d.conjugate() +
                   mat[0,0] * mat[1,0].conjugate() * self.t ** 2)
 
         return FinitePoint(num / denom, self.t / denom)
-        
+
     def cosh_dist(self, other):
 
         """
@@ -142,7 +142,7 @@ class FinitePoint(object):
         """
 
         # The distance between two points in the upper half plane model is
-        # given by 
+        # given by
         #                                                  2          2
         #                                           (x2-x1)  + (y2-y1)
         #   dist( (x1,y1), (x2, y2) = arcosh(  1 + ---------------------  )
@@ -173,7 +173,7 @@ class FinitePoint(object):
         if r < 1.0:
             return RIF(1.0)
         return r
-                 
+
     def dist(self, other):
         """
         Returns the distance of this finite point to another finite point::
@@ -189,7 +189,7 @@ class FinitePoint(object):
         # Note: SageMath 8.1 doesn't compute arccosh correctly for a
         # complex interval, but at least it does so for a real interval.
         return self.cosh_dist(other).arccosh()
-    
+
     def __repr__(self):
         return 'FinitePoint(%r, %r)' % (self.z, self.t)
 
@@ -218,7 +218,7 @@ class _FinitePointTester(object):
         return matrix(
             [[CIF(RIF(1.3),RIF(-0.4)), CIF(RIF(5.6),RIF(2.3))],
              [CIF(RIF(-0.3), RIF(0.1)), CIF(1)]])
-    
+
     def extended_matrix1(self, isOrientationReversing):
         return ExtendedMatrix(self.matrix1(), isOrientationReversing)
 
@@ -227,7 +227,7 @@ class _FinitePointTester(object):
         return matrix(
             [[CIF(RIF(0.3),RIF(-1.4)), CIF(RIF(3.6),RIF(6.3))],
              [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]])
-    
+
     def extended_matrix2(self, isOrientationReversing):
         return ExtendedMatrix(self.matrix2(), isOrientationReversing)
 
@@ -249,7 +249,7 @@ class _FinitePointTester(object):
             raise Exception("Expected distance to be RIF")
         if not isinstance(d_after, RealIntervalFieldElement):
             raise Exception("Expected distance to be RIF")
-        
+
         if not abs(d_before - d_after) < RIF(1e-12):
             raise Exception("Distance changed %r %r" % (d_before, d_after))
 

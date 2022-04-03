@@ -157,7 +157,7 @@ class NumericOutputChecker(doctest.OutputChecker):
     ('OK', None)
 
     """
-    
+
     def compare_numeric(self, want, got, optionflags):
         """
         Compares want and got by scanning for numbers. The numbers are
@@ -188,7 +188,7 @@ class NumericOutputChecker(doctest.OutputChecker):
             if not doctest.OutputChecker.check_output(
                     self, split_want[i], split_got[i], flags):
                 return ('TEXT', (split_want[i], split_got[i], i))
-        
+
         epsilon = decimal.Decimal(0.1) ** get_precision(optionflags)
 
         rows = []
@@ -204,7 +204,7 @@ class NumericOutputChecker(doctest.OutputChecker):
             is_interval_got  = bool(split_got [i + 2])
             if is_interval_want != is_interval_got:
                 return ('TYPE', (is_interval_want, number_got))
-            
+
             # Number (or crushed interval) as decimal.Decimal
             decimal_want = to_decimal(split_want[i : i + number_group_count])
             decimal_got  = to_decimal(split_got [i : i + number_group_count])
@@ -266,7 +266,7 @@ class NumericOutputChecker(doctest.OutputChecker):
         """
 
         status, data = self.compare_numeric(want, got, optionflags)
-        
+
         return self.format_compare_numeric_result(status, data)
 
     def check_output(self, want, got, optionflags):
@@ -301,7 +301,7 @@ class NumericOutputChecker(doctest.OutputChecker):
             flags = optionflags | NUMERIC_DEFAULT_OPTIONFLAGS
             base_result = doctest.OutputChecker.output_difference(
                 self, example, got, flags)
-            
+
             # Our compare result
             compare_result = self.formatted_compare_numeric(
                 example.want, got, optionflags)
@@ -313,7 +313,7 @@ def run_doctests(verbose = False):
     failed, attempted = 0, 0
 
     finder = doctest.DocTestFinder()
-    
+
     # Use the default docTest.OutputChecker to test our NumericOutputChecker
     runner = doctest.DocTestRunner(verbose = verbose)
     for test in finder.find(NumericOutputChecker):

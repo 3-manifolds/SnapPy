@@ -112,7 +112,7 @@ class IntervalTree(object):
 
         # Recurse down to the right
         IntervalTree._fill_recursive(node.children[RIGHT], interval, result)
-        
+
     def insert(self, interval, value):
         """
         Inserts (interval, value) where interval is an element in
@@ -132,7 +132,7 @@ class IntervalTree(object):
         else:
             # If empty tree, node becomes root
             self._root = node
-        
+
         # Root is always black
         self._root.isRed = False
 
@@ -174,13 +174,13 @@ class IntervalTree(object):
 
         # Step 3
         node.update_max_value()
-        
+
         return violation, node
 
     @staticmethod
     def _insert_and_fix(node, leaf):
         # Step 1: find whether to follow left or right child
-        
+
         branch = LEFT if leaf.interval.lower() <= node.interval.lower() else RIGHT
 
         # If we recursed down and have no more child, ...
@@ -194,7 +194,7 @@ class IntervalTree(object):
         # Otherwise, recurse further down the tree
         violation, node.children[branch] = IntervalTree._insert_fix_and_update_max(
             node.children[branch], leaf)
-        
+
         # We are unwinding the stack:
 
         # Check whether we have a violation. Skip step 2 if not.
@@ -214,7 +214,7 @@ class IntervalTree(object):
 
         # This node is black. Get all our red children to analyze the different
         # cases.
-        redChildren = [ 
+        redChildren = [
             (branch, child) for branch, child in enumerate(node.children)
             if IntervalTree._if_red(child) ]
 
@@ -305,7 +305,7 @@ class _IntervalTreeTester(IntervalTree):
             raise Exception("Red root")
         _IntervalTreeTester._recursively_check_consistency(
             self._root, -Infinity, +Infinity)
-        
+
     @staticmethod
     def _recursively_check_consistency(node, l, r):
         from sage.all import Infinity
@@ -325,7 +325,7 @@ class _IntervalTreeTester(IntervalTree):
         right_max, right_depth = (
             _IntervalTreeTester._recursively_check_consistency(
                 node.children[RIGHT], node.interval.lower(), r))
-            
+
         if not max(left_max, right_max, node.interval.upper()) == node.max_value:
             raise Exception("Maximum incorrect")
 
@@ -338,7 +338,7 @@ class _IntervalTreeTester(IntervalTree):
                     raise Exception("Red node has red child")
         else:
             left_depth += 1
-        
+
         return node.max_value, left_depth
 
     def print_tree(self):
@@ -353,7 +353,7 @@ class _IntervalTreeTester(IntervalTree):
             depth += 1
 
         _IntervalTreeTester.print_tree_recursively(node.children[0], depth)
-            
+
         align = 6 * depth
         if node.isRed:
             align += 3
@@ -367,11 +367,11 @@ class _IntervalTreeTester(IntervalTree):
         print(node.interval.lower())
 
         _IntervalTreeTester.print_tree_recursively(node.children[1], depth)
-            
+
     @staticmethod
     def run_test():
         from sage.all import RIF, sin, Infinity
-        
+
         intervals = [
             RIF(sin(1.2 * i), sin(1.2 * i) + sin(1.43 * i) ** 2)
             for i in range(200) ]

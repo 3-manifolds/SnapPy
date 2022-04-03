@@ -26,7 +26,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
 
         # Term order "lex" for lexicographic
         self.term_order = term_order
-        
+
         self.dimension = dimension
         self.is_prime = is_prime
         self.free_variables = free_variables
@@ -45,7 +45,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         # Split the polynomials into the ones requiring extensions and
         # the assignments
         self._extensions_and_assignments_cache = None
-        
+
         # Intermediate computations for exact solution
         self._number_field_and_ext_assignments_cache = None
 
@@ -53,7 +53,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         is_zero_dim = (self.dimension == 0)
         is_prime = self.is_prime
         is_lex = (self.term_order is None) or (self.term_order == "lex")
-        
+
         return is_zero_dim and is_prime and is_lex
 
     def _extensions_and_assignments(self):
@@ -98,10 +98,10 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
 
         return PtolemyCoordinates(
             assignments,
-            is_numerical = False, 
+            is_numerical = False,
             py_eval_section = self.py_eval,
             manifold_thunk = self.manifold_thunk)
-        
+
     def _numerical_solutions(self):
         if not self._is_zero_dim_prime_and_lex():
             raise Exception("Can find solutions only for Groebner basis in "
@@ -119,7 +119,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                 is_numerical = True,
                 py_eval_section = self.py_eval,
                 manifold_thunk = self.manifold_thunk)
-            
+
         return ZeroDimensionalComponent(
             [ process_solution(sol) for sol in sols ])
 

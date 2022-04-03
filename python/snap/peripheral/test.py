@@ -31,5 +31,5 @@ if __name__ == '__main__':
         attempted += result.attempted
     print('\nAll doctests:\n    %s failures out of %s tests.' % (failed, attempted))
 
-    
-        
+
+

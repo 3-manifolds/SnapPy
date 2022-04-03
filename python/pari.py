@@ -47,11 +47,11 @@ if _within_sage:
             prec_words_to_bits,
             prec_bits_to_dec,
             prec_dec_to_bits)
-        
+
     from sage.all import PariError
     shut_up  = lambda : None
-    speak_up = lambda : None   
-    
+    speak_up = lambda : None
+
 else: # Plain Python, use CyPari
     import cypari
     cypari_version = parse_version(cypari.__version__)

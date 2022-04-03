@@ -2,7 +2,7 @@ from .simplex import *
 from .linalg import Matrix
 
 def boundary_three(manifold):
-    F, T = len(manifold.Faces), len(manifold.Tetrahedra) 
+    F, T = len(manifold.Faces), len(manifold.Tetrahedra)
     ans = Matrix(F, T)
     for F in manifold.Faces:
         t0, t1 = [C.Tetrahedron.Index for C in F.Corners]
@@ -24,7 +24,7 @@ def boundary_two(manifold):
             a, b = vertices[i], vertices[(i + 1)%3]
             e = tet.Class[a | b]
             ans[e.index(), F.Index] += e.orientation_with_respect_to(tet, a, b)
-    return ans 
+    return ans
 
 def boundary_one(manifold):
     V, E = len(manifold.Vertices), len(manifold.Edges)
@@ -45,5 +45,5 @@ def boundary_maps(manifold):
     True
     """
     B1, B2, B3 = boundary_one(manifold), boundary_two(manifold), boundary_three(manifold)
-    assert B1*B2 == 0 and B2*B3 == 0 
+    assert B1*B2 == 0 and B2*B3 == 0
     return B1, B2, B3

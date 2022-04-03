@@ -26,7 +26,7 @@ class RaytracingData(McomplexEngine):
             [ tet.Gluing[F][f]
               for tet in self.mcomplex.Tetrahedra
               for f, F in enumerate(t3m.TwoSubsimplices) ])
-        
+
         d['TetrahedraBasics.SO13tsfms'] = (
             'mat4[]',
             [ tet.O13_matrices[F]
@@ -70,7 +70,7 @@ class RaytracingData(McomplexEngine):
               for F in t3m.TwoSubsimplices ])
 
         return d
-    
+
     def get_compile_time_constants(self):
         d = {}
         d[b'##num_tets##'] = len(self.mcomplex.Tetrahedra)
@@ -80,7 +80,7 @@ class RaytracingData(McomplexEngine):
 
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0], 
+                          m = matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
@@ -105,7 +105,7 @@ class RaytracingData(McomplexEngine):
                 break
             if amount < 0.0000001:
                 break
-            
+
             boost = O13_orthonormalize(tet.O13_matrices[F] * boost)
             tet_num = tet.Neighbor[F].Index
             entry_F = tet.Gluing[F].image(F)

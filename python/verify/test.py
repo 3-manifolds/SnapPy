@@ -8,7 +8,7 @@ def check_certified_intervals():
               'm129(2,3)', 'm129(2,3)(3,4)']:
         M = Manifold(n)
         high_prec = M.tetrahedra_shapes('rect', bits_prec = 1000)
-        
+
         intervals = M.tetrahedra_shapes('rect', bits_prec = 100,
                                         intervals = True)
 

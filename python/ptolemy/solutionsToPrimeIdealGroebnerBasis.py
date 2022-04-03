@@ -45,7 +45,7 @@ from ..pari import pari
 # So assignments will be { 'a': t^3 - 1, 'b': 2}.
 #
 # extensions will be empty if the solutions are in Q.
-    
+
 # Step 2: Process the extensions
 #    number_field, ext_assignments = process_extensions_to_pari(extensions)
 #
@@ -57,7 +57,7 @@ from ..pari import pari
 
 # Step 3: Subsituiting
 #    assignments = update_assignments_and_merge(assignments, ext_assignments)
-    
+
 # The other variables are given as polynomials in the variables from
 # the field extension tower, do the substituition to convert them
 # into polynomials in x
@@ -154,7 +154,7 @@ def update_assignments_and_merge(assignments, d):
         max_degree = max([poly.degree(var) for poly in assignments.values()])
 
         old_keys = list(monomial_to_value.keys())
-        
+
         v = d[var]
         power_of_v = pari(1)
 
@@ -183,7 +183,7 @@ def update_assignments_and_merge(assignments, d):
     # Merge all the assignments of variables
     new_assignments.update(d)
     new_assignments['1'] = pari(1)
-    
+
     return new_assignments
 
 def _process_extensions(extensions):
@@ -203,7 +203,7 @@ def _process_extensions(extensions):
     # Just rename the variable of the polynomial by x
     ext_assignments = { var: Polynomial.from_variable_name('x') }
     number_field = poly.substitute(ext_assignments)
-    
+
     # Process the other extensions
     # number_field is the polynomial in x defining the number field
     # obtained so far in the tower
@@ -232,7 +232,7 @@ def _process_extensions(extensions):
         ext_assignments[var] = (
               Polynomial.from_variable_name('x')
             - Polynomial.constant_polynomial(k) * old_x_in_new_x)
-    
+
     return number_field, ext_assignments
 
 

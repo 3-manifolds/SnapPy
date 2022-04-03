@@ -21,9 +21,9 @@ def parse_decomposition(text):
         return processComponents.decomposition_from_components(text)
 
     raise Exception("Solution file format not recognized")
-    
+
 def parse_decomposition_from_file(filename):
-    
+
     return parse_decomposition(open(filename, 'r').read())
 
 def parse_solutions(text, numerical = False):
@@ -37,9 +37,9 @@ def parse_solutions(text, numerical = False):
 
     return parse_decomposition(text).solutions(numerical)
 
-    
+
 def parse_solutions_from_file(filename, numerical = False):
-    
+
     """
     As parse_solutions, but takes a filename instead.
     """

@@ -16,7 +16,7 @@ def homology_basis_representatives_with_orders(d1, d2, N):
     if it is finite otherwise 0.
     """
 
-    # two consecutive maps in a chain complex should give zero    
+    # two consecutive maps in a chain complex should give zero
     assert matrix.is_matrix_zero(
         matrix.matrix_mult(d1, d2))
 
@@ -31,7 +31,7 @@ def homology_basis_representatives_with_orders(d1, d2, N):
 
     # Perform consistency checks
     matrix.test_simultaneous_smith_normal_form(
-        d1, d2, 
+        d1, d2,
         basechange0, basechange1, basechange2,
         transformed_d1, transformed_d2)
 
@@ -67,7 +67,7 @@ def homology_basis_representatives_with_orders(d1, d2, N):
             # If gcd(e, N) % N is 0, the kernel is Z/N. If 1, the kernel is 0.
             # Otherwise, N / (gcd(e, N) % N) is generating the kernel and the
             # kernel has size gcd(e, N) % N).
-            
+
             # Example: Z/6 -> Z/6, x |-> 5 * x has full image Z/6 because
             # gcd(5, 6) = 1. The kernel is 0.
 
@@ -117,7 +117,7 @@ def homology_basis_representatives_with_orders(d1, d2, N):
 
         # d1 entry is 1, so the basis vector or any multiple of it
         # is in the kernel. Do not add it
-            
+
     return homology_basis
 
 def homology_representatives(d1, d2, N):

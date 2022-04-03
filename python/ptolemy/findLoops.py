@@ -7,7 +7,7 @@ from . import matrix
 # We construct a fundamental domain of the Manifold from doubly truncated
 # simplices. See Figure 18 for simplices.
 #    Garoufalidis, Goerner, Zickert:
-#    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+#    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
 #    http://arxiv.org/abs/1207.6711
 
 # We use SnapPy's _choose_generators_info to construct the same fundamental
@@ -37,7 +37,7 @@ class Vertex(tuple):
 
     def __new__(cls, tet, v0, v1, v2):
         return super(Vertex, cls).__new__(cls, (tet, v0, v1, v2))
-    
+
     def edges_starting_at_vertex(self):
         """
         Return the three edges of the simplex starting at this point.
@@ -67,7 +67,7 @@ class Edge(object):
         """
         return self._start_point
 
-    def __pow__(self, other): 
+    def __pow__(self, other):
         """
         Invert an edge with ** -1
         """
@@ -125,7 +125,7 @@ class Path(tuple):
         """
         assert other == -1
         return Path([edge ** -1 for edge in self][::-1])
-    
+
     def __mul__(self, other):
         """
         Two paths a, b can be composed as a * b.
@@ -185,13 +185,13 @@ def _compute_point_identification_dict(choose_generators_info):
     d = dict( [ (Vertex(tet, v0, v1, v2), set([Vertex(tet, v0, v1, v2)]))
                 for tet in range(len(choose_generators_info))
                 for v0, v1, v2, v3 in _perm4_iterator() ] )
-    
+
     # Go through all points on faces not corresponding to
     # generators
     for this_tet, info in enumerate(choose_generators_info):
         for this_v0, this_v1, this_v2, this_v3 in _perm4_iterator():
             if info['generators'][this_v0] == 0:
-                
+
                 # Determine the point
                 this_pt = Vertex(this_tet, this_v1, this_v2, this_v3)
 
@@ -260,7 +260,7 @@ def _compute_point_to_shortest_path(point_identification_dict, origin,
                 # add that path
                 new_path = path * edge
                 new_end_point = edge.end_point()
-                
+
                 # If the end point of this edge does not have a path
                 # yet or the new path is shorter.
                 if (new_end_point not in d
@@ -285,7 +285,7 @@ def _compute_num_generators(choose_generators_info):
 def _compute_loops_for_generators_from_info(choose_generators_info,
                                             point_to_shortest_path,
                                             penalties):
-    
+
     """
     Using the result of SnapPy's _choose_generators_info() that
     indicates which face pairings correspond to which generators and
@@ -330,7 +330,7 @@ def _compute_loops_for_generators_from_info(choose_generators_info,
                     or _penalty_of_path(new_loop, penalties) <
                                             _penalty_of_path(loop, penalties)):
                     loops_for_generators[generator_index - 1] = new_loop
-                    
+
     return loops_for_generators
 
 
@@ -348,7 +348,7 @@ def compute_loops_for_generators(M, penalties):
     # Get the necessary information from SnapPea kernel
     M._choose_generators(False, False)
     choose_generators_info = M._choose_generators_info()
-    
+
     # Compute which vertices of doubly truncated simplices are identified
     # to form the fundamental domain
     point_identification_dict = _compute_point_identification_dict(
@@ -356,7 +356,7 @@ def compute_loops_for_generators(M, penalties):
 
     # Pick an origin
     origin = _compute_origin(choose_generators_info)
-    
+
     # Compute shortest paths form the origin to every vertex
     point_to_shortest_path = _compute_point_to_shortest_path(
         point_identification_dict, origin, penalties)
@@ -364,7 +364,7 @@ def compute_loops_for_generators(M, penalties):
     # Compute the loops
     return _compute_loops_for_generators_from_info(
         choose_generators_info, point_to_shortest_path, penalties)
-    
+
 def _evaluate_path(coordinate_object, path):
     """
     Given PtolemyCoordinates or CrossRatios (or more generally, any object that
@@ -389,7 +389,7 @@ def _evaluate_path(coordinate_object, path):
             raise Exception("Edge of unknown type in path")
 
         m = matrix.matrix_mult(m, matrix_method(*edge.start_point()))
-        
+
     return m
 
 
@@ -426,7 +426,7 @@ def _apply_hom_to_word(word, G):
         # Get how each letter translates into the original generators
         imgs = G.generators_in_originals()
         for letter in word:
-            
+
             if letter.isupper():
                 # Upper case letter correspond to inverses
                 # Inverse is formed by swapping case, then reversing string
@@ -439,7 +439,7 @@ def _apply_hom_to_word(word, G):
 
 def evaluate_word(identity_matrix, generator_matrices, inverse_matrices,
                   word, G):
-    
+
     # Start with the identity matrix
     m = identity_matrix
 

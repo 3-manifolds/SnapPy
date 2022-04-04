@@ -1,74 +1,74 @@
 from ..snap.t3mlite import Mcomplex
-from ..snap.t3mlite import simplex
+from ..snap.t3mlite import simplex, Tetrahedron
 
 from collections import deque
 
-def install_all_peripheral_curves(mcomplex : Mcomplex) -> None:
-    for tet in mcomplex.Tetrahedra:
-        if tet.base_for_peripherals:
-            install_peripheral_curves(tet)
+def install_peripheral_curves(start_tet : Tetrahedron):
+    _install_meridian(start_tet)
+    _install_longitude(start_tet)
 
-def install_peripheral_curves(tet):
-    install_meridian(tet)
-    install_longitude(tet)
-
-def install_meridian(tet0):
-    tet1 = tet0
+def _install_meridian(start_tet : Tetrahedron):
+    tet = start_tet
     while True:
-        tet1.PeripheralCurves[0][0][simplex.V0][simplex.F3] = +1
-        tet1.PeripheralCurves[0][0][simplex.V0][simplex.F2] = -1
-        tet2 = tet1.Neighbor[simplex.F2]
-        tet2.PeripheralCurves[0][1][simplex.V0][simplex.F2] = +1
-        tet2.PeripheralCurves[0][1][simplex.V0][simplex.F1] = -1
-        tet3 = tet2.Neighbor[simplex.F1]
-        tet3.PeripheralCurves[0][0][simplex.V0][simplex.F1] = +1
-        tet3.PeripheralCurves[0][0][simplex.V0][simplex.F2] = -1
-        tet4 = tet3.Neighbor[simplex.F2]
-        tet4.PeripheralCurves[0][1][simplex.V0][simplex.F2] = +1
-        tet4.PeripheralCurves[0][1][simplex.V0][simplex.F3] = -1
-        tet1 = tet4.Neighbor[simplex.F3]
-        if tet1 is tet0:
+        for f in [ simplex.F2, simplex.F1, simplex.F2, simplex.F3 ]:
+            tet.PeripheralCurves[0][tet.orientation][simplex.V0][f] = -1
+            tet = tet.Neighbor[f]
+            tet.PeripheralCurves[0][tet.orientation][simplex.V0][f] = +1
+        if tet is start_tet:
             break
 
-def has_meridian(tet):
+def _has_meridian(tet : Tetrahedron):
     for sheet in tet.PeripheralCurves[0]:
         for v in sheet[simplex.V0].values():
             if v != 0:
                 return True
     return False
 
-def install_longitude(tet0):
-
-    if not has_meridian(tet0):
-        raise Exception("tet0 not meridian")
-    if not has_meridian(tet0.Neighbor[simplex.F2]):
-        raise Exception("tet0->2 not meridian")
-    if not has_meridian(tet0.Neighbor[simplex.F3]):
-        raise Exception("tet0->1 not meridian")
-
-    tet1 = tet0.Neighbor[simplex.F1]
-    tet_finish = tet0.Neighbor[simplex.F2]
-
-    pending_tets = deque([(tet1, simplex.F1)])
-    visited_tets = { }
+def _walk_tet_to_face(start_tet, tet_to_face):
+    tet = start_tet
     while True:
-        tet, old_f = pending_tets.popleft()
-        if tet in visited_tets:
-            continue
-        visited_tets[tet] = old_f
-        for f in [ simplex.F1, simplex.F2, simplex.F3 ]:
-            if f != old_f:
-                neighbor = tet.Neighbor[f]
-                if neighbor is tet_finish:
-                    l = [ (tet0, simplex.F2), (neighbor, f) ]
-                    while tet in visited_tets:
-                        f = visited_tets[tet]
-                        l.append((tet, f))
-                        tet = tet.Neighbor[f]
+        f = tet_to_face[tet]
 
-                    for tet, f in l:
-                        tet.PeripheralCurves[1][tet.Index % 2][simplex.V0][f] -= 1
-                        tet.Neighbor[f].PeripheralCurves[1][(tet.Index+1) % 2][simplex.V0][f] += 1
-                    return
-                if not has_meridian(neighbor):
-                    pending_tets.append((neighbor, f))
+        tet.PeripheralCurves[1][tet.orientation][simplex.V0][f] = -1
+        tet = tet.Neighbor[f]
+        tet.PeripheralCurves[1][tet.orientation][simplex.V0][f] = +1
+        if tet is start_tet:
+            break
+
+def _install_longitude(start_tet : Tetrahedron):
+
+    tet0 = start_tet.Neighbor[simplex.F1]
+    tet1 = start_tet
+    tet2 = start_tet.Neighbor[simplex.F2]
+    tet3 = tet2.Neighbor[simplex.F3]
+
+    if _has_meridian(tet0):
+        raise Exception(
+            "F1-neighbor of start_tet not expected to have meridian.")
+    if not _has_meridian(tet1):
+        raise Exception(
+            "start_tet expected to have meridian.")
+    if not _has_meridian(tet2):
+        raise Exception(
+            "F2-neighbor of start_tet expected to have meridian.")
+    if _has_meridian(tet3):
+        raise Exception(
+            "F3-enighbor of F2-neighbor of start_tet not expected to have "
+            "meridian.")
+
+    visited_tet_to_face = { tet2 : simplex.F3,
+                            tet1 : simplex.F2 }
+    pending_tets = deque([( tet0,  simplex.F1)])
+    while True:
+        tet, entry_f = pending_tets.popleft()
+        if tet in visited_tet_to_face:
+            continue
+        visited_tet_to_face[tet] = entry_f
+        if tet is tet3:
+            break
+        for f in [ simplex.F1, simplex.F2, simplex.F3 ]:
+            neighbor = tet.Neighbor[f]
+            if f != entry_f and not _has_meridian(neighbor):
+                pending_tets.append((neighbor, f))
+                
+    _walk_tet_to_face(start_tet, visited_tet_to_face)

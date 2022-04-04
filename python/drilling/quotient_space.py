@@ -22,7 +22,7 @@ class ZQuotientLiftedTetrahedronSet:
         self._dict = _ZQuotientDict(mcomplex, line_with_matrix)
         self._mcomplex = mcomplex
 
-    def add(self, lifted_tetrahedron : LiftedTetrahedron):
+    def add(self, lifted_tetrahedron : LiftedTetrahedron) -> bool:
         tets = self._dict.setdefault(
             lifted_tetrahedron.o13_matrix * self._mcomplex.R13_baseTetInCenter,
             set())

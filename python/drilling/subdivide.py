@@ -28,13 +28,17 @@ def traverse_geodesics_to_subdivide(
 
     new_mcomplex = find_tetrahedra_and_create_mcomplex(last_piece.tet)
 
-    check_consistency(new_mcomplex)
-    check_consistency_segments(flatten_link_list(last_piece))
+#    check_consistency(new_mcomplex)
+#    check_consistency_segments(flatten_link_list(last_piece))
 
     return new_mcomplex
 
 def find_tetrahedra_and_create_mcomplex(tet : Tetrahedron) -> Mcomplex:
     tets = find_all_tetrahedra(tet)
+    for i, tet in enumerate(tets):
+        tet.Index = i
+    return tets
+
     clear_tetrahedra_classes(tets)
     return Mcomplex(tets)
 

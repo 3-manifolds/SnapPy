@@ -139,20 +139,25 @@ def test():
         M = Manifold("m125")
         MM=drill_words(M, ['d'])
         MM.dehn_fill((1,0),2)
+
+        bad_word = 'bc'
+
         try:
-            drill_words(MM, ['ba'])
+            drill_words(MM, [bad_word])
+            print("Looking for geodesic of length 1.0612, picked %s" % bad_word)
+            print(MM.length_spectrum(1.07, include_words = True, grouped = False))
             raise Exception("Did not catch too close to core curve.")
         except exceptions.GeodesicCloseToCoreCurve:
             print("GeodesicCloseToCoreCurve raised")
-            pass
 
         try:
-            drill_words_implementation(MM, ['ba'],
+            drill_words_implementation(MM, [bad_word],
                                        verified = False, bits_prec = None, perturb = True)
+            print("Looking for geodesic of length 1.0612, picked %s" % bad_word)
+            print(MM.length_spectrum(1.07, include_words = True, grouped = False))
             raise Exception("Did not catch too close to core curve.")
         except exceptions.GeodesicCloseToCoreCurve:
             print("GeodesicCloseToCoreCurve raised (perturb)")
-            pass
 
 
 # Hard cases:

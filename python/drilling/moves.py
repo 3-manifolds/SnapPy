@@ -30,11 +30,10 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     n = len(given_pieces)
 
     if n == 1:
-        t0 = RF(constants.one_four_new_point_ratio)
-        t1 = 1 - t0
+        bias = RF(constants.piece_midpoint_bias)
         new_point = (
-            t0 * given_pieces[0].endpoints[0].r13_point +
-            t1 * given_pieces[0].endpoints[1].r13_point)
+                   given_pieces[0].endpoints[0].r13_point +
+            bias * given_pieces[0].endpoints[1].r13_point)
     elif n == 2:
         if not given_pieces[0].endpoints[1].subsimplex == simplex.T:
             raise Exception("Expected middle point to be in the tetrahedron "
@@ -62,7 +61,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     id_matrix = matrix.identity(ring = RF, n = 4)
 
     for f0, new_tet0 in new_tets.items():
-        new_tet0.geodesic_pieces : List[GeodesicPiece] = []
+        new_tet0.geodesic_pieces = []
         v0 = simplex.comp(f0)
         new_tet0.R13_vertices = { v0 : new_point }
         new_tet0.post_drill_infos = {

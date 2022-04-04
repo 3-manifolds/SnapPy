@@ -1,7 +1,7 @@
 from ..snap.t3mlite import simplex
 from ..hyperboloid import *
 
-def find_all_tetrahedra(tet):
+def _find_all_tetrahedra(tet):
     result = [ ]
     pending_tets = [ tet ]
     visited_tets = set()
@@ -181,7 +181,7 @@ def flatten_link_list(x):
             return l
 
 def check_consistency_2(piece):
-    tets = find_all_tetrahedra(piece.tet)
+    tets = _find_all_tetrahedra(piece.tet)
 
     tets_set = set(tets)
     

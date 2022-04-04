@@ -62,7 +62,7 @@ def index_geodesics_and_add_post_drill_infos(
         else:
             g.index = n + i
 
-    for tet in mcomplex:
+    for tet in mcomplex.Tetrahedra:
         tet.post_drill_infos = {
             V : tet.Class[V].post_drill_info
             for V in simplex.ZeroSubsimplices }

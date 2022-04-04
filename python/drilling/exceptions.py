@@ -1,8 +1,13 @@
 class DrillGeodesicError(RuntimeError):
     pass
 
-class DrillingCoreCurve(RuntimeError):
-    pass
+class WordAppearsToBeParabolic(DrillGeodesicError):
+    def __init__(self, word, trace):
+        self.word = word
+        self.trace = trace
+        super().__init__(
+            "Attempting to drill a geodesic corresponding to parabolic "
+            "matrix. Word: %s, trace: %r." % (word, trace))
 
 class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
@@ -23,28 +28,10 @@ class UnfinishedTraceGeodesicError(DrillGeodesicError):
 class GeodesicStartPointOnTwoSkeletonError(DrillGeodesicError):
     pass
 
-class RayStuckOnFaceError(DrillGeodesicError):
-    pass
-
 class RayHittingOneSkeletonError(DrillGeodesicError):
     pass
 
-class RayHitNothingError(DrillGeodesicError):
-    pass
-
-class GeodesicHasNoLengthError(DrillGeodesicError):
-    pass
-
-class AmbiguousEndContionError(DrillGeodesicError):
-    pass
-
-class RetracingRayStuckOnFaceError(DrillGeodesicError):
-    pass
-
 class RetracingRayHittingOneSkeletonError(DrillGeodesicError):
-    pass
-
-class RetracingRayHitNothingError(DrillGeodesicError):
     pass
 
 class GeodesicNotSimpleError(DrillGeodesicError):

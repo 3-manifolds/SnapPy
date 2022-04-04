@@ -1,24 +1,24 @@
-from ..drilling.tracing import trace_geodesic
-from ..drilling.barycentric_subdivider import barycentric_subdivision
-from ..drilling.link_crusher import crush_link
-from ..drilling.line import R13LineWithMatrix
-from ..drilling.geometric_structure import add_r13_geometry, word_to_psl2c_matrix
-from ..drilling.geodesic_info import GeodesicInfo, sample_line
-from ..drilling.perturb import perturb_geodesics
-from ..drilling.subdivide import traverse_geodesics_to_subdivide
-from ..drilling import exceptions
-from ..drilling.cusps import (
+from . import exceptions
+from . import epsilons
+from .tracing import trace_geodesic
+from .crush import crush_geodesic_pieces
+from .line import R13LineWithMatrix
+from .geometric_structure import add_r13_geometry, word_to_psl2c_matrix
+from .geodesic_info import GeodesicInfo, sample_line
+from .perturb import perturb_geodesics
+from .subdivide import traverse_geodesics_to_subdivide
+from .cusps import (
     CuspPostDrillInfo,
     index_geodesics_and_add_post_drill_infos,
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
-from ..drilling.peripheral_curves import install_all_peripheral_curves
 
-from ..snap.t3mlite import Mcomplex, simplex
+from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
-from ..drilling.debug import *
+from .debug import *
 
+import functools
 from typing import Sequence
 
 def drill_word(manifold,
@@ -40,6 +40,9 @@ def drill_words(manifold,
 
     if len(words) == 0:
         return manifold
+
+    if not manifold.is_orientable():
+        raise ValueError("Drilling only supported for orientable manifolds.")
 
     try:
         return drill_words_implementation(
@@ -105,13 +108,26 @@ def drill_words_implementation(
 
     refill_and_adjust_peripheral_curves(drilled_manifold, post_drill_infos)
 
+    drilled_manifold.set_name(manifold.name() + "_drilled")
+
     return drilled_manifold
+
+def _verify_not_parabolic(m, mcomplex, word):
+    if mcomplex.verified:
+        epsilon = 0
+    else:
+        epsilon = epsilons.compute_epsilon(mcomplex.RF)
+
+    tr = m.trace()
+    if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
+        raise exceptions.WordAppearsToBeParabolic(word, tr)
 
 def compute_geodesic_info(mcomplex : Mcomplex,
                           word) -> GeodesicInfo:
 
-    line = R13LineWithMatrix.from_psl2c_matrix(
-        word_to_psl2c_matrix(mcomplex, word))
+    m = word_to_psl2c_matrix(mcomplex, word)
+    _verify_not_parabolic(m, mcomplex, word)
+    line = R13LineWithMatrix.from_psl2c_matrix(m)
 
     start_point = sample_line(line)
 
@@ -147,41 +163,34 @@ def drill_geodesics(mcomplex : Mcomplex,
         print("Number of geodesic pieces:",
               [len(pieces) for pieces in all_pieces])
 
-    subdivided_mcomplex = traverse_geodesics_to_subdivide(
+    tetrahedra = traverse_geodesics_to_subdivide(
         mcomplex, all_pieces)
 
     if verbose:
         print("Number of tets after subdividing: %d" % (
-            len(subdivided_mcomplex.Tetrahedra)))
+            len(tetrahedra)))
 
-    check_oriented(subdivided_mcomplex)
-    check_vertex_indices(subdivided_mcomplex)
-    check_peripheral_curves(subdivided_mcomplex)
-
-    b = barycentric_subdivision(subdivided_mcomplex)
-
-    for tet in b.Tetrahedra:
-        tet.base_for_peripherals = False
-
-    visited_components = set()
-
-    for tet in b.Tetrahedra:
-        if tet.Index % 2 == 0:
-            c = tet.Class[simplex.E01].link_component_index
-            if c > 0:
-                if not c in visited_components:
-                    tet0 = tet.Neighbor[simplex.F1]
-                    tet0.base_for_peripherals = True
-                    visited_components.add(c)
-
-    check_vertex_indices(b.Tetrahedra)
-    check_peripheral_curves(b.Tetrahedra)
-
-    result = crush_link(subdivided_mcomplex, b)
-
-    install_all_peripheral_curves(result)
+    result = crush_geodesic_pieces(tetrahedra)
 
     check_vertex_indices(result.Tetrahedra)
     check_peripheral_curves(result.Tetrahedra)
 
     return result
+
+@functools.wraps(drill_word)
+def drill_word_hp(*args, **kwargs):
+    return drill_word(*args, **kwargs).high_precision()
+
+@functools.wraps(drill_words)
+def drill_words_hp(*args, **kwargs):
+    return drill_words(*args, **kwargs).high_precision()
+
+def _add_methods(mfld_class, high_precision = False):
+
+    if high_precision:
+        mfld_class._experimental_drill_word  = drill_word_hp
+        mfld_class._experimental_drill_words = drill_words_hp
+    else:
+        mfld_class._experimental_drill_word  = drill_word
+        mfld_class._experimental_drill_words = drill_words
+        

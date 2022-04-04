@@ -27,9 +27,9 @@ def sample_line(line_with_matrix : R13LineWithMatrix):
 
     line = line_with_matrix.r13_line
     RF = line.points[0][0].parent()
-    p = RF(constants.start_point_perturb)
+    bias = RF(constants.start_point_bias)
 
-    return line.points[0] + p * line.points[1]
+    return line.points[0] + bias * line.points[1]
 
 # @dataclass
 class LiftedTetrahedron:

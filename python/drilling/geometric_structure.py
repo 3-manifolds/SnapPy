@@ -7,9 +7,9 @@ from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron, Vertex # type: ignore
 from ..SnapPy import word_as_list # type: ignore
 
 from ..hyperboloid import (o13_inverse,  # type: ignore
-                                space_r13_normalise,
-                                r13_dot,
-                                unnormalised_plane_eqn_from_r13_points)
+                           space_r13_normalise,
+                           r13_dot,
+                           unnormalised_plane_eqn_from_r13_points)
 from ..upper_halfspace import sl2c_inverse, psl2c_to_o13 # type: ignore
 from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
 from ..matrix import vector, matrix, mat_solve # type: ignore
@@ -18,6 +18,9 @@ from ..math_basics import prod, xgcd # type: ignore
 from collections import deque
 
 from typing import Tuple, Sequence, Optional, Any
+
+Filling = Tuple[int, int]
+FillingMatrix = Tuple[Filling, Filling]
 
 def compute_r13_planes_for_tet(tet : Tetrahedron):
     """
@@ -101,7 +104,7 @@ def add_r13_geometry(
     # Number of generators of the fundamental group.
     mcomplex.num_generators = len(mcomplex.GeneratorMatrices) // 2
 
-    for tet, developed_tet in zip(mcomplex, poly.mcomplex):
+    for tet, developed_tet in zip(mcomplex.Tetrahedra, poly.mcomplex):
         # Shape for each edge, keys are simplex.OneSubsimplices
         tet.ShapeParameters = developed_tet.ShapeParameters
         # Vertices in C union infinity on the boundary of
@@ -142,18 +145,16 @@ def add_r13_geometry(
 
     # For each cusp
     for v, info in zip(mcomplex.Vertices, manifold.cusp_info()):
-        # v.has_filling is a bool, True if the cusp is filled
-        #
         # v.filling_matrix is a matrix of integers (as list of lists) such that
         # v.filling_matrix[0] contains the filling coefficients
         # (e.g., [3,4] for m004(3,4)) and the determinant is 1 if the cusp is
         # filled. That is, v.filling_matrix[1] determines a curve intersecting
         # the filling curve once (as sum of a multiple of meridian and
         # longitude) and that is thus parallel to the core curve.
-        # For an unfilled cusp, v.filling_matrix is [[0,0], [0,0]]
+        # For an unfilled cusp, v.filling_matrix is ((0,0), (0,0))
 
-        v.has_filling, v.filling_matrix = _has_filling_and_filling_matrix(info)
-        if v.has_filling:
+        v.filling_matrix = _filling_matrix(info)
+        if v.filling_matrix[0] != (0,0):
             if all_peripheral_words is None:
                 # Make the SnapPea kernel compute peripheral curves the first
                 # time when we need them.
@@ -203,7 +204,7 @@ def _to_matrix(m):
 def _compute_core_curve(
         mcomplex : Mcomplex,
         peripheral_words : Sequence[Sequence[int]],
-        core_curve_coefficients : Sequence[int]) -> R13LineWithMatrix:
+        core_curve_coefficients : Filling) -> R13LineWithMatrix:
     """
     Compute core curve given words for meridian and longitude and
     the integers determining a curve (as sum of a multiple of meridian
@@ -318,21 +319,19 @@ def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
 
     return scale.arcsinh(), scale * pt
 
-def _has_filling_and_filling_matrix(
-        cusp_info : dict) -> Tuple[bool, Sequence[Sequence[int]]]:
+def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """
     Given one of the dictionaries returned by Manifold.cusp_info(),
-    return (has_filling, filling_matrix).
+    returns the "filling matrix" filling_matrix.
     
-    has_filling is a bool, True if the cusp is filled
-
     filling_matrix is a matrix of integers (as list of lists) such that
     filling_matrix[0] contains the filling coefficients
     (e.g., [3,4] for m004(3,4)) and the determinant is 1 if the cusp is
     filled. That is, filling_matrix[1] determines a curve intersecting
     the filling curve once (as sum of a multiple of meridian and
     longitude) and that is thus parallel to the core curve.
-    For an unfilled cusp, filling_matrix is [[0,0], [0,0]]
+
+    For an unfilled cusp, filling_matrix is ((0,0), (0,0))
 
     Raises an exception if the filling coefficients are non-integral or
     not coprime.
@@ -345,13 +344,13 @@ def _has_filling_and_filling_matrix(
         raise ValueError("Filling coefficients (%r,%r) are not integral." % (
             float_m, float_l))
     if (m, l) == (0,0):
-        return (False, [[0,0],
-                        [0,0]])
-    
+        return ((0,0),
+                (0,0))
+
     n, a, b = xgcd(m, l)
     if n != 1:
         raise ValueError("Filling coefficients (%d,%d) are not co-prime." % (
             m, l))
-            
-    return (True, [[  m, l ],
-                   [ -b, a ]])
+
+    return(( m, l),
+           (-b, a))

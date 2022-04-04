@@ -1,4 +1,5 @@
 from .geodesic_info import GeodesicInfo
+from .geometric_structure import Filling, FillingMatrix
 
 from ..snap.t3mlite import Mcomplex, simplex
 
@@ -14,9 +15,15 @@ class CuspPostDrillInfo:
     """
 
     def __init__(self,
+                 # Index this vertex will have in the drilled manifold.
+                 # None if vertex is a finite vertex.
                  index : Optional[int] = None,
-                 filling : Tuple[int, int] = (0, 0),
-                 peripheral_matrix : Optional[Tuple[Tuple[int,int],Tuple[int,int]]] = None):
+                 # Filling that needs to be applied after drilling the
+                 # manifold. (0,0) if cusps will be left unfilled.
+                 filling : Filling = (0, 0),
+                 # Optional adjustment of peripheral curves performed
+                 # to drilled manifold with Manifold.set_peripheral_curves.
+                 peripheral_matrix : Optional[FillingMatrix] = None):
         self.index = index
         self.filling = filling
         self.peripheral_matrix = peripheral_matrix
@@ -47,11 +54,11 @@ def index_geodesics_and_add_post_drill_infos(
 
     for i, g in enumerate(geodesics):
         if g.core_curve_cusp:
-            m = [[ g.core_curve_direction * x for x in row]
-                 for row in g.core_curve_cusp.filling_matrix]
-            
             g.core_curve_cusp.post_drill_info = CuspPostDrillInfo(
-                index = n + i, peripheral_matrix = m)
+                index = n + i,
+                peripheral_matrix = _multiply_filling_matrix(
+                    g.core_curve_cusp.filling_matrix,
+                    g.core_curve_direction))
         else:
             g.index = n + i
 
@@ -91,3 +98,7 @@ def refill_and_adjust_peripheral_curves(
         if not info.peripheral_matrix is None:
             manifold.set_peripheral_curves(
                 info.peripheral_matrix, which_cusp = info.index)
+
+def _multiply_filling_matrix(m : FillingMatrix, s : int) -> FillingMatrix:
+    return ((s * m[0][0], s * m[0][1]),
+            (s * m[1][0], s * m[1][1]))

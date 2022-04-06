@@ -7,13 +7,18 @@ def install_peripheral_curves(start_tet : Tetrahedron):
     _install_meridian(start_tet)
     _install_longitude(start_tet)
 
+def _walk_face(tet, ml, f):
+    tet.PeripheralCurves[ml][tet.orientation][simplex.V0][f] = +1
+    tet = tet.Neighbor[f]
+    tet.PeripheralCurves[ml][tet.orientation][simplex.V0][f] = -1
+
+    return tet
+
 def _install_meridian(start_tet : Tetrahedron):
     tet = start_tet
     while True:
         for f in [ simplex.F2, simplex.F1, simplex.F2, simplex.F3 ]:
-            tet.PeripheralCurves[0][tet.orientation][simplex.V0][f] = -1
-            tet = tet.Neighbor[f]
-            tet.PeripheralCurves[0][tet.orientation][simplex.V0][f] = +1
+            tet = _walk_face(tet, 0, f)
         if tet is start_tet:
             break
 
@@ -27,11 +32,7 @@ def _has_meridian(tet : Tetrahedron):
 def _walk_tet_to_face(start_tet, tet_to_face):
     tet = start_tet
     while True:
-        f = tet_to_face[tet]
-
-        tet.PeripheralCurves[1][tet.orientation][simplex.V0][f] = -1
-        tet = tet.Neighbor[f]
-        tet.PeripheralCurves[1][tet.orientation][simplex.V0][f] = +1
+        tet = _walk_face(tet, 1, tet_to_face[tet])
         if tet is start_tet:
             break
 

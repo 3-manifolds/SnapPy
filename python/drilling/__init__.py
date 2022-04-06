@@ -26,6 +26,19 @@ def drill_word(manifold,
                verified : bool = False,
                bits_prec = None,
                verbose : bool = False):
+
+    """
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("v2986(3,4)")
+        >>> M._experimental_drill_word('EdFgabcGEdFgaDcc').canonical_retriangulation().triangulation_isosig(decorated=True)
+        'jvLALQQdeefgihihiokcmmwwswg_edBB'
+        >>> M = Manifold("v2986")
+        >>> M._experimental_drill_word('gB').canonical_retriangulation().triangulation_isosig(decorated=True)
+        'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
+    """
+
+
     return drill_words(manifold,
                        [word],
                        verified = verified,

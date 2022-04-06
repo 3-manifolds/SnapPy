@@ -11,6 +11,7 @@ import snappy.raytracing.geodesic
 import snappy.raytracing.geodesics
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
+import snappy.drilling
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -93,6 +94,7 @@ modules += [snappy.SnapPy,
             snappy.raytracing.geodesics,
             snappy.raytracing.ideal_raytracing_data,
             snappy.raytracing.upper_halfspace_utilities,
+            snappy.drilling,
             ptolemy_doctester,
             spherogram_doctester]
 

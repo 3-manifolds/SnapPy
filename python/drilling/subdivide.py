@@ -9,7 +9,7 @@ from typing import Sequence, Dict
 
 def traverse_geodesics_to_subdivide(
         mcomplex : Mcomplex,
-        all_pieces : Sequence[Sequence[GeodesicPiece]]):
+        all_pieces : Sequence[Sequence[GeodesicPiece]]) -> Sequence[Tetrahedron]:
 
     for tet in mcomplex.Tetrahedra:
         tet.geodesic_pieces = []
@@ -24,45 +24,11 @@ def traverse_geodesics_to_subdivide(
         check_consistency_segments(flatten_link_list(start_pieces[index]))
 
     for index in list(sorted(start_pieces.keys())):
-        last_piece = traverse_geodesic_to_subdivide(start_pieces[index], start_pieces, mcomplex.verified)
+        last_piece = _traverse_geodesic_to_subdivide(start_pieces[index], start_pieces, mcomplex.verified)
 
-    new_mcomplex = find_tetrahedra_and_create_mcomplex(last_piece.tet)
+    return _find_and_index_all_tetrahedra(last_piece.tet)
 
-#    check_consistency(new_mcomplex)
-#    check_consistency_segments(flatten_link_list(last_piece))
-
-    return new_mcomplex
-
-def find_tetrahedra_and_create_mcomplex(tet : Tetrahedron) -> Mcomplex:
-    tets = find_all_tetrahedra(tet)
-    for i, tet in enumerate(tets):
-        tet.Index = i
-    return tets
-
-    clear_tetrahedra_classes(tets)
-    return Mcomplex(tets)
-
-def clear_tetrahedra_classes(tets):
-    for tet in tets:
-        tet.Index = -1
-        tet.Name = ''
-        tet.Class = [None]*16
-        tet.Checked = 0
-
-def find_all_tetrahedra(tet):
-    result = [ ]
-    pending_tets = [ tet ]
-    visited_tets = set()
-    while pending_tets:
-       tet = pending_tets.pop()
-       if not tet in visited_tets:
-           visited_tets.add(tet)
-           result.append(tet)
-           for neighbor in tet.Neighbor.values():
-               pending_tets.append(neighbor)
-    return result
-
-def traverse_geodesic_to_subdivide(
+def _traverse_geodesic_to_subdivide(
         start_piece : GeodesicPiece,
         start_pieces : Dict[int, GeodesicPiece],
         verified : bool) -> GeodesicPiece:
@@ -96,3 +62,20 @@ def traverse_geodesic_to_subdivide(
         check_consistency_2(piece)
 
         piece = piece.next_
+
+def _find_and_index_all_tetrahedra(tet):
+    result = [ ]
+    pending_tets = [ tet ]
+    visited_tets = set()
+    i = 0
+    while pending_tets:
+       tet = pending_tets.pop()
+       if not tet in visited_tets:
+           visited_tets.add(tet)
+           tet.Index = i
+           i += 1
+           result.append(tet)
+           for neighbor in tet.Neighbor.values():
+               pending_tets.append(neighbor)
+
+    return result

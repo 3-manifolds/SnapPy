@@ -1,5 +1,6 @@
 from . import exceptions
 from . import epsilons
+from . import debug
 from .tracing import trace_geodesic
 from .crush import crush_geodesic_pieces
 from .line import R13LineWithMatrix
@@ -16,25 +17,88 @@ from .cusps import (
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
-from .debug import *
 
 import functools
 from typing import Sequence
 
 def drill_word(manifold,
-               word,
+               word : str,
                verified : bool = False,
                bits_prec = None,
                verbose : bool = False):
 
     """
+    Drills the geodesic corresponding to the given word in the unsimplified
+    fundamental group.
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("m004")
+        >>> M.length_spectrum(1.2, include_words = True, grouped = False)
+        mult  length                                  topology     parity word
+        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
+        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
+        >>> N = M.drill_word('a')
+        >>> N.identify()
+        [m129(0,0)(0,0), 5^2_1(0,0)(0,0), L5a1(0,0)(0,0), ooct01_00001(0,0)(0,0)]
+
+    The last cusp of the new manifold corresponds to the drilled
+    geodesic and the longitude and meridian for that cusp are chosen such that
+    (1,0)-filling results in the original (undrilled) manifold. The orientation
+    of the new longitude is chosen so that it is parallel to the closed geodesic.
+    That is, the new longitude is homotopic to the closed geodsic when embedding
+    the drilled manifold into the original manifold.
+
+        >>> N.dehn_fill((1,0),1)
+        >>> M.is_isometric_to(N)
+        True
+        >>> N.cusp_info(1)['core_length'] # doctest: +NUMERIC9
+        1.08707014499574 - 1.72276844987009*I
+
+    If the drilled geodesic coincides with a core curve of a filled cusp, the
+    cusp is unfilled instead and the longitude and meridian changed so that
+    the above again applies. The cusp order is also changed so that the unfilled
+    cusp becomes the last cusp.
+
+        >>> M = Manifold("m004(2,3)")
+        >>> M.volume() # doctest: +NUMERIC9
+        1.73712388065
+        >>> M.cusp_info(0)['core_length'] # doctest: +NUMERIC9
+        0.178792491242577 - 2.11983007979743*I
+        >>> M.fundamental_group(simplify_presentation = False).complex_length('aBAbbABab') # doctest: +NUMERIC9
+        0.178792491242577 - 2.11983007979743*I
+        >>> N = M.drill_word('aBAbbABab')
+        >>> N
+        m004_drilled(0,0)
+        >>> N.num_cusps()
+        1
+        >>> N.dehn_fill((1,0))
+        >>> N.volume() # doctest: +NUMERIC9
+        1.73712388065
+
+    Even though the output of the drilling geodesic algorithm is a
+    triangulation and thus combinatorial in nature, the intermediate
+    computations to compute the intersections of the geodesic with the
+    faces of the tetrahedra is numerical. Sometimes it is necessary to increase
+    the precision with `bits_prec` to make this computation accurate or succeed.
+    If `verified = True` is specified, intervals are used for all computations
+    and the result is provably correct (only supported when used inside
+    SageMath).
+    That is, the algorithm will fail with an exception (most likely
+    InsufficientPrecisionError) if insufficient precision is used. Example of
+    verified computation::
+
+        sage: M = Manifold("m004(2,3)")
+        sage: M.drill_word('caa', verified = True, bits_prec = 100)
+        m004_drilled(2,3)(0,0)
+
+    More testing::
 
         >>> from snappy import Manifold
         >>> M = Manifold("v2986(3,4)")
-        >>> M._experimental_drill_word('EdFgabcGEdFgaDcc').canonical_retriangulation().triangulation_isosig(decorated=True)
+        >>> M.drill_word('EdFgabcGEdFgaDcc').canonical_retriangulation().triangulation_isosig(decorated=True)
         'jvLALQQdeefgihihiokcmmwwswg_edBB'
         >>> M = Manifold("v2986")
-        >>> M._experimental_drill_word('gB').canonical_retriangulation().triangulation_isosig(decorated=True)
+        >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(decorated=True)
         'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
     """
 
@@ -46,13 +110,63 @@ def drill_word(manifold,
                        verbose = verbose)
 
 def drill_words(manifold,
-                words,
+                words : Sequence[str],
                 verified : bool = False,
                 bits_prec = None,
                 verbose : bool = False):
 
+    """
+    A generalization of M.drill_word taking a list of words to
+    drill several geodesics simultaneously.
+
+    Here is an example where we drill the core curve corresponding to the third cusp
+    and a geodesic that is not a core curve:
+
+
+        >>> from snappy import Manifold
+        >>> M=Manifold("t12047(0,0)(1,3)(1,4)(1,5)")
+        >>> [ info.get('core_length') for info in M.cusp_info() ] # doctest: +NUMERIC9
+        [None,
+         0.510804267610103 + 1.92397456664239*I,
+         0.317363079597924 + 1.48157893409218*I,
+         0.223574975263386 + 1.26933288854145*I]
+        >>> G = M.fundamental_group(simplify_presentation = False)
+        >>> G.complex_length('c') # doctest: +NUMERIC9
+        0.317363079597924 + 1.48157893409218*I
+        >>> G.complex_length('fA') # doctest: +NUMERIC9
+        1.43914411734250 + 2.66246879992795*I
+        >>> N = M.drill_words(['c','fA'])
+        >>> N
+        t12047_drilled(0,0)(1,3)(1,5)(0,0)(0,0)
+
+    The last n cusps correspond to the n geodesics that were drilled, appearing
+    in the same order the words for the geodesics were given. Note that in the
+    above example, the drilled manifold has only five cusps even though the
+    original manifold had four cusps and we drilled two geodesics. This is
+    because one geodesic was a core curve, thus the (1,4)-filling. The
+    resulting unfilled cusp is grouped with the other cusps coming from
+    drilling.
+
+    We obtain the original (undrilled) manifold by (1,0)-filling the last n cusps.
+
+        >>> N.dehn_fill((1,0), 3)
+        >>> N.dehn_fill((1,0), 4)
+        >>> M.is_isometric_to(N)
+        True
+        >>> [ info.get('core_length') for info in N.cusp_info() ] # doctest: +NUMERIC9
+        [None,
+         0.510804267610103 + 1.92397456664239*I,
+         0.223574975263386 + 1.26933288854145*I,
+         0.317363079597924 + 1.48157893409218*I,
+         1.43914411734251 + 2.66246879992796*I]
+
+    """
+
+    if isinstance(words, str):
+        raise ValueError("words has to be a list of strings, not a single string.")
+    
     if len(words) == 0:
-        return manifold
+        return manifold.copy()
 
     if not manifold.is_orientable():
         raise ValueError("Drilling only supported for orientable manifolds.")
@@ -165,10 +279,6 @@ def drill_geodesics(mcomplex : Mcomplex,
         if not g.tet:
             raise exceptions.GeodesicStartPointOnTwoSkeletonError()
 
-    check_peripheral_curves(mcomplex.Tetrahedra)
-    check_oriented(mcomplex.Tetrahedra)
-    check_vertex_indices(mcomplex.Tetrahedra)
-
     all_pieces = [ trace_geodesic(g, verified = mcomplex.verified)
                    for g in geodesics ]
 
@@ -185,8 +295,8 @@ def drill_geodesics(mcomplex : Mcomplex,
 
     result = crush_geodesic_pieces(tetrahedra)
 
-    check_vertex_indices(result.Tetrahedra)
-    check_peripheral_curves(result.Tetrahedra)
+    debug.check_vertex_indices(result.Tetrahedra)
+    debug.check_peripheral_curves(result.Tetrahedra)
 
     return result
 
@@ -199,11 +309,9 @@ def drill_words_hp(*args, **kwargs):
     return drill_words(*args, **kwargs).high_precision()
 
 def _add_methods(mfld_class, high_precision = False):
-
     if high_precision:
-        mfld_class._experimental_drill_word  = drill_word_hp
-        mfld_class._experimental_drill_words = drill_words_hp
+        mfld_class.drill_word  = drill_word_hp
+        mfld_class.drill_words = drill_words_hp
     else:
-        mfld_class._experimental_drill_word  = drill_word
-        mfld_class._experimental_drill_words = drill_words
-        
+        mfld_class.drill_word  = drill_word
+        mfld_class.drill_words = drill_words

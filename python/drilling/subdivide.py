@@ -1,7 +1,7 @@
 from .moves import one_four_move, two_three_move
 from .tracing import GeodesicPiece
 
-from .debug import *
+from . import debug
 
 from ..snap.t3mlite import Mcomplex, Tetrahedron
 
@@ -21,7 +21,7 @@ def traverse_geodesics_to_subdivide(
     start_pieces = { pieces[0].index : pieces[0] for pieces in all_pieces }
 
     for index in list(sorted(start_pieces.keys())):
-        check_consistency_segments(flatten_link_list(start_pieces[index]))
+        debug.check_consistency_segments(debug.flatten_link_list(start_pieces[index]))
 
     for index in list(sorted(start_pieces.keys())):
         last_piece = _traverse_geodesic_to_subdivide(start_pieces[index], start_pieces, mcomplex.verified)
@@ -33,14 +33,14 @@ def _traverse_geodesic_to_subdivide(
         start_pieces : Dict[int, GeodesicPiece],
         verified : bool) -> GeodesicPiece:
     
-    check_consistency_2(start_piece)
+    debug.check_consistency_2(start_piece)
 
     end_piece, piece = one_four_move(
         [start_piece.prev, start_piece],
         start_pieces,
         verified)
     
-    check_consistency_2(piece)
+    debug.check_consistency_2(piece)
     
     while True:
         piece = piece.next_
@@ -49,17 +49,17 @@ def _traverse_geodesic_to_subdivide(
             
             piece = two_three_move([piece.prev, piece], start_pieces, verified)
 
-            check_consistency_2(piece)
+            debug.check_consistency_2(piece)
 
             return piece
         
         piece, next_piece = one_four_move([piece], start_pieces, verified)
 
-        check_consistency_2(piece)
+        debug.check_consistency_2(piece)
 
         piece = two_three_move([piece.prev, piece], start_pieces, verified)
 
-        check_consistency_2(piece)
+        debug.check_consistency_2(piece)
 
         piece = piece.next_
 

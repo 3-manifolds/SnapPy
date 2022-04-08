@@ -48,12 +48,6 @@ def check_vertex_indices(tets):
                         print("index and other index:", index, tet.Neighbor[f].post_drill_infos, [tet.Gluing[f].image(v)])
                         raise Exception("Neighbors don't have same vertex.")
 
-def check_oriented(tets):
-    for tet in tets:
-        for f in simplex.TwoSubsimplices:
-            if tet.Gluing[f].sign() == 0:
-                raise Exception("Triangulation not oriented.")
-
 def check_points_equal(v0, v1):
     RF = v0[0].parent()
     

@@ -4,6 +4,12 @@
 News
 ====
 
+* Version 3.? (? 2022):
+
+  - Drilling any simple geodesic with :meth:`drill_word <snappy.Manifold.drill_word>` and :meth:`drill_words <snappy.Manifold.drill_words>`.
+  - Added `include_words` to :meth:`length_spectrum <snappy.Manifold.length_spectrum>` showing the word corresponding to a geodesic which can be given to :meth:`drill_word <snappy.Manifold.drill_word>`.
+  - Added geodesics to the :meth:`inside_view <snappy.Manifold.inside_view>` (add picture???).
+
 * Version 3.0.3 (December 2021):
 
   - Runs natively on Macs with Apple Silicon processors (M1, M1 Pro, M1 Max).

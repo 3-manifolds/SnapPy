@@ -143,9 +143,8 @@ def drill_words(manifold,
     in the same order the words for the geodesics were given. Note that in the
     above example, the drilled manifold has only five cusps even though the
     original manifold had four cusps and we drilled two geodesics. This is
-    because one geodesic was a core curve, thus the (1,4)-filling. The
-    resulting unfilled cusp is grouped with the other cusps coming from
-    drilling.
+    because one geodesic was a core curve. The corresponding cusp was unfilled
+    (from (1,4)) and grouped with the other cusps coming from drilling.
 
     We obtain the original (undrilled) manifold by (1,0)-filling the last n cusps.
 

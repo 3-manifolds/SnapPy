@@ -7,6 +7,19 @@ def install_peripheral_curves(start_tet : Tetrahedron):
     _install_meridian(start_tet)
     _install_longitude(start_tet)
 
+# We could flip the meridian here since the SnapPea kernel would just switch
+# it back, but ideally we would just follow the orientation conventions of
+# the kernel to begin with.
+#
+# The below code is actually doing that.
+#
+# To check this, add printf's into the kernel into the following if-branches
+# and call Manifold.drill_word:
+#
+#   "if (tet->cusp[v]->intersection_number[L][M] == -1)" in orient.c and
+#   "if (tet->cusp[i]->intersection_number[L][M] == -1)" in peripheral_curves.c
+#
+
 def _walk_face(tet, ml, f):
     tet.PeripheralCurves[ml][tet.orientation][simplex.V0][f] = +1
     tet = tet.Neighbor[f]

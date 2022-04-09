@@ -165,23 +165,31 @@ def drill_words(manifold,
         raise ValueError("words has to be a list of strings, not a single string.")
     
     if len(words) == 0:
+        # Just return copy of manifold if nothing is drilled.
         return manifold.copy()
 
     if not manifold.is_orientable():
         raise ValueError("Drilling only supported for orientable manifolds.")
 
     try:
+        # First try to drill the geodesics without perturbing them.
         return drill_words_implementation(
             manifold,
             words = words,
             verified = verified,
             bits_prec = bits_prec,
             verbose = verbose)
-    except (exceptions.GeodesicStartPointOnTwoSkeletonError,
-            exceptions.RayHittingOneSkeletonError,
-            exceptions.RetracingRayHittingOneSkeletonError):
+    except exceptions.GeodesicHittingOneSkeletonError:
+        # Exceptions raised when geodesic is intersecting the 1-skeleton
+        # (including that a positive length piece of the geodesic lying
+        # in a face).
+        # An interesting example is the shortest geodesic ("a" in
+        # unsimplified fundamental group) of m125: the entire geodesic
+        # lies in the faces of the triangulation.
         pass
 
+    # If geodesic is intersecting 1-skeleton, try again, this time
+    # perturbing the geodesic before drilling it.
     try:
         return drill_words_implementation(
             manifold,
@@ -191,6 +199,11 @@ def drill_words(manifold,
             perturb = True,
             verbose = verbose)
     except exceptions.RayHittingOneSkeletonError as e:
+        # Sometimes, the code runs into numerical issues and cannot
+        # determine whether the perturbed geodesic is passing an edge
+        # on one side or the other. This can usually be fixed by
+        # increasing precision - change the exception type to tell the
+        # user.
         raise InsufficientPrecisionError(
             "The geodesic is so closer to an edge of the "
             "triangulation that it cannot be unambiguously traced "
@@ -314,3 +327,29 @@ def _add_methods(mfld_class, high_precision = False):
     else:
         mfld_class.drill_word  = drill_word
         mfld_class.drill_words = drill_words
+
+def dummy_function_for_additional_doctests():
+    """
+    Test error when drilling something close to core curve::
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("m125")
+        >>> MM = M.drill_word('d')
+        >>> MM.dehn_fill((1,0),2)
+        >>> bad_word = 'bc'
+        >>> MM.drill_word(bad_word) #doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
+
+    There are two places where we detect whether the geodesic is close
+    to a core curve (rather than tiling forever). Test the other place
+    in the GeodesicTube code used to determine the maximal amount we can
+    perturb the geodesic:
+
+        >>> drill_words_implementation(MM, [bad_word], verified = False, bits_prec = 53, perturb = True) #doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
+
+    """

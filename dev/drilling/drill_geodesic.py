@@ -9,6 +9,8 @@ def check_isomorphic(a, b):
         raise Exception("Expected manifolds to be isomorphic")
 
 def test():
+    print("Starting...")
+    
     from snappy import Manifold, ManifoldHP
 
     import sys

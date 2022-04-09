@@ -39,7 +39,7 @@ for i in range(int(sys.argv[1]), len(OrientableCuspedCensus)):
         
         try:
             drilled_manifold = drill_words(M, [l['word']], verified = True, bits_prec = 1000, verbose = True)
-        except exceptions.GeodesicNotSimpleError:
+        except exceptions.GeodesicSystemNotSimpleError:
 
             print("Geodsic not simple error")
             

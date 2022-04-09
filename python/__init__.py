@@ -116,6 +116,7 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'DirichletDomain', 'DirichletDomainHP', 'CuspNeighborhood',
            'CuspNeighborhoodHP', 'SymmetryGroup', 'AlternatingKnotExteriors',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
+           'InsufficientPrecisionError',
            'pari', 'twister', ]
 
 from .sage_helper import _within_sage

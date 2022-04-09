@@ -33,7 +33,7 @@ def perturb_geodesics(
         print("Tubes lower bound injectivity radius:", r)
 
     if not r > epsilon:
-        raise exceptions.GeodesicNotSimpleError()
+        raise exceptions.GeodesicSystemNotSimpleError(r)
 
     for g in geodesics:
         perturb_geodesic(g, r, mcomplex.verified)

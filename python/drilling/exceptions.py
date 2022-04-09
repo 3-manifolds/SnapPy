@@ -6,15 +6,36 @@ class WordAppearsToBeParabolic(DrillGeodesicError):
         self.word = word
         self.trace = trace
         super().__init__(
-            "Attempting to drill a geodesic corresponding to parabolic "
-            "matrix. Word: %s, trace: %r." % (word, trace))
+            "Attempting to drill a geodesic corresponding to a matrix "
+            "that could be parabolic. "
+            "Word: %s, trace: %r." % (word, trace))
 
+class GeodesicSystemNotSimpleError(DrillGeodesicError):
+    def __init__(self, maximal_tube_radius):
+        self.maximal_tube_radius = maximal_tube_radius
+        super().__init__(
+            "One of the given geodesics might not simple or two of the "
+            "given geodesics might intersect. "
+            "The maximal tube radius about the given system of geodesics "
+            "was estimated to be: %r." % maximal_tube_radius)
+
+class GeodesicCloseToCoreCurve(DrillGeodesicError):
+    def __init__(self):
+        super().__init__(
+            "The given geodesic is very close to a core curve and might "
+            "intersect it.")
+        
 class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
         self.steps = steps
         super().__init__(
-            "??? after %d steps. This is probably due to a pathology, "
-            "e.g., big conjugate" % steps)
+            "The line fixed by the given word could not be moved (by "
+            "Decktransformations) to intersect the fundamental domain after "
+            "%d steps. "
+            "This is probably due to a pathology, e.g., a bad conjugate "
+            "was picked and the line is very far away from the fundamental "
+            "domain or the given geodesic is very close to a core curve of "
+            "a filled cusp." % steps)
 
 class UnfinishedTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
@@ -25,17 +46,18 @@ class UnfinishedTraceGeodesicError(DrillGeodesicError):
             "e.g., the geodesic is very close to a core curve of "
             "filled cusp." % steps)
 
-class GeodesicStartPointOnTwoSkeletonError(DrillGeodesicError):
+class GeodesicHittingOneSkeletonError(DrillGeodesicError):
+    """
+    Base class for exceptions caused by the geodesic hitting the
+    1-skeleton and that can be avoided by perturbing the geodesic.
+    """
+
+class GeodesicStartPointOnTwoSkeletonError(GeodesicHittingOneSkeletonError):
     pass
 
-class RayHittingOneSkeletonError(DrillGeodesicError):
+class RayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
     pass
 
-class RetracingRayHittingOneSkeletonError(DrillGeodesicError):
+class RetracingRayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
     pass
 
-class GeodesicNotSimpleError(DrillGeodesicError):
-    pass
-
-class GeodesicCloseToCoreCurve(DrillGeodesicError):
-    pass

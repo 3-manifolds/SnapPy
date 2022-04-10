@@ -511,15 +511,19 @@ def _verified_canonical_retriangulation(
 
     return None
 
+
 _known_canonical_retriangulations = [
     ('m004', '\x02\x0e\x01\x01\x01-\x1b\x87'),
     ('m412', '\x0c\x80\xac\xff\x07\x05\x07\t\n\t\x08\t\n\x0b\x0b\n\x0b\xe4\xe4\xe4\xe4\xe4\xe1\xe1\xe1\xe1\xe1\xe1\xe1\xe1'),
     ('m137', '\x12\x00\xb0\xfa\xaf\x0f\x04\t\x0b\x08\x07\x07\n\x0c\x0e\r\n\x0f\x0f\r\x11\x11\x10\x10\x11\xb4\xe4\xe1\xe1\xe1\xb4\xe1\xe1\xb1\xe1\xb4\xe4\xe4\xe1\xb1\xe1\xe1\xb4\xe1') ]
 
+
 def _test_against_known_canonical_retriangulations():
     from snappy import Manifold
     for name, bytes_ in _known_canonical_retriangulations:
-        M = Manifold(name); K = verified_canonical_retriangulation(M)
-        L = Manifold('empty'); L._from_bytes(bytes_)
-        if not len(K.isomorphisms_to(L)):
+        M = Manifold(name)
+        K = verified_canonical_retriangulation(M)
+        L = Manifold('empty')
+        L._from_bytes(bytes_)
+        if not K.isomorphisms_to(L):
             raise Exception('%s failed' % name)

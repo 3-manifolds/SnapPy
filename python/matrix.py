@@ -84,16 +84,17 @@ class SimpleVector(number.SupportsMultiplicationByNumber):
         except IndexError:
             return self.type
 
+
 # A very basic matrix class
 class SimpleMatrix(number.SupportsMultiplicationByNumber):
     """
     A simple matrix class that wraps a list of lists.
     """
-    def __init__(self, list_of_lists, ring = None):
+    def __init__(self, list_of_lists, ring=None):
 
         if isinstance(list_of_lists, SimpleMatrix):
             list_of_lists = list_of_lists.data
-        if not ring is None:
+        if ring is not None:
             self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
         else:
             # XXX

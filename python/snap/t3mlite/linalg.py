@@ -171,7 +171,7 @@ class Matrix:
 
     def __init__(self, nrows=None, ncols=None, entries=None, pari_matrix=None):
         if nrows is not None:
-            if ncols==None:
+            if ncols is None:
                 nice_entries = nrows
                 try:
                     ncols = len(nrows[0])

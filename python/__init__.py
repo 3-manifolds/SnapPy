@@ -788,22 +788,18 @@ for mfld_class in [Triangulation, Manifold, ManifoldHP]:
                    'normal_boundary_slopes']:
         setattr(mfld_class, method, getattr(_spun, method))
 
+import textwrap
+
 #   Documentation for the module:
-SnapPy_doc = """
+__doc__ = """
 SnapPy is a Cython wrapping of Jeff Weeks' SnapPea kernel.
 
 The module defines the following classes:
-  Triangulation, Manifold,
-  AbelianGroup, FundamentalGroup, HolonomyGroup,
-  DirichletDomain, CuspNeighborhood, SymmetryGroup,
-  OrientableCuspedCensus, NonorientableCuspedCensus,
-  OrientableClosedCensus, NonorientableClosedCensus,
-  AlternatingKnotExteriors, NonalternatingKnotExteriors,
-  SnapPeaFatalError, pari, twister,
-  %s
-  %s.
-
-"""%(', '.join(database_objects), ', '.join(link_objects))
+%s""" % textwrap.fill(
+    ', '.join(__all__) + '.',
+    width = 78,
+    initial_indent = '    ',
+    subsequent_indent = '    ')
 
 # Add easy way to get the version info
 from .version import version as release_info

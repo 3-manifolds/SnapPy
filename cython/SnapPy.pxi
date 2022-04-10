@@ -756,7 +756,7 @@ cdef extern from "addl_code.h":
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
 cdef extern from "isomorphism_signature.h":
-    extern char* get_isomorphism_signature(c_Triangulation *triangulation)
+    extern char* get_isomorphism_signature(c_Triangulation *triangulation, Boolean ignore_orientation)
     extern c_Triangulation* triangulation_from_isomorphism_signature(char *isoSig)
 
 cdef extern from "ptolemy_types.h":

@@ -3,7 +3,7 @@
  *
  *  This file provides the function
  *
- *      char * get_isomorphism_signature(Triangulation *triangulation);
+ *      char * get_isomorphism_signature(Triangulation *triangulation, Boolean ignore_orientation);
  * and
  *
  *      Triangulation* triangulation_from_isomorphism_signature(const char *isoSig);
@@ -425,7 +425,7 @@ char* isomorphism_signature_from(
 }
 
 char* get_isomorphism_signature(
-    Triangulation* tri)
+    Triangulation* tri, Boolean ignore_orientation)
 {
     /* The current candidate isomorphism signature */
     /* If equal to comp, this pointer does not own the memory */
@@ -434,27 +434,39 @@ char* get_isomorphism_signature(
     /* This pointer always owns the memory */
     char* comp = NULL;
     int simp;
-    int perm;
+    int p;
+    Permutation perm;
 
     /* Iterate through all simplicies */
     for (simp = 0; simp < tri->num_tetrahedra; simp++)
 	/* And labelings of that simplex */
-	for (perm = 0; perm < 24; perm++)
+	for (p = 0; p < 24; p++)
 	{
-	    /* Get candidate isomorphism signature */
-	    curr = isomorphism_signature_from(
-		tri, simp, permutation_by_index[perm]);
+            perm = permutation_by_index[p]; 
 
-	    /* If this is the first candidate or it is a better canidadate */
-	    if ((!comp) || (strcmp(curr, comp) < 0)) {
-		/* Free the previous candidate if necessary */
-		if (comp)
-		    free(comp);  /* not "my_free" as only "malloc'd" */
-		/* And set the new best candidate */
-		comp = curr;
-	    } else {
-		/* Otherwise free the current candidate */
-		free(curr);  /* not "my_free" as only "malloc'd" */
+            /* Note that an even permutation has
+               parity[perm] == orientation_reversing, see comment
+               in tables.c */
+
+            if (ignore_orientation ||
+                tri->orientability == nonorientable_manifold ||
+                parity[perm] == orientation_reversing) {
+
+                /* Get candidate isomorphism signature */
+                curr = isomorphism_signature_from(tri, simp, perm);
+
+                /* If this is the first candidate or it is a better
+                   canidadate */
+                if ((!comp) || (strcmp(curr, comp) < 0)) {
+                    /* Free the previous candidate if necessary */
+                    if (comp)
+                        free(comp);  /* not "my_free" as only "malloc'd" */
+                    /* And set the new best candidate */
+                    comp = curr;
+                } else {
+                    /* Otherwise free the current candidate */
+                    free(curr);  /* not "my_free" as only "malloc'd" */
+                }
 	    }
 	}
 

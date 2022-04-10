@@ -2744,7 +2744,8 @@ cdef class Triangulation(object):
     def triangulation_isosig(self,
                              decorated=True,
                              ignore_cusp_ordering = False,
-                             ignore_curve_orientations = False):
+                             ignore_curve_orientations = False,
+                             ignore_orientation = True):
         """
         Returns a compact text representation of the triangulation, called a
         "decorated isomorphism signature"
@@ -2765,7 +2766,7 @@ cdef class Triangulation(object):
         By default, the returned string encodes the peripheral curves (and
         slopes of Dehn-fillings if any are present), but you can request
         only the "isomorphism signature" which can be given to
-        `Regina <http://regina.sf.net/>`_.
+        `Regina <https://regina-normal.github.io/>`_.
 
           >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
           >>> isosig = E.triangulation_isosig(decorated = False); isosig
@@ -2817,7 +2818,32 @@ cdef class Triangulation(object):
           [0 -1]  [0 -1]
           Extends to link]
 
-        The code has been copied from `Regina <http://regina.sf.net/>`_ where
+        By default, the isomorphism signature does not capture the orientation
+        of an orientable triangulation. If you specify
+        `ignore_orientation = False`, the isomorphism signature for an oriented
+        triangulation and its mirror image will be different if the
+        triangulation is cheiral.
+
+          >>> M = Manifold("m006")
+          >>> M.triangulation_isosig(decorated = False, ignore_orientation = False)
+          'dLQacccjnjs'
+          >>> M.reverse_orientation()
+          >>> M.triangulation_isosig(decorated = False, ignore_orientation = False)
+          'dLQacccnsnk'
+
+        Note that a decorated triangulation isosig with the default values
+        `ignore_orientation = True` but `ignore_curve_orientations = False`
+        still captures the orientations of the triangulation through the
+        peripheral curves.
+
+          >>> M = Manifold("m006")
+          >>> M.triangulation_isosig()
+          'dLQacccjnjs_aBbB'
+          >>> M.reverse_orientation()
+          >>> M.triangulation_isosig()
+          'dLQacccjnjs_aBBb'
+
+        The code has been copied from `Regina <https://regina-normal.github.io/>`_ where
         the corresponding method is called "isoSig".
 
         Unlike dehydrations for 3-manifold triangulations, an
@@ -2836,7 +2862,10 @@ cdef class Triangulation(object):
         cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        args = (decorated, ignore_cusp_ordering, ignore_curve_orientations)
+        args = (decorated,
+                ignore_cusp_ordering,
+                ignore_curve_orientations,
+                ignore_orientation)
         try:
             return self._cache.lookup('triangulation_isosig', *args)
         except KeyError:
@@ -2844,7 +2873,8 @@ cdef class Triangulation(object):
 
         if not decorated:
             try:
-                c_string = get_isomorphism_signature(self.c_triangulation)
+                c_string = get_isomorphism_signature(
+                    self.c_triangulation, ignore_orientation)
                 result = to_str(c_string)
             finally:
                 free(c_string)
@@ -2852,5 +2882,6 @@ cdef class Triangulation(object):
             result = decorated_isosig.decorated_isosig(
                 self, _triangulation_class,
                 ignore_cusp_ordering = ignore_cusp_ordering,
-                ignore_curve_orientations = ignore_curve_orientations)
+                ignore_curve_orientations = ignore_curve_orientations,
+                ignore_orientation = ignore_orientation)
         return self._cache.save(result, 'triangulation_isosig', *args)

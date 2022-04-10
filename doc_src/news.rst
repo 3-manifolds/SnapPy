@@ -9,6 +9,7 @@ News
   - Drilling any simple geodesic with :meth:`drill_word <snappy.Manifold.drill_word>` and :meth:`drill_words <snappy.Manifold.drill_words>`.
   - Added `include_words` to :meth:`length_spectrum <snappy.Manifold.length_spectrum>` showing the word corresponding to a geodesic which can be given to :meth:`drill_word <snappy.Manifold.drill_word>`.
   - Added geodesics to the :meth:`inside_view <snappy.Manifold.inside_view>` (add picture???).
+  - Added `ignore_orientation` flag to :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>`.
 
 * Version 3.0.3 (December 2021):
 

@@ -207,9 +207,12 @@ def supress_minus_zero(x):
 
 def decorated_isosig(manifold, triangulation_class,
                      ignore_cusp_ordering = False,
-                     ignore_curve_orientations = False):
+                     ignore_curve_orientations = False,
+                     ignore_orientation = True):
 
-    isosig = manifold.triangulation_isosig(decorated = False)
+    isosig = manifold.triangulation_isosig(
+        decorated = False,
+        ignore_orientation = ignore_orientation)
 
     # Do not decorate if no cusps
     if manifold.num_cusps() == 0:
@@ -227,6 +230,13 @@ def decorated_isosig(manifold, triangulation_class,
 
     # Try all combinatorial isomorphisms
     for tri_iso in manifold.isomorphisms_to(N):
+
+        # Do not consider orientation-reversing isomorphisms if
+        # ignore_orientation isn't specified.
+        if ( manifold.is_orientable() and
+             not ignore_orientation and
+             det(tri_iso.cusp_maps()[0]) < 0):
+            continue
 
         # Permutation of cusps
         perm = inverse_perm(tri_iso.cusp_images())

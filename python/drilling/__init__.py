@@ -102,7 +102,6 @@ def drill_word(manifold,
         'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
     """
 
-
     return drill_words(manifold,
                        [word],
                        verified = verified,
@@ -114,7 +113,6 @@ def drill_words(manifold,
                 verified : bool = False,
                 bits_prec = None,
                 verbose : bool = False):
-
     """
     A generalization of M.drill_word taking a list of words to
     drill several geodesics simultaneously.
@@ -218,40 +216,93 @@ def drill_words_implementation(
         perturb = False,
         verbose : bool = False):
 
+    # Convert SnapPea kernel triangulation to python triangulation
+    # snappy.snap.t3mlite.Mcomplex
     mcomplex = Mcomplex(manifold)
+
+    # Add vertices in hyperboloid model and other geometric information
     add_r13_geometry(mcomplex,
                      manifold,
                      verified = verified, bits_prec = bits_prec)
 
-    geodesics = [ compute_geodesic_info(mcomplex, word)
-                  for word in words ]
+    # For the words compute basic information such as the corresponding
+    # matrix and the end points and a sample point on the fixed line.
+    # Try to conjugate/translate matrix and end points such that the 
+    # line intersects the fundamental domain.
+    geodesics : Sequence[GeodesicInfo] = [
+        compute_geodesic_info(mcomplex, word)
+        for word in words ]
 
+    # Record information in the geodesics and triangulation needed
+    # to index the cusps after drilling and transform the peripheral
+    # curves and unfill the cusps if drilling a core curve.
     index_geodesics_and_add_post_drill_infos(geodesics, mcomplex)
 
+    # Only drill the geodesics that are not core curves of filled
+    # cusps. For the other geodesics, we simply unfill the cusp instead.
     geodesics_to_drill = [ g for g in geodesics
                            if not g.core_curve_cusp ]
 
     if perturb:
+        # Move the sample point for each geodesic a bit and use it
+        # as start point. Much of perturb_geodesics is about computing
+        # the maximal amount we can move all the start points without
+        # changing the isotopy class of the system of resulting closed
+        # loops.
         perturb_geodesics(mcomplex,
                           geodesics_to_drill,
                           verbose = verbose)
 
+    # At this point, the information in each entry of geodesics_to_drill
+    # "should" (*) contain a start point in the interior of a tetrahedron
+    # of the fundamental domain and an end point that is the image under
+    # the stored matrix corresponding to the geodesic.
+    # Depending on perturb, the start point is either on or close
+    # the line fixed by the matrix.
+    # The image of the line segment from start point to end point
+    # in the manifold is a closed loop that is equal or isotopic to the
+    # geodesic. If multiple words are given, the system of closed loops
+    # is isotopic to the system of geodesics.
+
+    # (*) This is not true if perturb is false and the geodesic intersects
+    # the 1-skeleton. In this case, drill_geodesics raises a
+    # GeodesicHittingOneSkeletonError which is caught by the callee so that
+    # the callee can call this function again with perturb = True.
+
+    # For each geodesic to drill, trace the line segment from start to end
+    # point through the triangulation, and then drill the closed loop.
     drilled_mcomplex : Mcomplex = drill_geodesics(mcomplex,
                                                   geodesics_to_drill,
                                                   verbose = verbose)
 
+    # Index the cusps of the new triangulation and extract information
+    # needed later
     post_drill_infos : Sequence[CuspPostDrillInfo] = (
         reorder_vertices_and_get_post_drill_infos(drilled_mcomplex))
 
+    # Convert python triangulation to SnapPea kernel triangulation.
+    # Note that this will remove the finite vertices created by
+    # drill_geodesics.
     drilled_manifold = drilled_mcomplex.snappy_manifold()
 
+    # If there was a filled cusp whose core curve was not drilled, we need
+    # to refill it. If there was a filled cusp whose core curve was drilled,
+    # we need to change the peripheral curves such that the longitude
+    # corresponds to the core curve so that (1,0)-filling results in the
+    # original manifold.
     refill_and_adjust_peripheral_curves(drilled_manifold, post_drill_infos)
 
+    # Set name
     drilled_manifold.set_name(manifold.name() + "_drilled")
 
     return drilled_manifold
 
 def _verify_not_parabolic(m, mcomplex, word):
+    """
+    Raise exception when user gives a word corresponding to a parabolic
+    matrix.
+    """
+
     if mcomplex.verified:
         epsilon = 0
     else:
@@ -263,11 +314,18 @@ def _verify_not_parabolic(m, mcomplex, word):
 
 def compute_geodesic_info(mcomplex : Mcomplex,
                           word) -> GeodesicInfo:
+    """
+    Compute basic information about a geodesic given a word.
+
+    add_r13_geometry must have been called on the Mcomplex.
+    """
 
     m = word_to_psl2c_matrix(mcomplex, word)
     _verify_not_parabolic(m, mcomplex, word)
+    # Line fixed by matrix
     line = R13LineWithMatrix.from_psl2c_matrix(m)
 
+    # Pick a point on the line
     start_point = sample_line(line)
 
     g = GeodesicInfo(
@@ -276,6 +334,13 @@ def compute_geodesic_info(mcomplex : Mcomplex,
         unnormalised_end_point = line.o13_matrix * start_point,
         line = line)
 
+    # Determines whether geodesic corresponds to a core curve.
+    # Applies Decktransformations so that start point lies within
+    # the interior of one tetrahedron in the fundamental domain or
+    # within the union of two tetrahedra neigboring in the hyperboloid
+    # model.
+    #
+    # See GeodesicInfo for details.
     g.find_tet_or_core_curve()
 
     return g
@@ -283,35 +348,67 @@ def compute_geodesic_info(mcomplex : Mcomplex,
 def drill_geodesics(mcomplex : Mcomplex,
                     geodesics : Sequence[GeodesicInfo],
                     verbose : bool = False) -> Mcomplex:
+    """
+    Given a triangulation with geometric structure attached with
+    add_r13_geometry and basic information about geodesics, computes
+    the triangulation (with finite vertices) obtained by drilling
+    the geodesics.
+
+    Each provided GeodesicInfo is supposed to have a start point and
+    a tetrahedron in the fundamental domain that contains the start point
+    in its interior and an end point such that the line segment from the
+    start to the endpoint forms a closed loop in the manifold.
+    """
 
     if len(geodesics) == 0:
+        # Nothing to do if there is nothing to drill
         return mcomplex
 
     for g in geodesics:
+        # We need a tetrahedron guaranteed to contain the start point
+        # to start tracing.
         if not g.tet:
             raise exceptions.GeodesicStartPointOnTwoSkeletonError()
 
-    all_pieces = [ trace_geodesic(g, verified = mcomplex.verified)
-                   for g in geodesics ]
+    # For each line segment described above, trace it through the
+    # triangulation.
+    all_pieces : Sequence[Sequence[GeodesicPiece]] = [
+        trace_geodesic(g, verified = mcomplex.verified)
+        for g in geodesics ]
 
     if verbose:
         print("Number of geodesic pieces:",
               [len(pieces) for pieces in all_pieces])
 
-    tetrahedra = traverse_geodesics_to_subdivide(
+    # Perform 1-4 and 2-3 moves such that the closed loops embed
+    # into the 1-skeleton of the resulting triangulation.
+    #
+    # Rather than creating a triangulation object (and thus
+    # computing the Vertex, Edge, ... objects), we just compute
+    # the tetrahedra forming the triangulation.
+    tetrahedra : Sequence[Tetrahedron] = traverse_geodesics_to_subdivide(
         mcomplex, all_pieces)
 
     if verbose:
         print("Number of tets after subdividing: %d" % (
             len(tetrahedra)))
 
-    result = crush_geodesic_pieces(tetrahedra)
+    # Perform a barycentric subdivision. Then crush all tetrahedra
+    # touching the closed loop we traced. Note that
+    # crush_geodesic_pieces is actually doing the subdivision and
+    # crushing in just one step.
+    result : Mcomplex = crush_geodesic_pieces(tetrahedra)
 
+    # Sanity checks while we are still testing the new features.
     debug.check_vertex_indices(result.Tetrahedra)
     debug.check_peripheral_curves(result.Tetrahedra)
 
     return result
 
+# Create a version of drill_word and drill_words suitable
+# for ManifoldHP.
+# Use @functools.wraps to carry forward the argument names
+# and default values and the doc string.
 @functools.wraps(drill_word)
 def drill_word_hp(*args, **kwargs):
     return drill_word(*args, **kwargs).high_precision()

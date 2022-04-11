@@ -117,3 +117,26 @@ def compute_geodesic_key(geodesic):
         length = - length
 
     return (int(length.real() * 1e5), int(abs(length.imag() * 1e5)), length.imag() > 1e-5, geodesic.index)
+
+def _hsv2rgb_helper(hue, saturation, value, x):
+    p = abs(((hue + x / 3.0) % 1.0) * 6.0 - 3.0)
+    c = min(max(p - 1.0, 0.0), 1.0)
+    return value * (1.0 + saturation * (c - 1.0))
+
+def hsv2rgb(hue, saturation, value):
+    """
+    Reimplementation of hsv2rgb from fragment.glsl.
+    """
+
+    return [ _hsv2rgb_helper(hue, saturation, value, x)
+             for x in [ 0.0, 2.0, 1.0 ] ]
+
+def geodesic_index_to_color(i):
+    """
+    Reimplementation of object_type_geodesic_tube case of
+    material_params from fragment.glsl.
+    """
+
+    golden_angle_by_2_pi = 0.3819660112501051
+
+    return hsv2rgb(golden_angle_by_2_pi * i + 0.1, 1.0, 1.0)

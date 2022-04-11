@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 
 from .gui_utilities import UniformDictController
+from .geodesics import geodesic_index_to_color
 
 class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
@@ -98,10 +99,14 @@ class GeodesicsWindow(tkinter.Toplevel):
             l = ttk.Label(self.geodesics_frame, text = str(geodesic.complex_length))
             l.grid(row = row, column = length_column)
 
-            l = ttk.Label(self.geodesics_frame, text = "Color %d" % geodesic.index)
+            color = geodesic_index_to_color(geodesic.index)
+
+            l = ttk.Label(self.geodesics_frame,
+                          text = "Color")
+            l.configure(foreground = color_to_tkinter(color))
             l.grid(row = row, column = color_column)
 
-            UniformDictController.create_horizontal_scale(
+            scale = UniformDictController.create_horizontal_scale(
                 self.geodesics_frame,
                 self.raytracing_view.ui_parameter_dict,
                 key = 'geodesicTubeRadii',
@@ -111,7 +116,10 @@ class GeodesicsWindow(tkinter.Toplevel):
                 left_end = 0.0,
                 right_end = 1.0,
                 update_function = self.raytracing_view.update_geodesic_data_and_redraw,
-                format_string = '%.3f')
+                format_string = '%.3f').scale
+
+            # Need to color Scale - but the following code fails.
+            # scale.configure(background = color_to_tkinter(color))
 
             row += 1
 
@@ -141,3 +149,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
         self.raytracing_view.update_geodesic_data_and_redraw()
+
+def color_to_tkinter(color):
+    return "#%.3x%.3x%.3x" % tuple([min(max(int(x * 4095), 0), 4095)
+                                    for x in color])

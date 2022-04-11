@@ -18,26 +18,24 @@ def traverse_geodesics_to_subdivide(
         for piece in pieces:
             piece.tet.geodesic_pieces.append(piece)
 
-    start_pieces = { pieces[0].index : pieces[0] for pieces in all_pieces }
+    start_pieces = [ pieces[0] for pieces in all_pieces ]
 
-    for index in list(sorted(start_pieces.keys())):
-        debug.check_consistency_segments(debug.flatten_link_list(start_pieces[index]))
+    for start_piece in start_pieces:
+        debug.check_consistency_segments(debug.flatten_link_list(start_piece))
 
-    for index in list(sorted(start_pieces.keys())):
-        last_piece = _traverse_geodesic_to_subdivide(start_pieces[index], start_pieces, mcomplex.verified)
+    for start_piece in start_pieces:
+        last_piece = _traverse_geodesic_to_subdivide(start_piece, mcomplex.verified)
 
     return _find_and_index_all_tetrahedra(last_piece.tet)
 
 def _traverse_geodesic_to_subdivide(
         start_piece : GeodesicPiece,
-        start_pieces : Dict[int, GeodesicPiece],
         verified : bool) -> GeodesicPiece:
     
     debug.check_consistency_2(start_piece)
 
     end_piece, piece = one_four_move(
         [start_piece.prev, start_piece],
-        start_pieces,
         verified)
     
     debug.check_consistency_2(piece)
@@ -47,17 +45,17 @@ def _traverse_geodesic_to_subdivide(
 
         if piece.is_face_to_vertex():
             
-            piece = two_three_move([piece.prev, piece], start_pieces, verified)
+            piece = two_three_move([piece.prev, piece], verified)
 
             debug.check_consistency_2(piece)
 
             return piece
         
-        piece, next_piece = one_four_move([piece], start_pieces, verified)
+        piece, next_piece = one_four_move([piece], verified)
 
         debug.check_consistency_2(piece)
 
-        piece = two_three_move([piece.prev, piece], start_pieces, verified)
+        piece = two_three_move([piece.prev, piece], verified)
 
         debug.check_consistency_2(piece)
 

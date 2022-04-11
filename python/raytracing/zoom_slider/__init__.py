@@ -16,10 +16,10 @@ class Slider(ttk.Scale):
     Subclass of ttk.Scale which makes clicking on the track cause the
     knob to move to the click point.
     """
-    def __init__(self, master, left_end, right_end,
+    def __init__(self, container, left_end, right_end,
                  orient = tkinter.HORIZONTAL):
         ttk.Scale.__init__(self,
-                           master = master,
+                           master = container,
                            from_ = self._slider_left_end,
                            to = self._slider_right_end,
                            value = 2.0,
@@ -82,9 +82,9 @@ class ZoomSlider(ttk.Frame):
     min_span = 0.05
     max_span = 100
 
-    def __init__(self, master, left_end, right_end, label_text=None, on_change=None):
+    def __init__(self, container, left_end, right_end, label_text=None, on_change=None):
         self._build_icons()
-        ttk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, container)
         self.left_end = left_end
         self.right_end = right_end
         self.on_change = on_change

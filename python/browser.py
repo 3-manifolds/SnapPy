@@ -14,6 +14,10 @@ from .exceptions import SnapPeaFatalError
 from plink import LinkViewer, LinkEditor
 from plink.ipython_tools import IPythonTkRoot
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
+try:
+    from tkinter.simpledialog import _place_window
+except:
+    pass
 
 
 main_window = None
@@ -34,9 +38,9 @@ class SelectableText(ttk.Frame):
     background color matches the background of a depth 2 LabelFrame
     by default.
     """
-    def __init__(self, master, labeltext='', width=18, depth=2):
-        ttk.Frame.__init__(self, master)
-        self.var = Tk_.StringVar(master)
+    def __init__(self, container, labeltext='', width=18, depth=2):
+        ttk.Frame.__init__(self, container)
+        self.var = Tk_.StringVar(container)
         style = SnapPyStyle()
         bg_color = style.groupBG if depth == 1 else style.subgroupBG
         self.label = label = ttk.Label(self, text=labeltext)
@@ -71,9 +75,9 @@ class SelectableMessage(ttk.Frame):
     the selection does not highlight correctly unless the Text widget has
     focus and does not clear correctly unless the state is NORMAL.
     """
-    def __init__(self, master):
-        self.master = master
-        ttk.Frame.__init__(self, master)
+    def __init__(self, container):
+        self.container = container
+        ttk.Frame.__init__(self, container)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         self.text = text = Tk_.Text(self, width=60, height=12,
             highlightthickness=0, relief=Tk_.FLAT,
@@ -106,10 +110,10 @@ class SelectableMessage(ttk.Frame):
         self.text.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
-    def __init__(self, master, facedicts=[], title='Polyhedron Tab', parent=None):
+    def __init__(self, container, facedicts=[], title='Polyhedron Tab', parent=None):
         self.main_window = main_window
         self.style = style = SnapPyStyle()
-        PolyhedronViewer.__init__(self, master, facedicts=facedicts,
+        PolyhedronViewer.__init__(self, container, facedicts=facedicts,
                                   title=title, bgcolor=style.groupBG)
     def update_menus(self, menubar):
         menubar.children['help'].activate(
@@ -748,14 +752,13 @@ class Browser(Tk_.Toplevel):
         self.wait_window(self)
 
 class Driller(SimpleDialog):
-    def __init__(self, master, manifold):
+    def __init__(self, parent, manifold):
         self.manifold = manifold
         self.num = 0 # make the superclass happy
         self.max_segments = 6
         self.result = []
         style = SnapPyStyle()
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy',
-                                        bg=style.windowBG)
+        self.root = root = Tk_.Toplevel(parent, class_='SnapPy', bg=style.windowBG)
         title = 'Drill'
         root.title(title)
         root.iconname(title)
@@ -807,7 +810,7 @@ class Driller(SimpleDialog):
         button.pack(side=Tk_.LEFT, padx=6)
         button_frame.pack(pady=6)
         self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
-        self._set_transient(master)
+        _place_window(self.root, parent)
 
     def show_curves(self):
         self.curves.delete(*self.curves.get_children())
@@ -844,12 +847,12 @@ class Driller(SimpleDialog):
         return True
 
 class Coverer(SimpleDialog):
-    def __init__(self, master, manifold):
+    def __init__(self, parent, manifold):
         self.manifold = manifold.copy()
         self.num = 0 # make the superclass happy
         self.result = []
         style = SnapPyStyle()
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.windowBG)
+        self.root = root = Tk_.Toplevel(parent, class_='SnapPy', bg=style.windowBG)
         title = 'Cover'
         root.title(title)
         root.iconname(title)
@@ -915,7 +918,10 @@ class Coverer(SimpleDialog):
         button.grid(row=0, column=1, sticky=Tk_.W, padx=6)
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
         self.root.protocol('WM_DELETE_WINDOW', self.cancel)
-        self._set_transient(master)
+        try:
+            _place_window(self.root, parent)
+        except AttributeError:
+            self._set_transient(container)
         degree_var.set('2')
         cyclic_var.set(True)
         self.show_covers()

@@ -9,13 +9,13 @@ from .zoom_slider import Slider, ZoomSlider
 # Main widget
 
 class FiniteViewer(ttk.Frame):
-    def __init__(self, master, manifold,
+    def __init__(self, container, manifold,
                  fillings_changed_callback = None,
                  weights = None,
                  cohomology_basis = None,
                  cohomology_class = None):
 
-        ttk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, container)
         self.bindtags(self.bindtags() + ('finite',))
 
         self.fillings_changed_callback = fillings_changed_callback
@@ -74,8 +74,8 @@ class FiniteViewer(ttk.Frame):
 
         self.menubar = None
         self.build_menus()
-        if isinstance(master, tkinter.Toplevel) and self.menubar:
-            master.config(menu=self.menubar)
+        if isinstance(container, tkinter.Toplevel) and self.menubar:
+            container.config(menu=self.menubar)
         self.focus_viewer()
 
     def focus_viewer(self, event=None):
@@ -386,7 +386,7 @@ class FiniteViewer(ttk.Frame):
             cohomology_basis = cohomology_basis,
             cohomology_class = cohomology_class,
             geodesics = [],
-            master = frame,
+            container = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.widget.make_current()

@@ -13,8 +13,9 @@ class PolyhedronViewer(ttk.Frame):
     Displays a hyperbolic polyhedron, either in the Poincare or Klein model.
     """
 
-    def __init__(self, master, facedicts=[], **kwargs):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, parent, facedicts=[], **kwargs):
+        ttk.Frame.__init__(self, parent)
+        self.parent = parent
         self.empty = (len(facedicts) == 0)
         self.style = style = SnapPyStyle()
         self.bgcolor = kwargs.get('bgcolor', self.style.windowBG)
@@ -46,7 +47,7 @@ class PolyhedronViewer(ttk.Frame):
         spherelabel.insert(Tk_.END, '∞', 'sub')
         spherelabel.config(state=Tk_.DISABLED)
         if sys.platform == 'darwin':
-            if master:
+            if parent:
                 spherelabel.configure(background=self.style.groupBG)
             else:
                 spherelabel.configure(background=self.style.windowBG)
@@ -55,7 +56,7 @@ class PolyhedronViewer(ttk.Frame):
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))
         spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        self.widget = widget = OpenGLPerspectiveWidget(master = bottomframe,
+        self.widget = widget = OpenGLPerspectiveWidget(bottomframe,
                                                        width = 600,
                                                        height = 500,
                                                        double = 1,
@@ -85,8 +86,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
-        if isinstance(master, Tk_.Toplevel) and self.menubar:
-            master.config(menu=self.menubar)
+        if isinstance(parent, Tk_.Toplevel) and self.menubar:
+            parent.config(menu=self.menubar)
         self.add_help()
         # Added to avoid occasional missing faces in the browser.
         self.update_idletasks()
@@ -105,7 +106,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def export_stl(self):
         model = self.model_var.get()
         file = filedialog.asksaveasfile(
-            parent=self.master,
+            parent=self.parent,
             title='Save %s model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
@@ -124,7 +125,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def export_cutout_stl(self):
         model = self.model_var.get()
         file = filedialog.asksaveasfile(
-            parent=self.master,
+            parent=self.parent,
             title='Save %s model cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [

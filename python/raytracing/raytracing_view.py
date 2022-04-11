@@ -70,12 +70,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                  cohomology_basis, # Each entry are weights for the tet faces
                  cohomology_class, # Number for each entry in basis specifying superposition
                  geodesics,
-                 master,
+                 container,
                  *args,
                  **kwargs):
 
         SimpleImageShaderWidget.__init__(
-            self, master,
+            self, container,
             *args, **kwargs)
 
         self.trig_type = trig_type

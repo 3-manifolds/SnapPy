@@ -6,15 +6,14 @@ from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
 from tkinter.simpledialog import Dialog, SimpleDialog
 from tkinter.messagebox import askyesno
-
 from plink.ipython_tools import IPythonTkRoot
 from . import filedialog
 from .ppm_to_png import convert_ppm_to_png
 
 if sys.version_info.major < 3 or sys.version_info.minor < 7:
     class Spinbox(ttk.Entry):
-        def __init__(self, master=None, **kw):
-            ttk.Entry.__init__(self, master, "ttk::spinbox", **kw)
+        def __init__(self, container=None, **kw):
+            ttk.Entry.__init__(self, container, "ttk::spinbox", **kw)
 
         def set(self, value):
             self.tk.call(self._w, "set", value)
@@ -49,7 +48,7 @@ class ViewerWindow(Tk_.Toplevel):
     def __init__(self, view_class, *args, **kwargs):
         window_type = kwargs.pop('window_type', 'untyped')
         self.root = kwargs.pop('root', self._get_root(window_type))
-        Tk_.Toplevel.__init__(self, master=self.root, class_='snappy')
+        Tk_.Toplevel.__init__(self, self.root, class_='snappy')
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.title(string=kwargs.pop('title', ''))
         self.view = view_class(self, *args, **kwargs)
@@ -69,7 +68,7 @@ class ViewerWindow(Tk_.Toplevel):
     def _togl_save_image(self):
         """
         Helper for the save_image menu command of a ViewerWindow.
-        It expects to be passed the view Frame (not the master Toplevel)
+        It expects to be passed the view Frame (not the parent Toplevel)
         and it saves a PNG image of the current state of the view.
         """
         view = self.view

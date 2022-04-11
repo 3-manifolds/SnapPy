@@ -272,9 +272,9 @@ def plink_menus(self):
 def dirichlet_menus(self):
     """
     Menus for the standalone Dirichlet viewer.  Called by the view Frame, not the
-    master Toplevel.
+    parent Toplevel.
     """
-    self.menubar = menubar = Tk_.Menu(self.master)
+    self.menubar = menubar = Tk_.Menu(self.parent)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
                             command=lambda : about_snappy(self.master))

@@ -21,7 +21,7 @@ class UniformDictController:
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
 
-        scale = Slider(master = container,
+        scale = Slider(container = container,
                        left_end = left_end,
                        right_end = right_end)
         scale.grid(row = row, column = column, sticky = slider_stick)

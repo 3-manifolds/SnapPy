@@ -9,11 +9,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
 
-        tkinter.Toplevel.__init__(
-            self,
-            master = inside_viewer,
-            class_='snappy')
-
+        tkinter.Toplevel.__init__(self, class_='snappy')
         self.title('Geodesics')
 
         self.frame = ttk.Frame(self)

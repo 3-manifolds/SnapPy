@@ -33,7 +33,7 @@ jobs:
             pip install cython sphinx cypari FXrays &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
             pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
-            pip install https://github.com/3-manifolds/Spherogram/archive/master.zip
+            pip install https://github.com/3-manifolds/Spherogram/archive/093850bc4752b75f5c.zip
           CIBW_BEFORE_TEST: >
             pip install cython &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&

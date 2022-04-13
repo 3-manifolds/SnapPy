@@ -53,11 +53,19 @@ class GeodesicHittingOneSkeletonError(DrillGeodesicError):
     """
 
 class GeodesicStartPointOnTwoSkeletonError(GeodesicHittingOneSkeletonError):
-    pass
+    """
+    Raised when the start point given to GeodesicInfo appears not to be in the
+    interior of a tetrahedron.
+    """
 
 class RayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
-    pass
+    """
+    Raised when the geodesic appears to intersect the 1-skeleton of the
+    original triangulation.
+    """
 
 class RetracingRayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
-    pass
-
+    """
+    Raised when the geodesic appears to intersect the 1-skeleton of the
+    subdivided triangulation.
+    """

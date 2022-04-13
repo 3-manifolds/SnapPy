@@ -45,7 +45,7 @@ def drill_word(manifold,
     geodesic and the longitude and meridian for that cusp are chosen such that
     (1,0)-filling results in the original (undrilled) manifold. The orientation
     of the new longitude is chosen so that it is parallel to the closed geodesic.
-    That is, the new longitude is homotopic to the closed geodsic when embedding
+    That is, the new longitude is homotopic to the closed geodesic when embedding
     the drilled manifold into the original manifold.
 
         >>> N.dehn_fill((1,0),1)
@@ -248,7 +248,7 @@ def drill_words_implementation(
         # as start point. Much of perturb_geodesics is about computing
         # the maximal amount we can move all the start points without
         # changing the isotopy class of the system of resulting closed
-        # loops.
+        # curves.
         perturb_geodesics(mcomplex,
                           geodesics_to_drill,
                           verbose = verbose)
@@ -260,8 +260,8 @@ def drill_words_implementation(
     # Depending on perturb, the start point is either on or close
     # the line fixed by the matrix.
     # The image of the line segment from start point to end point
-    # in the manifold is a closed loop that is equal or isotopic to the
-    # geodesic. If multiple words are given, the system of closed loops
+    # in the manifold is a closed curve that is equal or isotopic to the
+    # geodesic. If multiple words are given, the system of closed curve
     # is isotopic to the system of geodesics.
 
     # (*) This is not true if perturb is false and the geodesic intersects
@@ -270,7 +270,7 @@ def drill_words_implementation(
     # the callee can call this function again with perturb = True.
 
     # For each geodesic to drill, trace the line segment from start to end
-    # point through the triangulation, and then drill the closed loop.
+    # point through the triangulation, and then drill the closed curve.
     drilled_mcomplex : Mcomplex = drill_geodesics(mcomplex,
                                                   geodesics_to_drill,
                                                   verbose = verbose)
@@ -357,7 +357,7 @@ def drill_geodesics(mcomplex : Mcomplex,
     Each provided GeodesicInfo is supposed to have a start point and
     a tetrahedron in the fundamental domain that contains the start point
     in its interior and an end point such that the line segment from the
-    start to the endpoint forms a closed loop in the manifold.
+    start to the endpoint forms a closed curve in the manifold.
     """
 
     if len(geodesics) == 0:
@@ -380,7 +380,7 @@ def drill_geodesics(mcomplex : Mcomplex,
         print("Number of geodesic pieces:",
               [len(pieces) for pieces in all_pieces])
 
-    # Perform 1-4 and 2-3 moves such that the closed loops embed
+    # Perform 1-4 and 2-3 moves such that the closed curves embed
     # into the 1-skeleton of the resulting triangulation.
     #
     # Rather than creating a triangulation object (and thus
@@ -394,7 +394,7 @@ def drill_geodesics(mcomplex : Mcomplex,
             len(tetrahedra)))
 
     # Perform a barycentric subdivision. Then crush all tetrahedra
-    # touching the closed loop we traced. Note that
+    # touching the closed curve we traced. Note that
     # crush_geodesic_pieces is actually doing the subdivision and
     # crushing in just one step.
     result : Mcomplex = crush_geodesic_pieces(tetrahedra)

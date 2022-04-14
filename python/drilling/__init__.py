@@ -91,15 +91,16 @@ def drill_word(manifold,
         sage: M.drill_word('caa', verified = True, bits_prec = 100)
         m004_drilled(2,3)(0,0)
 
-    More testing::
+    An example where we drill the core geodesic::
 
         >>> from snappy import Manifold
         >>> M = Manifold("v2986(3,4)")
-        >>> M.drill_word('EdFgabcGEdFgaDcc').canonical_retriangulation().triangulation_isosig(decorated=True)
-        'jvLALQQdeefgihihiokcmmwwswg_edBB'
-        >>> M = Manifold("v2986")
-        >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(decorated=True)
-        'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
+        >>> N = M.drill_word('EdFgabcGEdFgaDcc')
+        >>> N.is_isometric_to(Manifold("v2986"), return_isometries = True) # doctest: +NORMALIZE_WHITESPACE
+        [0 -> 0
+         [3 -1]
+         [4 -1]
+         Does not extend to link]
     """
 
     return drill_words(manifold,
@@ -427,6 +428,48 @@ def _add_methods(mfld_class, high_precision = False):
 
 def dummy_function_for_additional_doctests():
     """
+    Test with manifold without symmetry. Note that the code in drilling is
+    deterministic but the SnapPea kernel code to remove the finite vertices
+    and simplify is not. Thus, we need canonical_retriangulation() to get
+    a consistent result:
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("v2986")
+        >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
+
+    Test non-simple geodesic:
+
+        >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
+        >>> from snappy import ManifoldHP
+        >>> M = ManifoldHP("m004")
+        sage: try: # doctest +NUMERIC21
+        ...       M.drill_word('bbCC', verified = True)
+        ... except GeodesicSystemNotSimpleError as e:
+        ...     print("Not simple")
+        Not simple
+
+    Tests drilling one geodesic that intersects 1-skeleton::
+
+        >>> M = Manifold("m125")
+        >>> M.drill_word('d').triangulation_isosig(ignore_orientation=False)
+        'gLLPQcdefeffpvauppb_acbBbBaaBbacbBa'
+
+    Tests drilling two geodesics that intersect each other:
+
+        >>> try: # doctest: +NUMERIC9
+        ...     M.drill_words(['d','Ad'])
+        ... except GeodesicSystemNotSimpleError as e:
+        ...     print("Max tube radius:", e.maximal_tube_radius)
+        Max tube radius: 0.0000000000
+
+    Tests drilling geodesics that are entirely in the 2-skeleton::
+
+        >>> M.drill_words(['a','acAADa']).triangulation_isosig(ignore_orientation=False)
+        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+        sage: M.drill_words(['a','acAADa'], verified = True).triangulation_isosig(ignore_orientation=False)
+        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+
     Test error when drilling something close to core curve::
 
         >>> from snappy import Manifold
@@ -434,7 +477,7 @@ def dummy_function_for_additional_doctests():
         >>> MM = M.drill_word('d')
         >>> MM.dehn_fill((1,0),2)
         >>> bad_word = 'bc'
-        >>> MM.drill_word(bad_word) #doctest: +ELLIPSIS
+        >>> MM.drill_word(bad_word) # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
         snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
@@ -444,7 +487,7 @@ def dummy_function_for_additional_doctests():
     in the GeodesicTube code used to determine the maximal amount we can
     perturb the geodesic:
 
-        >>> drill_words_implementation(MM, [bad_word], verified = False, bits_prec = 53, perturb = True) #doctest: +ELLIPSIS
+        >>> drill_words_implementation(MM, [bad_word], verified = False, bits_prec = 53, perturb = True) # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
         snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.

@@ -14,7 +14,6 @@ from typing import Sequence, Optional, Union, Tuple, List, Dict, Mapping
 __all__ = ['one_four_move', 'two_three_move']
 
 def one_four_move(given_pieces : Sequence[GeodesicPiece],
-                  start_pieces : Dict[int, GeodesicPiece],
                   verified : bool) -> Sequence[GeodesicPiece]:
 
     tet : Tetrahedron = given_pieces[0].tet
@@ -152,19 +151,17 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
                     for new_tet in new_tets.values() ]
             else:
                 allowed_end_corners = [ (new_tets[end_subsimplex], end_subsimplex) ]
-            old_piece.replace_by(
-                _retrace_geodesic_piece(
-                    old_piece.index,
-                    new_tets,
-                    new_tets[start_subsimplex],
-                    start_subsimplex,
-                    end_cell_dimension,
-                    r13_endpoints[0],
-                    r13_endpoints[1],
-                    retrace_direction,
-                    start_pieces,
-                    verified,
-                    allowed_end_corners = allowed_end_corners))
+            _retrace_geodesic_piece(
+                old_piece,
+                new_tets,
+                new_tets[start_subsimplex],
+                start_subsimplex,
+                end_cell_dimension,
+                r13_endpoints[0],
+                r13_endpoints[1],
+                retrace_direction,
+                verified,
+                allowed_end_corners = allowed_end_corners)
 
     start_point : Endpoint = given_pieces[0].endpoints[0]
     end_point : Endpoint = given_pieces[-1].endpoints[1]
@@ -187,7 +184,6 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     return new_pieces
 
 def two_three_move(given_pieces : Sequence[GeodesicPiece],
-                   start_pieces : Dict[int, GeodesicPiece],
                    verified : bool) -> Sequence[GeodesicPiece]:
     """
     piece is assumed to go from a vertex to opposite face.
@@ -401,18 +397,16 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                 new_start_subsimplex = old_to_new_tets[j][i].image(start_subsimplex)
 
                 if new_start_subsimplex == new_face:
-                    old_piece.replace_by(
-                        _retrace_geodesic_piece(
-                            old_piece.index,
-                            new_tets,
-                            new_tet,
-                            new_face,
-                            end_cell_dimension,
-                            start_point, end_point,
-                            trace_end - trace_start,
-                            start_pieces,
-                            verified,
-                            allowed_end_corners = allowed_end_corners))
+                    _retrace_geodesic_piece(
+                        old_piece,
+                        new_tets,
+                        new_tet,
+                        new_face,
+                        end_cell_dimension,
+                        start_point, end_point,
+                        trace_end - trace_start,
+                        verified,
+                        allowed_end_corners = allowed_end_corners)
                     break
             else:
                 raise Exception("No match")
@@ -438,7 +432,7 @@ _swap_perms = { (f0, f1) : _swap_perm(i, j)
                 for j, f1 in enumerate(simplex.TwoSubsimplices) }
 
 def _retrace_geodesic_piece(
-        index : int,
+        old_piece : GeodesicPiece,
         tets : Union[Mapping[int,Tetrahedron], Sequence[Tetrahedron]],
         tet : Tetrahedron,
         face : int,
@@ -446,7 +440,6 @@ def _retrace_geodesic_piece(
         start_point,
         end_point,
         trace_direction : int,
-        start_pieces : Dict[int, GeodesicPiece],
         verified : bool,
         allowed_end_corners : Optional[Sequence[Tuple[Tetrahedron, int]]] = None):
 
@@ -455,6 +448,8 @@ def _retrace_geodesic_piece(
         epsilon = 0
     else:
         epsilon = compute_epsilon(RF)
+
+    index = old_piece.index
 
     direction = end_point - start_point
 
@@ -542,17 +537,20 @@ def _retrace_geodesic_piece(
                         "This is either due to a lack of precision or an "
                         "implementation bug.")
 
-            p = GeodesicPiece.create_and_attach(
-                index,
-                tet,
-                [ Endpoint(start_point + param * direction, face),
-                  Endpoint(end_point, end_cell) ][::trace_direction])
+            endpoints = [ Endpoint(start_point + param * direction, face),
+                          Endpoint(end_point, end_cell) ][::trace_direction]
 
             if dimension_end_cell == 3 and trace_direction < 0:
-                start_pieces[index] = p
+                old_piece.tet = tet
+                tet.geodesic_pieces.append(old_piece)
+                old_piece.endpoints = endpoints
+                pieces.append(old_piece)
+            else:
+                pieces.append(
+                    GeodesicPiece.create_and_attach(index, tet, endpoints))
 
-            pieces.append(p)
-            return pieces[::trace_direction]
+            old_piece.replace_by(pieces[::trace_direction])
+            return
 
         pieces.append(
             GeodesicPiece.create_and_attach(
@@ -577,7 +575,8 @@ def _retrace_geodesic_piece(
                 GeodesicPiece.create_face_to_vertex_and_attach(
                     index,
                     tet, Endpoint(start_point + hit_param * direction, face), trace_direction))
-            return pieces[::trace_direction]
+            old_piece.replace_by(pieces[::trace_direction])
+            return
     else:
         raise Exception(
             "Too many steps when re-tracing a geodesic piece. "

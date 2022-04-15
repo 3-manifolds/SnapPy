@@ -99,15 +99,15 @@ class GeodesicInfo:
                  mcomplex : Mcomplex,
 
                  # A point on or near the line corresponding to the closed geodesic.
-                 
+
                  # It is a light-like R13-vector. Using Any as type annotation because
                  # this might be a SimpleVector or SageMath type.
                  unnormalised_start_point : Any,
-                 
+
                  # Optional: image of the point under the matrix corresponding to
                  # the closed geodesic and fixing the given line (set-wise).
                  unnormalised_end_point : Optional[Any] = None,
-                 
+
                  # Line corresponding to the closed geodesic with matrix.
                  # Must be given if we want to detect whether this geodesic
                  # is a core curve.
@@ -117,20 +117,20 @@ class GeodesicInfo:
                  # is guaranteed to be in this tetrahedron (as part of the
                  # fundamental domain).
                  tet : Optional[Tetrahedron] = None,
-                 
+
                  # Output of find_tet_or_core_curve: if non-empty, the start point
                  # is guaranteed to be in the union of the lifted tetrahedra.
                  # A lifted tetrahedron is encoded as a pair of a tetrahedron
                  # (in the fundamental domain) and an O(1,3)-matrix and is the
                  # image of this tetrahedron under the matrix.
                  # domain and a O(1,3)-matrix that needs to be applied
-                 
+
                  lifted_tetrahedra : Sequence[LiftedTetrahedron] = (),
-                 
+
                  # Output of find_tet_or_core_curve: if not None, the geodesic
                  # corresponds to the core curve for this cusp.
                  core_curve_cusp : Optional[Vertex] = None,
-                 
+
                  # Output of find_tet_or_core_corve: sign (+1/-1) indicating whether
                  # the given geodesic and the core curve run parallel or
                  # anti-parallel.

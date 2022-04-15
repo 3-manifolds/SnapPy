@@ -21,20 +21,53 @@ def perturb_geodesics(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo],
         verbose = False):
+    """
+    Given a triangulation with structures added by add_r13_geometry
+    and GeodesicInfo's with start points on the line that is a lift
+    of the closed geodesic, perturbs the start point away from the line
+    and computes a new end point (as image of the new start point under
+    the matrix associated to the geodesic line). The line segment
+    from the start point to the end point forms a simple closed
+    curve in the manifold which is guaranteed to be isotopic to the
+    closed geodesic.
+
+    If several GeodesicInfo's are given and/or there are filled
+    cusps with core curves, the system of simple closed curves
+    resulting from the perturbation together with the core curves
+    is guarenteed to be isotopic to the original system of closed
+    geodesics together with the core curves.
+
+    Through the perturbation, the simple closed curve should avoid
+    the 1-skeleton (more precision might be required to see this).
+    In particular, the start point should be in the interior of
+    a tetrahedron and trace_geodesic should succeed.
+    An example where trace_geodesic would not succeed without
+    perturbation is e.g., the geodesic 'a' in m125 which lies entirely
+    in the 2-skeleton.
+    """
 
     if mcomplex.verified:
         epsilon = 0
     else:
         epsilon = epsilons.compute_tube_injectivity_radius_epsilon(mcomplex.RF)
 
+    # Compute a lower bound for the maximal distance we can
+    # perturb the start points before we might change the isotopy class.
+    #
     r = compute_lower_bound_injectivity_radius(mcomplex, geodesics)
 
     if verbose:
         print("Tubes lower bound injectivity radius:", r)
 
+    # If the distance between two different closed geodesics or
+    # between two different lifts of the same geodesic (that is the
+    # closed geodesic is not simple) or between
+    # a closed geodesic and a core curve is zero, raise exception that
+    # the system is not simple.
     if not r > epsilon:
         raise exceptions.GeodesicSystemNotSimpleError(r)
 
+    # Perturb each geodesic using above amount
     for g in geodesics:
         perturb_geodesic(g, r, mcomplex.verified)
 

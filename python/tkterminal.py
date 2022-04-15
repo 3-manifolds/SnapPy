@@ -9,7 +9,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -119,6 +119,7 @@ class TkTerm:
         # 'output_end' marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
+        # Normally it is set at the end of the input prompt.
         self.text.mark_set('output_end', Tk_.INSERT)
         self.text.mark_gravity('output_end', Tk_.LEFT)
         text.tag_config('output')
@@ -265,8 +266,26 @@ class TkTerm:
             return
         keysym = event.keysym
         if keysym == 'Left':
-            # Don't go past the prompt
-            if self.text.compare(Tk_.INSERT, '<', 'output_end+1c'):
+            # Don't go into the prompt or continuation prompt
+            insert_line, insert_pos = map(int, self.text.index(Tk_.INSERT).split('.'))
+            if insert_pos <= self._prompt_size:
+                prompt_line = int(self.text.index('output_end').split('.')[0])
+                if insert_line > prompt_line:
+                    self.text.mark_set(Tk_.INSERT, '%s.0-1c'%insert_line)
+                else:
+                    self.window.bell()
+                return 'break'
+            return
+        if keysym == 'Right':
+            # Don't go into a continuation prompt or past the end
+            insert_pos = int(self.text.index('%s+1c'%Tk_.INSERT).split('.')[1])
+            if insert_pos < self._prompt_size:
+                insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
+                if self.text.compare(Tk_.INSERT, '>=', '%s-2c'%Tk_.END):
+                    self.window.bell()
+                else:
+                    self.text.mark_set(Tk_.INSERT, '%d.%d'%(
+                        insert_line + 1, self._prompt_size))
                 return 'break'
             return
         # Check for a control character
@@ -309,27 +328,24 @@ class TkTerm:
 
     def handle_return(self, event):
         self.clear_completions()
-        line = self.text.get('output_end', Tk_.END)
         if self.editing_hist:
-            insert = self.text.index(Tk_.INSERT)
             newline = self.text.index('output_end')
-            tail = self.text.get('%s.0'%insert.split('.')[0], Tk_.END)
+            insert = self.text.index(Tk_.INSERT)
+            tail = self.text.get(Tk_.INSERT, Tk_.END)
             if tail.strip() != '':
                     return
-            prompt_size = self.text.index('output_end-1c').split('.')[1]
-            first = self.text.index('output_end').split('.')[0]
-            last = self.text.index(Tk_.END).split('.')[0]
-            prompt = self._continuation_prompt(int(prompt_size)).pop()
-            for line_number in range(int(first) + 1, int(last) - 1):
-                self.write(prompt[1], style=prompt[0], advance=False,
-                           mark='%s.0'%line_number)
-            self.text.delete(newline+'-1c', newline)
-        else:
-            self.text.insert(Tk_.END, '\n')
-        self.text.tag_add('output', 'output_end', Tk_.END)
-        self.text.mark_set('output_end', Tk_.END)
+            #prompt_size = self.text.index('output_end-1c').split('.')[1]
+            #start = int(self.text.index('output_end').split('.')[0])
+            #end = int(self.text.index(Tk_.END).split('.')[0])
+            #prompt = self._continuation_prompt(int(prompt_size)).pop()
+            #for line_number in range(start + 1, end - 1):
+            #    self.write(prompt[1], style=prompt[0], advance=False,
+            #               mark='%s.0'%line_number)
+            #self.text.delete(newline+'-1c', newline)
+        self.text.insert(Tk_.INSERT, '\n')
         if not self.running_code:
-            self.send_code(line)
+            code = self.text.get('output_end', Tk_.END)
+            self.send_code(code)
         return 'break'
 
     def handle_shift_return(self, event):
@@ -345,9 +361,9 @@ class TkTerm:
     def handle_up(self, event):
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return
-        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0]
-        prompt_line = str(self.text.index('output_end')).split('.')[0]
-        if insert_line != prompt_line:
+        insert_line_number = str(self.text.index(Tk_.INSERT)).split('.')[0]
+        prompt_line_number = str(self.text.index('output_end')).split('.')[0]
+        if insert_line_number != prompt_line_number:
             return
         if self.hist_pointer == 0:
             input_history = self.IP.history_manager.input_hist_raw
@@ -371,8 +387,7 @@ class TkTerm:
             if insert_line < bottom_line - 1:
                 return
         if self.hist_pointer == 0:
-            self.window.bell()
-            return 'break'
+            return
         self.text.delete('output_end', Tk_.END)
         self.hist_pointer -= 1
         if self.hist_pointer == 0:
@@ -418,7 +433,9 @@ class TkTerm:
         if len(stem) > len(word):
             self.do_completion(word, stem)
         elif len(completions) > 60 and self.tab_count == 1:
-            self.show_completions(['%s possibilities -- hit tab again to view them all'%len(completions)])
+            self.show_completions(
+                ['%s possibilities -- hit tab again to view them all'%
+                     len(completions)])
         else:
             self.show_completions(completions)
             if len(completions) <= 60:
@@ -470,6 +487,11 @@ class TkTerm:
                 result = heads.pop()
         return wordlist[0][:100]
 
+    def write_continuation_prompt(self):
+        prompt_tokens = self._continuation_prompt(self._prompt_size)
+        for style, text in prompt_tokens:
+            self.write(text, style, mark=Tk_.INSERT, advance=True)
+
     def write_history(self, force_multiline=False):
         self.text.see('output_end')
         input = self.filtered_hist[-self.hist_pointer]
@@ -477,12 +499,13 @@ class TkTerm:
         if input.find('\n') > 0 or force_multiline:
             self.editing_hist = True
             self.multiline = True
-            # Add a newline to place the editing box below the prompt.
-            self.write('\n')
-            self.text.tag_config('history',
-                                 background='White')
-            self.text.tag_lower('history')
-            self.write(input + '\n\n', style=('history',), advance=False)
+            lines = input.split('\n')
+            self.text.delete('output_end', Tk_.END)
+            self.write(lines[0] + '\n', mark=Tk_.INSERT, advance=True)
+            prompt_tokens = self._continuation_prompt(self._prompt_size)
+            for line in lines[1:]:
+                self.write_continuation_prompt()
+                self.write(line + '\n', mark=Tk_.INSERT, advance=True)
             self.text.mark_set('history_end', Tk_.INSERT)
             self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
@@ -627,7 +650,6 @@ class TkTerm:
         self.IP.magics_manager.magics['line']['cd']("-q " + default_save_dir)
         # Create the prompt and go!
         self.interact_prompt()
-        self.text.mark_set('output_end',Tk_.INSERT)
 
     def _input_prompt(self):
         result = [('Prompt', 'In['),
@@ -642,28 +664,42 @@ class TkTerm:
 
     def interact_prompt(self):
         """
-        Print an input prompt or a continuation prompt.
+        Print an input prompt or a continuation prompt.  For an input
+        prompt set the output_end mark at the end of the prompt.
         """
         if self.showing_traceback:
             self.showing_traceback = False
             return
         try:
             if self.IP.more:
-                prompt_tokens = self._continuation_prompt(self._prompt_size)
+                self.write_continuation_prompt()
             else:
                 self.write(self.IP.separate_in)
                 prompt_tokens = self._input_prompt()
+                for style, text in prompt_tokens:
+                    self.write(text, style, mark='output_end')
         except:
             self.IP.showtraceback()
-        for style, text in prompt_tokens:
-            self.write(text, style)
+
+    def clean_code(self, code):
+        """
+        Remove blank lines and continuation prompts.
+        """
+        lines = [line for line in code.split('\n') if line]
+        clean_lines = [lines[0].lstrip()]
+        for line in lines[1:]:
+            try:
+                clean_lines.append(line.split(': ', 1)[1])
+            except IndexError:
+                pass
+        return '\n'.join(clean_lines)
 
     def interact_handle_input(self, code, script=False):
         transformer = self.IP.input_transformer_manager
         assert code.endswith('\n')
-        code = re.sub('\n+', '\n', code).rstrip() + '\n'
-        self._input_buffer += code
+        self._input_buffer = self.clean_code(code)
         status, indent = transformer.check_complete(self._input_buffer)
+        self._current_indent = indent or 0
         if script:
             # We are running a script.  If adding a newline would make the
             # buffer complete and the indent 0 then we want to run the code.
@@ -674,7 +710,6 @@ class TkTerm:
                 status, indent = Xstatus, Xindent
         if status == 'incomplete':
             self.IP.more = True
-            self._current_indent = indent or 0
             return
         if status == 'invalid':
             # Force display of the SyntaxError
@@ -683,16 +718,19 @@ class TkTerm:
             return
         # The code is complete, but we only run it if the indent level is 0 or
         # if there is an empty line at the end.
-        if self._current_indent == 0 or self._input_buffer.endswith('\n\n'):
+        if self._current_indent == 0 or self._input_buffer.endswith('\n'):
             self.editing_hist = False
             self.multiline = False
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
             if self._input_buffer.count('\n') > 1:
-                self.write('\n')
+                self.write('\n', mark=Tk_.END)
             self.running_code = True
-            result = self.IP.run_cell(self._input_buffer, store_history=True)
+            self.text.mark_set(Tk_.INSERT, Tk_.END)
+            self.text.mark_set('output_end', Tk_.END)
+            self.IP.run_cell(self._input_buffer, store_history=True)
             self.write('\n')
+            self.text.tag_add('output', 'output_end', Tk_.END)
             self.reset()
         else:
             self.IP.more = True
@@ -706,7 +744,6 @@ class TkTerm:
         self.multiline = False
         self.running_code = False
         self.IP.more = False
-
         self.text.tag_delete('history')
         return result
 
@@ -723,7 +760,6 @@ class TkTerm:
             self.reset()
         self.interact_prompt()
         self.text.see(Tk_.INSERT)
-        self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
         self.hist_pointer = 0

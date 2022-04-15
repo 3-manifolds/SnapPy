@@ -328,20 +328,6 @@ class TkTerm:
 
     def handle_return(self, event):
         self.clear_completions()
-        if self.editing_hist:
-            newline = self.text.index('output_end')
-            insert = self.text.index(Tk_.INSERT)
-            tail = self.text.get(Tk_.INSERT, Tk_.END)
-            if tail.strip() != '':
-                    return
-            #prompt_size = self.text.index('output_end-1c').split('.')[1]
-            #start = int(self.text.index('output_end').split('.')[0])
-            #end = int(self.text.index(Tk_.END).split('.')[0])
-            #prompt = self._continuation_prompt(int(prompt_size)).pop()
-            #for line_number in range(start + 1, end - 1):
-            #    self.write(prompt[1], style=prompt[0], advance=False,
-            #               mark='%s.0'%line_number)
-            #self.text.delete(newline+'-1c', newline)
         self.text.insert(Tk_.INSERT, '\n')
         if not self.running_code:
             code = self.text.get('output_end', Tk_.END)
@@ -402,6 +388,13 @@ class TkTerm:
         self.clear_completions()
         if self.text.compare(Tk_.INSERT, '<=', 'output_end'):
             self.window.bell()
+            return 'break'
+        line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
+        if pos <= self._prompt_size + 1:
+            start = '%d.end'%(line - 1)
+            end = '%d.end'%(line)
+            self.text.mark_set(Tk_.INSERT, start)
+            self.text.delete(start, end)
             return 'break'
         if self._current_indent >= 4:
             if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':
@@ -719,16 +712,19 @@ class TkTerm:
         # The code is complete, but we only run it if the indent level is 0 or
         # if there is an empty line at the end.
         if self._current_indent == 0 or self._input_buffer.endswith('\n'):
-            self.editing_hist = False
             self.multiline = False
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
             if self._input_buffer.count('\n') > 1:
-                self.write('\n', mark=Tk_.END)
+                # Add a newline before the output, if needed.
+                if not self.editing_hist:
+                    self.write('\n', mark=Tk_.END)
+            self.editing_hist = False
             self.running_code = True
             self.text.mark_set(Tk_.INSERT, Tk_.END)
             self.text.mark_set('output_end', Tk_.END)
             self.IP.run_cell(self._input_buffer, store_history=True)
+            # Add a newline after the output.
             self.write('\n')
             self.text.tag_add('output', 'output_end', Tk_.END)
             self.reset()

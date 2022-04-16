@@ -679,6 +679,8 @@ class TkTerm:
         Remove blank lines and continuation prompts.
         """
         lines = [line for line in code.split('\n') if line]
+        if len(lines) == 0:
+            return '\n'
         clean_lines = [lines[0].lstrip()]
         for line in lines[1:]:
             try:

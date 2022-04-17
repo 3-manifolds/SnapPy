@@ -492,4 +492,10 @@ def dummy_function_for_additional_doctests():
         ...
         snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
 
+    A particular tricky case in terms testing that the start piece is correctly
+    handled by 2-3 moves (in particular, commit f9879d04 introduced a bug):
+
+        >>> Manifold("m004").drill_words(['CAC','CCbC']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'qLvvLvAMQQQkcgimopkllmpkonnnpixcaelchapewetvrn_bcaaBbBBbaBaBbB'
+
     """

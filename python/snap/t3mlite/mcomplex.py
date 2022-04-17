@@ -1244,12 +1244,14 @@ class Mcomplex:
         files.write_SnapPea_file(self, data)
         return data.getvalue()
 
-    def snappy_triangulation(self):
+    def snappy_triangulation(self, remove_finite_vertices = True):
         """
         >>> Mcomplex('4_1').snappy_manifold().homology()
         Z
         """
-        return snappy.Triangulation(self._snappea_file_contents())
+        return snappy.Triangulation(
+            self._snappea_file_contents(),
+            remove_finite_vertices = remove_finite_vertices)
 
     def snappy_manifold(self):
         return self.snappy_triangulation().with_hyperbolic_structure()

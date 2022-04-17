@@ -433,17 +433,16 @@ def dummy_function_for_additional_doctests():
     and simplify is not. Thus, we need canonical_retriangulation() to get
     a consistent result:
 
-        >>> from snappy import Manifold
+        >>> from snappy import Manifold, ManifoldHP
+        >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
         >>> M = Manifold("v2986")
         >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
         'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
 
-    Test non-simple geodesic:
+    Test non-simple geodesic and verified computation:
 
-        >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
-        >>> from snappy import ManifoldHP
-        >>> M = ManifoldHP("m004")
-        sage: try: # doctest +NUMERIC21
+        sage: M = ManifoldHP("m004")
+        sage: try:
         ...       M.drill_word('bbCC', verified = True)
         ... except GeodesicSystemNotSimpleError as e:
         ...     print("Not simple")
@@ -467,6 +466,9 @@ def dummy_function_for_additional_doctests():
 
         >>> M.drill_words(['a','acAADa']).triangulation_isosig(ignore_orientation=False)
         'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+
+    Same test as verified computation::
+
         sage: M.drill_words(['a','acAADa'], verified = True).triangulation_isosig(ignore_orientation=False)
         'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
 

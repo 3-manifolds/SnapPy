@@ -1,4 +1,5 @@
 from .cache import SnapPyCache
+from low_index import SimsTree
 
 cdef class Triangulation(object):
     """
@@ -2404,8 +2405,13 @@ cdef class Triangulation(object):
         >>> [(N, N.homology()) for N in covers]
         [(m003~cyc~0(0,0), Z/3 + Z/15 + Z)]
 
-        If you are using Sage, you can use GAP to find the subgroups,
-        which is often much faster, by specifying the optional argument
+        By default, SnapPy uses the low_index method to find non-cyclic
+	covers.  This corresponds to using the optional argument
+
+        method = 'low_index'
+
+        If you are using Sage, you can use GAP to find the subgroups
+        by specifying the optional argument
 
         method = 'gap'
 
@@ -2419,26 +2425,41 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-
-        if cover_type == 'cyclic':
-            method = None
-
         if method:
-            if not _within_sage:
-                raise RuntimeError('Only the default method of finding '
-                                   'subgroups is available, as you are '
-                                   'not using Sage.')
-            if method == 'gap':
-                G = gap(self.fundamental_group())
-                return [self.cover(H)
-                        for H in G.LowIndexSubgroupsFpGroup(degree)
-                        if G.Index(H) == degree]
-            if method == 'magma':
-                G = magma(self.fundamental_group())
-                return [self.cover(H)
-                        for H in G.LowIndexSubgroups('<%d, %d>' %
-                                                     (degree, degree))]
+            method = method.lower()
+        if cover_type not in ('cyclic', 'all'):
+            raise ValueError("Supported cover_types are 'all' "
+                             "and 'cyclic'.")
+        if cover_type == 'cyclic':
+            method = 'snappea'
+        elif method is None:
+            method = 'low_index'
 
+        if method == 'low_index':
+            G = self.fundamental_group()
+            S = SimsTree(G.num_generators(), degree, G.relators(),
+                             num_long_relators=self.num_cusps())
+            return [self.cover(H.permutation_rep()) for H in S.list()
+                        if H.degree == degree]
+        elif method in ('gap', 'magma'):
+            if not _within_sage:
+                raise RuntimeError('The %s method for finding subroups '
+                                   'is not available, as you are not '
+                                    'using Sage.'%method)
+        elif method == 'gap':
+            G = gap(self.fundamental_group())
+            return [self.cover(H)
+                    for H in G.LowIndexSubgroupsFpGroup(degree)
+                        if G.Index(H) == degree]
+        elif method == 'magma':
+            G = magma(self.fundamental_group())
+            return [self.cover(H)
+                    for H in G.LowIndexSubgroups('<%d, %d>' %
+                        (degree, degree))]
+        elif method != 'snappea':
+            raise ValueError("Supported methods are 'low_index', 'gap', 'magma' "
+                             "and 'snappea'")
+        # We are using the SnapPea code ...
         if cover_type == 'all':
             reps = find_representations(self.c_triangulation,
                                         degree,
@@ -2447,9 +2468,6 @@ cdef class Triangulation(object):
             reps = find_representations(self.c_triangulation,
                                         degree,
                                         permutation_subgroup_Zn)
-        else:
-            raise ValueError("Supported cover_types are 'all' "
-                             "and 'cyclic'.")
 
         covers = []
         rep = reps.list

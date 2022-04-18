@@ -2388,35 +2388,41 @@ cdef class Triangulation(object):
 
     def covers(self, degree, method=None, cover_type='all'):
         """
+        M.covers(degree, method=None, cover_type='all')
+
         Returns a list of Triangulations corresponding to all of the
-        finite covers of the given degree.
+        finite covers of the given degree.  The default method is
+        'low_index' for general covers and 'snappea' for cyclic
+        covers.  The former uses Sim's algorithm while the latter
+        uses the original Snappea algorithm.
 
         WARNING: If the degree is large this might take a very, very,
         very long time.
 
         >>> M = Triangulation('m003')
         >>> covers = M.covers(4)
-        >>> [(N, N.homology()) for N in covers]
-        [(m003~irr~0(0,0)(0,0), Z/5 + Z + Z), (m003~cyc~1(0,0), Z/3 + Z/15 + Z)]
+        >>> sorted(N.homology() for N in covers)
+        [Z/3 + Z/15 + Z, Z/5 + Z + Z]
 
-        You can also look just at cyclic covers, which is much faster.
+        It is faster to look just at cyclic covers.
 
         >>> covers = M.covers(4, cover_type='cyclic')
         >>> [(N, N.homology()) for N in covers]
         [(m003~cyc~0(0,0), Z/3 + Z/15 + Z)]
 
-        By default, SnapPy uses the low_index method to find non-cyclic
-	covers.  This corresponds to using the optional argument
+        Here we check that we get the same number of covers with the
+        'snappea' and 'low_index' methods.
 
-        method = 'low_index'
+        >>> M = Triangulation('m125')
+        >>> len(M.covers(5))
+        19
+        >>> len(M.covers(5, method='snappea'))
+        19
 
-        If you are using Sage, you can use GAP to find the subgroups
-        by specifying the optional argument
-
-        method = 'gap'
-
-        If in addition you have Magma installed, you can use it to do
-        the heavy-lifting by specifying method = 'magma'.
+        If you are using Sage, you can use GAP to find the subgroups,
+        which is often much faster, by specifying the optional
+        argument method = 'gap' If you have Magma installed, you can
+        used it to do the heavy lifting by specifying method='magma'.
         """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep

@@ -582,24 +582,36 @@ cdef class Manifold(Triangulation):
 
     def covers(self, degree, method=None, cover_type='all'):
         """
-        M.covers(degree, method=None)
+        M.covers(degree, method=None, cover_type='all')
 
         Returns a list of Manifolds corresponding to all of the
-        finite covers of the given degree.
+        finite covers of the given degree.  The default method is
+        'low_index' for general covers and 'snappea' for cyclic
+        covers.  The former uses Sim's algorithm while the latter
+        uses the original Snappea algorithm.
 
         WARNING: If the degree is large this might take a very, very,
         very long time.
 
         >>> M = Manifold('m003')
         >>> covers = M.covers(4)
-        >>> [(N, N.homology()) for N in covers]
-        [(m003~irr~0(0,0)(0,0), Z/5 + Z + Z), (m003~cyc~1(0,0), Z/3 + Z/15 + Z)]
+        >>> sorted(N.homology() for N in covers)
+        [Z/3 + Z/15 + Z, Z/5 + Z + Z]
 
-        You can also look just at cyclic covers, which is much faster.
+        It is faster to look just at cyclic covers.
 
         >>> covers = M.covers(4, cover_type='cyclic')
         >>> [(N, N.homology()) for N in covers]
         [(m003~cyc~0(0,0), Z/3 + Z/15 + Z)]
+
+        Here we check that we get the same number of covers with the
+        'snappea' and 'low_index' methods.
+
+        >>> M = Manifold('m125')
+        >>> len(M.covers(5))
+        19
+        >>> len(M.covers(5, method='snappea'))
+        19
 
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional

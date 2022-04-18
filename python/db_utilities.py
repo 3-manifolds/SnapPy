@@ -55,7 +55,8 @@ def cover_type(mfld):
 
 def cover_hash(mfld, degrees):
     return [ repr(sorted(
-        [(cover_type(C), C.homology()) for C in mfld.covers(degree)]
+        [(cover_type(C), C.homology())
+             for C in mfld.covers(degree, method='snappea')]
         )) for degree in degrees ]
 
 

@@ -95,11 +95,9 @@ class TkTerm:
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
         text.bind('<Up>', self.handle_up)
-        if sys.platform == 'darwin':
-            self.text.bind('<Command-Key-Up>', self.jump_up)
-        else:
-            self.text.bind('<Control-Key-Up>', self.jump_up)
+        text.bind('<Shift-Up>', lambda event : None)
         text.bind('<Down>', self.handle_down)
+        text.bind('<Shift-Down>', lambda event : None)
         text.bind('<Home>', self.go_to_beginning)
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Copy>>', self.edit_copy)
@@ -346,10 +344,7 @@ class TkTerm:
         self.write_history(force_multiline=True)
         self.text.mark_set(Tk_.INSERT, index)
 
-    def jump_up(self, event):
-        return self.handle_up(event, jump=True)
-
-    def handle_up(self, event, jump=False):
+    def handle_up(self, event):
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return
         insert_line_number = str(self.text.index(Tk_.INSERT)).split('.')[0]
@@ -367,8 +362,6 @@ class TkTerm:
         self.text.delete('output_end', Tk_.END)
         self.hist_pointer += 1
         self.write_history()
-        if jump:
-            self.text.mark_set(Tk_.INSERT, 'output_end')
         return 'break'
 
     def handle_down(self, event):
@@ -377,7 +370,7 @@ class TkTerm:
         if self.editing_hist:
             insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])
             bottom_line = int(str(self.text.index('history_end')).split('.')[0])
-            if insert_line < bottom_line:
+            if insert_line < bottom_line - 1:
                 return
         if self.hist_pointer == 0:
             return
@@ -505,9 +498,9 @@ class TkTerm:
             prompt_tokens = self._continuation_prompt(self._prompt_size)
             for line in lines[1:]:
                 self.write_continuation_prompt()
-                self.write(line + '\n', mark=Tk_.INSERT, advance=False)
-            self.write_continuation_prompt()
+                self.write(line + '\n', mark=Tk_.INSERT, advance=True)
             self.text.mark_set('history_end', Tk_.INSERT)
+            self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
             self.multiline = False
             self.write(input, style=(), advance=False)

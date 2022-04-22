@@ -484,7 +484,7 @@ class TkTerm:
         input = self.filtered_hist[-self.hist_pointer]
         input = re.sub('\n+', '\n', input).rstrip()
         lines = input.split('\n')
-        if len(lines) > 0 or force_multiline:
+        if len(lines) > 1 or force_multiline:
             self.editing_hist = True
             self.multiline = True
             self.text.delete('output_end', Tk_.END)

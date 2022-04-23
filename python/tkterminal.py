@@ -9,7 +9,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = True
+debug_Tk = False
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -85,10 +85,9 @@ class TkTerm:
         frame.pack(fill=Tk_.BOTH, expand=Tk_.YES)
         text.focus_set()
         window.bind('<FocusIn>', lambda event=None: text.focus_set())
+        text.bind('<Control-c>', self.handle_control_c)
         text.bind('<KeyPress>', self.handle_keypress)
         text.bind('<KeyRelease>', self.handle_keyrelease)
-        if not sys.platform == 'darwin':
-            text.bind('<Control-c>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
@@ -223,12 +222,14 @@ class TkTerm:
             source_raw = self.reset()
             self.IP.history_manager.store_inputs(self.IP.execution_count, source_raw)
             self.IP.execution_count += 1
-            raise KeyboardInterrupt('Halted')
         else:
             self.interrupted = True
             # Inform the SnapPea kernel about the interrupt.
             snappy.SnapPy.SnapPea_interrupt()
             snappy.SnapPyHP.SnapPea_interrupt()
+        # For some reason we need to raise a KeyboardInterrupt here.  Otherwise
+        # the call to KeyboardInterrupt('Halted') will be ignored.
+        raise KeyboardInterrupt('Interrupted')
 
     def report_callback_exception(self, exc, value, traceback):
         """
@@ -255,6 +256,10 @@ class TkTerm:
     def close(self, event=None):
         self.window.quit()
         self.closed = True
+
+    def handle_control_c(self, event):
+        self.interrupt()
+        self.interrupted = False
 
     def handle_keypress(self, event):
         self.clear_completions()
@@ -795,13 +800,14 @@ class TkTerm:
         if see:
             self.text.see(Tk_.INSERT)
         # Give the Text widget a chance to update itself every
-        # so often (but let's not overdo it!)
+        # so often.  In order to force processing of key events
+        # we have to call the evil update method, unfortunately.
         if self.output_count > 2000:
             self.output_count = 0
-            self.text.update_idletasks()
+            self.text.update()
             if self.interrupted:
                 self.interrupted = False
-                self.interrupt()
+                raise KeyboardInterrupt('Halted')
 
     def write2(self, string):
         """

@@ -15,7 +15,7 @@ import time
 python_major_version = sys.version_info[0]
 
 # Sage interaction
-from .sage_helper import _within_sage
+from .sage_helper import _within_sage, SageNotAvailable
 from .pari import pari as pari
 try:
     import sage.all

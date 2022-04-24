@@ -250,6 +250,9 @@ class Matrix:
         >>> B = Matrix(4, 2, range(0, 8))
         >>> B.solve([5, 23, 41, 59])
         [4, 5]
+        >>> C = Matrix(2, 2, [1, 1, -1, -1])
+        >>> C.solve([1, -1])
+        [1/2, 1/2]
         """
         ncols, nrows = self.ncols(), self.nrows()
         if not isinstance(b, Vector):

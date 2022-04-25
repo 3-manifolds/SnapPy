@@ -9,7 +9,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -273,6 +273,7 @@ class TkTerm:
             line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
             if pos <= self._prompt_size:
                 prompt_line = int(self.text.index('output_end').split('.')[0])
+                insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
                 if line > prompt_line:
                     self.text.mark_set(Tk_.INSERT, '%s.0-1c'%insert_line)
                 else:
@@ -667,7 +668,8 @@ class TkTerm:
             if self.IP.more or self.editing_hist:
                 self.write_continuation_prompt()
             else:
-                self.write(self.IP.separate_in)
+                if int(self.text.index('output_end').split('.')[1]) != 0:
+                    self.write('\n\n', mark='output_end')
                 prompt_tokens = self._input_prompt()
                 for style, text in prompt_tokens:
                     self.write(text, style, mark='output_end')
@@ -718,25 +720,29 @@ class TkTerm:
             return
         if status == 'invalid':
             # Force display of the SyntaxError
+            self.text.mark_set(Tk_.INSERT, self.text.index('output_end-1line'))
             self.IP.run_cell(self._input_buffer, store_history=True)
+            # How to add a newline after the syntax error?
+            self.text.insert('output_end-1line', '\n')
             self.reset()
+            self.text.delete('output_end', Tk_.END)
             return
         # The code is complete, but we only run it if the cursor is on the
         # last line of the input and that line is empty.
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
         tail = self.text.get('%d.%d'%(insert_line, self._prompt_size), Tk_.END)
         if not tail.strip():
-            self.multiline = False
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
             if self._input_buffer.count('\n') > 1:
                 # Add a newline before the output, if needed.
                 if not self.editing_hist:
-                    self.write('\n', mark=Tk_.END)
+                    self.write('\n', mark=Tk_.INSERT)
+            self.multiline = False
             self.editing_hist = False
             self.running_code = True
             self.text.mark_set(Tk_.INSERT, Tk_.END)
-            self.text.mark_set('output_end', Tk_.END)
+            self.text.mark_set('output_end', '%s-1c'%Tk_.INSERT)
             self.IP.run_cell(self._input_buffer, store_history=True)
             # Add a newline after the output.
             self.write('\n')

@@ -2447,17 +2447,16 @@ cdef class Triangulation(object):
                              num_long_relators=self.num_cusps())
             return [self.cover(H.permutation_rep()) for H in S.list()
                         if H.degree == degree]
-        elif method in ('gap', 'magma'):
-            if not _within_sage:
-                raise RuntimeError('The %s method for finding subroups '
-                                   'is not available, as you are not '
-                                    'using Sage.'%method)
         elif method == 'gap':
+            if not _within_sage:
+                raise SageNotAvailable('the "gap" method for covers requires Sage')
             G = gap(self.fundamental_group())
             return [self.cover(H)
                     for H in G.LowIndexSubgroupsFpGroup(degree)
                         if G.Index(H) == degree]
         elif method == 'magma':
+            if not _within_sage:
+                raise SageNotAvailable('the "magma" method for covers requires Sage')
             G = magma(self.fundamental_group())
             return [self.cover(H)
                     for H in G.LowIndexSubgroups('<%d, %d>' %

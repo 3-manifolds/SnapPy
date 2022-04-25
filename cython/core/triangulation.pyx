@@ -2375,12 +2375,12 @@ cdef class Triangulation(object):
                                           <int>degree)
         cover = self.__class__('empty')
         cover.set_c_triangulation(c_triangulation)
-        cover.set_name(self.name() +'~')
-        cover._cover_info = {
+        cover._cover_info = info = {
             'base'   : self.name(),
             'type'   : cover_types[c_representation.covering_type],
             'degree' : degree
             }
+        cover.set_name(self.name() +'~' + info['type'][:3])
         free_representation(c_representation,
                             G.num_original_generators(),
                             self.num_cusps())
@@ -2424,55 +2424,80 @@ cdef class Triangulation(object):
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method='magma'.
         """
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        if cover_type not in ('cyclic', 'all'):
+            raise ValueError("Supported cover_types are 'all' "
+                             "and 'cyclic'.")
+        if method is None:
+            method = 'low_index'
+        else:
+            method = method.lower()
+
+        if cover_type == 'cyclic' or method == 'snappea':
+            return self._covers_snappea(degree, cover_type)
+
+        if method == 'low_index':
+            return self._covers_low_index(degree)
+        if method == 'gap':
+            return self._covers_gap(degree)
+        if method == 'magma':
+            return self._covers_magma(degree)
+
+        raise ValueError("Supported methods are 'low_index', 'gap', 'magma' "
+                         "and 'snappea'")
+
+    def _covers_low_index(self, degree):
+        """
+        Compute all covers using low_index.
+        """
+        G = self.fundamental_group()
+        S = SimsTree(G.num_generators(), degree, G.relators(),
+                     num_long_relators=self.num_cusps())
+        return [self.cover(H.permutation_rep()) for H in S.list()
+                if H.degree == degree]
+
+    def _covers_gap(self, degree):
+        """
+        Compute all covers using gap.
+        """
+        if not _within_sage:
+            raise SageNotAvailable('the "gap" method for covers requires Sage')
+
+        G = gap(self.fundamental_group())
+        return [self.cover(H)
+                for H in G.LowIndexSubgroupsFpGroup(degree)
+                if G.Index(H) == degree]
+
+    def _covers_magma(self, degree):
+        """
+        Compute all covers using magma.
+        """
+        if not _within_sage:
+            raise SageNotAvailable('the "magma" method for covers requires Sage')
+
+        G = magma(self.fundamental_group())
+        return [self.cover(H)
+                for H in G.LowIndexSubgroups('<%d, %d>' %
+                                             (degree, degree))]
+
+    def _covers_snappea(self, degree, cover_type):
+        """
+        Compute cyclic or all covers using SnapPea kernel.
+        """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
         cdef c_Triangulation* cover
         cdef Triangulation T
+        cdef PermutationSubgroup c_cover_type
 
-        if self.c_triangulation is NULL:
-            raise ValueError('The Triangulation is empty.')
-        if method:
-            method = method.lower()
-        if cover_type not in ('cyclic', 'all'):
-            raise ValueError("Supported cover_types are 'all' "
-                             "and 'cyclic'.")
         if cover_type == 'cyclic':
-            method = 'snappea'
-        elif method is None:
-            method = 'low_index'
+            c_cover_type = permutation_subgroup_Zn
+        else:
+            c_cover_type = permutation_subgroup_Sn
 
-        if method == 'low_index':
-            G = self.fundamental_group()
-            S = SimsTree(G.num_generators(), degree, G.relators(),
-                             num_long_relators=self.num_cusps())
-            return [self.cover(H.permutation_rep()) for H in S.list()
-                        if H.degree == degree]
-        elif method == 'gap':
-            if not _within_sage:
-                raise SageNotAvailable('the "gap" method for covers requires Sage')
-            G = gap(self.fundamental_group())
-            return [self.cover(H)
-                    for H in G.LowIndexSubgroupsFpGroup(degree)
-                        if G.Index(H) == degree]
-        elif method == 'magma':
-            if not _within_sage:
-                raise SageNotAvailable('the "magma" method for covers requires Sage')
-            G = magma(self.fundamental_group())
-            return [self.cover(H)
-                    for H in G.LowIndexSubgroups('<%d, %d>' %
-                        (degree, degree))]
-        elif method != 'snappea':
-            raise ValueError("Supported methods are 'low_index', 'gap', 'magma' "
-                             "and 'snappea'")
-        # We are using the SnapPea code ...
-        if cover_type == 'all':
-            reps = find_representations(self.c_triangulation,
-                                        degree,
-                                        permutation_subgroup_Sn)
-        elif cover_type == 'cyclic':
-            reps = find_representations(self.c_triangulation,
-                                        degree,
-                                        permutation_subgroup_Zn)
+        reps = find_representations(
+            self.c_triangulation, degree, c_cover_type)
 
         covers = []
         rep = reps.list

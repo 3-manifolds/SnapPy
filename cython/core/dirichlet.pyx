@@ -146,7 +146,6 @@ cdef class CDirichletDomain(object):
                 c_displacement[n] = <double>displacement[n] 
             copy_triangulation(manifold.c_triangulation,
                                &self.c_triangulation)
-            self.c_num_generators = self.c_triangulation.num_generators
             self.c_dirichlet_domain = Dirichlet_with_displacement(
                 self.c_triangulation,
                 c_displacement,
@@ -155,6 +154,9 @@ cdef class CDirichletDomain(object):
                 Dirichlet_keep_going,
                 maximize_injectivity_radius,
                 include_words)
+            # num_generators computed implicitly by
+            # Dirichlet_with_displacement.
+            self.c_num_generators = self.c_triangulation.num_generators
             self.manifold_name = manifold.name()
         if self.c_dirichlet_domain == NULL:
             raise RuntimeError('The Dirichlet construction failed.')

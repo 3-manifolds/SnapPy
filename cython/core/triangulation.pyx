@@ -2452,8 +2452,11 @@ cdef class Triangulation(object):
         Compute all covers using low_index.
         """
         G = self.fundamental_group()
-        S = SimsTree(G.num_generators(), degree, G.relators(),
-                     num_long_relators=self.num_cusps())
+        if G.num_relators() > self.num_cusps():
+            S = SimsTree(G.num_generators(), degree, G.relators(),
+                        num_long_relators=self.num_cusps())
+        else:
+            S = SimsTree(G.num_generators(), degree, G.relators())
         return [self.cover(H.permutation_rep()) for H in S.list()
                 if H.degree == degree]
 

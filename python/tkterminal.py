@@ -9,7 +9,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = True
+debug_Tk = False
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -722,7 +722,6 @@ class TkTerm:
             # Force display of the SyntaxError
             self.text.mark_set(Tk_.INSERT, self.text.index('output_end-1line'))
             self.IP.run_cell(self._input_buffer, store_history=True)
-            # How to add a newline after the syntax error?
             self.text.insert('output_end-1line', '\n')
             self.reset()
             self.text.delete('output_end', Tk_.END)
@@ -730,19 +729,21 @@ class TkTerm:
         # The code is complete, but we only run it if the cursor is on the
         # last line of the input and that line is empty.
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
+        prompt_line = int(self.text.index('output_end').split('.')[0])
         tail = self.text.get('%d.%d'%(insert_line, self._prompt_size), Tk_.END)
         if not tail.strip():
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
-            if self._input_buffer.count('\n') > 1:
-                # Add a newline before the output, if needed.
-                if not self.editing_hist:
-                    self.write('\n', mark=Tk_.INSERT)
+            self.text.delete(Tk_.INSERT, Tk_.END)
+            self.text.insert(Tk_.INSERT, '\n')
+            self.text.mark_set('output_end', Tk_.INSERT)
             self.multiline = False
-            self.editing_hist = False
             self.running_code = True
-            self.text.mark_set(Tk_.INSERT, Tk_.END)
-            self.text.mark_set('output_end', '%s-1c'%Tk_.INSERT)
+            self.editing_hist = False
+            last_line = insert_line - 1
+            if last_line > prompt_line:
+                # Delete the last continuation prompt.
+                self.text.delete('%d.0'%last_line, '%d.0 lineend'%last_line)
             self.IP.run_cell(self._input_buffer, store_history=True)
             # Add a newline after the output.
             self.write('\n')

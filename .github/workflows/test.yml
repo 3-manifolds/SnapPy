@@ -18,26 +18,21 @@ jobs:
       - name: Sage version
         run: sage --version
 
-      - name: Poke
+      - name: Make checkout work
         run: |
-          whoami
-          groups
-          echo $HOME
-          
-
+           sudo groupadd -g 121 docker
+           sudo useradd -u 1001 -g docker runner
+        
+      - name: Checkout
+        uses: actions/checkout@v3
+        
       - name: Go home
         # https://github.com/actions/runner/issues/863
         run: sudo chown sage:sage $HOME
 
-      - name: see
-        run: |
-          ls -Rlat /__w
-          sudo chown -R sage:sage /__w
-          ls -Rlat /__w
-        
-      - name: Checkout
-        uses: actions/checkout@v3
 
+
+        
       - name: Install PLink
         run:
           sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip

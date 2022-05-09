@@ -19,7 +19,7 @@ jobs:
       - name: Sage version
         run: sage --version
 
-      -name: Poke
+      - name: Poke
         run: |
           whoami
           groups

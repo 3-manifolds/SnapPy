@@ -21,8 +21,9 @@ jobs:
       - name: Make checkout work
         run: |
            sudo groupadd -g 121 docker
-           sudo useradd -u 1001 -g docker -G sudo runner
+           sudo useradd -u 1001 -g docker runner
            sudo usermod -a -G docker sage
+           echo "runner ALL=(ALL) NOPASSWD:ALL" | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/02-runner
            ls -Rlat /__w
         
       - name: Checkout

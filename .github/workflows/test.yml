@@ -9,11 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [9.1, 9.3, 9.4]
+        version: [9.1]
 
     container:
       image: sagemath/sagemath:${{ matrix.version }}
-      options: '--user sage:sage'
 
     steps:
       - name: Sage version

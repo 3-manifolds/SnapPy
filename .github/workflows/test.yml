@@ -18,19 +18,17 @@ jobs:
       - name: Sage version
         run: sage --version
 
-      - name: Go home
-        # https://github.com/actions/runner/issues/863
-        run: sudo chown sage:sage $HOME
+      - name: Make checkout work
+        run: |
+           sudo chown -R sage:sage /__w/SnapPy
 
       - name: Checkout
         uses: actions/checkout@v3
-        path: $HOME
 
-      - name: see
-        run:
-          ls $HOME
-
-
+      - name: Go home
+        # https://github.com/actions/runner/issues/863
+        run: sudo chown sage:sage $HOME
+        
       - name: Install PLink
         run:
           sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip
@@ -49,7 +47,10 @@ jobs:
         run: sage -python -m spherogram.test
 
       - name: Install snappy
-        run: cd $HOME/SnapPy; sage -python setup.py pip_install
+        run: |
+          cd /__w/SnapPy/SnapPy
+          sage -pip install wheel FXrays
+          sage -python setup.py pip_install
 
       - name: Do the tests
         run: sage -python -m snappy.test

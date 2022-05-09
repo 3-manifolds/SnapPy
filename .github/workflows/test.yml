@@ -25,6 +25,7 @@ jobs:
            sudo usermod -a -G docker sage
            echo "runner ALL=(ALL) NOPASSWD:ALL" | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/02-runner
            ls -Rlat /__w
+           sudo chown -R /__w/SnapPy
         
    
       - name: Go home

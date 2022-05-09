@@ -61,7 +61,7 @@ jobs:
       - name: Install snappy
         run: |
           cd /__w/SnapPy/SnapPy
-          sage -pip install wheel
+          sage -pip install wheel FXrays
           sage -python setup.py pip_install
 
       - name: Do the tests

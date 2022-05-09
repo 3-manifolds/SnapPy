@@ -24,22 +24,14 @@ jobs:
            sudo useradd -u 1001 -g docker -G sage runner
            sudo usermod -a -G docker sage
            echo "runner ALL=(ALL) NOPASSWD:ALL" | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/02-runner
-           ls -Rlat /__w
            sudo chown -R sage:sage /__w/SnapPy
-        
-   
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Go home
         # https://github.com/actions/runner/issues/863
-        run: |
-          sudo chown sage:sage $HOME
-          ls -Rlat /__w
-
-
-      
+        run: sudo chown sage:sage $HOME
         
       - name: Install PLink
         run:

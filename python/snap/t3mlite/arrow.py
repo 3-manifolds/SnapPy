@@ -105,9 +105,7 @@ class Arrow:
         return self.Tetrahedron.Class[self.tail() | OppTail[self.tail(),self.head()]]
 
     def is_null(self):
-        if self.Tetrahedron is None:
-            return 1
-        return 0
+        return 1 if self.Tetrahedron is None else 0
 
     def face_class(self):
         return self.Tetrahedron.Class[self.Face]
@@ -123,10 +121,10 @@ class Arrow:
 # When you hit the boundary, self.next() returns None without changing self.
 # Does NOT create a new arrow.
     def next(self):
-        if not self.Tetrahedron == None:
+        if self.Tetrahedron is not None:
             perm = self.Tetrahedron.Gluing[self.Face]
             tet = self.Tetrahedron.Neighbor[self.Face]
-        if tet == None:
+        if tet is None:
             return None
 
         # Next line equivalent to:
@@ -138,14 +136,14 @@ class Arrow:
 
 # Glues two faces together so that other becomes self.next().
 # Returns None
-    def glue(self,other):
-        if self.Tetrahedron == None and other.Tetrahedron == None:
+    def glue(self, other):
+        if self.Tetrahedron is None and other.Tetrahedron is None:
             return
-        if self.Tetrahedron == None:
+        if self.Tetrahedron is None:
             other.reverse().glue(self)
             other.reverse()
             return
-        if other.Tetrahedron == None:
+        if other.Tetrahedron is None:
             self.Tetrahedron.attach(self.Face, None, (0,1,2,3))
             return
         # We do this manually for speed.  The below code is equivalent to
@@ -168,7 +166,7 @@ class Arrow:
 # DOES create a new arrow.
     def glued(self):
         a = self.copy()
-        if a.next() == None:
+        if a.next() is None:
             a.Tetrahedron = None
         return a
 
@@ -200,15 +198,13 @@ class Arrow:
 # comparison with None.
 
     def __eq__(self, other):
-        if other == None:
+        if other is None:
             return False
-        if self.Tetrahedron == None and other.Tetrahedron == None:
+        if self.Tetrahedron is None and other.Tetrahedron is None:
             return True
-        if (self.Tetrahedron == other.Tetrahedron and
+        return (self.Tetrahedron == other.Tetrahedron and
             self.Edge == other.Edge and
-                self.Face == other.Face):
-            return True
-        return False
+            self.Face == other.Face)
 
     def __ne__(self, other):
         return not self.__eq__(other)

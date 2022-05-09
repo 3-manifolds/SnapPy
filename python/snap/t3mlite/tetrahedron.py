@@ -27,7 +27,7 @@ class Tetrahedron:
             return '< floating tetrahedron ' + ' at ' + str(id(self)) + '>'
 
     def attach(self, two_subsimplex, tet, perm_data):
-        if tet == None:
+        if tet is None:
             self.Neighbor[two_subsimplex] = None
             self.Gluing[two_subsimplex] = None
         else:
@@ -40,12 +40,12 @@ class Tetrahedron:
 # and gluings are adjusted.
 #
     def reverse(self):
-        transpo = Perm4((1,0,2,3))
+        transpo = Perm4((1, 0, 2, 3))
         nhbr = self.Neighbor.copy()
         gluing = self.Gluing.copy()
         for two_subsimplex in TwoSubsimplices:
             relabeled = transpo.image(two_subsimplex)
-            if not nhbr[two_subsimplex] == None:
+            if nhbr[two_subsimplex] is not None:
                 perm = (gluing[two_subsimplex]*transpo).tuple()
             else:
                 perm = None
@@ -55,7 +55,7 @@ class Tetrahedron:
 #
     def detach(self, two_subsimplex):
         neighbor = self.Neighbor[two_subsimplex]
-        if neighbor == None:
+        if neighbor is None:
             return
         neighbors_subsimplex = self.Gluing[two_subsimplex].image(two_subsimplex)
         self.Neighbor[two_subsimplex] = None

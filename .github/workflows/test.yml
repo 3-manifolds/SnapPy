@@ -13,11 +13,18 @@ jobs:
 
     container:
       image: sagemath/sagemath:${{ matrix.version }}
-      options: --user sage
+      options: '--user sage:sage'
 
     steps:
       - name: Sage version
         run: sage --version
+
+      -name: Poke
+        run: |
+          whoami
+          groups
+          echo $HOME
+          
 
       - name: Go home
         # https://github.com/actions/runner/issues/863

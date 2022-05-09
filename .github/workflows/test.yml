@@ -34,7 +34,9 @@ jobs:
 
       - name: Go home
         # https://github.com/actions/runner/issues/863
-        run: sudo chown sage:sage $HOME
+        run: |
+          sudo chown sage:sage $HOME
+          ls -Rlat /__w
 
 
       
@@ -57,7 +59,9 @@ jobs:
         run: sage -python -m spherogram.test
 
       - name: Install snappy
-        run: cd $HOME/SnapPy; sage -python setup.py pip_install
+        run: |
+          cd /__w/SnapPy/SnapPy
+          sage -python setup.py pip_install
 
       - name: Do the tests
         run: sage -python -m snappy.test

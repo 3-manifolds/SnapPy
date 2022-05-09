@@ -22,6 +22,7 @@ jobs:
         run: |
            sudo groupadd -g 121 docker
            sudo useradd -u 1001 -g docker -G sudo runner
+           ls -Rlat /__w
         
       - name: Checkout
         uses: actions/checkout@v3

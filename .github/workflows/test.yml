@@ -22,14 +22,18 @@ jobs:
         # https://github.com/actions/runner/issues/863
         run: sudo chown sage:sage $HOME
 
+      - name: see
+        run: |
+          ls -Rlat /__w
+          sudo chown sage:sage /__w
+          ls -Rlat /__w
+        
       - name: Checkout
         uses: actions/checkout@v3
         with: 
           path: $HOME
 
-      - name: see
-        run:
-          ls $HOME
+
 
 
       - name: Install PLink

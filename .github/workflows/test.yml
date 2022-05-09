@@ -20,9 +20,6 @@ jobs:
 
       - name: Make checkout work
         run: |
-           sudo groupadd -g 121 docker
-           sudo useradd -u 1001 -g docker -G sage runner
-           sudo usermod -a -G docker sage
            sudo chown -R sage:sage /__w/SnapPy
 
       - name: Checkout

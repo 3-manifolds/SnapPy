@@ -25,16 +25,11 @@ jobs:
       - name: see
         run: |
           ls -Rlat /__w
-          sudo chown sage:sage /__w
+          sudo chown -R sage:sage /__w
           ls -Rlat /__w
         
       - name: Checkout
         uses: actions/checkout@v3
-        with: 
-          path: $HOME
-
-
-
 
       - name: Install PLink
         run:

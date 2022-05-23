@@ -66,9 +66,6 @@ layout (std140) uniform TetrahedraBasics
 
 uniform float edgeTubeRadiusParam;
 
-// +1 or -1 depending on orientation of tetrahedron.
-uniform int orientations[##num_tets##];
-
 uniform int face_color_indices[4 * ##num_tets##];
 uniform int edge_color_indices[6 * ##num_tets##];
 uniform int vertex_color_indices[4 * ##num_tets##];

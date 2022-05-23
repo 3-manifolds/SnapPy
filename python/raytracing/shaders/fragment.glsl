@@ -53,9 +53,13 @@ uniform bool showElevation = false;
 // The string ##NAME## is replaced by the code in __init__.py
 // by looking up its value in the dictionary constants_dict.
 
-uniform int otherTetNums[4 * ##num_tets##]; 
-uniform int otherFaceNums[4 * ##num_tets##]; 
-uniform float weights[4 * ##num_tets##]; 
+layout (std140) uniform TetrahedraCombinatorics
+{
+    int otherTetNums[4 * ##num_tets##]; 
+    int otherFaceNums[4 * ##num_tets##];
+};
+
+uniform float weights[4 * ##num_tets##];
 
 layout (std140) uniform TetrahedraBasics
 {

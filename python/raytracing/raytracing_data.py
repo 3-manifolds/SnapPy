@@ -15,13 +15,13 @@ class RaytracingData(McomplexEngine):
 
     def get_uniform_bindings(self):
         d = {}
-        d['otherTetNums'] = (
+        d['TetrahedraCombinatorics.otherTetNums'] = (
             'int[]',
             [ tet.Neighbor[F].Index
               for tet in self.mcomplex.Tetrahedra
               for F in t3m.TwoSubsimplices ])
 
-        d['otherFaceNums'] = (
+        d['TetrahedraCombinatorics.otherFaceNums'] = (
             'int[]',
             [ tet.Gluing[F][f]
               for tet in self.mcomplex.Tetrahedra

@@ -26,6 +26,10 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
     num_geodesic_segments = constants_dict[b'##num_geodesic_segments##']
 
     uniform_block_names_sizes_and_offsets = [
+        ('TetrahedraCombinatorics',
+         (64 + 64) * num_tets,
+         { 'otherTetNums' : 0,
+           'otherFaceNums' : 64 * num_tets }),
         ('TetrahedraBasics',
          (64 + 64 + 256) * num_tets,
          { 'R13Vertices' : 0,

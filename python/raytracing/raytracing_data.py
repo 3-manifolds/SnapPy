@@ -45,19 +45,19 @@ class RaytracingData(McomplexEngine):
               for tet in self.mcomplex.Tetrahedra
               for V in t3m.ZeroSubsimplices ])
 
-        d['face_color_indices'] = (
+        d['Colors.face_color_indices'] = (
             'int[]',
             [ tet.Class[F].Index
               for tet in self.mcomplex.Tetrahedra
               for F in t3m.TwoSubsimplices ])
 
-        d['edge_color_indices'] = (
+        d['Colors.edge_color_indices'] = (
             'int[]',
             [ tet.Class[E].Index
               for tet in self.mcomplex.Tetrahedra
               for E in t3m.OneSubsimplices ])
 
-        d['vertex_color_indices'] = (
+        d['Colors.vertex_color_indices'] = (
             'int[]',
             [ tet.Class[V].Index
               for tet in self.mcomplex.Tetrahedra

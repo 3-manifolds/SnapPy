@@ -68,16 +68,19 @@ layout (std140) uniform TetrahedraBasics
     mat4 SO13tsfms[4 * ##num_tets##];
 };
 
-uniform float edgeTubeRadiusParam;
-
-uniform int face_color_indices[4 * ##num_tets##];
-uniform int edge_color_indices[6 * ##num_tets##];
-uniform int vertex_color_indices[4 * ##num_tets##];
+layout (std140) uniform Colors
+{
+    int face_color_indices[4 * ##num_tets##];
+    int edge_color_indices[6 * ##num_tets##];
+    int vertex_color_indices[4 * ##num_tets##];
+};
 
 uniform bool desaturate_edges = false;
 
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
+
+uniform float edgeTubeRadiusParam;
 
 uniform float lightBias;
 uniform float lightFalloff;

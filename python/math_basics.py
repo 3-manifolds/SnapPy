@@ -24,12 +24,13 @@ if _within_sage:
         return is_RealIntervalFieldElement(x) or is_ComplexIntervalField(x.parent())
 
 else:
-    def prod(L, initial = None):
+
+    def prod(L, initial=None):
         """
         Product of all elements in L.
         If L is empty returns initial (if given) or 1.
         """
-        if not initial is None:
+        if initial is not None:
             return reduce(operator.mul, L, initial)
         elif L:
             return reduce(operator.mul, L)

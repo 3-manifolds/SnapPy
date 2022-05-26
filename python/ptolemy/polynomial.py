@@ -71,15 +71,17 @@ class Monomial(object):
         e.g., "+ 3 * x".
         """
 
-        v = [     var if expo == 1
+        v = [var if expo == 1
              else "%s^%s" % (var, expo)
              for var, expo in self._vars]
 
         coefficient_sign, coefficient_str = (
             print_coefficient_method(self._coefficient))
 
-        if coefficient_str: v = [coefficient_str] + v
-        if not v: v = [ "1" ]
+        if coefficient_str:
+            v = [coefficient_str] + v
+        if not v:
+            v = ["1"]
 
         sign_less_str = " * ".join(v)
 

@@ -408,6 +408,7 @@ class OneCycleSegment:
     def __repr__(self):
         return "<OCSeg: %d %d>" % (self.edge.index, self.family_index)
 
+
 class Cycle:
     """
     Base class of OneCycle and OneCocycle.  The get/setitem allows one to
@@ -418,8 +419,8 @@ class Cycle:
     """
     def __init__(self, surface, weights=None, check=True):
         self.surface, self.weights = surface, weights
-        if weights == None:
-            self.weights = len(surface.edges)*[None]
+        if weights is None:
+            self.weights = len(surface.edges) * [None]
         else:
             if check:
                 self.check()

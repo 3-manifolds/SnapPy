@@ -1926,35 +1926,42 @@ class CrossRatios(dict):
 
             m0 = mainCondition("z_1000_%d" % t, "z_0100_%d" % t,
                                "z_0010_%d" % t, "z_0001_%d" % t)
-            if not m0: return m0
+            if not m0:
+                return m0
 
             m1 = mainCondition("zp_1000_%d" % t, "zp_0010_%d" % t,
                                "zp_0100_%d" % t, "zp_0001_%d" % t)
-            if not m1: return m1
+            if not m1:
+                return m1
 
             m2 = mainCondition("zpp_1000_%d" % t, "zpp_0001_%d" % t,
                                "zpp_0100_%d" % t, "zpp_0010_%d" % t)
-            if not m2: return m2
+            if not m2:
+                return m2
 
             t0 = tripleRatioCondition(  "z_0100_%d" % t,
                                        "zp_0010_%d" % t,
                                       "zpp_0001_%d" % t)
-            if not t0: return t0
+            if not t0:
+                return t0
 
             t1 = tripleRatioCondition(  "z_1000_%d" % t,
                                        "zp_0001_%d" % t,
                                       "zpp_0010_%d" % t)
-            if not t1: return t1
+            if not t1:
+                return t1
 
             t2 = tripleRatioCondition(  "z_0001_%d" % t,
                                        "zp_1000_%d" % t,
                                       "zpp_0100_%d" % t)
-            if not t2: return t2
+            if not t2:
+                return t2
 
             t3 = tripleRatioCondition(  "z_0010_%d" % t,
                                        "zp_0100_%d" % t,
                                       "zpp_1000_%d" % t)
-            if not t3: return t3
+            if not t3:
+                return t3
 
         return True
 

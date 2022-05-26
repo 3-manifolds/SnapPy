@@ -98,8 +98,8 @@ class SpunSurface:
     """
     def __init__(self, manifold, quad_vector=None, quad_types=None, index=None):
         self._manifold = manifold
-        self._index=index
-        if quad_types != None:
+        self._index = index
+        if quad_types is not None:
             coefficients = quad_vector
             quad_vector = []
             for c, q in zip(coefficients, quad_types):

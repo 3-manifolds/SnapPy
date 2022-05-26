@@ -135,9 +135,10 @@ def read_edge(edge):
 #  function takes two successive edges in the link and glues the
 #  corresponding tetrahedra together.
 
+
 def read_geo_file(file_name, num_tet=None):
     data = open(file_name).readlines()
-    if num_tet == None:
+    if num_tet is None:
         num_tet = len(data) - 2
     tets = []
     for i in range(num_tet):

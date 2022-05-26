@@ -7,14 +7,17 @@
 
 from operator import inv
 
+
 def _make_opp_dict():
-    def swap(t): return (t[1], t[0])
-    dict = {(0,1) : (2,3), (2, 0):(1, 3), (1,2):(0,3)}
-    for k in list(dict.keys()):
-        dict[dict[k]] = k
-        dict[swap(dict[k])] = swap(k)
-        dict[swap(k)] = swap(dict[k])
-    return dict
+    def swap(t):
+        return (t[1], t[0])
+    dic = {(0, 1): (2, 3), (2, 0): (1, 3), (1, 2): (0, 3)}
+    for k in list(dic):
+        dic[dic[k]] = k
+        dic[swap(dic[k])] = swap(k)
+        dic[swap(k)] = swap(dic[k])
+    return dic
+
 
 # opposite[(i,j)] = (k,l), where i,j,k,l are distinct and the permutation
 # 0->i,1->j,2->k,3->l is even.

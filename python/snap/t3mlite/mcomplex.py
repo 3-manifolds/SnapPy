@@ -91,7 +91,7 @@ class Mcomplex:
     def __init__(self, tetrahedron_list=None):
         if tetrahedron_list is None:
             tetrahedron_list = []
-        elif isinstance(tetrahedron_list, str) and snappy == None:
+        elif isinstance(tetrahedron_list, str) and snappy is None:
             tetrahedron_list = tets_from_data(files.read_SnapPea_file(file_name=tetrahedron_list))
         elif snappy:
             if isinstance(tetrahedron_list, str):
@@ -126,7 +126,7 @@ class Mcomplex:
                 new_tet.attach(face,
                                old_to_new[new_to_old[new_tet].Neighbor[face]],
                                new_to_old[new_tet].Gluing[face].tuple())
-        if base_arrow == None:
+        if base_arrow is None:
             return self.__class__(new_tets)
         else:
             new_arrow = base_arrow.copy()
@@ -170,7 +170,7 @@ class Mcomplex:
         """
         for two_subsimplex in TwoSubsimplices:
             face = tet.Class[two_subsimplex]
-            if not face == None:
+            if face is not None:
                 face.erase()
             try:
                 self.Faces.remove(face)
@@ -179,7 +179,7 @@ class Mcomplex:
 
         for one_subsimplex in OneSubsimplices:
             edge = tet.Class[one_subsimplex]
-            if not edge == None:
+            if edge is not None:
                 edge.erase()
             try:
                 self.Edges.remove(edge)
@@ -188,7 +188,7 @@ class Mcomplex:
 
         for zero_subsimplex in ZeroSubsimplices:
             vertex = tet.Class[zero_subsimplex]
-            if not vertex == None:
+            if vertex is not None:
                 vertex.erase()
             try:
                 self.Vertices.remove(vertex)
@@ -272,7 +272,7 @@ class Mcomplex:
         """
         for tet in self.Tetrahedra:
             for one_subsimplex in OneSubsimplices:
-                if ( tet.Class[one_subsimplex] == None ):
+                if ( tet.Class[one_subsimplex] is None ):
                     newEdge = Edge()
                     self.Edges.append(newEdge)
                     first_arrow = Arrow(one_subsimplex, RightFace[one_subsimplex], tet)
@@ -286,7 +286,7 @@ class Mcomplex:
                         # Record the corners and edge classes as we go.
                         newEdge._add_corner(a)
                         a.Tetrahedron.Class[a.Edge] = newEdge
-                        if a.next() == None:
+                        if a.next() is None:
                            # We hit the boundary!
                            # Go back to the beginning and walk to the right.
                             # If this is our second boundary hit, we are done.
@@ -318,7 +318,7 @@ class Mcomplex:
     def build_vertex_classes(self):
         for tet in self.Tetrahedra:
             for zero_subsimplex in ZeroSubsimplices:
-                if ( tet.Class[zero_subsimplex] == None ):
+                if ( tet.Class[zero_subsimplex] is None ):
                     newVertex = Vertex()
                     self.Vertices.append(newVertex)
                     self.walk_vertex(newVertex,zero_subsimplex,tet)
@@ -326,7 +326,7 @@ class Mcomplex:
             self.Vertices[i].Index = i
 
     def walk_vertex(self,vertex,zero_subsimplex,tet):
-        if (tet.Class[zero_subsimplex] != None ):
+        if (tet.Class[zero_subsimplex] is not None ):
             return
         else:
             tet.Class[zero_subsimplex] = vertex
@@ -334,7 +334,7 @@ class Mcomplex:
             for two_subsimplex in TwoSubsimplices:
                 if ( is_subset(zero_subsimplex,two_subsimplex)
                      and
-                     tet.Gluing[two_subsimplex] != None):
+                     tet.Gluing[two_subsimplex] is not None):
                     self.walk_vertex(vertex,
                                      tet.Gluing[two_subsimplex].image(zero_subsimplex),
                                      tet.Neighbor[two_subsimplex])
@@ -366,7 +366,7 @@ class Mcomplex:
         """
         for tet in self.Tetrahedra:
             for two_subsimplex in TwoSubsimplices:
-                if ( tet.Class[two_subsimplex] == None ):
+                if ( tet.Class[two_subsimplex] is None ):
                     newFace = Face()
                     self.Faces.append(newFace)
                     newFace.Corners.append(Corner(tet,two_subsimplex))
@@ -397,7 +397,7 @@ class Mcomplex:
         self.rebuild()
         for tet in self.Tetrahedra:
             for two_subsimplex in TwoSubsimplices:
-                if (not tet.Neighbor[two_subsimplex] == None
+                if (not tet.Neighbor[two_subsimplex] is None
                         and tet.Gluing[two_subsimplex].sign() == 0):
                     return False
         return True
@@ -409,7 +409,7 @@ class Mcomplex:
         if sign == 0:
             tet.reverse()
         for ssimp in TwoSubsimplices:
-            if not tet.Neighbor[ssimp] == None:
+            if tet.Neighbor[ssimp] is not None:
                 self.walk_and_orient(tet.Neighbor[ssimp], tet.Gluing[ssimp].sign())
 
     def build_matrix(self):
@@ -696,7 +696,7 @@ class Mcomplex:
         arrow2 = arrow1.copy().reverse()
         count = 0
         while count < gap:
-            if arrow2.next() == None:
+            if arrow2.next() is None:
                 return False
             count = count + 1
         # Do we *also* need the old test, which was
@@ -951,7 +951,7 @@ class Mcomplex:
         Given an Arrow representing a boundary face, return the Arrow
         representing the boundary face that shares the Arrow's Edge.
         """
-        if arrow.next() != None:
+        if arrow.next() is not None:
             raise Insanity("That boundary face is not on the boundary!")
         edge = arrow.Tetrahedron.Class[arrow.Edge]
         if edge.LeftBdryArrow == arrow:
@@ -1137,8 +1137,10 @@ class Mcomplex:
 
         # check to make sure that the replacement will work
 
-        if not edge.IntOrBdry == 'int':  return None
-        if not edge.distinct():  return None
+        if not edge.IntOrBdry == 'int':
+            return None
+        if not edge.distinct():
+            return None
         valence = edge.valence()
         if len(top_arrows) != valence or len(bottom_arrows) != valence:
             return None

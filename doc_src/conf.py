@@ -40,6 +40,10 @@ def build_lib_dir():
 
 sys.path.insert(0, os.path.abspath(build_lib_dir()))
 
+print('sys.path')
+for p in sys.path:
+    print('   ' + p)
+
 import snappy
 print('Using: ' + snappy.__file__)
 

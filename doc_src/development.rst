@@ -31,7 +31,7 @@ Here is how to get a clean development setup under macOS.
     python3 -m pip install sphinx        # For building the documentation
     python3 -m pip install ipython       # Improved Python shell
     python3 -m pip install py2app        # For making app bundles
-    python3 -m pip install pyx
+    python3 -m pip install pyx FXrays low_index
 
 - Get the source code from the repository, using Git. For
   example you can install Git via its `package installer
@@ -62,7 +62,6 @@ Here is how to get a clean development setup under macOS.
     cd ../snappy
     python3 setup.py pip_install
     python3 setup.py test   # Run the tests; pretty picture should appear.
-    python3 setup.py build_docs pip_install
     python3 -m snappy.app   #SnapPy starts!
 
   To build the clickable app, just do the following::
@@ -158,7 +157,7 @@ need to do, one must install additional tools.
 - Use pip to install some basic tools::
   
     python -m pip install --upgrade pip setuptools wheel  # Upgrades pip to the current version.
-    python -m pip install pyreadline sphinx cython cypari pyx
+    python -m pip install pyreadline sphinx cython cypari pyx FXrays low_index
 
 - Fetch the latest development versions of the source straight from
   the t3m repository::

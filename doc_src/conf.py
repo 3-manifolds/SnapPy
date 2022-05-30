@@ -33,16 +33,19 @@ def build_lib_dir():
         python_platform = sysconfig.get_platform()
 
     v0, v1 = sys.version_info[:2]
-    return os.path.join(
+    old_path = os.path.join(
         '..',
         'build',
         f'lib.{python_platform}-{v0}.{v1}')
+    new_path = os.path.join(
+        '..',
+        'build',
+         f'lib.{python_platform}-cpython-{v0}{v1}')
+    return os.path.abspath(old_path), os.path.abspath(new_path)
 
-sys.path.insert(0, os.path.abspath(build_lib_dir()))
-
-print('sys.path')
-for p in sys.path:
-    print('   ' + p)
+for path in build_lib_dir():
+    print('sys.path addition:', path)
+    sys.path.insert(0, path)
 
 import snappy
 print('Using: ' + snappy.__file__)

@@ -556,7 +556,7 @@ class InsideViewer(ttk.Frame):
             pass
 
     def show_geodesics_window(self):
-        from .geodesicsWindow import GeodesicsWindow
+        from .geodesics_window import GeodesicsWindow
 
         w = GeodesicsWindow(self)
 

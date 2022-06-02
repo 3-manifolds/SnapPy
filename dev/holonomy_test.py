@@ -84,11 +84,12 @@ def test_manifoldhp_corners_and_initial_matrices(M):
     shapes_snap_high = polished_tetrahedra_shapes(M, bits_prec=1024)
     err = check_example(M.high_precision(), shapes_snap_high)
     return float(err.log(2))
-    
+
+
 def test():
-    for i in xrange(100):
+    for i in range(100):
         M = snappy.HTLinkExteriors.random()
-        if M.solution_type(enum=True) <=2:
+        if M.solution_type(enum=True) <= 2:
             print(M, test_manifoldhp_corners_and_initial_matrices(M))
 
 

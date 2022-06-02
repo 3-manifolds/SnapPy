@@ -22,7 +22,6 @@ if _within_sage:
     from sage.rings.real_mpfr import RealField_class
     from sage.misc.classcall_metaclass import ClasscallMetaclass
     from .sage_helper import ComplexField, ComplexField_class
-    from six import add_metaclass
 
     class SnappyNumbersMetaclass(ClasscallMetaclass):
         """
@@ -55,8 +54,8 @@ if _within_sage:
             result._precision = self.target_precision
             return result
 
-    @add_metaclass(SnappyNumbersMetaclass)
-    class SnapPyNumbers(UniqueRepresentation, Parent):
+    class SnapPyNumbers(UniqueRepresentation, Parent,
+                        metaclass=SnappyNumbersMetaclass):
         """
         Sage parents of SnapPy Number objects.
         """

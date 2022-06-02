@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 """
 A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.
@@ -40,7 +38,6 @@ class MapToFreeAbelianization(Object):
     >>> M = snappy.Manifold('m125')
     >>> G = M.fundamental_group(False, False, False)
     >>> rho = MapToFreeAbelianization(G)
-    >>> from __future__ import print_function
     >>> for g in G.generators(): print( g, rho(g) )
     ... 
     a (3, -1)

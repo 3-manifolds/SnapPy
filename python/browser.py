@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from builtins import range
-import sys, os
+import sys
+import os
 from .gui import *
 from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer

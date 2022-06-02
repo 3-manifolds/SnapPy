@@ -1,5 +1,5 @@
-from __future__ import print_function
-import sys, os
+import sys
+import os
 
 # python GLSLManifoldInsideView.py m004 "[0, 1, 0, 1, 0, 0, -1, -1]"
 

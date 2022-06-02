@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import os, sys, time, tempfile, png
 import tkinter as Tk_
 from tkinter import ttk as ttk

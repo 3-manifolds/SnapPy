@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, print_function
-from builtins import range
 import os, sys, re, tempfile, time, png, webbrowser, time, signal
-try:
-    from collections.abc import Mapping  # Python 3.5 or newer
-except ImportError:
-    from collections import Mapping  # Python 2.7
+from collections.abc import Mapping  # Python 3.5 or newer
 from IPython.core.displayhook import DisplayHook
 
 from .gui import *

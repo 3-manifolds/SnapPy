@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from .component import ZeroDimensionalComponent
 from .rur import RUR
 from . import matrix
@@ -8,6 +6,7 @@ from . import utilities
 from ..sage_helper import _within_sage
 from ..pari import Gen, pari
 import re
+
 
 class PtolemyCannotBeCheckedError(Exception):
     def __init__(self):

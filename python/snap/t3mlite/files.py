@@ -1,4 +1,3 @@
-from __future__ import unicode_literals
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

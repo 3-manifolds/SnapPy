@@ -1,6 +1,5 @@
 ### Required modules:
 # Some standard modules.
-from __future__ import print_function
 import os
 from random import choice
 from itertools import combinations

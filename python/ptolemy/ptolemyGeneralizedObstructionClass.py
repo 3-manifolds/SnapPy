@@ -1,8 +1,7 @@
-from __future__ import print_function
-
 from . import matrix
 from .polynomial import Polynomial
 from ..pari import pari
+
 
 class PtolemyGeneralizedObstructionClass(object):
 

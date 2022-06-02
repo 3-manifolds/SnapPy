@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import re
 import operator
 from fractions import Fraction

@@ -1,4 +1,3 @@
-from __future__ import print_function
 ### Tests the ptolemy module
 ###
 ### Test in sage with precomputed results in testing_files_directory:

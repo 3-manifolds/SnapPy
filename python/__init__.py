@@ -1,4 +1,3 @@
-#from __future__ import print_function
 # import the SnapPy bindings
 #import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)

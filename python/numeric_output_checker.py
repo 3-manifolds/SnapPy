@@ -1,5 +1,3 @@
-from builtins import range
-
 """
 Provides the NumericOutputChecker implementing doctest's OutputChecker.
 
@@ -10,6 +8,7 @@ See init_precisions(...) for the precisions we support.
 
 See documentation of NumericExample for more.
 """
+
 
 class NumericExample:
     """

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import snappy
 from sage.all import RealField, ComplexField, I
 

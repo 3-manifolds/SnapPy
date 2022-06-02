@@ -1,4 +1,3 @@
-from __future__ import print_function
 """
 Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 """

@@ -177,8 +177,8 @@ class InsideViewer(ttk.Frame):
                 row = row,
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
-            cusp_button = ttk.Button(frame, text = 'Cusp View', command = lambda: self.set_camera_cusp_view(i), takefocus = 0)
-            cusp_button.grid(row = row, column = 1)
+            cusp_button = ttk.Button(frame, text = 'View', command = lambda which_cusp = i: self.set_camera_cusp_view(which_cusp), takefocus = 0)
+            cusp_button.grid(row = row, column = 3)
             cusp_view_buttons.append(cusp_button)
             row += 1
 

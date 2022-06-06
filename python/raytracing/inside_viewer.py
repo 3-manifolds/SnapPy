@@ -6,6 +6,8 @@ from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
 
+from sage.all import matrix
+
 try:
     from math import gcd as _gcd
 except ImportError:
@@ -198,13 +200,20 @@ class InsideViewer(ttk.Frame):
         cusp_button = ttk.Button(
             view_frame,
             text = 'Cusp View',
+            takefocus = 0,
             command = self.set_camera_cusp_view)
         cusp_button.grid(row = 1, column = 0)
         
         return frame
 
     def set_camera_cusp_view(self):
-        print("Camera cusp")
+        self.widget.view_state = self.widget.raytracing_data.update_view_state(
+            (matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0,],[0,0,0,1]],
+                    ring = self.widget.raytracing_data.RF),
+             0,
+             0.0))
+
+        self.widget.redraw_if_initialized()
 
     def set_view(self, i):
         self.widget.ui_parameter_dict['perspectiveType'][1] = i

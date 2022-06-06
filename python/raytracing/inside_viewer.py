@@ -195,7 +195,16 @@ class InsideViewer(ttk.Frame):
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
 
+        cusp_button = ttk.Button(
+            view_frame,
+            text = 'Cusp View',
+            command = self.set_camera_cusp_view)
+        cusp_button.grid(row = 1, column = 0)
+        
         return frame
+
+    def set_camera_cusp_view(self):
+        print("Camera cusp")
 
     def set_view(self, i):
         self.widget.ui_parameter_dict['perspectiveType'][1] = i

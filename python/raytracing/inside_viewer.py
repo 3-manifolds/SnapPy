@@ -6,7 +6,7 @@ from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
 
-from sage.all import matrix
+from snappy.SnapPy import matrix
 
 try:
     from math import gcd as _gcd

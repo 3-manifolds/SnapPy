@@ -1,2 +1,2 @@
-version = '3.0.4a5'
+version = '3.0.5d.MT'
 release_date = 'TBA'

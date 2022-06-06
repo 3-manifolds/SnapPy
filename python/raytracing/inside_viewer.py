@@ -165,6 +165,7 @@ class InsideViewer(ttk.Frame):
 
         cusp_area_maximum = 1.05 * _maximal_cusp_area(self.widget.manifold)
 
+        cusp_view_buttons = []
         for i in range(self.widget.manifold.num_cusps()):
             UniformDictController.create_horizontal_scale(
                 frame,
@@ -176,6 +177,9 @@ class InsideViewer(ttk.Frame):
                 row = row,
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
+            cusp_button = ttk.Button(view_frame, text = 'Cusp View', command = lambda: self.set_camera_cusp_view(i), takefocus = 0)
+            cusp_button.grid(row = row, column = 1)
+            cusp_view_buttons.append(cusp_button)
             row += 1
 
         frame.rowconfigure(row, weight = 1)
@@ -194,9 +198,14 @@ class InsideViewer(ttk.Frame):
                                      text = text,
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
+        
+        
 
         return frame
 
+    def set_camera_cusp_view(self, which_cusp):
+        print("Cusp number %i" % which_cusp)
+    
     def set_view(self, i):
         self.widget.ui_parameter_dict['perspectiveType'][1] = i
         self.widget.redraw_if_initialized()

@@ -679,6 +679,7 @@ cdef class Manifold(Triangulation):
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
             self._cusped_complex_volume(&volume, &accuracy)
+            set_CS_value(self.c_triangulation, volume.imag / PI_SQUARED_BY_2)
             result = Complex2Number(volume)
             result.accuracy = accuracy
         else:

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 class SnapPyCache(dict):
     """
     Implementation of a simple cache used by the Manifold and Triangulation

@@ -3,7 +3,9 @@ from tkinter import ttk
 from . import gui_utilities
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
-from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
+from .hyperboloid_utilities import (
+    unit_3_vector_and_distance_to_O13_hyperbolic_translation,
+    cusp_view_matrix)
 from .zoom_slider import Slider, ZoomSlider
 
 from snappy.SnapPy import matrix
@@ -210,7 +212,19 @@ class InsideViewer(ttk.Frame):
         return frame
 
     def set_camera_cusp_view(self, which_cusp):
-        print("Cusp number %i" % which_cusp)
+        vert = self.widget.raytracing_data.mcomplex.Vertices[which_cusp]
+        corner = vert.Corners[0]
+        tet = corner.Tetrahedron
+        subsimplex = corner.Subsimplex
+        v = tet.R13_vertices[subsimplex] * tet.R13_horosphere_scales[subsimplex]
+
+        print("Cusp number %i, %r" % (which_cusp, v))
+
+        self.widget.view_state = self.widget.raytracing_data.update_view_state(
+            (cusp_view_matrix(v),
+             corner.Tetrahedron.Index,
+             0.0))
+        self.widget.redraw_if_initialized()
     
     def set_view(self, i):
         self.widget.ui_parameter_dict['perspectiveType'][1] = i

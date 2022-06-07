@@ -215,3 +215,13 @@ def height_euclidean_triangle(z0, z1, z2):
     """
 
     return abs(_dist_from_projection(z0 - z1, z2 - z1))
+
+def cusp_view_matrix(v):
+
+    RF = v[0].parent()
+
+    return matrix([[1,0,0,0],
+                   [0,1,0,0],
+                   [0,0,1,0],
+                   [0,0,0,1]],
+                  ring = RF)

@@ -406,7 +406,7 @@ distParamsForTubeIntersection(Ray ray,
     //           = R13Dot(endpoints[0],p) * R13Dot(endpoints[1],p)
     //
     // To see this, note that the isometries of the tube about
-    // the geodesic act on the like-like endpoints by multiplying
+    // the geodesic act on the light-like endpoints by multiplying
     // them by s and 1/s, respectively, where s > 0. It is easy
     // to check that the equation is invariant under this action.
     //

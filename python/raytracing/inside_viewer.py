@@ -201,15 +201,6 @@ class InsideViewer(ttk.Frame):
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
         
-        
-
-        cusp_button = ttk.Button(
-            view_frame,
-            text = 'Cusp View',
-            takefocus = 0,
-            command = self.set_camera_cusp_view)
-        cusp_button.grid(row = 1, column = 0)
-        
         return frame
 
     def set_camera_cusp_view(self, which_cusp):

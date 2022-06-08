@@ -216,12 +216,9 @@ class InsideViewer(ttk.Frame):
         corner = vert.Corners[0]
         tet = corner.Tetrahedron
         subsimplex = corner.Subsimplex
-        v = tet.R13_vertices[subsimplex] * tet.R13_horosphere_scales[subsimplex]
-
-        print("Cusp number %i, %r" % (which_cusp, v))
 
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
-            (cusp_view_matrix(v),
+            (cusp_view_matrix(tet, subsimplex),
              corner.Tetrahedron.Index,
              0.0))
         self.widget.redraw_if_initialized()

@@ -1,8 +1,10 @@
 from snappy.SnapPy import matrix, vector
 
-from snappy.hyperboloid import (r13_dot,
-                                unit_time_vector_to_o13_hyperbolic_translation,
-                                unnormalised_plane_eqn_from_r13_points)
+from snappy.hyperboloid import (
+    r13_dot,
+    unit_time_vector_to_o13_hyperbolic_translation,
+    unnormalised_plane_eqn_from_r13_points)
+from snappy.upper_halfspace import pgl2c_to_o13
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -216,12 +218,25 @@ def height_euclidean_triangle(z0, z1, z2):
 
     return abs(_dist_from_projection(z0 - z1, z2 - z1))
 
-def cusp_view_matrix(v):
+def cusp_view_matrix(tet, subsimplex):
+
+    v = tet.R13_vertices[subsimplex] * tet.R13_horosphere_scales[subsimplex]
+
+    print(tet.Class[subsimplex].mat_log)
+
+    a, b = tet.Class[subsimplex].mat_log[0]
+    z = a + b * 1j
 
     RF = v[0].parent()
+    CF = tet.ShapeParameters[3].parent()
 
-    return matrix([[1,0,0,0],
-                   [0,1,0,0],
-                   [0,0,1,0],
-                   [0,0,0,1]],
-                  ring = RF)
+    x = matrix([[1j * z, 0],[0,1]], ring = CF)
+
+    m = tet.cusp_to_tet_matrices[subsimplex]
+
+    m = m  * pgl2c_to_o13(x) * matrix([[1,0,0,0],
+                    [0,0,0,1],
+                    [0,1,0,0],
+                    [0,0,1,0]],
+                   ring = RF)
+    return m

@@ -4,17 +4,32 @@ cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
-    compact 3-manifold with torus boundaries, where each tetrahedron
-    has been assigned the geometry of an ideal tetrahedron in
-    hyperbolic 3-space.  A Dehn-filling can be specified for each
-    boundary component, allowing the description of closed 3-manifolds
-    and some orbifolds.   Here's a quick example:
+    compact 3-manifold with torus boundary components, where each 
+    tetrahedron has been assigned the geometry of an ideal tetrahedron 
+    in hyperbolic 3-space. A Dehn-filling can be specified for each
+    boundary component, allowing the description of closed 3-manifolds,
+    some orbifolds and cone 3-manifolds. Here's a quick example:
 
     >>> M = Manifold('9_42')
     >>> M.volume()  # doctest: +NUMERIC6
     4.05686022
     >>> M.cusp_info('shape') # doctest: +NUMERIC6
     [-4.278936315 + 1.95728679*I]
+
+    This is an example for running SnapPy inside Sage::
+
+      sage: import snappy
+      sage: M=snappy.Manifold("m125(1,2)(4,5)")
+      sage: M.is_orientable()
+      True 
+
+    An alternative way of running SnapPy inside Sage::
+
+      sage: from snappy import *
+      sage: M=Manifold("m123")
+      sage: M.num_cusps()
+      1
+
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -55,8 +70,9 @@ cdef class Manifold(Triangulation):
 
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
-
-    - A string containing the contents of a SnapPea triangulation or link
+      See :py:meth:`Manifold.save` for details.
+ 
+   - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
 

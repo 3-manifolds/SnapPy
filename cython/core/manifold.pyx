@@ -372,8 +372,17 @@ cdef class Manifold(Triangulation):
 
     def browse(self):
         """
+        Opens browser window with a graphical interface, which allows to
+        explore the manifold and interact with it.
+        This includes: invariants, Dirichlet domain, cusp neighborhoods,
+        inside view, symmetry, Dehn filling, drilling, etc.
+
         >>> M = Manifold('m125')
-        >>> M.browse() # Opens browser window  #doctest: +CYOPENGL
+        >>> M.browse()  #doctest: +CYOPENGL
+        
+        Note for Windows users. This works only when using SnapPy's dedicated
+        app. See `here <https://snappy.math.uic.edu/installing.html>`_ 
+        for details about installation.
         """
         if Browser is None:
             raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")

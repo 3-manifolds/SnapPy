@@ -4,7 +4,7 @@ cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
-    compact 3-manifold with torus boundary, where each tetrahedron has
+    compact 3-manifold with torus boundaries, where each tetrahedron
     has been assigned the geometry of an ideal tetrahedron in
     hyperbolic 3-space.  A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds

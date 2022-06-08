@@ -613,6 +613,15 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('m004')
         >>> M.save('fig-eight.tri')     #doctest: +SKIP
+
+        To retrieve a SnapPea triangulation from the saved file
+        you can do the following. The first command creates a cusped
+        manifold M. The second one creates the filled manifold M1
+        with Dehn coefficients (2,3).
+
+        >>> M = Manifold('fig-eight.tri')   #doctest: +SKIP
+        >>> M1 = Manifold('fig-eight.tri(2,3)')   #doctest: +SKIP
+
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')

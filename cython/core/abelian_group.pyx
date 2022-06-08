@@ -4,26 +4,39 @@ cdef class AbelianGroup(object):
     """
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a snappy Manifold.
+    
+    Instantiate an abelian group by its elementary divisors. If  the n_i
+    are the elementary divisors of the group 
+    use AbelianGroup(elementary_divisors=[n_0, n_1, ... ]).  
 
-    Instantiate as AbelianGroup(P) where P is a presentation matrix
-    given as a list of lists of integers.  Alternatively, use
-    AbelianGroup(elementary_divisors=[n_1, n_2, ... ]) where the n_i
-    are the elementary divisors of the group.
-
-    >>> AbelianGroup([[1,3,2],[2,0,6]])
-    Z/2 + Z
     >>> A = AbelianGroup(elementary_divisors=[5,15,0,0])
     >>> A
     Z/5 + Z/15 + Z + Z
-    >>> A[1]
-    15
-    >>> A.betti_number()
+
+    Alternatively, instantiate an abelian group as AbelianGroup(P) where P is a 
+    presentation matrix given as a list of lists of integers.  
+    Snappy stores an abelian group
+    as a list of elementary divisors. As such, for an 
+    AbelianGroup B, B[i] returns the ith elementary divisor, and len(B) 
+    returns the length of the list of elementary divisors and equals the rank
+    of B, rank(B).     
+
+    >>> B = AbelianGroup([[1,3,2],[2,0,6]])
+    Z/2 + Z
+    >>> B.elementary_divisors()
+    [2, 0] 
+    >>> B[1]
+    0
+    >>> len(B)
     2
-    >>> A.order()
+    >>> rank(B)  
+    2
+    >>> B.betti_number()
+    1
+    >>> B.order()
     'infinite'
-    >>> len(A)
-    4
     """
+
     cdef divisors
     # Backwards compatibility hack, part 1.
     cdef public coefficients
@@ -100,7 +113,7 @@ cdef class AbelianGroup(object):
 
     def elementary_divisors(self):
         """
-        The elementary_divisors of this finitely generated abelian group.
+        The elementary divisors of this finitely generated abelian group.
         """
         return self.divisors
 

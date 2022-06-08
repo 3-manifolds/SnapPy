@@ -356,8 +356,8 @@ cdef class CFundamentalGroup(object):
         """ 
         Returns a list of variables and a list polynomials where the
         polynomials generate the ideal defining the SL(2, C) character
-        variety of this group.  Each variables is of the form "Tw" where
-        "w" is a word in the generators and represents the trace
+        variety of this group.  Each variable is of the form "Tw" where
+        "w" is a word in the generators and "Tw" represents the trace
         function of that word.
 
         >>> H = Manifold('dLQacccbjkg')  # Hopf link exterior.
@@ -372,9 +372,11 @@ cdef class CFundamentalGroup(object):
         When used inside Sage, you can ask for the answer as a proper
         ideal::
       
-          sage: M = Manifold('m003')
+          sage: M = Manifold('m000')  # Gieseking manifold
           sage: G = M.fundamental_group()
           sage: I = G.character_variety_vars_and_polys(as_ideal=True)
+          sage: I
+          sage: Ideal (-Ta^3*Tb^2*Tab + Ta^4*Tb + Ta^2*Tb^3 + Ta^2*Tb*Tab^2 + Ta*Tb^2*Tab - 5*Ta^2*Tb - Tb^3 - Tb*Tab^2 + Ta*Tab - Ta + 3*Tb, Tb*Tab - Ta - Tb, -Ta^2*Tb^2*Tab + Ta^3*Tb + Ta*Tb^3 + Ta*Tb*Tab^2 - 4*Ta*Tb + Tab - 2) of Multivariate Polynomial Ring in Ta, Tb, Tab over Rational Field
           sage: I.dimension()
           1
 
@@ -464,21 +466,55 @@ cdef class CHolonomyGroup(CFundamentalGroup):
 
 class HolonomyGroup(CHolonomyGroup):
     """
-    A HolonomyGroup is a FundamentalGroup with added structure
-    consisting of a holonomy representation into O(3,1), and an
-    arbitrarily chosen lift of the holonomy representation to SL(2,C).
-    The holonomy is determined by the shapes of the tetrahedra, so a
-    HolonomyGroup is associated to a Manifold, while a Triangulation
-    only has a FundamentalGroup.  Methods are provided to evaluate the
-    representations on a group element.
-
     A FundamentalGroup represents a presentation of the fundamental
     group of a SnapPea Triangulation.  Group elements are described as
     words in the generators a,b,..., where the inverse of a is denoted
     A.  Words are represented by python strings (and the concatenation
     operator is named '+', according to Python conventions).
 
+    Instantiate via T.fundamental_group(), where T is a triangulation.
+
+    >>> T=Triangulation('m125')
+    >>> T.fundamental_group()
+    Generators:
+    a,b
+    Relators:
+    aabaBBAABAbb
+    >>> type(T.fundamental_group())
+    <class 'SnapPy.FundamentalGroup'>
+    
+    A HolonomyGroup is a FundamentalGroup with added structure
+    consisting of a holonomy representation into O(3,1), and an
+    arbitrarily chosen lift of the holonomy representation to SL(2,C).
+    The holonomy is determined by the shapes of the tetrahedra, so a
+    HolonomyGroup is associated to a Manifold, while a Triangulation
+    only has a FundamentalGroup.
+
     Instantiate via M.fundamental_group(), where M is a Manifold.
+
+    >>> M=Manifold('m125')
+    >>> M.fundamental_group()
+    Generators:
+    a,b
+    Relators:
+    aabaBBAABAbb
+    >>> type(M.fundamental_group())
+    <class 'SnapPy.HolonomyGroup'>
+
+    In the class HolonomyGroup, methods are provided to evaluate the
+    representations on a group element. Other methods are shared
+    with the FundamentalGroup class.
+
+    >>> G.O31('a')   # holonomy representation of group element 'a' into SO(3,1)
+    [  2.72953045761501   1.60278471520030  -1.92915916794830 -0.399703115436130]
+    [  1.60278471520030   1.38283427581839  -1.20986493804964  0.439220947337069]
+    [  1.92915916794830   1.20986493804964  -1.52396102721442 -0.967173569990765]
+    [-0.399703115436130  0.439220947337069  0.967173569990765 -0.177264845417795]
+    >>> G.SL2C('a')   # lift of representation of element into SL(2,C)
+    [   1.22669882575820 + 1.46771150871022*I -0.534117672286744 - 0.622949759651053*I]
+    [ 0.534117672286744 + 0.622949759651053*I  0.102784715200295 - 0.665456951152813*I]
+    >>> G.complex_length('ab')
+    6.34178338480000e-8 + 2.16589006210000e-8*I
     """
 
     @staticmethod

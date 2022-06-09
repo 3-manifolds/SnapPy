@@ -91,8 +91,8 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     SnapPy.Manifold.
 
     Note that the result is correct only up to two torsion, i.e.,
-    up to multiples of pi^2/2. The method expects an oriented manifold 
-    with exactly one cusp which is filled, othewise it raises an exception. 
+    up to multiples of pi^2/2. The method expects an oriented manifold
+    with exactly one cusp which is filled, othewise it raises an exception.
 
     If bits_prec is unspecified, the default precision of
     SnapPy.Manifold or SnapPy.ManifoldHP, respectively, will be used.
@@ -163,6 +163,3 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     # Also add multiples of pi^2/2 to try to get the Chern-Simons part
     # between -pi^2/4 and pi^2/4.
     return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
-
-
-

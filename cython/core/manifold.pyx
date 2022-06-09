@@ -380,9 +380,7 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m125')
         >>> M.browse()  #doctest: +CYOPENGL
         
-        Note for Windows users. This works only when using SnapPy's dedicated
-        app. See `here <https://snappy.math.uic.edu/installing.html>`_ 
-        for details about installation.
+        This does not work when using SnapPy in a Docker container. 
         """
         if Browser is None:
             raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")

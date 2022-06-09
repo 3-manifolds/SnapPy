@@ -166,7 +166,8 @@ cdef class CFundamentalGroup(object):
     def generators_in_originals(self, verbose_form=False, raw_form =False):
         """
         Return the current generators in terms of the original
-        geometric generators (before simplification).
+        geometric generators. By default, fundamental_group()
+	returns a simplified presentation of the group. 
 
         If the flag "raw_form" is set to True, it returns a sequence of
         instructions for expressing the current generators in terms of
@@ -222,6 +223,42 @@ cdef class CFundamentalGroup(object):
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
+	
+	>>> M = Manifold('9_42')
+        >>> G = M.fundamental_group() #Presentation simplified by default
+	>>> G
+        Generators:
+        a,b
+        Relators:
+        aaaabbABBBAbb
+        >>> H = M.fundamental_group(False,False,False) #Unsimplified presentation
+	>>> H
+        Generators:
+        a,b,c,d,e
+        Relators:
+        ECbC
+        dEb
+        dAcaB
+        dba
+
+        SnapPy stores a FundamentalGroup as a presentation of the group.
+	The following commands demonstrate how generators in the unsimplified
+	and simplified presentations above correspond.
+	
+        >>> G.generators()
+        ['a', 'b']
+        >>> H.generators()
+        ['a', 'b', 'c', 'd', 'e']
+        >>> G.generators_in_originals()
+        ['BABcBcbCABcBcbCCbCba', 'BcBCbCbab']
+        >>> G.original_generators()
+        ['BBAbba', 'A', 'AB', 'abba', 'bba']
+        >>> G.num_generators()
+        2
+        >>> G.num_original_generators()
+        5
+        >>> H.num_generators()
+        5
         """
         n = self.num_generators()
         return [ int_to_gen_string(i, n, verbose_form = False)
@@ -322,7 +359,19 @@ cdef class CFundamentalGroup(object):
 
     def gap_string(self):
         """
-        Returns a string which will define this group within GAP.
+        Returns a string which will define this group within GAP.:
+	
+	>>> M = Manifold('b++LLR')
+        >>> G = M.fundamental_group()
+        >>> G
+        Generators:
+        a,b
+        Relators:
+        aaaaBAbbAB
+        >>> G.gap_string()
+        'CallFuncList(function() local F, a, b; F := FreeGroup("a", "b"); a := F.1; b := F.2;   return F/[a*a*a*a*b^-1*a^-1*b*b*a^-1*b^-1]; end,[])'
+        >>> G.magma_string()
+        'Group<a,b|a*a*a*a*b^-1*a^-1*b*b*a^-1*b^-1>'
         """
         gens = ', '.join(self.generators())
         gen_names = ', '.join(['"' + x + '"' for x in self.generators()])
@@ -474,7 +523,7 @@ class HolonomyGroup(CHolonomyGroup):
 
     Instantiate via T.fundamental_group(), where T is a triangulation.
 
-    >>> T=Triangulation('m125')
+    >>> T = Triangulation('m125')
     >>> T.fundamental_group()
     Generators:
     a,b
@@ -492,7 +541,7 @@ class HolonomyGroup(CHolonomyGroup):
 
     Instantiate via M.fundamental_group(), where M is a Manifold.
 
-    >>> M=Manifold('m125')
+    >>> M = Manifold('m125')
     >>> M.fundamental_group()
     Generators:
     a,b

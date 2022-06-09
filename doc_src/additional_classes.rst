@@ -11,6 +11,7 @@ AbelianGroup
 ..   autoclass:: AbelianGroup
      :members:
      :inherited-members:
+     :exclude-members: coefficients
 
 FundamentalGroup
 ================

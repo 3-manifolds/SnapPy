@@ -178,7 +178,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 'edgeTubeRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1]) ** 2 / 2.0),
                 'vertexSphereRadiusParam' :
-                    ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1])),
+                    ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1]) ** 2),
                 'perspectiveType' :
                     ('int', int(self.ui_parameter_dict['perspectiveType'][1]))
             },

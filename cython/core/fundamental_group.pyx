@@ -139,7 +139,7 @@ cdef class CFundamentalGroup(object):
         Return the number of generators for the presentation.
         """
         return fg_get_num_relations(self.c_group_presentation)
-                            
+
     def num_original_generators(self):
         """
         Return the number of geometric generators (before simplification).
@@ -167,13 +167,13 @@ cdef class CFundamentalGroup(object):
         """
         Return the current generators in terms of the original
         geometric generators. Note that by default fundamental_group()
-        returns a simplified presentation of the group. 
+        returns a simplified presentation of the group.
 
         If the flag "raw_form" is set to True, it returns a sequence of
         instructions for expressing the current generators in terms of
         the original ones.  This is sometimes much more concise, though
         the format is somewhat obscure.  See the source code of this
-        function in SnapPy.pyx for details. 
+        function in SnapPy.pyx for details.
         """
         moves = self._word_moves()
         if raw_form:
@@ -205,7 +205,7 @@ cdef class CFundamentalGroup(object):
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
                         B = inverse_list_word(B)
-                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A ) 
+                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A )
 
         return [
             _letter_seperator(verbose_form).join(
@@ -219,7 +219,7 @@ cdef class CFundamentalGroup(object):
         moves = c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
         return moves
-        
+
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
@@ -322,7 +322,7 @@ cdef class CFundamentalGroup(object):
         >>> G = Manifold('m004').fundamental_group()
         >>> G.longitude(0)
         'aBAbABab'
-        >>> G.longitude()   # shortcut for the above.  
+        >>> G.longitude()   # shortcut for the above.
         'aBAbABab'
         """
         which_cusp = valid_index(
@@ -402,7 +402,7 @@ cdef class CFundamentalGroup(object):
         return F/rels
 
     def character_variety_vars_and_polys(self, as_ideal=False):
-        """ 
+        """
         Returns a list of variables and a list polynomials where the
         polynomials generate the ideal defining the SL(2, C) character
         variety of this group.  Each variable is of the form "Tw" where
@@ -415,12 +415,12 @@ cdef class CFundamentalGroup(object):
         >>> vars
         [Ta, Tb, Tab]
         >>> polys    # doctest: +NORMALIZE_WHITESPACE
-        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta, 
+        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta,
          Ta^2 - Tab*Tb*Ta + (Tb^2 + (Tab^2 - 4))]
-         
+
         When used inside Sage, you can ask for the answer as a proper
         ideal::
-      
+
           sage: M = Manifold('m000')  # Gieseking manifold
           sage: G = M.fundamental_group()
           sage: I = G.character_variety_vars_and_polys(as_ideal=True)
@@ -469,7 +469,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         Returns (M,O,L) where M = SL2C(word), O = O31(word), and L is
         the complex length.
         """
-        cdef MoebiusTransformation M 
+        cdef MoebiusTransformation M
         cdef O31Matrix O
         cdef int *c_word
         cdef c_FuncResult result
@@ -531,7 +531,7 @@ class HolonomyGroup(CHolonomyGroup):
        aabaBBAABAbb
     >>> type(T.fundamental_group()) #doctest: +SKIP
     <class 'SnapPy.FundamentalGroup'>
-    
+
     A HolonomyGroup is a FundamentalGroup with added structure
     consisting of a holonomy representation into O(3,1), and an
     arbitrarily chosen lift of the holonomy representation to SL(2,C).
@@ -558,11 +558,11 @@ class HolonomyGroup(CHolonomyGroup):
     >>> G.O31('a') # doctest: +NUMERIC12
     [    2.50000000000000   -0.500000000000000    -2.12132034355964   -0.707106781186547]
     [   0.500000000000002   -0.500000000000001   -0.707106781186549    0.707106781186547]
-    [  -0.707106781186548   -0.707106781186547     1.00000000000000 3.24000000000000e-16]
+    [  -0.707106781186548   -0.707106781186547     1.00000000000000                    0]
     [    2.12132034355964   -0.707106781186548    -2.00000000000000    -1.00000000000000]
-    >>> G.SL2C('a') # doctest: +NUMERIC12
-    [ 2.78000000000000e-16 - 1.00000000000000*I -3.33000000000000e-16 + 1.41421356237310*I]
-    [  -0.707106781186547 + 0.707106781186548*I  1.00000000000000 - 2.22000000000000e-16*I]
+    >>> G.SL2C('aab') # doctest: +NUMERIC12
+    [-1.00000000000000 + 4.00000000000000*I 2.12132034355964 - 0.707106781186545*I]
+    [2.12132034355964 - 0.707106781186549*I -1.00000000000000 - 1.00000000000000*I]
     >>> G.complex_length('ab') # doctest: +NUMERIC12
     1.06127506190504 - 2.23703575928741*I
     """

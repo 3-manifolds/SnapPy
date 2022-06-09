@@ -318,8 +318,16 @@ cdef class Triangulation(object):
 
     def plink(self):
         """
-        Brings up a link editor window if there is a link known to be associated
-        with the manifold.
+        Brings up a link editor window if the manifold is stored 
+        as a link complement in your current session.
+
+        >>> M=Manifold('4_1') #stored as a triangulation with a link
+        >>> M.link()
+        ... <Link: 1 comp; 4 cross>
+        >>> N=Manifold('m004') #stored as a triangulation without a link
+        ... 
+        ValueError: No associated link known.   
+        
         """
         if self.LE is not None:
             self.LE.reopen()
@@ -333,6 +341,13 @@ cdef class Triangulation(object):
             raise ValueError('No associated link known.')
 
     def link(self):
+        """
+        If the manifold is stored as a link complement in your 
+        current session then it returns the number of components 
+        and crossing of the link. To view and interact with the 
+        link see :py:meth:`spherogram.Link.view`
+        and :py:meth:`Manifold.plink`.
+        """
         if self._PDcode is not None:
             return spherogram.Link(self._PDcode)
         elif self.DT_code() is not None:

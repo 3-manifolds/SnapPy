@@ -594,7 +594,9 @@ except ImportError as e:
 
 def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     """
-    Show raytraced inside view of hyperbolic manifold:
+    Show raytraced inside view of hyperbolic manifold. See
+    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ 
+    and `demo video <https://youtu.be/CAERhmUCkRs>`_.
 
         >>> M = Manifold("m004")
         >>> M.inside_view() #doctest: +CYMODERNOPENGL

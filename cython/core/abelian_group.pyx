@@ -5,21 +5,17 @@ cdef class AbelianGroup(object):
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a snappy Manifold.
 
-    Instantiate an abelian group by its elementary divisors. If  the n_i
-    are the elementary divisors of the group
-    use AbelianGroup(elementary_divisors=[n_0, n_1, ... ]).
+    Instantiate an abelian group by its elementary divisors:
 
     >>> A = AbelianGroup(elementary_divisors=[5,15,0,0])
     >>> A
     Z/5 + Z/15 + Z + Z
+    >>> A[0]
+    5
 
     Alternatively, instantiate an abelian group as AbelianGroup(P) where P is a
     presentation matrix given as a list of lists of integers.
-    Snappy stores an abelian group
-    as a list of elementary divisors. As such, for an
-    AbelianGroup B, B[i] returns the ith elementary divisor, and len(B)
-    returns the length of the list of elementary divisors and equals the rank
-    of B, rank(B).
+    Snappy stores an abelian group as a list of elementary divisors:
 
     >>> B = AbelianGroup([[1,3,2],[2,0,6]])
     >>> B

@@ -166,7 +166,7 @@ cdef class CFundamentalGroup(object):
     def generators_in_originals(self, verbose_form=False, raw_form =False):
         """
         Return the current generators in terms of the original
-        geometric generators. By default, fundamental_group()
+        geometric generators. Note that by default fundamental_group()
         returns a simplified presentation of the group. 
 
         If the flag "raw_form" is set to True, it returns a sequence of
@@ -231,7 +231,7 @@ cdef class CFundamentalGroup(object):
            a,b
         Relators:
            aaaabbABBBAbb
-        >>> H = M.fundamental_group(False,False,False) #Unsimplified presentation
+        >>> H = M.fundamental_group(False) #Unsimplified presentation
         >>> H
         Generators:
            a,b,c,d,e
@@ -243,7 +243,7 @@ cdef class CFundamentalGroup(object):
 
         SnapPy stores a FundamentalGroup as a presentation of the group.
         The following commands demonstrate how generators in the unsimplified
-        and simplified presentations above correspond.
+        and simplified presentations above correspond:
 
         >>> G.generators()
         ['a', 'b']
@@ -359,7 +359,7 @@ cdef class CFundamentalGroup(object):
 
     def gap_string(self):
         """
-        Returns a string which will define this group within GAP.:
+        Returns a string which will define this group within GAP:
 
         >>> M = Manifold('b++LLR')
         >>> G = M.fundamental_group()
@@ -521,7 +521,7 @@ class HolonomyGroup(CHolonomyGroup):
     A.  Words are represented by python strings (and the concatenation
     operator is named '+', according to Python conventions).
 
-    Instantiate via T.fundamental_group(), where T is a triangulation.
+    Instantiate via ``T.fundamental_group()``, where T is a triangulation:
 
     >>> T = Triangulation('m125')
     >>> T.fundamental_group()
@@ -537,9 +537,9 @@ class HolonomyGroup(CHolonomyGroup):
     arbitrarily chosen lift of the holonomy representation to SL(2,C).
     The holonomy is determined by the shapes of the tetrahedra, so a
     HolonomyGroup is associated to a Manifold, while a Triangulation
-    only has a FundamentalGroup.
+    only has a FundamentalGroup:
 
-    Instantiate via M.fundamental_group(), where M is a Manifold.
+    Instantiate via ``M.fundamental_group()``, where M is a Manifold:
 
     >>> M = Manifold('m125')
     >>> G = M.fundamental_group()

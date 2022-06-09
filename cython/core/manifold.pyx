@@ -19,14 +19,14 @@ cdef class Manifold(Triangulation):
     This is an example for running SnapPy inside Sage::
 
       sage: import snappy
-      sage: M=snappy.Manifold("m125(1,2)(4,5)")
+      sage: M = snappy.Manifold('m125(1,2)(4,5)')
       sage: M.is_orientable()
-      True 
+      True
 
     An alternative way of running SnapPy inside Sage::
 
       sage: from snappy import *
-      sage: M=Manifold("m123")
+      sage: M = Manifold('m123')
       sage: M.num_cusps()
       1
 
@@ -1805,19 +1805,19 @@ cdef class Manifold(Triangulation):
         Looks for the manifold in all of the SnapPy databases.
         For hyperbolic manifolds this is done by searching for isometries: 
 
-        >>> M = ManifoldHP('m125')
+        >>> M = Manifold('m125')
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        By default, there is no restriction on the isometries. One can require
-	that the isometry take meridians to meridians. This might return
-	fewer results:
+        By default, there is no restriction on the isometries. One can
+        require that the isometry take meridians to meridians. This
+        might return fewer results:
 
         >>> M.identify(extends_to_link=True)
         [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        For closed manifolds, extends_to_link doesn't make sense because
-        of how the kernel code works:
+        For closed manifolds, extends_to_link doesn't make sense
+        because of how the kernel code works:
         
         >>> C = Manifold("m015(1,2)")
         >>> C.identify()

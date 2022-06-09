@@ -167,7 +167,7 @@ cdef class CFundamentalGroup(object):
         """
         Return the current generators in terms of the original
         geometric generators. By default, fundamental_group()
-	returns a simplified presentation of the group. 
+        returns a simplified presentation of the group. 
 
         If the flag "raw_form" is set to True, it returns a sequence of
         instructions for expressing the current generators in terms of
@@ -223,28 +223,28 @@ cdef class CFundamentalGroup(object):
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
-	
-	>>> M = Manifold('9_42')
+
+        >>> M = Manifold('9_42')
         >>> G = M.fundamental_group() #Presentation simplified by default
-	>>> G
+        >>> G
         Generators:
-        a,b
+           a,b
         Relators:
-        aaaabbABBBAbb
+           aaaabbABBBAbb
         >>> H = M.fundamental_group(False,False,False) #Unsimplified presentation
-	>>> H
+        >>> H
         Generators:
-        a,b,c,d,e
+           a,b,c,d,e
         Relators:
-        ECbC
-        dEb
-        dAcaB
-        dba
+           ECbC
+           dEb
+           dAcaB
+           dbaE
 
         SnapPy stores a FundamentalGroup as a presentation of the group.
-	The following commands demonstrate how generators in the unsimplified
-	and simplified presentations above correspond.
-	
+        The following commands demonstrate how generators in the unsimplified
+        and simplified presentations above correspond.
+
         >>> G.generators()
         ['a', 'b']
         >>> H.generators()
@@ -269,7 +269,7 @@ cdef class CFundamentalGroup(object):
         Return a list of words representing the relators in the presentation.
 
         If the optional argument verbose_form is True, then the
-        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".  
+        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".
         """
         cdef int n
         cdef int *relation
@@ -360,14 +360,14 @@ cdef class CFundamentalGroup(object):
     def gap_string(self):
         """
         Returns a string which will define this group within GAP.:
-	
-	>>> M = Manifold('b++LLR')
+
+        >>> M = Manifold('b++LLR')
         >>> G = M.fundamental_group()
         >>> G
         Generators:
-        a,b
+           a,b
         Relators:
-        aaaaBAbbAB
+           aaaaBAbbAB
         >>> G.gap_string()
         'CallFuncList(function() local F, a, b; F := FreeGroup("a", "b"); a := F.1; b := F.2;   return F/[a*a*a*a*b^-1*a^-1*b*b*a^-1*b^-1]; end,[])'
         >>> G.magma_string()
@@ -425,7 +425,7 @@ cdef class CFundamentalGroup(object):
           sage: G = M.fundamental_group()
           sage: I = G.character_variety_vars_and_polys(as_ideal=True)
           sage: I
-          sage: Ideal (-Ta^3*Tb^2*Tab + Ta^4*Tb + Ta^2*Tb^3 + Ta^2*Tb*Tab^2 + Ta*Tb^2*Tab - 5*Ta^2*Tb - Tb^3 - Tb*Tab^2 + Ta*Tab - Ta + 3*Tb, Tb*Tab - Ta - Tb, -Ta^2*Tb^2*Tab + Ta^3*Tb + Ta*Tb^3 + Ta*Tb*Tab^2 - 4*Ta*Tb + Tab - 2) of Multivariate Polynomial Ring in Ta, Tb, Tab over Rational Field
+          Ideal (-Ta^3*Tb^2*Tab + Ta^4*Tb + Ta^2*Tb^3 + Ta^2*Tb*Tab^2 + Ta*Tb^2*Tab - 5*Ta^2*Tb - Tb^3 - Tb*Tab^2 + Ta*Tab - Ta + 3*Tb, Tb*Tab - Ta - Tb, -Ta^2*Tb^2*Tab + Ta^3*Tb + Ta*Tb^3 + Ta*Tb*Tab^2 - 4*Ta*Tb + Tab - 2) of Multivariate Polynomial Ring in Ta, Tb, Tab over Rational Field
           sage: I.dimension()
           1
 
@@ -526,10 +526,10 @@ class HolonomyGroup(CHolonomyGroup):
     >>> T = Triangulation('m125')
     >>> T.fundamental_group()
     Generators:
-    a,b
+       a,b
     Relators:
-    aabaBBAABAbb
-    >>> type(T.fundamental_group())
+       aabaBBAABAbb
+    >>> type(T.fundamental_group()) #doctest: +SKIP
     <class 'SnapPy.FundamentalGroup'>
     
     A HolonomyGroup is a FundamentalGroup with added structure
@@ -542,28 +542,29 @@ class HolonomyGroup(CHolonomyGroup):
     Instantiate via M.fundamental_group(), where M is a Manifold.
 
     >>> M = Manifold('m125')
-    >>> M.fundamental_group()
+    >>> G = M.fundamental_group()
+    >>> G
     Generators:
-    a,b
+       a,b
     Relators:
-    aabaBBAABAbb
-    >>> type(M.fundamental_group())
+       aabaBBAABAbb
+    >>> type(G) #doctest: +SKIP
     <class 'SnapPy.HolonomyGroup'>
 
     In the class HolonomyGroup, methods are provided to evaluate the
     representations on a group element. Other methods are shared
     with the FundamentalGroup class.
 
-    >>> G.O31('a')   # holonomy representation of group element 'a' into SO(3,1)
-    [  2.72953045761501   1.60278471520030  -1.92915916794830 -0.399703115436130]
-    [  1.60278471520030   1.38283427581839  -1.20986493804964  0.439220947337069]
-    [  1.92915916794830   1.20986493804964  -1.52396102721442 -0.967173569990765]
-    [-0.399703115436130  0.439220947337069  0.967173569990765 -0.177264845417795]
-    >>> G.SL2C('a')   # lift of representation of element into SL(2,C)
-    [   1.22669882575820 + 1.46771150871022*I -0.534117672286744 - 0.622949759651053*I]
-    [ 0.534117672286744 + 0.622949759651053*I  0.102784715200295 - 0.665456951152813*I]
-    >>> G.complex_length('ab')
-    6.34178338480000e-8 + 2.16589006210000e-8*I
+    #>>> G.O31('a')   # holonomy representation of group element 'a' into SO(3,1)
+    #[  2.72953045761501   1.60278471520030  -1.92915916794830 -0.399703115436130]
+    #[  1.60278471520030   1.38283427581839  -1.20986493804964  0.439220947337069]
+    #[  1.92915916794830   1.20986493804964  -1.52396102721442 -0.967173569990765]
+    #[-0.399703115436130  0.439220947337069  0.967173569990765 -0.177264845417795]
+    #>>> G.SL2C('a')   # lift of representation of element into SL(2,C)
+    #[   1.22669882575820 + 1.46771150871022*I -0.534117672286744 - 0.622949759651053*I]
+    #[ 0.534117672286744 + 0.622949759651053*I  0.102784715200295 - 0.665456951152813*I]
+    #>>> G.complex_length('ab')
+    #6.34178338480000e-8 + 2.16589006210000e-8*I
     """
 
     @staticmethod

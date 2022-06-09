@@ -321,12 +321,14 @@ cdef class Triangulation(object):
         Brings up a link editor window if the manifold is stored 
         as a link complement in your current session.
 
-        >>> M=Manifold('4_1') #stored as a triangulation with a link
+        >>> M = Manifold('4_1') # stored as a triangulation with a link
         >>> M.link()
-        ... <Link: 1 comp; 4 cross>
-        >>> N=Manifold('m004') #stored as a triangulation without a link
-        ... 
-        ValueError: No associated link known.   
+        <Link: 1 comp; 4 cross>
+        >>> N = Manifold('m004') # stored as a triangulation without a link
+        >>> N.link() #doctest: +ELLIPSIS
+        Traceback (most recent call last):
+        ...
+        ValueError: No associated link known.
         
         """
         if self.LE is not None:

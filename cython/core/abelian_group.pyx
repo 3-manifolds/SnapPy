@@ -4,32 +4,33 @@ cdef class AbelianGroup(object):
     """
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a snappy Manifold.
-    
+
     Instantiate an abelian group by its elementary divisors. If  the n_i
-    are the elementary divisors of the group 
-    use AbelianGroup(elementary_divisors=[n_0, n_1, ... ]).  
+    are the elementary divisors of the group
+    use AbelianGroup(elementary_divisors=[n_0, n_1, ... ]).
 
     >>> A = AbelianGroup(elementary_divisors=[5,15,0,0])
     >>> A
     Z/5 + Z/15 + Z + Z
 
-    Alternatively, instantiate an abelian group as AbelianGroup(P) where P is a 
-    presentation matrix given as a list of lists of integers.  
+    Alternatively, instantiate an abelian group as AbelianGroup(P) where P is a
+    presentation matrix given as a list of lists of integers.
     Snappy stores an abelian group
-    as a list of elementary divisors. As such, for an 
-    AbelianGroup B, B[i] returns the ith elementary divisor, and len(B) 
+    as a list of elementary divisors. As such, for an
+    AbelianGroup B, B[i] returns the ith elementary divisor, and len(B)
     returns the length of the list of elementary divisors and equals the rank
-    of B, rank(B).     
+    of B, rank(B).
 
     >>> B = AbelianGroup([[1,3,2],[2,0,6]])
+    >>> B
     Z/2 + Z
     >>> B.elementary_divisors()
-    [2, 0] 
+    [2, 0]
     >>> B[1]
     0
     >>> len(B)
     2
-    >>> rank(B)  
+    >>> B.rank()
     2
     >>> B.betti_number()
     1
@@ -40,7 +41,7 @@ cdef class AbelianGroup(object):
     cdef divisors
     # Backwards compatibility hack, part 1.
     cdef public coefficients
-    
+
     def __init__(self, presentation=None, elementary_divisors=[]):
         if presentation is not None:
             self.divisors = smith_form(presentation)
@@ -62,7 +63,7 @@ cdef class AbelianGroup(object):
                    'The elementary divisors must form a divisibility chain\n'
 
         # So that the group is determined entirely by self.divisors
-        # we don't allow '1' as a divisor.  
+        # we don't allow '1' as a divisor.
         self.divisors = [n for n in self.divisors if n != 1]
         # Backwards compatibility hack, part 2.
         self.coefficients = self.divisors
@@ -76,7 +77,7 @@ cdef class AbelianGroup(object):
 
     def __len__(self):
         return len(self.divisors)
-    
+
     def __getitem__(self, i):
         return self.divisors[i]
 
@@ -91,7 +92,7 @@ cdef class AbelianGroup(object):
         True
         """
         return (AbelianGroup, (None, self.elementary_divisors()))
-    
+
     def __richcmp__(AbelianGroup self, AbelianGroup other, op):
         if op == 0:
             return self.divisors < other.elementary_divisors()
@@ -107,7 +108,7 @@ cdef class AbelianGroup(object):
             return self.divisors >= other.elementary_divisors()
         else:
             return NotImplemented
-        
+
     def __call__(self):
         return self
 
@@ -131,7 +132,7 @@ cdef class AbelianGroup(object):
     def order(self):
         """
         The order of the group.  Returns the string 'infinite' if the
-        group is infinite.        
+        group is infinite.
         """
         det = 1
         for c in self.divisors:
@@ -199,7 +200,7 @@ cdef class PresentationMatrix(object):
             self._col_support[j] = set([i])
         # set the value
         self._entries[ij] = value
-    
+
     def __getitem__(self, ij):
         return self._entries.get(ij, 0)
 
@@ -224,7 +225,7 @@ cdef class PresentationMatrix(object):
             [self._entries.get((i,j), 0) for j in xrange(self.cols)]
             for i in xrange(self.rows)]
 
-    
+
     def simplify(self):
         """
         If any entry is a unit, eliminate the corresponding generator.
@@ -233,7 +234,7 @@ cdef class PresentationMatrix(object):
         """
         cdef temp, m, i, j, k, l
         while len(self._units) > 0:
-            for i,j in self._units: break 
+            for i,j in self._units: break
             col_support = [k for k in self._col_support[j] if k != i] + [i]
             row_entries = [(l, self._entries.get((i,l), 0))
                            for l in self._row_support[i]]

@@ -84,20 +84,23 @@ class ManifoldHP(_ManifoldHP):
 
     def identify(self, extends_to_link=False):
         """
-        Look for the manifold in all of the SnapPy databases:
+        Looks for the manifold in all of the SnapPy databases.
+        For hyperbolic manifolds this is done by searching for isometries: 
 
         >>> M = ManifoldHP('m125')
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        One can require that there be an isometry taking merdians
-        to meridians:
+        By default, there is no restriction on the isometries. One can require
+        that the isometry take meridians to meridians. This might return
+        fewer results:
 
         >>> M.identify(extends_to_link=True)
         [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
         For closed manifolds, extends_to_link doesn't make sense because
-        of how the kernel code works:        
+        of how the kernel code works:
+        
         >>> C = Manifold("m015(1,2)")
         >>> C.identify()
         [m006(-5,2)]
@@ -591,7 +594,9 @@ except ImportError as e:
 
 def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     """
-    Show raytraced inside view of hyperbolic manifold:
+    Show raytraced inside view of hyperbolic manifold. See
+    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ 
+    and `demo video <https://youtu.be/CAERhmUCkRs>`_.
 
         >>> M = Manifold("m004")
         >>> M.inside_view() #doctest: +CYMODERNOPENGL

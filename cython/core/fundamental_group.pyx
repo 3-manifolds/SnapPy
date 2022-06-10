@@ -139,7 +139,7 @@ cdef class CFundamentalGroup(object):
         Return the number of generators for the presentation.
         """
         return fg_get_num_relations(self.c_group_presentation)
-                            
+
     def num_original_generators(self):
         """
         Return the number of geometric generators (before simplification).
@@ -166,13 +166,14 @@ cdef class CFundamentalGroup(object):
     def generators_in_originals(self, verbose_form=False, raw_form =False):
         """
         Return the current generators in terms of the original
-        geometric generators (before simplification).
+        geometric generators. Note that by default fundamental_group()
+        returns a simplified presentation of the group.
 
         If the flag "raw_form" is set to True, it returns a sequence of
         instructions for expressing the current generators in terms of
         the original ones.  This is sometimes much more concise, though
         the format is somewhat obscure.  See the source code of this
-        function in SnapPy.pyx for details. 
+        function in SnapPy.pyx for details.
         """
         moves = self._word_moves()
         if raw_form:
@@ -204,7 +205,7 @@ cdef class CFundamentalGroup(object):
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
                         B = inverse_list_word(B)
-                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A ) 
+                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A )
 
         return [
             _letter_seperator(verbose_form).join(
@@ -218,10 +219,46 @@ cdef class CFundamentalGroup(object):
         moves = c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
         return moves
-        
+
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
+
+        >>> M = Manifold('9_42')
+        >>> G = M.fundamental_group() #Presentation simplified by default
+        >>> G
+        Generators:
+           a,b
+        Relators:
+           aaaabbABBBAbb
+        >>> H = M.fundamental_group(False) #Unsimplified presentation
+        >>> H
+        Generators:
+           a,b,c,d,e
+        Relators:
+           ECbC
+           dEb
+           dAcaB
+           dbaE
+
+        SnapPy stores a FundamentalGroup as a presentation of the group.
+        The following commands demonstrate how generators in the unsimplified
+        and simplified presentations above correspond:
+
+        >>> G.generators()
+        ['a', 'b']
+        >>> H.generators()
+        ['a', 'b', 'c', 'd', 'e']
+        >>> G.generators_in_originals()
+        ['BABcBcbCABcBcbCCbCba', 'BcBCbCbab']
+        >>> G.original_generators()
+        ['BBAbba', 'A', 'AB', 'abba', 'bba']
+        >>> G.num_generators()
+        2
+        >>> G.num_original_generators()
+        5
+        >>> H.num_generators()
+        5
         """
         n = self.num_generators()
         return [ int_to_gen_string(i, n, verbose_form = False)
@@ -232,7 +269,7 @@ cdef class CFundamentalGroup(object):
         Return a list of words representing the relators in the presentation.
 
         If the optional argument verbose_form is True, then the
-        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".  
+        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".
         """
         cdef int n
         cdef int *relation
@@ -285,7 +322,7 @@ cdef class CFundamentalGroup(object):
         >>> G = Manifold('m004').fundamental_group()
         >>> G.longitude(0)
         'aBAbABab'
-        >>> G.longitude()   # shortcut for the above.  
+        >>> G.longitude()   # shortcut for the above.
         'aBAbABab'
         """
         which_cusp = valid_index(
@@ -322,7 +359,19 @@ cdef class CFundamentalGroup(object):
 
     def gap_string(self):
         """
-        Returns a string which will define this group within GAP.
+        Returns a string which will define this group within GAP:
+
+        >>> M = Manifold('b++LLR')
+        >>> G = M.fundamental_group()
+        >>> G
+        Generators:
+           a,b
+        Relators:
+           aaaaBAbbAB
+        >>> G.gap_string()
+        'CallFuncList(function() local F, a, b; F := FreeGroup("a", "b"); a := F.1; b := F.2;   return F/[a*a*a*a*b^-1*a^-1*b*b*a^-1*b^-1]; end,[])'
+        >>> G.magma_string()
+        'Group<a,b|a*a*a*a*b^-1*a^-1*b*b*a^-1*b^-1>'
         """
         gens = ', '.join(self.generators())
         gen_names = ', '.join(['"' + x + '"' for x in self.generators()])
@@ -353,11 +402,11 @@ cdef class CFundamentalGroup(object):
         return F/rels
 
     def character_variety_vars_and_polys(self, as_ideal=False):
-        """ 
+        """
         Returns a list of variables and a list polynomials where the
         polynomials generate the ideal defining the SL(2, C) character
-        variety of this group.  Each variables is of the form "Tw" where
-        "w" is a word in the generators and represents the trace
+        variety of this group.  Each variable is of the form "Tw" where
+        "w" is a word in the generators and "Tw" represents the trace
         function of that word.
 
         >>> H = Manifold('dLQacccbjkg')  # Hopf link exterior.
@@ -366,15 +415,17 @@ cdef class CFundamentalGroup(object):
         >>> vars
         [Ta, Tb, Tab]
         >>> polys    # doctest: +NORMALIZE_WHITESPACE
-        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta, 
+        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta,
          Ta^2 - Tab*Tb*Ta + (Tb^2 + (Tab^2 - 4))]
-         
+
         When used inside Sage, you can ask for the answer as a proper
         ideal::
-      
-          sage: M = Manifold('m003')
+
+          sage: M = Manifold('m000')  # Gieseking manifold
           sage: G = M.fundamental_group()
           sage: I = G.character_variety_vars_and_polys(as_ideal=True)
+          sage: I
+          Ideal (-Ta^3*Tb^2*Tab + Ta^4*Tb + Ta^2*Tb^3 + Ta^2*Tb*Tab^2 + Ta*Tb^2*Tab - 5*Ta^2*Tb - Tb^3 - Tb*Tab^2 + Ta*Tab - Ta + 3*Tb, Tb*Tab - Ta - Tb, -Ta^2*Tb^2*Tab + Ta^3*Tb + Ta*Tb^3 + Ta*Tb*Tab^2 - 4*Ta*Tb + Tab - 2) of Multivariate Polynomial Ring in Ta, Tb, Tab over Rational Field
           sage: I.dimension()
           1
 
@@ -418,7 +469,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         Returns (M,O,L) where M = SL2C(word), O = O31(word), and L is
         the complex length.
         """
-        cdef MoebiusTransformation M 
+        cdef MoebiusTransformation M
         cdef O31Matrix O
         cdef int *c_word
         cdef c_FuncResult result
@@ -464,21 +515,56 @@ cdef class CHolonomyGroup(CFundamentalGroup):
 
 class HolonomyGroup(CHolonomyGroup):
     """
-    A HolonomyGroup is a FundamentalGroup with added structure
-    consisting of a holonomy representation into O(3,1), and an
-    arbitrarily chosen lift of the holonomy representation to SL(2,C).
-    The holonomy is determined by the shapes of the tetrahedra, so a
-    HolonomyGroup is associated to a Manifold, while a Triangulation
-    only has a FundamentalGroup.  Methods are provided to evaluate the
-    representations on a group element.
-
     A FundamentalGroup represents a presentation of the fundamental
     group of a SnapPea Triangulation.  Group elements are described as
     words in the generators a,b,..., where the inverse of a is denoted
     A.  Words are represented by python strings (and the concatenation
     operator is named '+', according to Python conventions).
 
-    Instantiate via M.fundamental_group(), where M is a Manifold.
+    Instantiate via ``T.fundamental_group()``, where T is a triangulation:
+
+    >>> T = Triangulation('m125')
+    >>> T.fundamental_group()
+    Generators:
+       a,b
+    Relators:
+       aabaBBAABAbb
+    >>> type(T.fundamental_group()) #doctest: +SKIP
+    <class 'SnapPy.FundamentalGroup'>
+
+    A HolonomyGroup is a FundamentalGroup with added structure
+    consisting of a holonomy representation into O(3,1), and an
+    arbitrarily chosen lift of the holonomy representation to SL(2,C).
+    The holonomy is determined by the shapes of the tetrahedra, so a
+    HolonomyGroup is associated to a Manifold, while a Triangulation
+    only has a FundamentalGroup:
+
+    Instantiate via ``M.fundamental_group()``, where M is a Manifold:
+
+    >>> M = Manifold('m125')
+    >>> G = M.fundamental_group()
+    >>> G
+    Generators:
+       a,b
+    Relators:
+       aabaBBAABAbb
+    >>> type(G) #doctest: +SKIP
+    <class 'SnapPy.HolonomyGroup'>
+
+    In the class HolonomyGroup, methods are provided to evaluate the
+    representations on a group element. Other methods are shared
+    with the FundamentalGroup class.
+
+    >>> G.O31('a') # doctest: +NUMERIC12
+    [    2.50000000000000   -0.500000000000000    -2.12132034355964   -0.707106781186547]
+    [   0.500000000000002   -0.500000000000001   -0.707106781186549    0.707106781186547]
+    [  -0.707106781186548   -0.707106781186547     1.00000000000000                    0]
+    [    2.12132034355964   -0.707106781186548    -2.00000000000000    -1.00000000000000]
+    >>> G.SL2C('aaB') # doctest: +NUMERIC12
+    [-1.00000000000000 + 4.00000000000000*I 2.12132034355964 - 0.707106781186545*I]
+    [2.12132034355964 - 0.707106781186549*I -1.00000000000000 - 1.00000000000000*I]
+    >>> G.complex_length('ab') # doctest: +NUMERIC12
+    1.06127506190504 - 2.23703575928741*I
     """
 
     @staticmethod

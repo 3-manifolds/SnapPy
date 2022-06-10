@@ -4,17 +4,32 @@ cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
-    compact 3-manifold with torus boundary, where each tetrahedron has
-    has been assigned the geometry of an ideal tetrahedron in
-    hyperbolic 3-space.  A Dehn-filling can be specified for each
-    boundary component, allowing the description of closed 3-manifolds
-    and some orbifolds.   Here's a quick example:
+    compact 3-manifold with torus boundary components, where each 
+    tetrahedron has been assigned the geometry of an ideal tetrahedron 
+    in hyperbolic 3-space. A Dehn-filling can be specified for each
+    boundary component, allowing the description of closed 3-manifolds,
+    some orbifolds and cone 3-manifolds. Here's a quick example:
 
     >>> M = Manifold('9_42')
     >>> M.volume()  # doctest: +NUMERIC6
     4.05686022
     >>> M.cusp_info('shape') # doctest: +NUMERIC6
     [-4.278936315 + 1.95728679*I]
+
+    This is an example for running SnapPy inside Sage::
+
+      sage: import snappy
+      sage: M = snappy.Manifold('m125(1,2)(4,5)')
+      sage: M.is_orientable()
+      True
+
+    An alternative way of running SnapPy inside Sage::
+
+      sage: from snappy import *
+      sage: M = Manifold('m123')
+      sage: M.num_cusps()
+      1
+
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -55,8 +70,9 @@ cdef class Manifold(Triangulation):
 
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
-
-    - A string containing the contents of a SnapPea triangulation or link
+      See :py:meth:`Manifold.save` for details.
+ 
+   - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
 
@@ -356,8 +372,15 @@ cdef class Manifold(Triangulation):
 
     def browse(self):
         """
+        Opens browser window with a graphical interface, which allows to
+        explore the manifold and interact with it.
+        This includes: invariants, Dirichlet domain, cusp neighborhoods,
+        inside view, symmetry, Dehn filling, drilling, etc.
+
         >>> M = Manifold('m125')
-        >>> M.browse() # Opens browser window  #doctest: +CYOPENGL
+        >>> M.browse()  #doctest: +CYOPENGL
+        
+        This does not work when using SnapPy in a Docker container. 
         """
         if Browser is None:
             raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")
@@ -1778,20 +1801,22 @@ cdef class Manifold(Triangulation):
 
     def identify(self, extends_to_link=False):
         """
-        Look for the manifold in all of the SnapPy databases:
+        Looks for the manifold in all of the SnapPy databases.
+        For hyperbolic manifolds this is done by searching for isometries: 
 
         >>> M = Manifold('m125')
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        One can require that there be an isometry taking meridians
-        to meridians:
+        By default, there is no restriction on the isometries. One can
+        require that the isometry take meridians to meridians. This
+        might return fewer results:
 
         >>> M.identify(extends_to_link=True)
         [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        For closed manifolds, extends_to_link doesn't make sense because
-        of how the kernel code works:
+        For closed manifolds, extends_to_link doesn't make sense
+        because of how the kernel code works:
         
         >>> C = Manifold("m015(1,2)")
         >>> C.identify()

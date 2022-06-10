@@ -91,18 +91,22 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     SnapPy.Manifold.
 
     Note that the result is correct only up to two torsion, i.e.,
-    up to multiples of pi^2/2. The method raises an exception if the
-    manifold is not oriented or has a filled cusp.
+    up to multiples of pi^2/2. The method expects an oriented manifold
+    with exactly one cusp which is filled, othewise it raises an exception.
 
     If bits_prec is unspecified, the default precision of
-    SnapPy.Manifold, respectively, SnapPy.ManifoldHP will be used.
+    SnapPy.Manifold or SnapPy.ManifoldHP, respectively, will be used.
     """
 
     if manifold.num_cusps() != 1:
-        raise Exception("Only one cusped manifolds are supported")
+        raise ValueError(
+            "The method does not support the given manifold because "
+            "it does not have exactly one cusp.")
 
     if manifold.cusp_info()[0]['complete?']:
-        raise Exception("Only closed manifolds are supported")
+        raise ValueError(
+            "The method does not support the given manifold because "
+            "it is not a closed manifold.")
 
     # Compute tetrahedra shapes to arbitrary precision.
     shapes = manifold.tetrahedra_shapes(
@@ -159,6 +163,3 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     # Also add multiples of pi^2/2 to try to get the Chern-Simons part
     # between -pi^2/4 and pi^2/4.
     return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
-
-
-

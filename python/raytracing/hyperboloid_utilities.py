@@ -225,12 +225,15 @@ def cusp_view_matrix(tet, subsimplex):
     print(tet.Class[subsimplex].mat_log)
 
     a, b = tet.Class[subsimplex].mat_log[0]
-    z = a + b * 1j
+    c, d = tet.Class[subsimplex].mat_log[1]
+    z = (a + b * 1j)
+    w = (c + d*1j)
+   
 
     RF = v[0].parent()
     CF = tet.ShapeParameters[3].parent()
 
-    x = matrix([[1j * z, 0],[0,1]], ring = CF)
+    x = matrix([[1.25j*z, -1.25*w],[0,1]], ring = CF)
 
     m = tet.cusp_to_tet_matrices[subsimplex]
 

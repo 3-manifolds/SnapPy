@@ -187,7 +187,7 @@ class InsideViewer(ttk.Frame):
                 takefocus = 0,
                 command = (
                     lambda which_cusp = i:
-                        self.set_camera_cusp_view(which_cusp)))
+                        self.set_camera_cusp_view(which_cusp)) )
             cusp_button.grid(row = row, column = 3)
             cusp_view_buttons.append(cusp_button)
             row += 1
@@ -200,7 +200,7 @@ class InsideViewer(ttk.Frame):
 
         view_label = ttk.Label(view_frame, text = "View:")
         view_label.grid(row = 0, column = 0)
-
+        
         for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
             button = ttk.Radiobutton(view_frame,
                                      variable = self.view_var,
@@ -208,7 +208,7 @@ class InsideViewer(ttk.Frame):
                                      text = text,
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
-        
+
         return frame
 
     def set_camera_cusp_view(self, which_cusp):
@@ -221,6 +221,8 @@ class InsideViewer(ttk.Frame):
             (cusp_view_matrix(tet, subsimplex),
              corner.Tetrahedron.Index,
              0.0))
+        self.view_var.set(1)
+        self.set_view(1)
         self.widget.redraw_if_initialized()
     
     def set_view(self, i):

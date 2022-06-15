@@ -86,7 +86,7 @@ class GeodesicInfo:
         # Note that to keep away from cyclic dependencies, we just
         # recompute them here instead of using them from IdealRayTracingData.
         self.tet_to_shader_vertices = [
-            _shader_vertices(z) for z in self.shapes ]
+            symmetric_vertices_for_tetrahedron(z) for z in self.shapes ]
 
         # For each tetrahedron, information which tetrahedra are neighboring,
         # which face-pairings correspond to which generator in above group
@@ -466,12 +466,5 @@ def pack_tets_and_R13_heads_and_tails_for_shader(
     indices.append(len(heads))
 
     return heads, tails, indices
-
-def _shader_vertices(z):
-    """
-    Matches how IdealRayTracingData places the vertices of a tetrahedron in H^3.
-    """
-    w = z.sqrt() + (z - 1).sqrt()
-    return [ w, 1/w, -1/w, -w ]
 
 

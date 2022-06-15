@@ -11,6 +11,7 @@ from ..upper_halfspace import pgl2c_to_o13
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
 from .hyperboloid_utilities import *
+from .upper_halfspace_utilities import *
 
 from .raytracing_data import *
 
@@ -132,13 +133,12 @@ class IdealRaytracingData(RaytracingData):
 
     def _add_complex_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
-            z = tet.ShapeParameters[t3m.E01]
-            w = z.sqrt() + (z-1).sqrt()
             tet.complex_vertices = {
-                t3m.V0 :       w,
-                t3m.V1 :   1 / w,
-                t3m.V2 : - 1 / w,
-                t3m.V3 : -     w }
+                v : vert
+                for v, vert in zip(
+                        t3m.ZeroSubsimplices,
+                        symmetric_vertices_for_tetrahedron(
+                            tet.ShapeParameters[t3m.E01])) }
 
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:

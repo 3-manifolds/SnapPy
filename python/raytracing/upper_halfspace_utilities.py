@@ -412,3 +412,18 @@ def dist_triangle_and_std_geodesic(verts):
     # We can conveniently compute distances of each edge of T to L
     # from the above cross ratios.
     return min(dist_of_opposite_edges_from_cross_ratio(z) for z in zs)
+
+def symmetric_vertices_for_tetrahedron(z):
+    """
+    Given a tetrahedron shape, returns four (ideal) points spanning
+    a tetrahedron of that shape.
+
+    The points are in C subset C union { Infinity } regarded as
+    boundary of the upper half space model.
+
+    Duplicates initial_tetrahedron(... centroid_at_origin = true)
+    in choose_generators.c.
+    """
+
+    w = z.sqrt() + (z - 1).sqrt()
+    return [ w, 1/w, -1/w, -w ]

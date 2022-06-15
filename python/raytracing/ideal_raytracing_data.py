@@ -373,13 +373,6 @@ class NonGeometricRaytracingData(McomplexEngine):
         boost = boost * m
         return boost, tet_num, weight
 
-def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
-    l = z1   - z0
-    m = zinf - z1
-
-    return matrix([[ l * zinf, m * z0 ],
-                   [ l,        m      ]])
-
 def _pgl2_matrix_for_face(tet, F):
     gluing = tet.Gluing[F]
     other_tet = tet.Neighbor[F]
@@ -392,8 +385,8 @@ def _pgl2_matrix_for_face(tet, F):
         for V in t3m.ZeroSubsimplices
         if V & F ]
 
-    m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
-    m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
+    m1 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts)
+    m2 = pgl2_matrix_taking_0_1_inf_to_given_points(*other_verts)
 
     return m2 * sl2c_inverse(m1)
 
@@ -461,8 +454,9 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
         z0 = cusp_vertices[0]
         cusp_vertices = [ z / z0 for z in cusp_vertices ]
 
-    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
-    cusp_to_std = sl2c_inverse(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+    std_to_tet = pgl2_matrix_taking_0_1_inf_to_given_points(*tet_vertices)
+    cusp_to_std = sl2c_inverse(
+        pgl2_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
     return (
         pgl2c_to_o13(         std_to_tet * cusp_to_std),

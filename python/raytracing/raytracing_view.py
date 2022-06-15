@@ -306,7 +306,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             speed)
 
     def resize_geodesic_params(self, enable = False):
-        num = len(self.geodesics.geodesic_infos) - len(self.ui_parameter_dict['geodesicTubeRadii'][1])
+        num = (len(self.geodesics.geodesic_tube_infos) -
+               len(self.ui_parameter_dict['geodesicTubeRadii'][1]))
         self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
         self.ui_parameter_dict['geodesicTubeEnables'][1] += num * [ enable ]
 

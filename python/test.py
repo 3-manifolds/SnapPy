@@ -7,7 +7,7 @@ import snappy.matrix
 import snappy.verify.test
 import snappy.ptolemy.test
 import snappy.raytracing.cohomology_fractal
-import snappy.raytracing.geodesic
+import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
@@ -90,7 +90,7 @@ modules += [snappy.SnapPy,
             snap_doctester,
             snappy.matrix,
             snappy.raytracing.cohomology_fractal,
-            snappy.raytracing.geodesic,
+            snappy.raytracing.geodesic_tube_info,
             snappy.raytracing.geodesics,
             snappy.raytracing.ideal_raytracing_data,
             snappy.raytracing.upper_halfspace_utilities,

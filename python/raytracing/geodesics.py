@@ -1,4 +1,10 @@
-from .geodesic import GeodesicInfo
+from .geodesic_tube_info import GeodesicTubeInfo
+from .upper_halfspace_utilities import *
+
+from ..drilling.geometric_structure import add_r13_geometry
+from ..drilling.geodesic_tube import add_structures_necessary_for_tube
+from ..snap.t3mlite import Mcomplex, simplex
+from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
 class Geodesics:
     def __init__(self, manifold, words):
@@ -16,13 +22,14 @@ class Geodesics:
         """
 
         self.manifold = manifold
+        self.mcomplex = None
 
-        self.geodesic_infos = [
-            GeodesicInfo(manifold, word)
-            for word in words ]
-        for i, geodesic_info in enumerate(self.geodesic_infos):
-            geodesic_info.index = i
-            geodesic_info.words = [ geodesic_info.word ]
+        self.geodesic_tube_infos = [
+            GeodesicTubeInfo(
+                self.get_mcomplex(),
+                word,
+                index)
+            for index, word in enumerate(words) ]
 
         self.num_tetrahedra = manifold.num_tetrahedra()
         self.RF = manifold.tetrahedra_shapes('rect')[0].real().parent()
@@ -35,7 +42,7 @@ class Geodesics:
 
     def set_enables_and_radii_and_update(self, enables, radii):
 
-        if not self.geodesic_infos:
+        if not self.geodesic_tube_infos:
             return
 
         self.data_heads = []
@@ -46,14 +53,16 @@ class Geodesics:
 
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
-        for i, (enable, radius, geodesic_info) in enumerate(
-                zip(enables, radii, self.geodesic_infos)):
+        for i, (enable, radius, geodesic_tube) in enumerate(
+                zip(enables, radii, self.geodesic_tube_infos)):
             if enable:
                 radius = self.RF(radius)
-                radius_param = radius.cosh() ** 2 / 2
 
                 tets_and_endpoints = (
-                    geodesic_info.compute_tets_and_R13_endpoints_for_tube(radius))
+                    geodesic_tube.compute_tets_and_R13_endpoints_for_tube(radius))
+
+                radius_param = radius.cosh() ** 2 / 2
+
                 for tet, endpoints in tets_and_endpoints:
                     tets_to_data[tet].append(
                         (endpoints, i, radius_param))
@@ -93,30 +102,50 @@ class Geodesics:
             self.add_word(g['word'])
 
     def add_word(self, word):
-        geodesic_info = GeodesicInfo(self.manifold, word)
+        geodesic_tube_info = GeodesicTubeInfo(
+            self.get_mcomplex(),
+            word,
+            index = len(self.geodesic_tube_infos))
 
-        for i, other in enumerate(self.geodesic_infos):
-            if other == geodesic_info:
+        for i, other in enumerate(self.geodesic_tube_infos):
+            if other == geodesic_tube_info:
                 if word not in other.words:
                     other.words.append(word)
                 return i
 
-        geodesic_info.index = len(self.geodesic_infos)
-        geodesic_info.words = [word]
-        self.geodesic_infos.append(geodesic_info)
+        self.geodesic_tube_infos.append(geodesic_tube_info)
 
-        return len(self.geodesic_infos) - 1
+        return len(self.geodesic_tube_infos) - 1
 
     def geodesics_sorted_by_length(self):
-        return sorted(self.geodesic_infos, key = compute_geodesic_key)
+        return sorted(self.geodesic_tube_infos,
+                      key = compute_geodesic_tube_info_key)
 
+    def get_mcomplex(self):
+        if self.mcomplex is None:
+            self.mcomplex = Mcomplex(self.manifold)
+            add_r13_geometry(self.mcomplex,
+                             self.manifold)
+            add_structures_necessary_for_tube(self.mcomplex)
 
-def compute_geodesic_key(geodesic):
-    length = (geodesic.eigenvalue0 ** 2).log()
-    if length.real() < 0:
-        length = - length
+            for tet in self.mcomplex.Tetrahedra:
+                z = tet.ShapeParameters[simplex.E01]
+                vert0 = [ tet.ideal_vertices[v]
+                          for v in simplex.ZeroSubsimplices[:3]]
+                vert1 = symmetric_vertices_for_tetrahedron(z)[:3]
+                tet.to_coordinates_in_symmetric_tet = (
+                    o13_matrix_taking_ideal_vertices_to_ideal_vertices(
+                        vert0, vert1))
 
-    return (int(length.real() * 1e5), int(abs(length.imag() * 1e5)), length.imag() > 1e-5, geodesic.index)
+        return self.mcomplex
+
+def compute_geodesic_tube_info_key(geodesic_tube_info):
+    l = geodesic_tube_info.complex_length
+    
+    return (int(l.real() * 1e5),
+            int(abs(l.imag() * 1e5)), # Pair complex conjugate lengths
+            l.imag() > 1e-5, # Making the one with negative imag part first
+            geodesic_tube_info.index)
 
 def _hsv2rgb_helper(hue, saturation, value, x):
     p = abs(((hue + x / 3.0) % 1.0) * 6.0 - 3.0)
@@ -140,3 +169,10 @@ def geodesic_index_to_color(i):
     golden_angle_by_2_pi = 0.3819660112501051
 
     return hsv2rgb(golden_angle_by_2_pi * i + 0.1, 1.0, 1.0)
+
+
+def o13_matrix_taking_ideal_vertices_to_ideal_vertices(verts0, verts1):
+    m1 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts0)
+    m2 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts1)
+
+    return pgl2c_to_o13(m2 * sl2c_inverse(m1))

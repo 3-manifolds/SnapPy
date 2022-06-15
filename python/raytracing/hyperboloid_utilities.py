@@ -220,26 +220,40 @@ def height_euclidean_triangle(z0, z1, z2):
 
 def cusp_view_matrix(tet, subsimplex):
 
-    v = tet.R13_vertices[subsimplex] * tet.R13_horosphere_scales[subsimplex]
+    # Complex numbers encoding translation of horosphere corresponding
+    # to meridian and longitude. Here, the horosphere maps to the
+    # boundary of a cusp neighborhood with area one.
+    m_translation, l_translation = tet.Class[subsimplex].Translations
 
-    print(tet.Class[subsimplex].mat_log)
+    print(m_translation)
+    print(l_translation)
 
-    a, b = tet.Class[subsimplex].mat_log[0]
-    c, d = tet.Class[subsimplex].mat_log[1]
-    z = (a + b * 1j)
-    w = (c + d*1j)
-   
+    CF = m_translation.parent()
+    RF = m_translation.real().parent()
 
-    RF = v[0].parent()
-    CF = tet.ShapeParameters[3].parent()
+    # Let us work in the upper halfspace model
+    #         H^3 = { z + tj : z in C, t > 0 }
+    # and with coordinates such that:
+    # 1. The camera we start with is at jand looking down.
+    # 2. The above horosphere is horizontal.
+    # 3. The meridian and longitude act by the PSL(2,Z)-matrix
+    #    [[1, z], [0, 1]] where z = m_translation or z = l_translation,
+    #    respectively.
 
-    x = matrix([[1.25j*z, -1.25*w],[0,1]], ring = CF)
+    borel_transform = matrix([[ 1, (m_translation + l_translation) / 2],
+                              [ 0, 1]], ring = CF)
 
-    m = tet.cusp_to_tet_matrices[subsimplex]
+    base_camera_matrix = matrix(
+        [[ 1, 0, 0, 0],
+         [ 0, 0, 0, 1],
+         [ 0, 1, 0, 0],
+         [ 0, 0, 1, 0]], ring = RF)
 
-    m = m  * pgl2c_to_o13(x) * matrix([[1,0,0,0],
-                    [0,0,0,1],
-                    [0,1,0,0],
-                    [0,0,1,0]],
-                   ring = RF)
-    return m
+    # Apply necessary pre and post O13-transforms to the transform
+    # in the upper halfspace we computed above.
+    o13_matrix = (
+        tet.cusp_to_tet_matrices[subsimplex] *
+        pgl2c_to_o13(borel_transform) *
+        base_camera_matrix)
+
+    return o13_matrix

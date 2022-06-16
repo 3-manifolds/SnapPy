@@ -13,7 +13,7 @@ __all__ = [ 'prod',
 if _within_sage:
     from sage.all import prod, xgcd
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
-    from sage.rings.complex_interval_field import is_ComplexIntervalField
+    from sage.rings.complex_interval import is_ComplexIntervalFieldElement
 
     def is_Interval(x):
         """
@@ -21,7 +21,7 @@ if _within_sage:
         with RealIntervalField or ComplexIntervalField, respectively.
         """
 
-        return is_RealIntervalFieldElement(x) or is_ComplexIntervalField(x.parent())
+        return is_RealIntervalFieldElement(x) or is_ComplexIntervalFieldElement(x)
 
 else:
 

@@ -345,7 +345,7 @@ class IdealRaytracingData(RaytracingData):
         subsimplex = corner.Subsimplex
 
         return self.update_view_state(
-            (_cusp_view_matrix(tet, subsimplex),
+            (_cusp_view_matrix(tet, subsimplex, self.areas[which_cusp]),
              corner.Tetrahedron.Index,
              0.0))
 
@@ -495,7 +495,7 @@ def _compute_margulis_tube_ends(tet, vertex):
              for x in [-1.0, 1.0] ]
 
 
-def _cusp_view_matrix(tet, subsimplex):
+def _cusp_view_matrix(tet, subsimplex, area):
 
     # Complex numbers encoding translation of horosphere corresponding
     # to meridian and longitude. Here, the horosphere maps to the
@@ -517,8 +517,14 @@ def _cusp_view_matrix(tet, subsimplex):
     #    [[1, z], [0, 1]] where z = m_translation or z = l_translation,
     #    respectively.
 
-    borel_transform = matrix([[ 1, (m_translation + l_translation) / 2],
-                              [ 0, 1]], ring = CF)
+    translation = (m_translation + l_translation) / 2
+    
+    # A small factor to move the camera a little bit into the cusp neighborhood
+    # to avoid z-Fighting.
+    factor_to_move_inside = 1.0000001
+    scale = factor_to_move_inside / area.sqrt()
+    borel_transform = matrix([[ scale, translation ],
+                              [     0, 1 ]], ring = CF)
 
     base_camera_matrix = matrix(
         [[ 1, 0, 0, 0],

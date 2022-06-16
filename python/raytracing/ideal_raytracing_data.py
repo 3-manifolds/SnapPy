@@ -502,8 +502,9 @@ def _cusp_view_matrix(tet, subsimplex, area):
     # A small factor to move the camera a little bit into the cusp neighborhood
     # to avoid z-Fighting.
     factor_to_move_inside = 1.0000001
-    scale = factor_to_move_inside / area.sqrt()
-    borel_transform = matrix([[ scale, translation ],
+    rotation = l_translation / abs(l_translation)
+    scale = factor_to_move_inside/area.sqrt()
+    borel_transform = matrix([[ scale*rotation, translation ],
                               [     0, 1 ]], ring = CF)
 
     base_camera_matrix = matrix(

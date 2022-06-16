@@ -7,7 +7,7 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
-from ..upper_halfspace import pgl2c_to_o13
+from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
 from .hyperboloid_utilities import *
@@ -395,7 +395,7 @@ def _pgl2_matrix_for_face(tet, F):
     m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
     m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
 
-    return m2 * _adjoint(m1)
+    return m2 * sl2c_inverse(m1)
 
 def _o13_matrix_for_face(tet, F):
     return pgl2c_to_o13(_pgl2_matrix_for_face(tet, F))
@@ -447,10 +447,6 @@ def _compute_R13_point_on_horosphere_for_vertex(tet, V0):
 
     return complex_and_height_to_R13_time_vector(pts[0], horosphere_height)
 
-def _adjoint(m):
-    return matrix([[ m[1,1], -m[0,1]],
-                   [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
-
 def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
 
@@ -466,11 +462,11 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
         cusp_vertices = [ z / z0 for z in cusp_vertices ]
 
     std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
-    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+    cusp_to_std = sl2c_inverse(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
     return (
         pgl2c_to_o13(         std_to_tet * cusp_to_std),
-        pgl2c_to_o13(_adjoint(std_to_tet * cusp_to_std)))
+        pgl2c_to_o13(sl2c_inverse(std_to_tet * cusp_to_std)))
 
 def _compute_margulis_tube_ends(tet, vertex):
 

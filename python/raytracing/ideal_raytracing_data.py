@@ -338,6 +338,17 @@ class IdealRaytracingData(RaytracingData):
         weight = 0.0
         return (boost, tet_num, weight)
 
+    def cusp_view_state(self, which_cusp):
+        vert = self.mcomplex.Vertices[which_cusp]
+        corner = vert.Corners[0]
+        tet = corner.Tetrahedron
+        subsimplex = corner.Subsimplex
+
+        return self.update_view_state(
+            (_cusp_view_matrix(tet, subsimplex),
+             corner.Tetrahedron.Index,
+             0.0))
+
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
         super(NonGeometricRaytracingData, self).__init__(mcomplex)
@@ -372,6 +383,9 @@ class NonGeometricRaytracingData(McomplexEngine):
         boost, tet_num, weight = boost_tet_num_and_weight
         boost = boost * m
         return boost, tet_num, weight
+
+    def cusp_view_state(self, which_cusp):
+        return self.initial_view_state()
 
 def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
     l = z1   - z0
@@ -479,6 +493,47 @@ def _compute_margulis_tube_ends(tet, vertex):
 
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
+
+
+def _cusp_view_matrix(tet, subsimplex):
+
+    # Complex numbers encoding translation of horosphere corresponding
+    # to meridian and longitude. Here, the horosphere maps to the
+    # boundary of a cusp neighborhood with area one.
+    m_translation, l_translation = tet.Class[subsimplex].Translations
+
+    print(m_translation)
+    print(l_translation)
+
+    CF = m_translation.parent()
+    RF = m_translation.real().parent()
+
+    # Let us work in the upper halfspace model
+    #         H^3 = { z + tj : z in C, t > 0 }
+    # and with coordinates such that:
+    # 1. The camera we start with is at jand looking down.
+    # 2. The above horosphere is horizontal.
+    # 3. The meridian and longitude act by the PSL(2,Z)-matrix
+    #    [[1, z], [0, 1]] where z = m_translation or z = l_translation,
+    #    respectively.
+
+    borel_transform = matrix([[ 1, (m_translation + l_translation) / 2],
+                              [ 0, 1]], ring = CF)
+
+    base_camera_matrix = matrix(
+        [[ 1, 0, 0, 0],
+         [ 0, 0, 0, 1],
+         [ 0, 1, 0, 0],
+         [ 0, 0, 1, 0]], ring = RF)
+
+    # Apply necessary pre and post O13-transforms to the transform
+    # in the upper halfspace we computed above.
+    o13_matrix = (
+        tet.cusp_to_tet_matrices[subsimplex] *
+        pgl2c_to_o13(borel_transform) *
+        base_camera_matrix)
+
+    return o13_matrix
 
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:

@@ -2465,6 +2465,8 @@ cdef class Triangulation(object):
 
         if method == 'low_index':
             return self._covers_low_index(degree)
+        if method == 'cpp_low_index':
+            return self._covers_cpp_low_index(degree)
         if method == 'gap':
             return self._covers_gap(degree)
         if method == 'magma':
@@ -2485,6 +2487,25 @@ cdef class Triangulation(object):
             S = SimsTree(G.num_generators(), degree, G.relators())
         return [self.cover(H.permutation_rep()) for H in S.list()
                 if H.degree == degree]
+
+    def _covers_cpp_low_index(self, degree):
+        """
+        Compute all covers using cpp_low_index.
+        """
+
+        import cpp_low_index
+        G = self.fundamental_group()
+        if G.num_relators() > self.num_cusps():
+            num_long_relators = self.num_cusps()
+        else:
+            num_long_relators = 0
+        return [self.cover(H)
+                for H in cpp_low_index.permutation_reps(
+                        G.num_generators(),
+                        G.relators(as_int_list=True),
+                        degree,
+                        num_long_relators)
+                if len(H[0]) == degree]
 
     def _covers_gap(self, degree):
         """

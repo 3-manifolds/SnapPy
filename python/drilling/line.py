@@ -58,7 +58,7 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
     t0 = ((p00 * p11) / pp).sqrt()
     t1 = ((p01 * p10) / pp).sqrt()
 
-    p = 2 * ((t0 + t1 - 1) / 2)
+    p = (t0 + t1 - 1) / 2
 
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
@@ -68,7 +68,7 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
             RF = p.parent()
             p = RF(0)
 
-    return p.sqrt().arcsinh()
+    return 2 * p.sqrt().arcsinh()
 
 class R13LineWithMatrix:
     """

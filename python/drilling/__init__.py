@@ -331,6 +331,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
 
     g = GeodesicInfo(
         mcomplex = mcomplex,
+        trace = m.trace(),
         unnormalised_start_point = start_point,
         unnormalised_end_point = line.o13_matrix * start_point,
         line = line)
@@ -338,7 +339,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     # Determines whether geodesic corresponds to a core curve.
     # Applies Decktransformations so that start point lies within
     # the interior of one tetrahedron in the fundamental domain or
-    # within the union of two tetrahedra neigboring in the hyperboloid
+    # within the union of two tetrahedra neighboring in the hyperboloid
     # model.
     #
     # See GeodesicInfo for details.

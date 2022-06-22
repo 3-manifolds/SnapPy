@@ -98,6 +98,9 @@ class GeodesicInfo:
                  # The triangulation
                  mcomplex : Mcomplex,
 
+                 # Trace of corresponding PSL(2,C)-matrix.
+                 trace : Any,
+
                  # A point on or near the line corresponding to the closed geodesic.
 
                  # It is a light-like R13-vector. Using Any as type annotation because
@@ -141,6 +144,7 @@ class GeodesicInfo:
                  index : Optional[int] = None):
 
         self.mcomplex = mcomplex
+        self.trace = trace
         self.unnormalised_start_point = unnormalised_start_point
         self.unnormalised_end_point = unnormalised_end_point
         self.line = line

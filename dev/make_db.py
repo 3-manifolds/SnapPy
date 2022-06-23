@@ -171,7 +171,7 @@ def insert_cusped_manifold(connection, table, mfld,
         try:
             cs = mfld.chern_simons()
         except ValueError:
-            print 'Chern-Simons failed for %s'%name
+            print('Chern-Simons failed for %s' % name)
             cs = 'NULL'
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
@@ -227,7 +227,7 @@ def make_morwen_links(connection):
         m=1
         for M in MorwenLinks(n):
             M.set_name(M.name().split('(')[0])
-            print '%s %s %s'%(n, m, M.name())
+            print('%s %s %s' % (n, m, M.name()))
             m += 1
             insert_cusped_manifold(connection, table, M,
                                    is_link=True)

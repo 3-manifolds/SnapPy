@@ -278,7 +278,7 @@ def insert_cusped_manifold(connection, table, mfld,
         try:
             cs = float(mfld.chern_simons())
         except ValueError:
-#            print 'Chern-Simons failed for %s'%name
+#            print('Chern-Simons failed for %s' % name)
             cs = 'NULL'
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
@@ -299,7 +299,7 @@ def insert_cusped_manifold(connection, table, mfld,
     try:
         hash_value = mfld_hash(mfld)
     except:
-        print 'failed to hash %s (%s)'%(mfld, DTcode)
+        print('failed to hash %s (%s)' % (mfld, DTcode))
         hash_value = '00000000000000000000000000000000'
     if mfld.is_orientable():
         if DTcode is not None:
@@ -317,18 +317,18 @@ def insert_cusped_manifold(connection, table, mfld,
     connection.execute(query)
 
 def copy_table_to_disk(connection, table, dbfile):
-    print 'copying %s'%table
-    connection.execute('attach "%s" as disk'%dbfile)
+    print('copying %s'%table)
+    connection.execute('attach "%s" as disk' % dbfile)
     connection.execute('begin transaction')
     connection.execute('insert into disk.%s select * from %s'%(table, table))
     connection.commit()
     connection.close()
-    print 'finished %s'%table
+    print('finished %s' % table)
 
 def make_cusped(dbfile):
     connection = setup_db(":memory:")
     table = 'orientable_cusped_census'
-    print 'making %s'%table
+    print('making %s' % table)
     for M in ObsOrientableCuspedCensus():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M, is_link=True)
@@ -339,7 +339,7 @@ def make_cusped_nine(dbfile):
     import bz2, regina
     connection = setup_db(":memory:")
     table = 'orientable_cusped_census'
-    print 'making 9 tetrahedra census'
+    print('making 9 tetrahedra census')
     curr_len = 17661
     connection.execute("insert into %s (id, name) values (%d,'None')" % (table, curr_len))
     for line in bz2.BZ2File('cusped-9-or-bab.bz2'):
@@ -361,7 +361,7 @@ def make_links(dbfile):
                                 gzip.open('ChristyDT.gz').read(), re.MULTILINE))
     connection = setup_db(":memory:")
     table = 'link_exteriors'
-    print 'making %s'%table
+    print('making %s' % table)
     for n in range(1, 6):
         for M in ObsLinkExteriors(n):
             M.set_name(M.name().split('(')[0])
@@ -372,7 +372,7 @@ def make_links(dbfile):
 def make_census_knots(dbfile):
     connection = setup_db(":memory:")
     table = 'census_knots'
-    print 'making %s'%table
+    print('making %s' % table)
     for M in ObsCensusKnots():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M, is_link=True)
@@ -388,7 +388,7 @@ def make_census_knots(dbfile):
 def make_closed(dbfile):
     connection = setup_db(":memory:")
     table = 'orientable_closed_census'
-    print 'making %s'%table
+    print('making %s' % table)
     for M in ObsOrientableClosedCensus():
         insert_closed_manifold(connection, table, M)
     connection.commit()
@@ -498,7 +498,7 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
     connection = sqlite3.connect(":memory:")
     connection.execute(link_schema%table)
     connection.commit()
-    print os.getpid(), 'starting'
+    print(os.getpid(), 'starting')
     connection.execute('begin transaction')
     for code, name in my_list:
         M = link_exterior_tri(code)
@@ -506,15 +506,15 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
         insert_cusped_manifold(connection, table, M, is_link=True,
                                DTcode=code)
     connection.commit()
-    print os.getpid(), 'waiting'
+    print(os.getpid(), 'waiting')
 
     # The first process doesn't need to wait, but the others
     # must acquire their lock before writing to disk.
     if my_lock is not None:
         my_lock.acquire()
         my_lock.release()
-    print os.getpid(), 'copying'
-    connection.execute("attach database '%s' as disk"%dbfile)
+    print(os.getpid(), 'copying')
+    connection.execute("attach database '%s' as disk" % dbfile)
     connection.execute("begin transaction")
     connection.execute("""
     insert into disk.HT_links (
@@ -529,7 +529,7 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
     connection.close()
     # Now tell the next process to go ahead.
     next_lock.release()
-    print os.getpid(), 'finished'
+    print(os.getpid(), 'finished')
 
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'

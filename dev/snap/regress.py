@@ -38,7 +38,7 @@ def test_snappy():
         ts = M.tetrahedra_field_gens()
         ans = ts.find_field(300, 16)
         if ans is None:
-            print M
+            print(M)
 
 def test_list_of_names(names, prec):
     for name in names:
@@ -46,7 +46,7 @@ def test_list_of_names(names, prec):
         ts = M.tetrahedra_field_gens()
         ans = ts.find_field(prec, 16, True, True)
         if ans is None:
-            print M
+            print(M)
 
 CC = ComplexField(100)
 p_z = R('x^14 + 23*x^13 - 50*x^12 + 453*x^11 - 1381*x^10 + 880*x^9 + 3113*x^8 - 8829*x^7 + 12005*x^6 - 10603*x^5 + 6456*x^4 - 2688*x^3 + 728*x^2 - 115*x + 8')

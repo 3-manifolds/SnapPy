@@ -119,7 +119,7 @@ Again, we can check that the representation actually assigns the identity to all
     >>> sol.evaluate_word('AbCbA', G)
     [[Mod(1, x^2 - x - 1), 0], [0, Mod(1, x^2 - x - 1)]]
     >>> for relator in G.relators():
-    ...     print sol.evaluate_word(relator, G)
+    ...     print(sol.evaluate_word(relator, G))
     [[Mod(1, x^2 - x - 1), 0], [0, Mod(1, x^2 - x - 1)]]
     [[Mod(1, x^2 - x - 1), 0], [0, Mod(1, x^2 - x - 1)]]
   
@@ -135,9 +135,9 @@ The object returned by ``fundamental_group`` also contains words for the periphe
     >>> G = M.fundamental_group()
     >>> sol = M.ptolemy_variety(2,1).retrieve_solutions()[0]
     >>> for i, cusp_curves in enumerate(G.peripheral_curves()):
-    ...     print "Cusp %d:" % i
+    ...     print("Cusp %d:" % i)
     ...     for cusp_curve in cusp_curves:
-    ...         print sol.evaluate_word(cusp_curve, G)
+    ...         print(sol.evaluate_word(cusp_curve, G))
     Cusp 0:
     [[Mod(2*x - 3, x^2 + x + 1), Mod(2*x, x^2 + x + 1)], [Mod(6, x^2 + x + 1), Mod(-2*x + 1, x^2 + x + 1)]]
     [[Mod(-2*x - 5, x^2 + x + 1), Mod(-2, x^2 + x + 1)], [Mod(6*x + 6, x^2 + x + 1), Mod(2*x + 3, x^2 + x + 1)]]    
@@ -179,10 +179,10 @@ We see that we have one such component and that each component is actually itsel
 We can access the witness point(s) for each component just by iteration::
 
     >>> for component in one_dim_sols:
-    ...     print "Component:"
+    ...     print("Component:")
     ...     for witness in component:
-    ...         print "    Witness:"
-    ...         print "        Volumes:", witness.volume_numerical()
+    ...         print("    Witness:")
+    ...         print("        Volumes:", witness.volume_numerical())
     Component:
         Witness:
             Volumes: [0.E-38, 0.E-38]
@@ -201,12 +201,12 @@ We now revisit the :ref:`1-dimensional component of the Ptolemy variety<ptolemy-
     >>> sols = M.ptolemy_variety(2,'all').retrieve_solutions().flatten()
     >>> components = [ sol for sol in sols if sol.dimension > 0]
     >>> for component in components:
-    ...     print "Component of dimension %d" % component.dimension
+    ...     print("Component of dimension %d" % component.dimension)
     ...     for witness in component:
     ...         for i, cusp_curves in enumerate(G.peripheral_curves()):
-    ...             print "    Cusp %d:" % i
+    ...             print("    Cusp %d:" % i)
     ...             for cusp_curve in cusp_curves:
-    ...                 print "        ", witness.evaluate_word(cusp_curve, G)
+    ...                 print("        ", witness.evaluate_word(cusp_curve, G))
     Component of dimension 1
         Cusp 0:
             [[Mod(1, x^2 + x + 2), 0], [0, Mod(1, x^2 + x + 2)]]
@@ -221,12 +221,12 @@ Let us try another manifold, ``m410``:
     >>> sols = M.ptolemy_variety(2,'all').retrieve_solutions().flatten()
     >>> components = [ sol for sol in sols if sol.dimension > 0]
     >>> for component in components:
-    ...     print "Component of dimension %d" % component.dimension
+    ...     print("Component of dimension %d" % component.dimension)
     ...     for witness in component:
     ...         for i, cusp_curves in enumerate(G.peripheral_curves()):
-    ...             print "    Cusp %d:" % i
+    ...             print("    Cusp %d:" % i)
     ...             for cusp_curve in cusp_curves:
-    ...                 print "       ", witness.evaluate_word(cusp_curve, G)
+    ...                 print("       ", witness.evaluate_word(cusp_curve, G))
     Component of dimension 1
         Cusp 0:
             [[Mod(1, x^2 + 2), 0], [0, Mod(1, x^2 + 2)]]

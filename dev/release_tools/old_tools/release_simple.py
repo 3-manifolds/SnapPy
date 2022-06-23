@@ -37,7 +37,7 @@ elif sys.platform.startswith('win'):
     commands = ['install', 'bdist_wheel']
                
 for python in pythons:
-    print "\n*** Building version with " + python
+    print("\n*** Building version with " + python)
     if sys.platform.startswith('win'):
         run( python + ' setup.py build -c mingw32')
     for command in commands:

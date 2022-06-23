@@ -1250,7 +1250,7 @@ class SnapPeaGUITriangulation(Pmw.MegaToplevel):
     #    temporary __del__ method to investigate weird behavior
     #    of embedded Python MegaWidgets.
 #    def __del__(self):
-#        print 'deleting manifold window'
+#        print('deleting manifold window')
 
     def destroy(self):
         #    Due to a bug in Python Mega Widgets, a Pmw.MegaToplevel

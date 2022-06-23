@@ -215,7 +215,7 @@ class ObjectsByHashes:
         return repetition_count(sizes)
 
     def __iter__(self):
-        return self.hashes.iteritems()
+        return self.hashes.items()
 
     def __repr__(self):
         return "<ObjHashes %d hashes %d items>" % (self.num_hashes(), self.num_objects())

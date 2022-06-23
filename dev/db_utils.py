@@ -6,10 +6,10 @@ import re
 try:
     unichr
     def encode_torsion(divisors):
-        return ''.join([unichr(x) for x in divisors]).encode('utf8')
+        return ''.join(unichr(x) for x in divisors).encode('utf8')
 except: # Python3
     def encode_torsion(divisors):
-        return ''.join([chr(x) for x in divisors]).encode('utf8')
+        return ''.join(chr(x) for x in divisors).encode('utf8')
 
 def decode_torsion(utf8):
     return [ord(x) for x in utf8.decode('utf8')]
@@ -41,11 +41,10 @@ def cover_type(mfld):
     return re.findall("~reg~|~irr~|~cyc~", mfld.name())[-1][1:-1]
 
 def cover_hash(mfld, degrees):
-    return [ repr(sorted(
-	    [(cover_type(C), C.homology()) for C in mfld.covers(degree)]
-	    ))
-	    for degree in degrees ]
-			
+    return [repr(sorted([(cover_type(C), C.homology())
+                         for C in mfld.covers(degree)]))
+            for degree in degrees]
+
 def combined_hash(mfld):
     return " &and& ".join( [basic_hash(mfld)] + cover_hash(mfld, (2,3)) )
 

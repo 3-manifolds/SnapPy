@@ -11,9 +11,6 @@ the required "snappy_manifolds".  Such a package must provide a
 "get_tables" function that accepts the below "ManifoldTable" as input
 and returns a list of subclasses of "ManifoldTable".
 """
-
-from __future__ import print_function
-from builtins import range
 from .db_utilities import decode_torsion, decode_matrices, db_hash
 from .sage_helper import _within_sage
 from spherogram.codecs import DTcodec

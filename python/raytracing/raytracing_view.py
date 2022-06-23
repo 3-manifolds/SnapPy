@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from .hyperboloid_utilities import *
 from .ideal_raytracing_data import *
 from .finite_raytracing_data import *
@@ -13,6 +11,7 @@ from snappy.SnapPy import vector, matrix
 
 import math
 __all__ = ['RaytracingView', 'NonorientableUnsupportedError']
+
 
 class NonorientableUnsupportedError(RuntimeError):
     def __init__(self, mfd):

@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-from __future__ import print_function
 import os, sys, re, glob, pkg_resources
 
 web = '/afs/math.uic.edu/www/t3m/SnapPy/'

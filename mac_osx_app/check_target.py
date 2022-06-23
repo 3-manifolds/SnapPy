@@ -2,15 +2,15 @@
 Tools for finding out which sdk was used to build an executable binary and
 what its minimum deployment target is.
 """
-from __future__ import print_function
 from subprocess import Popen, PIPE
 import sys
+
 
 class TargetChecker:
     output_string = """
     {self.path} was built using the {self.sdk} sdk targeting {self.target}.
     """
-    
+
     def __init__(self, path):
         self.path = path
         self.target, self.sdk = self.get_target_and_sdk(path)

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import tkinter as Tk_
 import tkinter.ttk as ttk
 

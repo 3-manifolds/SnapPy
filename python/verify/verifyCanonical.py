@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from ..sage_helper import _within_sage, sage_method
 
 from .cuspCrossSection import RealCuspCrossSection

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from builtins import range
 import sys, os, webbrowser
 from urllib.request import pathname2url
 from .gui import *

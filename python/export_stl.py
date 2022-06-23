@@ -1,5 +1,5 @@
-from builtins import range
 import math
+
 
 def facet_stl(triangle):
     vertex1, vertex2, vertex3 = triangle

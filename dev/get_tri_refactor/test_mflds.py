@@ -1,6 +1,9 @@
-from __future__ import print_function
-import snappy, doctest
+import snappy
+import doctest
+
+
 snappy.SnapPy._float_print_precision_fixed = 8
+
 
 def get_triangulation_tester():
     """

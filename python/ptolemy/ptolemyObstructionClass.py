@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 class PtolemyObstructionClass(object):
 
     """
     Represents an obstruction cocycle of a pSL(n,C) representation as
     described in Definition 1.7 of
-    
+
     Garoufalidis, Thurston, Zickert
     The Complex Volume of SL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1111.2828

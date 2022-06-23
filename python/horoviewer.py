@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-from builtins import range
 from .gui import *
 from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
                        GetColor, cyglSetStandardLighting)
 from plink.ipython_tools import IPythonTkRoot
-import os, sys
+import os
+import sys
+
 
 class HoroballViewer(ttk.Frame):
     def __init__(self, master, nbhd=None, which_cusp=0, cutoff=None,

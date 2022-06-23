@@ -1,4 +1,3 @@
-from __future__ import print_function
 import doctest, inspect, os, sys, getopt, collections
 import snappy
 import snappy.snap.test

@@ -1,7 +1,7 @@
-from __future__ import print_function
 from .polynomial import Polynomial
 from .component import NonZeroDimensionalComponent
 from ..pari import pari
+
 
 def numerical_solutions_with_one(polys):
 

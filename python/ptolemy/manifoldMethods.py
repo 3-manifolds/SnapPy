@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from . import matrix
 from . import homology
 from .ptolemyObstructionClass import PtolemyObstructionClass

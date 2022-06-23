@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 """
 With new code, can't find trace field of s075, s230 [...]
 

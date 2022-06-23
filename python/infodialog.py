@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import sys, os, datetime
 from .gui import *
 from .version import version as SnapPy_version

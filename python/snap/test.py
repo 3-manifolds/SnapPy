@@ -1,9 +1,9 @@
-from __future__ import print_function
 from ..sage_helper import _within_sage, doctest_modules
 from ..pari import pari
 import snappy
 import snappy.snap as snap
 import doctest, collections, getopt, sys
+
 
 def _test_gluing_equations(manifold, shapes):
     """

@@ -74,11 +74,11 @@ class ManifoldTable:
         if self._filter == '':
             return 'ManifoldTable object without filters'
         else:
-            return 'ManifoldTable object with filter: %s'%self._filter
+            return 'ManifoldTable object with filter: %s' % self._filter
         
     def __call__(self, *args, **kwargs):
         if args: # backwards compatibility
-            if not kwargs.has_key('num_cusps'):
+            if 'num_cusps' not in kwargs:
                 kwargs['num_cusps'] = args[0]
         return ManifoldTable(self._table, **kwargs)
     
@@ -180,17 +180,17 @@ class ManifoldTable:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
                 M.set_peripheral_curves('combinatorial')
                 M.set_peripheral_curves(cobs)
-	self._finalize(M, row)
+        self._finalize(M, row)
         return M
 
     def _finalize(self, M, row):
-	"""
-	Give the manifold a name and make last-minute adjustments
-	to the manifold before it leaves the factory, e.g. Dehn filling.
-	Override this method for custom manifold production.
-	"""
+        """
+        Give the manifold a name and make last-minute adjustments
+        to the manifold before it leaves the factory, e.g. Dehn filling.
+        Override this method for custom manifold production.
+        """
         M.set_name(row[0])
-	
+
     def keys(self):
         """
         Return the list of column names for this manifold table.
@@ -236,20 +236,21 @@ class ManifoldTable:
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hashes match
-		# Check for isometry
+                # Check for isometry
         try:
             for N in sibs:
                 if mfld.is_isometric_to(N):
                     return N
         except RuntimeError:
             pass
-		# Check for identical triangulations
+                # Check for identical triangulations
         for n in (1,2):
             for N in sibs:
                 if mfld == N:
                     return N
             mfld.randomize()
         return None
+
 
 class ClosedManifoldTable(ManifoldTable):
 
@@ -259,9 +260,9 @@ class ClosedManifoldTable(ManifoldTable):
         return ClosedManifoldTable(self._table, **kwargs)
 
     def _finalize(self, M, row):
-	"""
-	Give the closed manifold a name and do the Dehn filling.
-	"""
+        """
+        Give the closed manifold a name and do the Dehn filling.
+        """
         M.set_name(row[0])
         M.dehn_fill(row[2:4])
 

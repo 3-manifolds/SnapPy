@@ -3,12 +3,12 @@ from .sage_helper import _within_sage
 from functools import reduce
 import operator
 
-__all__ = [ 'prod',
-            'xgcd',
-            'is_RealIntervalFieldElement',
-            'is_Interval',
-            'correct_min',
-            'corred_max' ]
+__all__ = ['prod',
+           'xgcd',
+           'is_RealIntervalFieldElement',
+           'is_Interval',
+           'correct_min',
+           'correct_max']
 
 if _within_sage:
     from sage.all import prod, xgcd
@@ -20,7 +20,6 @@ if _within_sage:
         Returns True is x is either a real or complex interval as constructed
         with RealIntervalField or ComplexIntervalField, respectively.
         """
-
         return is_RealIntervalFieldElement(x) or is_ComplexIntervalFieldElement(x)
 
 else:
@@ -32,13 +31,12 @@ else:
         """
         if initial is not None:
             return reduce(operator.mul, L, initial)
-        elif L:
+        if L:
             return reduce(operator.mul, L)
-        else:
-            return 1
+        return 1
 
     def xgcd(a, b):
-        """
+        r"""
         Returns a triple ``(g,s,t)`` such that `g = s\cdot a+t\cdot b = \gcd(a,b)`.
 
         >>> xgcd(56, 44)
@@ -64,9 +62,8 @@ else:
             old_t, t = t, old_t - q * t
 
         if old_r > 0:
-            return  old_r,  old_s,  old_t
-        else:
-            return -old_r, -old_s, -old_t
+            return old_r, old_s, old_t
+        return -old_r, -old_s, -old_t
 
     def is_RealIntervalFieldElement(x):
         """
@@ -80,6 +77,7 @@ else:
 
     def is_Interval(x):
         return False
+
 
 def correct_min(l):
     """
@@ -100,8 +98,7 @@ def correct_min(l):
     the smallest lower and upper bound across all intervals,
     respectively.
     """
-
-    are_intervals = [ is_RealIntervalFieldElement(x) for x in l ]
+    are_intervals = [is_RealIntervalFieldElement(x) for x in l]
     if any(are_intervals):
         if not all(are_intervals):
             raise TypeError(
@@ -127,12 +124,12 @@ def correct_min(l):
                     "Trying to compute min of array containing NaN.")
         return min(l)
 
+
 def correct_max(l):
     """
     Analogous to correct_min.
     """
-
-    are_intervals = [ is_RealIntervalFieldElement(x) for x in l ]
+    are_intervals = [is_RealIntervalFieldElement(x) for x in l]
     if any(are_intervals):
         if not all(are_intervals):
             raise TypeError(
@@ -151,4 +148,3 @@ def correct_max(l):
                 raise ValueError(
                     "Trying to compute max of array containing NaN.")
         return max(l)
-

@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 """
 Finding a hyperbolic manifold in a list or census, and for generating
 such censuses.
@@ -20,8 +18,10 @@ manifolds.  Thus one needs to keep the number of actual isometry
 comparisons to a minimum. Our approach for both issues is to use
 non-geometric hashes based on covers.
 """
-
-import snappy, re, os, sys
+import snappy
+import re
+import os
+import sys
 
 
 #-----------------------------------------

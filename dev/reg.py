@@ -29,7 +29,7 @@ def compare_spun(M):
 
 def test_spun():
     for M in snappy.OrientableCuspedCensus(tets=8):
-        print M.name()
+        print(M.name())
         compare_spun(M)
         
 test_spun()

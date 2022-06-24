@@ -268,7 +268,7 @@ Here is python code to iterate over all obstruction classes:
 
     >>> for p in Manifold("m003").ptolemy_variety(2,'all'):
     ...     sols = p.retrieve_solutions(verbose=False)
-    ...     print sols.volume_numerical()
+    ...     print(sols.volume_numerical())
     [[0.E-19, 1.88267370443418 E-14]]
     [[2.02988321281931, -2.02988321281931]]    
 

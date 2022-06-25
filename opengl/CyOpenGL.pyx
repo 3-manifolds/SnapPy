@@ -1,6 +1,5 @@
-# cython: language_level=2
+# cython: language_level=3str
 # cython: auto_pickle=False
-
 
 # Setting auto_pickle = False to avoid AttributeError
 # "... has no attribute '__reduce_cython__'" on certain

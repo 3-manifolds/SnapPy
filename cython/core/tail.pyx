@@ -184,11 +184,11 @@ def get_triangulation_tester():
         vol = M.volume()
         if abs(vol) < 0.1:
             vol = 0.0
-        print M, vol, M.homology()
+        print(M, vol, M.homology())
 
     for spec in specs:
         M = Triangulation(spec)
-        print M, M.homology()
+        print(M, M.homology())
 
 # Support for Hoste-Thistethwaite tables
 

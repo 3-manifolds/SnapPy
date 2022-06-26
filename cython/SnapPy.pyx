@@ -1,4 +1,4 @@
-# cython: language_level=2
+# cython: language_level=3str
 
 DEF REAL_TYPE = 'double'
 DEF HIGH_PRECISION = False

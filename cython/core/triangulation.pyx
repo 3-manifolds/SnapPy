@@ -2497,14 +2497,19 @@ cdef class Triangulation(object):
         G = self.fundamental_group()
         if G.num_relators() > self.num_cusps():
             num_long_relators = self.num_cusps()
+            num_short_relators = G.num_relators() - num_long_relators
+            relators = sorted(G.relators(as_int_list=True), key = len)
+            short_relators = relators[:num_short_relators]
+            long_relators = relators[num_short_relators:]
         else:
-            num_long_relators = 0
+            short_relators = G.relators(as_int_list = True)
+            long_relators = []
+
         return [self.cover(H)
                 for H in cpp_low_index.permutation_reps(
                         G.num_generators(),
-                        G.relators(as_int_list=True),
-                        degree,
-                        num_long_relators)
+                        short_relators, long_relators,
+                        degree)
                 if len(H[0]) == degree]
 
     def _covers_gap(self, degree):

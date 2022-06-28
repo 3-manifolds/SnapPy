@@ -704,7 +704,6 @@ class TkTerm:
         transformer = self.IP.input_transformer_manager
         assert code.endswith('\n')
         if not code.strip():
-            self.IP.more = True
             self._current_indent = 0
             return
         self._input_buffer = self.clean_code(code)

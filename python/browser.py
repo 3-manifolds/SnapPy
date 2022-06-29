@@ -473,9 +473,9 @@ class Browser(Tk_.Toplevel):
         modeline.insert(Tk_.END, '%s tetrahedra; %s'%(
             self.manifold.num_tetrahedra(), self.manifold.solution_type()))
         if len(self.dirichlet) == 0:
-             modeline.insert(Tk_.END,
-                             '  * failed to compute Dirichlet domain!',
-                             'alert')
+            modeline.insert(Tk_.END,
+                            '  * failed to compute Dirichlet domain!',
+                            'alert')
         modeline.config(state=Tk_.DISABLED)
 
     def update_modeline_and_side_panel(self):

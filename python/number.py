@@ -646,4 +646,3 @@ if _within_sage:
     use_field_conversion('sage')
 else:
     use_field_conversion('snappy')
-

@@ -11,6 +11,7 @@ import snappy.raytracing.geodesics
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
 import snappy.drilling
+import snappy.exterior_to_link.test
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -102,6 +103,13 @@ def snappy_verify_doctester(verbose):
 
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
+
+def snappy_exterior_to_link_doctester(verbose):
+    return snappy.exterior_to_link.test.run_doctests(verbose, print_info=False)
+
+snappy_exterior_to_link_doctester.__name__ = 'snappy.exterior_to_link'
+modules.insert(0, snappy_exterior_to_link_doctester)
+
 
 def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():

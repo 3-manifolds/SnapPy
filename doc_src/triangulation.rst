@@ -8,3 +8,4 @@ basic class below.
 
 ..   autoclass:: snappy.Triangulation
      :members:
+     :inherited-members:

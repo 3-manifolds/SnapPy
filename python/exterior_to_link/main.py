@@ -1,7 +1,7 @@
 """
 Defines the main function `exterior_to_link`.
 """
-import snappy
+
 import random
 from .exceptions import ExteriorToLinkError
 from .simplify_to_base_tri import good_simplification
@@ -13,12 +13,15 @@ from . import hyp_utils
 def filled_is_3sphere(manifold):
     """
     >>> isosig = 'nLvLLLPQQkcfejimhklkmlkmuphkvuoupilhhv_Bbba(1, 0)'
-    >>> filled_is_3sphere(isosig)
+    >>> filled_is_3sphere(Manifold(isosig))
     True
-    >>> filled_is_3sphere('m004(1, 2)')
+    >>> filled_is_3sphere(Triangulation('m004(1, 2)'))
     False
     """
-    T = snappy.Triangulation(manifold)
+    if hasattr(manifold, 'without_hyperbolic_structure'):
+        T = manifold.without_hyperbolic_structure()
+    else:
+        T = manifold.copy()
     for i in range(T.num_cusps()):
         if T.cusp_info(i).is_complete:
             T.dehn_fill((1, 0), i)

@@ -3,7 +3,6 @@ The class McomplexWithLink is an Mcomplex containing a PL link that is
 disjoint from the one-skeleton.
 """
 
-import snappy
 from ..snap.t3mlite.simplex import *
 from ..snap.t3mlite.edge import Edge
 from ..snap.t3mlite.arrow import Arrow
@@ -245,7 +244,7 @@ class McomplexWithLink(McomplexWithExpansion):
     >>> KT.run_example_moves()
     >>> len(KT), len(KT[0].arcs), len(KT[1].arcs)
     (2, 10, 10)
-    >>> LT = link_triangulation('L6a4', simplify=True)
+    >>> LT = link_triangulation(Manifold('L6a4'), simplify=True)
     >>> len(LT.link_components())
     3
     """
@@ -627,7 +626,8 @@ def add_arcs_to_standard_solid_tori(mcomplex, num_tori):
     for tet in M.Tetrahedra[-n:]:
         add_core_arc_in_one_tet_solid_torus(M, tet)
 
-def link_triangulation(name, add_arcs=True, simplify=True,
+
+def link_triangulation(manifold, add_arcs=True, simplify=True,
                        easy_simplify=False, jiggle_limit=100,
                        randomize=0):
     """
@@ -642,7 +642,11 @@ def link_triangulation(name, add_arcs=True, simplify=True,
     True
 
     """
-    M = snappy.Triangulation(name)
+    if hasattr(manifold, 'without_hyperbolic_structure'):
+        M = manifold.without_hyperbolic_structure()
+    else:
+        M = manifold.copy()
+
     n = M.num_cusps()
     if M.cusp_info('is_complete') == n*[True]:
         M.dehn_fill(n*[(1, 0)])

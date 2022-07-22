@@ -1,5 +1,3 @@
-import snappy  # Needed for ManifoldHP
-
 def pos_tets(manifold):
     return manifold.solution_type() == 'all tetrahedra positively oriented'
 
@@ -63,9 +61,10 @@ def are_isometric_as_links(A, B, tries=100):
     isos = is_isometric_to_with_effort(A, B, return_isometries=True, tries=tries)
     ans = any(iso.extends_to_link() for iso in isos)
     if not ans:
-        A, B = snappy.ManifoldHP(A), snappy.ManifoldHP(B)
+        A, B = A.high_precision(), B.high_precision()
         isos = is_isometric_to_with_effort(A, B, return_isometries=True, tries=tries)
     return any(iso.extends_to_link() for iso in isos)
+
 
 if __name__ == '__main__':
     import doctest

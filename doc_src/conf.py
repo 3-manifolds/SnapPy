@@ -57,7 +57,7 @@ print('Using: ' + snappy.__file__)
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'sphinx.ext.autosectionlabel']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -162,7 +162,8 @@ html_theme = 'classic'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    }
+    'body_max_width':'90%'
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

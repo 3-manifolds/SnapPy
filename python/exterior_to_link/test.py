@@ -26,10 +26,8 @@ modules = [rational_linear_algebra,
            main]
 
 def run_doctests(verbose=False, print_info=True):
-    optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     globs = {'Manifold':snappy.Manifold,
              'Triangulation':snappy.Triangulation}
-    verbose = len(optlist) > 0
     results =  snappy.sage_helper.doctest_modules(modules,
                                                   verbose=verbose,
                                                   extraglobs=globs,

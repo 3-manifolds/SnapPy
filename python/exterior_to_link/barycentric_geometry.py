@@ -11,7 +11,9 @@ from . import pl_utils
 
 class Point():
     """
-    A point in a convex polytope in R^3
+    A point in R^3.  The optional ``boundary`` parameter is for
+    recording the label of the face of a convex polytope containing
+    the point.
     """
     def __init__(self, c0, c1, c2, boundary=None):
         self.vector = Vector3([c0, c1, c2])
@@ -48,7 +50,7 @@ class Point():
 class Arc():
     """
     A line segment between two Points, often part of a linked list of
-    forming PL paths or loops.
+    Arcs forming a PL path or loop.
     """
     def __init__(self, start, end, past=None, next=None):
         self.start = start
@@ -82,7 +84,10 @@ class Arc():
 
     def glue_to(self, next_arc):
         """
-        Assumes self.end == next_arc.start and then makes them the same object.
+        Helper method used when concatenating two linked lists of Arcs.
+
+        Assumes self.end == next_arc.start and then makes them the
+        same object.
         """
         self.next = next_arc
         next_arc.past = self

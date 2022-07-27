@@ -38,7 +38,7 @@ def is_isometric_to_with_effort(A, B, return_isometries=False, tries=10):
 
 def are_isometric_as_ordered_links(A, B):
     """
-    All isometric, but not as ordered links
+    All of the following manifolds isometric, but not as ordered links
 
     >>> A = Manifold('L10n1')
     >>> B = Manifold('L7a2')

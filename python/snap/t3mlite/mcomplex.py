@@ -394,12 +394,16 @@ class Mcomplex:
             tet.Checked = 0
         self.walk_and_orient(self[0], 1)
         self.rebuild()
+        return self.is_oriented()
+
+    def is_oriented(self):
         for tet in self.Tetrahedra:
             for two_subsimplex in TwoSubsimplices:
                 if (not tet.Neighbor[two_subsimplex] is None
                         and tet.Gluing[two_subsimplex].sign() == 0):
                     return False
         return True
+
 
     def walk_and_orient(self, tet, sign):
         if tet.Checked == 1:
@@ -1306,7 +1310,7 @@ class Mcomplex:
         """
         return homology.boundary_maps(self)
 
-    def isomorphisms_to(self, other, at_most_one=False):
+    def isomorphisms_to(self, other, orientation_preserving=False, at_most_one=False):
         """
         Return the list of isomorphisms between the MComplexes M and N.
         If `at_most_one` is `True`, only returns the first one found (but
@@ -1320,6 +1324,8 @@ class Mcomplex:
         4
         >>> isos[0]
         {0: [tet0, (0, 2, 1, 3)], 1: [tet1, (0, 2, 1, 3)]}
+        >>> len(M.isomorphisms_to(N, orientation_preserving=True))
+        2
         >>> M.two_to_three(Arrow(E01, F3, M[0])); M.rebuild()
         True
         >>> len(M), len(N)
@@ -1347,11 +1353,19 @@ class Mcomplex:
         M, N = self, other
         if not isinstance(N, Mcomplex):
             raise ValueError('The other triangulation must be an Mcomplex')
-        
+
         if len(M) != len(N):
             return []
         t_M0 = M[0]
-        permutations = list(itertools.permutations([0, 1, 2, 3]))
+
+        if orientation_preserving:
+            if not (M.is_oriented() and N.is_oriented()):
+                raise ValueError('Asked for orientation preserving isomorphisms '
+                                 'of unoriented triangulations')
+            permutations = list(Perm4.A4())  # even perms only
+        else:
+            permutations = list(Perm4.S4())
+
         isomorphisms = []
         # We will try and build an isomorphism from M to N that sends t_M0 to t_N0
         for t_N0 in N:
@@ -1361,7 +1375,7 @@ class Mcomplex:
                 iso = {k:None for k in range(len(M))}
                 # set up first map t_M -> t_N
                 # temporary way of encoding gluing.
-                iso[0] = [t_N0, Perm4(perm)]
+                iso[0] = [t_N0, perm]
                 tet_queue = [t_M0]
                 while tet_queue != []:
                     t_M = tet_queue.pop()

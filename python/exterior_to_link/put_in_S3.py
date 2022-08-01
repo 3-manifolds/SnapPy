@@ -11,7 +11,7 @@ def transfer_arcs(M, N): #from M to N.
     M.rebuild()
     M.connect_arcs()
     N.rebuild()
-    iso = M.isomorphisms_to(N, at_most_one=True)[0]
+    iso = M.isomorphisms_to(N, orientation_preserving=True, at_most_one=True)[0]
     arcs_M = [M[i].arcs for i in range(len(M))]
     arcs_N = [N[i].arcs for i in range(len(N))]
     for t_M in M:

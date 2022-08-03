@@ -79,6 +79,7 @@ def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutof
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
 
+
 def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     """
     Yield the lines of an stl file corresponding to the solid given by face_dicts that is suitable for 3d printing.
@@ -110,5 +111,3 @@ def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_fact
     for triangle in output:
         yield facet_stl(triangle)
     yield 'endsolid\n'
-    return
-

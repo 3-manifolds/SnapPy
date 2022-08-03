@@ -18,9 +18,8 @@ class SnapPyCache(dict):
 
     def clear(self, key=None, message=''):
         if self.debug:
-            print('_clear_cache: %s'%message)
+            print('_clear_cache: %s' % message)
         if key is None:
             self._clear()
         else:
             self.pop(key)
-

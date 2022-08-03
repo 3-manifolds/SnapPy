@@ -181,6 +181,7 @@ def determine_flips(matrices, orientable):
         return [ (sgn_column(matrix, 0), sgn_column(matrix, 1))
                  for matrix in matrices ]
 
+
 def pack_matrices_applying_flips(matrices, flips):
     """
     Multiplies the columns of each matrix by the entries in flips and
@@ -195,10 +196,9 @@ def pack_matrices_applying_flips(matrices, flips):
 
     return result
 
+
 def supress_minus_zero(x):
-    if x == 0:
-        return 0
-    return x
+    return 0 if x == 0 else x
 
 # main two functions
 
@@ -412,6 +412,7 @@ def test_link_invariant():
 
     print("Tested that decorated isometry_signature is a link invariant")
 
+
 def helper_are_isometric(M, N):
     for i in range(100):
         try:
@@ -470,4 +471,3 @@ if __name__ == '__main__':
     main_test()
     test_link_invariant()
     test_by_dehn_filling()
-

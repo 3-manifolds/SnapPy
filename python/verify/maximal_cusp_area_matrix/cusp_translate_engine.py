@@ -52,8 +52,8 @@ class CuspTranslateEngine(object):
             sage: z = CIF(0.23, 0.43)
             sage: t = RIF(5)
             sage: for i in range(-2, 3): # doctest: +NUMERIC6
-            ....:   for j in range(-2, 3):
-            ....:       print(list(c.canonical_translates(FinitePoint(z + i * t0 + j * t1, t))))
+            ...     for j in range(-2, 3):
+            ...         print(list(c.canonical_translates(FinitePoint(z + i * t0 + j * t1, t))))
             [FinitePoint(0.2300000000? + 0.430000000?*I, 5)]
             [FinitePoint(0.2300000000? + 0.430000000?*I, 5)]
             [FinitePoint(0.2300000000? + 0.430000000000000?*I, 5)]

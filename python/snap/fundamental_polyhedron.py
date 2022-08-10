@@ -54,16 +54,16 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         The above code adds the given shapes to each edge (here 01) of each
         tetrahedron::
 
-        >>> from snappy.snap.t3mlite import simplex
-        >>> F.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01] # doctest: +NUMERIC6
-        0.500000000000000 + 0.866025403784438*I
+            >>> from snappy.snap.t3mlite import simplex
+            >>> F.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01] # doctest: +NUMERIC6
+            0.500000000000000 + 0.866025403784438*I
 
         And annotates each face (here 1) of each tetrahedron with the
         corresponding generator (here, the inverse of the second generator)
         or 0 if the face is internal to the fundamental polyhedron::
 
-        >>> F.mcomplex.Tetrahedra[0].GeneratorsInfo[simplex.F1]
-        -2
+            >>> F.mcomplex.Tetrahedra[0].GeneratorsInfo[simplex.F1]
+            -2
 
         This information is also available in a dict keyed by generator.
         For each generator, it gives a list of the corresponding face pairing
@@ -75,29 +75,29 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         pairing of face 2 of tet 1 to face 1 of tet0 such that face 2 is
         taken to face 1 by the permutation (3, 0, 1, 2)::
 
-        >>> F.mcomplex.Generators[2]
-        [((<F2 of tet1>, <F1 of tet0>), (3, 0, 1, 2))]
+            >>> F.mcomplex.Generators[2]
+            [((<F2 of tet1>, <F1 of tet0>), (3, 0, 1, 2))]
 
         The four vertices of tetrahedron 1::
 
-        >>> for v in simplex.ZeroSubsimplices: # doctest: +NUMERIC6
-        ...     F.mcomplex.Tetrahedra[1].Class[v].IdealPoint
-        'Infinity'
-        0.000000000000000
-        0.866025403784439 - 0.500000000000000*I
-        0.866025403784439 + 0.500000000000000*I
+            >>> for v in simplex.ZeroSubsimplices: # doctest: +NUMERIC6
+            ...     F.mcomplex.Tetrahedra[1].Class[v].IdealPoint
+            'Infinity'
+            0.000000000000000
+            0.866025403784439 - 0.500000000000000*I
+            0.866025403784439 + 0.500000000000000*I
 
         The matrix for generator 1 (of the unsimplified presentation)::
 
-        >>> F.mcomplex.GeneratorMatrices[1] # doctest: +NUMERIC6 +ELLIPSIS
-        [   -0.577350269189626 - 1.00000000000000*I    0.500000000000000 + 0.288675134594813*I...]
-        [  -0.500000000000000 - 0.288675134594813*I 0.577350269189626 + 2.22044604925031e-16*I...]
+            >>> F.mcomplex.GeneratorMatrices[1] # doctest: +NUMERIC6 +ELLIPSIS
+            [   -0.577350269189626 - 1.00000000000000*I    0.500000000000000 + 0.288675134594813*I...]
+            [  -0.500000000000000 - 0.288675134594813*I 0.577350269189626 + 2.22044604925031e-16*I...]
 
         Get the cusp that a vertex of the fundamental polyhedron corresponds
         to::
 
-        >>> F.mcomplex.Tetrahedra[1].Class[simplex.V0].SubsimplexIndexInManifold
-        0
+            >>> F.mcomplex.Tetrahedra[1].Class[simplex.V0].SubsimplexIndexInManifold
+            0
 
         """
 
@@ -284,7 +284,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         GeneratorMatrices to the Mcomplex which assigns a matrix to each
         generator.
 
-        Compute generator matrices::
+        Compute generator matrices:
 
         >>> M = Manifold("s776")
         >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes(
@@ -292,7 +292,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         >>> generatorMatrices = F.mcomplex.GeneratorMatrices
 
         Given a letter such as 'a' or 'A', return matrix for corresponding
-        generator::
+        generator:
 
         >>> def letterToMatrix(l, generatorMatrices):
         ...     g = ord(l.lower()) - ord('a') + 1

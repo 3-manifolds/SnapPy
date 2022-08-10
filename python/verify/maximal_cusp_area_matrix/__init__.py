@@ -13,17 +13,15 @@ __all__ = ['verified_maximal_cusp_area_matrix',
 @sage_method
 def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
     """
+    TESTS::
 
-    sage: from snappy import Manifold
-    sage: M = Manifold("s776")
-    sage: verified_maximal_cusp_area_matrix(M) # doctest: +NUMERIC6
-    [28.0000000000? 7.00000000000? 7.00000000000?]
-    [7.00000000000?  28.000000000? 7.00000000000?]
-    [7.00000000000? 7.00000000000?  28.000000000?]
-
+        sage: from snappy import Manifold
+        sage: M = Manifold("s776")
+        sage: verified_maximal_cusp_area_matrix(M) # doctest: +NUMERIC6
+        [28.0000000000? 7.00000000000? 7.00000000000?]
+        [7.00000000000?  28.000000000? 7.00000000000?]
+        [7.00000000000? 7.00000000000?  28.000000000?]
     """
-
-
     hyperbolic, shapes = snappy_manifold.verify_hyperbolicity(
         bits_prec = bits_prec)
 
@@ -44,16 +42,16 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
 
     return _to_matrix(rows)
 
+
 def triangulation_dependent_cusp_area_matrix(
                             snappy_manifold, verified, bits_prec = None):
     """
-
     Interesting case: t12521
 
     Maximal cusp area matrix:
 
     [ 77.5537626509970512653317518641810890989543820290380458409? 11.40953140648583915022197187043644048603871960228564151087?]
-[11.40953140648583915022197187043644048603871960228564151087?     91.1461442179608339668518063027198489593908228325190920?]
+    [11.40953140648583915022197187043644048603871960228564151087?     91.1461442179608339668518063027198489593908228325190920?]
 
     This result:
     
@@ -61,13 +59,10 @@ def triangulation_dependent_cusp_area_matrix(
     [  11.409531407? 5.508968850234?]
     
     After M.canonize:
+
     [  62.42018359?  11.409531407?]
     [ 11.409531407? 15.1140644993?]
-
-    
-
     """
-
     # Get shapes, as intervals if requested
     shapes = compute_hyperbolic_shapes(
         snappy_manifold, verified = verified, bits_prec = bits_prec)

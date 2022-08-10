@@ -67,21 +67,22 @@ class GeodesicInfo:
     If a client has instantiated this class with the basic information,
     it can call find_tet_or_core_curve. The method find_tet_or_core_curve
     will either:
-        1. Detect that the closed geodesic is actually a core curve of a
-           filled cusp and set core_curve_cusp and core_curve_direction
-           accordingly. This means that instead tracing the geodesic
-           through the triangulation, the client has to unfill the
-           corresponding cusp instead.
-        2. Apply a Decktransformation to the line and points such that
-           start point is either in the interior of a tetrahedron (in the
-           fundamental domain) or in the union of two (lifted) tetrahedra
-           (in the universal cover which is the hyperboloid model). That
-           is, if the start point is on a face of the triangulation, it
-           will return the two adjacent tetrahedra. If the start point is
-           in the interior of a tetrahedron, the client can attempt to
-           trace the geodesic through the triangulation. The client can
-           use the given (lifted) tetrahedra to develop a tube about the
-           geodesic to compute its injectivity radius.
+
+    1. Detect that the closed geodesic is actually a core curve of a
+       filled cusp and set core_curve_cusp and core_curve_direction
+       accordingly. This means that instead tracing the geodesic
+       through the triangulation, the client has to unfill the
+       corresponding cusp instead.
+    2. Apply a Decktransformation to the line and points such that
+       start point is either in the interior of a tetrahedron (in the
+       fundamental domain) or in the union of two (lifted) tetrahedra
+       (in the universal cover which is the hyperboloid model). That
+       is, if the start point is on a face of the triangulation, it
+       will return the two adjacent tetrahedra. If the start point is
+       in the interior of a tetrahedron, the client can attempt to
+       trace the geodesic through the triangulation. The client can
+       use the given (lifted) tetrahedra to develop a tube about the
+       geodesic to compute its injectivity radius.
 
     There is an additional field index that can be used by clients for
     book-keeping purposes, for example, to store the index of the cusp

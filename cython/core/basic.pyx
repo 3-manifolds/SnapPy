@@ -78,10 +78,11 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
 
 def valid_index(i, n, format_str):
     """
-    Returns (x)range(n)[i] or raises a nicely formatted IndexError
+    Return range(n)[i] or raises a nicely formatted IndexError
     using format_str.
     
     This does several things for us::
+
         * avoid that cython happily converts a float to an int, so a call
           such as M.dehn_fill((1,0), 0.6) would succeed.
         * converts a negative index such as -1 to n - 1
@@ -91,13 +92,11 @@ def valid_index(i, n, format_str):
     
     It is faster than reimplementing these behaviors.
     """
-
     try:
-        # Use Cython's xrange, which behaves like the Python 3 range and
-        # the Python 2 xrange.
-        return xrange(n)[i]
+        return range(n)[i]
     except IndexError:
         raise IndexError(format_str % i)
+
 
 # A stream for asynchronous messages
 class MsgIO(object):
@@ -107,18 +106,12 @@ class MsgIO(object):
 
 msg_stream = MsgIO()
 
-# Uniform string testing for Python 2 and 3.
-if python_major_version == 2:
-    def to_str(s):
-        return s
-    def bytearray_to_bytes(x):
-        return str(x)
-if python_major_version == 3:
-    basestring = unicode = str
-    def to_str(s):
-        return s.decode()
-    def bytearray_to_bytes(x):
-        return bytes(x)
+# string testing for Python 3
+basestring = unicode = str
+def to_str(s):
+    return s.decode()
+def bytearray_to_bytes(x):
+    return bytes(x)
 
 def to_byte_str(s):
     return s.encode('utf-8') if type(s) != bytes else s

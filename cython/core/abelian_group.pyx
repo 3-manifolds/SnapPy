@@ -217,10 +217,8 @@ cdef class PresentationMatrix(object):
         """
         Return the full matrix, including dead columns, as a list of lists.
         """
-        return [
-            [self._entries.get((i,j), 0) for j in xrange(self.cols)]
-            for i in xrange(self.rows)]
-
+        return [[self._entries.get((i, j), 0) for j in range(self.cols)]
+                for i in range(self.rows)]
 
     def simplify(self):
         """
@@ -250,11 +248,11 @@ cdef class PresentationMatrix(object):
         Return the simplified presentation as a matrix.
         """
         self.simplify()
-        columns = [j for j in xrange(self.cols) if j not in self.dead_columns]
-        rows = [i for i in xrange(self.rows) if self._row_support.get(i,None)]
-        if len(rows) == 0:
-            presentation = [ [0 for j in columns] ]
+        columns = [j for j in range(self.cols) if j not in self.dead_columns]
+        rows = [i for i in range(self.rows) if self._row_support.get(i, None)]
+        if not rows:
+            presentation = [[0 for j in columns]]
         else:
-            presentation = [ [self._entries.get((i,j), 0) for j in columns]
-                             for i in rows ]
+            presentation = [[self._entries.get((i, j), 0) for j in columns]
+                            for i in rows ]
         return matrix(presentation)

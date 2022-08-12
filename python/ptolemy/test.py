@@ -802,8 +802,10 @@ modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
 if test_regina:
     modules.append(ptolemy.reginaWrapper)
 
+
 def run_doctests(verbose=False, print_info=True):
-     return doctest_modules(modules, verbose, print_info)
+    return doctest_modules(modules, verbose, print_info)
+
 
 def main(verbose=False, doctest=True):
     print("Testing in sage:", _within_sage)
@@ -1059,6 +1061,7 @@ def main(verbose=False, doctest=True):
             compute_solutions = compute_solutions,
             baseline_cvolumes = cvols,
             expect_non_zero_dimensional = expect_non_zero_dim)
+
 
 if __name__ == '__main__':
     main()

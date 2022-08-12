@@ -564,8 +564,6 @@ class McomplexWithLink(McomplexWithExpansion):
         self.rebuild()
         self._build_link()
 
-
-
     def run_example_moves(self, k=None, straighten=True, push=True,
                           round=True, careful=True, start=0):
         """
@@ -573,18 +571,16 @@ class McomplexWithLink(McomplexWithExpansion):
         first k moves.
         """
         db = stored_moves.move_db
-        if not self.name in db:
+        if self.name not in db:
             raise ValueError('Manifold not found in stored_moves')
         moves = stored_moves.move_db[self.name]['moves']
         if k is not None:
             moves = moves[start:k]
         self.perform_moves(moves, straighten , push, round, careful)
 
-
     def _build_link(self):
         self.build_face_classes()
         self.connect_arcs()
-
 
     def how_edgy_in_faces(self):
         return min(arc.start.min_nonzero()
@@ -611,9 +607,9 @@ def add_core_arc_in_one_tet_solid_torus(mcomplex, tet):
 
 
 def is_standard_solid_torus(tet):
-     if tet.Neighbor[F2] == tet.Neighbor[F3] == tet:
-         return no_fixed_point(tet.Gluing[F2]) and no_fixed_point(tet.Gluing[F3])
-     return False
+    if tet.Neighbor[F2] == tet.Neighbor[F3] == tet:
+        return no_fixed_point(tet.Gluing[F2]) and no_fixed_point(tet.Gluing[F3])
+    return False
 
 
 def add_arcs_to_standard_solid_tori(mcomplex, num_tori):
@@ -691,9 +687,10 @@ def link_triangulation(manifold, add_arcs=True, simplify=True,
     assert all(is_standard_solid_torus(tet) for tet in MA.Tetrahedra[-n:])
 
     if add_arcs:
-       add_arcs_to_standard_solid_tori(MA, n)
+        add_arcs_to_standard_solid_tori(MA, n)
 
     return MA
+
 
 if __name__ == '__main__':
     import doctest

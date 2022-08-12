@@ -247,6 +247,7 @@ def _traverse_geodesic_to_subdivide(
         #
         # Start next iteration.
 
+
 def _find_and_index_all_tetrahedra(tet : Tetrahedron):
     """
     Recursively traverses neighbors of the given Tetrahedron
@@ -254,19 +255,18 @@ def _find_and_index_all_tetrahedra(tet : Tetrahedron):
 
     Assigns tet.Index to them.
     """
-
-    result = [ ]
-    pending_tets = [ tet ]
+    result = []
+    pending_tets = [tet]
     visited_tets = set()
     i = 0
     while pending_tets:
-       tet = pending_tets.pop()
-       if not tet in visited_tets:
-           visited_tets.add(tet)
-           tet.Index = i
-           i += 1
-           result.append(tet)
-           for neighbor in tet.Neighbor.values():
-               pending_tets.append(neighbor)
+        tet = pending_tets.pop()
+        if tet not in visited_tets:
+            visited_tets.add(tet)
+            tet.Index = i
+            i += 1
+            result.append(tet)
+            for neighbor in tet.Neighbor.values():
+                pending_tets.append(neighbor)
 
     return result

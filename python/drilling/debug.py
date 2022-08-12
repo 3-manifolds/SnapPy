@@ -1,18 +1,20 @@
 from ..snap.t3mlite import simplex
 from ..hyperboloid import *
 
+
 def _find_all_tetrahedra(tet):
     result = [ ]
     pending_tets = [ tet ]
     visited_tets = set()
     while pending_tets:
-       tet = pending_tets.pop()
-       if not tet in visited_tets:
-           visited_tets.add(tet)
-           result.append(tet)
-           for neighbor in tet.Neighbor.values():
-               pending_tets.append(neighbor)
+        tet = pending_tets.pop()
+        if tet not in visited_tets:
+            visited_tets.add(tet)
+            result.append(tet)
+            for neighbor in tet.Neighbor.values():
+                pending_tets.append(neighbor)
     return result
+
 
 def check_peripheral_curves(tets):
     for tet in tets:
@@ -201,7 +203,7 @@ def check_consistency_2(piece):
             if not piece.index == piece.prev.index:
                 raise Exception("Index inconsistent.")
 
-            if not piece.index in to_pieces_map:
+            if piece.index not in to_pieces_map:
                 l = flatten_link_list(piece)
                 for i, p in enumerate(l):
                     if p is piece:

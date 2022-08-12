@@ -1,7 +1,9 @@
 from snappy import verify, Manifold
 from snappy.verify import upper_halfspace, cusp_shapes, cusp_areas, volume
 from snappy.sage_helper import _within_sage, doctest_modules
-import sys, getopt
+import sys
+import getopt
+
 
 def check_certified_intervals():
     for n in ['m009', 'm015', 't02333', 't02333(1,2)',

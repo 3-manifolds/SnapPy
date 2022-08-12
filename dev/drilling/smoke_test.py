@@ -59,7 +59,7 @@ for i in range(int(sys.argv[1]), len(OrientableCuspedCensus)):
         if abs(len0.real() - len1.real()) > 1e-6:
             print("Lengths not matching:", drilled_manifold.triangulation_isosig())
 
-            if not 'degen' in drilled_manifold.solution_type():
+            if 'degen' not in drilled_manifold.solution_type():
                 raise Exception("Real lengths don't match %s %s %s %s" % (M.name(), word, len0, len1))
 
         d = len0.imag() - len1.imag()
@@ -68,7 +68,7 @@ for i in range(int(sys.argv[1]), len(OrientableCuspedCensus)):
         
         if not any(abs(d + i * twoPi) < 1e-6 for i in [-1,0,1]):
             print("Lengths not matching:", drilled_manifold.triangulation_isosig())
-            if not 'degen' in drilled_manifold.solution_type():
+            if 'degen' not in drilled_manifold.solution_type():
                 raise Exception("Imag lengths don't match %s %s %s %s" % (M.name(), word, len0, len1))
 
         if 'pos' in drilled_manifold.solution_type():

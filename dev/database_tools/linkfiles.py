@@ -149,9 +149,11 @@ class Crossing:
     def sign(self):
         try:
             D = self.under.dx*self.over.dy - self.under.dy*self.over.dx
-            if D > 0: return 'RH'
-            if D < 0: return 'LH'
-        except:
+            if D > 0:
+                return 'RH'
+            if D < 0:
+                return 'LH'
+        except Exception:
             return 0
 
     def strand(self, arrow):

@@ -16,9 +16,11 @@ t3m_edge_to_tuple = {t3m.E01:(0,1), t3m.E02:(0,2), t3m.E03:(0,3),
 to_t3m_edge = {(0,1):t3m.E01, (0,2):t3m.E02, (0,3):t3m.E03,
                          (1,2):t3m.E12, (1,3):t3m.E13, (2,3):t3m.E23}
 
+
 def arrow(mcomplex, tet, face, edge):
     return t3m.Arrow(to_t3m_edge[edge], t3m.TwoSubsimplices[face],
                      mcomplex.Tetrahedra[tet])
+
 
 def faces_around_edge(mcomplex, tet, edge):
     face = min(set(range(4)) - set(edge))
@@ -194,7 +196,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
                      'c_0011_']
         first_var_name = 'c_1100_0'
 
-    tet_vars = [ x + repr(d) for d in range(n) for x in var_names ]
+    tet_vars = [x + repr(d) for d in range(n) for x in var_names]
+
     def var(tet, edge):
         return tet_vars[6*tet + directed_edges.index(edge)]
 
@@ -387,12 +390,14 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
         ans.append(shape_dict)
     return ans
 
+
 def doctest_globals():
     import snappy
-    return {'Manifold':snappy.Manifold}
+    return {'Manifold': snappy.Manifold}
+
 
 if __name__ == '__main__':
-   from snappy.sage_helper import doctest_modules
-   import sys
-   current_module = sys.modules[__name__]
-   doctest_modules([current_module], extraglobs=doctest_globals())
+    from snappy.sage_helper import doctest_modules
+    import sys
+    current_module = sys.modules[__name__]
+    doctest_modules([current_module], extraglobs=doctest_globals())

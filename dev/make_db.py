@@ -79,7 +79,8 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 epsilon = 0.000001
 
-closed_re = re.compile('(.*)\((.*),(.*)\)')
+closed_re = re.compile(r'(.*)\((.*),(.*)\)')
+
 
 def create_manifold_tables(connection):
     """
@@ -99,6 +100,7 @@ def create_manifold_tables(connection):
     for table in ['nonorientable_closed_census']:
         connection.execute(nono_closed_schema%table)
         connection.commit()
+
 
 def ambiguity_exists(M):
     """

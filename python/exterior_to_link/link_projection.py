@@ -99,7 +99,8 @@ def straighten_knot(points):
 
 def straighten_link(points_list):
     for i in range(len(points_list)):
-        other_points = points_list.copy(); del other_points[i]
+        other_points = points_list.copy()
+        del other_points[i]
         other_arcs = arcs_from_points(other_points)
         while True:
             points = points_list[i]

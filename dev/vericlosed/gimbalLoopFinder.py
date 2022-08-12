@@ -46,7 +46,7 @@ class GimbalLoopFinder:
         edge_index_and_end = (
             self.truncated_complex.get_edge_index_and_end_from_tet_and_perm(
                 edge.tet_and_perm))
-        if not edge_index_and_end in self.uncovered_edge_ends:
+        if edge_index_and_end not in self.uncovered_edge_ends:
             return position
 
         self.uncovered_edge_ends.remove(edge_index_and_end)
@@ -114,10 +114,11 @@ class GimbalLoopFinder:
     def __repr__(self):
         return repr(self.edges)
 
+
 def _group_loop(loop):
-    indices = [ i for i, edge in enumerate(loop)
-                if edge.subcomplex_type == 'edgeLoop' ] + [ len(loop) ]
-    if not 0 in indices:
+    indices = [i for i, edge in enumerate(loop)
+               if edge.subcomplex_type == 'edgeLoop'] + [len(loop)]
+    if 0 not in indices:
         raise Exception("Missing edgeLoop")
     result = [
         [loop[indices[i]], loop[indices[i]+1:indices[i+1]]]
@@ -127,4 +128,3 @@ def _group_loop(loop):
         raise Exception("Error in _group_loop")
 
     return result
-    

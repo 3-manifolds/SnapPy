@@ -1,5 +1,6 @@
-import sys, os, tkinter as tk
-import tkinter
+import sys
+import os
+import tkinter as tk
 from tkinter import ttk
 
 if sys.platform == 'linux':
@@ -17,7 +18,7 @@ class Slider(ttk.Scale):
     knob to move to the click point.
     """
     def __init__(self, container, left_end, right_end,
-                 orient = tkinter.HORIZONTAL):
+                 orient = tk.HORIZONTAL):
         ttk.Scale.__init__(self,
                            master = container,
                            from_ = self._slider_left_end,
@@ -176,7 +177,7 @@ class ZoomSlider(ttk.Frame):
                 self.expand_icon=tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
         else:
-            suffix = 'gif' if tkinter.TkVersion < 8.6 else 'png'
+            suffix = 'gif' if tk.TkVersion < 8.6 else 'png'
             self.compress_icon=tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'inward18.' + suffix))
 

@@ -385,10 +385,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     # Otherwise try to interpret obstruction_class as an index
     try:
         obstruction_class = obstruction_classes[int(obstruction_class)]
-    except:
+    except (KeyError, IndexError):
         raise Exception("Bad index for obstruction class")
 
     return PtolemyVariety(manifold, N, obstruction_class,
                           simplify = simplify,
                           eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
-

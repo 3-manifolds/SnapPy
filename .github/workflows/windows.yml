@@ -26,8 +26,8 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
-          # Skip Python 2.7, 3.5, 3.10, and PyPy
-          CIBW_SKIP: cp27-* cp35-* pp*
+          # Skip Python 2.7, 3.5, 3.11, and PyPy
+          CIBW_SKIP: cp27-* cp35-* cp311-* pp*
           CIBW_BEFORE_BUILD: >            
             pip install cython sphinx cypari FXrays low_index &&
             pip install https://github.com/3-manifolds/PLink/archive/master.zip &&

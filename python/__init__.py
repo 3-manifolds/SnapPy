@@ -64,6 +64,7 @@ class ManifoldHP(_ManifoldHP):
         >>> M = ManifoldHP('m004')
         >>> type(M.low_precision())
         <class 'snappy.Manifold'>
+
         """
         LP = Manifold('empty')
         LP._from_string(self._to_string(), initialize_structure=False)
@@ -105,6 +106,7 @@ class ManifoldHP(_ManifoldHP):
         [m006(-5,2)]
         >>> C.identify(True)
         []
+
         """
         return self.low_precision().identify(extends_to_link)
 

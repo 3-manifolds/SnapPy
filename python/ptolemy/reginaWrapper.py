@@ -105,12 +105,14 @@ class NTriangulationForPtolemy(NTriangulation):
         return manifoldMethods.get_ptolemy_obstruction_classes(self)
 
     def ptolemy_generalized_obstruction_classes(self, N):
-
         """
-                Returns the obstruction classes needed to compute
-        PGL(N,C)-representations for any N, i.e., it returns a list with
+        Return the obstruction classes needed to compute
+        PGL(N,C)-representations for any N.
+
+        It returns a list with
         a representative cocycle for each element in
-        H^2(M, boundary M; Z/N) / (Z/N)^* where (Z/N)^* are the units in Z/N.
+        ``H^2(M, boundary M; Z/N) / (Z/N)^*``
+        where ``(Z/N)^*`` are the units in Z/N.
         The first element in the list always corresponds to the trivial
         obstruction class.
         The generalized ptolemy obstruction classes are thus a generalization
@@ -131,14 +133,12 @@ class NTriangulationForPtolemy(NTriangulation):
 
         See  help(Manifold.ptolemy_generalized_obstruction_classes()) for more.
         """
-
         return (
             manifoldMethods.get_generalized_ptolemy_obstruction_classes(
                 self, N))
 
     def ptolemy_variety(self, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
-
         """
         M.ptolemy_variety(N, obstruction_class = None, simplify = True, eliminate_fixed_ptolemys = False)
 

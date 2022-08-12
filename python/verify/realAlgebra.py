@@ -142,6 +142,7 @@ def _real_or_imaginary_part_for_polynomial_in_complex_variable(polynomial,
         coeff * _real_or_imaginary_part_of_power_of_complex_number(i, start)
         for i, coeff in enumerate(polynomial.coefficients(sparse = False))])
 
+
 @sage_method
 def field_containing_real_and_imaginary_part_of_number_field(number_field):
     """
@@ -153,7 +154,7 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
 
     real_part and imag_part are elements in real_number_field which comes with
     a real embedding such that under this embedding, we have
-               z = real_part + imag_part * I.
+    ``z = real_part + imag_part * I``.  ::
 
         sage: CF = ComplexField()
         sage: x = var('x')

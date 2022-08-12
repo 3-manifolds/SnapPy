@@ -1,17 +1,17 @@
 r"""
 Studying the vertex links of triangulations of 3-manifolds.
 
-Recall that in t3m and SnapPea, a 3-simplex is oriented like this:
+Recall that in t3m and SnapPea, a 3-simplex is oriented like this::
 
-     1
-    /|\
-   / | \
-  /  |  \
- 2---|---3
-  \  |  /
-   \ | /
-    \|/
-     0
+         1
+        /|\
+       / | \
+      /  |  \
+     2---|---3
+      \  |  /
+       \ | /
+        \|/
+         0
 
 Now consider the truncated tetrahedron; there, each vertex gives rise to a
 small triangular face whose vertices correspond to edges of the original

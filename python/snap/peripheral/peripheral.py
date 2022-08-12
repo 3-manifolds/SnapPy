@@ -116,23 +116,27 @@ class PeripheralOneCocycle(object):
 
 def peripheral_cohomology_basis(manifold):
     """
-    sage: M = Manifold('v0000')
-    sage: m, l = peripheral_cohomology_basis(M)
-    sage: face_corners = [(t, f, v) for t in range(7) for f in t3m.TwoSubsimplices for v in t3m.ZeroSubsimplices if f & v ]
-    sage: [m[fc] for fc in face_corners]  # doctest: +SKIP
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-     0, 0, -1, 0, -1, -1, 0, -1, 0, 0, -1, 0, 1, 0, 1, 0, 1, 0]
-    """
+    TESTS::
 
+        sage: M = Manifold('v0000')
+        sage: m, l = peripheral_cohomology_basis(M)
+        sage: face_corners = [(t, f, v) for t in range(7) for f in t3m.TwoSubsimplices for v in t3m.ZeroSubsimplices if f & v ]
+        sage: [m[fc] for fc in face_corners]  # doctest: +SKIP
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, -1, 0, -1, -1, 0, -1, 0, 0, -1, 0, 1, 0, 1, 0, 1, 0]
+    """
     assert manifold.is_orientable() and manifold.num_cusps() == 1
     N, T, D, (m, l) = peripheral_curve_package(manifold)
     return PeripheralOneCocycle(m), PeripheralOneCocycle(l)
 
+
 def test_peripheral_curves(n=100, progress=True):
     """
-    sage: test_peripheral_curves(5, False)
+    TESTS::
+
+        sage: test_peripheral_curves(5, False)
     """
     import snappy
     census = snappy.OrientableCuspedCensus(cusps=1)

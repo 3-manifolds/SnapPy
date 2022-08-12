@@ -122,6 +122,7 @@ _ignore_key_release_time_s = 0.005
 
 _viewModes = [ 'Weight', 'Distance', 'Tet Num' ]
 
+
 class HyperboloidNavigation:
     """
     A mixin class for a Tk widget that binds some key and mouse events
@@ -129,17 +130,18 @@ class HyperboloidNavigation:
 
     This is a mixin class and some other class in the class hierarchy
     is expected to provide the following attributes and methods:
-        - self.raytracing_data has to be an instance of, e.g.,
-          IdealRaytracingData. This is needed to update data
-          such as the view matrix 
-          using self.raytracing_data.update_view_state(...).
-        - self.redraw_if_initialized() to redraw.
-        - self.read_depth_value(x, y) to return the depth value at a pixel.
-          It is used for orbiting about that point.
-        - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
-          returning the SO(1,3)-matrices for conjugating to orbit with a certain
-          speed about the point with frag coord xy and depth given a viewport of
-          size size.
+
+    - self.raytracing_data has to be an instance of, e.g.,
+      IdealRaytracingData. This is needed to update data
+      such as the view matrix 
+      using self.raytracing_data.update_view_state(...).
+    - self.redraw_if_initialized() to redraw.
+    - self.read_depth_value(x, y) to return the depth value at a pixel.
+      It is used for orbiting about that point.
+    - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
+      returning the SO(1,3)-matrices for conjugating to orbit with a certain
+      speed about the point with frag coord xy and depth given a viewport of
+      size size.
 
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).

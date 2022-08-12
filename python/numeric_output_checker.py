@@ -150,10 +150,10 @@ class NumericOutputChecker(doctest.OutputChecker):
 
     Account for pari adding a space before the E::
 
-    >>> a   = "4.5e-9"
-    >>> b   = "4.5 E-9"
-    >>> N.compare_numeric(a, b, NUMERIC_DICT[12])
-    ('OK', None)
+        >>> a   = "4.5e-9"
+        >>> b   = "4.5 E-9"
+        >>> N.compare_numeric(a, b, NUMERIC_DICT[12])
+        ('OK', None)
 
     """
 

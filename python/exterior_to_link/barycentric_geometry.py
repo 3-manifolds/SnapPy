@@ -342,6 +342,7 @@ class TetrahedronEmbedding():
         self.tetrahedron.info()
         print(self.matrix)
 
+
 class TetrahedronEmbeddingCache():
     def __init__(self):
         self.cache = dict()
@@ -352,11 +353,13 @@ class TetrahedronEmbeddingCache():
         else:
             bdry_map_key = tuple(bdry_map)
         key = (arrow.Edge, arrow.Face, tuple(vertex_images), bdry_map_key)
-        if not key in self.cache:
+        if key not in self.cache:
             self.cache[key] = TetrahedronEmbedding(arrow, vertex_images, bdry_map)
         return self.cache[key]
 
+
 tetrahedron_embedding = TetrahedronEmbeddingCache()
+
 
 def barycentric_face_embedding(arrow, north_pole=None):
     """

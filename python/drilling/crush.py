@@ -287,13 +287,14 @@ def _tet_mask_and_peripheral_base_subtet_indices(tetrahedra):
 
             # And if this is the first time we encounter this
             # simple closed curve, compute a base tet.
-            if not piece.index in index_to_peripheral_base_subtet_index:
+            if piece.index not in index_to_peripheral_base_subtet_index:
                 # Get the neighboring subtetrahedron that won't be crushed
                 other_perm = perm * _transpositions[1]
                 subtet_index = 24 * tet.Index + _perm_to_index(other_perm)
                 index_to_peripheral_base_subtet_index[piece.index] = subtet_index
 
     return mask, index_to_peripheral_base_subtet_index.values()
+
 
 def _assign_orientations(subtetrahedra):
     for j in range(len(subtetrahedra) // 24):

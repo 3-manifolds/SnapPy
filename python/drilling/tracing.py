@@ -78,8 +78,7 @@ class GeodesicPiece:
 
         Also appends the new geodesic piece to tet.geodesic_pieces.
         """
-        
-        if not point.subsimplex in simplex.TwoSubsimplices:
+        if point.subsimplex not in simplex.TwoSubsimplices:
             raise ValueError(
                 "Expected point to be on a face, but its "
                 "subsimplex is %d" % point.subsimplex)

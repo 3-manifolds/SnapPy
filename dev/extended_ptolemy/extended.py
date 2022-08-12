@@ -156,27 +156,25 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
 
 
     where recall that the basic orientation convention of t3m and
-    SnapPy is that a positively oriented simplex is as below.
+    SnapPy is that a positively oriented simplex is as below. ::
 
-
-              1
-             /|\
-           d/ | \e
-           /  |  \
-          /   |   \
-         2----|----3   with back edge from 2 to 3 labelled f.
-          \   |   /
-          b\  |a /c
-            \ | /
-             \|/
-              0
+             1
+            /|\
+          d/ | \e
+          /  |  \
+         /   |   \
+        2----|----3   with back edge from 2 to 3 labelled f.
+         \   |   /
+         b\  |a /c
+           \ | /
+            \|/
+             0
 
     sage: M = Manifold('m016')
     sage: I = extended_ptolemy_equations(M)
     sage: I.dimension()
     1
     """
-
     if gen_obs_class is None:
         gen_obs_class = manifold.ptolemy_generalized_obstruction_classes(2)[0]
 

@@ -1831,24 +1831,24 @@ class CrossRatios(dict):
         d = { }
 
         for key, value in self.items():
-           variable_name, index, tet_index = key.split('_')
-           if variable_name not in ['z', 'zp', 'zpp']:
-               raise Exception("Variable not z, zp, or, zpp")
-           if len(index) != 4:
-               raise Exception("Not 4 indices")
+            variable_name, index, tet_index = key.split('_')
+            if variable_name not in ['z', 'zp', 'zpp']:
+                raise Exception("Variable not z, zp, or, zpp")
+            if len(index) != 4:
+                raise Exception("Not 4 indices")
 
-           # The key in the auxiliary dictionary
-           short_key = variable_name + '_' + tet_index
+            # The key in the auxiliary dictionary
+            short_key = variable_name + '_' + tet_index
 
-           # Get the old value in the auxiliary dictionary
-           old_value = d.setdefault(short_key, value)
+            # Get the old value in the auxiliary dictionary
+            old_value = d.setdefault(short_key, value)
 
-           if epsilon is None:
-               if value != old_value:
-                   return False
-           else:
-               if (value - old_value).abs() > epsilon:
-                   return False
+            if epsilon is None:
+                if value != old_value:
+                    return False
+            else:
+                if (value - old_value).abs() > epsilon:
+                    return False
 
         return True
 

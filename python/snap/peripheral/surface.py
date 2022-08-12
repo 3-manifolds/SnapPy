@@ -319,14 +319,13 @@ class Surface(object):
         b2 = B2.right_kernel().dimension()
         assert b0 - b1 + b2 == self.euler()
 
-
     @cached_method
     def chain_complex(self):
-         return ChainComplex( {1:self.B1(), 2:self.B2()} , degree=-1 )
+        return ChainComplex({1: self.B1(), 2: self.B2()}, degree=-1)
 
     @cached_method
     def cochain_complex(self):
-         return self.chain_complex().dual()
+        return self.chain_complex().dual()
 
     @cached_method
     def betti(self, dimension=1):

@@ -52,8 +52,8 @@ def index_geodesics_and_add_post_drill_infos(
     all_reindexed_verts = set(
         g.core_curve_cusp for g in geodesics if g.core_curve_cusp)
 
-    old_vertices = [ v for v in mcomplex.Vertices
-                     if not v in all_reindexed_verts ]
+    old_vertices = [v for v in mcomplex.Vertices
+                    if v not in all_reindexed_verts]
 
     for i, v in enumerate(old_vertices):
         v.post_drill_info = CuspPostDrillInfo(

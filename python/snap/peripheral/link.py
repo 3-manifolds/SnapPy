@@ -110,13 +110,15 @@ class LinkSphere(LinkSurface):
     22
     """
     def __init__(self, t3m_triangulation):
-         N = t3m_triangulation
-         assert len(N.Vertices) == 1 and N.Vertices[0].link_genus() == 0
-         LinkSurface.__init__(self, N)
+        N = t3m_triangulation
+        assert len(N.Vertices) == 1 and N.Vertices[0].link_genus() == 0
+        LinkSurface.__init__(self, N)
+
 
 def doctest_globals():
     import snappy.snap.t3mlite
-    return {'Mcomplex':snappy.snap.t3mlite.Mcomplex}
+    return {'Mcomplex': snappy.snap.t3mlite.Mcomplex}
+
 
 if __name__ == '__main__':
     import doctest

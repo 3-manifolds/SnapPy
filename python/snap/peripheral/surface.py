@@ -9,7 +9,7 @@ else:
         return func
 
 
-class Triangle(object):
+class Triangle():
     """
     The vertices are numbered 0, 1, 2 in an anti-clockwise
     orientation.
@@ -40,7 +40,7 @@ opposite_vertex_from_edge_dict = {(i,j):opposite_vertex_from_edge_function((i,j)
 oriented_edges_of_triangle = [ (1,2), (2,0), (0, 1)]
 
 
-class Edge(object):
+class Edge():
     """
     An oriented edge 0 -> 1.
     """
@@ -74,7 +74,7 @@ class Edge(object):
         self.vertices = (self.vertices[1], self.vertices[0])
         self.sides = tuple( [-s for s in self.sides] )
 
-class EdgeList(object):
+class EdgeList():
     """
     A list with one item for each edge in a Triangle.  The contents
     can be accessed either by a pair of vertices or by the opposite
@@ -98,7 +98,7 @@ class EdgeList(object):
     def __repr__(self):
         return '[%s, %s, %s]' % (self.data[0], self.data[1], self.data[2])
 
-class Vertex(object):
+class Vertex():
     def __init__(self, corners = None):
         self.corners = corners
         self.index = None
@@ -107,7 +107,7 @@ class Vertex(object):
     def __repr__(self):
         return "<Vertex %s: %s %s : %s>" % (self.index, [e.index for e in self.incoming], [e.index for e in self.outgoing], self.corners)
 
-class Side(object):
+class Side():
     """
     A neighborhood of an oriented edge in a triangle
     """
@@ -145,7 +145,7 @@ class Side(object):
     def opposite_vertex(self):
         return opposite_vertex_from_edge_dict[self.vertices]
 
-class Corner(object):
+class Corner():
     """
     A neighborhood of a vertex V in a triangle T.
     """
@@ -177,7 +177,7 @@ class Corner(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-class Surface(object):
+class Surface():
     """
     An oriented surface.
     """

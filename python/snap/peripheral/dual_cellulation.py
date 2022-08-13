@@ -8,7 +8,7 @@ from .. import t3mlite as t3m
 if sage_helper._within_sage:
     from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
 
-class DualCell(object):
+class DualCell():
     """
     A cell in the dual cellulation
     """
@@ -46,7 +46,7 @@ class Face(DualCell):
     def __repr__(self):
         return "<Face: %s>" % self.index
 
-class DualCellulation(object):
+class DualCellulation():
     """
     The dual cellulation to a triangulation of a surface.
     """
@@ -151,7 +151,7 @@ class DualCellulation(object):
         assert CD.homology() == CT.homology()
 
 
-class OneCycle(object):
+class OneCycle():
     """
     A cycle on the 1-skeleton of a DualCellulation.
     """
@@ -187,7 +187,7 @@ class OneCycle(object):
             ans.append(OneCycle(self.cellulation, weights))
         return ans
 
-class OneCocycle(object):
+class OneCocycle():
     """
     A cocycle on the 1-skeleton of a DualCellulation.
     """

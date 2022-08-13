@@ -643,7 +643,7 @@ class SnapPeaGUITriangulationCoreGeodesicsPane(SnapPeaGUITriangulationDataPane):
                     self.text.insert(END, '%*.*f%s'
                         %(    thePrecision + 3, thePrecision, theValue.real, theSpacing[thePrecision:]))
                     if theValue.imag != 0.0:
-                        raise RuntimeError, 'nonorientable geodesic has nonzero torison'
+                        raise RuntimeError('nonorientable geodesic has nonzero torsion')
 
             self.text.insert(END, '\n')
 
@@ -1026,7 +1026,7 @@ class SnapPeaGUITriangulationTetShapesPane(SnapPeaGUITriangulationDataPane):
                                     theTetShapes[i]['log'].imag))
 
             else:
-                raise RuntimeError, 'bad tet shape format'
+                raise RuntimeError('bad tet shape format')
 
             self.text.insert(END, '\n')
 
@@ -1404,7 +1404,7 @@ def ManifoldFromFile(event=None):
     if len(theFileName.get()) > 0:
         SnapPeaGUITriangulation(Manifold(theFileName.get()))
     else:
-        raise ValueError, 'The file name is empty.'
+        raise ValueError('the file name is empty')
 
 def ManifoldFromCensus(event=None):
     theCensusNumber            = [5, 6, 6, 7, 7]

@@ -48,7 +48,8 @@ class Vertex(tuple):
     def __repr__(self):
         return "Vertex(%d,%d,%d,%d)" % self
 
-class Edge(object):
+
+class Edge():
     """
     Base class representing a directed edge of the doubly truncated
     simplex.

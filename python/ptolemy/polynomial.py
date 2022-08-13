@@ -2,9 +2,9 @@ import re
 import operator
 from fractions import Fraction
 import sys
-if sys.version > '3':
-    long = int
-    unicode = str
+
+long = int
+unicode = str
 
 #######################################################
 ### Public Definitions of Monomial and Polynomial class
@@ -15,7 +15,7 @@ if sys.version > '3':
 
 ### Definition of Monomial Class
 
-class Monomial(object):
+class Monomial():
 
     @classmethod
     def from_variable_name(cls, var):
@@ -184,9 +184,9 @@ class Monomial(object):
         return Monomial(self.get_coefficient(), vars)
 
 
-### Definition of Polynomial class
+# Definition of Polynomial class
 
-class Polynomial(object):
+class Polynomial():
 
     """
     >>> m1 = Monomial(1, (('t', 1), ('x', 1), ('y', 1)))

@@ -1,4 +1,4 @@
-class PtolemyObstructionClass(object):
+class PtolemyObstructionClass():
 
     """
     Represents an obstruction cocycle of a pSL(n,C) representation as

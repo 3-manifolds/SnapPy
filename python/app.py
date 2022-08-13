@@ -335,7 +335,7 @@ class SnapPyExit:
 
 # This hack avoids an unnecessary warning from IPython saying that
 # _Helper is not included in the app2py site.py file.
-class _Helper(object):
+class _Helper():
     pass
 import site
 site._Helper = _Helper
@@ -373,8 +373,9 @@ def set_icon(window):
                 dock_icon = Tk_.PhotoImage(file=image_file)
                 window.eval('wm iconphoto . -default %s'%dock_icon)
 
+
 #from multiprocessing import Process
-class SnapPyKernelServer(object):
+class SnapPyKernelServer():
     """
     Placeholder for a real SnapPyKernelServer which the app can use to
     asynchronously compute data about manifolds.

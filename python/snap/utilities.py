@@ -20,7 +20,7 @@ else:
     is_field = lambda R: isinstance(R, SnapPyNumbers)
 
 
-class MatrixBase(object):
+class MatrixBase():
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
     _base_ring = None
 

@@ -5,7 +5,8 @@ if _within_sage:
 
 __all__ = ['ExtendedMatrix']
 
-class ExtendedMatrix(object):
+
+class ExtendedMatrix():
     """
     An extended PGL(2,C)-matrix. It consists of a SageMath ``Matrix`` with
     coefficients in SageMath's ``ComplexIntervalField`` together with a flag
@@ -97,4 +98,3 @@ class ExtendedMatrix(object):
 
         m = ExtendedMatrix.extract_matrix_for_orientation_preserving(m)
         return (m[0,0] + m[1,1]) / sqrt(m.det())
-

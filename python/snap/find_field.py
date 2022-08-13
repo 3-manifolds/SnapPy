@@ -48,7 +48,7 @@ def complex_to_lattice(z, d, a, N=None):
     return A.transpose()
 
 
-class ApproximateAlgebraicNumber(object):
+class ApproximateAlgebraicNumber():
     """
     An algebraic number which we can compute 
     to arbitrary precision.  Specified by a function
@@ -199,7 +199,7 @@ def optimize_field_generator(z):
     f = f.denominator() * f
     return ExactAlgebraicNumber(f.change_ring(ZZ), w)
 
-class ListOfApproximateAlgebraicNumbers(object):
+class ListOfApproximateAlgebraicNumbers():
     def __init__(self, defining_function):
         self.f = defining_function
         self.n = len(defining_function(100))

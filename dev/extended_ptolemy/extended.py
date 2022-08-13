@@ -57,17 +57,20 @@ def arrows_around_edges(manifold):
     ans = []
     return [faces_around_edge(T, tet, edge) for tet, edge in starts]
 
+
 def parse_ptolemy_edge(var):
     c, index, tet = var.split('_')
     tet = int(tet)
     edge = tuple(i for i in range(4) if index[i] == '1')
     return tet, edge
 
+
 def parse_ptolemy_face(var):
     s, index, tet = var.split('_')
     return int(tet), int(index)
 
-class EdgeGluings(object):
+
+class EdgeGluings():
     def __init__(self, gen_obs_class):
         assert gen_obs_class._N == 2
         M = gen_obs_class._manifold

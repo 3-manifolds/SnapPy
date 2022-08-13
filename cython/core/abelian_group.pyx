@@ -1,6 +1,6 @@
 # Abelian Groups
 
-cdef class AbelianGroup(object):
+cdef class AbelianGroup():
     """
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a snappy Manifold.
@@ -124,7 +124,8 @@ cdef class AbelianGroup(object):
         """
         The rank of the maximal free abelian subgroup.
         """
-        return len([n for n in self.divisors if n == 0])
+        return len([1 for n in self.divisors if n == 0])
+
     def order(self):
         """
         The order of the group.  Returns the string 'infinite' if the
@@ -135,7 +136,8 @@ cdef class AbelianGroup(object):
             det = det * c
         return 'infinite' if det == 0 else det
 
-cdef class PresentationMatrix(object):
+
+cdef class PresentationMatrix():
     """
     A sparse representation of the presentation matrix of an abelian group.
     """

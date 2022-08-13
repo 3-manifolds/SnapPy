@@ -19,8 +19,8 @@ cdef struct SparseMatrixEntry:
 cdef struct SparseMatrixColumn:
      SparseMatrixEntry * entries
      int number_entries
-    
-cdef class ComplexIntervalColumnSparseMatrix(object):
+
+cdef class ComplexIntervalColumnSparseMatrix():
     cdef int _nrows
     cdef int _ncols
     cdef SparseMatrixColumn *_columns

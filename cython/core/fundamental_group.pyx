@@ -96,7 +96,8 @@ def word_as_list(word, int num_generators):
 
     return word_list
 
-cdef class CFundamentalGroup(object):
+
+cdef class CFundamentalGroup():
     cdef c_GroupPresentation *c_group_presentation
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps

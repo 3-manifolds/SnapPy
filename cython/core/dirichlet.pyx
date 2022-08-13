@@ -92,7 +92,8 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     free(generators)
     return c_dirichlet_domain
 
-cdef class CDirichletDomain(object):
+
+cdef class CDirichletDomain():
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
     cdef int c_num_generators

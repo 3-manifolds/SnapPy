@@ -1,6 +1,6 @@
 # Cusp Neighborhoods
 
-cdef class CCuspNeighborhood(object):
+cdef class CCuspNeighborhood():
     cdef c_CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
     cdef int _num_cusps

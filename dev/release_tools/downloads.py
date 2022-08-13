@@ -1,8 +1,12 @@
 #! /usr/bin/env python3
 
-import os, sys, json, requests
+import os
+import sys
+import json
+import requests
 
-class GithubREST(object):
+
+class GithubREST():
     """
     Interacts with Github via their REST API.
     """

@@ -1,10 +1,14 @@
 #! /usr/bin/env python
 
-import os, sys, json, requests
+import os
+import sys
+import json
+import requests
 from future.builtins import input
 from configparser import ConfigParser
 
-class AppveyorREST(object):
+
+class AppveyorREST():
     """
     Interacts with Appveyor via their REST API.
     """

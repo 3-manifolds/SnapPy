@@ -1,4 +1,7 @@
-import tkinter, math, sys, time
+import tkinter
+import math
+import sys
+import time
 from tkinter import ttk
 from . import gui_utilities
 from .gui_utilities import UniformDictController, FpsLabelUpdater

@@ -1,5 +1,10 @@
-import snappy, os, sys, re, gzip
+import snappy
+import os
+import sys
+import re
+import gzip
 from nsagetools import homological_longitude
+
 
 def raw_data():
     def manifold(line):
@@ -10,6 +15,7 @@ def raw_data():
         return M
     return [manifold(line) for line in gzip.open('table-8tet.gz')]
 
+
 def meridian(M):
     T = M.without_hyperbolic_structure()
     for slope in [ (1,0), (0,1), (1,1), (1,-1)]:
@@ -19,15 +25,18 @@ def meridian(M):
                 return slope
             T.randomize()
 
+
 def one_line(M):
     m, l = meridian(M), homological_longitude(M)
     if m[0]*l[1] - m[1]*l[0] < 0:
         l = -l
     return M.name() + '\t%s\n' % repr([m, tuple(l)])
     
+
 def main():
     file = gzip.open('knots_8_tet.gz', 'w')
     file.write(''.join(one_line(M) for M in raw_data()))
+
 
 def test():
     added = [M for M in snappy.CensusKnots if M.name().startswith('K8')]

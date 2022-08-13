@@ -15,7 +15,7 @@ from snappy.upper_halfspace import pgl2c_to_o13
 try:
     import sage.all
     _within_sage = True
-except:
+except ImportError:
     _within_sage = False
     import decorator
 

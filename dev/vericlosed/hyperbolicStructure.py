@@ -281,9 +281,9 @@ def _find_rows_and_columns_for_full_rank_submatrix(m, expected_rank):
         for c in cols_left:
             m.add_multiple_of_column(c, col, -m[row, c  ] / m[row, col])
 
-    return (
-        [ row for row in range(num_rows) if not row in rows_left ],
-        [ col for col in range(num_cols) if not col in cols_left ])
+    return ([row for row in range(num_rows) if row not in rows_left],
+            [col for col in range(num_cols) if col not in cols_left])
+
 
 def _cofactor_matrices_for_submatrices(m):
     def cofactor_matrix(r, c):

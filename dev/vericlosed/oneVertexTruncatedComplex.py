@@ -50,7 +50,7 @@ class OneVertexTruncatedComplex(TruncatedComplex):
                     
                     key = self.get_key(tet_and_perm_of_end)
                 
-                    if not key in self.tet_and_perm_to_edge:
+                    if key not in self.tet_and_perm_to_edge:
                         self.tet_and_perm_to_edge[key] = edge
                         pending.append(tet_and_perm_of_end)
                         

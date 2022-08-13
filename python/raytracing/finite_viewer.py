@@ -1,4 +1,6 @@
-import tkinter, math, sys
+import tkinter
+import math
+import sys
 from tkinter import ttk
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *

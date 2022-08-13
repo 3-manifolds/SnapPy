@@ -196,7 +196,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         else:
             try:
                 self._unguarded_initialize_raytracing_data()
-            except:
+            except Exception:
                 pass
 
     def _unguarded_initialize_raytracing_data(self):

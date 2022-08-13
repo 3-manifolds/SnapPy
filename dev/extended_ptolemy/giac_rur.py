@@ -116,12 +116,14 @@ def rational_univariate_representation(ideal):
 
     return ans
 
+
 def doctest_globals():
     import snappy
-    return {'Manifold':snappy.Manifold}
+    return {'Manifold': snappy.Manifold}
+
 
 if __name__ == '__main__':
-   from snappy.sage_helper import doctest_modules
-   import sys
-   current_module = sys.modules[__name__]
-   doctest_modules([current_module], extraglobs=doctest_globals())
+    from snappy.sage_helper import doctest_modules
+    import sys
+    current_module = sys.modules[__name__]
+    doctest_modules([current_module], extraglobs=doctest_globals())

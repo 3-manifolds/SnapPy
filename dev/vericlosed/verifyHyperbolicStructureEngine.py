@@ -7,6 +7,7 @@ from sage.all import matrix, prod, RealDoubleField, pi
 
 __all__ = [ 'VerifyHyperbolicStructureEngine']
 
+
 class VerifyHyperbolicStructureEngine:
     def __init__(self, hyperbolic_structure):
         self.hyperbolic_structure = hyperbolic_structure
@@ -21,8 +22,8 @@ class VerifyHyperbolicStructureEngine:
         num_edges = len(self.mcomplex.Edges)
         exact_edges = set(hyperbolic_structure.exact_edges)
 
-        self.approx_edges = [
-            i for i in range(num_edges) if not i in exact_edges ]
+        self.approx_edges = [i for i in range(num_edges)
+                             if i not in exact_edges]
 
         self.truncated_complex = TruncatedComplex(self.mcomplex)
 
@@ -74,7 +75,7 @@ class VerifyHyperbolicStructureEngine:
         two_pi = RIF(2 * pi)
 
         for angle in self.hyperbolic_structure.angle_sums:
-            if not two_pi in angle:
+            if two_pi not in angle:
                 raise AngleSumIntervalNotContainingTwoPiError()
 
     def assert_vertex_gram_matrices_valid(self):

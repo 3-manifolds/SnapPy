@@ -320,9 +320,11 @@ class OrientableClosedCensusRecognizer(ManifoldRecognizer):
 
 def add_recognizer_to_census(recog, census):
     census._regonizer = recog()
+
     def find(self, manifold):
         return self._regonizer.find(manifold)
     census.find = find
+
 
 add_recognizer_to_census(OrientableClosedCensusRecognizer, snappy.OrientableClosedCensus)
 add_recognizer_to_census(OrientableCuspedCensusRecognizer, snappy.OrientableCuspedCensus)

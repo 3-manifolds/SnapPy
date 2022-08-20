@@ -26,6 +26,13 @@ documentation for snappy module, e.g.
 
 """
 
+no_wheel_message = """
+You need to have wheel installed to pip_install snappy, e.g.,
+
+  sudo python -m pip install "wheel"
+
+"""
+
 # On some python distributions for Mac OS X, one needs to set the environment
 # variable MACOSX_DEPLOYMENT_TARGET to, e.g., 10.14.
 
@@ -185,9 +192,21 @@ try:
             check_call([python, 'setup.py', 'build'])
             check_call([python, 'setup.py', 'build_docs'])
             bdist_wheel.run(self)
+        @staticmethod
+        def check_command_available():
+            pass
 except ImportError:
-    SnapPyBuildWheel = None
-
+    class SnapPyBuildWheel(Command):
+        user_options = []
+        def initialize_options(self):
+            pass
+        def finalize_options(self):
+            pass
+        def run(self):
+            self.check_command_available()
+        @staticmethod
+        def check_command_available():
+            raise ImportError(no_wheel_message)
 
 class SnapPyRelease(Command):
     user_options = [('install', 'i', 'install the release into each Python')]
@@ -232,6 +251,8 @@ class SnapPyPipInstall(Command):
     def finalize_options(self):
         pass
     def run(self):
+        SnapPyBuildWheel.check_command_available()
+
         python = sys.executable
         check_call([python, 'setup.py', 'bdist_wheel'])
         egginfo = 'snappy.egg-info'

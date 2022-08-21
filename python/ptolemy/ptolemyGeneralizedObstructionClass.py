@@ -3,8 +3,7 @@ from .polynomial import Polynomial
 from ..pari import pari
 
 
-class PtolemyGeneralizedObstructionClass(object):
-
+class PtolemyGeneralizedObstructionClass():
     """
     Represents an obstruction cocycle of a PSL(n,C) representation in
     H^2(M,partial M;Z/n).

@@ -1,5 +1,5 @@
 
-class McomplexEngine(object):
+class McomplexEngine():
     """
     A base for classes that modify or add extra structure to a t3mlite.Mcomplex.
     """
@@ -15,5 +15,4 @@ class McomplexEngine(object):
         an engine and perform certain modifications, see, e.g.,
         FundamentalPolyhedronEngine.from_manifold_and_shapes.
         """
-
         self.mcomplex = mcomplex

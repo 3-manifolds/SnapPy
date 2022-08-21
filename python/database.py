@@ -55,6 +55,7 @@ def connect_to_db(db_path):
     else:
         return sqlite3.connect(db_path)
 
+
 def mfld_hash(manifold):
     """
     We cache the hash to speed up searching for one manifold in
@@ -64,7 +65,8 @@ def mfld_hash(manifold):
         manifold._cache['db_hash'] = db_hash(manifold)
     return manifold._cache['db_hash']
 
-class ManifoldTable(object):
+
+class ManifoldTable():
     """
     Iterator for cusped manifolds in an sqlite3 table of manifolds.
 

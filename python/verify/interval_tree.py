@@ -3,7 +3,7 @@ __all__ = ['IntervalTree']
 LEFT  = 0
 RIGHT = 1
 
-class IntervalTree(object):
+class IntervalTree():
     """
     A data structure that can store (interval, value) pairs and quickly
     retrieve all values for which the interval overlaps with a given
@@ -40,7 +40,7 @@ class IntervalTree(object):
     Also see wikipedia or Cormen et al, *Introduction to Algorithms*.
     """
 
-    class _Node(object):
+    class _Node():
         def __init__(self, interval, value):
             # The interval and value of the inserted pair this node corresponds
             # to. The left endpoint of the interval is used as key for the

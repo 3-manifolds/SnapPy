@@ -45,7 +45,7 @@ def pari_poly_variable(variable_name):
     return p
 
 
-class TracePolynomialRing(object):
+class TracePolynomialRing():
     """
     >>> S = TracePolynomialRing('ab')
     >>> S.var_names
@@ -71,7 +71,7 @@ class TracePolynomialRing(object):
     def __call__(self, poly):
         return pari(poly)
 
-class Word(object):
+class Word():
     """
     The Word class is used to make objects which represent words in a
     free group. The words are represented by a string of letters, with
@@ -185,7 +185,7 @@ def tr(w):
     return w.SL2_trace()
 
 
-class Presentation(object):
+class Presentation():
     """
     Class representing a presentation of a finitely presented group.
     gens is a list of Word objects representing the generators

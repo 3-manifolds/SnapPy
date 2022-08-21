@@ -34,7 +34,7 @@ class PtolemyFileMissingError(Exception):
         Exception.__init__(self, message)
 
 
-class PtolemyVariety(object):
+class PtolemyVariety():
     """
     Holds a reduced Ptolemy variety.
 

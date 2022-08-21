@@ -1,6 +1,6 @@
 #  Symmetry_group
 
-cdef class SymmetryGroup(object):
+cdef class SymmetryGroup():
     """
     A SymmetryGroup is a group of self-isometries of hyperbolic
     3-manifold.  Instantiate as follows:

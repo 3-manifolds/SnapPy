@@ -2,9 +2,10 @@ from snappy.snap import t3mlite as t3m
 
 __all__ = ['TruncatedComplex']
 
-class TruncatedComplex(object):
 
-    class SubcomplexBase(object):
+class TruncatedComplex():
+
+    class SubcomplexBase():
         def __init__(self, subcomplex_type, tet_and_perm):
             self.subcomplex_type = subcomplex_type
             self.tet_and_perm = tet_and_perm

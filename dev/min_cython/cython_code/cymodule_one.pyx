@@ -12,7 +12,7 @@ cdef copy_to_GL2RMatrix(M, c_library.GL2RMatrix* N):
         for j in range(2):
             N.entries[i][j] = M[i][j]
 
-cdef class TwoByTwoMatrix(object):
+cdef class TwoByTwoMatrix():
     # C attributes that are defined in the "pxd" header file.
     #
     # cdef c_library.GL2RMatrix matrix

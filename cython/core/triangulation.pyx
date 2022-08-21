@@ -1,7 +1,7 @@
 from .cache import SnapPyCache
 from low_index import SimsTree
 
-cdef class Triangulation(object):
+cdef class Triangulation():
     """
     A Triangulation object represents a compact 3-manifold with torus
     boundary components, given as an ideal triangulation of the

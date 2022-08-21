@@ -99,7 +99,7 @@ def valid_index(i, n, format_str):
 
 
 # A stream for asynchronous messages
-class MsgIO(object):
+class MsgIO():
     def __init__(self):
         self.write = sys.stdout.write
         self.flush = sys.stdout.flush()
@@ -333,7 +333,8 @@ cdef convert_and_free_integer_matrix(
 
     return python_matrix, explain_row, explain_column
 
-class MatrixWithExplanations(object):
+
+class MatrixWithExplanations():
 
     def __init__(self, mat, explain_rows, explain_columns):
 
@@ -685,8 +686,9 @@ def format_two_by_two(mat):
     w1 = max(len(b), len(d))
     return ('[' + a.rjust(w0) + ' ' + b.rjust(w1) + ']',
             '[' + c.rjust(w0) + ' ' + d.rjust(w1) + ']')
-    
-class Isometry(object):
+
+
+class Isometry():
     """
     Represents an isometry from one manifold to another.
     """

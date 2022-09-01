@@ -26,8 +26,8 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
         env:
-          # Skip Python 2.7, 3.5, 3.11, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp27-* cp35-* cp311-* pp*
+          # Skip Python 2.7, 3.5, 3.6, 3.11, 32 bit Linux, and PyPy
+          CIBW_SKIP: cp27-* cp35-* cp36-* cp311-* pp*
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_BEFORE_BUILD: >            
             pip install cython sphinx cypari FXrays low_index &&

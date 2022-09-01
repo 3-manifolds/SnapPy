@@ -634,7 +634,7 @@ def link_triangulation(manifold, add_arcs=True, simplify=True,
     >>> len(KT)
     13
     >>> KT = link_triangulation(Manifold('L5a1'), simplify=True)
-    >>> len(KT) <= 20
+    >>> len(KT) <= 25
     True
 
     """

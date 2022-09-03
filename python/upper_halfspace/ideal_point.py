@@ -20,6 +20,7 @@ def ideal_point_to_r13(z, RF):
     z_abs_sqr = z_re**2 + z_im**2
     denom = z_abs_sqr + 1
 
-    return vector([RF(1), (z_abs_sqr - 1) / denom,
+    return vector([RF(1),
+                   (z_abs_sqr - 1) / denom,
                    2 * z_re / denom,
                    2 * z_im / denom])

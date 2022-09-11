@@ -1,4 +1,5 @@
-import doctest, inspect, os, sys, getopt, collections
+import sys
+import getopt
 import snappy
 import snappy.snap.test
 import spherogram.test

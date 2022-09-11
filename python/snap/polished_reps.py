@@ -2,9 +2,7 @@
 A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.
 """
-import os, sys, re, string, tempfile
 from itertools import product, chain
-from functools import reduce
 from ..sage_helper import _within_sage
 from ..math_basics import prod
 from ..pari import pari

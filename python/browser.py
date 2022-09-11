@@ -571,9 +571,10 @@ class Browser(Tk_.Toplevel):
 
     def update_aka(self):
         self._write_aka_info()
-        #self.identifier.identify(self.manifold)
-        #self.aka_after_id = self.after(100, self._aka_callback)
+        # self.identifier.identify(self.manifold)
+        # self.aka_after_id = self.after(100, self._aka_callback)
         M = self.manifold.copy()
+
         def format_name(N):
             if all(N.cusp_info('is_complete')):
                 return N.name()

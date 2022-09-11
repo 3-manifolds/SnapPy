@@ -11,16 +11,21 @@ than the usual ">>>".
 try:
     import sage.all
     _within_sage = True
-except:
+except ImportError:
     _within_sage = False
     import decorator
 
-import sys, doctest, re, types
+import sys
+import doctest
+import re
+import types
 
 from .numeric_output_checker import NumericOutputChecker
 
+
 class SageNotAvailable(Exception):
     pass
+
 
 if _within_sage:
     def sage_method(function):

@@ -20,7 +20,8 @@ from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
 from snappy.sage_helper import _within_sage, doctest_modules
 from snappy.pari import pari
 import bz2
-import os, sys
+import os
+import sys
 
 if _within_sage:
     from sage.misc.sage_eval import sage_eval

@@ -1,8 +1,10 @@
-import sys, getopt
+import sys
+import getopt
 import doctest
 
 from . import dual_cellulation, link, peripheral, surface
 modules = [dual_cellulation, link, peripheral, surface]
+
 
 def verbose():
     try:
@@ -13,11 +15,12 @@ def verbose():
         verbose = False
     return verbose
 
+
 def doctest_globals(module):
     if hasattr(module, 'doctest_globals'):
         return module.doctest_globals()
-    else:
-        return dict()
+    return {}
+
 
 if __name__ == '__main__':
     failed, attempted = 0, 0

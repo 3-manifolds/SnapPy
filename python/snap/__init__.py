@@ -26,6 +26,7 @@ def tetrahedra_field_gens(manifold):
             return polished_tetrahedra_shapes(manifold, bits_prec=prec)
     else:
         double_cover = manifold.orientation_cover()
+
         def func(prec):
             return polished_tetrahedra_shapes(double_cover, bits_prec=prec)[::2]
     return ListOfApproximateAlgebraicNumbers(func)

@@ -14,15 +14,21 @@ and returns a list of subclasses of "ManifoldTable".
 from .db_utilities import decode_torsion, decode_matrices, db_hash
 from .sage_helper import _within_sage
 from spherogram.codecs import DTcodec
-import sys, sqlite3, re, os, random, importlib, collections
+import sys
+import sqlite3
+import re
+import random
+import importlib
+import collections
 
 if _within_sage:
     import sage.all
+
     def is_int(slice):
-        return isinstance(slice, (sage.all.Integer,int))
+        return isinstance(slice, (sage.all.Integer, int))
 
     def is_int_or_none(slice):
-        return isinstance(slice, (sage.all.Integer,int, type(None)))
+        return isinstance(slice, (sage.all.Integer, int, type(None)))
 
     def is_float_or_none(slice):
         return isinstance(slice, (float, sage.all.RealDoubleElement,

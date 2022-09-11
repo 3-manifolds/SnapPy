@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-import sys, os, webbrowser
+import sys
+import os
+import webbrowser
 from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir

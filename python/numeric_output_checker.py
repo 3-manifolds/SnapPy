@@ -31,7 +31,9 @@ class NumericExample:
 
     """
 
-import doctest, re, decimal
+import doctest
+import re
+import decimal
 
 # Generate flags NUMERIC6, ...
 

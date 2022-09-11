@@ -1,4 +1,5 @@
-import os, sys, re, time
+import os
+import sys
 try:
     import plistlib
 except ImportError:

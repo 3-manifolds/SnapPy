@@ -8,7 +8,7 @@
 from .arrow import eArrow
 from .simplex import *
 from .tetrahedron import Tetrahedron
-import os, sys, re
+import re
 
 # Nathan's code for importing and exporting snappea files.
 # Converts a SnapPea file to MComplex.  Doesn't really use all the
@@ -19,7 +19,7 @@ import os, sys, re
 #      2    5    1   34
 #   3120 0321 0132 0132
 
-def read_SnapPea_file(file_name=None, data = None):
+def read_SnapPea_file(file_name=None, data=None):
     if data is None:
         data = open(file_name).read().decode('ascii')
     count = 0

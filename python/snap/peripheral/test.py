@@ -19,7 +19,7 @@ def verbose():
 def doctest_globals(module):
     if hasattr(module, 'doctest_globals'):
         return module.doctest_globals()
-    return {}
+    return dict()
 
 
 if __name__ == '__main__':
@@ -27,12 +27,9 @@ if __name__ == '__main__':
     for module in modules:
         print(module.__name__)
         result = doctest.testmod(module,
-                                 extraglobs= doctest_globals(module),
+                                 extraglobs=doctest_globals(module),
                                  verbose=verbose())
-        print(4*' ' + repr(result))
+        print(4 * ' ' + repr(result))
         failed += result.failed
         attempted += result.attempted
     print('\nAll doctests:\n    %s failures out of %s tests.' % (failed, attempted))
-
-
-

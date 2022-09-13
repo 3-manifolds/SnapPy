@@ -49,7 +49,7 @@ except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
 
 import os, platform, shutil, site, subprocess, sys, sysconfig, re
 from os.path import getmtime, exists
-get_default_compiler = setuptools.distutils.ccompiler.get_default_compiler
+from distutils.ccompiler import get_default_compiler
 from glob import glob
 
 if sys.platform == 'darwin':

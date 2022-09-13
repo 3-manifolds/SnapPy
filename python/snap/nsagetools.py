@@ -1,8 +1,7 @@
 """
 Tools for use in Sage.
 """
-
-import os, sys, re, string, tempfile
+import string
 from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:

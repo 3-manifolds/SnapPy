@@ -67,7 +67,7 @@ def peripheral_curve_package(snappy_manifold):
     A = matrix([[alpha(meridian), beta(meridian)], [alpha(longitude), beta(longitude)]])
     assert abs(A.det()) == 1
     Ainv = A.inverse().change_ring(ZZ)
-    B = Ainv.transpose()*matrix(ZZ, [alpha.weights, beta.weights])
+    B = Ainv.transpose() * matrix(ZZ, [alpha.weights, beta.weights])
     mstar = dual_cellulation.OneCocycle(D, list(B[0]))
     lstar = dual_cellulation.OneCocycle(D, list(B[1]))
     AA = matrix([[mstar(meridian), lstar(meridian)], [mstar(longitude), lstar(longitude)]])
@@ -78,6 +78,7 @@ def peripheral_curve_package(snappy_manifold):
     N.cusp_dual_cellulation = D
     D.meridian, D.longitude = meridian, longitude
     D.meridian_star, D.longitude_star = mstar, lstar
+
     def slope(onecycle):
         return vector([D.meridian_star(onecycle), D.longitude_star(onecycle)])
     D.slope = slope

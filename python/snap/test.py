@@ -2,7 +2,8 @@ from ..sage_helper import _within_sage, doctest_modules
 from ..pari import pari
 import snappy
 import snappy.snap as snap
-import doctest, collections, getopt, sys
+import getopt
+import sys
 
 
 def _test_gluing_equations(manifold, shapes):
@@ -10,7 +11,7 @@ def _test_gluing_equations(manifold, shapes):
     Given a manifold and exact shapes, test whether the rectangular gluing
     equations are fulfilled.
     """
-    one_minus_shapes = [ 1 - shape for shape in shapes ]
+    one_minus_shapes = [1 - shape for shape in shapes]
     for A, B, c in manifold.gluing_equations('rect'):
         val = c
         for a, shape in zip(A, shapes):
@@ -20,6 +21,7 @@ def _test_gluing_equations(manifold, shapes):
         if not val == 1:
             return False
     return True
+
 
 def test_polished(dec_prec=200):
     def test_manifold(manifold):

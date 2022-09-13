@@ -18,7 +18,9 @@ from .perm4 import Perm4, inv
 from . import files
 from . import linalg
 from . import homology
-import os, sys, random, io, itertools
+import sys
+import random
+import io
 
 try:
     import snappy

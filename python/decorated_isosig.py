@@ -45,7 +45,8 @@ multiple change-of-basis matrices that yield combinatorially
 isomorphic pairs (triangulation, peripheral curves).  In such cases,
 the decoration is the lexicographically first one.
 """
-import re, string
+import re
+import string
 
 # Used between the base isosig and the decorated version.
 separator = '_'

@@ -6,13 +6,15 @@ of it (though depending very much on snappy), except for borrowing
 some linear algebra code.
 """
 
-import snappy, FXrays
+import snappy
+import FXrays
 if snappy._within_sage:
     from sage.all import gcd
     from sage.all import vector as Vector
     from sage.all import matrix as Matrix
 else:
     from snappy.snap.t3mlite.linalg import Vector, Matrix, gcd
+
 
 def weak_normalize_slope(slope):
     """For a tuple (a, b), scale it so that gcd(a,b)=1"""
@@ -22,6 +24,7 @@ def weak_normalize_slope(slope):
     g = gcd(a,b)
     a, b = a//g, b//g
     return (a,b)
+
 
 def normalize_slope(slope):
     """
@@ -46,6 +49,7 @@ def normalize_slope(slope):
     elif a == 0 and b < 0:
         b = -b
     return (a,b)
+
 
 def shift_matrix(n):
     """

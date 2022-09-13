@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-import os, sys, time, tempfile, png
+import os
+import sys
+import time
+import tempfile
 import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families

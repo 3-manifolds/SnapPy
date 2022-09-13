@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-import os, sys, re, tempfile, time, png, webbrowser, time, signal
+import os
+import sys
+import re
+import time
 from collections.abc import Mapping  # Python 3.5 or newer
 from IPython.core.displayhook import DisplayHook
 

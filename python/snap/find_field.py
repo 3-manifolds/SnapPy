@@ -135,6 +135,7 @@ class ApproximateAlgebraicNumber():
     def __add__(self, other):
         if not isinstance(other, ApproximateAlgebraicNumber):
             raise ValueError
+
         def f(prec):
             return self(prec) + other(prec)
         return ApproximateAlgebraicNumber(f)
@@ -142,6 +143,7 @@ class ApproximateAlgebraicNumber():
     def __mul__(self, other):
         if not isinstance(other, ApproximateAlgebraicNumber):
             raise ValueError
+
         def f(prec):
             return self(prec)*other(prec)
         return ApproximateAlgebraicNumber(f)
@@ -149,6 +151,7 @@ class ApproximateAlgebraicNumber():
     def __div__(self, other):
         if not isinstance(other, ApproximateAlgebraicNumber):
             raise ValueError
+
         def f(prec):
             return self(prec)/other(prec)
         return ApproximateAlgebraicNumber(f)
@@ -181,9 +184,11 @@ class ExactAlgebraicNumber(ApproximateAlgebraicNumber):
     @cached_method
     def __call__(self, prec):
         roots = [r[0] for r in self._min_poly.roots(ComplexField(prec))]
+
         def dist_to_defining_root(z):
             return abs(z - self._approx_root)
         return sorted(roots, key=dist_to_defining_root)[0]
+
 
 def optimize_field_generator(z):
     p = z.min_polynomial()

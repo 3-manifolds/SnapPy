@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-import sys, os, datetime
+import sys
+import os
+import datetime
 from .gui import *
 from .version import version as SnapPy_version
 from IPython import __version__ as IPython_version

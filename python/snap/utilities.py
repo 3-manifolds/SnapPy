@@ -215,7 +215,7 @@ class Matrix2x2(MatrixBase):
 
     def __invert__(self):
         try:
-            D = ~self.det()
+            D = 1 / self.det()
         except ZeroDivisionError:
             raise ZeroDivisionError('matrix %s is not invertible.' % self)
         return Matrix2x2(self.d * D, -self.b * D, -self.c * D, self.a * D)

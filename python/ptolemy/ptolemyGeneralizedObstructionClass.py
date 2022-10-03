@@ -100,4 +100,3 @@ class PtolemyGeneralizedObstructionClass():
 
     def __repr__(self):
         return "PtolemyGeneralizedObstructionClass(%s)" % self.H2_class
-

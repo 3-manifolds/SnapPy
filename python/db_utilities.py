@@ -2,14 +2,10 @@ from hashlib import md5
 import array
 import re
 
+
 # Codecs we use.
-try:
-    unichr
-    def encode_torsion(divisors):
-        return ''.join(unichr(x) for x in divisors).encode('utf8')
-except: # Python3
-    def encode_torsion(divisors):
-        return ''.join(chr(x) for x in divisors).encode('utf8')
+def encode_torsion(divisors):
+    return ''.join(chr(x) for x in divisors).encode('utf8')
 
 
 def decode_torsion(utf8):
@@ -21,7 +17,7 @@ def encode_matrices(matrices):
     Convert a list of 2x2 integer matrices into a sequence of bytes.
     """
     # The tricky thing here is converting signed integers to bytes.
-    return bytes(array.array('b', sum(sum(matrices,[]),[])).tostring())
+    return bytes(array.array('b', sum(sum(matrices, []), [])).tostring())
     # NOTE: tostring is deprecated in python3, but for now
     # it does the same thing as tobytes.
 
@@ -61,13 +57,14 @@ def cover_hash(mfld, degrees):
 
 
 def old_combined_hash(mfld):
-    hash = str(" &and& ".join( [old_basic_hash(mfld)] + cover_hash(mfld, (2,3)) ))
+    hash = str(" &and& ".join([old_basic_hash(mfld)] +
+                              cover_hash(mfld, (2, 3))))
     return hash.encode('utf8')
 
 
 def combined_hash(mfld):
-    hash = str(" &and& ".join( [basic_hash(mfld)] +
-                               cover_hash(mfld, (2,3)) ))
+    hash = str(" &and& ".join([basic_hash(mfld)] +
+                              cover_hash(mfld, (2, 3))))
     return hash.encode('utf8')
 
 

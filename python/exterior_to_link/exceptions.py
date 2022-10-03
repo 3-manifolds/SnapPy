@@ -4,4 +4,3 @@ class GeneralPositionError(Exception):
 
 class ExteriorToLinkError(Exception):
     pass
-

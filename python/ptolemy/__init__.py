@@ -1,6 +1,6 @@
-### ptolemy module implements methods to find and solve the Ptolemy variety
-###
-### 2012 - "Matthias Goerner" <enischte@gmail.com>
+# ptolemy module implements methods to find and solve the Ptolemy variety
+#
+# 2012 - "Matthias Goerner" <enischte@gmail.com>
 
 from .coordinates import PtolemyCoordinates, Flattenings, CrossRatios
 from .processMagmaFile import solutions_from_magma, solutions_from_magma_file
@@ -15,5 +15,3 @@ if _env:
     DATA_URL = _env
 else:
     DATA_URL = "http://ptolemy.unhyperbolic.org/"
-
-

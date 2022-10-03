@@ -582,12 +582,14 @@ def parse_int_or_fraction(s):
 
     return parse_int_coefficient(s)
 
+
 def parenthesis_coefficient_method(i):
     if isinstance(i, int) or isinstance(i, Fraction):
         return default_print_coefficient_method(i)
 
     else:
         return '+', '(%s)' % repr(i)
+
 
 def default_print_coefficient_method(i):
     try:
@@ -597,8 +599,9 @@ def default_print_coefficient_method(i):
         else:
             print_str = str(abs(i))
         return sign, print_str
-    except:
+    except (TypeError, ValueError):
         return uncomparable_print_coefficient_method(i)
+
 
 def uncomparable_print_coefficient_method(i):
     print_str = str(i)
@@ -607,11 +610,12 @@ def uncomparable_print_coefficient_method(i):
     else:
         return '+', print_str
 
-##############################################################################
-### Private Definitions
 
-### Methods defining what coefficient types can be mixed a polynomial
-### Type Mixing Policy: only int can be mixed with another type
+##############################################################################
+# Private Definitions
+
+# Methods defining what coefficient types can be mixed a polynomial
+# Type Mixing Policy: only int can be mixed with another type
 
 def _storage_type_policy(type_a, type_b):
     assert isinstance(type_a, type)
@@ -629,6 +633,7 @@ def _storage_type_policy(type_a, type_b):
 
     return type_a
 
+
 def _operator_type_policy(obj_a, obj_b, op = operator.add):
 
     try:
@@ -642,14 +647,14 @@ def _operator_type_policy(obj_a, obj_b, op = operator.add):
 
         raise Exception
 
-    except:
+    except (TypeError, ValueError):
 
         print(obj_a, obj_b)
         print(type(obj_a), type(obj_b))
 
-        raise Exception("In _operatore_type_policy, cannot apply operator")
+        raise Exception("In _operator_type_policy, cannot apply operator")
 
-### Definitions of parsable operators and their precedence
+# Definitions of parsable operators and their precedence
 
 _operators = {
     '+' : operator.add,
@@ -811,7 +816,8 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
     return operand_stack[-1]
 
-### Other help functions to deal with the internal representation
+
+# ## Other help functions to deal with the internal representation
 
 # take a dictionary and turn it into a tuple of pairs sorted by keys
 
@@ -821,10 +827,10 @@ def _dict_to_ordered_tuple_of_pairs(d):
     ...      { 'key3':'value3', 'key1':'value1', 'key2':'value2' })
     (('key1', 'value1'), ('key2', 'value2'), ('key3', 'value3'))
     """
-
     l = list(d.items())
-    l.sort(key = lambda x:x[0])
+    l.sort(key=lambda x: x[0])
     return tuple(l)
+
 
 # given a list of dictionaries, combine values of the different
 # dictionaries having the same key using combine_function.

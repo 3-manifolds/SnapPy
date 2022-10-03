@@ -148,4 +148,3 @@ def _reduced_polynomial(poly, mod_pol, mod_var, mod_degree):
         for m in poly.get_monomials():
             if degree_of_monomial(m) == degree:
                 poly = poly - reducing_polynomial(m) * mod_pol
-

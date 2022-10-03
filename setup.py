@@ -80,13 +80,12 @@ if sys.platform == 'darwin':
 
     else:
         macos_arch = sysconfig.get_platform().split('-')[-1]
-            
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
 try:
     sys.path.remove(os.path.realpath(os.curdir))
-except:
+except ValueError:
     pass
 
 from setuptools.extension import Extension

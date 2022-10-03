@@ -7,7 +7,7 @@ interpreter.
 """
 
 from ..sage_helper import _within_sage
-from snappy.number import SnapPyNumbers, Number, is_exact
+from snappy.number import SnapPyNumbers, Number
 from itertools import chain
 from ..pari import pari, PariError
 from .fundamental_polyhedron import Infinity
@@ -15,9 +15,13 @@ if _within_sage:
     from sage.all import matrix as sage_matrix, vector as sage_vector
     from sage.rings.real_mpfr import RealField_class
     from ..sage_helper import ComplexField_class
-    is_field = lambda R: isinstance(R, (SnapPyNumbers, RealField_class, ComplexField_class))
+
+    def is_field(R):
+        return isinstance(R, (SnapPyNumbers, RealField_class,
+                              ComplexField_class))
 else:
-    is_field = lambda R: isinstance(R, SnapPyNumbers)
+    def is_field(R):
+        return isinstance(R, SnapPyNumbers)
 
 
 class MatrixBase():
@@ -38,8 +42,7 @@ class MatrixBase():
         of the elements.  If a new Number is created using the computed
         base ring and combined with the entries of this matrix, then the
         precision of the result will be determined by the precisions of
-        the entries.  
-
+        the entries.
         """
         if self._base_ring:
             return self._base_ring
@@ -48,8 +51,9 @@ class MatrixBase():
             return SnapPyNumbers(precision=precision)
 
     def list(self):
-        #Override this
+        # Override this
         return []
+
 
 class Vector2(MatrixBase):
     """A 2-dimensional vector whose entries are snappy Numbers."""
@@ -78,8 +82,8 @@ class Vector2(MatrixBase):
     def __repr__(self):
         entries = [str(e) for e in self.list()]
         size = max(map(len, entries))
-        entries = tuple(('%%-%d.%ds'%(size,size))%x for x in entries)
-        return '[ %s ]\n[ %s ]'%entries
+        entries = tuple(('%%-%d.%ds' % (size, size)) % x for x in entries)
+        return '[ %s ]\n[ %s ]' % entries
 
     def __add__(self, other):
         return Vector2(self.x + other.x, self.y + other.y)
@@ -91,13 +95,12 @@ class Vector2(MatrixBase):
         if isinstance(other, Matrix2x2):
             return Vector2(self.x * other.a + self.y * other.c,
                            self.x * other.b + self.y * other.d)
-        elif isinstance(other, Number):
+        if isinstance(other, Number):
             return Vector2(self.x * other, self.y * other)
-        else:
-            try:
-                return self*base_ring()(other)
-            except:
-                return NotImplemented
+        try:
+            return self * self.base_ring()(other)
+        except (TypeError, ValueError):
+            return NotImplemented
 
     def __rmul__(self, other):
         return Vector2(self.x * other, self.y * other)
@@ -120,11 +123,11 @@ class Vector2(MatrixBase):
     def norm(self, p=2):
         if p == 1:
             return self.x.abs() + self.y.abs()
-        elif p == 2:
-            precision = self.base_ring().precision()
-            return ((self.x*self.x).abs() + (self.y*self.y).abs()).sqrt()
-        elif p == Infinity:
+        if p == 2:
+            return ((self.x * self.x).abs() + (self.y * self.y).abs()).sqrt()
+        if p == Infinity:
             return max(self.x.abs(), self.y.abs())
+
 
 class Matrix2x2(MatrixBase):
     """A 2x2 matrix class whose entries are snappy Numbers."""
@@ -145,20 +148,20 @@ class Matrix2x2(MatrixBase):
     def __repr__(self):
         entries = [str(e) for e in self.list()]
         size = max(map(len, entries))
-        entries = tuple(('%%-%d.%ds'%(size,size))%x for x in entries)
-        return '[ %s  %s ]\n[ %s  %s ]'%entries
+        entries = tuple(('%%-%d.%ds' % (size, size)) % x for x in entries)
+        return '[ %s  %s ]\n[ %s  %s ]' % entries
 
     def __getitem__(self, index):
         if isinstance(index, int):
             if index == 0:
                 return [self.a, self.b]
-            elif index == 1:
+            if index == 1:
                 return [self.c, self.d]
         elif isinstance(index, tuple) and len(index) == 2:
             i, j = index
-            if   i == 0:
+            if i == 0:
                 return self.a if j == 0 else self.b
-            elif i == 1:
+            if i == 1:
                 return self.c if j == 0 else self.d
         raise IndexError('Invalid 2x2 matrix index.')
 
@@ -186,11 +189,10 @@ class Matrix2x2(MatrixBase):
         if isinstance(other, Number):
             return Matrix2x2(self.a * other, self.b * other,
                              self.c * other, self.d * other)
-        else:
-            try:
-                return self*base_ring()(other)
-            except:
-                return NotImplemented
+        try:
+            return self * self.base_ring()(other)
+        except (TypeError, ValueError):
+            return NotImplemented
 
     def __rmul__(self, other):
         # Assumes that other is a scalar. This will not be
@@ -213,10 +215,10 @@ class Matrix2x2(MatrixBase):
 
     def __invert__(self):
         try:
-            D = 1/self.det()
+            D = 1 / self.det()
         except ZeroDivisionError:
-            raise ZeroDivisionError('matrix %s is not invertible.'%self)
-        return Matrix2x2(self.d*D, -self.b*D, -self.c*D, self.a*D)
+            raise ZeroDivisionError('matrix %s is not invertible.' % self)
+        return Matrix2x2(self.d * D, -self.b * D, -self.c * D, self.a * D)
 
     def adjoint(self):
         return Matrix2x2(self.d, -self.b, -self.c, self.a)
@@ -230,22 +232,22 @@ class Matrix2x2(MatrixBase):
         return self.a + self.d
 
     def eigenvalues(self):
-        #WARNING: This can take infinitely long!!!! (WHY???)
+        # WARNING: This can take infinitely long!!!! (WHY???)
         R = self.base_ring()
         x = pari('x')
         a, b, c, d = map(pari, self.list())
-        p = x*x - (a + d)*x + (a*d - b*c)
+        p = x * x - (a + d) * x + (a * d - b * c)
         roots = p.polroots(precision=R.precision())
         return map(R, roots)
 
     def norm(self, p=2):
         if p == 1:
             return max(self.a.abs() + self.c.abs(), self.b.abs() + self.d.abs())
-        elif p == 'frob':
-            return sum([x*x for x in self.list()]).sqrt()
-        elif p == Infinity:
+        if p == 'frob':
+            return sum([x * x for x in self.list()]).sqrt()
+        if p == Infinity:
             return max(self.a.abs() + self.b.abs(), self.c.abs() + self.d.abs())
-        elif p == 2:
+        if p == 2:
             return max([x.abs() for x in self.eigenvalues()])
 
     def list(self):
@@ -258,18 +260,20 @@ class Matrix2x2(MatrixBase):
     def sage(self):
         return sage_matrix(2, 2, [x.sage() for x in self.list()])
 
+
 def indexset(n):
     """The orders of the non-zero bits in the binary expansion of n."""
     i = 0
     result = []
     while True:
-        mask = 1<<i
+        mask = 1 << i
         if n & mask:
             result.append(i)
         if n < mask:
             break
         i += 1
     return result
+
 
 def powerset(X):
     """Iterator for all finite subsequences of the iterable X"""
@@ -279,9 +283,7 @@ def powerset(X):
         segment.append(x)
         while True:
             try:
-                yield [ segment[i] for i in indexset(n) ]
+                yield [segment[i] for i in indexset(n)]
             except IndexError:
                 break
             n += 1
-
-

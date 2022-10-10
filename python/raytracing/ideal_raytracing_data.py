@@ -470,6 +470,7 @@ def _compute_margulis_tube_ends(tet, vertex):
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
+
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:
         for F in t3m.TwoSubsimplices:
@@ -480,4 +481,3 @@ def _check_consistency(mcomplex):
                     err = r13_dot(v0, v1)
                     if err > 1e-10 or err < -1e-10:
                         print("PROBLEM", v0, v1)
-

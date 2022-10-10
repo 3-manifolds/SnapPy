@@ -438,6 +438,7 @@ def _apply_hom_to_word(word, G):
 
     raise Exception("Given argument is not a SnapPy fundamental group")
 
+
 def evaluate_word(identity_matrix, generator_matrices, inverse_matrices,
                   word, G):
 
@@ -459,4 +460,3 @@ def evaluate_word(identity_matrix, generator_matrices, inverse_matrices,
         m = matrix.matrix_mult(m, g)
 
     return m
-

@@ -215,6 +215,7 @@ _new_perm_edge_type_old_perm = [
     ((3, 2, 0, 1), 'alpha', t3m.Perm4((2, 3, 0, 1))),
     ((3, 2, 1, 0), 'alpha', t3m.Perm4((2, 3, 1, 0))) ]
 
+
 def _matrices_for_tet(hyperbolic_structure, tet_num):
     RF = hyperbolic_structure.vertex_gram_matrices[0].base_ring()
     CF = RF.complex_field()
@@ -229,4 +230,3 @@ def _matrices_for_tet(hyperbolic_structure, tet_num):
         matrices[new_perm] = m * matrices[old_perm.tuple()]
 
     return matrices
-

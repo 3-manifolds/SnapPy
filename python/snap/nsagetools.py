@@ -380,17 +380,20 @@ def clean_CC(z, error):
     CC = z.parent()
     return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) ) if not CC.is_exact() else z
 
+
 def univ_exponents(p):
     try:
         return [a[0] for a in p.exponents()]
     except TypeError:
         return p.exponents()
 
+
 def clean_laurent(p, error):
     R = p.parent()
     t = R.gen()
     new_coeffs = [clean_CC(z, error) for z in p.coefficients()]
     return sum( [a*t**n for a , n in zip(new_coeffs, univ_exponents(p))], R.zero())
+
 
 def clean_laurent_to_poly(p, error=10**-8):
     R = p.parent()
@@ -403,20 +406,23 @@ def clean_laurent_to_poly(p, error=10**-8):
     m = min(exponents)
     return sum( [a*t**(n-m) for a,n in zip(cp.coefficients(), exponents)], P(0))
 
+
 def univ_abs(z):
     """
     Compute a reasonable choice for the absolute value of z.
     """
     try:
         return z.abs()
-    except:
+    except (TypeError, AttributeError):
         if hasattr(z, 'coefficients'):
             return max([0,] + [univ_abs(c) for c in z.coefficients()])
         else:
             return 0 if z == 0 else Infinity
 
+
 def univ_matrix_norm(A):
     return max([0,] + [univ_abs(a) for a in A.list()])
+
 
 def matrix_has_small_entries(A, bound):
     if A.base_ring().is_exact():
@@ -424,12 +430,14 @@ def matrix_has_small_entries(A, bound):
     else:
         return univ_matrix_norm(A) < bound
 
+
 def last_square_submatrix(A):
     r, c = A.nrows(), A.ncols()
     if r <= c:
         return A.matrix_from_columns( range(c - r, c) )
     else:
         return A.matrix_from_rows( range( r - c, r) )
+
 
 def first_square_submatrix(A):
     r, c = A.nrows(), A.ncols()
@@ -441,6 +449,7 @@ def first_square_submatrix(A):
 
 class TorsionComputationError(Exception):
     pass
+
 
 @sage_method
 def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
@@ -462,6 +471,7 @@ def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_convention
         return [compute_torsion(G, bits_prec, beta, phi, wada_conventions=wada_conventions)
                 for beta in alpha.all_lifts_to_SL2C()]
 
+
 def fast_determinant_of_laurent_poly_matrix(A):
     """
     Return the determinant of the given matrix up to
@@ -474,6 +484,7 @@ def fast_determinant_of_laurent_poly_matrix(A):
     MS = A.parent().change_ring(P)
     Ap = MS([convert_laurent_to_poly(p, minexp, P) for p in A.list()])
     return Ap.det()
+
 
 def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
                     return_parts = False, return_as_poly=True,

@@ -223,4 +223,3 @@ def check_consistency_2(piece):
             output_linked(pieces[0], tets_set)
 
         print("Total length: %d" % num_pieces)
-

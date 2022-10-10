@@ -66,9 +66,11 @@ def _basis_vectors_sl2c(CF):
              matrix([[ 0 , 1j],
                      [-1j, 0 ]], ring = CF) ]
 
+
 def _adjoint(m):
     return matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
                    [ m[0][1].conjugate(), m[1][1].conjugate()]])
+
 
 def _o13_matrix_column(A, m):
     fAmj = A * m * _adjoint(A)
@@ -77,4 +79,3 @@ def _o13_matrix_column(A, m):
              (fAmj[0][0].real() - fAmj[1][1].real()) / 2,
               fAmj[0][1].real(),
               fAmj[0][1].imag() ]
-

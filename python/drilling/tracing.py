@@ -308,7 +308,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
         # Transform data
         start_point = m * start_point
         direction = m * direction
-        if not line is None:
+        if line is not None:
             line = line.transformed(m)
         param = hit_param
 
@@ -321,6 +321,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
 
     raise exceptions.UnfinishedTraceGeodesicError(
         constants.trace_max_steps)
+
 
 def _verify_away_from_core_curve(line : Optional[R13LineWithMatrix],
                                  tet : Tetrahedron,
@@ -353,4 +354,3 @@ def _verify_away_from_core_curve(line : Optional[R13LineWithMatrix],
 
         if not d > epsilon:
             raise exceptions.GeodesicCloseToCoreCurve()
-

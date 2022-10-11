@@ -14,7 +14,9 @@ from . import togl
 
 from cpython cimport array
 
-import os, sys, platform, png
+import os
+import sys
+import platform, png
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
@@ -22,10 +24,7 @@ import time
 
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
-if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-else:
-    import tkinter as Tk_
+import tkinter as Tk_
 
 ##############################################################################
 # Classes and utilties that work with any OpenGL

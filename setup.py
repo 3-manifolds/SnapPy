@@ -149,8 +149,10 @@ def distutils_dir_name(dname):
         name += os.sep + 'Release'
     return name
 
+
 def build_lib_dir():
     return os.path.abspath(distutils_dir_name('lib'))
+
 
 class SnapPyTest(Command):
     user_options = []
@@ -381,9 +383,7 @@ if sys.platform == 'win32':
         # snappy_extra_compile_args += ['/DDEBUG', '/Zi',
         #                              '/FdSnapPy.cp37-win_amd64.pdb']
     else:
-        if sys.version_info.major == 2:
-            snappy_extra_link_args.append('-lmsvcr90')
-        elif sys.version_info == (3,4):
+        if sys.version_info == (3, 4):
             snappy_extra_link_args.append('-lmsvcr100')
 if sys.platform == 'darwin':
     snappy_extra_compile_args += macOS_compile_args

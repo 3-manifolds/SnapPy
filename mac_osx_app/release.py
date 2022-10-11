@@ -162,9 +162,10 @@ def do_release(python, dmg_name, freshen=True):
     sign_app()
     package_app(dmg_name)
 
+
 if __name__ == '__main__':
     if '-m' in sys.argv or '--manual' in sys.argv:
-        do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
+        do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info.major))
     else:
         nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
         if os.path.exists(nmd_python_dir):
@@ -174,4 +175,3 @@ if __name__ == '__main__':
             python3 = APP_PYTHON
         freshen = '--no-freshen' not in sys.argv
         do_release(python3, "SnapPy", freshen)
-

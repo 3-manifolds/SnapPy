@@ -12,7 +12,7 @@ from plink.ipython_tools import IPythonTkRoot
 from . import filedialog
 from .ppm_to_png import convert_ppm_to_png
 
-if sys.version_info.major < 3 or sys.version_info.minor < 7:
+if sys.version_info < (3, 7):
     class Spinbox(ttk.Entry):
         def __init__(self, container=None, **kw):
             ttk.Entry.__init__(self, container, "ttk::spinbox", **kw)
@@ -21,6 +21,7 @@ if sys.version_info.major < 3 or sys.version_info.minor < 7:
             self.tk.call(self._w, "set", value)
 else:
     Spinbox = ttk.Spinbox
+
 
 class SnapPyStyle:
     def __init__(self):

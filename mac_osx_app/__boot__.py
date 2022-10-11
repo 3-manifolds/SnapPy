@@ -1,6 +1,7 @@
 # Set up the environment that py2app expects when this is run.
 import os
 import sys
+import re
 os.environ["ARGVZERO"] = sys.argv[0]
 os.environ["RESOURCEPATH"] = os.path.split(__file__)[0]
 PYTHON = 'python3.10'
@@ -42,14 +43,8 @@ def _disable_linecache():
 _disable_linecache()
 
 
-import re
-import sys
-
 cookie_re = re.compile(br"coding[:=]\s*([-\w.]+)")
-if sys.version_info[0] == 2:
-    default_encoding = "ascii"
-else:
-    default_encoding = "utf-8"
+default_encoding = "utf-8"
 
 
 def guess_encoding(fp):
@@ -76,19 +71,15 @@ def _run():
 
     path = os.path.join(base, script)
     sys.argv[0] = __file__ = path
-    if sys.version_info[0] == 2:
-        with open(path, "rU") as fp:
-            source = fp.read() + "\n"
-    else:
-        with open(path, "rb") as fp:
-            encoding = guess_encoding(fp)
+    with open(path, "rb") as fp:
+        encoding = guess_encoding(fp)
 
-        with open(path, "r", encoding=encoding) as fp:
-            source = fp.read() + "\n"
+    with open(path, "r", encoding=encoding) as fp:
+        source = fp.read() + "\n"
 
-        BOM = b"\xef\xbb\xbf".decode("utf-8")
-        if source.startswith(BOM):
-            source = source[1:]
+    BOM = b"\xef\xbb\xbf".decode("utf-8")
+    if source.startswith(BOM):
+        source = source[1:]
 
     exec(compile(source, path, "exec"), globals(), globals())
 

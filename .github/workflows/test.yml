@@ -9,26 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [9.1, 9.3, 9.4, 9.5]
+        version: [9.1, 9.3, 9.4, 9.5, 9.6, 9.7]
 
     container:
       image: sagemath/sagemath:${{ matrix.version }}
+      options: --user root
 
     steps:
       - name: Sage version
         run: sage --version
 
-      - name: Make checkout work
-        run: |
-           sudo chown -R sage:sage /__w/SnapPy
-
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Go home
-        # https://github.com/actions/runner/issues/863
-        run: sudo chown sage:sage $HOME
-        
       - name: Install PLink
         run:
           sage -pip install -U https://github.com/3-manifolds/PLink/archive/master.zip

@@ -30,12 +30,8 @@ def check_example(M, shapes=None):
     mats = compute_matrices(MM)
     for i in range(1, G.num_generators() + 1):
         A = mats[i]
-        B = G.SL2C(G.generators()[i-1])
-        error = min(matrix_norm(A-B), matrix_norm(A+B))
+        B = G.SL2C(G.generators()[i - 1])
+        error = min(matrix_norm(A - B), matrix_norm(A + B))
         max_error = max(max_error, error)
 
     return max_error
-
-
-
-

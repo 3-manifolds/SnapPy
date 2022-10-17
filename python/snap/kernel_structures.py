@@ -111,7 +111,7 @@ class TransferKernelStructuresEngine(McomplexEngine):
                                           cusp_indices[i]):
                 tet.Class[vertex].Index = cusp_index
 
-        self.mcomplex.Vertices.sort(key = lambda vertex : vertex.Index)
+        self.mcomplex.Vertices.sort(key=lambda vertex: vertex.Index)
 
         for index, vertex in enumerate(self.mcomplex.Vertices):
             if not index == vertex.Index:
@@ -120,4 +120,3 @@ class TransferKernelStructuresEngine(McomplexEngine):
     def reindex_cusps_and_transfer_peripheral_curves(self):
         self.reindex_cusps_and_add_peripheral_curves(
             self.snappyTriangulation._get_cusp_indices_and_peripheral_curve_data())
-

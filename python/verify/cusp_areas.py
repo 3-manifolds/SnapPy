@@ -168,7 +168,7 @@ def _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
     num_cusps = cusp_area_matrix.dimensions()[0]
     num_pending = num_cusps
 
-    result = num_cusps * [ None ]
+    result = num_cusps * [None]
 
     while num_pending > 0:
         stop_size, (i, j) = _find_minimal_stopper(cusp_area_matrix, result)
@@ -182,4 +182,3 @@ def _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
                 num_pending -= 1
 
     return result
-

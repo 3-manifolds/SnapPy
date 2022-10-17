@@ -93,7 +93,8 @@ def triangulation_dependent_cusp_area_matrix(
         return result
 
     return _to_matrix([[entry(i, j) for i in range(len(areas))]
-                   for j in range(len(areas))])
+                       for j in range(len(areas))])
+
 
 def _to_matrix(m):
     # delayed import to avoid cycles
@@ -101,10 +102,11 @@ def _to_matrix(m):
 
     return matrix(m)
 
+
 def _doctest():
     import doctest
     doctest.testmod()
 
+
 if __name__ == '__main__':
     _doctest()
-

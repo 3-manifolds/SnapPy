@@ -286,9 +286,9 @@ def polished_holonomy(manifold,
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
     f = FundamentalPolyhedronEngine.from_manifold_and_shapes(
-        M, shapes, normalize_matrices = True, match_kernel = match_kernel)
-    mats = f.matrices_for_presentation(G, match_kernel = True)
-    clean_mats = [ clean_matrix(A, error=error, prec=bits_prec) for A in mats ]
+        M, shapes, normalize_matrices=True, match_kernel=match_kernel)
+    mats = f.matrices_for_presentation(G, match_kernel=True)
+    clean_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in mats]
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), clean_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()
@@ -296,4 +296,3 @@ def polished_holonomy(manifold,
         assert PG.is_projective_representation()
 
     return PG
-

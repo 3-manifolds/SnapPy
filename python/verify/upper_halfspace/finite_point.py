@@ -217,7 +217,7 @@ class _FinitePointTester():
     def matrix1(self):
         from sage.all import RIF, CIF, matrix
         return matrix(
-            [[CIF(RIF(1.3),RIF(-0.4)), CIF(RIF(5.6),RIF(2.3))],
+            [[CIF(RIF(1.3), RIF(-0.4)), CIF(RIF(5.6), RIF(2.3))],
              [CIF(RIF(-0.3), RIF(0.1)), CIF(1)]])
 
     def extended_matrix1(self, isOrientationReversing):
@@ -226,7 +226,7 @@ class _FinitePointTester():
     def matrix2(self):
         from sage.all import RIF, CIF, matrix
         return matrix(
-            [[CIF(RIF(0.3),RIF(-1.4)), CIF(RIF(3.6),RIF(6.3))],
+            [[CIF(RIF(0.3), RIF(-1.4)), CIF(RIF(3.6), RIF(6.3))],
              [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]])
 
     def extended_matrix2(self, isOrientationReversing):
@@ -282,4 +282,3 @@ class _FinitePointTester():
         self.matrix_multiplication_works([m1o, m1o, m2r, m1o])
         self.matrix_multiplication_works([m1o, m1r, m2r, m1o])
         self.matrix_multiplication_works([m2r, m1o, m2r, m1o])
-

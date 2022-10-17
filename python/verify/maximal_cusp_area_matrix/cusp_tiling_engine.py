@@ -401,7 +401,7 @@ class CuspTilingEngine(McomplexEngine):
                      self.max_horosphere_height_for_cusp[i])
             return self.cusp_areas[i] * cusp_area * (ratio ** 2)
 
-        return [ maximal_cusp_area(i) for i in range(self.num_cusps) ]
+        return [maximal_cusp_area(i) for i in range(self.num_cusps)]
 
     def compute_maximal_cusp_area_matrix_row(self, cusp_index):
         self.reset_cusp(cusp_index)
@@ -409,11 +409,11 @@ class CuspTilingEngine(McomplexEngine):
         self.tile_until_done()
         return self.retrieve_maximal_cusp_area_matrix_row()
 
+
 def _doctest():
     import doctest
     doctest.testmod()
 
+
 if __name__ == '__main__':
     _doctest()
-
-

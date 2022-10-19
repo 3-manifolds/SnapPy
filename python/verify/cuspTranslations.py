@@ -77,8 +77,7 @@ def cusp_translations_for_neighborhood(neighborhood,
     # also should have given us areas corresponding to disjoint cusps to
     # begin with.
 
-    return cusp_translations_for_manifold(manifold, areas = areas,
-                                          check_std_form = verified,
-                                          verified = verified,
-                                          bits_prec = bits_prec)
-
+    return cusp_translations_for_manifold(manifold, areas=areas,
+                                          check_std_form=verified,
+                                          verified=verified,
+                                          bits_prec=bits_prec)

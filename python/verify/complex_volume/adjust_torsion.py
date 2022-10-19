@@ -74,11 +74,10 @@ def normalize_by_pi_square_over_two(z):
     CIF = z.parent()
     RIF = CIF.real_field()
 
-    pi_square_over_two = RIF(pi**2/2)
+    pi_square_over_two = RIF(pi**2 / 2)
 
     # Round to integer
     q = (z.real().center() / pi_square_over_two.center()).round()
 
     # Subtract multiple of pi^2/6
     return z - q * pi_square_over_two
-

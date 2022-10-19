@@ -1409,8 +1409,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             trig = tet.horotriangles[vert]
 
             trig.lifted_vertex_positions = {
-                edge : position - log0
+                edge: position - log0
                 for edge, position in trig.lifted_vertex_positions.items()
             }
-
-

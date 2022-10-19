@@ -544,10 +544,11 @@ def _negate_matrices_to_match_kernel(matrices, G):
     return [ _negate_matrix_to_match_kernel(m, matrix(G.SL2C(g)))
              for m, g in zip(matrices, G.generators()) ]
 
+
 def _compute_pairing_matrix(pairing):
     (inCorner, outCorner), perm = pairing
 
-    inTriple  = []
+    inTriple = []
     outTriple = []
 
     for v in simplex.ZeroSubsimplices:
@@ -556,4 +557,3 @@ def _compute_pairing_matrix(pairing):
             outTriple.append(outCorner.Tetrahedron.Class[perm.image(v)].IdealPoint)
 
     return _matrix_taking_triple_to_triple(outTriple, inTriple)
-

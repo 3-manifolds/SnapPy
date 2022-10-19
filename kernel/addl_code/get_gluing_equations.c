@@ -11,7 +11,7 @@
 
             a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z) + d*log(z1) +... = 2 pi i
 
-        for an edge equation, and (same) = 1 for a cusp equation.
+        for an edge equation, and (same) = 0 for a cusp equation.
 
         In terms of the tetrahedra, a is the invariant of the edge
         (2,3), b the invariant of the edge (0,2) and c is the

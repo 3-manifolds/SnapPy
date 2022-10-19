@@ -16,15 +16,14 @@ disk images created on it not work correctly on those systems.   Thus this "solu
 (4) Open the disk image in the Finder and do View->Hide Tool Bar and then View->Show View Options.  To add the background picture inside the hidden directory, use cmd-shift-g in the file dialog.  Adjust everything to suit, close window and open it.   Then copy the .DS_Store file to dotDS_store.  
 
 """
-import os, sys, re
+import os
+import re
 from math import ceil
 
-if sys.version_info.major == 2:
-    name = "SnapPy"
-else:
-    name = "SnapPy3"
+name = "SnapPy3"
 dist_dir = "../dist"
-print('dmg name is %s'%name)
+print('dmg name is %s' % name)
+
 
 def main():
     # Make sure the dmg isn't currently mounted, or this won't work.  

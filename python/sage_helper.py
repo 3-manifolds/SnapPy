@@ -32,8 +32,7 @@ if _within_sage:
         function._sage_method = True
         return function
 
-
-    try: # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483
+    try:  # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483
         from sage.rings.complex_mpfr import (ComplexField,
                                              ComplexField_class,
                                              create_ComplexNumber)
@@ -81,6 +80,7 @@ else:
     _gui_status['cyopengl'] = False
 _gui_status['fake_root'] = False
 
+
 def cyopengl_works():
     if not _gui_status['cyopengl']:
         return False
@@ -98,14 +98,17 @@ def cyopengl_works():
             _gui_status['tk'] = _gui_status['cyopengl'] = False
     return _gui_status['cyopengl']
 
+
 def tk_root():
     if _gui_status['tk']:
         return Tk_._default_root
     else:
         return None
 
+
 def root_is_fake():
     return _gui_status['fake_root']
+
 
 class DocTestParser(doctest.DocTestParser):
     _use_cyopengl_initialized = False
@@ -133,17 +136,19 @@ class DocTestParser(doctest.DocTestParser):
                              string)[0]
         return doctest.DocTestParser.parse(self, string, name)
 
+
 DocTestParser.use_sage = _within_sage
 
 if _within_sage:
-    globs = {'PSL':sage.all.PSL, 'BraidGroup':sage.all.BraidGroup}
+    globs = {'PSL': sage.all.PSL, 'BraidGroup': sage.all.BraidGroup}
 else:
-    globs = { }
+    globs = {}
+
 
 def print_results(module, results):
     root = tk_root()
     # Platform specific hacks to make running the tests work.
-    if root and (sys.version_info.major < 3 or not root_is_fake()):
+    if root and not root_is_fake():
         if sys.platform in ('linux', 'linux2'):
             root.deiconify()
             root.update_idletasks()

@@ -12,7 +12,7 @@ import atexit
 import math
 import string
 import time
-python_major_version = sys.version_info[0]
+python_major_version = sys.version_info.major
 
 # Sage interaction
 from .sage_helper import _within_sage, SageNotAvailable

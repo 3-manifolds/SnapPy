@@ -37,7 +37,7 @@ def geodesic_moves(mcomplex):
     isosig = A.isosig()
     B = McomplexWithMemory(isosig)
     new_moves = []
-    
+
     for move in geodesic_map[isosig]:
         iso = B.isomorphisms_to(A, at_most_one=True)[0]
         move_type, B_edge, B_face, B_tet_idx = move

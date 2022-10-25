@@ -34,4 +34,3 @@ class Face:
         tet = self.Corners[0].Tetrahedron
         edge = PickAnEdge[face]
         return Arrow(edge, face, tet)
-

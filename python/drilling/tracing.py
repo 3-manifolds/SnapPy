@@ -64,7 +64,7 @@ class GeodesicPiece:
         g = GeodesicPiece(index, tet, endpoints)
         tet.geodesic_pieces.append(g)
         return g
-        
+
     @staticmethod
     def create_face_to_vertex_and_attach(index : int,
                                          tet : Tetrahedron,
@@ -95,7 +95,7 @@ class GeodesicPiece:
         Given a list of pieces, populates next_ and prev of each
         piece to turn it into a linked list.
         """
-        
+
         n = len(pieces)
         for i in range(n):
             a = pieces[i]
@@ -107,7 +107,7 @@ class GeodesicPiece:
         """
         True if line segment starts on a face and goes to a vertex.
         """
-        
+
         return (
             (self.endpoints[0].subsimplex in simplex.TwoSubsimplices) and
             (self.endpoints[1].subsimplex in simplex.ZeroSubsimplices))

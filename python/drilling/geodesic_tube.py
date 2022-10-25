@@ -221,7 +221,7 @@ class GeodesicTube:
         Ensures that all pieces needed to cover a tube up to radius
         r are stored in GeodesicTube.pieces.
         """
-        
+
         while not self.covered_radius() > r:
             self._add_next_piece()
 
@@ -391,14 +391,14 @@ if __name__ == '__main__':
         g.add_next_piece()
 
     print("============================")
-        
+
     for p in g.pieces:
         print(p.lower_bound_distance)
 
     print("Injectivity radius:", inj)
 
 # Expected:
-        
+
 """
         [0,
  0.000000000000000,

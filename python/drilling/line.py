@@ -20,7 +20,7 @@ class R13Line:
     For distance computations, the inner product between the two
     vectors is stored as well.
     """
-    
+
     def __init__(self,
                  points, # Two light-like vectors
                  inner_product = None): # Optional: their inner product
@@ -47,7 +47,7 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
     """
     Computes distance between two hyperbolic lines.
     """
-    
+
     p00 = r13_dot(line0.points[0], line1.points[0])
     p01 = r13_dot(line0.points[0], line1.points[1])
     p10 = r13_dot(line0.points[1], line1.points[0])
@@ -88,7 +88,7 @@ class R13LineWithMatrix:
         with the O(1,3)-matrix corresponding to m) fixed by m in
         the hyperboloid model.
         """
-        
+
         return R13LineWithMatrix(
             R13Line(r13_fixed_points_of_psl2c_matrix(m)),
             psl2c_to_o13(m))

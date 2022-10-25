@@ -53,7 +53,7 @@ def word_list_to_psl2c_matrix(mcomplex : Mcomplex, word_list : Sequence[int]):
     non-zero integers with positive integers corresponding to generators and
     negative integers corresponding to their inverses.
     """
-    
+
     return prod([mcomplex.GeneratorMatrices[g]
                  for g in word_list])
 
@@ -185,7 +185,7 @@ def add_r13_geometry(
                     mcomplex,
                     all_peripheral_words[v.Index],
                     v.filling_matrix[1]))
-    
+
     return mcomplex
 
 ###############################################################################

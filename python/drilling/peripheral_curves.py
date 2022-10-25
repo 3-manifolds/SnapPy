@@ -169,7 +169,7 @@ def _install_longitude(start_tet : Tetrahedron):
             neighbor = tet.Neighbor[f]
             if f != entry_f and not _has_meridian(neighbor):
                 pending_tets.append((neighbor, f))
-                
+
     _walk_tet_to_face(start_tet, visited_tet_to_face)
 
 # Notes on orientation

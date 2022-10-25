@@ -77,7 +77,3 @@ def cusped_test(N = 100):
         for M in census:
             print(M)
             compare_cusped(M)
-
-
-
-

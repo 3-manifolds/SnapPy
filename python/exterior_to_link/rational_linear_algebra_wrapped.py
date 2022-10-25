@@ -36,10 +36,10 @@ class Vector:
 
     def __hash__(self):
         return hash(self.vector)
-            
+
     def __repr__(self):
         return repr(self.vector)
-    
+
     def __add__(self, other):
         return Vector(self.vector + other.vector)
 
@@ -79,7 +79,7 @@ class Vector2(Vector):
     def __init__(self, entries):
         assert len(entries) == 2
         Vector.__init__(self, entries)
-        
+
 class Vector3(Vector):
     def __init__(self, entries):
         assert len(entries) == 3
@@ -123,7 +123,7 @@ class Matrix:
 
     def __getitem__(self, index):
         return Vector(self.matrix[index])
-    
+
 if __name__ == '__main__':
     import doctest
     print(doctest.testmod())

@@ -115,7 +115,7 @@ class McomplexWithMemory(Mcomplex):
 
     def _two_to_zero_hook(self, old_arrow):
         self._add_to_move_memory('two_to_zero', old_arrow)
-        
+
     def zero_to_two(self, arrow, gap):
         success = Mcomplex.zero_to_two(self, arrow, gap)
         if success and hasattr(self, 'move_memory'):

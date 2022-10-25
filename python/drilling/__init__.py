@@ -162,7 +162,7 @@ def drill_words(manifold,
 
     if isinstance(words, str):
         raise ValueError("words has to be a list of strings, not a single string.")
-    
+
     if len(words) == 0:
         # Just return copy of manifold if nothing is drilled.
         return manifold.copy()
@@ -228,7 +228,7 @@ def drill_words_implementation(
 
     # For the words compute basic information such as the corresponding
     # matrix and the end points and a sample point on the fixed line.
-    # Try to conjugate/translate matrix and end points such that the 
+    # Try to conjugate/translate matrix and end points such that the
     # line intersects the fundamental domain.
     geodesics : Sequence[GeodesicInfo] = [
         compute_geodesic_info(mcomplex, word)

@@ -114,7 +114,7 @@ class SpatialDict:
     def representatives(self, point):
         # Applies, e.g., translation by geodesic matrix
         return [ point ]
-    
+
     def float_hash(self, point):
         raise NotImplementedError()
 

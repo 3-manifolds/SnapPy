@@ -10,4 +10,3 @@ setup (
     packages = ['t3m'],
     package_dir = {'t3m':''}
 )
-

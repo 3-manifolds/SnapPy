@@ -126,7 +126,7 @@ def _det_shifted_matrix3(m, i):
     Computes determinant of 3x3 matrix obtained by picking
     3 rows from the given 3x4 matrix m.
     """
-    
+
     i0 = (i+1) % 4
     i1 = (i+2) % 4
     i2 = (i+3) % 4

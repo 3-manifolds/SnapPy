@@ -141,7 +141,7 @@ class Geodesics:
 
 def compute_geodesic_tube_info_key(geodesic_tube_info):
     l = geodesic_tube_info.complex_length
-    
+
     return (int(l.real() * 1e5),
             int(abs(l.imag() * 1e5)), # Pair complex conjugate lengths
             l.imag() > 1e-5, # Making the one with negative imag part first

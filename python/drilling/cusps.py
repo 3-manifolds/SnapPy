@@ -100,7 +100,7 @@ def reorder_vertices_and_get_post_drill_infos(
 def refill_and_adjust_peripheral_curves(
         manifold,
         post_drill_infos : Sequence[CuspPostDrillInfo]) -> None:
-    
+
     manifold.dehn_fill([ info.filling for info in post_drill_infos])
 
     for info in post_drill_infos:

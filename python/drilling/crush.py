@@ -21,7 +21,7 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
 
     # We call the tetrahedra in the barycentric subdivision subtetrahedra
     # to distinguish them from the original tetrahedra.
-    
+
     # We order the vertices of a subtetrahedra such that 0 corresponds to an
     # original vertex, vertex 1 to an edge center, ... of a tetrahedron.
     # This means that half of the subtetrahedra have the orientation
@@ -159,7 +159,7 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
             # Later, we fix the chains to be cycles again by adding values
             # to the half-edges forming a circle about vertex 3 in the
             # above picture - in _fix_all_peripheral_curves.
-            
+
             subtet.needs_peripheral_curves_fixed = False
             subtet.PeripheralCurves = [
                 [ { v : { f : 0 for f in simplex.TwoSubsimplices }
@@ -282,7 +282,7 @@ def _tet_mask_and_peripheral_base_subtet_indices(tetrahedra):
             # Find all subtetrahedra adjacent to it to delete
             # them from mask
             perm = _find_perm_for_piece(piece)
-            
+
             _traverse_edge(tet, perm, mask)
 
             # And if this is the first time we encounter this

@@ -21,7 +21,7 @@ class GeodesicTubeInfo:
         self.geodesic_tube.add_pieces_for_radius(radius)
 
         result = []
-        
+
         for piece in self.geodesic_tube.pieces:
             if piece.lower_bound > radius:
                 break
@@ -57,18 +57,18 @@ class GeodesicTubeInfo:
                     if _are_parallel_light_vectors(point, other_point, 1e-5):
                         return True
         return False
-        
+
 def _normalize_complex_length(z):
     imag = z.imag()
-    
+
     CF = z.parent()
     RF = imag.parent()
-    
+
     two_pi = RF("6.283185307179586476925286766559005768394338798750")
     I = CF("I")
 
     n = (imag / two_pi - RF("0.00000001")).round()
-    
+
     return z - n * two_pi * I
 
 def _are_parallel_light_vectors(a, b, epsilon):

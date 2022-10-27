@@ -24,7 +24,7 @@ class GeodesicCloseToCoreCurve(DrillGeodesicError):
         super().__init__(
             "The given geodesic is very close to a core curve and might "
             "intersect it.")
-        
+
 class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
         self.steps = steps

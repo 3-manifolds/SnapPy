@@ -52,7 +52,7 @@ def check_vertex_indices(tets):
 
 def check_points_equal(v0, v1):
     RF = v0[0].parent()
-    
+
     if abs(r13_dot(v0, v0)) < RF(1e-10):
         if abs(r13_dot(v1, v1)) > RF(1e-10):
             raise Exception("Light-like vs time-like:", v0, v1)
@@ -74,7 +74,7 @@ def check_points_consistency(m):
 def check_edge_consistency(m):
     RF = m.Tetrahedra[0].O13_matrices[simplex.F0].base_ring()
     id_matrix = matrix.identity(ring = RF, n = 4)
-    
+
     for e in m.Edges:
         t = id_matrix
         for tet, perm in e.embeddings():
@@ -101,7 +101,7 @@ def check_geodesic1(tets):
                 else:
                     if abs(r13_dot(ptInClass.r13_point, tet.R13_planes[ptInClass.subsimplex])) > RF(1e-10):
                         raise Exception("Point not on plane")
-                
+
 def check_consistency(mcomplex):
     check_edge_consistency(mcomplex)
     check_points_consistency(mcomplex)
@@ -119,7 +119,7 @@ def check_consistency_segments(segments):
             raise Exception("Linked list broken (next)")
         if not s1.prev is s0:
             raise Exception("Linked list broken (prev)")
-        
+
         if s0.endpoints[1].subsimplex in simplex.TwoSubsimplices:
             check_points_equal(
                 s0.tet.O13_matrices[s0.endpoints[1].subsimplex] * s0.endpoints[1].r13_point,
@@ -144,7 +144,7 @@ def output_linked(x, tets_set):
             break
 
     print()
-        
+
     y = x
     while True:
         print("%2d---%2d" % (y.endpoints[0].subsimplex, y.endpoints[1].subsimplex), end = " ")
@@ -153,7 +153,7 @@ def output_linked(x, tets_set):
             break
 
     print()
-        
+
     y = x
     while True:
         if y.tet in tets_set:
@@ -180,16 +180,16 @@ def check_consistency_2(piece):
     tets = _find_all_tetrahedra(piece.tet)
 
     tets_set = set(tets)
-    
+
     to_pieces_map = {  }
 
     num_pieces = 0
-    
+
     for tet in tets:
         for piece in tet.geodesic_pieces:
 
             num_pieces += 1
-            
+
             if not piece.tet is tet:
                 raise Exception("Piece.tet not pointing to tet.")
             if not piece.next_.prev is piece:
@@ -199,7 +199,7 @@ def check_consistency_2(piece):
 
             if not piece.index == piece.next_.index:
                 raise Exception("Index inconsistent.")
-            
+
             if not piece.index == piece.prev.index:
                 raise Exception("Index inconsistent.")
 

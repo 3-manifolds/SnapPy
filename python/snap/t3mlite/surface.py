@@ -516,5 +516,3 @@ class ClosedSurfaceInCusped(ClosedSurface):
         for i in range(len(self.EdgeWeights)):
             out.write("  Edge %s has weight %d\n"
                       % (manifold.Edges[i], self.EdgeWeights[i]))
-
-

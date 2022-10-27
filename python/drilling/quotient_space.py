@@ -39,7 +39,7 @@ class _ZQuotientDict(SpatialDict):
 
         self._line = line_with_matrix.r13_line
         self._power_cache = _O13MatrixPowerCache(line_with_matrix.o13_matrix)
-        
+
         a = self._line.points[0][0]
         b = (line_with_matrix.o13_matrix * self._line.points[0])[0]
 

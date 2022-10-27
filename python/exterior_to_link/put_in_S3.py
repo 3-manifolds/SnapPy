@@ -42,7 +42,7 @@ def example10():
 
     base_tri = [([0,1,0,1], [(2,1,0,3), (0,3,2,1), (2,1,0,3), (0,1,3,2)]),
                 ([1,1,0,0], [(1,0,2,3), (1,0,2,3), (0,1,3,2), (0,3,2,1)])]
-    
+
     M = McomplexWithLink(base_tri)
     T0, T1 = M.Tetrahedra
     a0 = BP(17, 18, 0, 19)
@@ -105,7 +105,7 @@ def embed_link_in_S3(M):
     (1, 19)
     """
     target = 'cMcabbgdv'
-    assert M.isosig() == target 
+    assert M.isosig() == target
     K = transfer_arcs(M, McomplexWithLink(target))
     ans = []
     for arcs in K.link_components():

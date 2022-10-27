@@ -121,7 +121,7 @@ def perturb_geodesic(geodesic : GeodesicInfo,
         verified = verified)
 
     m = geodesic.line.o13_matrix
-    
+
     geodesic.unnormalised_start_point = perturbed_point
     geodesic.unnormalised_end_point = m * perturbed_point
     geodesic.line = None

@@ -1,5 +1,7 @@
 from .cache import SnapPyCache
-from low_index import SimsTree
+import low_index
+
+_low_index_version = [int(n) for n in low_index.version().split('.')]
 
 cdef class Triangulation():
     """
@@ -2465,8 +2467,6 @@ cdef class Triangulation():
 
         if method == 'low_index':
             return self._covers_low_index(degree)
-        if method == 'cpp_low_index':
-            return self._covers_cpp_low_index(degree)
         if method == 'gap':
             return self._covers_gap(degree)
         if method == 'magma':
@@ -2479,22 +2479,11 @@ cdef class Triangulation():
         """
         Compute all covers using low_index.
         """
-        G = self.fundamental_group()
-        if G.num_relators() > self.num_cusps():
-            S = SimsTree(G.num_generators(), degree, G.relators(),
-                        num_long_relators=self.num_cusps())
-        else:
-            S = SimsTree(G.num_generators(), degree, G.relators())
-        return [self.cover(H.permutation_rep()) for H in S.list()
-                if H.degree == degree]
+        if _low_index_version < [1, 2]:
+            return self._covers_low_index_old(degree)
 
-    def _covers_cpp_low_index(self, degree):
-        """
-        Compute all covers using cpp_low_index.
-        """
-
-        import cpp_low_index
         G = self.fundamental_group()
+
         if G.num_relators() > self.num_cusps():
             num_long_relators = self.num_cusps()
             num_short_relators = G.num_relators() - num_long_relators
@@ -2506,11 +2495,22 @@ cdef class Triangulation():
             long_relators = []
 
         return [self.cover(H)
-                for H in cpp_low_index.permutation_reps(
+                for H in low_index.permutation_reps(
                         G.num_generators(),
                         short_relators, long_relators,
                         degree)
                 if len(H[0]) == degree]
+
+    def _covers_low_index_old(self, degree):
+        G = self.fundamental_group()
+    
+        if G.num_relators() > self.num_cusps():
+            S = low_index.SimsTree(G.num_generators(), degree, G.relators(),
+                        num_long_relators=self.num_cusps())
+        else:
+            S = low_index.SimsTree(G.num_generators(), degree, G.relators())
+        return [self.cover(H.permutation_rep()) for H in S.list()
+                if H.degree == degree]
 
     def _covers_gap(self, degree):
         """

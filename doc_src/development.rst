@@ -105,7 +105,7 @@ need to do, one must install additional tools.
   <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16>`_
   installer and selecting the "C++ command line tools" and installing
   the following subpackages: "MSVC v142 - VS 2019 C++ build tools",
-  "Testsing tools core features", "C++/CLI support for v142", and
+  "Testing tools core features", "C++/CLI support for v142", and
   "Windows 10 SDK (most recent version)".
   
   If you would like to make your own installer you will also need

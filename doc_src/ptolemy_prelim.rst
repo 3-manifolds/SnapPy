@@ -22,7 +22,7 @@ Boundary-unipotent
 
 We call a SL(*N*,  **C**)-representation *boundary-unipotent* if each peripheral subgroup is taken to
 a conjugate of the unipotent group *P* of upper unit-triangular matrices. Similarly, we call
-a PSL(*N*, **C**)-representation *boundary-unipotent* if each peripheral subrgroup is taken to a conjugate
+a PSL(*N*, **C**)-representation *boundary-unipotent* if each peripheral subgroup is taken to a conjugate
 of the unipotent group of PSL(*N*, **C**), i.e., the image of *P* under the projection SL(*N*, **C**)\ :math:`\rightarrow`\ PSL(*N*, **C**).
 
 Note that even when boundary-unipotent PSL(*N*, **C**)-representation can be lifted to an

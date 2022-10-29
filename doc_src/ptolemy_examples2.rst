@@ -59,7 +59,7 @@ The list type described in the previous example works recursively. Recall that a
      >>> sol.volume_numerical()
      [0.E-19, 1.88267370443418 E-14]
 
-We can chain these commands together to retrieve the volumes of all boundary-unpotent PSL(2, **C**) (that are :ref:`generically decorated <ptolemy-generically-decorated>` with respect to the triangulation) in just one line::
+We can chain these commands together to retrieve the volumes of all boundary-unipotent PSL(2, **C**) (that are :ref:`generically decorated <ptolemy-generically-decorated>` with respect to the triangulation) in just one line::
 
     >>> Manifold("m003").ptolemy_variety(2,'all').retrieve_solutions(verbose=False).volume_numerical()
     [[[0.E-19, 1.88267370443418 E-14]], [[2.02988321281931, -2.02988321281931]]]
@@ -98,12 +98,12 @@ Note that one of the Ptolemy varieties is non-empty which proves that all edges 
 Flattening nested structures
 ----------------------------
 
-If we want to loose some of the groupping, we can call ``flatten`` on the results. Here the grouping by obstruction class is lost::
+If we want to loose some of the grouping, we can call ``flatten`` on the results. Here the grouping by obstruction class is lost::
 
     >>> Manifold("m003").ptolemy_variety(2,'all').retrieve_solutions(verbose=False).volume_numerical().flatten()
     [[0.E-19, 1.88267370443418 E-14], [2.02988321281931, -2.02988321281931]]
 
-And now, the groupping by Galois conjugacy is lost as well, resulting in a flat list::
+And now, the grouping by Galois conjugacy is lost as well, resulting in a flat list::
 
     >>> Manifold("m003").ptolemy_variety(2,'all').retrieve_solutions(verbose=False).volume_numerical().flatten(2)
     [0.E-19, 1.88267370443418 E-14, 2.02988321281931, -2.02988321281931]

@@ -32,7 +32,7 @@ Examples of what the Ptolemy module can do:
 * Compute the matrices for these representations :ref:`exactly <ptolemy-example-matrices>` or :ref:`numerically <ptolemy-example-numerical-matrix>` given a generator of or word in the fundamental group.
 * Compute the :ref:`traces <ptolemy-example-traces>` for these matrices.
 * Compute the :ref:`trace field <ptolemy-examples-trace-field>` of the representation.
-* Compute the :ref:`boundary holonomoy <ptolemy-example-boundary-holonomy>`.
+* Compute the :ref:`boundary holonomy <ptolemy-example-boundary-holonomy>`.
 * Compute the corresponding :ref:`shape parameters/cross ratios <ptolemy-example-cross-ratios>` for a representation.
 * Compute the :ref:`volume <ptolemy-example-volume>` and :ref:`complex volume <ptolemy-example-complex-volume>` (volume + i Chern-Simons) for a representation.
 * Compute solutions to the Ptolemy varieties :ref:`using magma or sage <ptolemy-example-using-magma-sage>`.

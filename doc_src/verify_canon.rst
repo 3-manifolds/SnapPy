@@ -8,10 +8,10 @@ Like the canonical cell decomposition, it is intrinsic to
 a hyperbolic manifold M and is (up to combinatorial isomorphism
 relabeling the tetrahedra and vertices) completely determined by the
 isometry type of a hyperbolic manifold. Unlike the canonical cell decomposition,
-the canonical retriangulation always conists entirely of tetrahedra which makes
+the canonical retriangulation always consists entirely of tetrahedra which makes
 it more amenable for many computations by SnapPy.
 
-If the canonical cell decompositon of manifold M has only tetrahedral cells,
+If the canonical cell decomposition of manifold M has only tetrahedral cells,
 we define the canonical retriangulation to be the canonical cell decomposition.
 In this case, the canonical retriangulation consists of ideal hyperbolic
 tetrahedra and the ``canonical_retriangulation`` method returns a
@@ -83,8 +83,8 @@ have to be isomorphic)::
 Other applications of the canonical retriangulation include the detection of
 2-bridge knots.
 
-========================================
-Verifiying the canonical retriangulation
-========================================
+=======================================
+Verifying the canonical retriangulation
+=======================================
 
 ..   autofunction:: snappy.verify.verified_canonical_retriangulation

@@ -145,6 +145,11 @@ class IdealRaytracingData(RaytracingData):
             tet.R13_vertices = {
                 V: ideal_point_to_r13(z, self.RF)
                 for V, z in tet.complex_vertices.items() }
+            tet.R13_vertex_products = {
+                v0 | v1 : r13_dot(pt0, pt1)
+                for v0, pt0 in tet.R13_vertices.items()
+                for v1, pt1 in tet.R13_vertices.items()
+                if v0 != v1 }
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -155,16 +160,24 @@ class IdealRaytracingData(RaytracingData):
                 F : plane
                 for F, plane in zip(t3m.TwoSubsimplices, planes) }
 
-    def _compute_R13_horosphere_scale_for_vertex(self, tet, V):
-        vertex = tet.Class[V]
+    def _compute_R13_horosphere_scale_for_vertex(self, tet, V0):
+        vertex = tet.Class[V0]
+        if not vertex.is_complete:
+            return 0.0
         area = self.areas[vertex.Index]
-        if (not vertex.is_complete) or area < 1e-6:
+        if area < 1e-6:
             return 0.0
 
-        horosphere_point = _compute_R13_point_on_horosphere_for_vertex(tet, V)
+        V1, V2, _ = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
-        return - 1.0 / (r13_dot(tet.R13_vertices[V], horosphere_point)
-                          * area.sqrt())
+        cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
+
+        scale_for_unit_length = (
+            -2 * tet.R13_vertex_products[V1 | V2] / (
+                tet.R13_vertex_products[V0 | V1] *
+                tet.R13_vertex_products[V0 | V2])).sqrt()
+
+        return scale_for_unit_length / (cusp_length * area.sqrt())
 
     def _add_R13_horosphere_scales_to_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -424,21 +437,6 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
                              for z in vertex_positions ]
 
     return log_z0, vertex_positions
-
-def _compute_R13_point_on_horosphere_for_vertex(tet, V0):
-    V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
-
-    cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
-    pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
-
-    pts[1] = 1.0 / (pts[1] - pts[0])
-    pts[2] = 1.0 / (pts[2] - pts[0])
-
-    base_length = abs(pts[2] - pts[1])
-
-    horosphere_height = cusp_length / base_length
-
-    return complex_and_height_to_R13_time_vector(pts[0], horosphere_height)
 
 def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]

@@ -30,15 +30,17 @@ jobs:
           CIBW_SKIP: cp27-* cp35-* pp*
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_BEFORE_BUILD: >            
-            pip install cython sphinx cypari FXrays low_index &&
-            pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
-            pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
-            pip install https://github.com/3-manifolds/Spherogram/archive/master.zip
+            pip install cython sphinx cypari FXrays &&
+            pip install git+https://github.com/3-manifolds/PLink &&
+            pip install git+https://github.com/3-manifolds/snappy_manifolds &&
+            pip install git+https://github.com/3-manifolds/Spherogram &&
+            pip install git+https://github.com/3-manifolds/low_index 
           CIBW_BEFORE_TEST: >
             pip install cython &&
-            pip install https://github.com/3-manifolds/PLink/archive/master.zip &&
-            pip install https://github.com/3-manifolds/snappy_manifolds/archive/master.zip &&
-            pip install git+https://github.com/3-manifolds/Spherogram
+            pip install git+https://github.com/3-manifolds/PLink &&
+            pip install git+https://github.com/3-manifolds/snappy_manifolds &&
+            pip install git+https://github.com/3-manifolds/Spherogram &&
+            pip install git+https://github.com/3-manifolds/low_index 
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 
       - uses: actions/upload-artifact@v2

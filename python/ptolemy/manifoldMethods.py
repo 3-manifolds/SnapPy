@@ -28,16 +28,16 @@ def get_ptolemy_obstruction_classes(manifold):
     === Examples ===
 
     Get the obstruction classes for 4_1:
-    
+
     >>> from snappy import Manifold
     >>> M = Manifold("4_1")
     >>> c = get_ptolemy_obstruction_classes(M)
 
-    There are two such clases for 4_1:
-    
+    There are two such classes for 4_1:
+
     >>> len(c)
     2
-    
+
     Print the non-trivial obstruction class:
 
     >>> c[1]

@@ -1467,7 +1467,7 @@ class Mcomplex:
                             tet_queue = tet_queue + [t]
 
                 # did we succeed, or do we need to reset everything
-                if None not in list(iso.values()): #we succeeed!
+                if None not in list(iso.values()):  # we succeed!
                     isomorphisms.append(iso.copy())
                     if at_most_one:
                         return isomorphisms

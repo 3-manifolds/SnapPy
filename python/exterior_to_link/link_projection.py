@@ -1,13 +1,12 @@
 """
 For a PL link in R^3, produce a link diagram by projecting it onto a
-plane (by default a randomly choosen one).  Also includes code for
+plane (by default a randomly chosen one).  Also includes code for
 simplifying a PL link by basic straightening moves.
 """
 
 import spherogram
 import random
 import itertools
-import sys
 from . import pl_utils
 from .rational_linear_algebra import QQ, Matrix, Vector3
 from .exceptions import GeneralPositionError

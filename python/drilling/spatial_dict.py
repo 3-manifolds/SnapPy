@@ -57,6 +57,7 @@ class _Entry:
     def __init__(self, value):
         self.value = value
 
+
 class SpatialDict:
     """
     A python dict-like object appropriate for using numerical points (e.g.,
@@ -64,7 +65,7 @@ class SpatialDict:
     the same entry for points that are almost but not exactly the
     same due to rounding-errors.
 
-    To achieve this, the points are asumed to be in some lattice
+    To achieve this, the points are assumed to be in some lattice
     and the minimal distance between any two points in the lattice
     must be given.
     """

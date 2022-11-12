@@ -27,8 +27,8 @@ def geodesic_moves(mcomplex):
     ...          ([4,4,0,4], [(3,1,2,0),(0,1,3,2),(0,2,1,3),(0,1,3,2)]),
     ...          ([2,3,3,3], [(2,3,1,0),(0,1,3,2),(0,1,3,2),(3,1,2,0)])]
     >>> M = McomplexWithMemory(data)
-    >>> transfered = geodesic_moves(M)
-    >>> M.perform_moves(transfered)
+    >>> transferred = geodesic_moves(M)
+    >>> M.perform_moves(transferred)
     >>> M.isosig()
     'cMcabbgdv'
     """

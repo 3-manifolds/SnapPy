@@ -1361,7 +1361,8 @@ void main(){
         return;
     }
 
-    vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+    vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy) /
+         min(screenResolution.x,screenResolution.y);
     if(multiScreenShot == 1) {
         // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
         // Here screenResolution is really tileResolution;
@@ -1378,7 +1379,10 @@ void main(){
             vec2 offset =
                 ( vec2(float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) )
                 / screenResolution.x / numTiles.x;
-            vec2 scaled_xy = viewScale * (xy + offset);
+            vec2 scaled_xy = xy + offset;
+            if (perspectiveType != perspectiveTypeHyperideal) {
+                scaled_xy *= viewScale;
+            }
             
             bool outsideView =
                 perspectiveType == perspectiveTypeHyperideal &&

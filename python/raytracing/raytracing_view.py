@@ -249,8 +249,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         view_scale = 2.0 * view_scale
 
         # Reimplement computation of xy from fragment coordinate
-        x = (frag_coord[0] - 0.5 * size[0]) / size[0]
-        y = (frag_coord[1] - 0.5 * size[1]) / size[0]
+        x = (frag_coord[0] - 0.5 * size[0]) / min(size[0], size[1])
+        y = (frag_coord[1] - 0.5 * size[1]) / min(size[0], size[1])
 
         # Reimplement get_ray_eye_space to determine end point of
         # ray. The end point is encoded as pair distance to origin

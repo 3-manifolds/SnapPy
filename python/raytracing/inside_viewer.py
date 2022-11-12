@@ -82,7 +82,6 @@ class InsideViewer(ttk.Frame):
 
         self.view_scale_controller = ViewScaleController(
             self.widget.ui_uniform_dict,
-            self.widget.ui_parameter_dict,
             self.view_scale_slider,
             self.view_scale_label,
             self.view_scale_value_label,
@@ -195,35 +194,43 @@ class InsideViewer(ttk.Frame):
 
         view_frame = ttk.Frame(frame)
         view_frame.grid(row = row, column = 1)
-        self.view_var = tkinter.IntVar(value = 0)
 
         view_label = ttk.Label(view_frame, text = "View:")
         view_label.grid(row = 0, column = 0)
 
+        radio_buttons = []
         for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
             button = ttk.Radiobutton(view_frame,
-                                     variable = self.view_var,
                                      value = i,
                                      text = text,
-                                     command = lambda i = i: self.set_view(i))
+                                     takefocus = 0)
             button.grid(row = 0, column = i + 1)
+            radio_buttons.append(button)
+
+        self.perspective_type_controller = UniformDictController(
+            self.widget.ui_uniform_dict,
+            key = 'perspectiveType',
+            radio_buttons = radio_buttons,
+            update_function = self.perspective_type_changed)
 
         return frame
 
+    def perspective_type_changed(self):
+        self.view_scale_controller.update()
+        self.widget.redraw_if_initialized()
+    
     def set_camera_cusp_view(self, which_cusp):
-        self.widget.view_state = self.widget.raytracing_data.cusp_view_state(
-            which_cusp)
+        self.widget.view_state, view_scale = (
+            self.widget.raytracing_data.cusp_view_state_and_scale(
+                which_cusp))
 
-        # Switch to ideal view
-        self.view_var.set(1)
-        self.set_view(1)
-
-        self.widget.redraw_if_initialized()
-
-    def set_view(self, i):
-        self.widget.ui_parameter_dict['perspectiveType'][1] = i
-        self.widget.redraw_if_initialized()
-        self.focus_viewer()
+        extra_scale = 1.1
+        
+        self.widget.ui_uniform_dict['perspectiveType'][1] = 1
+        self.widget.ui_uniform_dict['viewScale'][1] = float(extra_scale * view_scale)
+        
+        self.perspective_type_controller.update()
+        self.perspective_type_changed()
 
     def checkbox_update(self):
         self.widget.redraw_if_initialized()

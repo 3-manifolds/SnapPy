@@ -351,16 +351,19 @@ class IdealRaytracingData(RaytracingData):
         weight = 0.0
         return (boost, tet_num, weight)
 
-    def cusp_view_state(self, which_cusp):
+    def cusp_view_state_and_scale(self, which_cusp):
         vert = self.mcomplex.Vertices[which_cusp]
         corner = vert.Corners[0]
         tet = corner.Tetrahedron
         subsimplex = corner.Subsimplex
+        area = self.areas[which_cusp]
 
-        return self.update_view_state(
-            (_cusp_view_matrix(tet, subsimplex, self.areas[which_cusp]),
-             corner.Tetrahedron.Index,
-             0.0))
+        return (
+            self.update_view_state(
+                (_cusp_view_matrix(tet, subsimplex, area),
+                 corner.Tetrahedron.Index,
+                 0.0)),
+            _cusp_view_scale(tet, subsimplex, area))
 
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
@@ -501,7 +504,7 @@ def _cusp_view_matrix(tet, subsimplex, area):
     
     # A small factor to move the camera a little bit into the cusp neighborhood
     # to avoid z-Fighting.
-    factor_to_move_inside = 1.00001
+    factor_to_move_inside = 1.0001
     rotation = l_translation / abs(l_translation)
     scale = factor_to_move_inside/area.sqrt()
     borel_transform = matrix([[ scale*rotation, translation ],
@@ -522,6 +525,21 @@ def _cusp_view_matrix(tet, subsimplex, area):
 
     return o13_matrix
 
+def _cusp_view_scale(tet, subsimplex, area):
+    # Complex numbers encoding translation of horosphere corresponding
+    # to meridian and longitude. Here, the horosphere maps to the
+    # boundary of a cusp neighborhood with area one.
+    m_translation, l_translation = tet.Class[subsimplex].Translations
+
+    real_l_translation = abs(l_translation)
+    m_translation = m_translation * abs(l_translation) / l_translation
+
+    t = max(real_l_translation + m_translation.real(),
+            real_l_translation - m_translation.real(),
+            m_translation.imag())
+    
+    return area.sqrt() * t
+    
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:
         for F in t3m.TwoSubsimplices:

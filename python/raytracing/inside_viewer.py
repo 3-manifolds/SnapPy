@@ -9,8 +9,6 @@ from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
 
-from snappy.SnapPy import matrix
-
 try:
     from math import gcd as _gcd
 except ImportError:
@@ -207,15 +205,12 @@ class InsideViewer(ttk.Frame):
                                      text = text,
                                      command = lambda i = i: self.set_view(i))
             button.grid(row = 0, column = i + 1)
-        
+
         return frame
 
     def set_camera_cusp_view(self, which_cusp):
-        self.widget.view_state = self.widget.raytracing_data.update_view_state(
-            (matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0,],[0,0,0,1]],
-                    ring = self.widget.raytracing_data.RF),
-             0,
-             0.0))
+        self.widget.view_state = self.widget.raytracing_data.cusp_view_state(
+            which_cusp)
 
         # Switch to ideal view
         self.view_var.set(1)

@@ -5,6 +5,7 @@ import time
 from tkinter import ttk
 from . import gui_utilities
 from .gui_utilities import UniformDictController, FpsLabelUpdater
+from .view_scale_controller import ViewScaleController
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
@@ -79,12 +80,13 @@ class InsideViewer(ttk.Frame):
         status_frame = self.create_status_frame(self)
         status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
-        UniformDictController(
-            self.widget.ui_parameter_dict, 'fov',
-            update_function = self.widget.redraw_if_initialized,
-            scale = self.fov_scale,
-            label = self.fov_label,
-            format_string = '%.1f')
+        self.view_scale_controller = ViewScaleController(
+            self.widget.ui_uniform_dict,
+            self.widget.ui_parameter_dict,
+            self.view_scale_slider,
+            self.view_scale_label,
+            self.view_scale_value_label,
+            update_function = self.widget.redraw_if_initialized)
 
         self.widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
@@ -537,9 +539,11 @@ class InsideViewer(ttk.Frame):
         frame.rowconfigure(0, weight = 1)
 
         column += 1
-        self.fov_scale = Slider(frame, left_end = 20, right_end = 120,
-                                orient = tkinter.VERTICAL)
-        self.fov_scale.grid(row = 0, column = column, sticky = tkinter.NSEW)
+        self.view_scale_slider = Slider(
+            frame, left_end = -100.0, right_end = 100.0,
+            orient = tkinter.VERTICAL)
+        self.view_scale_slider.grid(
+            row = 0, column = column, sticky = tkinter.NSEW)
 
         return frame
 
@@ -547,12 +551,12 @@ class InsideViewer(ttk.Frame):
         frame = ttk.Frame(parent)
 
         column = 0
-        label = ttk.Label(frame, text = "FOV:")
-        label.grid(row = 0, column = column)
+        self.view_scale_label = ttk.Label(frame, text = "FOV:")
+        self.view_scale_label.grid(row = 0, column = column)
 
         column += 1
-        self.fov_label = ttk.Label(frame)
-        self.fov_label.grid(row = 0, column = column)
+        self.view_scale_value_label = ttk.Label(frame)
+        self.view_scale_value_label.grid(row = 0, column = column)
 
         column += 1
         self.vol_label = ttk.Label(frame)

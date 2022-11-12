@@ -106,11 +106,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'brightness' : ['float', 1.9],
 
             'showElevation' : ['bool', False],
-            'desaturate_edges' : ['bool', False]
+            'desaturate_edges' : ['bool', False],
+            'viewScale' : ['float', 1.0]
+
             }
 
         self.ui_parameter_dict = {
-            'fov': ['float', 90],
+            'viewScaleParameter': ['float', 90],
             'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
@@ -179,9 +181,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 'vertexSphereRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1]) ** 2),
                 'perspectiveType' :
-                    ('int', int(self.ui_parameter_dict['perspectiveType'][1])),
-                'viewScale' :
-                    ('float', math.tan(self.ui_parameter_dict['fov'][1] / 360.0 * math.pi))
+                    ('int', int(self.ui_parameter_dict['perspectiveType'][1]))
             },
             self.ui_uniform_dict
             )
@@ -240,13 +240,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         # Limit the maximal depth for orbiting to avoid numeric issues
         depth = min(depth, _max_depth_for_orbiting)
 
-        fov = self.ui_uniform_dict['fov'][1]
+        view_scale = self.ui_uniform_dict['viewScale'][1]
         isIdeal = self.ui_parameter_dict['perspectiveType'][1]
 
         # Reimplement functionality from fragment shader
 
         # See get_ray_eye_space
-        fov_scale = 2.0 * math.tan(fov / 360.0 * math.pi)
+        view_scale = 2.0 * view_scale
 
         # Reimplement computation of xy from fragment coordinate
         x = (frag_coord[0] - 0.5 * size[0]) / size[0]
@@ -256,8 +256,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         # ray. The end point is encoded as pair distance to origin
         # direction to origin.
         if isIdeal:
-            scaled_x = 0.5 * fov_scale * x
-            scaled_y = 0.5 * fov_scale * y
+            scaled_x = 0.5 * view_scale * x
+            scaled_y = 0.5 * view_scale * y
 
             # Use "parabolic transformation magic by Saul"
             # to determine the start point and direction of ray.
@@ -274,8 +274,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             # Direction from origin to rayEnd
             dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
         else:
-            scaled_x = fov_scale * x
-            scaled_y = fov_scale * y
+            scaled_x = view_scale * x
+            scaled_y = view_scale * y
 
             # Camera is assumed to be at origin.
             dist = RF(depth).arctanh()

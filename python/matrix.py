@@ -323,7 +323,7 @@ def mat_solve(m, v, epsilon = 0):
 
     Our implementation improves on this by swapping rows so that the
     element with the largest (lower bound of the) absolute value is
-    usied as pivot.
+    used as pivot.
 
     Setup a complex interval for example::
 

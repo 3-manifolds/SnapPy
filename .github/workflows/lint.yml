@@ -1,0 +1,30 @@
+name: Lint
+on:
+  push: { branches: [ "master" ] }
+  pull_request: { branches: [ "master" ] }
+
+jobs:
+  codespell:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with: { submodules: recursive }
+      - uses: conda-incubator/setup-miniconda@v2
+        with: { mamba-version: "*", channels: "conda-forge", channel-priority: true }
+      - name: Install dependencies
+        shell: bash -l {0}
+        run: |
+          mamba install codespell=2.2.2 pycodestyle=2.9.1
+      - name: Run codespell
+        shell: bash -l {0}
+        run: codespell python
+      - name: Run pycodestyle
+        shell: bash -l {0}
+        # We currently only check for some warnings. We should enable & fix more of them.
+        run: pycodestyle --select=E111,E306,E401,E701,E702,E703,E704,W391,W605,E711,E713,E714,E721,E722 python/
+      - uses: SnapPy/actions/show-logs@main
+        if: ${{ always() }}
+
+env:
+  MAKEFLAGS: -j2
+  SAGE_NUM_THREADS: 2

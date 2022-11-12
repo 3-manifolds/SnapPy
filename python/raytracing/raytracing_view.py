@@ -241,12 +241,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         depth = min(depth, _max_depth_for_orbiting)
 
         view_scale = self.ui_uniform_dict['viewScale'][1]
-        isIdeal = self.ui_parameter_dict['perspectiveType'][1]
+        view_mode = self.ui_parameter_dict['perspectiveType'][1]
 
         # Reimplement functionality from fragment shader
-
-        # See get_ray_eye_space
-        view_scale = 2.0 * view_scale
 
         # Reimplement computation of xy from fragment coordinate
         x = (frag_coord[0] - 0.5 * size[0]) / min(size[0], size[1])
@@ -255,33 +252,41 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         # Reimplement get_ray_eye_space to determine end point of
         # ray. The end point is encoded as pair distance to origin
         # direction to origin.
-        if isIdeal:
-            scaled_x = 0.5 * view_scale * x
-            scaled_y = 0.5 * view_scale * y
-
-            # Use "parabolic transformation magic by Saul"
-            # to determine the start point and direction of ray.
-            # Then compute end point using depth value.
-            foo = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
-            rayEnd = R13_normalise(
-                vector([RF((foo + 1.0)        + depth * foo),
-                        RF( scaled_x          + depth * scaled_x),
-                        RF( scaled_y          + depth * scaled_y),
-                        RF( foo               + depth * (foo - 1.0))]))
-
-            # Distance of rayEnd from origin
-            dist = rayEnd[0].arccosh()
-            # Direction from origin to rayEnd
-            dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
-        else:
-            scaled_x = view_scale * x
-            scaled_y = view_scale * y
+        if view_mode == 0:
+            scaled_x = 2.0 * view_scale * x
+            scaled_y = 2.0 * view_scale * y
 
             # Camera is assumed to be at origin.
             dist = RF(depth).arctanh()
             # Reimplemented from get_ray_eye_space
             dir = vector([RF(scaled_x), RF(scaled_y), RF(-1)])
 
+        else:
+            if view_mode == 1:
+                scaled_x = view_scale * x
+                scaled_y = view_scale * y
+
+                # Use "parabolic transformation magic by Saul"
+                # to determine the start point and direction of ray.
+                # Then compute end point using depth value.
+                r2 = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
+                ray_end = vector(
+                    [RF((r2 + 1.0)        + depth * r2),
+                     RF( scaled_x         + depth * scaled_x),
+                     RF( scaled_y         + depth * scaled_y),
+                     RF( r2               + depth * (r2 - 1.0))])
+            else:
+                pt = R13_normalise(
+                    vector([RF(1.0), RF(2.0 * x), RF(2.0 * y), RF(0.0)]))
+                ray_end = vector([pt[0],pt[1],pt[2],RF(-depth)])
+
+            ray_end = R13_normalise(ray_end)
+                
+            # Distance of ray_end from origin
+            dist = ray_end[0].arccosh()
+            # Direction from origin to ray_end
+            dir = vector([ray_end[1], ray_end[2], ray_end[3]])
+            
         # Normalize direction
         dir = dir.normalized()
 

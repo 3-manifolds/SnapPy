@@ -25,7 +25,7 @@ out vec4 out_FragColor;
 //--------------------------------------------
 
 uniform vec2 screenResolution;
-uniform float fov;
+uniform float viewScale;
 
 uniform int currentTetIndex;
 uniform mat4 currentBoost;
@@ -1378,7 +1378,7 @@ void main(){
             vec2 offset =
                 ( vec2(float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) )
                 / screenResolution.x / numTiles.x;
-            vec2 scaled_xy = tan(radians(fov * 0.5)) * (xy + offset);
+            vec2 scaled_xy = viewScale * (xy + offset);
             
             bool outsideView =
                 perspectiveType == perspectiveTypeHyperideal &&

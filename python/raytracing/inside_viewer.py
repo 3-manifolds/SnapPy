@@ -80,7 +80,7 @@ class InsideViewer(ttk.Frame):
         status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
         UniformDictController(
-            self.widget.ui_uniform_dict, 'fov',
+            self.widget.ui_parameter_dict, 'fov',
             update_function = self.widget.redraw_if_initialized,
             scale = self.fov_scale,
             label = self.fov_label,

@@ -217,6 +217,10 @@ class InsideViewer(ttk.Frame):
              0,
              0.0))
 
+        # Switch to ideal view
+        self.view_var.set(1)
+        self.set_view(1)
+
         self.widget.redraw_if_initialized()
 
     def set_view(self, i):

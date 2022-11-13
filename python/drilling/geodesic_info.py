@@ -281,7 +281,7 @@ class GeodesicInfo:
         entry_cell = simplex.T
 
         for i in range(constants.graph_trace_max_steps):
-            # See whether we the geodesic is close to a core curve.
+            # See whether the geodesic is close to a core curve.
             v = self._find_cusp_if_core_curve(tet, entry_cell, epsilon)
 
             # Compute the signed distance of the start point to the

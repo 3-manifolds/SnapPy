@@ -37,7 +37,7 @@ class MapToFreeAbelianization(Object):
     >>> G = M.fundamental_group(False, False, False)
     >>> rho = MapToFreeAbelianization(G)
     >>> for g in G.generators(): print( g, rho(g) )
-    ... 
+    ...
     a (3, -1)
     b (5, -2)
     c (0, 1)
@@ -118,7 +118,7 @@ def parabolic_eigenvector(A):
         if (v - P*v).norm() < epsilon:
             return v
 
-    v = vector( CC , pari(P - 1).matker()._sage_().list() )
+    v = vector( CC , pari(P - 1).matker()[0])
     assert (v - P*v).norm() < epsilon
     return v
 
@@ -233,6 +233,15 @@ class ManifoldGroup(MatrixRepresentation):
         return  max([projective_distance(A, identity(A)) for A in relator_matrices])
 
     def cusp_shape(self, cusp_num=0):
+        """
+        Get the polished cusp shape for this representation::
+
+          sage: M = ManifoldHP('m015')
+          sage: rho = M.polished_holonomy(bits_prec=100)
+          sage: rho.cusp_shape()   # doctest: +NUMERIC24
+          -0.49024466750661447990098220731 + 2.9794470664789769463726817144*I
+
+        """
         M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])
         C = extend_to_basis(parabolic_eigenvector(M))
         M, L = [ make_trace_2( C**(-1)*A*C ) for A in [M, L] ]

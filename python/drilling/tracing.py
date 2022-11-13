@@ -125,7 +125,7 @@ class GeodesicPiece:
             b.prev = a
 
     def __repr__(self):
-        return "GeodesicPiece(%d, %r, %r)" % (index, self.tet, self.endpoints)
+        return "GeodesicPiece(%d, %r, %r)" % (self.index, self.tet, self.endpoints)
 
 def compute_plane_intersection_param(
         plane, # Unnormalised space-like vector/plane equation

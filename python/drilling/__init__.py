@@ -510,7 +510,7 @@ def dummy_function_for_additional_doctests():
     A bug in an earlier implementation found by Nathan Dunfield (where putting the words in one order caused a failure):
 
         >>> import sys
-        >>> original_limit = sys.getrecursionlimit())
+        >>> original_limit = sys.getrecursionlimit()
         >>> sys.setrecursionlimit(100000)
 
         >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)

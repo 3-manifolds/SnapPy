@@ -501,4 +501,10 @@ def dummy_function_for_additional_doctests():
         >>> Manifold("m004").drill_words(['CAC','CCbC']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
         'qLvvLvAMQQQkcgimopkllmpkonnnpixcaelchapewetvrn_bcaaBbBBbaBaBbB'
 
+
+    An interesting case where geodesic intersects triangulation in only one tetrahedron:
+
+        >>> Manifold("m019").drill_word('A').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'gLLPQccdefffqffqqof_BaaBdcbb'
+    
     """

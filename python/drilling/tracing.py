@@ -53,6 +53,7 @@ class GeodesicPiece:
         self.endpoints : Sequence[Endpoint] = endpoints
         self.prev = None
         self.next_ = None
+        self.tracker = None
 
     @staticmethod
     def create_and_attach(index : int,
@@ -117,16 +118,27 @@ class GeodesicPiece:
         Replaces this piece by the given (not linked) list of pieces in
         the linked list this piece participates in.
         """
-        items = [ self.prev ] + pieces + [ self.next_ ]
+        if self is self.next_:
+            items = pieces + [ pieces[0] ]
+        else:
+            items = [ self.prev ] + pieces + [ self.next_ ]
         for i in range(len(items) - 1):
             a = items[i]
             b = items[i + 1]
             a.next_ = b
             b.prev = a
+        if self.tracker and pieces:
+            self.tracker.geodesic_piece = pieces[0]
+            pieces[0].tracker = self.tracker
 
     def __repr__(self):
         return "GeodesicPiece(%d, %r, %r)" % (self.index, self.tet, self.endpoints)
 
+class GeodesicPieceTracker:
+    def __init__(self, geodesic_piece):
+        self.geodesic_piece = geodesic_piece
+        geodesic_piece.tracker = self
+    
 def compute_plane_intersection_param(
         plane, # Unnormalised space-like vector/plane equation
         point, # Unnormalised time-like vector
@@ -269,14 +281,23 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
         # Check geodesic does not intersect core curve - if line is given.
         _verify_away_from_core_curve(line, tet, hit_face, epsilon)
 
+        entry_point = Endpoint(start_point + param * direction, face)
+        
         # The crossing of the ray with the exit face is beyond the given
         # end point. Thus, we are at the last piece.
         if hit_param > RF(1) + epsilon:
-            # Force us to end at the given end point
-            hit_param = RF(1)
-            # The last piece ends in the interior of a tetrahedron.
-            T : int = simplex.T # Make mypy happy.
-            hit_face = T
+            if not tet is geodesic.tet:
+                raise InsufficientPrecisionError(
+                    "Tracing geodesic ended up in a different "
+                    "tetrahedron than it started. "
+                    "Increasing the precision will probably fix this problem.")
+
+            pieces[0].endpoints[0] = entry_point
+            
+            GeodesicPiece.make_linked_list(pieces)
+
+            return pieces
+
         elif not hit_param < RF(1) - epsilon:
             raise InsufficientPrecisionError(
                 "Could not determine whether we finished tracing the geodesic. "
@@ -287,19 +308,8 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
             GeodesicPiece(
                 geodesic.index,
                 tet,
-                [Endpoint(start_point + param * direction, face),
+                [entry_point,
                  Endpoint(start_point + hit_param * direction, hit_face)]))
-
-        if hit_face == simplex.T:
-            if not tet is geodesic.tet:
-                raise InsufficientPrecisionError(
-                    "Tracing geodesic ended up in a different "
-                    "tetrahedron than it started. "
-                    "Increasing the precision will probably fix this problem.")
-
-            GeodesicPiece.make_linked_list(pieces)
-
-            return pieces
 
         # Face-pairing matrix to transform data from this tetrahedron
         # to next tetrahedron.

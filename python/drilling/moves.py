@@ -394,6 +394,10 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
 
             if next_old_piece:
                 piece_to_replace = next_old_piece
+                if old_piece.tracker:
+                    piece_to_replace.tracker = old_piece.tracker
+                    piece_to_replace.tracker.geodesic_piece = piece_to_replace
+                    old_piece.tracker = None
                 old_piece.replace_by([])
             else:
                 piece_to_replace = old_piece

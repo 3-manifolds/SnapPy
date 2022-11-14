@@ -506,5 +506,12 @@ def dummy_function_for_additional_doctests():
 
         >>> Manifold("m019").drill_word('A').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
         'gLLPQccdefffqffqqof_BaaBdcbb'
+
+    A bug in an earlier implementation found by Nathan Dunfield (where putting the words in one order caused a failure):
+
+        >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBcB'
+        >>> Manifold('K11n34(0,1)').drill_words(['iFJ', 'iFcdbEiFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
     
     """

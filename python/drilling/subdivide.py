@@ -1,5 +1,5 @@
 from .moves import one_four_move, two_three_move
-from .tracing import GeodesicPiece
+from .tracing import GeodesicPiece, GeodesicPieceTracker
 
 from . import debug
 
@@ -92,12 +92,15 @@ def traverse_geodesics_to_subdivide(
     for start_piece in start_pieces:
         debug.check_consistency_segments(debug.flatten_link_list(start_piece))
 
+    trackers = [ GeodesicPieceTracker(start_piece)
+                 for start_piece in start_pieces ]
+
     # Iterate through start pieces.
-    for start_piece in start_pieces:
+    for tracker in trackers:
         # Make 1-skeleton contain the simple closed curve starting with
         # the start piece.
         last_piece : GeodesicPiece = _traverse_geodesic_to_subdivide(
-            start_piece, mcomplex.verified)
+            tracker.geodesic_piece, mcomplex.verified)
 
     # At this point, all start pieces have been processed and all elements
     # of start_pieces are invalid. Luckily, _traverse_geodesic_to_subdivide
@@ -144,7 +147,7 @@ def _traverse_geodesic_to_subdivide(
     #         start_piece
 
     end_piece, piece = one_four_move(
-        [start_piece.prev, start_piece],
+        [start_piece],
         verified)
 
     # The first 1-4 move creates a vertex for the point where the

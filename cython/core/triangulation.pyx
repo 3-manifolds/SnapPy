@@ -764,6 +764,26 @@ cdef class Triangulation():
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
+    def _from_tetrahedra_gluing_data(self, tetrahedra_data, remove_finite_vertices=True):
+        """
+        >>> data = [([1, 1, 2, 2], [[0, 1, 3, 2], [2, 3, 1, 0], [0, 1, 3, 2], [3, 0, 1, 2]]),
+        ...         ([0, 2, 2, 0], [[0, 1, 3, 2], [1, 0, 2, 3], [2, 3, 1, 0], [3, 2, 0, 1]]),
+        ...         ([1, 1, 0, 0], [[1, 0, 2, 3], [3, 2, 0, 1], [1, 2, 3, 0], [0, 1, 3, 2]])]
+        >>> M = Triangulation('empty')
+        >>> M._from_tetrahedra_gluing_data(data)
+        >>> N = Triangulation('m007')
+        >>> M == N
+        True
+        """
+        cdef c_Triangulation* c_triangulation = NULL
+        if not self.c_triangulation is NULL:
+            raise ValueError('The Triangulation must be empty.')
+        c_triangulation = listlike_to_triangulation(tetrahedra_data)
+        self.set_c_triangulation(c_triangulation)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+
+        
     def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To

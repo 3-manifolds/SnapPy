@@ -307,3 +307,48 @@ cdef int unpickle_tetrahedron_data(
 
     # Return the position of the next char.
     return n
+
+
+cdef c_Triangulation* listlike_to_triangulation(listlike) except *:
+    cdef c_TetrahedronData* tets = NULL    
+    cdef c_CuspData* cusps = NULL
+    cdef c_Triangulation *tri
+    cdef TriangulationData tri_data
+    cdef int i, j, t, num_tets, num_cusps
+
+    num_tets = len(listlike)
+    if num_tets == 0:
+        raise ValueError('No tetrahedra data provided')
+    
+    first = listlike[0]
+    if len(first) != 2 or len(first[0]) != 4 or not [len(x) for x in first[1]] == [4, 4, 4, 4]:
+        raise ValueError('Tetrahedra data appears invalid')
+
+    py_name = b'from_data'
+    tri_data.name = py_name
+    tri_data.solution_type = not_attempted
+    tri_data.volume = <Real> 0.0
+    tri_data.orientability = unknown_orientability
+    tri_data.num_tetrahedra = num_tets
+    tri_data.num_or_cusps = 0
+    tri_data.num_nonor_cusps = 0
+    tri_data.cusp_data = NULL
+    tri_data.CS_value_is_known = 0
+    tri_data.CS_value = <Real>0.0
+
+    # Use malloc (not mymalloc) to allocate memory for the tetrahedra
+    # data.  We free the memory before returning.
+    tets = <c_TetrahedronData*>malloc(num_tets*sizeof(c_TetrahedronData))
+    if tets == NULL:
+        raise RuntimeError('Failed to allocate memory for tets.')
+    tri_data.tetrahedron_data = tets
+    
+    for t, (neighbors, gluings) in enumerate(listlike):
+        for i in range(4):
+            tets[t].neighbor_index[i] = neighbors[i]
+            for j in range(4):
+                tets[t].gluing[i][j] = gluings[i][j]
+
+    data_to_triangulation(&tri_data, &tri)
+    free(tets)
+    return tri

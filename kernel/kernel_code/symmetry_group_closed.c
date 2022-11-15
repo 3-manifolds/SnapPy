@@ -797,7 +797,7 @@ static FuncResult drill_one_curve(
     /*
      *  See what curves are drillable.
      */
-    dual_curves(*manifold, MAX_DUAL_CURVE_LENGTH, &num_curves, &the_curves);
+    dual_curves(*manifold, MAX_DUAL_CURVE_LENGTH, TRUE, &num_curves, &the_curves);
     if (num_curves == 0)
         return func_failed;
 
@@ -1028,7 +1028,7 @@ static FuncResult compute_symmetry_group_without_polyhedron(
      *  What curves are available in the 1-skeleton?
      */
 
-    dual_curves(manifold, MAX_DUAL_CURVE_LENGTH, &num_curves, &the_curves);
+    dual_curves(manifold, MAX_DUAL_CURVE_LENGTH, TRUE, &num_curves, &the_curves);
 
     prev_length = Zero;
 

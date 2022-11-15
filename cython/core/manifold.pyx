@@ -1380,7 +1380,7 @@ cdef class Manifold(Triangulation):
             return Triangulation.set_peripheral_curves(
                 self, peripheral_data, which_cusp,return_matrices)
         
-    def dual_curves(self, max_segments=6):
+    def dual_curves(self, max_segments=6, only_one_per_length=True):
         """
         Constructs a *reasonable* selection of simple closed curves in
         a manifold's dual 1-skeleton.  In particular, it returns those
@@ -1424,6 +1424,7 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty.')
         dual_curves(self.c_triangulation,
                     max_segments,
+                    only_one_per_length,    
                     &num_curves,
                     &curve_list)
         result = []
@@ -1440,7 +1441,8 @@ cdef class Manifold(Triangulation):
                     parity=parity,
                     filled_length=self._number_(Complex2Number(filled_length)), 
                     complete_length=self._number_(Complex2Number(complete_length)),
-                    max_segments=max_segments
+                    max_segments=max_segments,
+                    only_one_per_length=only_one_per_length,
                   )
                )
         free_dual_curves(num_curves, curve_list)
@@ -1483,7 +1485,7 @@ cdef class Manifold(Triangulation):
             'length_spectrum',
             *args)
         
-    def drill(self, which_curve, max_segments=6):
+    def drill(self, which_curve, max_segments=6, only_one_per_length=True):
         """
         Drills out the specified dual curve from among all dual curves
         with at most max_segments, which defaults to 6. The method
@@ -1504,13 +1506,16 @@ cdef class Manifold(Triangulation):
 
         if isinstance(which_curve, DualCurveInfo):
             max_segments = which_curve.max_segments
+            only_one_per_length = which_curve.only_one_per_length
             which_curve = which_curve.index
+            
 
         new_name = to_byte_str(self.name() + '-%d'%which_curve)
         c_new_name = new_name
 
         dual_curves(self.c_triangulation,
                     max_segments,
+                    only_one_per_length,
                     &num_curves,
                     &curve_list)
 

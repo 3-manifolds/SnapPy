@@ -103,8 +103,8 @@ FuncResult compute_closed_isometry(
     /*
      *  See what curves are drillable.
      */
-    dual_curves(manifold0, MAX_DUAL_CURVE_LENGTH, &num_curves0, &the_curves0);
-    dual_curves(manifold1, MAX_DUAL_CURVE_LENGTH, &num_curves1, &the_curves1);
+    dual_curves(manifold0, MAX_DUAL_CURVE_LENGTH, TRUE, &num_curves0, &the_curves0);
+    dual_curves(manifold1, MAX_DUAL_CURVE_LENGTH, TRUE, &num_curves1, &the_curves1);
 
     /*
      *  Compare each drillable curve in manifold0 (including the core

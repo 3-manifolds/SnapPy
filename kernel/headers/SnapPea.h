@@ -1328,6 +1328,7 @@ extern Triangulation *double_cover(Triangulation *manifold);
 
 extern void dual_curves(    Triangulation           *manifold,
                             int                     max_size,
+			    Boolean                 only_one_per_length,
                             int                     *num_curves,
                             DualOneSkeletonCurve    ***the_curves);
 /**<

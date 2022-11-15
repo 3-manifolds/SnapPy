@@ -559,7 +559,7 @@ cdef extern from "SnapPea.h":
     extern void update_poly_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction) except *
     extern c_Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron) except *
     extern c_Triangulation *double_cover(c_Triangulation *manifold) except *
-    extern void dual_curves(c_Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves) except *
+    extern void dual_curves(c_Triangulation *manifold, int max_size, Boolean only_one_per_length, int *num_curves, DualOneSkeletonCurve ***the_curves) except *
     extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, c_MatrixParity *parity) except *
     extern void free_dual_curves(int num_curves, DualOneSkeletonCurve **the_curves) except *
     extern c_Triangulation *drill_cusp(c_Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name) except *

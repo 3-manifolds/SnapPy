@@ -205,11 +205,11 @@
 
 
 static void                 initialize_flags(Triangulation *manifold);
-static void                 consider_its_neighbor(Tetrahedron *tet, FaceIndex face, int size, Complex corners[2][4], Orientation orientation, Tetrahedron *tet0, FaceIndex face0, int max_size, Triangulation *manifold, DualOneSkeletonCurve **curve_tree);
+static void                 consider_its_neighbor(Tetrahedron *tet, FaceIndex face, int size, Complex corners[2][4], Orientation orientation, Tetrahedron *tet0, FaceIndex face0, int max_size, Boolean only_one_per_length, Triangulation *manifold, DualOneSkeletonCurve **curve_tree);
 static void                 compute_corners(Complex corners[4], Complex nbr_corners[4], FaceIndex face, FaceIndex entry_face, Permutation gluing, Orientation nbr_orientation, ComplexWithLog cwl[3]);
 static void                 compute_Moebius_transformation(Orientation orientation, Complex corners[4], MoebiusTransformation *mt);
 static void                 verify_mt_action(MoebiusTransformation *mt, Complex z, Complex w);
-static void                 add_curve_to_tree(Triangulation *manifold, DualOneSkeletonCurve **curve_tree, MatrixParity parity, Complex cl[2], int size);
+static void                 add_curve_to_tree(Triangulation *manifold, DualOneSkeletonCurve **curve_tree, MatrixParity parity, Complex cl[2], int size, Boolean only_one_per_length);
 static DualOneSkeletonCurve *package_up_the_curve(Triangulation *manifold, MatrixParity parity, Complex cl[2], int size);
 static void                 replace_contents_of_node(DualOneSkeletonCurve *node, Triangulation *manifold, MatrixParity parity, Complex cl[2], int size);
 static void                 convert_tree_to_pointer_array( DualOneSkeletonCurve *curve_tree, int *num_curves, DualOneSkeletonCurve ***the_curves);
@@ -220,6 +220,7 @@ static void                 write_node_addresses(DualOneSkeletonCurve *curve_tre
 void dual_curves(
     Triangulation           *manifold,
     int                     max_size,
+    Boolean                 only_one_per_length,
     int                     *num_curves,
     DualOneSkeletonCurve    ***the_curves)
 {
@@ -307,7 +308,7 @@ void dual_curves(
         for (face0 = 0; face0 < 3; face0++)
             consider_its_neighbor(  tet0, face0, 1,
                                     corners0, right_handed,
-                                    tet0, face0, max_size,
+                                    tet0, face0, max_size, only_one_per_length,
                                     manifold, &curve_tree);
 
         /*
@@ -354,6 +355,7 @@ static void consider_its_neighbor(
     Tetrahedron             *tet0,
     FaceIndex               face0,
     int                     max_size,
+    Boolean                 only_one_per_length,
     Triangulation           *manifold,
     DualOneSkeletonCurve    **curve_tree)
 {
@@ -448,7 +450,7 @@ static void consider_its_neighbor(
              *  equal complex length and smaller or equal
              *  combinatorial size is already there.
              */
-            add_curve_to_tree(manifold, curve_tree, mt[0].parity, cl, size);
+            add_curve_to_tree(manifold, curve_tree, mt[0].parity, cl, size, only_one_per_length);
 
             /*
              *  Remove the final segment of the curve before
@@ -505,7 +507,7 @@ static void consider_its_neighbor(
             consider_its_neighbor(
                 nbr,  nbr_face, size + 1,
                 nbr_corners, nbr_orientation,
-                tet0, face0,    max_size,
+                tet0, face0, max_size, only_one_per_length,
                 manifold, curve_tree);
 
     /*
@@ -769,9 +771,11 @@ static void add_curve_to_tree(
     DualOneSkeletonCurve    **curve_tree,
     MatrixParity            parity,
     Complex                 cl[2],  /*  complex length of geodesic  */
-    int                     size)   /*  combinatorial size of curve */
+    int                     size,   /*  combinatorial size of curve */
+    Boolean                 only_one_per_length)
+
 {
-    DualOneSkeletonCurve    *node;
+    DualOneSkeletonCurve    *node, *other_node;
     int                     position;
 
     /*
@@ -857,9 +861,22 @@ static void add_curve_to_tree(
                 break;
 
             case 0:
-                if (size < node->size)
-                    replace_contents_of_node(node, manifold, parity, cl, size);
-                return;
+		if (only_one_per_length){
+		    if (size < node->size)
+			replace_contents_of_node(node, manifold, parity, cl, size);
+		    return;
+		}
+		else{
+		    if (node->right_child == NULL){
+			node->right_child = package_up_the_curve(manifold, parity, cl, size);
+		    }
+		    else{
+			other_node = node->right_child;
+			node->right_child = package_up_the_curve(manifold, parity, cl, size);
+			node->right_child->right_child = other_node;
+		    }
+		    return;
+                }
         }
     }
 

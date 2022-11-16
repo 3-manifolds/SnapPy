@@ -127,42 +127,50 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
                             new_tet,
                             old_piece.endpoints) ])
                     break
-        else:
-            r13_endpoints = [ e.r13_point for e in old_piece.endpoints ]
-            retrace_direction : int = +1
-            end_cell_dimension : int = 2
-            if end_subsimplex in simplex.ZeroSubsimplices:
-                end_cell_dimension = 0
-                allowed_end_corners : Sequence[Tuple[Tetrahedron, int]] = [
-                    (new_tets[f], end_subsimplex)
-                    for f in simplex.TwoSubsimplices
-                    if simplex.is_subset(end_subsimplex, f) ]
-            elif end_subsimplex == simplex.T:
-                end_cell_dimension = 3
-                allowed_end_corners = [
-                    (new_tet, end_subsimplex)
-                    for new_tet in new_tets.values() ]
-            elif start_subsimplex == simplex.T:
-                end_cell_dimension = 3
-                retrace_direction = -1
-                start_subsimplex, end_subsimplex = end_subsimplex, start_subsimplex
-                allowed_end_corners = [
-                    (new_tet, end_subsimplex)
-                    for new_tet in new_tets.values() ]
             else:
-                allowed_end_corners = [ (new_tets[end_subsimplex], end_subsimplex) ]
-            GeodesicPiece.replace_by(
-                old_piece, old_piece,
-                _retrace_geodesic_piece(
-                    old_piece.index,
-                    new_tets,
-                    new_tets[start_subsimplex],
-                    start_subsimplex,
-                    end_cell_dimension,
-                    r13_endpoints,
-                    retrace_direction,
-                    verified,
-                    allowed_end_corners = allowed_end_corners))
+                raise Exception("Unhandled edge case")
+            continue
+
+        r13_endpoints = [ e.r13_point for e in old_piece.endpoints ]
+        retrace_direction : int = +1
+        end_cell_dimension : int = 2
+        if end_subsimplex in simplex.ZeroSubsimplices:
+            end_cell_dimension = 0
+            allowed_end_corners : Sequence[Tuple[Tetrahedron, int]] = [
+                (new_tets[f], end_subsimplex)
+                for f in simplex.TwoSubsimplices
+                if simplex.is_subset(end_subsimplex, f) ]
+        elif end_subsimplex == simplex.T:
+            end_cell_dimension = 3
+            allowed_end_corners = [
+                (new_tet, end_subsimplex)
+                for new_tet in new_tets.values() ]
+        elif start_subsimplex == simplex.T:
+            end_cell_dimension = 3
+            retrace_direction = -1
+            start_subsimplex, end_subsimplex = end_subsimplex, start_subsimplex
+            r13_endpoints = r13_endpoints[::-1]
+            allowed_end_corners = [
+                (new_tet, end_subsimplex)
+                for new_tet in new_tets.values() ]
+        elif (start_subsimplex in simplex.TwoSubsimplices and
+              end_subsimplex in simplex.TwoSubsimplices):
+            allowed_end_corners = [ (new_tets[end_subsimplex], end_subsimplex) ]
+        else:
+            raise Exception("Unhandled case")
+
+        GeodesicPiece.replace_by(
+            old_piece, old_piece,
+            _retrace_geodesic_piece(
+                old_piece.index,
+                new_tets,
+                new_tets[start_subsimplex],
+                start_subsimplex,
+                end_cell_dimension,
+                r13_endpoints,
+                retrace_direction,
+                verified,
+                allowed_end_corners = allowed_end_corners))
 
     start_point : Endpoint = given_pieces[0].endpoints[0]
     end_point : Endpoint = given_pieces[-1].endpoints[1]
@@ -334,7 +342,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
             else:
                 end_j = j
 
-            r13_points = [
+            r13_endpoints = [
                 O13_embeddings[j]     * old_pieces[ 0].endpoints[0].r13_point,
                 O13_embeddings[end_j] * old_pieces[-1].endpoints[1].r13_point
                 ]
@@ -344,15 +352,16 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
 
             start_j = j
             
-            if start_subsimplex == simplex.T:
-                retrace_direction = -1
-                start_subsimplex, end_subsimplex = end_subsimplex, start_subsimplex
-                start_j, end_j = end_j, start_j
-                end_cell_dimension = 3
+            if end_subsimplex in simplex.ZeroSubsimplices:
+                end_cell_dimension = 0
             elif end_subsimplex == simplex.T:
                 end_cell_dimension = 3
-            elif end_subsimplex in simplex.ZeroSubsimplices:
-                end_cell_dimension = 0
+            elif start_subsimplex == simplex.T:
+                end_cell_dimension = 3
+                retrace_direction = -1
+                start_j, end_j = end_j, start_j
+                start_subsimplex, end_subsimplex = end_subsimplex, start_subsimplex
+                r13_endpoints = r13_endpoints[::-1]
             elif not (start_subsimplex in simplex.TwoSubsimplices and
                       end_subsimplex in simplex.TwoSubsimplices):
                 raise Exception("Unhandled case")
@@ -371,7 +380,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                             new_tet,
                             new_face,
                             end_cell_dimension,
-                            r13_points,
+                            r13_endpoints,
                             retrace_direction,
                             verified,
                             allowed_end_corners = None))
@@ -411,7 +420,6 @@ def _retrace_geodesic_piece(
         verified : bool,
         allowed_end_corners : Optional[Sequence[Tuple[Tetrahedron, int]]] = None):
 
-    points = points[::trace_direction]
     start_point, end_point = points
 
     RF = start_point[0].parent()
@@ -512,7 +520,7 @@ def _retrace_geodesic_piece(
             pieces.append(
                 GeodesicPiece.create_and_attach(index, tet, endpoints))
 
-            return pieces[::trace_direction]
+            break
 
         pieces.append(
             GeodesicPiece.create_and_attach(
@@ -537,10 +545,12 @@ def _retrace_geodesic_piece(
                 GeodesicPiece.create_face_to_vertex_and_attach(
                     index,
                     tet, Endpoint(start_point + hit_param * direction, face), trace_direction))
+            break
 
-            return pieces[::trace_direction]
     else:
         raise Exception(
             "Too many steps when re-tracing a geodesic piece. "
             "This is either due to a lack of precision or an "
             "implemenation bug.")
+
+    return pieces[::trace_direction]

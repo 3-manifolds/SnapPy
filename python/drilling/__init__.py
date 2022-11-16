@@ -514,7 +514,7 @@ def dummy_function_for_additional_doctests():
         >>> sys.setrecursionlimit(100000)
 
         >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBcB'
+        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBba'
         >>> Manifold('K11n34(0,1)').drill_words(['iFJ', 'iFcdbEiFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
 

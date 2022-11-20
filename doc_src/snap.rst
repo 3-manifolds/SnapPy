@@ -2,7 +2,7 @@
 ..   automodule:: snappy.snap
    
 Number theory of hyperbolic 3-manifolds
-=============================================
+=======================================
 
 SnapPy has support for arbitrary-precision computation and for
 identifying number fields associated to hyperbolic 3-manifolds.  While
@@ -77,7 +77,7 @@ introspection::
   sage: M.hyperbolic_torsion?
   Definition: M.hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None)
   Docstring:
-  Computes the hyperbolic torision polynomial as defined in [DFJ].
+  Computes the hyperbolic torsion polynomial as defined in [DFJ].
 
   >>> M = Manifold('K11n42')
   >>> M.alexander_polynomial()

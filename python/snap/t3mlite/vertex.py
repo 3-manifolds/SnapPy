@@ -31,11 +31,10 @@ class Vertex:
                 pass
         self.Index = -1
 
-
-# The link of a vertex in an Mcomplex is a surface
-# of arbitrary genus, possibly with non-empty boundary.
-# For now I am pretending that links are closed and orientable
     def link_genus(self):
+        # The link of a vertex in an Mcomplex is a surface
+        # of arbitrary genus, possibly with non-empty boundary.
+        # For now I am pretending that links are closed and orientable
         sum = 12
         for edge in self.Edges:
             sum = sum - 6 + edge.valence()

@@ -15,7 +15,7 @@
 # such that the normal coordinates for the peripheral curves are assumed
 # to be in the interval [-128, 127].  Also the Dehn filling coefficients
 # must be integers in that interval.  If these conditions do not hold
-# then the _to_string method can be used as an alternative. 
+# then the _to_string method can be used as an alternative.
 #
 # Note that the byte sequences produced by pickle_triangulation
 # are very likely to contain null bytes, so care must be taken
@@ -83,7 +83,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
         # Add the Dehn filling coefficients
         for j in range(num_cusps):
             # The quad double library doesn't support casting qd_real to char.
-            M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l 
+            M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l
             filling[0] = <signed char>M
             filling[1] = <signed char>L
             result += filling[:2]
@@ -309,19 +309,24 @@ cdef int unpickle_tetrahedron_data(
     return n
 
 
-cdef c_Triangulation* listlike_to_triangulation(listlike) except *:
-    cdef c_TetrahedronData* tets = NULL    
+cdef c_Triangulation* listlike_to_triangulation(listlike,
+                                                num_or_cusps=0,
+                                                num_nonor_cusps=0,
+                                                cusp_indices=None,
+                                                peripheral_curves=None) except *:
+    cdef c_TetrahedronData* tets = NULL
     cdef c_CuspData* cusps = NULL
     cdef c_Triangulation *tri
     cdef TriangulationData tri_data
-    cdef int i, j, t, num_tets, num_cusps
+    cdef int i, j, t, a, b, v, f, num_tets, num_cusps
 
     num_tets = len(listlike)
     if num_tets == 0:
         raise ValueError('No tetrahedra data provided')
-    
+
     first = listlike[0]
-    if len(first) != 2 or len(first[0]) != 4 or not [len(x) for x in first[1]] == [4, 4, 4, 4]:
+    if (len(first) != 2 or len(first[0]) != 4 or
+        not [len(x) for x in first[1]] == [4, 4, 4, 4]):
         raise ValueError('Tetrahedra data appears invalid')
 
     py_name = b'from_data'
@@ -330,11 +335,32 @@ cdef c_Triangulation* listlike_to_triangulation(listlike) except *:
     tri_data.volume = <Real> 0.0
     tri_data.orientability = unknown_orientability
     tri_data.num_tetrahedra = num_tets
-    tri_data.num_or_cusps = 0
-    tri_data.num_nonor_cusps = 0
+    tri_data.num_or_cusps = num_or_cusps
+    tri_data.num_nonor_cusps = num_nonor_cusps
     tri_data.cusp_data = NULL
     tri_data.CS_value_is_known = 0
     tri_data.CS_value = <Real>0.0
+
+    num_cusps = tri_data.num_or_cusps + tri_data.num_nonor_cusps
+    if num_cusps > 0:
+        # Use malloc (not mymalloc) to allocate memory for the cusp
+        # data.  We free the memory before returning.
+        cusps = <c_CuspData*>malloc(num_cusps*sizeof(c_CuspData))
+        if cusps:
+            for i in range(tri_data.num_or_cusps):
+                cusps[i].topology = torus_cusp
+                cusps[i].m = <Real>0.0
+                cusps[i].l = <Real>0.0
+            for i in range(tri_data.num_or_cusps, num_cusps):
+                cusps[i].topology = Klein_cusp
+                cusps[i].m = <Real>0.0
+                cusps[i].l = <Real>0.0
+        else:
+            raise RuntimeError('Failed to allocate memory for cusps')
+    tri_data.cusp_data = cusps
+
+    if peripheral_curves is None:
+        peripheral_curves = (4*num_tets)*[16*[0]]
 
     # Use malloc (not mymalloc) to allocate memory for the tetrahedra
     # data.  We free the memory before returning.
@@ -342,13 +368,24 @@ cdef c_Triangulation* listlike_to_triangulation(listlike) except *:
     if tets == NULL:
         raise RuntimeError('Failed to allocate memory for tets.')
     tri_data.tetrahedron_data = tets
-    
+
     for t, (neighbors, gluings) in enumerate(listlike):
         for i in range(4):
             tets[t].neighbor_index[i] = neighbors[i]
             for j in range(4):
                 tets[t].gluing[i][j] = gluings[i][j]
+            if cusp_indices:
+                tets[t].cusp_index[i] = cusp_indices[t][i]
+
+        if cusp_indices:
+            for a in range(2):
+                for b in range(2):
+                    for v in range(4):
+                        for f in range(4):
+                            tets[t].curve[a][b][v][f] = peripheral_curves[4*t + 2*a + b][4*v + f]
 
     data_to_triangulation(&tri_data, &tri)
     free(tets)
+    if cusps:
+        free(cusps)
     return tri

@@ -18,24 +18,29 @@ def _find_all_tetrahedra(tet):
 
 def check_peripheral_curves(tets):
     for tet in tets:
-        for ml in range(2):
-            for sheet_index in range(2):
-                for v in simplex.ZeroSubsimplices:
-                    sheet = tet.PeripheralCurves[ml][sheet_index][v]
-                    if not sum(sheet.values()) == 0:
-                        raise Exception("Not adding up to zero. %r" % tet)
-                    for f in simplex.TwoSubsimplices:
-                        if f == simplex.comp(v):
-                            if not sheet[simplex.comp(v)] == 0:
+        for f in simplex.TwoSubsimplices:
+            neighbor = tet.Neighbor[f]
+            gluing = tet.Gluing[f]
+            other_f = gluing.image(f)
+            sgn = gluing.sign()
+            for v in simplex.ZeroSubsimplices:
+                v_comp = simplex.comp(v)
+                other_v = gluing.image(v)
+                for ml in range(2):
+                    for sheet_index in range(2):
+                        sheet = tet.PeripheralCurves[ml][sheet_index][v]
+                        if not sum(sheet.values()) == 0:
+                            raise Exception("Not adding up to zero. %r" % tet)
+                        if f == v_comp:
+                            if not sheet[v_comp] == 0:
                                 raise Exception("Diagonal entry for peripheral curve.")
                         else:
-                            gluing = tet.Gluing[f]
-                            if gluing.sign() == 0:
+                            if sgn == 0:
                                 other_sheet_index = 1 - sheet_index
                             else:
                                 other_sheet_index = sheet_index
                             a = sheet[f]
-                            b = tet.Neighbor[f].PeripheralCurves[ml][other_sheet_index][gluing.image(v)][gluing.image(f)]
+                            b = neighbor.PeripheralCurves[ml][other_sheet_index][other_v][other_f]
                             if not a + b == 0:
                                 raise Exception("Peripheral curve not adding up.")
 

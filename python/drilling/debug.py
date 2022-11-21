@@ -29,9 +29,9 @@ def check_peripheral_curves(tets):
                 for ml in range(2):
                     for sheet_index in range(2):
                         sheet = tet.PeripheralCurves[ml][sheet_index][v]
-                        if not sum(sheet.values()) == 0:
-                            raise Exception("Not adding up to zero. %r" % tet)
                         if f == v_comp:
+                            if not sum(sheet.values()) == 0:
+                                raise Exception("Not adding up to zero. %r" % tet)
                             if not sheet[v_comp] == 0:
                                 raise Exception("Diagonal entry for peripheral curve.")
                         else:

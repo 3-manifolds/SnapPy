@@ -320,7 +320,7 @@ cdef class Triangulation():
 
     def plink(self):
         """
-        Brings up a link editor window if the manifold is stored 
+        Brings up a link editor window if the manifold is stored
         as a link complement in your current session.
 
         >>> M = Manifold('4_1') # stored as a triangulation with a link
@@ -331,7 +331,7 @@ cdef class Triangulation():
         Traceback (most recent call last):
         ...
         ValueError: No associated link known.
-        
+
         """
         if self.LE is not None:
             self.LE.reopen()
@@ -346,9 +346,9 @@ cdef class Triangulation():
 
     def link(self):
         """
-        If the manifold is stored as a link complement in your 
-        current session then it returns the number of components 
-        and crossing of the link. To view and interact with the 
+        If the manifold is stored as a link complement in your
+        current session then it returns the number of components
+        and crossing of the link. To view and interact with the
         link see :py:meth:`spherogram.Link.view`
         and :py:meth:`Manifold.plink`.
         """
@@ -763,6 +763,61 @@ cdef class Triangulation():
         self.set_c_triangulation(c_triangulation)
         if remove_finite_vertices:
             self._remove_finite_vertices()
+
+    def _from_tetrahedra_gluing_data(self, tetrahedra_data,
+                                     num_or_cusps=0,
+                                     num_nonor_cusps=0,
+                                     cusp_indices=None,
+                                     peripheral_curves=None,
+                                     remove_finite_vertices=True):
+        """
+        >>> data = [([1, 1, 2, 2], [[0, 1, 3, 2], [2, 3, 1, 0], [0, 1, 3, 2], [3, 0, 1, 2]]),
+        ...         ([0, 2, 2, 0], [[0, 1, 3, 2], [1, 0, 2, 3], [2, 3, 1, 0], [3, 2, 0, 1]]),
+        ...         ([1, 1, 0, 0], [[1, 0, 2, 3], [3, 2, 0, 1], [1, 2, 3, 0], [0, 1, 3, 2]])]
+        >>> M = Triangulation('empty')
+        >>> M._from_tetrahedra_gluing_data(data)
+        >>> N = Triangulation('m007')
+        >>> M == N
+        True
+
+        Check that cusp indices are transmitted. This manfiold has two
+        cusps and trivial symmetry group and we interchange the two
+        cusps.
+
+        >>> M = Manifold('o9_44133')
+        >>> tet_data = M._get_tetrahedra_gluing_data()
+        >>> cusp_data = M._get_cusp_indices_and_peripheral_curve_data()[0]
+        >>> cusp_data = [[1 - c for c in tet_cusps] for tet_cusps in cusp_data]
+        >>> N = Manifold('empty')
+        >>> N._from_tetrahedra_gluing_data(tet_data, num_or_cusps=2, cusp_indices=cusp_data)
+        >>> M.is_isometric_to(N, True)[0].cusp_images()
+        [1, 0]
+
+        A nonorientable example.
+
+        >>> Y = Triangulation('y885')
+        >>> Y.set_peripheral_curves([([1, 0], [0, 1]), ([-1, 0], [0, -1]), ([1, 7], [1, 8])])
+        >>> tets = Y._get_tetrahedra_gluing_data()
+        >>> cusps, curves = Y._get_cusp_indices_and_peripheral_curve_data()
+        >>> max(sum(curves, []))
+        9
+        >>> X = Triangulation('empty')
+        >>> X._from_tetrahedra_gluing_data(tets, 1, 2, cusps, curves)
+        >>> X._get_cusp_indices_and_peripheral_curve_data() == (cusps, curves)
+        True
+        """
+        cdef c_Triangulation* c_triangulation = NULL
+        if not self.c_triangulation is NULL:
+            raise ValueError('The Triangulation must be empty.')
+        c_triangulation = listlike_to_triangulation(tetrahedra_data,
+                                                    num_or_cusps,
+                                                    num_nonor_cusps,
+                                                    cusp_indices,
+                                                    peripheral_curves)
+        self.set_c_triangulation(c_triangulation)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+
 
     def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
@@ -2503,7 +2558,7 @@ cdef class Triangulation():
 
     def _covers_low_index_old(self, degree):
         G = self.fundamental_group()
-    
+
         if G.num_relators() > self.num_cusps():
             S = low_index.SimsTree(G.num_generators(), degree, G.relators(),
                         num_long_relators=self.num_cusps())

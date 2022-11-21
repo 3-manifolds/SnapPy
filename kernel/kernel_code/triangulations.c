@@ -80,7 +80,6 @@ void data_to_triangulation(
                     k,
                     l,
                     m;
-    /*    Boolean         all_peripheral_curves_are_zero*/
     Boolean finite_vertices_are_present;
 
     /*
@@ -162,7 +161,6 @@ void data_to_triangulation(
      *  Set up the Tetrahedra.
      */
 
-    /*    all_peripheral_curves_are_zero  = TRUE; */
     finite_vertices_are_present     = FALSE;
 
     for (i = 0; i < manifold->num_tetrahedra; i++)
@@ -198,11 +196,6 @@ void data_to_triangulation(
                         for (m = 0; m < 4; m++)
                         {
                             tet_array[i]->curve[j][k][l][m] = data->tetrahedron_data[i].curve[j][k][l][m];
-    
-			    /*
-                            if (data->tetrahedron_data[i].curve[j][k][l][m] != 0)
-                                all_peripheral_curves_are_zero = FALSE;
-			    */
                         }
         }
     }
@@ -276,14 +269,6 @@ void data_to_triangulation(
     }
 
     /*
-     *  If the given triangulation includes finite vertices, remove them.
-     *  Removed 2015/10/6 by NMD for flexibility.
-     *
-     * if (finite_vertices_are_present == TRUE)
-     *   remove_finite_vertices(manifold);
-     */
-    
-    /*
      *  Count the Cusps if necessary, noting how many have each topology.
      */
     if (cusps_are_given == FALSE)
@@ -295,29 +280,6 @@ void data_to_triangulation(
     my_free(tet_array);
     if (cusp_array != NULL)
         my_free(cusp_array);
-
-    /*
-     *  Compute the complete and filled hyperbolic structures.
-     *
-     *  (The Dehn fillings should be nontrivial only if the data
-     *  provided the peripheral curves.)
-     *
-     * Removed 2013/10/15 by NMD.
-     *
-     * find_complete_hyperbolic_structure(manifold);
-     * do_Dehn_filling(manifold);
-     *
-     *
-     *
-     *  If we provided the basis and the manifold is hyperbolic,
-     *  replace it with a shortest basis.
-     *
-     * if (all_peripheral_curves_are_zero == TRUE
-     * && (   manifold->solution_type[complete] == geometric_solution
-     *    || manifold->solution_type[complete] == nongeometric_solution))
-     *   install_shortest_bases(manifold);
-     *
-     */
 
     /*
      *  If the Chern-Simons invariant is present, compute the fudge factor.

@@ -18,7 +18,7 @@ from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
 
-import functools
+import functools, pickle
 from typing import Sequence
 
 def drill_word(manifold,

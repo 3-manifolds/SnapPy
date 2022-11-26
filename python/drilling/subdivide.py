@@ -87,13 +87,11 @@ def traverse_geodesics_to_subdivide(
             piece.tet.geodesic_pieces.append(piece)
 
     # Store all start pieces.
-    start_pieces = [ pieces[0] for pieces in all_pieces ]
+    trackers = [ GeodesicPieceTracker(pieces[0]) for pieces in all_pieces ]
 
-    for start_piece in start_pieces:
-        debug.check_consistency_segments(debug.flatten_link_list(start_piece))
-
-    trackers = [ GeodesicPieceTracker(start_piece)
-                 for start_piece in start_pieces ]
+    for tracker in trackers:
+        debug.check_consistency_segments(
+            debug.flatten_link_list(tracker.geodesic_piece))
 
     # Iterate through start pieces.
     for tracker in trackers:
@@ -118,10 +116,11 @@ def _traverse_geodesic_to_subdivide(
     # of the GeodesicPiece's that are cyclically linked to form
     # the simple closed curve that we are currently processing:
     #
-    # end_piece
+    # start_piece.prev
     #    v
     # F-F-T-F-...-F-
     #      ^
+    #   start_piece
     #
     # X-Y denotes a GeodesicPiece where X and Y are V, F, or T to
     # indicate whether the start or end point, respectively, is
@@ -147,7 +146,7 @@ def _traverse_geodesic_to_subdivide(
     #         start_piece
 
     end_piece, piece = one_four_move(
-        [start_piece],
+        [start_piece.prev, start_piece],
         verified)
 
     # The first 1-4 move creates a vertex for the point where the

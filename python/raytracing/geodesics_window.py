@@ -21,7 +21,7 @@ class GeodesicsWindow(tkinter.Toplevel):
 
         left_top_frame = ttk.Frame(top_frame)
         left_top_frame.pack(side = tkinter.LEFT, padx = 20)
-        
+
         self.length_button = ttk.Button(
             left_top_frame, text = "Add up to length", command=self.add_length_spectrum)
         self.length_button.grid(row = 0, column = 0)
@@ -37,7 +37,7 @@ class GeodesicsWindow(tkinter.Toplevel):
 
         right_top_frame = ttk.Frame(top_frame)
         right_top_frame.pack(side = tkinter.LEFT, padx = 20)
-        
+
         self.word_button = ttk.Button(
             right_top_frame, text = "Add word", command = self.add_word)
         self.word_button.grid(row = 0, column = 0)
@@ -53,8 +53,9 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.geodesics_frame.columnconfigure(1, weight = 0)
         self.geodesics_frame.columnconfigure(2, weight = 0)
         self.geodesics_frame.columnconfigure(3, weight = 0)
-        self.geodesics_frame.columnconfigure(4, weight = 1)
-        self.geodesics_frame.columnconfigure(5, weight = 0)
+        self.geodesics_frame.columnconfigure(4, weight = 0)
+        self.geodesics_frame.columnconfigure(5, weight = 1)
+        self.geodesics_frame.columnconfigure(6, weight = 0)
 
         self.populate_geodesics_frame()
 
@@ -65,19 +66,22 @@ class GeodesicsWindow(tkinter.Toplevel):
         row = 0
 
         checkbox_column = 0
-        words_column = 1
-        length_column = 2
-        color_column = 3
-        radius_column = 4
+        color_column = 1
+        words_column = 2
+        length_column = 3
+        radius_column = 5
 
         l = ttk.Label(self.geodesics_frame, text = 'Show')
         l.grid(row = row, column = checkbox_column)
+
+        l = ttk.Label(self.geodesics_frame, text = 'Color')
+        l.grid(row = row, column = color_column)
 
         l = ttk.Label(self.geodesics_frame, text = 'Word(s)')
         l.grid(row = row, column = words_column)
 
         l = ttk.Label(self.geodesics_frame, text = 'Complex length')
-        l.grid(row = row, column = length_column)
+        l.grid(row = row, column = length_column, columnspan = 2)
 
         l = ttk.Label(self.geodesics_frame, text = 'Radius')
         l.grid(row = row, column = radius_column)
@@ -97,15 +101,28 @@ class GeodesicsWindow(tkinter.Toplevel):
             l = ttk.Label(self.geodesics_frame, text = ', '.join(geodesic.words))
             l.grid(row = row, column = words_column)
 
-            l = ttk.Label(self.geodesics_frame, text = str(geodesic.complex_length))
+            l = ttk.Label(self.geodesics_frame,
+                          text = '%.8f' % geodesic.complex_length.real())
             l.grid(row = row, column = length_column)
+
+            im_length = geodesic.complex_length.imag()
+            abs_im_length = im_length.abs()
+
+            if abs_im_length > 1e-10:
+                s = '+' if im_length > 0 else '-'
+
+                l = ttk.Label(self.geodesics_frame,
+                              text = s + ' %.8f * I' % abs_im_length)
+                l.grid(row = row, column = length_column + 1)
+
 
             color = geodesic_index_to_color(geodesic.index)
 
-            l = ttk.Label(self.geodesics_frame,
-                          text = "Color")
-            l.configure(foreground = color_to_tkinter(color))
-            l.grid(row = row, column = color_column)
+            l = tkinter.Label(self.geodesics_frame,
+                              text = "Color",
+                              fg = color_to_tkinter(color),
+                              bg = color_to_tkinter(color))
+            l.grid(row = row, column = color_column, padx = 5)
 
             scale = UniformDictController.create_horizontal_scale(
                 self.geodesics_frame,

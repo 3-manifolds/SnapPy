@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 
-from .gui_utilities import UniformDictController
+from .gui_utilities import UniformDictController, ScrollableFrame
 from .geodesics import geodesic_index_to_color
 
 class GeodesicsWindow(tkinter.Toplevel):
@@ -16,46 +16,51 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.frame.pack(expand = True, fill = tkinter.BOTH)
         self.frame.columnconfigure(0, weight = 1)
 
-        length_frame = ttk.Frame(self.frame)
-        length_frame.grid(row = 0, column = 0)
+        top_frame = ttk.Frame(self.frame)
+        top_frame.pack()
 
+        left_top_frame = ttk.Frame(top_frame)
+        left_top_frame.pack(side = tkinter.LEFT, padx = 20)
+        
         self.length_button = ttk.Button(
-            length_frame, text = "Add up to length", command=self.add_length_spectrum)
+            left_top_frame, text = "Add up to length", command=self.add_length_spectrum)
         self.length_button.grid(row = 0, column = 0)
 
         self.length_var = tkinter.StringVar(value=1.0)
 
         self.length_box = ttk.Spinbox(
-            length_frame,
+            left_top_frame,
             from_=0.2, to=20.0, increment=0.2,
             textvariable = self.length_var,
             width = 4)
         self.length_box.grid(row = 0, column = 1)
 
+        right_top_frame = ttk.Frame(top_frame)
+        right_top_frame.pack(side = tkinter.LEFT, padx = 20)
+        
         self.word_button = ttk.Button(
-            length_frame, text = "Add word", command = self.add_word)
-        self.word_button.grid(row = 0, column = 2)
+            right_top_frame, text = "Add word", command = self.add_word)
+        self.word_button.grid(row = 0, column = 0)
         self.word_entry = ttk.Entry(
-            length_frame)
-        self.word_entry.grid(row = 0, column = 3)
+            right_top_frame)
+        self.word_entry.grid(row = 0, column = 1)
 
-        self.geodesics_frame = None
+        self.scrollable_frame = ScrollableFrame(self.frame)
+        self.scrollable_frame.pack(expand = True, fill = tkinter.BOTH)
 
-        self.populate_geodesics_frame()
-
-    def populate_geodesics_frame(self):
-        if not self.geodesics_frame is None:
-            self.geodesics_frame.destroy()
-
-        self.geodesics_frame = ttk.Frame(self.frame)
-        self.geodesics_frame.grid(row = 1, column = 0, sticky = tkinter.NSEW)
-
+        self.geodesics_frame = self.scrollable_frame.scrollable_frame
         self.geodesics_frame.columnconfigure(0, weight = 0)
         self.geodesics_frame.columnconfigure(1, weight = 0)
         self.geodesics_frame.columnconfigure(2, weight = 0)
         self.geodesics_frame.columnconfigure(3, weight = 0)
         self.geodesics_frame.columnconfigure(4, weight = 1)
         self.geodesics_frame.columnconfigure(5, weight = 0)
+
+        self.populate_geodesics_frame()
+
+    def populate_geodesics_frame(self):
+        for widget in self.geodesics_frame.grid_slaves():
+            widget.destroy()
 
         row = 0
 

@@ -3,6 +3,7 @@ from tkinter import ttk
 
 from .gui_utilities import UniformDictController, ScrollableFrame
 from .geodesics import geodesic_index_to_color
+from ..drilling.exceptions import WordAppearsToBeParabolic
 
 class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
@@ -44,6 +45,9 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.word_entry = ttk.Entry(
             right_top_frame)
         self.word_entry.grid(row = 0, column = 1)
+
+        self.status_label = ttk.Label(self.frame)
+        self.status_label.pack()
 
         self.scrollable_frame = ScrollableFrame(self.frame)
         self.scrollable_frame.pack(expand = True, fill = tkinter.BOTH)
@@ -142,6 +146,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             row += 1
 
     def add_length_spectrum(self):
+        self.status_label.configure(text = "")
 
         self.raytracing_view.geodesics.add_length_spectrum(
             float(self.length_box.get()))
@@ -151,9 +156,15 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.populate_geodesics_frame()
 
     def add_word(self):
-        index = self.raytracing_view.geodesics.add_word(
-            self.word_entry.get())
+        word = self.word_entry.get()
+        try:
+            index = self.raytracing_view.geodesics.add_word(word)
+        except WordAppearsToBeParabolic:
+            self.status_label.configure(text = word + " is parabolic")
+            return
 
+        self.status_label.configure(text = "")
+        
         self.raytracing_view.resize_geodesic_params()
         self.raytracing_view.enable_geodesic(index)
         if self.raytracing_view.disable_edges_for_geodesics():

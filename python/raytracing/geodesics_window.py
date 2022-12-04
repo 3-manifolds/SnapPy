@@ -47,7 +47,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             right_top_frame)
         self.word_entry.grid(row = 0, column = 1)
 
-        self.status_label = ttk.Label(self.frame)
+        self.status_label = ttk.Label(self.frame, text = _default_status_msg)
         self.status_label.pack()
 
         self.scrollable_frame = ScrollableFrame(self.frame)
@@ -151,7 +151,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             row += 1
 
     def add_length_spectrum(self):
-        self.status_label.configure(text = "")
+        self.status_label.configure(text = _default_status_msg)
 
         self.raytracing_view.geodesics.add_length_spectrum(
             float(self.length_box.get()))
@@ -175,8 +175,8 @@ class GeodesicsWindow(tkinter.Toplevel):
             self.status_label.configure(text = word + " is parabolic")
             return
 
-        self.status_label.configure(text = "")
-        
+        self.status_label.configure(text = _default_status_msg)
+
         self.raytracing_view.resize_geodesic_params()
         self.raytracing_view.enable_geodesic(index)
         if self.raytracing_view.disable_edges_for_geodesics():
@@ -194,3 +194,5 @@ class GeodesicsWindow(tkinter.Toplevel):
 def color_to_tkinter(color):
     return "#%.3x%.3x%.3x" % tuple([min(max(int(x * 4095), 0), 4095)
                                     for x in color])
+
+_default_status_msg = "Words are in unsimplified fundamental group Manifold.fundamental_group(False)"

@@ -4,6 +4,7 @@ from tkinter import ttk
 from .gui_utilities import UniformDictController, ScrollableFrame
 from .geodesics import geodesic_index_to_color
 from ..drilling.exceptions import WordAppearsToBeParabolic
+from ..SnapPy import word_as_list # type: ignore
 
 class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
@@ -157,6 +158,13 @@ class GeodesicsWindow(tkinter.Toplevel):
 
     def add_word(self):
         word = self.word_entry.get()
+        try:
+            n = self.raytracing_view.geodesics.get_mcomplex().num_generators
+            word_as_list(word, n)
+        except ValueError:
+            self.status_label.configure(text = word + " contains non-generators")
+            return
+
         try:
             index = self.raytracing_view.geodesics.add_word(word)
         except WordAppearsToBeParabolic:

@@ -103,7 +103,11 @@ class GeodesicsWindow(tkinter.Toplevel):
                 column = checkbox_column,
                 update_function = self.geodesic_checkbox_clicked)
 
-            l = ttk.Label(self.geodesics_frame, text = ', '.join(geodesic.words))
+            text = ', '.join(geodesic.words)
+            if not geodesic.is_primitive():
+                text += ' (not primitive)'
+            
+            l = ttk.Label(self.geodesics_frame, text = text)
             l.grid(row = row, column = words_column)
 
             l = ttk.Label(self.geodesics_frame,

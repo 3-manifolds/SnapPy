@@ -1236,7 +1236,7 @@ class Flattenings(dict):
             _check_relation(
                 w - (z.log() + f * p),
                 epsilon,
-                "Flattening relation w != log(z) + PiI * p")
+                "Flattening relation w == log(z) + PiI * p")
 
         for k in list(self.keys()):
             if k[:2] == 'z_':
@@ -1246,7 +1246,7 @@ class Flattenings(dict):
                 _check_relation(
                     w + wp + wpp,
                     epsilon,
-                    "Flattening relation w0 + w1 + w2 != 0")
+                    "Flattening relation w0 + w1 + w2 == 0")
 
         some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')

@@ -13,12 +13,14 @@ import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
 import snappy.drilling
 import snappy.exterior_to_link.test
+import snappy.pari
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
 modules = []
 
+snappy.pari.allocatemem(2**24,2**30)
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 # Augment tests for SnapPy with those that Cython missed

@@ -8,6 +8,7 @@ import re
 
 strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
 left_zeros = re.compile(r'0\.0*')
+precision_of_exact_GEN = pari(0).precision()
 
 if _within_sage:
     from sage.all import RealField, Integer, Rational, ZZ, QQ, RR, CC, SR
@@ -118,9 +119,9 @@ if _within_sage:
         if isinstance(x, int) or isinstance(x, Integer) or isinstance(x, Rational):
             return True
         if isinstance(x, Gen):
-            return x.precision() == 0
+            return x.precision() == precision_of_exact_GEN
         if isinstance(x, Number):
-            return x.gen.precision() == 0
+            return x.gen.precision() == precision_of_exact_GEN
         return False
 
     def float_to_gen(x, precision):
@@ -136,9 +137,9 @@ else:  # We are not in Sage
         if isinstance(x, int):
             return True
         if isinstance(x, Gen):
-            return x.precision() == 0
+            return x.precision() == precision_of_exact_GEN
         if isinstance(x, Number):
-            return x.gen.precision() == 0
+            return x.gen.precision() == precision_of_exact_GEN
         return False
 
     def float_to_gen(x, precision):

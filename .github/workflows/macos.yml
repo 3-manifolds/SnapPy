@@ -30,7 +30,8 @@ jobs:
           CIBW_SKIP: cp27-* cp35-* pp*
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_BEFORE_BUILD: >            
-            pip install cython sphinx cypari FXrays &&
+            pip install cython sphinx FXrays &&
+            pip install --index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram &&

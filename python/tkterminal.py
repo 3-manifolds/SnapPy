@@ -200,7 +200,7 @@ class TkTerm:
             self.write(traceback)
         self.reset()
         self.showing_traceback = True
-        self.send_code('\n')
+        self.process_return('\n')
 
     def SnapPea_callback(self, interrupted=False):
         """
@@ -337,9 +337,22 @@ class TkTerm:
         self.clear_completions()
         self.text.insert(Tk_.INSERT, '\n')
         if not self.running_code:
-            code = self.text.get('output_end', Tk_.INSERT)
-            self.send_code(code)
+            cell = self.text.get('output_end', Tk_.INSERT)
+            self.process_return(cell)
         return 'break'
+
+    def process_return(self, cell):
+        try:
+            self.interact_handle_input(cell)
+        except KeyboardInterrupt:
+            self.write('(IP) Keyboard Interrupt: ')
+            self.reset()
+        self.interact_prompt()
+        self.text.see(Tk_.INSERT)
+        if self.IP.more:
+            self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
+        self.hist_pointer = 0
+        self.hist_stem = ''
 
     def jump_up(self, event):
         return self.handle_up(event, jump=True)
@@ -694,29 +707,24 @@ class TkTerm:
                 pass
         return '\n'.join(clean_lines)
 
-    def interact_handle_input(self, code, script=False):
+    def interact_handle_input(self, cell, script=False):
         """
-        Validate the code.  If the code is valid but incomplete, set the
-        indent that should follow a continuation prompt and set the
-        'more' flag.  If the code is valid and complete and the
-        cursor is at the end of the input then run the code.
+        Validate the code in the cell.  If the code is valid but
+        incomplete, set the indent that should follow a continuation
+        prompt and set the 'more' flag.  If the code is valid and
+        complete then run the code.
         """
         transformer = self.IP.input_transformer_manager
-        assert code.endswith('\n')
-        if not code.strip():
+        assert cell.endswith('\n')
+        if not cell.strip():
             self._current_indent = 0
             return
-        self._input_buffer = self.clean_code(code)
+        if script:
+            self._input_buffer += cell
+        else:
+            self._input_buffer = self.clean_code(cell)
         status, indent = transformer.check_complete(self._input_buffer)
         self._current_indent = indent or 0
-        if script:
-            # We are running a script.  If adding a newline would make the
-            # buffer complete and the indent 0 then we want to run the code.
-            # So add the newline to force the buffer to be run.
-            Xstatus, Xindent = transformer.check_complete(self._input_buffer + '\n')
-            if Xstatus == 'complete' and Xindent is None:
-                self._input_buffer += '\n'
-                status, indent = Xstatus, Xindent
         if status == 'incomplete':
             self.IP.more = True
             return
@@ -729,7 +737,7 @@ class TkTerm:
             self.text.delete('output_end', Tk_.END)
             return
         # The code is complete, but we only run it if the cursor is on the
-        # last line of the input and that line is empty.
+        # last line of the input and that line is blank.
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
         prompt_line = int(self.text.index('output_end').split('.')[0])
         tail = self.text.get('%d.%d'%(insert_line, self._prompt_size), Tk_.END)
@@ -766,24 +774,6 @@ class TkTerm:
         self.text.tag_delete('history')
         return result
 
-    def send_code(self, code):
-        """
-        Accumulate some lines of code and either issue a continuation
-        prompt or execute the code, print the result and issue a new
-        input prompt.
-        """
-        try:
-            self.interact_handle_input(code)
-        except KeyboardInterrupt:
-            self.write('(IP) Keyboard Interrupt: ')
-            self.reset()
-        self.interact_prompt()
-        self.text.see(Tk_.INSERT)
-        if self.IP.more:
-            self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
-        self.hist_pointer = 0
-        self.hist_stem = ''
-
     def write(self, string, style=('output',), advance=True,
               mark='output_end', see=True):
         """
@@ -796,7 +786,8 @@ class TkTerm:
         #if self.interrupted:
         #    self.interrupted = False
         #    raise KeyboardInterrupt('Writing')
-        self.text.mark_set(Tk_.INSERT, mark)
+        if mark != Tk_.INSERT:
+            self.text.mark_set(Tk_.INSERT, mark)
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
             code, text = pair

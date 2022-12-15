@@ -124,20 +124,29 @@ class SnapPyTerm(TkTerm, ListedWindow):
             openfile.close()
             if re.search(r"%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", lines[0]):
                 tkMessageBox.showwarning('Bad file',
-                                         'This is a SnapPea link projection file, not a session transcript.')
+                    'This is a SnapPea link projection file, '
+                    'not a session transcript.')
             elif re.search(r"%\s*[tT]riangulation", lines[0]):
                 tkMessageBox.showwarning('Bad file',
-                                         'This is a SnapPea triangulation file, not a session transcript.')
+                    'This is a SnapPea triangulation file, '
+                    'not a session transcript.')
             elif re.search(r"%\s*Generators", lines[0]):
                 tkMessageBox.showwarning('Bad file',
-                                         'This is a SnapPea generator file, not a session transcript.')
+                    'This is a SnapPea generator file, '
+                    'not a session transcript.')
             else:
+                while lines[0][0] in ('#', '\n'):
+                    lines.pop(0)
                 for line in lines:
-                    if line.startswith('#') or len(line) == 1:
+                    # Skip comments.
+                    if line.startswith('#'):
                         continue
-                    self.write(line)
-                    self.interact_handle_input(line, script=True)
-                    self.interact_prompt()
+                    # Simulate the user typing this line of code; strip off
+                    # the indentation since that has already been printed by
+                    # interact_prompt.
+                    self.write(line[:-1].lstrip(), mark=Tk_.INSERT, advance=False)
+                    # Then simulate the user pressing the Enter key.
+                    self.handle_return(event=None)
 
     def open_link_file(self, event=None):
         openfile = filedialog.askopenfile(

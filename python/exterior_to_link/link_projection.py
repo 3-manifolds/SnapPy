@@ -22,6 +22,15 @@ def fig8_points():
     return [[Vector3([a, b, c])/d for a, b, c, d in pts]]
 
 
+def twist_knot_points():
+    """
+    The knot 5_2 = K5a1
+    """
+    pts = [(25, 36, 5), (14, 36, -3), (14, 14, 0), (47, 14, 0), (47, 25, 0),
+           (3, 25, 0), (3, 47, 0), (36, 47, -6), (36, 3, 4), (25, 3, -5)]
+    return [[Vector3(pt) for pt in pts]]
+
+
 def proj(point): #projection onto z = 0
     return Vector3([point[i] for i in [0,1]]+[0])
 
@@ -143,7 +152,7 @@ class Crossing():
         self.s, self.t = s, t
         a, b = over_arc.proj
         u, v = under_arc.proj
-        M = Matrix([b - a, u - v])
+        M = Matrix([b - a, v - u])
         self.sign = 1 if M.det() > 0 else -1
         e = 1e-12
         assert (1 - s)*a + s*b == (1 - t)*u + t*v
@@ -170,6 +179,13 @@ class LinkProjection():
     >>> K = kp.link()
     >>> K.exterior().identify()
     [m004(0,0), 4_1(0,0), K2_1(0,0), K4a1(0,0), otet02_00001(0,0)]
+
+    >>> kp = LinkProjection(twist_knot_points())
+    >>> K = kp.link()
+    >>> M = Manifold('K5a1')
+    >>> isos = M.is_isometric_to(K.exterior(), True)
+    >>> {iso.cusp_maps()[0].det() for iso in isos}
+    {1}
     """
 
     def __init__(self, points_by_component, mat=None):

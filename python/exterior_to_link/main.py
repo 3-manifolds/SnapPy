@@ -166,7 +166,15 @@ def exterior_to_link(manifold,
 
     if check_answer:
         E = L.exterior()
-        if hyp_utils.are_isometric_as_links(E, manifold, tries=1000):
+        if unfilled == {True}:
+            F = manifold
+        else:
+            F = manifold.copy()
+            F.dehn_fill(F.num_cusps()*[(0, 0)])
+            F.randomize()
+        if hasattr(F, 'with_hyperbolic_structure'):
+            F = F.with_hyperbolic_structure()
+        if hyp_utils.are_isometric_as_links(E, F, tries=1000):
             print_status('    Exterior of final link checks!\n')
         else:
             raise ExteriorToLinkError('Could not confirm topology of link exterior')

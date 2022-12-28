@@ -102,13 +102,18 @@ def exterior_to_link(manifold,
     * ``seed``: The algorithm involves many random choices, and hence
       each run typically produces a different diagram of the
       underlying link.  If you need the same output each time, you can
-      specify a fixed seed for the various psuedo-random number
+      specify a fixed seed for the various pseudo-random number
       generators.
 
     Note on rigor: Provided at least one of ``check_answer`` and
-    ``careful_perturbation`` is ``True``, the exterior of the output link
-    is guaranteed to match the input (including the choice of
+    ``careful_perturbation`` is ``True``, the exterior of the output
+    link is guaranteed to match the input (including the choice of
     meridians).
+
+    **Warning:** The order of the link components and the cusps of the
+    input manifold is only guaranteed to match when
+    ``check_answer=True``.  Even then, the implicit orientation along
+    each component of the link may not be preserved.
     """
 
     unfilled = set(manifold.cusp_info('is_complete'))
@@ -174,8 +179,15 @@ def exterior_to_link(manifold,
             F.randomize()
         if hasattr(F, 'with_hyperbolic_structure'):
             F = F.with_hyperbolic_structure()
-        if hyp_utils.are_isometric_as_links(E, F, tries=1000):
-            print_status('    Exterior of final link checks!\n')
+
+        iso = hyp_utils.orientation_preserving_link_isometries(E, F, tries=1000)
+        if iso is not None:
+            L = hyp_utils.reorder_link_components(L, iso.cusp_images())
+            E = L.exterior()
+            if hyp_utils.are_orient_pres_isometric_as_ordered_links(E, F):
+                print_status('    Exterior of final link checks!\n')
+            else:
+                ExteriorToLinkError('Could not correctly order link components')
         else:
             raise ExteriorToLinkError('Could not confirm topology of link exterior')
 

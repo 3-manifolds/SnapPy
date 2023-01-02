@@ -9,8 +9,8 @@ import configparser
 from subprocess import check_call, call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
-APP_PYTHON = 'python3.10'
-PYTHON_ZIP = 'python310.zip'
+APP_PYTHON = 'python3.11'
+PYTHON_ZIP = 'python311.zip'
 
 # Make sure that we have our frameworks.
 if not os.path.exists('Frameworks.tgz'):
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
         if os.path.exists(nmd_python_dir):
             print('Using virtualenv Pythons')
-            python3 = nmd_python_dir + '/py310/bin/python'
+            python3 = nmd_python_dir + '/py311/bin/python'
         else:
             python3 = APP_PYTHON
         freshen = '--no-freshen' not in sys.argv

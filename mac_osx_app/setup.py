@@ -67,7 +67,7 @@ plist_dict['PythonInfoDict']['PythonExecutable'] = sys.executable
 plist_dict['PythonInfoDict']['PythonLongVersion'] = sys.version
 plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
 packages = 'snappy,spherogram,snappy_manifolds,snappy_15_knots,plink,cypari,FXrays,'
-packages += 'IPython,pygments,plink,pyx,lib2to3,knot_floer_homology'
+packages += 'IPython,pygments,plink,pyx,lib2to3,knot_floer_homology,low_index'
 
 try:
   import jedi

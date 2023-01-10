@@ -196,7 +196,7 @@ class MatrixRepresentation(Object):
     def all_lifts_to_SL2C(self):
         ans = []
         self.lift_to_SL2C()
-        base_gen_images = map(self, self.generators())
+        base_gen_images = [self(g) for g in self.generators()]
         pos_signs = product( *([(1, -1)]*len(base_gen_images)))
         for signs in pos_signs:
             beta = MatrixRepresentation(self.generators(), self.relators(), [ s*A for s, A in zip(signs, base_gen_images)])

@@ -9,6 +9,7 @@ from . import put_in_S3
 from . import link_projection
 from .rational_linear_algebra import Matrix
 from . import hyp_utils
+from ..SnapPy import set_rand_seed
 
 def filled_is_3sphere(manifold):
     """
@@ -131,7 +132,7 @@ def exterior_to_link(manifold,
     if seed is not None:
         seed = int(seed)
         random.seed(seed)
-        snappy.set_rand_seed(seed)
+        set_rand_seed(seed)
         print_status('    Seed:', seed)
 
     print_status('    Finding moves to base triangulation of S^3...')

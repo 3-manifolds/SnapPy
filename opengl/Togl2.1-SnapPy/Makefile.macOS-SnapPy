@@ -2,7 +2,7 @@
 # We build fat libraries for i386 and x86_64 with a deployment
 # target of OS X 10.6.
 # Set the Tk version in the following variable: 
-TKVERSION = 8.6
+TKVERSION = 8.7
 
 DEPLOY = -mmacosx-version-min=10.9
 CFLAGS_DEFAULT	= -Os -arch arm64 -arch x86_64 $(DEPLOY)

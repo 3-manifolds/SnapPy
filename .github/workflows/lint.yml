@@ -12,6 +12,7 @@ jobs:
         shell: bash -l {0}
         run: |
           sudo apt-get install -y codespell
+          sudo apt-get install -y pycodestyle
       - name: Run codespell
         shell: bash -l {0}
         run: codespell -L ans,arithmetics,inout,trough,compresser,rime,ba python

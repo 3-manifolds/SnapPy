@@ -2414,7 +2414,7 @@ cdef class Triangulation():
         # alternate inputs
 
         if _within_sage:
-            if isinstance(permutation_rep, sage.interfaces.abc.GapElement):
+            if is_GapElement(permutation_rep):
                 if permutation_rep.IsSubgroupFpGroup():
                     GG = gap(self.fundamental_group())
                     coset_action = GG.FactorCosetAction(permutation_rep)
@@ -2425,7 +2425,7 @@ cdef class Triangulation():
                     f = permutation_rep
                     return self.cover(f.PreImage(f.Image().Stabilizer(1)))
 
-            elif isinstance(permutation_rep, sage.interfaces.abc.MagmaElement):
+            elif is_MagmaElement(permutation_rep):
                 input_type = repr(permutation_rep.Type())
                 if input_type == 'GrpFP':
                     GG = magma(self.fundamental_group())

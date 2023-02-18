@@ -24,9 +24,16 @@ try:
     from sage.groups.perm_gps.permgroup import PermutationGroup
     from sage.groups.free_group import FreeGroup
     from sage.interfaces.gap import gap
-    from sage.interfaces.gap import is_GapElement
     from sage.interfaces.magma import magma
-    from sage.interfaces.magma import is_MagmaElement
+    try:
+        from sage.interfaces.abc import GapElement, MagmaElement
+        def is_GapElement(elt):
+            return isinstance(elt, GapElement)
+        def is_MagmaElement(elt):
+            return isinstance(elt, MagmaElement)
+    except:
+        from sage.interfaces.gap import is_GapElement
+        from sage.interfaces.magma import is_MagmaElement
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
 except ImportError:

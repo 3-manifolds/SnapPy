@@ -7,6 +7,8 @@
 #include <string.h>
 #include "kernel_namespace.h"
 
+#define BUFFER_SIZE 1000
+
 /* Unless otherwise stated, all references are with respect to the paper
 
    Garoufalidis, Goerner, Zickert:                                                                                                         
@@ -230,8 +232,8 @@ void get_ptolemy_equations_identified_coordinates(
     int face;
     Ptolemy_index ptolemy_index, other_ptolemy_index;
 
-    char face_ptolemy[1000];
-    char other_face_ptolemy[1000];
+    char face_ptolemy[BUFFER_SIZE];
+    char other_face_ptolemy[BUFFER_SIZE];
 
     Face_data *face_to_index = NULL;
     Face_data *face_to_sign = NULL;
@@ -296,17 +298,19 @@ void get_ptolemy_equations_identified_coordinates(
 			/* Write identified variable names into data
 			   structure */
 			
-			sprintf(face_ptolemy,"c_%d%d%d%d_%d",
-				ptolemy_index[0],ptolemy_index[1],
-				ptolemy_index[2],ptolemy_index[3],
-				tet->index);
+			snprintf(face_ptolemy, BUFFER_SIZE,
+				 "c_%d%d%d%d_%d",
+				 ptolemy_index[0],ptolemy_index[1],
+				 ptolemy_index[2],ptolemy_index[3],
+				 tet->index);
 			id->variables[index_in_id][0] = 
 			    fakestrdup(face_ptolemy);
 
-			sprintf(other_face_ptolemy,"c_%d%d%d%d_%d",
-				other_ptolemy_index[0],other_ptolemy_index[1],
-				other_ptolemy_index[2],other_ptolemy_index[3],
-				other_tet->index);
+			snprintf(other_face_ptolemy, BUFFER_SIZE,
+				 "c_%d%d%d%d_%d",
+				 other_ptolemy_index[0],other_ptolemy_index[1],
+				 other_ptolemy_index[2],other_ptolemy_index[3],
+				 other_tet->index);
 			id->variables[index_in_id][1] = 
 			    fakestrdup(other_face_ptolemy);
 
@@ -350,8 +354,8 @@ void get_ptolemy_equations_identified_face_classes(
     Tetrahedron *tet, *other_tet;
     int face, other_face;
 
-    char face_class[1000];
-    char other_face_class[1000];
+    char face_class[BUFFER_SIZE];
+    char other_face_class[BUFFER_SIZE];
 
     int index_in_id;
 
@@ -377,11 +381,10 @@ void get_ptolemy_equations_identified_face_classes(
 		
   	        /* Write identified faces into data structure */
 
-		sprintf(face_class, 
-			"s_%d_%d", face, tet->index);
+		snprintf(face_class, BUFFER_SIZE,
+			 "s_%d_%d", face, tet->index);
 		id->variables[index_in_id][0] = fakestrdup(face_class);
-
-		sprintf(other_face_class, 
+		snprintf(other_face_class, BUFFER_SIZE,
 			"s_%d_%d", other_face, other_tet->index);
 		id->variables[index_in_id][1] = fakestrdup(other_face_class);
 
@@ -409,7 +412,7 @@ void get_ptolemy_equations_action_by_decoration_change(
     Tetrahedron *tet;
     Ptolemy_index ptolemy_index;
 
-    char explain_row[1000], explain_column[1000];
+    char explain_row[BUFFER_SIZE], explain_column[BUFFER_SIZE];
 
     T = manifold -> num_tetrahedra;
     C = manifold -> num_cusps;
@@ -431,8 +434,8 @@ void get_ptolemy_equations_action_by_decoration_change(
         for (diag_entry = 0; diag_entry < N - 1; diag_entry++) {
 
    	    /* Write explain_column */
-   	    sprintf(explain_column,
-		    "diagonal_entry_%d_on_cusp_%d", diag_entry, cusp_index);
+   	    snprintf(explain_column, BUFFER_SIZE,
+		     "diagonal_entry_%d_on_cusp_%d", diag_entry, cusp_index);
 
 	    column_index = cusp_index * (N-1) + diag_entry;
 	    m->explain_column[column_index] = fakestrdup(explain_column);
@@ -454,11 +457,11 @@ void get_ptolemy_equations_action_by_decoration_change(
 	    if (number_of_zeros_in_Ptolemy_index(ptolemy_index) < 3) {
 
 	        /* explain row */
-   	        sprintf(explain_row,
-			"c_%d%d%d%d_%d",
-			ptolemy_index[0], ptolemy_index[1], 
-			ptolemy_index[2], ptolemy_index[3],
-			tet->index);
+   	        snprintf(explain_row, BUFFER_SIZE,
+			 "c_%d%d%d%d_%d",
+			 ptolemy_index[0], ptolemy_index[1], 
+			 ptolemy_index[2], ptolemy_index[3],
+			 tet->index);
 		m->explain_row[row_index] = fakestrdup(explain_row);
 
 		/* for each vertex */
@@ -518,7 +521,7 @@ void _fill_tet_face_to_index_data(
     Tetrahedron *tet, *other_tet;
     int face, other_face;
 
-    char explain[1000];
+    char explain[BUFFER_SIZE];
 
     T = manifold -> num_tetrahedra;
 
@@ -561,8 +564,7 @@ void _fill_tet_face_to_index_data(
                 /* Write the explanation string */
 
 		if (explanations) {
-  		    sprintf(explain, "s_%d_%d",
-			    face, tet->index);
+		    snprintf(explain, BUFFER_SIZE, "s_%d_%d", face, tet->index);
 		    explanations[index] = fakestrdup(explain);
 		}
 
@@ -591,7 +593,7 @@ void get_ptolemy_equations_boundary_map_3(
     int sign;
     int row_index;
 
-    char explain_column[1000];
+    char explain_column[BUFFER_SIZE];
 
 
     T = manifold -> num_tetrahedra;
@@ -615,7 +617,7 @@ void get_ptolemy_equations_boundary_map_3(
 
         /* Make a new column */
 
-	sprintf(explain_column, "tet_%d", tet->index);
+	snprintf(explain_column, BUFFER_SIZE, "tet_%d", tet->index);
 	m->explain_column[tet->index] = fakestrdup(explain_column);
 	
         /* Boundary of tetrahedron consists of four faces */
@@ -646,7 +648,7 @@ void get_ptolemy_equations_boundary_map_2(
     PositionedTet   ptet0, ptet;
     int row_index, column_index;
     int sign;
-    char explain_row[1000];
+    char explain_row[BUFFER_SIZE];
     EdgeClass       *edge;	
     int T;
 
@@ -674,8 +676,8 @@ void get_ptolemy_equations_boundary_map_2(
 
         /* Write that this row belongs to this edge in explanations */
 
-	sprintf(explain_row,
-		"edge_%d",row_index);
+	snprintf(explain_row, BUFFER_SIZE,
+		 "edge_%d",row_index);
 	m->explain_row[row_index] = fakestrdup(explain_row);
 	
 	/* Iterate through all the PositionedTetrahedron's incident to this
@@ -727,8 +729,8 @@ void get_ptolemy_equations_boundary_map_1(
     
     PositionedTet   ptet;
     int row_index, column_index;
-    char explain_row[1000];
-    char explain_column[1000];
+    char explain_row[BUFFER_SIZE];
+    char explain_column[BUFFER_SIZE];
     EdgeClass       *edge;
 
     /* allocate data structures */
@@ -739,7 +741,7 @@ void get_ptolemy_equations_boundary_map_1(
     /* Explain rows */
 
     for (row_index = 0; row_index < manifold->num_cusps; row_index++) {
-	sprintf(explain_row,
+	snprintf(explain_row, BUFFER_SIZE,
 		"cusp_%d", row_index);
 	m->explain_row[row_index] = fakestrdup(explain_row);
     }
@@ -755,7 +757,7 @@ void get_ptolemy_equations_boundary_map_1(
 
         /* Write that this column belongs to this edge in explanations */
 
-	sprintf(explain_column,
+	snprintf(explain_column, BUFFER_SIZE,
 		"edge_%d",column_index);
 	m->explain_column[column_index] = fakestrdup(explain_column);
 

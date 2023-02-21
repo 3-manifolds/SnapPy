@@ -50,7 +50,7 @@
 
 #include "kernel.h"
 #include <stdlib.h> /* needed for malloc()  */
-#include <stdio.h>  /* needed for sprintf() */
+#include <stdio.h>  /* needed for snprintf() */
 #include "kernel_namespace.h"
 
 static int  net_malloc_calls = 0;
@@ -206,7 +206,7 @@ void verify_my_malloc_usage()
 
     if (net_malloc_calls != 0)
     {
-        sprintf(the_message, "Memory allocation error:\rThere were %d %s calls to my_malloc() than to my_free().",
+        snprintf(the_message, 256, "Memory allocation error:\rThere were %d %s calls to my_malloc() than to my_free().",
             net_malloc_calls > 0 ? net_malloc_calls : - net_malloc_calls,
             net_malloc_calls > 0 ? "more" : "fewer");
         uAcknowledge(the_message);

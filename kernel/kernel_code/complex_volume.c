@@ -550,7 +550,7 @@ static void check_neighbors_and_gluings(
 
             if (nbr->neighbor[nbr_f] != tet)
             {
-                sprintf(scratch, "inconsistent neighbor data, tet %d face %d to tet %d face %d",
+	        snprintf(scratch, 256, "inconsistent neighbor data, tet %d face %d to tet %d face %d",
                         tet->index, f, nbr->index, nbr_f);
                 uAcknowledge(scratch);
                 uFatalError("check_neighbors_and_gluings", "complex_volume");
@@ -558,7 +558,7 @@ static void check_neighbors_and_gluings(
 
             if (nbr->gluing[nbr_f] != inverse_permutation[this_gluing])
             {
-                sprintf(scratch, "inconsistent gluing data, tet %d face %d to tet %d face %d",
+	        snprintf(scratch, 256, "inconsistent gluing data, tet %d face %d to tet %d face %d",
                         tet->index, f, nbr->index, nbr_f);
                 uAcknowledge(scratch);
                 uFatalError("check_neighbors_and_gluings", "complex_volume");

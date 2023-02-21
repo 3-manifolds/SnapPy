@@ -77,6 +77,8 @@ static TersestTriangulation *ReadCensusBuffer(char*        basePathName,
 					      const char*  aFileName,
 					      unsigned int aNumManifolds);
 
+#define MAX_NAME_SIZE 10
+
 Triangulation *GetCuspedCensusManifold(
     char*           basePathName, 
     int             aNumTetrahedra,
@@ -85,7 +87,7 @@ Triangulation *GetCuspedCensusManifold(
 {
     int                     theNumCensusManifolds;
     TersestTriangulation    *theData;
-    char                    theName[10];
+    char                    theName[MAX_NAME_SIZE];
     int                     theCensus;
     Triangulation           *theTriangulation;
 
@@ -118,7 +120,7 @@ Triangulation *GetCuspedCensusManifold(
             if (theData5 == NULL)
                 theData5 = ReadCensusBuffer(basePathName, FILE5, theNumCensusManifolds);
             theData = theData5;
-            sprintf(theName, "m%.3d", anIndex);
+            snprintf(theName, MAX_NAME_SIZE, "m%.3d", anIndex);
             theCensus = 5;
             break;
 
@@ -130,7 +132,7 @@ Triangulation *GetCuspedCensusManifold(
                     if (theData6o == NULL)
                         theData6o = ReadCensusBuffer(basePathName, FILE6o, theNumCensusManifolds);
                     theData = theData6o;
-                    sprintf(theName, "s%.3d", anIndex);
+                    snprintf(theName, MAX_NAME_SIZE, "s%.3d", anIndex);
                     theCensus = 6;
                     break;
                 
@@ -138,7 +140,7 @@ Triangulation *GetCuspedCensusManifold(
                     if (theData6n == NULL)
                         theData6n = ReadCensusBuffer(basePathName, FILE6n, theNumCensusManifolds);
                     theData = theData6n;
-                    sprintf(theName, "x%.3d", anIndex);
+                    snprintf(theName, MAX_NAME_SIZE, "x%.3d", anIndex);
                     theCensus = 8;  /* this is how the kernel identifies the nonorientable 6-tet census */
                     break;
                 
@@ -155,7 +157,7 @@ Triangulation *GetCuspedCensusManifold(
                     if (theData7o == NULL)
                         theData7o = ReadCensusBuffer(basePathName, FILE7o, theNumCensusManifolds);
                     theData = theData7o;
-                    sprintf(theName, "v%.4d", anIndex);
+                    snprintf(theName, MAX_NAME_SIZE, "v%.4d", anIndex);
                     theCensus = 7;
                     break;
                 
@@ -163,7 +165,7 @@ Triangulation *GetCuspedCensusManifold(
                     if (theData7n == NULL)
                         theData7n = ReadCensusBuffer(basePathName, FILE7n, theNumCensusManifolds);
                     theData = theData7n;
-                    sprintf(theName, "y%.3d", anIndex);
+                    snprintf(theName, MAX_NAME_SIZE, "y%.3d", anIndex);
                     theCensus = 9;  /* this is how the kernel identifies the nonorientable 7-tet census */
                     break;
                 

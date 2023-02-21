@@ -33,6 +33,7 @@ const char* column_format_str[3] =
 
 /* fills the explain columns structure of the matrix with strings showing
    the cross ratio a column corresponds to */
+#define MAX_EXPLANATION_SIZE 1000
 
 static
 void _explain_columns(Triangulation *manifold,
@@ -41,7 +42,7 @@ void _explain_columns(Triangulation *manifold,
 
     int edge, index, tet_index;
     Ptolemy_index ptolemy_index;
-    char explanation[1000];
+    char explanation[MAX_EXPLANATION_SIZE];
     int column_index;
 
     for (edge = 0; edge < 3; edge++) {
@@ -54,7 +55,7 @@ void _explain_columns(Triangulation *manifold,
 		
 		index_to_Ptolemy_index(index, N-2, ptolemy_index);
 
-		sprintf(explanation,
+		snprintf(explanation, MAX_EXPLANATION_SIZE,
 			column_format_str[edge],
 			ptolemy_index[0],
 			ptolemy_index[1],
@@ -109,7 +110,8 @@ void get_edge_gluing_equations_pgl(Triangulation *manifold,
 
 	for (edge_level = 0; edge_level <= N - 2; edge_level++) {
 
-	    sprintf(explanation, "edge_%d_%d", edge_level, edge_index);
+	  snprintf(explanation, MAX_EXPLANATION_SIZE,
+		  "edge_%d_%d", edge_level, edge_index);
 	    m->explain_row[eqn_index] = fakestrdup(explanation);
 
 	    /* create a new row for the corresponding gluing equation,
@@ -251,7 +253,7 @@ void get_face_gluing_equations_pgl(Triangulation* manifold,
 		if (is_canonical_face_class_representative(tet,face)) {
 	  
   		    /* write that this row will represent a face equation */
-		    sprintf(explanation, 
+		    snprintf(explanation, MAX_EXPLANATION_SIZE,
 			    "face_%d%d%d%d_%d",
 			    ptolemy_index[0], ptolemy_index[1],
 			    ptolemy_index[2], ptolemy_index[3],
@@ -332,7 +334,7 @@ void get_internal_gluing_equations_pgl(Triangulation *manifold,
 
   	        /* Write that this is the gluing equation for an internal 
 		   point */
-		sprintf(explanation, 
+		snprintf(explanation, MAX_EXPLANATION_SIZE,
 			"internal_%d%d%d%d_%d",
 			ptolemy_index[0], ptolemy_index[1],
 			ptolemy_index[2], ptolemy_index[3],

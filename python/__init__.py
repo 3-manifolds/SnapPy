@@ -23,14 +23,17 @@ import time
 from .SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
 
+
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
 
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
+
 class Manifold(_ManifoldLP):
     __doc__ = _ManifoldLP.__doc__
+
     def high_precision(self):
         """
         Return a high precision version of this manifold.
@@ -56,12 +59,15 @@ class Manifold(_ManifoldLP):
         return self.copy()
 
     def is_isometric_to(self, other, return_isometries=False):
+        __doc__ = _ManifoldLP.is_isometric_to.__doc__
         if other.__class__ is ManifoldHP:
-            return self.high_precision()._is_isometric_to(other, return_isometries)
-        return self._is_isometric_to(other, return_isometries)
+            return _ManifoldHP.is_isometric_to(self.high_precision(), other,
+                                                  return_isometries)
+        return _ManifoldLP.is_isometric_to(self, other, return_isometries)
 
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
+
     def low_precision(self):
         """
         Return a low precision version of this high precision manifold.
@@ -88,9 +94,11 @@ class ManifoldHP(_ManifoldHP):
         return self.copy()
 
     def is_isometric_to(self, other, return_isometries=False):
+        __doc__ = _ManifoldHP.is_isometric_to.__doc__
         if other.__class__ is Manifold:
-            return self._is_isometric_to(other.high_precision(), return_isometries)
-        return self._is_isometric_to(other, return_isometries)
+            return _ManifoldHP.is_isometric_to(self, other.high_precision(),
+                                                   return_isometries)
+        return _ManifoldHP.is_isometric_to(self, other, return_isometries)
 
     def identify(self, extends_to_link=False):
         """

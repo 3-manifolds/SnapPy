@@ -55,10 +55,10 @@ class Manifold(_ManifoldLP):
     def low_precision(self):
         return self.copy()
 
-    def is_isometric_to(self, other):
+    def is_isometric_to(self, other, return_isometries=False):
         if other.__class__ is ManifoldHP:
-            return self.high_precision()._is_isometric_to(other)
-        return self._is_isometric_to(other)
+            return self.high_precision()._is_isometric_to(other, return_isometries)
+        return self._is_isometric_to(other, return_isometries)
 
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
@@ -87,10 +87,10 @@ class ManifoldHP(_ManifoldHP):
     def high_precision(self):
         return self.copy()
 
-    def is_isometric_to(self, other):
+    def is_isometric_to(self, other, return_isometries=False):
         if other.__class__ is Manifold:
-            return self._is_isometric_to(other.high_precision())
-        return self._is_isometric_to(other)
+            return self._is_isometric_to(other.high_precision(), return_isometries)
+        return self._is_isometric_to(other, return_isometries)
 
     def identify(self, extends_to_link=False):
         """

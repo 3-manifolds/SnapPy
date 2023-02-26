@@ -1,32 +1,30 @@
 import sys
-from http.client import HTTPConnection
 from threading import Thread
-from .version import version as this_version
-from distutils.version import LooseVersion
-
-
+from .version import version as current
+from pkg_resources import parse_version
+import ssl
+from urllib import request
+version_url = 'https://raw.githubusercontent.com/3-manifolds/SnapPy/master/current.txt'
+    
 class Phoner(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.answer = None
 
     def run(self):
-        newest_version = None
-        try:
-            connection = HTTPConnection('snappy.math.uic.edu', timeout=1)
-            connection.request('GET', '/current.txt')
-            response = connection.getresponse()
-            if response.status != 200:
-                return
-            newest_version = response.read().strip()
-            connection.close()
-        except Exception:
-            return
-        if isinstance(newest_version, bytes):
-            newest_version = newest_version.decode()
-        if newest_version and LooseVersion(newest_version) > LooseVersion(this_version):
-            self.answer = (newest_version, this_version)
-
+        this_version = parse_version(current)
+        latest = None
+        #try:
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with request.urlopen(version_url, context=ctx) as response:
+            latest = response.read().decode('ascii').strip()
+        latest_version = parse_version(latest)
+        #except Exception:
+        #    return
+        if latest and latest_version > this_version:
+            self.answer = (latest, current)
 
 def update_needed():
     ET = Phoner()

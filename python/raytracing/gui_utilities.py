@@ -212,20 +212,35 @@ class ScrollableFrame(ttk.Frame):
     
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
-        canvas = tkinter.Canvas(self)
+        self.header = header = ttk.Frame(self)
+        header.pack(fill='x', expand=True)
+        self.canvas = canvas = tkinter.Canvas(self)
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
         self.scrollable_frame = ttk.Frame(canvas)
-
-        self.scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
-            )
-        )
+        self.scrollable_frame.bind("<Configure>", self.resize)
 
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
         canvas.configure(yscrollcommand=scrollbar.set)
-
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+        self.num_columns = 0
+
+    def headings(self, columninfo):
+        for heading, column, weight, span in columninfo:
+            self.num_columns = max(self.num_columns, 1 + column)
+            self.header.columnconfigure(column, weight=weight)
+            self.scrollable_frame.columnconfigure(column, weight=weight)
+            ttk.Label(self.header, text=heading).grid(row=0,
+                column=column, columnspan=span)
+
+    def set_widths(self):
+        for n in range(self.num_columns):
+            header_width = self.header.grid_bbox(n, 0, n, 0)[2]
+            column_width = self.scrollable_frame.grid_bbox(n, 0, n, 0)[2]
+            width = max(header_width, column_width)
+            self.header.columnconfigure(n, minsize=width)
+            self.scrollable_frame.columnconfigure(n, minsize=width)
+        
+    def resize(self, event=None):
+        self.set_widths()
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))

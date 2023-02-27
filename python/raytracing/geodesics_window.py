@@ -10,6 +10,13 @@ class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
+        self.headings = (
+            ('Show', 0, 0, 1),
+            ('Color', 1, 0, 1),
+            ('Word(s)', 2, 0, 1),
+            ('Complex length', 3, 0, 2),
+            ('Radius', 5, 0, 1),
+            ('', 6, 1, 1))
 
         tkinter.Toplevel.__init__(self, class_='snappy')
         self.title('Geodesics')
@@ -63,6 +70,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.geodesics_frame.columnconfigure(6, weight = 0)
 
         self.populate_geodesics_frame()
+        self.scrollable_frame.headings(self.headings)
 
     def populate_geodesics_frame(self):
         for widget in self.geodesics_frame.grid_slaves():
@@ -75,23 +83,6 @@ class GeodesicsWindow(tkinter.Toplevel):
         words_column = 2
         length_column = 3
         radius_column = 5
-
-        l = ttk.Label(self.geodesics_frame, text = 'Show')
-        l.grid(row = row, column = checkbox_column)
-
-        l = ttk.Label(self.geodesics_frame, text = 'Color')
-        l.grid(row = row, column = color_column)
-
-        l = ttk.Label(self.geodesics_frame, text = 'Word(s)')
-        l.grid(row = row, column = words_column)
-
-        l = ttk.Label(self.geodesics_frame, text = 'Complex length')
-        l.grid(row = row, column = length_column, columnspan = 2)
-
-        l = ttk.Label(self.geodesics_frame, text = 'Radius')
-        l.grid(row = row, column = radius_column)
-
-        row += 1
 
         for geodesic in self.raytracing_view.geodesics.geodesics_sorted_by_length():
             UniformDictController.create_checkbox(
@@ -149,6 +140,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             # scale.configure(background = color_to_tkinter(color))
 
             row += 1
+        self.scrollable_frame.set_widths()
 
     def add_length_spectrum(self):
         self.status_label.configure(text = _default_status_msg)

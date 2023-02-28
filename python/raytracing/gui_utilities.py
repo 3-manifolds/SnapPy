@@ -5,7 +5,7 @@ from .zoom_slider import Slider
 import time
 
 if sys.platform == 'linux':
-    label_pad, slider_stick = (4, 0), tkinter.EW
+    label_pad, slider_stick = (4, 0, 20, 0), tkinter.EW
 else:
     label_pad, slider_stick = 0, tkinter.NSEW
 
@@ -25,10 +25,10 @@ class UniformDictController:
         scale = Slider(container = container,
                        left_end = left_end,
                        right_end = right_end)
-        scale.grid(row = row, column = column, sticky = slider_stick)
+        scale.grid(row = row, column = column, sticky = slider_stick, padx=10)
         column += 1
         value_label = ttk.Label(container, padding=label_pad)
-        value_label.grid(row = row, column = column, sticky=tkinter.NW)
+        value_label.grid(row = row, column = column, sticky=tkinter.NW, padx=20)
 
         if title:
             title_label.grid_configure(sticky=tkinter.N, pady=4)
@@ -223,6 +223,7 @@ class ScrollableFrame(ttk.Frame):
         canvas.configure(yscrollcommand=self.set_scrollbar)
         canvas.pack(side="left", fill="both", expand=True, anchor="nw", pady=10)
         scrollbar.pack(side="right", fill="y", anchor="nw", pady=10)
+        scrollbar.is_visible = True
         self.num_columns = 0
         self.has_mouse = False
         self.bind('<Enter>', self.mouse_in)
@@ -248,12 +249,15 @@ class ScrollableFrame(ttk.Frame):
     def set_scrollbar(self, low, high):
         if float(low) <= 0.0 and float(high) >= 1.0:
             self.scrollbar.pack_forget()
+            self.scrollbar.is_visible=False
         else:
             self.scrollbar.pack(side="right", fill="y", anchor="nw", pady=10)
+            self.scrollbar.is_visible=True
         self.scrollbar.set(low, high)
 
     def resize(self, event=None):
         self.set_widths()
+        self.update_idletasks()
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def mouse_in(self, event=None):
@@ -263,6 +267,9 @@ class ScrollableFrame(ttk.Frame):
         self.has_mouse = False
 
     def mouse_wheel(self, event=None):
-        if self.has_mouse:
-            # might need a scale factor for Windows
-            self.canvas.yview_scroll(event.delta, "units")
+        if not self.has_mouse or not self.scrollbar.is_visible:
+            return
+        low, high = self.scrollbar.get()
+        delta = event.delta
+        # We might need a scale factor for Windows.
+        self.canvas.yview_scroll(-delta, "units")

@@ -11,12 +11,13 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
         self.headings = (
+            #(text, column, weight, span)
             ('Show', 0, 0, 1),
             ('Color', 1, 0, 1),
             ('Word(s)', 2, 0, 1),
             ('Complex length', 3, 0, 2),
             ('Radius', 5, 0, 1),
-            ('', 6, 1, 1))
+            ('    ', 6, 0, 1))
 
         tkinter.Toplevel.__init__(self, class_='snappy')
         self.title('Geodesics')
@@ -50,25 +51,16 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.word_button = ttk.Button(
             right_top_frame, text = "Add word", command = self.add_word)
         self.word_button.grid(row = 0, column = 0)
-        self.word_entry = ttk.Entry(
-            right_top_frame)
+        self.word_entry = ttk.Entry(right_top_frame)
         self.word_entry.grid(row = 0, column = 1)
 
         self.status_label = ttk.Label(self.frame, text = _default_status_msg)
         self.status_label.pack()
 
         self.scrollable_frame = ScrollableFrame(self.frame)
-        self.scrollable_frame.pack(expand = True, fill = tkinter.BOTH)
+        self.scrollable_frame.pack(fill="y", anchor="n", expand=True)
 
         self.geodesics_frame = self.scrollable_frame.scrollable_frame
-        self.geodesics_frame.columnconfigure(0, weight = 0)
-        self.geodesics_frame.columnconfigure(1, weight = 0)
-        self.geodesics_frame.columnconfigure(2, weight = 0)
-        self.geodesics_frame.columnconfigure(3, weight = 0)
-        self.geodesics_frame.columnconfigure(4, weight = 0)
-        self.geodesics_frame.columnconfigure(5, weight = 1)
-        self.geodesics_frame.columnconfigure(6, weight = 0)
-
         self.populate_geodesics_frame()
         self.scrollable_frame.headings(self.headings)
 
@@ -134,7 +126,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                 left_end = 0.0,
                 right_end = 1.0,
                 update_function = self.raytracing_view.update_geodesic_data_and_redraw,
-                format_string = '%.3f').scale
+                format_string = '%.3f')
 
             # Need to color Scale - but the following code fails.
             # scale.configure(background = color_to_tkinter(color))

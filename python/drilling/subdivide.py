@@ -53,7 +53,7 @@ def traverse_geodesics_to_subdivide(
     # Each tetrahedron tet points to all line segments embedded in it
     # through tet.geodesic_pieces.
     # Each GeodesicPiece points back to the tetrahedron where the line
-    # segment it represents is embdedded in.
+    # segment it represents is embedded in.
     # Each GeodesicPiece also has a pointer to the previous and next
     # GeodesicPiece in the simple closed curves. In other words, we have
     # a cyclically linked list of GeodesicPiece's.

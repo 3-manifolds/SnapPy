@@ -428,7 +428,7 @@ class PtolemyCoordinates(dict):
         >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
         >>> solution = solutions[2]
 
-        Compute a numerical soluton
+        Compute a numerical solution
 
         >>> flattenings = solution.flattenings_numerical()
 

@@ -433,7 +433,7 @@ def _retrace_geodesic_piece(
     # Result
     pieces : List[GeodesicPiece] = []
 
-    # Parameterizes ray. That is, we are start_point + param * direction.
+    # Parametrizes ray. That is, we are start_point + param * direction.
     param = RF(0)
 
     for i in range(4):
@@ -472,7 +472,7 @@ def _retrace_geodesic_piece(
                     hit_param = candidate_param
                     hit_face = candidate_face
                 elif not candidate_param > hit_param + epsilon:
-                    # If there is any ambiguitiy whether this face was
+                    # If there is any ambiguity whether this face was
                     # crossed before the other face, fail!
                     # Most likely, this is because the ray is close to
                     # or crossing an edge of the triangulation.
@@ -551,6 +551,6 @@ def _retrace_geodesic_piece(
         raise Exception(
             "Too many steps when re-tracing a geodesic piece. "
             "This is either due to a lack of precision or an "
-            "implemenation bug.")
+            "implementation bug.")
 
     return pieces[::trace_direction]

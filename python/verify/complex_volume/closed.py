@@ -83,8 +83,9 @@ def zero_lifted_holonomy(manifold, m, l, f):
 
     return m, l
 
+
 @sage_method
-def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
+def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
     """
     Computes the verified complex volume (where the real part is the
     volume and the imaginary part is the Chern-Simons) for a given
@@ -92,7 +93,7 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
 
     Note that the result is correct only up to two torsion, i.e.,
     up to multiples of pi^2/2. The method expects an oriented manifold
-    with exactly one cusp which is filled, othewise it raises an exception.
+    with exactly one cusp which is filled, otherwise it raises an exception.
 
     If bits_prec is unspecified, the default precision of
     SnapPy.Manifold or SnapPy.ManifoldHP, respectively, will be used.

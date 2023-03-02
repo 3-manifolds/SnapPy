@@ -231,7 +231,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     # Result
     pieces : List[GeodesicPiece] = [ ]
 
-    # Parameterizes ray. That is, we are start_point + param * direction.
+    # Parametrizes ray. That is, we are start_point + param * direction.
     param = RF(0)
 
     # Trace
@@ -272,7 +272,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
                     hit_param = candidate_param
                     hit_face = candidate_face
                 elif not candidate_param > hit_param + epsilon:
-                    # If there is any ambiguitiy whether this face was
+                    # If there is any ambiguity whether this face was
                     # crossed before the other face, fail!
                     # Most likely, this is because the ray is close to
                     # or crossing an edge of the triangulation.

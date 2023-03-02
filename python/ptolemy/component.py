@@ -1,7 +1,9 @@
 from . import utilities
 
+
 class Component(utilities.MethodMappingList):
     pass
+
 
 class ZeroDimensionalComponent(Component):
     """
@@ -17,7 +19,7 @@ class ZeroDimensionalComponent(Component):
 
 class NonZeroDimensionalComponent(Component):
     """
-    Represents a non-zero dimensinal component in the
+    Represents a non-zero dimensional component in the
     Ptolemy variety. It is a list that can hold points sampled from that
     component (witnesses).
     """

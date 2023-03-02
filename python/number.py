@@ -621,7 +621,7 @@ def use_field_conversion(func):
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
-            However, this behavior can be overriden by
+            However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
             """
@@ -635,7 +635,7 @@ def use_field_conversion(func):
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
-            However, this behavior can be overriden by
+            However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
             """

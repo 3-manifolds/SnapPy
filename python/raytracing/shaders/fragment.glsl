@@ -77,7 +77,7 @@ layout (std140) uniform Colors
 
 uniform bool desaturate_edges = false;
 
-uniform float gradientThreshholds[5];
+uniform float gradientThresholds[5];
 uniform vec3 gradientColours[5];
 
 uniform float edgeTubeRadiusParam;
@@ -872,20 +872,20 @@ ray_trace(inout RayHit ray_hit) {
 
 /// --- Colour gradient code --- ///
 
-int find_band(float t, float threshholds[5]){
+int find_band(float t, float thresholds[5]){
     for(int j = 1; j < 4; j++) {
-        if(t < threshholds[j]) {
+        if(t < thresholds[j]) {
             return j;
         }
     }
     return 4;
 }
 
-vec3 general_gradient(float t, float threshholds[5], vec3 colours[5]){
-    int i = find_band(t, threshholds);
+vec3 general_gradient(float t, float thresholds[5], vec3 colours[5]){
+    int i = find_band(t, thresholds);
     return mix(colours[i-1],
                colours[i],
-               (t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]));
+               (t - thresholds[i-1])/(thresholds[i] - thresholds[i-1]));
 }
 
 // Given the (average) value for a ray hit, apply gradient to get
@@ -899,7 +899,7 @@ vec3 colorForValue(float value)
     value = contrast * value;
     value = 0.5 + 0.5 * value/ (abs(value) + 1.0);  //faster than atan, similar
 
-    return general_gradient(value, gradientThreshholds, gradientColours);
+    return general_gradient(value, gradientThresholds, gradientColours);
 }
 
 struct MaterialParams

@@ -32,7 +32,7 @@ def is_isometric_to_with_effort(A, B, return_isometries=False, tries=10):
     B = improved_triangulation(B, tries=tries)
     try:
         return A.is_isometric_to(B, return_isometries=return_isometries)
-    except RuntimeError: # SnapPea kernel failed
+    except RuntimeError:  # SnapPea kernel failed
         return []
 
 
@@ -77,6 +77,7 @@ def orientation_preserving_link_isometries(A, B, tries=100):
     if good_isos:
         return good_isos[0]
 
+
 def reorder_link_components(link, perm):
     """
     This link has three components, which are in order a trefoil, the
@@ -99,9 +100,9 @@ def reorder_link_components(link, perm):
     n = len(link.link_components)
     assert len(perm) == n and link.unlinked_unknot_components == 0
     L = link.copy()
-    component_starts = n*[None]
+    component_starts = n * [None]
     for a, b in enumerate(perm):
-         component_starts[b] = L.link_components[a][0]
+        component_starts[b] = L.link_components[a][0]
     L._build_components(component_starts)
     return L
 

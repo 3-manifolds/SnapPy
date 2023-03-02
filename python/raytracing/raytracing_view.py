@@ -25,7 +25,7 @@ _constant_uniform_bindings = {
     'tile' : ('vec2', [0.0, 0.0]),
     'numTiles' : ('vec2', [1.0, 1.0]),
 
-    'gradientThreshholds' : ('float[]', [0.0, 0.25, 0.45, 0.75, 1.0]),
+    'gradientThresholds' : ('float[]', [0.0, 0.25, 0.45, 0.75, 1.0]),
     'gradientColours' : ('vec3[]', [[1.0, 1.0, 1.0],
                                     [0.86, 0.92, 0.78],
                                     [0.25, 0.70, 0.83],

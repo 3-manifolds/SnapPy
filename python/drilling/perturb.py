@@ -34,7 +34,7 @@ def perturb_geodesics(
     If several GeodesicInfo's are given and/or there are filled
     cusps with core curves, the system of simple closed curves
     resulting from the perturbation together with the core curves
-    is guarenteed to be isotopic to the original system of closed
+    is guaranteed to be isotopic to the original system of closed
     geodesics together with the core curves.
 
     Through the perturbation, the simple closed curve should avoid

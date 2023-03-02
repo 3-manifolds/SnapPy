@@ -345,7 +345,7 @@ class CuspTilingEngine(McomplexEngine):
         for height in heights:
             if height.is_NaN():
                 raise InsufficientPrecisionError(
-                    "A NaN occured when computing the height of a triangle "
+                    "A NaN occurred when computing the height of a triangle "
                     "face. This can most likely be avoided by increasing the "
                     "precision.")
         return max(heights)

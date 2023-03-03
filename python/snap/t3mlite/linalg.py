@@ -122,10 +122,10 @@ class Vector:
         raise NotImplementedError
 
     def __rmul__(self, other):
-        return  self.__class__(pari_vector=other*self.pari)
+        return self.__class__(pari_vector=other * self.pari)
 
     def __truediv__(self, other):
-        return self.__class__(pari_vector=self.pari/other)
+        return self.__class__(pari_vector=self.pari / other)
 
     def __mul__(self, other):
         if isinstance(other, Vector):

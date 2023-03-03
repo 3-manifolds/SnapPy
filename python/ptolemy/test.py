@@ -331,7 +331,7 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
 
     solutions = (
         [ (s, False) for s in solutions_trivial ] +
-        [ (s, True)  for s in solutions_non_trivial ])
+        [ (s, True) for s in solutions_non_trivial ])
 
     # Dimensions and volumes encountered
     dimensions = set()

@@ -117,11 +117,11 @@ def R13_time_vector_to_upper_halfspace(v):
     a, b, c = [ x * poincare_factor for x in klein ]
 
     denom = (a - 1.0) ** 2 + b ** 2 + c ** 2
-    return  [                         2.0 * b / denom,
-                                      2.0 * c / denom,
-             (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
+    return [                         2.0 * b / denom,
+                                     2.0 * c / denom,
+            (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
 
-def R13_normalise(v, sign = 0):
+def R13_normalise(v, sign=0):
     dot = r13_dot(v,v)
     if sign == 0:
         d = abs(dot)

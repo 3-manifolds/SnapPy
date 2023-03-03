@@ -713,7 +713,7 @@ class PtolemyCoordinates(dict):
                 # Get integral point for diamond coordinate
                 pt = [ a1 * _kronecker_delta(v0, i) +
                        a2 * _kronecker_delta(v1, i) +
-                       a0 * _kronecker_delta(v2, i)    for i in range(4) ]
+                       a0 * _kronecker_delta(v2, i) for i in range(4) ]
 
                 # Compute diamond coordinate
                 diamond = self.diamond_coordinate(tet, v0, v1, v2, pt)
@@ -1507,7 +1507,7 @@ class CrossRatios(dict):
         for v0 in range(4):
             for v1 in range(v0 + 1, 4):
                 e = [ _kronecker_delta(v0, i) +
-                      _kronecker_delta(v1, i)   for i in range(4) ]
+                      _kronecker_delta(v1, i) for i in range(4) ]
                 p = [ x1 - x2 for x1, x2 in zip(pt, e) ]
                 if all(x >= 0 for x in p):
                     result *= self._shape_at_tet_point_and_edge(tet, p, e)
@@ -1646,7 +1646,7 @@ class CrossRatios(dict):
         if key not in self._edge_cache:
 
             edge = [ _kronecker_delta(v0, i) +
-                     _kronecker_delta(v1, i)   for i in range(4) ]
+                     _kronecker_delta(v1, i) for i in range(4) ]
 
             # The epsilon permutation sign
             sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
@@ -1661,7 +1661,7 @@ class CrossRatios(dict):
             for a0 in range(N-1):
                 a1 = N - 2 - a0
                 pt = [ a0 * _kronecker_delta(v0, i) +
-                       a1 * _kronecker_delta(v1, i)   for i in range(4) ]
+                       a1 * _kronecker_delta(v1, i) for i in range(4) ]
 
                 cross_ratio = self._shape_at_tet_point_and_edge(tet, pt, edge)
 
@@ -2174,7 +2174,7 @@ def _apply_to_RURs(d, RUR_method):
             return RUR_method(v)
         return v
 
-    return dict( [ (k, _apply_to_RUR(v)) for  k, v in d.items() ] )
+    return {k: _apply_to_RUR(v) for k, v in d.items()}
 
 
 def _convert_to_pari_float(z):

@@ -308,13 +308,12 @@ class Surface():
         return self.B2().transpose()
 
     def euler(self):
-        return  len(self.vertices) - len(self.edges) + len(self.triangles)
+        return len(self.vertices) - len(self.edges) + len(self.triangles)
 
     def homology_test(self):
         B1, B2 = self.B1(), self.B2()
-        assert B1*B2 == 0
-        r1, r2 = B1.rank(), B2.rank()
-        b0 = len(self.vertices) - r1
+        assert B1 * B2 == 0
+        b0 = len(self.vertices) - B1.rank()
         b1 = B1.right_kernel().dimension() - B2.rank()
         b2 = B2.right_kernel().dimension()
         assert b0 - b1 + b2 == self.euler()

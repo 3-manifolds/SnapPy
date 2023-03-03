@@ -122,7 +122,7 @@ class MatrixRepresentation():
         gens, rels, rho = self.generators, self.relators, self
         d2 = [ [fox_derivative_with_involution(R, rho, g) for R in rels] for g in gens]
         d2 = block_matrix(d2, nrows=len(gens), ncols=len(rels))
-        d1 = [rho(g.swapcase()) - 1  for g in gens]
+        d1 = [rho(g.swapcase()) - 1 for g in gens]
         d1 = block_matrix(d1, nrows=1, ncols=len(gens))
         C = ChainComplex({1:d1, 2:d2}, degree_of_differential=-1, check=True)
         return C
@@ -135,7 +135,7 @@ class MatrixRepresentation():
         gens, rels, rho = self.generators, self.relators, self
         d1 = [[fox_derivative(R, rho, g) for g in gens] for R in rels]
         d1 = block_matrix(d1, nrows=len(rels), ncols=len(gens))
-        d0 = [rho(g) - 1  for g in gens]
+        d0 = [rho(g) - 1 for g in gens]
         d0 = block_matrix(d0, nrow=len(gens), ncols=1)
         C = ChainComplex({0:d0, 1:d1}, check=True)
         return C
@@ -415,7 +415,7 @@ def twisted_alexander_polynomial(alpha, reduced=False):
 
     d2 = [ [fox_derivative_with_involution(R, alpha, g) for R in rels] for g in gens]
     d2 = block_matrix(d2, nrows=k, ncols=k-1)
-    d1 = [alpha(g.swapcase())  - 1  for g in gens]
+    d1 = [alpha(g.swapcase()) - 1 for g in gens]
     d1 = block_matrix(d1, nrows=1, ncols=k)
     assert d1 * d2 == 0
 

@@ -144,7 +144,7 @@ class GeodesicPieceTracker:
     def set_geodesic_piece(self, geodesic_piece):
         self.geodesic_piece = geodesic_piece
         geodesic_piece.tracker = self
-    
+
 def compute_plane_intersection_param(
         plane, # Unnormalised space-like vector/plane equation
         point, # Unnormalised time-like vector

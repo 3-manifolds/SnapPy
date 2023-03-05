@@ -141,14 +141,11 @@ class CuspTranslateEngine():
         FinitePoint(0.3? + 0.430000000000000?*I, 5)
         FinitePoint(0.3? + 0.430000000?*I, 5)
         FinitePoint(0.3? + 0.430000000?*I, 5)
-        
+
         sage: perturb = CIF(0.1, 0)
         sage: c.translate_to_match(FinitePoint(z + 2 * t0 + 1 * t1 + perturb, t), FinitePoint(z, t)) is None
         True
-        
-        
         """
-
         z = self._translate_to_match(finitePoint.z, targetFinitePoint.z)
         if z is None:
             return None

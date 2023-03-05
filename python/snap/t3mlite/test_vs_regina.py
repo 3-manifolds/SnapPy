@@ -10,6 +10,7 @@ def hash_t3m_surface(surface):
     ans += sorted(list(surface.Quadvector))
     return ans
 
+
 def hash_regina_surface(S):
     T = S.getTriangulation()
     t = T.getNumberOfTetrahedra()
@@ -18,13 +19,15 @@ def hash_regina_surface(S):
     ans += sorted([S.getQuadCoord(i, j) for i in range(t) for j in range(3)])
     return ans
 
+
 def to_regina(snappy_manifold):
     return regina.NTriangulation(snappy_manifold._to_string())
+
 
 def vertex_surfaces(regina_triangulation):
     """
     Enumerate the vertex surfaces of the given triangulation
-    in quad coordinates.  
+    in quad coordinates.
     """
     surfaces = regina.NNormalSurfaceList.enumerate(
         regina_triangulation, regina.NS_QUAD)

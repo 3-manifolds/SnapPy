@@ -89,7 +89,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             text = ', '.join(geodesic.words)
             if not geodesic.is_primitive():
                 text += ' (not primitive)'
-            
+
             l = ttk.Label(self.geodesics_frame, text = text)
             l.grid(row = row, column = words_column)
 

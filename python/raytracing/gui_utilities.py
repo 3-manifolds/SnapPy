@@ -116,7 +116,7 @@ class UniformDictController:
             for radio_button in self.radio_buttons:
                 radio_button.configure(variable = self.radio_var)
                 radio_button.configure(command = self.radio_command)
-                   
+
         self.update()
 
     def get_value(self):
@@ -164,7 +164,7 @@ class UniformDictController:
     def update_radiobuttons(self):
         if self.radio_buttons:
             self.radio_var.set(self.get_value())
-            
+
     def update(self):
         self.update_scale()
         self.update_label()
@@ -186,7 +186,7 @@ class UniformDictController:
         self.set_value(self.radio_var.get())
         if self.update_function:
             self.update_function()
-            
+
 class FpsLabelUpdater:
     def __init__(self, label):
         self.label = label
@@ -209,7 +209,7 @@ class FpsLabelUpdater:
 
 class ScrollableFrame(ttk.Frame):
     # From https://blog.teclado.com/tkinter-scrollable-frames/
-    
+
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
         self.header = header = ttk.Frame(self)

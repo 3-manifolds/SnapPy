@@ -6,18 +6,19 @@ from . import utilities
 Basic functions to read a ptolemy solutions file.
 """
 
+
 def find_section(text, name):
 
     """
     Finds all sections of the form
-    
+
     NAME=BEGINS=HERE
     stuff
     stuff
     stuff
     NAME=ENDS=HERE
-    
-    or 
+
+    or
 
     ==NAME=BEGINS==
     stuff

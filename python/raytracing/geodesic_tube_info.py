@@ -18,7 +18,7 @@ class GeodesicTubeInfo:
         self._pieces_covering_geodesic = []
 
         self._is_primitive = is_primitive
-        
+
     def compute_tets_and_R13_endpoints_for_tube(self, radius):
         self.geodesic_tube.add_pieces_for_radius(radius)
 

@@ -1,4 +1,4 @@
-""" 
+"""
 Computing the defining equations of the SL(2, C) character variety
 in terms of the trace coordinates.
 
@@ -10,6 +10,7 @@ based on: https://arxiv.org/abs/1703.08241
 from ..pari import pari
 import string
 from itertools import combinations, combinations_with_replacement, product
+
 
 def cycle_sort(l):
     """

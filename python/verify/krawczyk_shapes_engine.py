@@ -37,14 +37,14 @@ class KrawczykShapesEngine:
        We simply use Sage's complex interval type avoiding the need of
        converting n x n complex matrices into 2n x 2n real matrices as
        described Section 3.4 of the HIKMOT paper.
-       
+
     2. We avoid automatic differentiation.  We pick an independent set of
        equations of the following form and try to solve them:
 
                log(LHS) = 0
 
        where
-       
+
                LHS =  c * z0^a0 * (1-z0)^b0 *  z1^a1 * (1-z1)^b1 * ...
 
        with a, b and c's as returned by Manifold.gluing_equations('rect').
@@ -52,14 +52,14 @@ class KrawczykShapesEngine:
        The derivative of log (LHS) with respect to zj is simply given by
 
                             aj/zj - bj/(1-zj)
-         
+
        and thus no need for automatic differentiation.
 
     3. For speed-up, the approximate inverse is always computed with
        double's. Some intermediate matrix computations are performed sparsely.
 
     In contrast to HIKMOT, we use and return Sage's native implementation of
-    (complex) interval arithmetic here, which allows for increased interoperability. 
+    (complex) interval arithmetic here, which allows for increased interoperability.
     Another advantage is that Sage supports arbitrary precision.
 
     Here is an example how to explicitly invoke the KrawczykShapesEngine::
@@ -72,7 +72,7 @@ class KrawczykShapesEngine:
         (0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I)
 
     And here an example where the initial solution is somewhat off::
-        
+
         sage: M = Manifold("m019")
         sage: shapes = [ 0.78+0.91j, 0.79+0.92j, 0.5 + 0.63j ]
         sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
@@ -80,7 +80,7 @@ class KrawczykShapesEngine:
         True
         sage: C.certified_shapes
         (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
-        
+
     """
 
     def log_gluing_LHSs(self, shapes):
@@ -170,7 +170,7 @@ class KrawczykShapesEngine:
             [  0.292? - 1.6666?*I   0.292? - 1.6666?*I   0.752? - 1.0340?*I]
             [ 0.5400? - 0.6327?*I  0.5400? - 0.6327?*I  -1.561? - 1.8290?*I]
             [ 0.5400? - 0.6327?*I -0.5400? + 0.6327?*I                    0]
-        
+
         """
 
         # Similar to log_gluing_LHS
@@ -270,7 +270,7 @@ class KrawczykShapesEngine:
         """
         Compute the interval in the Krawczyk test.
 
-        It is given as 
+        It is given as
 
             K(z0, [z], f) := z0 - c * f(z0) + (Id - c * df([z])) * ([z] - z0)
 
@@ -280,7 +280,7 @@ class KrawczykShapesEngine:
            - f is the function taking the shapes to the errors of the logarithmic gluing equations
            - c is an approximate inverse of df
            - df([z]) is the derivative of f (interval-)evaluated for [z]
-           
+
         Note that z0 in self.initial_shapes which are complex intervals
         containing only one value (the candidate solution given initially).
 
@@ -389,7 +389,7 @@ class KrawczykShapesEngine:
 
 
         Or some non-hyperbolic manifolds::
-        
+
             sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True)
             Traceback (most recent call last):
             ...

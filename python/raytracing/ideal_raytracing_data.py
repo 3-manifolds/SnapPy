@@ -35,7 +35,7 @@ class IdealRaytracingData(RaytracingData):
         {...}
 
     The compile time constants can similarly be obtained as dictionary::
-    
+
         >>> data.get_compile_time_constants() # doctest: +ELLIPSIS
         {...}
 
@@ -55,7 +55,7 @@ class IdealRaytracingData(RaytracingData):
         ...             [ 0.0 , 1.0 , 0.0 , 0.0 ],
         ...             [ 2.82, 0.0 , 3.0 , 0.0 ],
         ...             [ 0.0 , 0.0 , 0.0 , 1.0 ]])
-        >>> view_state = data.update_view_state(view_state, m) 
+        >>> view_state = data.update_view_state(view_state, m)
         >>> view_state    # doctest: +NUMERIC6
         ([     1.08997684        1e-16   0.43364676        1e-16 ]
         [          1e-16  -1.00000000         1e-16       1e-16 ]
@@ -501,7 +501,7 @@ def _cusp_view_matrix(tet, subsimplex, area):
     #    respectively.
 
     translation = (m_translation + l_translation) / 2
-    
+
     # A small factor to move the camera a little bit into the cusp neighborhood
     # to avoid z-Fighting.
     factor_to_move_inside = 1.0001
@@ -537,9 +537,9 @@ def _cusp_view_scale(tet, subsimplex, area):
     t = max(real_l_translation + m_translation.real(),
             real_l_translation - m_translation.real(),
             m_translation.imag())
-    
+
     return area.sqrt() * t
-    
+
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:
         for F in t3m.TwoSubsimplices:

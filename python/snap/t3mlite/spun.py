@@ -63,11 +63,12 @@ def shift_matrix(n):
             shifts[i+j, i+((j+1) % 3)] = -1
     return shifts
 
+
 def quad_vector_to_type_and_coeffs(quad_vector):
     """
     For an n-tetrahedra manifold, take a full quad vector
     of length 3n and store the quad type and weight for
-    each tetrahedron.  
+    each tetrahedron.
     """
     quad_types, coefficients = [], []
     quad_vector = list(quad_vector)
@@ -85,6 +86,7 @@ def quad_vector_to_type_and_coeffs(quad_vector):
 
     return quad_types, Vector(coefficients)
 
+
 class SpunSurface:
     """
     A spun normal surface in an ideal triangulation, as introduced by
@@ -98,7 +100,7 @@ class SpunSurface:
     z -> 0, z' -> 0, and z'' -> 0 respectively, as per Figure 3.1 of
     `[DG] <http://arxiv.org/abs/1102.4588>`_.  The quad types
     are numbered 0, 1, 2; the "None" quad type means a
-    tetrahedron contains no quads at all.  
+    tetrahedron contains no quads at all.
     """
     def __init__(self, manifold, quad_vector=None, quad_types=None, index=None):
         self._manifold = manifold

@@ -1,5 +1,5 @@
 """
-This code is almost entirely copied 
+This code is almost entirely copied
 
 https://github.com/drj11/pypng/blob/main/code/pripamtopng
 
@@ -9,6 +9,7 @@ his png module proper, but was moved elsewhere in 0.0.19.
 
 from array import array
 import png
+
 
 def read_pam_header(infile):
     """

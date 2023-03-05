@@ -277,12 +277,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 ray_end = vector([pt[0],pt[1],pt[2],RF(-depth)])
 
             ray_end = R13_normalise(ray_end)
-                
+
             # Distance of ray_end from origin
             dist = ray_end[0].arccosh()
             # Direction from origin to ray_end
             dir = vector([ray_end[1], ray_end[2], ray_end[3]])
-            
+
         # Normalize direction
         dir = dir.normalized()
 

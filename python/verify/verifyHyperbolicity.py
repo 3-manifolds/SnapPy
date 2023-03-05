@@ -36,7 +36,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     are also fulfilled and that all shapes have positive imaginary part.
     It will raise an exception if the verification fails.
     This is sufficient to prove that the manifold is indeed hyperbolic.
-    
+
     Since the given interval are supposed to contain a true solution of
     the rectangular gluing equations, the logarithmic gluing equations
     are known to be fulfilled up to a multiple of 2 pi i. Thus it is enough
@@ -48,7 +48,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         sage: M = Manifold("m019")
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
         ...    M, M.tetrahedra_shapes('rect', intervals=True))
-        
+
 
     The SnapPy triangulation of the following hyperbolic manifold contains
     actually negatively oriented tetrahedra::
@@ -59,7 +59,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         Traceback (most recent call last):
         ...
         ShapePositiveImaginaryPartNumericalVerifyError: Numerical verification that shape has positive imaginary part has failed: Im(0.4800996900657? - 0.0019533695046?*I) > 0
-        
+
 
     """
 
@@ -153,7 +153,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = None,
         sage: M = Manifold("m019")
         sage: M.verify_hyperbolicity() # doctest: +NUMERIC12
         (True, [0.780552527850? + 0.914473662967?*I, 0.780552527850? + 0.91447366296773?*I, 0.4600211755737? + 0.6326241936052?*I])
-    
+
         sage: M = Manifold("t02333(3,4)")
         sage: M.verify_hyperbolicity() # doctest: +NUMERIC9
         (True, [2.152188153612? + 0.284940667895?*I, 1.92308491369? + 1.10360701507?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.504866865874? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.589495705074? + 0.81267480427?*I])

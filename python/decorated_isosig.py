@@ -89,11 +89,11 @@ def decode_nonnegative_int(s):
 def encode_int(x):
     """
     Encodes an integer in the range [-2**90 + 1, 2**90 - 1] with a "stop"
-    at the end so a concatenation of such encodings is easily decodable.  
+    at the end so a concatenation of such encodings is easily decodable.
     The basic format is:
-    
+
     If x in [0...15], encode as a single letter in [a...p].
-    If x in [-15...-1] encode as a single letter in [P...B]. 
+    If x in [-15...-1] encode as a single letter in [P...B].
 
     Otherwise, the first letter specifies the length of
     encode_nonnegative_int(abs(x)) as well as sign(x), followed by the
@@ -291,7 +291,7 @@ def decorated_isosig(manifold, triangulation_class,
 def set_peripheral_from_decoration(manifold, decoration):
     """
     The manifold is assumed to already have a triangulation created
-    from the "bare" isosig.    
+    from the "bare" isosig.
     """
     dec = decode_integer_list(decoration)
     manifold.set_peripheral_curves('combinatorial')
@@ -466,6 +466,7 @@ def test_by_dehn_filling():
                 helper_test_by_dehn_filling(M)
 
     print("Tested %d randomly Dehn filled manifolds" % count)
+
 
 if __name__ == '__main__':
     test_integer_list_encoder()

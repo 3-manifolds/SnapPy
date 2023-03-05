@@ -38,9 +38,10 @@ def boundary_one(manifold):
         ans[v_init, e.Index] += -1
     return ans
 
+
 def boundary_maps(manifold):
     """
-    The boundary maps in the homology chain complex of the 
+    The boundary maps in the homology chain complex of the
     underlying cell-complex of a Mcomplex.
 
     >>> M = Mcomplex('o9_12345')

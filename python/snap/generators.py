@@ -2,18 +2,20 @@
 This has been moved to FundamentalPolyhedronEngine.
 Only the testing code was left here.
 
-Replicating how SnapPea finds the matices of the geometric generators,
-so that this can replicated using e.g. extended precision.  
+Replicating how SnapPea finds the matrices of the geometric generators,
+so that this can replicated using e.g. extended precision.
 """
 
 from .fundamental_polyhedron import *
 from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices
 
+
 # Testing code
 
 def matrix_norm(A):
     return max(map(abs, A.list()))
+
 
 def check_example(M, shapes=None):
     e = fromManifoldAndShapes(M, shapes)

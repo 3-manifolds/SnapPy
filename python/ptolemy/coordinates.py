@@ -128,7 +128,7 @@ class PtolemyCoordinates(dict):
 
     >>> old_precision = pari.set_real_precision(100) # with high precision
     >>> numerical_solutions = solution.numerical()
-    
+
     Check that it is a solution, numerically:
 
     >>> numerical_solutions[0].check_against_manifold(M, 1e-80)
@@ -154,7 +154,7 @@ class PtolemyCoordinates(dict):
     True
 
     Compute flattenings:
-    
+
     >>> flattenings = solution.flattenings_numerical()
 
     Compute complex volumes:
@@ -170,7 +170,7 @@ class PtolemyCoordinates(dict):
     >>> normalized = chernSimons * 6 / (pari('Pi')**2)
 
     Check that Chern Simons is zero up to 6 torsion:
-    
+
     >>> normalized - normalized.round() < 1e-9
     True
     """
@@ -248,7 +248,7 @@ class PtolemyCoordinates(dict):
     def has_obstruction(self):
         """
         Whether the Ptolemy variety has legacy obstruction class that
-        modifies the Ptolemy relation to 
+        modifies the Ptolemy relation to
         """
         N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
         return has_obstruction
@@ -275,7 +275,7 @@ class PtolemyCoordinates(dict):
         >>> solution = solutions[2]
 
         Turn into a numerical solution:
-        
+
         >>> old_precision = pari.set_real_precision(100) # with high precision
         >>> numerical_solutions = solution.numerical()
         >>> pari.set_real_precision(old_precision) # reset pari engine
@@ -303,7 +303,7 @@ class PtolemyCoordinates(dict):
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
         return the result.
-        
+
         See to_PUR of RUR.
 
         This conversion might lead to very large coefficients.
@@ -361,18 +361,18 @@ class PtolemyCoordinates(dict):
         """
         Compute cross ratios from Ptolemy coordinates. The cross ratios are
         according to the SnapPy convention, so we have::
-        
+
              z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-             
+
         where::
-        
+
              z   is at the edge 01 and equal to   s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
              zp  is at the edge 02 and equal to - s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
              zpp is at the edge 03 and equal to   s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
 
-        Note that this is different from the convention used in 
+        Note that this is different from the convention used in
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         Take an exact solution:
@@ -384,14 +384,14 @@ class PtolemyCoordinates(dict):
         Turn into cross Ratios:
 
         >>> crossRatios = solution.cross_ratios()
-        
+
         Get a cross ratio:
-        
+
         >>> crossRatios['zp_0010_0']
         Mod(-x, x^2 + x + 1)
 
         Check the relationship between cross ratios:
-        
+
         >>> crossRatios['z_0010_0'] == 1 - 1 / crossRatios['zp_0010_0']
         True
 
@@ -421,7 +421,7 @@ class PtolemyCoordinates(dict):
 
     def flattenings_numerical(self):
         """
-        Turn into numerical solutions and compute flattenings, see 
+        Turn into numerical solutions and compute flattenings, see
         help(snappy.ptolemy.coordinates.Flattenings)
         Also see numerical()
 
@@ -558,7 +558,7 @@ class PtolemyCoordinates(dict):
 
         See Definition 10.1:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -606,7 +606,7 @@ class PtolemyCoordinates(dict):
 
         See Definition 10.2:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         Note that this definition turned out to have the wrong sign. Multiply
@@ -646,7 +646,7 @@ class PtolemyCoordinates(dict):
         This matrix was labeled alpha^{v0v1v2} (v2 does not matter for non
         double-truncated simplex) in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4. Note that the ratio coordinate
@@ -690,7 +690,7 @@ class PtolemyCoordinates(dict):
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4.
@@ -736,9 +736,9 @@ class PtolemyCoordinates(dict):
         can be though of as doubly truncated simplices where all short edges
         are collapsed, hence labeled by the identity.
 
-        See equation 10.4 in 
+        See equation 10.4 in
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -976,9 +976,9 @@ class Flattenings(dict):
 
     We assign to each pair of parallel edges of each simplex a triple (w, z, p)
     such that::
-    
+
            w = log(z) + p * (2 * pi * i / N)   where N is fixed and even.
-           
+
     For N = 2, the three triples belonging to a simplex form a combinatorial
     flattening (w0, w1, w2) as defined in Definition 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
@@ -988,7 +988,7 @@ class Flattenings(dict):
     (w0, w1, w2) that gives an element in the generalized Extended Bloch group
     which is the Extended Bloch group corresponding to the Riemann surface
     given by::
-    
+
                  u1 * e^w0 + u2 * e^w1 = 1
 
     where u1^N = u2^N = 1.
@@ -1001,7 +1001,7 @@ class Flattenings(dict):
     This work has not been published yet.
 
     If f is a flattening, then in the notation of Neumann, the value of::
-    
+
         f['z_xxxx_y']    is (w0, z, p)
         f['zp_xxxx_y']   is (w1, z', q)
         f['zpp_xxxx_y']  is (w2, z'', r).
@@ -1152,7 +1152,7 @@ class Flattenings(dict):
         """
         Gives a flattening as triple [z;p,q] representing an element
         in the generalized Extended Bloch group similar to the way the
-        triple [z;p,q] is used in Lemma 3.2 in 
+        triple [z;p,q] is used in Lemma 3.2 in
         Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
         http://arxiv.org/abs/math.GT/0307092
         """
@@ -1217,8 +1217,8 @@ class Flattenings(dict):
     def check_against_manifold(self, M = None, epsilon = 1e-10):
         """
         Checks that the flattening really is a solution to the logarithmic
-        PGL(N,C) gluing equations of a manifold. Usage similar to 
-        check_against_manifold of Ptolemy Coordinates, see 
+        PGL(N,C) gluing equations of a manifold. Usage similar to
+        check_against_manifold of Ptolemy Coordinates, see
         help(ptolemy.Coordinates) for similar examples.
 
         === Arguments ===
@@ -1282,18 +1282,18 @@ class CrossRatios(dict):
     Represents assigned shape parameters/cross ratios as
     dictionary. The cross ratios are according to SnapPy convention, so we
     have::
-    
+
         z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-        
+
     where::
-    
+
         z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
         zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
         zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
 
-    Note that this is different from the convention used in 
+    Note that this is different from the convention used in
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 
@@ -1392,7 +1392,7 @@ class CrossRatios(dict):
         return the result.
 
         See to_PUR of RUR.
-        
+
         This conversion might lead to very large coefficients.
         """
 
@@ -1477,7 +1477,7 @@ class CrossRatios(dict):
         and the conventions in Definition 4.2 of
 
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -1501,7 +1501,7 @@ class CrossRatios(dict):
 
         See Definition 10.9:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -1532,11 +1532,11 @@ class CrossRatios(dict):
 
         This matrix was labeled alpha^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -1566,11 +1566,11 @@ class CrossRatios(dict):
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -1634,11 +1634,11 @@ class CrossRatios(dict):
 
         This matrix was labeled gamma^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -2253,7 +2253,7 @@ def _X(N, k, v):
 
     See (10.2) of
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 
@@ -2265,10 +2265,10 @@ def _H(N, k, x):
     """
     Returns the NxN diagonal matrix where the first k diagonal entries are x
     and all other entries are 1.
-    
+
     See (10.1) of
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 

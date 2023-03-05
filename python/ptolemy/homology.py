@@ -140,7 +140,7 @@ def homology_representatives(d1, d2, N):
 def _enumerate_from_basis(basis, l, N):
     """
     Given a list of pairs `(v_i, o_i)` where each `v_i` is a vector of length l
-    and an integer N > 2, iterate through all linear combinations 
+    and an integer N > 2, iterate through all linear combinations
     `k_0 v_0 + k_1 v_1 + ... + k_m v_m` (modulo N) where `k_i = 0, ..., o_i`.
 
     If basis is empty, just return zero vector of length l.

@@ -47,6 +47,7 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     return _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
                                                 cusp_area_matrix)
 
+
 def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
 
     """
@@ -62,9 +63,8 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
         ...             matrix([[10.0, 40.0],
         ...                     [40.0, 20.0]]))
         [3.1622776601683795, 4.47213595499958]
-    
-    """
 
+    """
     num_cusps = cusp_area_matrix.dimensions()[0]
 
     result = list(range(num_cusps)) # Make space for range; initial values irrelevant

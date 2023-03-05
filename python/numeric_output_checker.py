@@ -147,7 +147,7 @@ class NumericOutputChecker(doctest.OutputChecker):
     >>> b   = "[4.5000001, 67.00000001, 2.0000000000000000001e+3]"
     >>> N.compare_numeric(a, b, NUMERIC_DICT[6])
     ('OK', None)
-    >>> N.compare_numeric(a, b, NUMERIC_DICT[12])    
+    >>> N.compare_numeric(a, b, NUMERIC_DICT[12])
     ('NUMERIC', ([('4.5', '4.5000001', True, Decimal('1E-7')), ('6.7e1', '67.00000001', True, Decimal('1E-8')), ('2e+3', '2.0000000000000000001e+3', False, Decimal('1E-16'))], Decimal('1E-7')))
 
     Account for pari adding a space before the E::

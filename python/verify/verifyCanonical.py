@@ -42,7 +42,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     manifold M, return this triangulation if it has tetrahedral cells and can
     be verified using interval arithmetics with the optional, given precision.
     Otherwise, raises an Exception.
-    
+
     It fails when we call it on something which is not the canonical
     triangulation::
 
@@ -68,7 +68,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
       Traceback (most recent call last):
       ...
       TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
-    
+
     Has a cubical canonical cell::
 
        sage: M = Manifold("m412")
@@ -77,7 +77,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
        Traceback (most recent call last):
        ...
        TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
-    
+
     """
 
     # Get verified shape intervals
@@ -134,12 +134,12 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
        sage: K = exactly_checked_canonical_retriangulation(M, 300, 4)
 
     M's canonical cell decomposition has a cube, so non-tetrahedral::
-    
+
        sage: K.has_finite_vertices()
        True
 
     Has 12 tetrahedra after the retrianglation::
-    
+
       sage: K.num_tetrahedra()
       12
 
@@ -280,11 +280,11 @@ def verified_canonical_retriangulation(
     return its canonical retriangulation. Return ``None`` if it could not certify
     the result.
 
-    To compute the canonical retriangulation, it first prepares the manifold 
+    To compute the canonical retriangulation, it first prepares the manifold
     (filling all Dehn-filled cusps and trying to find a proto-canonical
     triangulation).
     It then tries to certify the canonical triangulation using interval
-    arithmetics. If this fails, it uses snap (using `LLL-algorithm 
+    arithmetics. If this fails, it uses snap (using `LLL-algorithm
     <http://en.wikipedia.org/wiki/Lenstra%E2%80%93Lenstra%E2%80%93Lov%C3%A1sz_lattice_basis_reduction_algorithm>`_)
     to guess
     exact representations of the shapes in the shape field and then certifies
@@ -312,7 +312,7 @@ def verified_canonical_retriangulation(
     ``exact_bits_prec_and_degrees = None``.
 
     More information on the canonical retriangulation can be found in the
-    SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of 
+    SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of
     `Fominykh, Garoufalidis, Goerner, Tarkaev, Vesnin <http://arxiv.org/abs/1502.00383>`_.
 
     Canonical cell decomposition of ``m004`` has 2 tetrahedral cells::
@@ -333,7 +333,7 @@ def verified_canonical_retriangulation(
        True
        sage: K.num_tetrahedra()
        18
-    
+
     Canonical cell decomposition of ``m412`` is a cube and has exactly 8
     symmetries::
 

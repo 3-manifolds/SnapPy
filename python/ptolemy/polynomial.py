@@ -395,11 +395,10 @@ class Polynomial():
                  for monomial in self._monomials]))
 
     def substitute(self, d):
-        """ 
+        """
         Take a dictionary mapping variable name -> polynomial and
         replace each variable by the corresponding polynomial.
         """
-
         variables = self.variables()
 
         skip_computation = True

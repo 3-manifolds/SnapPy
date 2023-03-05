@@ -11,19 +11,21 @@ def error(poly, z, a=ZZ(0)):
 
         poly(z) = a
 
-    fails to hold.  
+    fails to hold.
     """
     err = poly(z) - a
     if err == 0:
         return 0
     return z.prec() + ceil(log(abs(poly(z) - a), 2))
 
+
 def acceptable_error(poly, z, a, portion_bad):
     """
-    A error is judged as acceptable if poly(z) = a to within 
+    A error is judged as acceptable if poly(z) = a to within
     2^-(portion_bad*z.prec())
     """
     return error(poly, z, a) <= floor(portion_bad*z.prec())
+
 
 def best_algdep_factor(z, degree):
     if hasattr(z, 'algebraic_dependency'): # Sage >= 8.0

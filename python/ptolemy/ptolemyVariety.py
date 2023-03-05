@@ -313,7 +313,7 @@ class PtolemyVariety():
         """
 
         result = "{"
-        result += "'variable_dict' : \n     %s" % self.py_eval_variable_dict()
+        result += "'variable_dict' :\n     %s" % self.py_eval_variable_dict()
 
         # If we have a non-trivial generalized obstruction class,
         # add an extra key to the dictionary to mark it.

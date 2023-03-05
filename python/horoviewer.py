@@ -230,7 +230,7 @@ Use the View Options to select which components of the scene are drawn.
             volume_label.grid(row=n+1, column=3, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
 
-    def new_scene (self, new_nbhd):
+    def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
         self.empty = (self.nbhd is None)
         self.set_ties()

@@ -20,15 +20,17 @@ else:
     Object = object
     from .utilities import Matrix2x2 as matrix, powerset
     from ..number import Number
+
     def identity(A):
         return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
     abelian_group_elt = lambda v: v
 
-#----------------------------------------------------------------
+
+# ----------------------------------------------------------------
 #
 #  Abelianization of the fundamental group
 #
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 
 class MapToFreeAbelianization(Object):
     """

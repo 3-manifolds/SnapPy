@@ -83,9 +83,9 @@ def is_imaginary_part_bounded(z, v):
     """
     Check that the imaginary part of z is in (-v, v).
     """
-
     imag = z.imag()
     return -v < imag and imag < v
+
 
 @sage_method
 def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
@@ -94,7 +94,6 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     the complex volume given by R(z;p,q) (equation before Proposition 2.5 in
     Neumann's Extended Bloch group and the Cheeger-Chern-Simons class).
     """
-
     RIF = w0.parent().real_field()
     my_pi = RIF(pi)
 
@@ -103,7 +102,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
     # Note that the values computed for log(z) and log(1-z)
     # are not verified to have the imaginary part between -pi and pi.
-    logZ         =    w0 - my_pi * p * sage.all.I
+    logZ = w0 - my_pi * p * sage.all.I
     logOneMinusZ = - (w1 - my_pi * q * sage.all.I)
 
     # Neumann's formula for the complex volume is

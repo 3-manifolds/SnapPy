@@ -199,7 +199,7 @@ class ZoomSlider(ttk.Frame):
         num_digits = _num_digits(r - l)
 
         format_str1 = '%%.%df' % (num_digits + 1)
-        format_str2 = '%%.%df' %  num_digits
+        format_str2 = '%%.%df' % num_digits
 
         self.value_label.configure(text = format_str1 % self.current_value)
         self.min_label.configure(text = format_str2 % l)

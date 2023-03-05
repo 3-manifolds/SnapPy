@@ -45,23 +45,21 @@ def _r13_fixed_points_of_psl2c_matrix(m):
     """
     Unguarded version of r13_fixed_points_of_psl2c_matrix.
     """
+    return [ideal_point_to_r13(z, z.real().parent())
+            for z in _complex_fixed_points_of_psl2c_matrix(m)]
 
-    return [
-        ideal_point_to_r13(z, z.real().parent())
-        for z in _complex_fixed_points_of_psl2c_matrix(m) ]
 
 def _complex_fixed_points_of_psl2c_matrix(m):
     """
     Given a PSL(2,C)-matrix acting on the upper halfspace H^3, compute
     the two fixed points as complex numbers on the boundary of H^3.
     """
-
     # We need to solve for
     #    (m[0,0] * z + m[0,1]) / (m[1,0] * z +m[1,1]) = z
     # which gives a quadratic equation a * z^2 + b * z + c = 0 where
-    a =  m[1,0]
-    b =  m[1,1] - m[0,0]
-    c = -m[0,1]
+    a = m[1, 0]
+    b = m[1, 1] - m[0, 0]
+    c = -m[0, 1]
 
     # Use usual formula z = (-b +/- sqrt(b^2 - 4 * a * c)) / (2 * a)
     d = (b * b - 4 * a * c).sqrt()

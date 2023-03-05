@@ -52,6 +52,7 @@ class NotPU21Representation:
 
     def __init__(self, reason):
         self.reason = reason
+
     def __repr__(self):
         return "NotPU21Representation(reason = %r)" % self.reason
 
@@ -63,12 +64,14 @@ class NotPU21Representation:
 class NumericalMethodError(Exception):
     def __init__(self, method):
         self.method = method
+
     def __str__(self):
         return "Method %s only supported for numerical values" % self.method
 
 class ExactMethodError(Exception):
     def __init__(self, method):
         self.method = method
+
     def __str__(self):
         return "Method %s only supported for exact values" % self.method
 
@@ -1074,9 +1077,9 @@ class Flattenings(dict):
         log_all_cross_ratios = [ z.log() for z in all_cross_ratios ]
 
         def flattening_condition(r):
-            return (   3 *                 r  * [0]
-                     + 3 *                      [1]
-                     + 3 * (num_tets - r - 1) * [0])
+            return (3 * r * [0]
+                    + 3 * [1]
+                    + 3 * (num_tets - r - 1) * [0])
 
         flattening_conditions = [
             flattening_condition(r) for r in range(num_tets)]
@@ -2023,9 +2026,9 @@ def _ptolemy_to_cross_ratio(solution_dict,
         c1100 = get_ptolemy_coordinate((1,1,0,0))
         c0011 = get_ptolemy_coordinate((0,0,1,1))
 
-        z   =   (c1010 * c0101) / (c1001 * c0110)
-        zp  = - (c1001 * c0110) / (c1100 * c0011)
-        zpp =   (c1100 * c0011) / (c1010 * c0101)
+        z = (c1010 * c0101) / (c1001 * c0110)
+        zp = - (c1001 * c0110) / (c1100 * c0011)
+        zpp = (c1100 * c0011) / (c1010 * c0101)
 
         if has_obstruction:
             s0 = get_obstruction_variable(0)

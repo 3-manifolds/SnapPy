@@ -36,9 +36,9 @@ class Tetrahedron:
             self.Gluing[two_subsimplex] = perm
             tet.Neighbor[perm.image(two_subsimplex)] = self
             tet.Gluing[perm.image(two_subsimplex)] = inv(self.Gluing[two_subsimplex])
-# Reverse the orientation.  Vertices are relabelled by a transposition
-# and gluings are adjusted.
-#
+
+    # Reverse the orientation.  Vertices are relabelled by a transposition
+    # and gluings are adjusted.
     def reverse(self):
         transpo = Perm4((1, 0, 2, 3))
         nhbr = self.Neighbor.copy()
@@ -46,13 +46,12 @@ class Tetrahedron:
         for two_subsimplex in TwoSubsimplices:
             relabeled = transpo.image(two_subsimplex)
             if nhbr[two_subsimplex] is not None:
-                perm = (gluing[two_subsimplex]*transpo).tuple()
+                perm = (gluing[two_subsimplex] * transpo).tuple()
             else:
                 perm = None
             self.attach(relabeled, nhbr[two_subsimplex], perm)
 
-# Unglues and removes references to self from neighbor.
-#
+    # Unglues and removes references to self from neighbor.
     def detach(self, two_subsimplex):
         neighbor = self.Neighbor[two_subsimplex]
         if neighbor is None:

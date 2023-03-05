@@ -433,14 +433,15 @@ def barycentric_quad_embedding0(arrow, north_pole=None):
     verts = [e, b, w, a, e]
     for i in range(4):
         bdry_map = [None, None, f'x{i}', f'y{i}']
-        tet_verts =  [verts[i], verts[i+1], s, n]
+        tet_verts = [verts[i], verts[i + 1], s, n]
         ans.append((arrow.Tetrahedron,
                     tetrahedron_embedding(arrow, tet_verts, bdry_map)))
         arrow.next()
 
     return ans
 
-#arrow, tail, head, opp_tail, opp_head
+
+# arrow, tail, head, opp_tail, opp_head
 def barycentric_quad_embedding1(arrow, north_pole=None):
     """
     Take an arrow with 4 valent axis, then build embedding of the

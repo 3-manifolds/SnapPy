@@ -103,9 +103,10 @@ def good_simplification(manifold, max_tries=5):
         M, moves, unexpanded = tris_with_moves[0]
         T = McomplexWithExpansion(M._triangulation_data())
         T.perform_moves(moves, tet_stop_num=5)
-        final_moves =  geodesic_moves(T)
+        final_moves = geodesic_moves(T)
         T.perform_moves(final_moves)
         return M, T.move_memory, unexpanded
+
 
 if __name__ == '__main__':
     import doctest

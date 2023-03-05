@@ -108,16 +108,19 @@ class SelectableMessage(ttk.Frame):
     def copy(self, event):
         self.text.selection_get(selection='CLIPBOARD')
 
+
 class DirichletTab(PolyhedronViewer):
     def __init__(self, container, facedicts=[], title='Polyhedron Tab', parent=None):
         self.main_window = main_window
         self.style = style = SnapPyStyle()
         PolyhedronViewer.__init__(self, container, facedicts=facedicts,
                                   title=title, bgcolor=style.groupBG)
+
     def update_menus(self, menubar):
         menubar.children['help'].activate(
             [ app_menus.help_polyhedron_viewer_label,
               app_menus.help_report_bugs_label ])
+
 
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, title='Polyhedron Tab'):
@@ -723,11 +726,11 @@ class Browser(Tk_.Toplevel):
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name in ('Invariants', 'Link', 'Symmetry'):
             try:
-                selected =  self.selection_get()
+                selected = self.selection_get()
             except:
                 selected = False
             if selected:
-                return {'Copy' : self.edit_copy}
+                return {'Copy': self.edit_copy}
         return {}
 
     def edit_copy(self):

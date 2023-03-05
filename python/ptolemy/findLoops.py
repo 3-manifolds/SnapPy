@@ -156,20 +156,21 @@ def _perm4_iterator():
                     if v2 != v0 and v2 != v1:
                         yield v0, v1, v2, 6 - v0 - v1 - v2
 
+
 def _compute_origin(choose_generators_info):
     """
     Using the info from SnapPy's choose_generators_info, return the vertex
     (0, 1, 2) of the simplex that SnapPy used to compute a spanning tree of
     the dual 1-skeleton.
     """
-
     # Picks the one tetrahedron with generator_path = -1.
     # If choose_generators_info comes from a regina triangulation, then
     # generator_path is missing and we pick the first tetrahedron.
 
-    tet = [ info['index'] for info in choose_generators_info
-            if info.get('generator_path', -1) == -1 ] [0]
+    tet = [info['index'] for info in choose_generators_info
+           if info.get('generator_path', -1) == -1][0]
     return Vertex(tet, 0, 1, 2)
+
 
 def _compute_point_identification_dict(choose_generators_info):
     """

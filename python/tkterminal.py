@@ -15,23 +15,24 @@ icon_file = os.path.join(snappy_path, 'info_icon.gif')
 debug_Tk = False
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
-ansi_colors =  {'0;30m': 'Black',
-                '0;31m': 'Red',
-                '0;32m': 'Green',
-                '0;33m': 'Brown',
-                '0;34m': 'Blue',
-                '0;35m': 'Purple',
-                '0;36m': 'Cyan',
-                '0;37m': 'LightGray',
-                '1;30m': 'Black', #'DarkGray',
-                '1;31m': 'DarkRed',
-                '1;32m': 'SeaGreen',
-                '1;33m': 'Yellow',
-                '1;34m': 'LightBlue',
-                '1;35m': 'MediumPurple',
-                '1;36m': 'LightCyan',
-                '1;37m': 'White'}
+ansi_colors = {'0;30m': 'Black',
+               '0;31m': 'Red',
+               '0;32m': 'Green',
+               '0;33m': 'Brown',
+               '0;34m': 'Blue',
+               '0;35m': 'Purple',
+               '0;36m': 'Cyan',
+               '0;37m': 'LightGray',
+               '1;30m': 'Black', #'DarkGray',
+               '1;31m': 'DarkRed',
+               '1;32m': 'SeaGreen',
+               '1;33m': 'Yellow',
+               '1;34m': 'LightBlue',
+               '1;35m': 'MediumPurple',
+               '1;36m': 'LightCyan',
+               '1;37m': 'White'}
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
+
 
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):

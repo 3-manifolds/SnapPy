@@ -25,10 +25,10 @@ snappy.database.Manifold = snappy.SnapPy.Manifold
 
 # Augment tests for SnapPy with those that Cython missed
 
-missed_classes =   ['Triangulation', 'Manifold',
-  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
-  'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors']
+missed_classes = ['Triangulation', 'Manifold',
+                  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+                  'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
+                  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors']
 
 for A in missed_classes:
     snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
@@ -164,12 +164,13 @@ def runtests(verbose = False,
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
 
-    num_graphics_failures =  graphics_failures(
+    num_graphics_failures = graphics_failures(
         verbose=verbose,
-        windows = windows,
-        use_modernopengl = use_modernopengl)
+        windows=windows,
+        use_modernopengl=use_modernopengl)
 
     return result.failed + num_graphics_failures
+
 
 if __name__ == '__main__':
 

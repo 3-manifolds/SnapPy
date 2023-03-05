@@ -14,6 +14,7 @@ class Vertex:
         self.Edges = []        # incident Edges
         # An Edge will appear twice if both its endpoints
         # are equal to this Vertex
+
     def __repr__(self):
         if self.Index > -1:
             return ('v' + str(self.Index)

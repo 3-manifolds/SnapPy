@@ -134,7 +134,7 @@ OneSubsimplices = (E01,E02,E21,E03,E13,E32)
 ZeroSubsimplices = (V0,V1,V2,V3)
 
 # This dictionary maps the bitmap of a face to its index.
-FaceIndex =   { F0:0,  F1:1, F2:2, F3:3 }
+FaceIndex = {F0: 0, F1: 1, F2: 2, F3: 3}
 
 # This dictionary maps a directed edge to the tail of its opposite.
 

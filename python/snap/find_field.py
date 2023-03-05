@@ -50,9 +50,9 @@ def complex_to_lattice(z, d, a, N=None):
 
 class ApproximateAlgebraicNumber():
     """
-    An algebraic number which we can compute 
+    An algebraic number which we can compute
     to arbitrary precision.  Specified by a function
-    where f(prec) is the number to 2^prec bits.  
+    where f(prec) is the number to 2^prec bits.
     """
     def __init__(self, defining_function):
         if defining_function in QQ:
@@ -62,7 +62,7 @@ class ApproximateAlgebraicNumber():
         self._min_poly = None
 
     def __repr__(self):
-        return  '<ApproxAN: %s>' % CDF(self(100))
+        return '<ApproxAN: %s>' % CDF(self(100))
 
     @cached_method
     def __call__(self, prec):

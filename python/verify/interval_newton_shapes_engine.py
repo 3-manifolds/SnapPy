@@ -169,10 +169,10 @@ class IntervalNewtonShapesEngine:
         # Similar to log_gluing_LHS
         BaseField = shapes[0].parent()
         zero = BaseField(0)
-        one  = BaseField(1)
+        one = BaseField(1)
 
         # 1 /    z for each shape z
-        shape_inverses           = [ one / shape         for shape in shapes ]
+        shape_inverses = [ one / shape for shape in shapes ]
 
         # 1 / (1-z) for each shape z
         one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ]
@@ -180,13 +180,13 @@ class IntervalNewtonShapesEngine:
         gluing_LHS_derivatives = []
         for A, B, c in equations:
             row = []
-            for a, b, shape_inverse,  one_minus_shape_inverse in zip(
+            for a, b, shape_inverse, one_minus_shape_inverse in zip(
                 A, B, shape_inverses, one_minus_shape_inverses):
                 # Equation for the derivative
                 #     derivative = (   a /      z -  b / (1-z) )
                 derivative = zero
                 if not a == 0:
-                    derivative  = BaseField(int(a)) * shape_inverse
+                    derivative = BaseField(int(a)) * shape_inverse
                 if not b == 0:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
 

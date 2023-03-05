@@ -145,17 +145,17 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
 
     is_prime = (prime_str is None) or (prime_str.lower() == 'prime')
 
-    return  PtolemyVarietyPrimeIdealGroebnerBasis(
-        polys = polys,
-        term_order = term_order,
-        size = processFileBase.parse_int_or_empty(size_str),
-        dimension = dimension,
-        is_prime = is_prime,
-        free_variables = free_vars,
-        py_eval = py_eval,
-        manifold_thunk = manifold_thunk,
-        witnesses = witnesses,
-        genus = genus)
+    return PtolemyVarietyPrimeIdealGroebnerBasis(
+        polys=polys,
+        term_order=term_order,
+        size=processFileBase.parse_int_or_empty(size_str),
+        dimension=dimension,
+        is_prime=is_prime,
+        free_variables=free_vars,
+        py_eval=py_eval,
+        manifold_thunk=manifold_thunk,
+        witnesses=witnesses,
+        genus=genus)
 
 
 def triangulation_from_magma(text):

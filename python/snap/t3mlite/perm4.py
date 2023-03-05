@@ -61,11 +61,10 @@ class Perm4Basic:
         9
         """
         image = 0
-        mask = 1
         for i in range(4):
             if bitmap & (1 << i):
                 image = image | (1 << self.dict[i])
-        return  image
+        return image
 
     def __repr__(self):
         return str(self.tuple())
@@ -78,7 +77,6 @@ class Perm4Basic:
         for i in a_tuple:
             image.append(self.dict[i])
         return tuple(image)
-
 
     def __getitem__(self, index):
         """

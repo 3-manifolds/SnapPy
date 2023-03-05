@@ -821,13 +821,13 @@ def _opposite_signs(left, right, prec):
         return None
 
     # Try to determine sign of left expression.
-    left_negative    = bool(left_interval  < 0)
-    left_positive    = bool(left_interval  > 0)
-    left_determined  = left_negative  or left_positive
+    left_negative = bool(left_interval < 0)
+    left_positive = bool(left_interval > 0)
+    left_determined = left_negative or left_positive
 
     # Try to determine sign of right expression
-    right_negative   = bool(right_interval < 0)
-    right_positive   = bool(right_interval > 0)
+    right_negative = bool(right_interval < 0)
+    right_positive = bool(right_interval > 0)
     right_determined = right_negative or right_positive
 
     # If both signs could be determined

@@ -501,7 +501,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
         phi = MapToGroupRingOfFreeAbelianization(G, F)
 
     # Make sure this special algorithm applies.
-    assert  len(rels) == len(gens) - 1 and len(phi.range().gens()) == 1
+    assert len(rels) == len(gens) - 1 and len(phi.range().gens()) == 1
 
     # Want the first variable to be homologically nontrivial
     i0 = [i for i, g in enumerate(gens) if phi(g) != 1][0]
@@ -514,18 +514,18 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
     if not wada_conventions:   # Using the conventions of our paper.
         d2 = [ [fox_derivative_with_involution(R, phialpha, g) for R in rels] for g in gens]
         d2 = block_matrix(d2, nrows=k, ncols=k-1)
-        d1 = [phialpha(g.swapcase())  - 1  for g in gens]
+        d1 = [phialpha(g.swapcase()) - 1 for g in gens]
         d1 = block_matrix(d1, nrows=1, ncols=k)
         dsquared = d1 * d2
 
     else: # Using those implicit in Wada's paper.
         d2 = [ [fox_derivative(R, phialpha, g) for g in gens] for R in rels]
         d2 = block_matrix(sum(d2, []), nrows=k-1, ncols=k)
-        d1 = [phialpha(g)  - 1  for g in gens]
+        d1 = [phialpha(g) - 1 for g in gens]
         d1 = block_matrix(d1, nrows=k, ncols=1)
         dsquared = d2 * d1
 
-    if not matrix_has_small_entries( dsquared , epsilon ):
+    if not matrix_has_small_entries( dsquared, epsilon ):
         raise TorsionComputationError("(boundary)^2 != 0")
 
     T = last_square_submatrix(d2)

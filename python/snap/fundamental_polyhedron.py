@@ -531,7 +531,7 @@ def _negate_matrix_to_match_kernel(m, snappeaM):
     # choice that the SnapPea kernel made.
 
     if diff_plus < diff_minus:
-        return  m
+        return m
     else:
         return -m
 

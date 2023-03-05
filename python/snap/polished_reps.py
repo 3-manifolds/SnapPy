@@ -92,13 +92,13 @@ def matrix_norm(A):
     return max( [abs(a) for a in A.list()])
 
 def matrix_difference_norm(A, B):
-    return max([abs(a - b) for a,b in zip(A.list(), B.list())])
+    return max([abs(a - b) for a, b in zip(A.list(), B.list())])
 
 def projective_distance(A, B):
     return min( matrix_norm(A-B), matrix_norm(A+B) )
 
 def compare_matrices(Mats0, Mats1):
-    return  max([projective_distance(A, B) for A,B in zip(Mats0, Mats1)])
+    return max([projective_distance(A, B) for A, B in zip(Mats0, Mats1)])
 
 def make_epsilon(A):
     prec = A.base_ring().precision()
@@ -229,8 +229,8 @@ class ManifoldGroup(MatrixRepresentation):
         return self(word)
 
     def check_representation(self):
-        relator_matrices = [self.SL2C(R) for R in self.relators()]
-        return  max([projective_distance(A, identity(A)) for A in relator_matrices])
+        relator_matrices = (self.SL2C(R) for R in self.relators())
+        return max(projective_distance(A, identity(A)) for A in relator_matrices)
 
     def cusp_shape(self, cusp_num=0):
         """

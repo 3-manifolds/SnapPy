@@ -555,15 +555,15 @@ class PtolemyVariety():
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
 
-        return processFileDispatch.parse_solutions(text, numerical = numerical)
+        return processFileDispatch.parse_solutions(text, numerical=numerical)
 
     def __repr__(self):
 
-        res =  "Ptolemy Variety for %s, N = %d" % (self._manifold.name(),
-                                                   self._N)
-        if not self._obstruction_class is None:
+        res = "Ptolemy Variety for %s, N = %d" % (self._manifold.name(),
+                                                  self._N)
+        if self._obstruction_class is not None:
             res += ", obstruction_class = "
-            if not self._obstruction_class._index is None:
+            if self._obstruction_class._index is not None:
                 res += "%d" % self._obstruction_class._index
                 if isinstance(self._obstruction_class,
                               PtolemyGeneralizedObstructionClass):
@@ -860,7 +860,7 @@ def _identified_variables_canonize(identified_variables):
 def _canonical_representative_to_polynomial_substituition(
         canonical_representative, order_of_u):
 
-    result = { }
+    result = {}
 
     for var1, signed_var2 in canonical_representative.items():
         sign, power, var2 = signed_var2
@@ -876,12 +876,13 @@ def _canonical_representative_to_polynomial_substituition(
                  u ** (power % order_of_u))
 
             if var2 == 1:
-                result[var1] =  sign_and_power
+                result[var1] = sign_and_power
             else:
                 result[var1] = (sign_and_power *
                                 Polynomial.from_variable_name(var2))
 
     return result
+
 
 def _retrieve_url(url):
 

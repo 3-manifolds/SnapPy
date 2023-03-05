@@ -70,15 +70,17 @@ def can_straighten_bend(arc_a, arc_b, arcs, return_obstruction=False):
 
     return (True, None) if return_obstruction else True
 
+
 def pushable_tri_in_tet(arcs):
     for arc_a in arcs:
         if arc_a.start.on_boundary() and arc_a.end.is_interior():
             arc_b = arc_a.next
             start_zeros = arc_a.start.zero_coordinates()
-            end_zeros =  arc_b.end.zero_coordinates()
+            end_zeros = arc_b.end.zero_coordinates()
             if start_zeros == end_zeros:
                 if can_straighten_bend(arc_a, arc_b, arcs):
                     return arc_a, arc_b
+
 
 def pair_arcs_across_face(face):
     if face.IntOrBdry == 'bdry':

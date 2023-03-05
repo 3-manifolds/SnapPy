@@ -155,7 +155,9 @@ def print_results(module, results):
         else:
             root.update()
     print(module.__name__ + ':')
-    print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
+    print('   %s failures out of %s tests.' % (results.failed,
+                                               results.attempted))
+
 
 def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())

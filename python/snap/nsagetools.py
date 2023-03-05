@@ -161,18 +161,18 @@ def homological_longitude(manifold, cusp=None):
     G = manifold.fundamental_group()
     f = MapToFreeAbelianization(G)
     m, l = G.peripheral_curves()[cusp]
-    kernel_basis =  matrix(ZZ, [f(m), f(l)]).left_kernel().basis()
+    kernel_basis = matrix(ZZ, [f(m), f(l)]).left_kernel().basis()
     if len(kernel_basis) >= 2:
         raise ValueError('Every curve on cusp is homologically trivial')
     if len(kernel_basis) == 0:
         return None
     return kernel_basis[0]
 
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 #
 #  Computing the Alexander polynomial
 #
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 
 
 class MapToGroupRingOfAbelianization(MapToAbelianization):
@@ -238,10 +238,10 @@ def fox_derivative(word, phi, var):
 
     R, phi_ims, fox_ders = setup_fox_derivative(word, phi, var)
     D = 0
-    curr_prod = R.one()
     for w in reverse_word(word):
-        D = fox_ders[w] + phi_ims[w]*D
+        D = fox_ders[w] + phi_ims[w] * D
     return D
+
 
 def fox_derivative_with_involution(word, phi, var):
     """
@@ -253,10 +253,10 @@ def fox_derivative_with_involution(word, phi, var):
     """
     R, phi_ims, fox_ders = setup_fox_derivative(word, phi, var, involute=True)
     D = 0
-    curr_prod = R.one()
     for w in reverse_word(word):
-        D = fox_ders[w] + D*phi_ims[w]
+        D = fox_ders[w] + D * phi_ims[w]
     return D
+
 
 # It's best to deal with matrices of polynomials rather than Laurent
 # polynomials, so we need to be able to clear denominators.  This add
@@ -421,7 +421,7 @@ def univ_abs(z):
 
 
 def univ_matrix_norm(A):
-    return max([0,] + [univ_abs(a) for a in A.list()])
+    return max([0] + [univ_abs(a) for a in A.list()])
 
 
 def matrix_has_small_entries(A, bound):
@@ -624,6 +624,7 @@ def test_rep(G, phialpha):
         return prod(phialpha(x) for x in w)
     return max([univ_matrix_norm(manually_apply_word(R) - 1) for R in G.relators()])
 
+
 @sage_method
 def hyperbolic_SLN_torsion(manifold, N, bits_prec=100):
     """
@@ -635,12 +636,12 @@ def hyperbolic_SLN_torsion(manifold, N, bits_prec=100):
         sage: [M.hyperbolic_SLN_torsion(N).degree() for N in [2, 3, 4]]
         [18, 27, 36]
     """
-
     G = alpha = polished_holonomy(manifold, bits_prec)
     phi = MapToGroupRingOfFreeAbelianization(G, alpha('a').base_ring())
     phialpha = PhiAlphaN(phi, alpha, N)
-    assert test_rep(G, phialpha) < ZZ(2)^(bits_prec//2)
+    assert test_rep(G, phialpha) < ZZ(2)**(bits_prec // 2)
     return compute_torsion(G, bits_prec, phialpha=phialpha, symmetry_test=False)
+
 
 @sage_method
 def hyperbolic_adjoint_torsion(manifold, bits_prec=100):

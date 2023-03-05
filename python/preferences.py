@@ -198,7 +198,7 @@ class PreferenceDialog(Dialog):
         sizer.insert(0, current_font['size'] )
         sizer.bind('<Return>', self.set_font_sample)
         sizer.bind('<Tab>', self.set_font_sample)
-        self.current_size =  current_font['size']
+        self.current_size = current_font['size']
         sizer.grid(row=0, column=2, sticky=Tk_.W, pady=(20,0))
         label = ttk.Label(font_frame, text='Weight: ')
         label.grid(row=1, column=1, sticky=Tk_.E)

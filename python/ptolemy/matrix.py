@@ -155,6 +155,7 @@ def _internal_to_pari(m):
         num_rows,num_cols,
         [i for row in m for i in row])
 
+
 def _expand_square_matrix(m, num_cols_rows):
 
     def upleft(row):
@@ -169,14 +170,14 @@ def _expand_square_matrix(m, num_cols_rows):
     def downright(row):
         return [1 if row == col else 0 for col in range(num_cols_rows)]
 
-    up   = [  upleft(row) +   upright(row) for row in range(len(m))]
+    up = [upleft(row) + upright(row) for row in range(len(m))]
     down = [downleft(row) + downright(row) for row in range(num_cols_rows)]
 
     return up + down
 
 
 def _identity_matrix(s):
-    return _expand_square_matrix([],s)
+    return _expand_square_matrix([], s)
 
 
 def _get_only_non_zero_entry_in_col(m, col):

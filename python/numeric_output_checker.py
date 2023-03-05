@@ -198,17 +198,17 @@ class NumericOutputChecker(doctest.OutputChecker):
         for i in range(1, len(split_want), number_split_stride):
             # Number how it literally appears
             number_want = split_want[i]
-            number_got  = split_got [i]
+            number_got = split_got[i]
 
             # Check whether both intervals or numbers
             is_interval_want = bool(split_want[i + 2])
-            is_interval_got  = bool(split_got [i + 2])
+            is_interval_got = bool(split_got[i + 2])
             if is_interval_want != is_interval_got:
                 return ('TYPE', (is_interval_want, number_got))
 
             # Number (or crushed interval) as decimal.Decimal
-            decimal_want = to_decimal(split_want[i : i + number_group_count])
-            decimal_got  = to_decimal(split_got [i : i + number_group_count])
+            decimal_want = to_decimal(split_want[i: i + number_group_count])
+            decimal_got = to_decimal(split_got[i: i + number_group_count])
 
             # Compute diff
             diff = abs(decimal_want - decimal_got)

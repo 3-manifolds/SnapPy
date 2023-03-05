@@ -188,6 +188,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def _noalgebra(self, other):
         raise TypeError('To do matrix algebra, please install numpy '
                         'or run SnapPy in Sage.')
+
     def entries(self):
         return [x for row in self.data for x in row]
 

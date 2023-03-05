@@ -462,7 +462,6 @@ def _matrix_taking_triple_to_triple(a, b):
 
         k = [(b2-b0)/(b2-b1)] * [(a2-a1)/(a2-a0)]
     """
-
     # Let's make it so that a[0], a[1], and b[0] are never infinite
 
     (a0, a1, a2), (b0, b1, b2) = _normalize_points(a,b)
@@ -472,23 +471,22 @@ def _matrix_taking_triple_to_triple(a, b):
     if b1 == Infinity:
         kb, b1kb = 0, -(b2 - b0)
     else:
-        kb =  (b2 - b0)/(b2 - b1) if b2 != Infinity else 1
+        kb = (b2 - b0)/(b2 - b1) if b2 != Infinity else 1
         b1kb = b1 * kb
 
-    k = kb*ka
+    k = kb * ka
 
-    A = matrix( [  ( b1kb * ka - b0,   b0*a1 - a0*b1kb*ka),
-                   (k - 1, a1 - k*a0)])
+    return matrix([(b1kb * ka - b0, b0 * a1 - a0 * b1kb * ka),
+                   (k - 1, a1 - k * a0)])
 
-    return A
 
 def _adjoint2(m):
     """
     Sage matrix.adjoint() produces an unnecessary large interval for
     ComplexIntervalField entries.
     """
+    return matrix([[m[1, 1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
-    return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
 def _perform_word_moves(matrices, G):
     mats = [ None ] + matrices

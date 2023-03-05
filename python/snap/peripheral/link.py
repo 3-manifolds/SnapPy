@@ -90,7 +90,7 @@ class LinkSurface(surface.Surface):
             sign = edge.orientation_with_respect_to(tet, a, b)
             for (v, s) in [(a, sign), (b, -sign)]:
                 label = s*(edge.Index + 1)
-                i = TruncatedSimplexCorners[v].index(a|b)
+                i = TruncatedSimplexCorners[v].index(a | b)
                 tri = tet.CuspCorners[v]
                 tri.vertices[i].index = label
 

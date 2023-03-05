@@ -158,18 +158,22 @@ perm_basic_by_index = [Perm4Basic(t) for t in S4_tuples]
 def perm_basic_to_index(perm):
     return perm_tuple_to_index[perm.tuple()]
 
-perm_signs_by_index = {i:perm.sign() for i, perm in enumerate(perm_basic_by_index)}
 
-bitmap_images =  {(i, bitmap):perm.image(bitmap)
-                  for bitmap in range(16)
-                  for i, perm in enumerate(perm_basic_by_index)}
+perm_signs_by_index = {i: perm.sign()
+                       for i, perm in enumerate(perm_basic_by_index)}
 
-index_of_inverse_by_index = {i:perm_basic_to_index(inv(perm))
+bitmap_images = {(i, bitmap): perm.image(bitmap)
+                 for bitmap in range(16)
+                 for i, perm in enumerate(perm_basic_by_index)}
+
+index_of_inverse_by_index = {i: perm_basic_to_index(inv(perm))
                              for i, perm in enumerate(perm_basic_by_index)}
 
-index_mult_table_by_index = {(i, j):perm_basic_to_index(P*Q)
+index_mult_table_by_index = {(i, j): perm_basic_to_index(P * Q)
                        for i, P in enumerate(perm_basic_by_index)
                        for j, Q in enumerate(perm_basic_by_index)}
+
+
 class Perm4():
     """
     Class Perm4: A permutation of {0,1,2,3}.

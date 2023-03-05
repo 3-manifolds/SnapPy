@@ -46,8 +46,8 @@ MeetsQuad = {E01:Vector((1,1,0)), E02:Vector((1,0,1)), E21:Vector((0,1,1)),
 MeetsTri = {E01:Vector((1,1,0,0)), E02:Vector((1,0,1,0)), E21:Vector((0,1,1,0)),
             E32:Vector((0,0,1,1)), E31:Vector((0,1,0,1)), E03:Vector((1,0,0,1))}
 
-MeetsOct =  {E01:Vector((1,1,2)), E02:Vector((1,2,1)), E21:Vector((2,1,1)),
-             E32:Vector((1,1,2)), E31:Vector((1,2,1)), E03:Vector((2,1,1))}
+MeetsOct = {E01:Vector((1,1,2)), E02:Vector((1,2,1)), E21:Vector((2,1,1)),
+            E32:Vector((1,1,2)), E31:Vector((1,2,1)), E03:Vector((2,1,1))}
 
 DisjointQuad = {E01:2, E02:1, E21:0,
                 E32:2, E31:1, E03:0}

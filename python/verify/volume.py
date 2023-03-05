@@ -5,6 +5,7 @@ if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     try:
         import sage.rings.abc
+
         def is_ComplexIntervalField(z):
             return isinstance(z, sage.rings.abc.ComplexIntervalField)
     except ImportError:

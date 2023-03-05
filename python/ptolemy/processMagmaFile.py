@@ -216,7 +216,7 @@ def run_magma(content,
               filename_base, memory_limit, directory, verbose):
 
     """
-    call magma on the given content and 
+    call magma on the given content and
     """
 
     magma = magma_executable()
@@ -276,18 +276,18 @@ CS_known -0.0000000000000001
     torus   0.000000000000   0.000000000000
 
 2
-   1    1    1    1 
+   1    1    1    1
  0132 1302 1023 2031
-   0    0    0    0 
+   0    0    0    0
   0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  1  0 -1 -1  0  2 -1  0 -1  0  1  0  1 -1  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0.500000000000   0.866025403784
 
-   0    0    0    0 
+   0    0    0    0
  0132 1302 1023 2031
-   0    0    0    0 
+   0    0    0    0
   0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  1 -2  1  1  0  0 -1  0  1  0 -1  0 -1  1  0
@@ -297,7 +297,7 @@ CS_known -0.0000000000000001
 
 ==TRIANGULATION=ENDS==
 PY=EVAL=SECTION=BEGINS=HERE
-{'variable_dict' : 
+{'variable_dict' :
      (lambda d, negation = (lambda x:-x): {
           'c_1020_0' : d['c_0012_1'],
           'c_1020_1' : d['1'],

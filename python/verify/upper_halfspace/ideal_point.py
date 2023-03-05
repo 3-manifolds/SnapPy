@@ -1,7 +1,7 @@
 """
 We have two representations of a point in the boundary of the upper half space model
 **H**\\ :sup:`3`:
- 
+
   - :class:`ProjectivePoint` encapsulate it as an element in **CP**\\ :sup:`1`. It uses intervals
     and can thus represent a neighborhood of infinity.
   - as a one point compactification of **C**.
@@ -84,10 +84,10 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
     from c perpendicular to the side a b. Call the intersection of the line
     with the side a b the midpoint. This function returns this point moved
     towards a by hyperbolic distance log(offset)::
-    
+
         sage: from sage.all import CIF, RIF
         sage: compute_midpoint_of_triangle_edge_with_offset( # doctest: +NUMERIC12
-        ...       [ CIF(0), Infinity, CIF(1) ], RIF(5.0)) 
+        ...       [ CIF(0), Infinity, CIF(1) ], RIF(5.0))
         FinitePoint(0, 0.2000000000000000?)
 
     """
@@ -191,10 +191,10 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
         sage: z1 = CIF(1)
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, Infinity])
         [+infinity .. +infinity]
-        
+
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, CIF(0.5, 0.8)]) # doctest: +NUMERIC12
         0.556250000000000?
-        
+
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, CIF(10, 0.001)]) # doctest: +NUMERIC12
         5.000000025000000?
 

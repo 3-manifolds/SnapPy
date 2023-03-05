@@ -29,7 +29,7 @@ class ViewScaleController:
         self.update_function = update_function
 
         self.update()
-        
+
         self.scale.set_callback(self.scale_command)
 
     def scale_command(self, value):
@@ -37,7 +37,7 @@ class ViewScaleController:
         parameter_interval = _parameter_interval[perspective_type]
         if not parameter_interval:
             return
-        
+
         parameter = _linear_remap(
             value,
             (self.scale.left_end, self.scale.right_end),

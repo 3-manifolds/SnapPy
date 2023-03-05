@@ -180,7 +180,7 @@ class SqrtLinCombination():
     cancel the two sqrt's and apply the common r_{i,j} to the c_i of the result
     instead. Thus, the following procedure for determining whether D == 0 will
     eventually terminate:
-    
+
     - if the number of terms n is 0, return True
     - if the number of terms n is 1, return c_1 == 0
     - if there is a r_{i,j} common to each summand, factor it out

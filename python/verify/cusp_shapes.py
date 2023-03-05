@@ -3,6 +3,7 @@ from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['NonorientableManifoldError', 'compute_cusp_shapes']
 
+
 class NonorientableManifoldError(RuntimeError):
     """
     Exception raised when trying to compute cusp shapes for a non-orientable
@@ -14,6 +15,7 @@ class NonorientableManifoldError(RuntimeError):
     def __str__(self):
         return (('Cannot compute cusp shapes for non-orientable '
                  'manifold %s') % self.manifold)
+
 
 def compute_cusp_shapes(manifold, verified, bits_prec = None):
     """
@@ -28,7 +30,7 @@ def compute_cusp_shapes(manifold, verified, bits_prec = None):
     sage: M = Manifold('s843')
     sage: M.cusp_info('shape', verified = True) # doctest: +NUMERIC12
     [0.46738227587? + 1.19036005068?*I, 0.0841873244146? + 1.0506945576790?*I]
-    
+
     sage: M.cusp_info('shape', verified = True, bits_prec = 100) # doctest: +NUMERIC21
     [0.4673822758634149679181698? + 1.1903600506742881207098974?*I, 0.084187324414612694374797272? + 1.050694557679002004845675723?*I]
     """

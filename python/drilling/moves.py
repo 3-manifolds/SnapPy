@@ -351,7 +351,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
             retrace_direction = +1
 
             start_j = j
-            
+
             if end_subsimplex in simplex.ZeroSubsimplices:
                 end_cell_dimension = 0
             elif end_subsimplex == simplex.T:

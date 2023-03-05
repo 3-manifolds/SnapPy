@@ -218,17 +218,17 @@ class InsideViewer(ttk.Frame):
     def perspective_type_changed(self):
         self.view_scale_controller.update()
         self.widget.redraw_if_initialized()
-    
+
     def set_camera_cusp_view(self, which_cusp):
         self.widget.view_state, view_scale = (
             self.widget.raytracing_data.cusp_view_state_and_scale(
                 which_cusp))
 
         extra_scale = 1.1
-        
+
         self.widget.ui_uniform_dict['perspectiveType'][1] = 1
         self.widget.ui_uniform_dict['viewScale'][1] = float(extra_scale * view_scale)
-        
+
         self.perspective_type_controller.update()
         self.perspective_type_changed()
 

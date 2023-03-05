@@ -48,9 +48,10 @@ def klein_stl(face_dicts):
             yield (vertices[0], vertices[i+1], vertices[i+2])
     return
 
+
 def klein_cutout_stl(face_dicts, shrink_factor=0.9):
     ''' Yield triangles describing these faces after removing a fraction of the interior.
-    
+
     The fraction removed is given by shrink_factor. '''
     for face in face_dicts:
         vertices = face['vertices']
@@ -83,7 +84,7 @@ def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutof
 def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     """
     Yield the lines of an stl file corresponding to the solid given by face_dicts that is suitable for 3d printing.
-    
+
     Arguments can be given to modify the model produced:
 
     - model='klein' -- (alt. 'poincare') the model of HH^3 to use.

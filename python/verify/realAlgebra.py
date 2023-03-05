@@ -130,8 +130,9 @@ def _real_or_imaginary_part_of_power_of_complex_number(n, start):
 def _real_or_imaginary_part_for_polynomial_in_complex_variable(polynomial,
                                                                start):
     """
-    Given a polynomial p with rational coefficients, return the 
+    Given a polynomial p with rational coefficients, return the
     real (start = 0) / imaginary (start = 1) part of p(x + y * I).
+
     The result is a sage symbolic expression in x and y with rational
     coefficients.
     """

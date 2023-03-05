@@ -5,13 +5,14 @@ from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionCla
 from .ptolemyVariety import PtolemyVariety
 from .utilities import MethodMappingList
 
+
 def _gcd(s, t):
     if t == 0:
         return s
     return _gcd(t, s % t)
 
-def get_ptolemy_obstruction_classes(manifold):
 
+def get_ptolemy_obstruction_classes(manifold):
     """
     Generates a list of obstruction cocycles representing each class in
     H^2(M,bd M; Z/2) suitable as argument for get_ptolemy_variety.
@@ -44,15 +45,15 @@ def get_ptolemy_obstruction_classes(manifold):
     PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
 
     Construct Ptolemy variety for non-trivial obstruction class:
-    
+
     >>> p = get_ptolemy_variety(M, N = 2, obstruction_class = c[1])
 
     Short cut for the above code:
-    
+
     >>> p = get_ptolemy_variety(M, N = 2, obstruction_class = 1)
 
     Obstruction class only makes sense for even N:
-    
+
     >>> p = get_ptolemy_variety(M, N = 3, obstruction_class = c[1])
     Traceback (most recent call last):
         ...
@@ -60,7 +61,7 @@ def get_ptolemy_obstruction_classes(manifold):
 
 
     When specifying N = 3, it automatically uses generalized obstruction class.
-    
+
     >>> len(get_ptolemy_variety(M, N = 3, obstruction_class = 'all'))
     2
     """
@@ -94,7 +95,7 @@ def get_generalized_ptolemy_obstruction_classes(manifold, N):
     [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([3, 0, 0, 1]), PtolemyGeneralizedObstructionClass([2, 0, 0, 2])]
     >>> get_generalized_ptolemy_obstruction_classes(M, 5)
     [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([4, 0, 0, 1])]
-  
+
     >>> M = Manifold("m202")
     >>> len(get_generalized_ptolemy_obstruction_classes(M, 2))
     4
@@ -102,7 +103,7 @@ def get_generalized_ptolemy_obstruction_classes(manifold, N):
     5
     >>> len(get_generalized_ptolemy_obstruction_classes(M, 4))
     10
-    
+
     >>> M = Manifold("m207")
     >>> len(get_generalized_ptolemy_obstruction_classes(M, 2))
     2
@@ -179,9 +180,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     (1) Garoufalidis, Thurston, Zickert
     The Complex Volume of SL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1111.2828
-    
+
     (2) Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
 
     The variety can be exported to magma or sage and solved there. The
@@ -194,7 +195,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     obstruction_class --- class from Definition 1.7 of (1).
     None for trivial class or a value returned from get_ptolemy_obstruction_classes.
     Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
-    for each obstruction. For easier iteration, can set obstruction_class to 
+    for each obstruction. For easier iteration, can set obstruction_class to
     an integer.
 
     simplify --- boolean to indicate whether to simplify the equations which
@@ -210,19 +211,19 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     Defaults to False.
 
     === Examples for 4_1 ===
-    
+
     >>> from snappy import Manifold
     >>> M = Manifold("4_1")
 
     Get the varieties for all obstruction classes at once (use
     help(varieties[0]) for more information):
-    
+
     >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all")
 
     Print the variety as an ideal (sage object) for the non-trivial class:
 
     >>> varieties[1].ideal    #doctest: +SKIP
-    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
+    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field
     (skip doctest because example only works in sage and not plain python)
 
     >>> for eqn in varieties[1].equations:
@@ -232,7 +233,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
          - 1 + c_0011_0
 
     Generate a magma input to compute Groebner basis for N = 3:
-    
+
     >>> p = get_ptolemy_variety(M, N = 3)
     >>> s = p.to_magma()
 
@@ -252,7 +253,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     Call p.compute_solutions() to automatically call magma on the above output
     and produce exact solutions!!!
-    
+
     >>> try:
     ...     sols = p.compute_solutions(verbose)
     ... except:
@@ -261,7 +262,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     === If you do not have a magma installation ===
 
     Load a precomputed example from magma which is provided with the package:
-    
+
     >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma, triangulation_from_magma
     >>> print(_magma_output_for_4_1__sl3)      #doctest: +ELLIPSIS
     <BLANKLINE>
@@ -286,7 +287,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     Pick the first solution of the three different solutions (up to Galois
     conjugates):
-    
+
     >>> len(sols)
     3
     >>> solution = sols[0]
@@ -309,7 +310,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     === ONLY DOCTESTS, NOT PART OF DOCUMENTATION ===
 
     >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all", eliminate_fixed_ptolemys = True)
-    
+
     >>> for eqn in varieties[1].equations:
     ...     print("    ", eqn)
          1 - c_0101_0 + c_0101_0^2

@@ -133,7 +133,7 @@ class HyperboloidNavigation:
 
     - self.raytracing_data has to be an instance of, e.g.,
       IdealRaytracingData. This is needed to update data
-      such as the view matrix 
+      such as the view matrix
       using self.raytracing_data.update_view_state(...).
     - self.redraw_if_initialized() to redraw.
     - self.read_depth_value(x, y) to return the depth value at a pixel.

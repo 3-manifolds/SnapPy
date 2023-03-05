@@ -23,6 +23,7 @@ _move_from_three = {
 def _perm_for_q_tet(F, gluing):
     return _move_to_three[gluing.image(F)] * gluing * _move_from_three[F]
 
+
 def _compute_adjustment_for_face(face):
     canonical_corner = face.Corners[0]
     tet     = canonical_corner.Tetrahedron
@@ -32,15 +33,17 @@ def _compute_adjustment_for_face(face):
 
     return -2 * _perm_for_q_tet(F, gluing)[0] * (-1) ** t3m.FaceIndex[other_F]
 
+
 def _compute_adjustment(mcomplex):
     """
     Given an mcomplex, compute the adjustment term to account for the
     triangulation not being ordered.
-    
+
     So far, only solves for the 3-torsion but 2-torsion remains
     """
     return sum([ _compute_adjustment_for_face(face)
                  for face in mcomplex.Faces ])
+
 
 @sage_method
 def verified_complex_volume_from_lifted_ptolemys(mcomplex, ptolemys):

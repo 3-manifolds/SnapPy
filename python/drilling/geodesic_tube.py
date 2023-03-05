@@ -149,12 +149,13 @@ class GeodesicTubePiece:
         self.lifted_geodesic = lifted_geodesic
         self.lower_bound = lower_bound
 
+
 class GeodesicTube:
     """
     Computes all GeodesicPiece's needed to cover a tube about the
     given closed geodesic in the given manifold. The geodesic cannot be
     a core curve of a filled cusp.
-    
+
     A GeodesicTube is constructed from a triangulation with a suitable
     geometric structure and a suitable GeodesicInfo object.
 
@@ -163,12 +164,11 @@ class GeodesicTube:
 
     The GeodesicInfo object needs to be constructed with a line and
     GeodesicInfo.find_tet_or_core_curve be called on it.
-    
+
     Calling GeodesicInfo.add_pieces_for_radius will then add the
     necessary pieces to GeodesicInfo.pieces to cover the tube of the
     given radius.
     """
-
     def __init__(self, mcomplex : Mcomplex, geodesic : GeodesicInfo):
         self.mcomplex = mcomplex
 

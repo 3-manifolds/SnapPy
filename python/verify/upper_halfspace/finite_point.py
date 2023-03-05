@@ -133,7 +133,7 @@ class FinitePoint():
         """
         Returns cosh of the distance of this finite point to another
         finite point::
-        
+
             sage: from sage.all import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
@@ -182,17 +182,17 @@ class FinitePoint():
             sage: from sage.all import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
-            sage: a.dist(b) # doctest: +NUMERIC12 
+            sage: a.dist(b) # doctest: +NUMERIC12
             1.158810360429947?
 
         """
-
         # Note: SageMath 8.1 doesn't compute arccosh correctly for a
         # complex interval, but at least it does so for a real interval.
         return self.cosh_dist(other).arccosh()
 
     def __repr__(self):
         return 'FinitePoint(%r, %r)' % (self.z, self.t)
+
 
 ###############################################################################
 # Various helpers

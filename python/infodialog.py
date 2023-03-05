@@ -52,15 +52,17 @@ This is version %s of SnapPy, running on Python %s using Tk %s and IPython %s.
 
 Development of SnapPy was made possible in part by generous support from the National Science Foundation of the United States.
 
-SnapPy is copyright © 2009-%d by Marc Culler, Nathan Dunfield, Matthias Gӧrner, Jeff Weeks, and others and is distributed under the GNU Public License, version 2 or later.  
-"""% (SnapPy_version,
-      sys.version.split()[0],
-      Tk_.Tcl().eval('info patchlevel'),
-      IPython_version,
-      datetime.datetime.now().year)
+SnapPy is copyright © 2009-%d by Marc Culler, Nathan Dunfield, Matthias Gӧrner, Jeff Weeks, and others and is distributed under the GNU Public License, version 2 or later.
+""" % (SnapPy_version,
+       sys.version.split()[0],
+       Tk_.Tcl().eval('info patchlevel'),
+       IPython_version,
+       datetime.datetime.now().year)
+
 
 def about_snappy(window):
         InfoDialog(window, 'About SnapPy', about_snappy_text)
+
 
 if __name__ == '__main__':
     root = Tk_.Tk()

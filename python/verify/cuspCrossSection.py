@@ -187,7 +187,7 @@ class ComplexHoroTriangle:
 
     def add_vertex_positions(self, vertex, edge, position):
         """
-        Adds a dictionary vertex_positions mapping 
+        Adds a dictionary vertex_positions mapping
         an edge (such as t3m.simplex.E01) to complex position
         for the vertex of the horotriangle obtained by
         intersecting the edge with the horosphere.
@@ -631,7 +631,7 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         Scales the cusp neighborhoods down until they are disjoint when
         intersected with the edges of the triangulations.
-        
+
         Given an edge of a triangulation, we can easily compute the signed
         distance between the two cusp neighborhoods at the ends of the edge
         measured along that edge. Thus, we can easily check that all the
@@ -644,7 +644,7 @@ class CuspCrossSectionBase(McomplexEngine):
         along the geodesic is shorter than measured along any edge of the
         triangulation.
 
-        Thus, it is necessary to call ensure_std_form as well: 
+        Thus, it is necessary to call ensure_std_form as well:
         it will make sure that the cusp neighborhoods are small enough so
         that they intersect the tetrahedra in "standard" form.
         Here, "standard" form means that the corresponding horoball about a
@@ -787,7 +787,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
 
         sage: [tilt < 0 for tilt in e.read_tilts()]
         [True, True, True, True, True, True, True, True]
-        
+
         Setup necessary things in Sage:
 
         sage: from sage.rings.qqbar import QQbar
@@ -1327,7 +1327,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         For an incomplete cusp, the respective value in lifted_vertex_positions
         will be None.
-        
+
         The three logarithms of the vertex positions of a triangle are only
         defined up to adding mu Z + lambda Z where mu and lambda are the
         logarithmic holonomies of the meridian and longitude.

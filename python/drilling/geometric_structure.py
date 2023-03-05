@@ -319,11 +319,12 @@ def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
 
     return scale.arcsinh(), scale * pt
 
+
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """
     Given one of the dictionaries returned by Manifold.cusp_info(),
     returns the "filling matrix" filling_matrix.
-    
+
     filling_matrix is a matrix of integers (as list of lists) such that
     filling_matrix[0] contains the filling coefficients
     (e.g., [3,4] for m004(3,4)) and the determinant is 1 if the cusp is

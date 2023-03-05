@@ -89,6 +89,7 @@ def _volume_from_shape(z):
     # precision.
     return z.volume()
 
+
 def compute_volume(manifold, verified, bits_prec = None):
     """
     Computes the volume of the given manifold. If verified is used,
@@ -96,17 +97,16 @@ def compute_volume(manifold, verified, bits_prec = None):
     verified interval.
 
     >>> M = Manifold('m004')
-    >>> vol = M.volume(bits_prec=100)   
+    >>> vol = M.volume(bits_prec=100)
     >>> vol # doctest: +ELLIPSIS
     2.029883212819307250042405108...
-    
+
     sage: ver_vol = M.volume(verified=True)
     sage: vol in ver_vol
     True
     sage: 2.02988321283 in ver_vol
     False
     """
-
     # Compute tetrahedra shapes to arbitrary precision.  If requested,
     # verify that this is indeed a solution to the polynomial gluing
     # equations.

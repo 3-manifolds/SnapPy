@@ -61,7 +61,7 @@ SnapPy is copyright © 2009-%d by Marc Culler, Nathan Dunfield, Matthias Gӧrner
 
 
 def about_snappy(window):
-        InfoDialog(window, 'About SnapPy', about_snappy_text)
+    InfoDialog(window, 'About SnapPy', about_snappy_text)
 
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ def twist_knot_points():
     return [[Vector3(pt) for pt in pts]]
 
 
-def proj(point): #projection onto z = 0
+def proj(point):  # projection onto z = 0
     return Vector3([point[i] for i in [0,1]]+[0])
 
 

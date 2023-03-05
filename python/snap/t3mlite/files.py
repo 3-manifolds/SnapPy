@@ -148,7 +148,7 @@ def read_geo_file(file_name, num_tet=None):
         cycle = re.split(r"\s+", line[ : -1])[1 : ]
         for i in range(len(cycle)):
             t1, v1, v2 = read_edge(cycle[i])
-            t2, w1, w2 = read_edge(cycle[(i+1)%len(cycle)]) #Yes, that's w2, w1
+            t2, w1, w2 = read_edge(cycle[(i+1) % len(cycle)])  # Yes, that's w2, w1
             a = eArrow(tets[t1], v1, v2)
             b = eArrow(tets[t2], w1, w2)
             a.glue(b)
@@ -179,6 +179,7 @@ def write_geo_file(mcomplex, fileobject):
         i = i + 1
         out("\n")
 
+
 # writing a file for Matveev's program Spine
 
 def write_spine_file(mcomplex, fileobject):
@@ -194,16 +195,9 @@ def write_spine_file(mcomplex, fileobject):
             back_local_faces.append(comp(A.head()))
             A.next()
 
-
-        signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1)%n]) else -1 for i in range(n)]
+        signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1) % n]) else -1 for i in range(n)]
         ans= repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
         out(ans + "\n")
-
-
-
-
-
-
 
 
 __all__  = ('read_SnapPea_file',

@@ -135,7 +135,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
+            str_row = ['% *s' % (size, x) for x in row]
             str_rows.append('[' + ' '.join(str_row) + ']')
         result = '\n'.join(str_rows)
         return result
@@ -145,7 +145,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
+            str_row = ['% *s' % (size, x) for x in row]
             str_rows.append(' [' + ' '.join(str_row) + ']')
         result = '\n'.join(str_rows)
         result = '[' + ('\n'.join(str_rows))[1:] + ']'

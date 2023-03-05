@@ -240,7 +240,7 @@ class Browser(Tk_.Toplevel):
         self.update_idletasks()
 
     def __repr__(self):
-        return 'Browser window for %s\n'%self.manifold
+        return 'Browser window for %s\n' % self.manifold
 
     build_menus = browser_menus
 
@@ -276,8 +276,8 @@ class Browser(Tk_.Toplevel):
         cusp_parent = self.filling_canvas if self.filling_canvas else filling
         for n in range(num_cusps):
             R, G, B, A = GetColor(n)
-            color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
-            cusp = ttk.Labelframe(cusp_parent, text='Cusp %d'%n)
+            color = '#%.3x%.3x%.3x' % (int(R*4095), int(G*4095), int(B*4095))
+            cusp = ttk.Labelframe(cusp_parent, text='Cusp %d' % n)
             mer_var = Tk_.StringVar(self, value='0')
             long_var = Tk_.StringVar(self, value='0')
             self.filling_vars.append((mer_var, long_var))
@@ -289,14 +289,14 @@ class Browser(Tk_.Toplevel):
                 row=1, column=1, sticky=Tk_.E)
             meridian = Spinbox(cusp, width=4, textvariable=mer_var,
                 from_=-1000, to=1000, increment=1,
-                name=':%s:0'%n, validate='focusout',
+                name=':%s:0' % n, validate='focusout',
                 validatecommand=(self.register(self.validate_coeff),'%P','%W')
                 )
             meridian.bind('<Return>', self.do_filling)
             meridian.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=3)
             longitude = Spinbox(cusp, width=4, textvariable=long_var,
                 from_=-1000, to=1000, increment=1,
-                name=':%s:1'%n, validate='focusout',
+                name=':%s:1' % n, validate='focusout',
                 validatecommand=(self.register(self.validate_coeff),'%P','%W')
                 )
             longitude.bind('<Return>', self.do_filling)
@@ -473,7 +473,7 @@ class Browser(Tk_.Toplevel):
         modeline.delete(1.0, Tk_.END)
         if not self.manifold.is_orientable():
             modeline.insert(Tk_.END, 'Non-orientable; ')
-        modeline.insert(Tk_.END, '%s tetrahedra; %s'%(
+        modeline.insert(Tk_.END, '%s tetrahedra; %s' % (
             self.manifold.num_tetrahedra(), self.manifold.solution_type()))
         if len(self.dirichlet) == 0:
             modeline.insert(Tk_.END,
@@ -514,7 +514,7 @@ class Browser(Tk_.Toplevel):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
-                value = '%g'%coeffs[m]
+                value = '%g' % coeffs[m]
                 value = '0' if value == '-0' else value
                 self.filling_vars[n][m].set(value)
 
@@ -654,7 +654,7 @@ class Browser(Tk_.Toplevel):
             if P == '':
                 var.set('0')
             else:
-                value = '%g'%self.manifold.cusp_info()[cusp].filling[curve]
+                value = '%g' % self.manifold.cusp_info()[cusp].filling[curve]
                 value = '0' if value == '-0' else value
                 var.set(value)
             return False
@@ -681,8 +681,8 @@ class Browser(Tk_.Toplevel):
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
-            for m in (0,1):
-                value = '%g'%coeffs[m]
+            for m in (0, 1):
+                value = '%g' % coeffs[m]
                 value = '0' if value == '-0' else value
                 self.filling_vars[n][m].set(value)
         self.update_cusps()

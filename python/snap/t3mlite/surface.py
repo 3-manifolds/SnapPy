@@ -80,10 +80,11 @@ def gcd(x, y):
     x = abs(x)
     y = abs(y)
     while y != 0:
-        r = x%y
+        r = x % y
         x = y
         y = r
     return x
+
 
 def reduce_slope( slope ):
     a, b = slope
@@ -92,6 +93,7 @@ def reduce_slope( slope ):
     g = gcd(a,b)
     a, b = a/g, b/g
     return (a,b), g
+
 
 class Surface:
 

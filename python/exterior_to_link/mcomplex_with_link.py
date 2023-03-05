@@ -164,8 +164,8 @@ def straighten_arcs(arcs):
                 # Make sure the arcs don't form a triangle with both
                 # ends on the same face.
                 if (b.start.on_boundary() and c.end.on_boundary() and
-                    b.start.boundary_face() == c.end.boundary_face()):
-                        continue
+                        b.start.boundary_face() == c.end.boundary_face()):
+                    continue
 
                 if (b, c) in obstructions:
                     if obstructions[b, c] in arcs:
@@ -332,7 +332,7 @@ class McomplexWithLink(McomplexWithExpansion):
         link independently by at most 1/N (per coordinate) cannot change
         the topology.
         """
-        min_distance_sq = 2**(-12) #kinda arbitrary default
+        min_distance_sq = 2**(-12)  # kinda arbitrary default
         for tet in self:
             m = len(tet.arcs)
             points_3d = [arc.to_3d_points() for arc in tet.arcs]
@@ -345,14 +345,14 @@ class McomplexWithLink(McomplexWithExpansion):
                 min_a, max_a = coor_min[a], coor_max[a]
                 for b in range(a + 1, m):
                     arc_b = tet.arcs[b]
-                    if arc_a != arc_b.past and arc_a != arc_b.next: ## so distance nonzero
+                    if arc_a != arc_b.past and arc_a != arc_b.next:  # so distance nonzero
                         # now quick check to try and avoid computing distance
                         check = True
                         min_b, max_b = coor_min[b], coor_max[b]
                         for i in range(3):
                             if (((min_a[i]-max_b[i])**2 >= min_distance_sq and (min_a[i]-max_b[i])>0)
                             or ((min_b[i]-max_a[i])**2 >= min_distance_sq and (min_b[i]-max_a[i])>0)):
-                                #arcs lie in different regions which are far apart so dont compare
+                                # arcs lie in different regions which are far apart so dont compare
                                 check = False
                                 break
 

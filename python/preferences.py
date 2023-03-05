@@ -46,7 +46,7 @@ class Preferences:
 
     def current_font_tuple(self):
         font = self.current_font_dict()
-        style = '%s %s'%(font['weight'], font['slant'])
+        style = '%s %s' % (font['weight'], font['slant'])
         return (font['family'], font['size'], style)
 
     def find_prefs(self):
@@ -246,7 +246,7 @@ class PreferenceDialog(Dialog):
             self.font_sizer.delete(0, Tk_.END)
             self.font_sizer.insert(0, str(size))
         self.font_list.selection_set(self.current_family)
-        style = '%s %s'%(self.font_weight.get(), self.font_slant.get())
+        style = '%s %s' % (self.font_weight.get(), self.font_slant.get())
         return (family, size, style.strip())
 
     def set_font_sample(self, event=None):

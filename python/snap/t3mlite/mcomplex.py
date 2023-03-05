@@ -288,8 +288,8 @@ class Mcomplex:
                         newEdge._add_corner(a)
                         a.Tetrahedron.Class[a.Edge] = newEdge
                         if a.next() is None:
-                           # We hit the boundary!
-                           # Go back to the beginning and walk to the right.
+                            # We hit the boundary!
+                            # Go back to the beginning and walk to the right.
                             # If this is our second boundary hit, we are done.
                             if not boundary_hits == 0:
                                 newEdge.RightBdryArrow = a.copy()
@@ -551,7 +551,7 @@ class Mcomplex:
         a_orig = a.copy()
         new = self.new_arrows(3)
         for i in range(3):
-            new[i].glue(new[(i+1)%3])
+            new[i].glue(new[(i + 1) % 3])
         a.reverse()
         for c in new:
             c.opposite().glue(a.glued())
@@ -761,7 +761,7 @@ class Mcomplex:
         c = self.new_arrows(4)
         c_orig = [x.copy() for x in c]
         for i in range(4):
-            c[i].glue( c[(i+1)%4] )
+            c[i].glue(c[(i + 1) % 4])
         b = a.glued().reverse()
         c[0].opposite().glue(a.rotate(1).glued())
         c[1].opposite().glue(b.rotate(-1).glued())

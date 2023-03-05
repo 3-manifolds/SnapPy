@@ -23,7 +23,7 @@ ansi_colors = {'0;30m': 'Black',
                '0;35m': 'Purple',
                '0;36m': 'Cyan',
                '0;37m': 'LightGray',
-               '1;30m': 'Black', #'DarkGray',
+               '1;30m': 'Black',  # 'DarkGray',
                '1;31m': 'DarkRed',
                '1;32m': 'SeaGreen',
                '1;33m': 'Yellow',
@@ -196,7 +196,7 @@ class TkTerm:
         traceback = '\n' + self.IP.InteractiveTB.stb2text(stb)
         if etype == KeyboardInterrupt:
             self.write('KeyboardInterrupt: ', style='msg')
-            self.write('%s'%evalue)
+            self.write('%s' % evalue)
         else:
             self.write(traceback)
         self.reset()
@@ -279,20 +279,20 @@ class TkTerm:
                 prompt_line = int(self.text.index('output_end').split('.')[0])
                 insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
                 if line > prompt_line:
-                    self.text.mark_set(Tk_.INSERT, '%s.0-1c'%insert_line)
+                    self.text.mark_set(Tk_.INSERT, '%s.0-1c' % insert_line)
                 else:
                     self.window.bell()
                 return 'break'
             return
         if keysym == 'Right':
             # Don't go into a continuation prompt or past the end
-            insert_pos = int(self.text.index('%s+1c'%Tk_.INSERT).split('.')[1])
+            insert_pos = int(self.text.index('%s+1c' % Tk_.INSERT).split('.')[1])
             if insert_pos < self._prompt_size:
                 insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
-                if self.text.compare(Tk_.INSERT, '>=', '%s-2c'%Tk_.END):
+                if self.text.compare(Tk_.INSERT, '>=', '%s-2c' % Tk_.END):
                     self.window.bell()
                 else:
-                    self.text.mark_set(Tk_.INSERT, '%d.%d'%(
+                    self.text.mark_set(Tk_.INSERT, '%d.%d' % (
                         insert_line + 1, self._prompt_size))
                 return 'break'
             return
@@ -408,8 +408,8 @@ class TkTerm:
         line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
         first_line = int(self.text.index('output_end').split('.')[0])
         if pos <= self._prompt_size + 1 and line != first_line:
-            start = '%d.end'%(line - 1)
-            end = '%d.end'%(line)
+            start = '%d.end' % (line - 1)
+            end = '%d.end' % (line)
             self.text.mark_set(Tk_.INSERT, start)
             self.text.delete(start, end)
             return 'break'
@@ -444,7 +444,7 @@ class TkTerm:
             self.do_completion(word, stem)
         elif len(completions) > 60 and self.tab_count == 1:
             self.show_completions(
-                ['%s possibilities -- hit tab again to view them all'%
+                ['%s possibilities -- hit tab again to view them all' %
                      len(completions)])
         else:
             self.show_completions(completions)
@@ -471,9 +471,9 @@ class TkTerm:
         num_cols = charwidth//biggest
         num_rows = (len(comps) + num_cols -1)//num_cols
         rows = []
-        format = '%%-%ds'%biggest
-        for n in range(0, num_rows):
-            rows.append(''.join([format%x for x in comps[n:len(comps):num_rows]]))
+        format = '%%-%ds' % biggest
+        for n in range(num_rows):
+            rows.append(''.join(format % x for x in comps[n:len(comps):num_rows]))
         view = '\n'.join(rows)
         self.text.insert(self.tab_index, '\n'+view)
         self.text.mark_set(Tk_.INSERT, self.tab_index)
@@ -651,7 +651,7 @@ class TkTerm:
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')
-         # Set a reasonable default directory for files to be saved to.
+        # Set a reasonable default directory for files to be saved to.
         try:
             home = os.environ['HOME']
         except KeyError:
@@ -664,7 +664,7 @@ class TkTerm:
 
     def _input_prompt(self):
         result = [('Prompt', 'In['),
-                  ('PromptNum', '%d'%self.IP.execution_count),
+                  ('PromptNum', '%d' % self.IP.execution_count),
                   ('Prompt', ']: ')]
         self._prompt_size = sum(len(token[1]) for token in result)
         return result
@@ -741,7 +741,7 @@ class TkTerm:
         # last line of the input and that line is blank.
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
         prompt_line = int(self.text.index('output_end').split('.')[0])
-        tail = self.text.get('%d.%d'%(insert_line, self._prompt_size), Tk_.END)
+        tail = self.text.get('%d.%d' % (insert_line, self._prompt_size), Tk_.END)
         if not tail.strip():
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
@@ -754,7 +754,7 @@ class TkTerm:
             last_line = insert_line - 1
             if last_line > prompt_line:
                 # Delete the last continuation prompt.
-                self.text.delete('%d.0'%last_line, '%d.0 lineend'%last_line)
+                self.text.delete('%d.0' % last_line, '%d.0 lineend' % last_line)
             self.IP.run_cell(self._input_buffer, store_history=True)
             # Add a newline after the output.
             self.write('\n')
@@ -849,7 +849,6 @@ class TkTerm:
         #     self.text.mark_set(Tk_.INSERT, 'output_end')
         # else:
         #     self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))
-
 
     def flush(self):
         """

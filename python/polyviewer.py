@@ -140,11 +140,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                     n = 0
             file.close()
 
-  # Subclasses may override this to provide menus.
+    # Subclasses may override this to provide menus.
     def build_menus(self):
         pass
 
-  # Subclasses may override this to update menus, e.g. when embedded in a larger window.
+    # Subclasses may override this to update menus, e.g. when embedded in a larger window.
     def update_menus(self, menubar):
         pass
 

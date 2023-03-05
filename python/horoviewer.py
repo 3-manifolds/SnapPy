@@ -99,7 +99,7 @@ Use the View Options to select which components of the scene are drawn.
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
         self.cutoff_label = ttk.Label(option_frame, text='Cutoff: ')
         self.cutoff_var = cutoff_var = Tk_.StringVar(self,
-            value='%.4f'%self.cutoff)
+            value='%.4f' % self.cutoff)
         self.cutoff_entry = ttk.Entry(option_frame, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
@@ -165,7 +165,7 @@ Use the View Options to select which components of the scene are drawn.
         self.horo_var.set(prefs['cusp_horoballs'])
         self.label_var.set(prefs['cusp_labels'])
         self.cutoff = float(prefs['cusp_cutoff'])
-        self.cutoff_var.set('%.4f'%self.cutoff)
+        self.cutoff_var.set('%.4f' % self.cutoff)
         self.rebuild()
 
     def view_check(self):
@@ -207,7 +207,7 @@ Use the View Options to select which components of the scene are drawn.
                 tie_button.grid(row=n+1, column=1)
                 self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(nbhd.original_index(n))
-            self.cusp_colors.append('#%.3x%.3x%.3x'%(
+            self.cusp_colors.append('#%.3x%.3x%.3x' % (
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self))
             self.slider_frames.append(Tk_.Frame(self.slider_frame, borderwidth=0))
@@ -295,7 +295,7 @@ Use the View Options to select which components of the scene are drawn.
             # print stop, length, disp position
             self.cusp_sliders[n].set(position)
             self.slider_frames[n].config(background=stopper_color)
-            self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
+            self.volume_labels[n].config(text='%.4f' % nbhd.volume(n))
             self.cusp_sliders[n].config(length=length,
                                         command=self.update_radius)
         self.update_idletasks()
@@ -318,11 +318,11 @@ Use the View Options to select which components of the scene are drawn.
         help.grid(row=0, column=5, sticky=E, pady=3)
         self.top_frame.columnconfigure(5, weight=1)
 
-  # Subclasses may override this to provide menus.
+    # Subclasses may override this to provide menus.
     def build_menus(self):
         pass
 
-  # Subclasses may override this to update menus, e.g. when embedded in a larger window.
+    # Subclasses may override this to update menus, e.g. when embedded in a larger window.
     def update_menus(self, menubar):
         pass
 

@@ -135,7 +135,7 @@ class HelpMenu(Tk_.Menu):
         else:
             from tkinter import messagebox
             messagebox.showwarning('Not found!',
-                                   'The file %s does not exist.'%path)
+                                   'The file %s does not exist.' % path)
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command

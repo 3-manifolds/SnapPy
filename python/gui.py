@@ -59,7 +59,7 @@ class ViewerWindow(Tk_.Toplevel):
         self.update_idletasks()
 
     def __repr__(self):
-        return 'New window: %s\n'%self.title()
+        return 'New window: %s\n' % self.title()
 
     def _get_root(self, window_type):
         if Tk_._default_root:
@@ -110,7 +110,7 @@ class ViewerWindow(Tk_.Toplevel):
         return {}
 
     def test(self):
-        print('Testing viewer for %s'%self.title())
+        print('Testing viewer for %s' % self.title())
         time.sleep(0.5)
         if hasattr(self.view, 'test'):
             if not self.view.winfo_ismapped():

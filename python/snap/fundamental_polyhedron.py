@@ -502,9 +502,9 @@ def _perform_word_moves(matrices, G):
             if a == b:  # generator removed
                 mats[a] = mats[-1]
                 mats = mats[:-1]
-            elif a == -b: # invert generator
+            elif a == -b:  # invert generator
                 mats[a] = _adjoint2(mats[a])
-            else: #handle slide
+            else:  # handle slide
                 A, B = mats[abs(a)], mats[abs(b)]
                 if a*b < 0:
                     B = _adjoint2(B)
@@ -512,10 +512,12 @@ def _perform_word_moves(matrices, G):
 
     return mats[1 : G.num_generators() + 1]
 
+
 def _matrix_L1_distance_to_kernel(m, snappeaM):
     return sum([ abs(_diff_to_kernel(m[i,j], snappeaM[i,j]))
                  for i in range(2)
                  for j in range(2)])
+
 
 def _negate_matrix_to_match_kernel(m, snappeaM):
     diff_plus  = _matrix_L1_distance_to_kernel(m,  snappeaM)

@@ -278,9 +278,10 @@ class ManifoldGroup(MatrixRepresentation):
         return ans
 
     def __repr__(self):
-        return 'Generators:\n   %s\nRelators:\n   %s'%(
+        return 'Generators:\n   %s\nRelators:\n   %s' % (
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
+
 
 def polished_holonomy(manifold,
                       bits_prec = 100,

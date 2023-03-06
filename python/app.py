@@ -185,7 +185,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             savefile.write("""\
 #!/usr/bin/env/python
 # This script was saved by SnapPy on %s.
-"""%time.asctime())
+""" % time.asctime())
             inputs = self.IP.history_manager.input_hist_raw
             results = self.IP.history_manager.output_hist
             for n in range(1,len(inputs)):
@@ -251,13 +251,13 @@ class SnapPyLinkEditor(LinkEditor, ListedWindow):
                 names.sort(key=lambda x : '}'+x if x.startswith('_') else x)
                 if names[0] == '_':
                     count = self.IP.execution_count
-                    title += ' - Out[%d]'%count
+                    title += ' - Out[%d]' % count
                 else:
                     title += ' - %s' % names[0]
             else:
                 count = self.IP.execution_count
                 if ns['_'] is self.manifold:
-                    title += ' - Out[%d]'%count
+                    title += ' - Out[%d]' % count
         self.window.title(title)
         self.menu_title = title
 
@@ -367,6 +367,7 @@ def pydoc_pager(text):
 pydoc.getpager() # this call creates the global variable pydoc.pager
 pydoc.pager = pydoc_pager
 
+
 # This sets the "system menu" icon in the title bar to be the SnapPy
 # icon (in Windows and ??KDE??)
 
@@ -383,7 +384,7 @@ def set_icon(window):
             image_file = os.path.join(snappy_path, 'SnapPy.png')
             if os.path.exists(image_file):
                 dock_icon = Tk_.PhotoImage(file=image_file)
-                window.eval('wm iconphoto . -default %s'%dock_icon)
+                window.eval('wm iconphoto . -default %s' % dock_icon)
 
 
 #from multiprocessing import Process

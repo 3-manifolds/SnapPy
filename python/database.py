@@ -104,12 +104,12 @@ class ManifoldTable():
         self._configure(**filter_args)
         self._get_length()
         self._get_max_volume()
-        self._select = self._select%table
+        self._select = self._select % table
 
     def _set_schema(self):
         cursor, table = self._cursor, self._table
         rows = cursor.execute("pragma table_info('%s')" % table).fetchall()
-        self.schema = dict([(row[1],row[2].lower()) for row in rows])
+        self.schema = dict([(row[1], row[2].lower()) for row in rows])
 
     def _check_schema(self):
         assert (self.schema['name'] == 'text' and
@@ -168,9 +168,9 @@ class ManifoldTable():
     def __repr__(self):
         class_name = self.__class__.__name__
         if self._filter == '':
-            return '%s without filters'%class_name
+            return '%s without filters' % class_name
         else:
-            return '%s with filter: %s'%(class_name, self._filter)
+            return '%s with filter: %s' % (class_name, self._filter)
 
     def __call__(self, **kwargs):
         return self.__class__(**kwargs)
@@ -181,7 +181,7 @@ class ManifoldTable():
     def __iter__(self):
         query = self._select
         if self._filter:
-            query += ' where %s order by id'%self._filter
+            query += ' where %s order by id' % self._filter
         cursor = self._connection.cursor()
         for row in cursor.execute(query):
             yield self._manifold_factory(row)
@@ -244,11 +244,11 @@ class ManifoldTable():
             if len(matches) != 1:
                 raise IndexError('Manifold index is out of bounds')
         elif isinstance(index, str):
-            matches = self.find("name='%s'"%index)
+            matches = self.find("name='%s'" % index)
             if len(matches) != 1:
-                raise KeyError('The manifold %s was not found.'%index)
+                raise KeyError('The manifold %s was not found.' % index)
         else:
-            raise IndexError('%s is not a valid index type for manifolds.'%
+            raise IndexError('%s is not a valid index type for manifolds.' %
                              type(index))
         return matches[0]
 
@@ -288,11 +288,11 @@ class ManifoldTable():
         """
         if hasattr(self, '_regex'):
             if self._regex.match(name) is None:
-                raise KeyError('The manifold %s was not found.'%name)
+                raise KeyError('The manifold %s was not found.' % name)
         cursor = self._cursor.execute(self._select + "where name='" + name + "'")
         rows = cursor.fetchall()
         if len(rows) != 1:
-            raise KeyError('The manifold %s was not found.'%name)
+            raise KeyError('The manifold %s was not found.' % name)
         return self._manifold_factory(rows[0], M)
 
     def keys(self):
@@ -330,13 +330,13 @@ class ManifoldTable():
         cusps = mfld.cusp_info('is_complete').count(True)
         H = mfld.homology()
         betti = H.betti_number()
-        torsion = [c for c in H.elementary_divisors() if c!=0]
+        torsion = [c for c in H.elementary_divisors() if c != 0]
         initial_candidates = self.find(
           "volume between %f and %f and cusps=%d and betti=%d and torsion='%s'"
           % (v_lower, v_upper, cusps, betti, torsion))
         if len(initial_candidates) == 0:
             return []
-        return self.find("hash = '%s'"%self.mfld_hash(mfld))
+        return self.find("hash = '%s'" % self.mfld_hash(mfld))
 
     def identify(self, mfld, extends_to_link=False):
         """

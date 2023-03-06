@@ -7,7 +7,7 @@ from .barycentric_geometry import (BarycentricPoint,
 from .mcomplex_with_link import McomplexWithLink
 
 
-def transfer_arcs(M, N): #from M to N.
+def transfer_arcs(M, N):  # from M to N.
     M.rebuild()
     M.connect_arcs()
     N.rebuild()
@@ -22,7 +22,7 @@ def transfer_arcs(M, N): #from M to N.
             map = iso[t_M.Index][1]
             y0 = x0.permute(map)
             y1 = x1.permute(map)
-            a = BarycentricArc(y0,y1)
+            a = BarycentricArc(y0, y1)
             t_N.arcs += [a]
     N.rebuild()
     N.connect_arcs()

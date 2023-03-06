@@ -278,7 +278,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
 
         new_tet.attach(
             simplex.F2,
-            new_tets[(i+1)%3],
+            new_tets[(i+1) % 3],
             (0,1,3,2))
 
         new_tet.R13_vertices = {

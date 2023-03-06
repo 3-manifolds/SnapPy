@@ -465,8 +465,8 @@ class NTriangulationForPtolemy(NTriangulation):
         if len(effective_perm) == 3:
             # Test whether cyclic permutation by i, including identity
             for i in range(3):
-                if ( (effective_perm[ i     ] < effective_perm[(i+1)%3]) and
-                     (effective_perm[(i+1)%3] < effective_perm[(i+2)%3])):
+                if (effective_perm[i] < effective_perm[(i + 1) % 3]
+                        < effective_perm[(i + 2) % 3]):
                     return +1
             return -1
 

@@ -31,15 +31,16 @@ def decode_matrices(byteseq):
     return [ [ list(m[n:n+2]), list(m[n+2:n+4]) ]
              for n in range(0, len(m), 4) ]
 
+
 # Some hash functions for manifolds:
 
 def old_basic_hash(mfld, digits=6):
-    return '%%%df'%digits%mfld.volume() + " " + repr(mfld.homology())
+    return '%%%df' % digits % mfld.volume() + " " + repr(mfld.homology())
 
 
 def basic_hash(mfld, digits=6):
     if mfld.solution_type() != 'contains degenerate tetrahedra':
-        volume = '%%%df'%digits%mfld.volume()
+        volume = '%%%df' % digits % mfld.volume()
     else:
         volume = 'degenerate'
     return volume + " " + repr(mfld.homology())

@@ -54,7 +54,7 @@ separator = '_'
 # Pattern matching decorated isosigs
 
 base64_pat = r'([a-zA-Z0-9\+\-]+)'
-separator_pat = '[%s]{1}'%separator
+separator_pat = '[%s]{1}' % separator
 base64_opt_pat = r'([a-zA-Z0-9\+\-]*)'
 isosig_pattern = re.compile(base64_pat + separator_pat + base64_opt_pat + '$')
 

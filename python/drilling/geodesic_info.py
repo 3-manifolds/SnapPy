@@ -11,6 +11,7 @@ from ..matrix import matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
+
 def sample_line(line_with_matrix : R13LineWithMatrix):
     """
     Pick a point on a line in the hyperboloid model.
@@ -32,6 +33,8 @@ def sample_line(line_with_matrix : R13LineWithMatrix):
     return line.points[0] + bias * line.points[1]
 
 # @dataclass
+
+
 class LiftedTetrahedron:
     """
     Represents the lift of a tetrahedron in a manifold to the hyperboloid
@@ -52,6 +55,8 @@ class LiftedTetrahedron:
         self.o13_matrix = o13_matrix
 
 # @dataclass
+
+
 class GeodesicInfo:
     """
     Information needed to trace a closed geodesic through a triangulation
@@ -462,8 +467,10 @@ class GeodesicInfo:
             "Geodesic is very close to a core curve but could not verify it is "
             "the core curve. Increasing the precision will probably fix this.")
 
+
 def _graph_trace_key(face_and_signed_distance):
     return face_and_signed_distance[1]
+
 
 def _graph_trace_key_verified(face_and_signed_distance):
     return face_and_signed_distance[1].center()

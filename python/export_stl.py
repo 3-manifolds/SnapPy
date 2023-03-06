@@ -16,6 +16,7 @@ def facet_stl(triangle):
         '  endfacet\n'
         ])
 
+
 def subdivide_triangles(triangles, num_subdivisions):
     if num_subdivisions == 0:
         for triangle in triangles:
@@ -32,6 +33,7 @@ def subdivide_triangles(triangles, num_subdivisions):
         for triangle in subdivide_triangles(subdivide_triangles(triangles, 1), num_subdivisions - 1):
             yield triangle
     return
+
 
 def projection(triangle, cutoff_radius):
     ''' Return the projection of a point in the Klein model to the Poincare model. '''
@@ -68,11 +70,13 @@ def klein_cutout_stl(face_dicts, shrink_factor=0.9):
             yield tuple(tuple(shrink_factor * coord for coord in point) for point in (vertices[i], new_vertices[(i+1) % len(vertices)], vertices[(i+1) % len(vertices)]))
     return
 
+
 def poincare_stl(face_dicts, num_subdivisions=5, cutoff_radius=0.9):
     ''' Yield the output of klein_stl(face_dicts, ...) after applying projection to every vertex produced. '''
     for triangle in subdivide_triangles(klein_stl(face_dicts), num_subdivisions):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
+
 
 def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     ''' Yield the output of klein_cutout_stl(face_dicts, ...) after applying projection to every vertex produced. '''

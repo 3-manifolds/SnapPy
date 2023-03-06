@@ -25,6 +25,7 @@ from urllib.request import Request, urlopen
 from urllib.request import quote as urlquote
 from urllib.error import HTTPError
 
+
 class PtolemyFileMissingError(Exception):
     """
     An exception indicating that a requested solution file was missing.
@@ -178,7 +179,6 @@ class PtolemyVariety():
                     u = Polynomial.constant_polynomial(-1)
                 else:
                     u = Polynomial.from_variable_name('u')
-
 
                 firstTerm = (
                     Polynomial.from_variable_name(var1) *
@@ -335,7 +335,6 @@ class PtolemyVariety():
     def to_magma_file(
             self, filename,
             template_path = "magma/default.magma_template"):
-
         """
         >>> import os, tempfile
         >>> from snappy import Manifold
@@ -350,7 +349,6 @@ class PtolemyVariety():
     def to_magma(
             self,
             template_path = "magma/default.magma_template"):
-
         """
         Returns a string with the ideal that can be used as input for magma.
 
@@ -522,7 +520,6 @@ class PtolemyVariety():
                 print("Retrieving solutions instead from %s ...:" % url)
             return _retrieve_url(url)
 
-
     def retrieve_decomposition(self, data_url = None, verbose = True):
 
         url = self._solution_file_url(data_url = data_url, rur = False)
@@ -585,7 +582,6 @@ class PtolemyVariety():
         directory = None,
         verbose = False,
         template_path = "magma/default.magma_template"):
-
         """
         Starts an engine such as magma to compute the
         radical decomposition of the Ptolemy variety.
@@ -647,8 +643,6 @@ class PtolemyVariety():
                   for component in sage_radical_decomp
                   if not component.is_one()])
 
-
-
     def compute_solutions(self,
                           engine = None,
                           numerical = False,
@@ -656,7 +650,6 @@ class PtolemyVariety():
                           memory_limit = 750000000,
                           directory = None,
                           verbose = False):
-
         """
         Starts an engine such as magma to compute the
         radical decomposition of the ideal and computes exact solutions.
@@ -678,7 +671,6 @@ class PtolemyVariety():
             template_path = template_path,
             directory = directory,
             verbose = verbose)
-
 
         return utilities.MethodMappingList(
                 [ component.solutions(numerical = numerical)
@@ -744,6 +736,7 @@ class PtolemyVariety():
                            for m in f.get_monomials()})
         return result
 
+
 def _fix_decoration(N, action_by_decoration_change):
 
     action_matrix, ptolemy_coords, decorations_to_be_fixed = (
@@ -751,6 +744,7 @@ def _fix_decoration(N, action_by_decoration_change):
 
     return matrix.get_independent_rows(
         action_matrix, ptolemy_coords, desired_determinant = N)
+
 
 def _generate_ptolemy_relations(N, num_tet,
                                 has_obstruction_class):
@@ -789,6 +783,7 @@ def _generate_ptolemy_relations(N, num_tet,
             for tet in range(num_tet)
             for index in utilities.quadruples_with_fixed_sum_iterator(N-2)]
 
+
 def _non_zero_condition(variables):
     one = Polynomial.constant_polynomial(1)
 
@@ -801,11 +796,13 @@ def _non_zero_condition(variables):
 
     return polynomial
 
+
 def _union(lists):
     all = sum(lists, [])
     all = list(set(all))
     all.sort()
     return all
+
 
 def _identified_variables_canonize(identified_variables):
 
@@ -856,6 +853,7 @@ def _identified_variables_canonize(identified_variables):
                                canonical_rep)
 
     return result
+
 
 def _canonical_representative_to_polynomial_substituition(
         canonical_representative, order_of_u):

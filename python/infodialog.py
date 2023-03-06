@@ -9,6 +9,7 @@ from IPython import __version__ as IPython_version
 snappy_path = os.path.dirname(__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
+
 class InfoDialog(Dialog):
     def __init__(self, master, title='', content=''):
         self.content = content
@@ -40,6 +41,7 @@ class InfoDialog(Dialog):
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
         box.pack()
+
 
 about_snappy_text = """
 For information on how to use SnapPy, please see the Help menu.

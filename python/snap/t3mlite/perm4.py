@@ -155,6 +155,7 @@ KleinFour_tuples = [(0,1,2,3),  # Id
 perm_tuple_to_index = {t:i for i, t in enumerate(S4_tuples)}
 perm_basic_by_index = [Perm4Basic(t) for t in S4_tuples]
 
+
 def perm_basic_to_index(perm):
     return perm_tuple_to_index[perm.tuple()]
 
@@ -307,6 +308,7 @@ class Perm4():
         """
         for p in KleinFour_tuples:
             yield Perm4(p)
+
 
 inverse_by_index = {k:Perm4(v) for k, v in index_of_inverse_by_index.items()}
 mult_table_by_index = {k:Perm4(v) for k, v in index_mult_table_by_index.items()}

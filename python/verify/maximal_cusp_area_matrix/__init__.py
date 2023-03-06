@@ -10,6 +10,7 @@ if _within_sage:
 __all__ = ['verified_maximal_cusp_area_matrix',
            'triangulation_dependent_cusp_area_matrix']
 
+
 @sage_method
 def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
     """

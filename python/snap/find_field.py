@@ -206,6 +206,7 @@ def optimize_field_generator(z):
     f = f.denominator() * f
     return ExactAlgebraicNumber(f.change_ring(ZZ), w)
 
+
 class ListOfApproximateAlgebraicNumbers():
     def __init__(self, defining_function):
         self.f = defining_function

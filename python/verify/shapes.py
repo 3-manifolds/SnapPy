@@ -2,6 +2,7 @@ from . import verifyHyperbolicity
 
 __all__ = ['compute_hyperbolic_shapes']
 
+
 def compute_hyperbolic_shapes(manifold, verified, bits_prec = None):
 
     # Get shapes, as intervals if requested

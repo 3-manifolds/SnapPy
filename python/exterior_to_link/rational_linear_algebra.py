@@ -111,7 +111,6 @@ else:
         assert len(ans) == 4
         return ans
 
-
     class Matrix(linalg.Matrix):
         """
         A matrix over QQ.

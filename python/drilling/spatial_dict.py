@@ -5,6 +5,7 @@ from typing import Sequence
 
 __all__ = ['floor_as_intergers', 'SpatialDict']
 
+
 def floor_as_integers(x) -> Sequence[int]:
     """
     Computes floor of a number or interval, returning a list of integers
@@ -45,6 +46,7 @@ def floor_as_integers(x) -> Sequence[int]:
         if d > 0.875:
             return [ int_f, int_f + 1 ]
         return [ int_f ]
+
 
 class _Entry:
     """

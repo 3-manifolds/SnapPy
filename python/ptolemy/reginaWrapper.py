@@ -13,6 +13,7 @@ from . import utilities
 
 # See addl_code/ptolemy_equations.c for more comments.
 
+
 class NTriangulationForPtolemy(NTriangulation):
 
     """
@@ -79,7 +80,6 @@ class NTriangulationForPtolemy(NTriangulation):
         os.unlink(filename)
 
         return NTriangulationForPtolemy(T)
-
 
     def ptolemy_obstruction_classes(self):
         """
@@ -373,7 +373,6 @@ class NTriangulationForPtolemy(NTriangulation):
         Also see _ptolemy_equations_boundary_map_2.
         """
 
-
         def process_triangle(triangle):
             row = [ 0 for i in range(self.getNumberOfTetrahedra()) ]
             for i in range(2):
@@ -517,8 +516,6 @@ class NTriangulationForPtolemy(NTriangulation):
             self._get_obstruction_on_edge(obstruction_class,
                                           other_tet, other_v0, other_v1))
 
-
-
     def _get_obstruction_on_edges(self, obstruction_class, tet, face, N):
         """
         This reimplements _get_obstruction_on_edges from
@@ -560,7 +557,6 @@ class NTriangulationForPtolemy(NTriangulation):
         and e02 to the edge e02 that is determined through the cohomology
         obstruction class by _get_obstruction_on_edges.
         """
-
 
         v1 = (face + 2) % 4
         v2 = (face + 3) % 4

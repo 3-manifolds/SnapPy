@@ -59,6 +59,7 @@ __all__ = [
     'RealCuspCrossSection',
     'ComplexCuspCrossSection']
 
+
 class IncompleteCuspError(RuntimeError):
     """
     Exception raised when trying to construct a CuspCrossSection
@@ -70,6 +71,7 @@ class IncompleteCuspError(RuntimeError):
     def __str__(self):
         return (('Cannot construct CuspCrossSection from manifold with '
                  'Dehn-fillings: %s') % self.manifold)
+
 
 class HoroTriangleBase:
     @staticmethod
@@ -88,6 +90,7 @@ class HoroTriangleBase:
         z_left  = tet.ShapeParameters[left_side   & center_side ]
         z_right = tet.ShapeParameters[center_side & right_side  ]
         return left_side, center_side, right_side, z_left, z_right
+
 
 class RealHoroTriangle:
     """
@@ -120,6 +123,7 @@ class RealHoroTriangle:
     def direction_sign():
         return +1
 
+
 # Given a vertex, cyclically order the three adjacent faces in
 # clockwise fashion. For each face, return the triple (face, edge, next face)
 # where edge is adjacent to both faces.
@@ -148,6 +152,7 @@ _pick_an_edge_for_vertex_and_face = {
     for face in t3m.simplex.TwoSubsimplices
     if t3m.simplex.is_subset(vertex, face)
 }
+
 
 class ComplexHoroTriangle:
     """
@@ -247,6 +252,7 @@ class ComplexHoroTriangle:
                 edge : adjust_log(position)
                 for edge, position in self.vertex_positions.items()
             }
+
 
 class CuspCrossSectionBase(McomplexEngine):
     """
@@ -707,6 +713,7 @@ class CuspCrossSectionBase(McomplexEngine):
                         ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[j],
                                                             scale)
 
+
 class RealCuspCrossSection(CuspCrossSectionBase):
     """
     A t3m triangulation with real edge lengths of cusp cross sections built
@@ -953,6 +960,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
                 if not abs(snappea_tet_tilt - tilt) < epsilon:
                     raise ConsistencyWithSnapPeaNumericalVerifyError(
                         snappea_tet_tilt, tilt)
+
 
 class ComplexCuspCrossSection(CuspCrossSectionBase):
     """

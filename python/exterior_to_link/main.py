@@ -11,6 +11,7 @@ from .rational_linear_algebra import Matrix
 from . import hyp_utils
 from ..SnapPy import set_rand_seed
 
+
 def filled_is_3sphere(manifold):
     """
     >>> isosig = 'nLvLLLPQQkcfejimhklkmlkmuphkvuoupilhhv_Bbba(1, 0)'

@@ -5,6 +5,7 @@ from . import link, dual_cellulation
 if sage_helper._within_sage:
     from sage.all import matrix, vector, ZZ
 
+
 def peripheral_curve_from_snappy(dual_cell, snappy_data):
     D = dual_cell
     T = D.dual_triangulation
@@ -147,9 +148,11 @@ def test_peripheral_curves(n=100, progress=True):
             print(M.name())
         peripheral_curve_package(M)
 
+
 def doctest_globals():
     import snappy
     return {'Manifold':snappy.Manifold}
+
 
 if __name__ == '__main__':
     import doctest

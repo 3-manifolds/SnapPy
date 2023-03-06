@@ -15,6 +15,7 @@ from .mcomplex_with_link import (link_triangulation,
 json_file = os.path.join(os.path.dirname(__file__), 'geodesic_map.json')
 geodesic_map = json.load(open(json_file))
 
+
 def geodesic_moves(mcomplex):
     """
     For a triangulation of S^3 with 5 or fewer tetrahedra, give 2 -> 3

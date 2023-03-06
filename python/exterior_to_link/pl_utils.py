@@ -424,7 +424,6 @@ def arc_distance_sq(arc_a, arc_b):
     #
     #  https://github.com/CGAL/cgal/blob/master/Distance_3/include/CGAL/Distance_3/Segment_3_Segment_3.h
 
-
     a0, a1 = arc_a
     b0, b1 = arc_b
 
@@ -464,8 +463,6 @@ def arc_distance_sq(arc_a, arc_b):
         pA = a0 + Vector3(t*u)
         pB = b0 + Vector3(s*v)
         return norm_sq(pA - pB)
-
-
 
     t = (b0-a0)*u/norm_sq(u)
     s = (b1-a0)*u/norm_sq(u)

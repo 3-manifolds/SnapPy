@@ -12,10 +12,12 @@ if _within_sage:
     from sage.functions.other import binomial
     from ..sage_helper import ComplexField
 
+
 class _IsolateFactorError(RuntimeError):
     """
     Exception raised by _find_unique_good_factor.
     """
+
 
 def _find_unique_good_factor(polynomial, eval_method):
     """
@@ -36,6 +38,7 @@ def _find_unique_good_factor(polynomial, eval_method):
         raise _IsolateFactorError()
 
     return good_factors[0]
+
 
 def _solve_two_equations(eqn1, eqn2, x_val, y_val):
     """
@@ -126,6 +129,7 @@ def _real_or_imaginary_part_of_power_of_complex_number(n, start):
     return sum([
         binomial(n, i) * (-1) ** (i//2) * var('x') ** (n - i) * var('y') ** i
         for i in range(start, n + 1, 2)])
+
 
 def _real_or_imaginary_part_for_polynomial_in_complex_variable(polynomial,
                                                                start):
@@ -252,6 +256,7 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
     # Give up
     return None
 
+
 def _test_result(number_field, prec = 53, epsilon = 1e-10):
     """
         sage: CF = ComplexField()
@@ -263,7 +268,6 @@ def _test_result(number_field, prec = 53, epsilon = 1e-10):
         sage: nf = NumberField(x**8 + 6 * x ** 4 + x + 23, 'x', embedding = CF(0.7747 + 1.25937j))
         sage: _test_result(nf, 212, epsilon = 1e-30)
     """
-
 
     CIF = ComplexIntervalField(prec)
     RIF = RealIntervalField(prec)

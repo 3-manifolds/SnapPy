@@ -31,6 +31,7 @@ class NumericExample:
 
     """
 
+
 import doctest
 import re
 import decimal
@@ -43,6 +44,7 @@ NUMERIC_LIST = []
 NUMERIC_DICT = {}
 # All or'ed together
 ALL_NUMERIC  = 0
+
 
 def init_precisions(precisions):
     """
@@ -66,8 +68,10 @@ def init_precisions(precisions):
             NUMERIC_DICT[precision] = flag
             ALL_NUMERIC |= flag
 
+
 # The precisions NUMERIC0, ... we support are hard-coded here:
 init_precisions(range(0,33,3))
+
 
 def get_precision(optionflags):
     """
@@ -79,6 +83,7 @@ def get_precision(optionflags):
 
 # Regular expressions matching numbers and intervals such as
 # 23, 2.3, 3.5e-4, 3.4 E-5, 3.4?, 5.6?e-3
+
 
 mantissa_pat = r'(-?[0-9]+(?:\.[0-9]+)?)'
 # Intervals can be 3.4? or 3.4?e-2, account for the "?"
@@ -96,6 +101,8 @@ NUMERIC_DEFAULT_OPTIONFLAGS = doctest.NORMALIZE_WHITESPACE
 
 # Given the above groups, e.g., ('4.5?e-3', '4.5', '?", 'e-3'), return
 # decimal.Decimal("4.5E-3")
+
+
 def to_decimal(groups):
     number, mantissa, interval, exponent = groups
     if exponent:
@@ -103,6 +110,7 @@ def to_decimal(groups):
     else:
         n = mantissa
     return decimal.Decimal(n)
+
 
 class NumericOutputChecker(doctest.OutputChecker):
     """
@@ -310,6 +318,7 @@ class NumericOutputChecker(doctest.OutputChecker):
             # Concatenate together
             return base_result + '\nReason for failure: ' + compare_result + '\n'
 
+
 def run_doctests(verbose = False):
     failed, attempted = 0, 0
 
@@ -332,5 +341,6 @@ def run_doctests(verbose = False):
         attempted += result.attempted
 
     return doctest.TestResults(failed, attempted)
+
 
 run_doctests.__name__ = 'NumericOutputChecker'

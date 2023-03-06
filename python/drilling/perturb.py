@@ -17,6 +17,7 @@ from ..math_basics import correct_min # type: ignore
 
 from typing import Sequence, List
 
+
 def perturb_geodesics(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo],
@@ -71,6 +72,7 @@ def perturb_geodesics(
     for g in geodesics:
         perturb_geodesic(g, r, mcomplex.verified)
 
+
 def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo]):
@@ -83,6 +85,7 @@ def compute_lower_bound_injectivity_radius(
 
     return compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex, tubes)
+
 
 def compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex : Mcomplex,
@@ -109,6 +112,7 @@ def compute_lower_bound_injectivity_radius_from_tubes(
 
     return correct_min(distances) / 2
 
+
 def perturb_geodesic(geodesic : GeodesicInfo,
                      injectivity_radius,
                      verified : bool):
@@ -127,6 +131,7 @@ def perturb_geodesic(geodesic : GeodesicInfo,
     geodesic.line = None
 
     geodesic.find_tet_or_core_curve()
+
 
 def perturb_unit_time_point(point, max_amt, verified : bool):
 

@@ -5,6 +5,7 @@ class SnapPeaFatalError(Exception):
     encounters a fatal error.
     """
 
+
 class InsufficientPrecisionError(Exception):
     """
     This exception is raised when a computation fails and is likely

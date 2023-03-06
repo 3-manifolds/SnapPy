@@ -6,53 +6,66 @@ import png
 
 __all__ = ['HyperboloidNavigation']
 
+
 def _move_left(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [ RF(-1), RF(0), RF(0) ], trans_amount) # a
+
 
 def _move_right(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [ RF(+1),  RF(0),  RF(0) ], trans_amount) # d
 
+
 def _move_up(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [  RF(0), RF(+1),  RF(0) ], trans_amount) # e
+
 
 def _move_down(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [  RF(0), RF(-1),  RF(0) ], trans_amount) # c
 
+
 def _move_forward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [  RF(0),  RF(0), RF(-1) ], trans_amount) # w
+
 
 def _move_backward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [  RF(0),  RF(0), RF(+1) ], trans_amount) # s
 
+
 def _turn_left(rot_amount, trans_amount):
     return O13_y_rotation(-rot_amount)
+
 
 def _turn_right(rot_amount, trans_amount):
     return O13_y_rotation(rot_amount)
 
+
 def _turn_up(rot_amount, trans_amount):
     return O13_x_rotation(-rot_amount)
+
 
 def _turn_down(rot_amount, trans_amount):
     return O13_x_rotation(rot_amount)
 
+
 def _turn_cw(rot_amount, trans_amount): # x
     return O13_z_rotation(-rot_amount)
 
+
 def _turn_ccw(rot_amount, trans_amount): # z
     return O13_z_rotation(rot_amount)
+
 
 def _add_cursor_keys(d):
     d['left']  = _turn_left
@@ -60,6 +73,7 @@ def _add_cursor_keys(d):
     d['up']    = _turn_up
     d['down']  = _turn_down
     return d
+
 
 _keymappings = {
     'QWERTY' : _add_cursor_keys(

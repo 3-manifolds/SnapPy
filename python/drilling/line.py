@@ -12,6 +12,7 @@ __all__ = [ 'R13Line',
             'distance_r13_lines',
             'R13LineWithMatrix' ]
 
+
 class R13Line:
     """
     A line in the hyperboloid model - represented by two
@@ -43,6 +44,7 @@ class R13Line:
             [ m * point for point in self.points],
             self.inner_product)
 
+
 def distance_r13_lines(line0 : R13Line, line1 : R13Line):
     """
     Computes distance between two hyperbolic lines.
@@ -69,6 +71,7 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
             p = RF(0)
 
     return 2 * p.sqrt().arcsinh()
+
 
 class R13LineWithMatrix:
     """

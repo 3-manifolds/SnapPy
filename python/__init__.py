@@ -27,6 +27,7 @@ set_rand_seed(int(time.time()))
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
 
+
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
@@ -64,6 +65,7 @@ class Manifold(_ManifoldLP):
             return _ManifoldHP.is_isometric_to(self.high_precision(), other,
                                                   return_isometries)
         return _ManifoldLP.is_isometric_to(self, other, return_isometries)
+
 
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
@@ -128,6 +130,7 @@ class ManifoldHP(_ManifoldHP):
         """
         return self.low_precision().identify(extends_to_link)
 
+
 SnapPy._manifold_class = Manifold
 SnapPy._triangulation_class = Triangulation
 SnapPyHP._triangulation_class = TriangulationHP
@@ -159,12 +162,12 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
+
 def canonical_retriangulation(
     manifold, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
     verbose = False):
-
     """
     The canonical retriangulation which is closely related to the canonical
     cell decomposition and described in more detail `here
@@ -199,15 +202,16 @@ def canonical_retriangulation(
     else:
         return manifold._canonical_retriangulation()
 
+
 Manifold.canonical_retriangulation = canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical_retriangulation
+
 
 def isometry_signature(
     manifold, of_link = False, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
     verbose = False):
-
     """
     The isomorphism signature of the canonical retriangulation. This is a
     complete invariant of the isometry type of a hyperbolic 3-manifold and
@@ -265,6 +269,7 @@ def isometry_signature(
     return retrig.triangulation_isosig(decorated = of_link,
                                        ignore_cusp_ordering = True,
                                        ignore_curve_orientations = True)
+
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
@@ -364,15 +369,16 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
                        "'trigDependent', 'trigDependentTryCanonize', "
                        "or 'maximal'.")
 
+
 Manifold.cusp_area_matrix = cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix
 
 from .verify import cusp_areas as verify_cusp_areas
 
+
 def cusp_areas(manifold, policy = 'unbiased',
                method = 'trigDependentTryCanonize',
                verified = False, bits_prec = None, first_cusps=[]):
-
     """
     Picks areas for the cusps such that the corresponding cusp
     neighborhoods are disjoint. By default, the ``policy`` is
@@ -446,10 +452,12 @@ def cusp_areas(manifold, policy = 'unbiased',
     else:
         return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
+
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
 
 from .verify import short_slopes as verify_short_slopes
+
 
 def short_slopes(manifold,
                  length = 6,
@@ -503,8 +511,10 @@ def short_slopes(manifold,
                 policy = policy, method = method,
                    verified = verified, bits_prec = bits_prec, first_cusps=first_cusps)) ]
 
+
 Manifold.short_slopes = short_slopes
 ManifoldHP.short_slopes = short_slopes
+
 
 def cusp_translations(manifold, policy = 'unbiased',
                       method = 'trigDependentTryCanonize',
@@ -554,8 +564,10 @@ def cusp_translations(manifold, policy = 'unbiased',
                 policy = policy, method = method,
                    verified = verified, bits_prec = bits_prec, first_cusps=first_cusps)) ]
 
+
 Manifold.cusp_translations = cusp_translations
 ManifoldHP.cusp_translations = cusp_translations
+
 
 def complex_volume(manifold, verified_modulo_2_torsion = False,
                    bits_prec = None):
@@ -602,6 +614,7 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 
     return manifold._complex_volume()
 
+
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
@@ -617,6 +630,7 @@ try:
 except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
+
 
 def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     """
@@ -666,8 +680,10 @@ def manifold_inside_view(self, cohomology_class = None, geodesics = []):
         cohomology_class = cohomology_class,
         geodesics = geodesics)
 
+
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view
+
 
 def all_translations(self, verified = False, bits_prec = None):
     """
@@ -734,6 +750,7 @@ def all_translations(self, verified = False, bits_prec = None):
     # Use the implementation in the SnapPea kernel
     return [ self.translations(i) for i in range(self.num_cusps()) ]
 
+
 CuspNeighborhood.all_translations = all_translations
 CuspNeighborhoodHP.all_translations = all_translations
 
@@ -762,6 +779,7 @@ __all__ += database_objects
 # Monkey patch the link_exterior method into Spherogram.
 
 from spherogram.codecs import DTcodec
+
 
 def _link_exterior(self, with_hyperbolic_structure=True,
                    remove_finite_vertices=True):
@@ -793,6 +811,7 @@ def _link_exterior(self, with_hyperbolic_structure=True,
     if self.name:
         M.set_name(self.name)
     return M
+
 
 link_objects = []
 
@@ -836,7 +855,9 @@ The module defines the following classes:
 # Add easy way to get the version info
 from .version import version as release_info
 
+
 def version():
     return release_info
+
 
 __version__ = version()

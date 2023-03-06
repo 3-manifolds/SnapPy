@@ -1,8 +1,8 @@
 from .polynomial import Polynomial, Monomial
 from . import matrix
 
-def my_rnfequation(base_poly, extension_poly):
 
+def my_rnfequation(base_poly, extension_poly):
     """
     This is returning the same as pari's
     rnfequation(base_poly, extension_poly, flag = 3) but
@@ -103,12 +103,14 @@ def my_rnfequation(base_poly, extension_poly):
 
     raise Exception("Should not get here")
 
+
 def _row_to_poly(row):
     zero = Polynomial.constant_polynomial(0)
     x = Polynomial.from_variable_name('x')
     return sum([ Polynomial.constant_polynomial(c) * x ** i
                  for i, c in enumerate(row)],
                zero)
+
 
 def _poly_to_row(poly, base_var, base_degree, extension_var, extension_degree):
     row = base_degree * extension_degree * [ 0 ]
@@ -119,6 +121,7 @@ def _poly_to_row(poly, base_var, base_degree, extension_var, extension_degree):
         index = degree2 * base_degree + degree1
         row[index] = m.get_coefficient()
     return row
+
 
 def _reduced_polynomial(poly, mod_pol, mod_var, mod_degree):
 

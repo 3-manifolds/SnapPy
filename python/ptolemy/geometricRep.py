@@ -3,7 +3,6 @@ def compute_geometric_solution(M, N = 2, numerical = False,
                                memory_limit = 750000000, directory = None,
                                prefer_rur = False, data_url = False,
                                verbose = None):
-
     """
     Given a manifold M, compute the exact or numerical solutions to the
     Ptolemy variety (pass numerical = True for numerical solutions). The additional
@@ -38,12 +37,12 @@ def compute_geometric_solution(M, N = 2, numerical = False,
 
     return None
 
+
 def retrieve_geometric_solution(M, N = 2,
                                 numerical = False,
                                 prefer_rur = False,
                                 data_url = None,
                                 verbose = True):
-
     """
     Given a manifold M, retrieve the exact or numerical solutions to the
     Ptolemy variety (pass numerical = True for numerical solutions). The additional
@@ -53,7 +52,6 @@ def retrieve_geometric_solution(M, N = 2,
     >>> retrieve_geometric_solutions(Manifold("m004")) #doctest: +SKIP
 
     """
-
 
     return compute_geometric_solution(M, N, numerical = numerical,
                                       engine = 'retrieve',

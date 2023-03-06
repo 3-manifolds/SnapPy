@@ -71,6 +71,7 @@ NonInteger = 'Error'
 
 # NOTE: The convention is that the order of the quads is (Q03, Q13, Q23)
 
+
 def gcd(x, y):
     if x == 0:
         if y == 0:
@@ -268,7 +269,6 @@ class ClosedSurface(Surface):
 
         self.EdgeWeights = Matrix(edge_matrix).dot(self.Weights)
 
-
     def find_euler_characteristic(self, manifold):
         # An EdgeValence is the number of tetrahedra that meet the edge.
         # The number of 2-simplices that meet the edge is larger by 1 in
@@ -322,7 +322,6 @@ class ClosedSurface(Surface):
                 double_bounds_subcomplex = 0
             if not (bounds_subcomplex or double_bounds_subcomplex):
                 break
-
 
         if bounds_subcomplex or double_bounds_subcomplex:
             thick_or_thin = "thin"
@@ -436,6 +435,7 @@ def dot_product(x,y):
         dot += x[i]*y[i]
     return dot
 
+
 class SpunSurface(Surface):
 
     def __init__(self, manifold, quadvector):
@@ -479,7 +479,6 @@ class ClosedSurfaceInCusped(ClosedSurface):
         ClosedSurface.__init__(self, manifold, quadvector)
         self.Incompressible = None
         self.BoundarySlope = None
-
 
     def info(self, manifold, out = sys.stdout):
         out.write("ClosedSurfaceInCusped #%d:  Euler %d;  Incompressible %s\n" %

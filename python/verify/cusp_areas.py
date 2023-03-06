@@ -49,7 +49,6 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
 
 
 def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
-
     """
 
         sage: from sage.all import matrix, RIF
@@ -109,15 +108,18 @@ def _find_potential_stoppers(cusp_area_matrix, assigned_areas):
              for j in range(i, num_cusps)
              if (assigned_areas[j] is None) or (assigned_areas[i] is None) ]
 
+
 def _find_stoppers(cusp_area_matrix, assigned_areas):
     return _interval_minimum_candidates(
         _find_potential_stoppers(cusp_area_matrix, assigned_areas))
+
 
 def _union_intervals(intervals):
     result = intervals[0]
     for i in intervals[1:]:
         result = result.union(i)
     return result
+
 
 def _get_cusps_from_stoppers(stoppers, assigned_areas):
     result = set()
@@ -126,6 +128,7 @@ def _get_cusps_from_stoppers(stoppers, assigned_areas):
             if assigned_areas[cusp] is None:
                 result.add(cusp)
     return result
+
 
 def _verified_unbiased_cusp_areas_from_cusp_area_matrix(
                                                 cusp_area_matrix):
@@ -160,8 +163,10 @@ def _verified_unbiased_cusp_areas_from_cusp_area_matrix(
 
     return result
 
+
 def _find_minimal_stopper(cusp_area_matrix, assigned_areas):
     return min(_find_potential_stoppers(cusp_area_matrix, assigned_areas))
+
 
 def _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
                                                 cusp_area_matrix):

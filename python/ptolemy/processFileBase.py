@@ -8,7 +8,6 @@ Basic functions to read a ptolemy solutions file.
 
 
 def find_section(text, name):
-
     """
     Finds all sections of the form
 
@@ -52,8 +51,8 @@ def find_section(text, name):
              for regex in regexs
              for s in re.findall(regex, text, re.DOTALL) ]
 
-def find_unique_section(text, name):
 
+def find_unique_section(text, name):
     """
     Like find_section but ensures that there is only a single
     such section. Exceptions in all other cases.
@@ -70,6 +69,7 @@ def find_unique_section(text, name):
         raise Exception("No section %s in file" % name)
     return sections[0]
 
+
 def extract_parameters_and_body_from_section(section_text):
     """
     Turns patterns of the form "==KEY:VALUE" at the beginning lines
@@ -79,7 +79,6 @@ def extract_parameters_and_body_from_section(section_text):
     >>> extract_parameters_and_body_from_section(t)[0]['A']
     '1'
     """
-
 
     params = {}
 
@@ -91,6 +90,7 @@ def extract_parameters_and_body_from_section(section_text):
         k, v = m.groups()
         params[k] = v
         section_text = section_text.split('\n',1)[1]
+
 
 def remove_outer_square_brackets(text):
     """
@@ -108,6 +108,7 @@ def remove_outer_square_brackets(text):
 
     return text[1:-1]
 
+
 def remove_optional_outer_square_brackets(text):
 
     if text[0] == '[':
@@ -115,8 +116,8 @@ def remove_optional_outer_square_brackets(text):
 
     return text
 
-def parse_int_or_empty(s):
 
+def parse_int_or_empty(s):
     """
     >>> parse_int_or_empty('3')
     3
@@ -124,13 +125,12 @@ def parse_int_or_empty(s):
     True
     """
 
-
     if s:
         return int(s)
     return None
 
-def get_py_eval(text):
 
+def get_py_eval(text):
     """
     From a ptolemy solutions file, extract the PY=EVAL=SECTION
     """
@@ -139,8 +139,8 @@ def get_py_eval(text):
         utilities.join_long_lines(
             find_unique_section(text, "PY=EVAL=SECTION")))
 
-def get_manifold_thunk(text):
 
+def get_manifold_thunk(text):
     """
     From a ptolemy solutions file, extract the manifold.
     Returned as thunk that evaluates to a snappy manifold.
@@ -169,8 +169,8 @@ def get_manifold_thunk(text):
 
     return get_manifold
 
-def get_manifold(text):
 
+def get_manifold(text):
     """
     From a ptolemy solutions file, extract the manifold.
     Returned as snappy Manifold.
@@ -178,8 +178,8 @@ def get_manifold(text):
 
     return get_manifold_thunk(text)()
 
-def get_manifold_from_file(filename):
 
+def get_manifold_from_file(filename):
     """
     As get_manifold but takes filename. Returns a byte sequence.
     """

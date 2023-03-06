@@ -6,6 +6,7 @@ import ssl
 from urllib import request
 version_url = 'https://raw.githubusercontent.com/3-manifolds/SnapPy/master/current.txt'
 
+
 class Phoner(Thread):
     def __init__(self):
         Thread.__init__(self)
@@ -38,6 +39,7 @@ def update_needed():
                 "http://snappy.computop.org**\n" % ET.answer)
     else:
         return ''
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

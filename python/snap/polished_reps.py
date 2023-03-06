@@ -69,8 +69,10 @@ class MapToFreeAbelianization(Object):
 
 # General code for storing high-precision representations.
 
+
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
+
 
 if _within_sage:
     def clean_CC(z, error, prec):
@@ -83,29 +85,37 @@ else:
         clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
         return Number(clean_z, precision=prec)
 
+
 def clean_matrix(A, error, prec):
     return matrix([[clean_CC(A[x], error, prec) for x in ((i,0),(i,1))]
                    for i in (0,1)])
 
+
 def SL2C_inverse(A):
     return matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
+
 
 def matrix_norm(A):
     return max( [abs(a) for a in A.list()])
 
+
 def matrix_difference_norm(A, B):
     return max([abs(a - b) for a, b in zip(A.list(), B.list())])
+
 
 def projective_distance(A, B):
     return min( matrix_norm(A-B), matrix_norm(A+B) )
 
+
 def compare_matrices(Mats0, Mats1):
     return max([projective_distance(A, B) for A, B in zip(Mats0, Mats1)])
+
 
 def make_epsilon(A):
     prec = A.base_ring().precision()
     RR = RealField(prec)
     return RR(2)**(RR(-0.6)*prec)
+
 
 def make_trace_2(A):
     P = A if A.trace() > 0 else - A
@@ -113,6 +123,7 @@ def make_trace_2(A):
         return P
     else:
         raise ValueError("Matrix of peripheral element doesn't seem to be parabolic")
+
 
 def parabolic_eigenvector(A):
     P, CC, epsilon = make_trace_2(A), A.base_ring(), make_epsilon(A)
@@ -218,6 +229,7 @@ class MatrixRepresentation(Object):
         gens = [2*g for g in gens]
         enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
         return [self(w).trace() for w in enough_elts]
+
 
 class ManifoldGroup(MatrixRepresentation):
     def __init__(self, gens, relators, peripheral_curves=None, matrices=None):

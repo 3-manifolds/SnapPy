@@ -16,6 +16,7 @@ class PtolemyCannotBeCheckedError(Exception):
             "class is not supported.")
         Exception.__init__(self, msg)
 
+
 class LogToCloseToBranchCutError(Exception):
     """
     An exception raised when taking log(-x) for some real number x
@@ -23,6 +24,7 @@ class LogToCloseToBranchCutError(Exception):
     -Pi or Pi as imaginary part.
     """
     pass
+
 
 class RelationViolationError(Exception):
     """
@@ -41,6 +43,7 @@ class RelationViolationError(Exception):
         if self.epsilon is None:
             return r + " (exact values)"
         return r + " (epsilon = %s)" % self.epsilon
+
 
 class NotPU21Representation:
     """
@@ -61,12 +64,14 @@ class NotPU21Representation:
 
     __nonzero__ = __bool__ # backwards compatibility python 2x
 
+
 class NumericalMethodError(Exception):
     def __init__(self, method):
         self.method = method
 
     def __str__(self):
         return "Method %s only supported for numerical values" % self.method
+
 
 class ExactMethodError(Exception):
     def __init__(self, method):
@@ -75,6 +80,7 @@ class ExactMethodError(Exception):
     def __str__(self):
         return "Method %s only supported for exact values" % self.method
 
+
 def _check_relation(value, epsilon, comment):
     if epsilon is None:
         if not value == 0:
@@ -82,6 +88,7 @@ def _check_relation(value, epsilon, comment):
     else:
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
+
 
 class PtolemyCoordinates(dict):
     """
@@ -298,7 +305,6 @@ class PtolemyCoordinates(dict):
               for d in _to_numerical(self) ])
 
     def to_PUR(self):
-
         """
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
@@ -317,7 +323,6 @@ class PtolemyCoordinates(dict):
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_terms_in_RUR(self):
-
         """
         If a Ptolemy coordinate is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms and
@@ -337,7 +342,6 @@ class PtolemyCoordinates(dict):
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_and_simplify_terms_in_RUR(self):
-
         """
         If a Ptolemy coordinate is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms,
@@ -596,7 +600,6 @@ class PtolemyCoordinates(dict):
         return - (obstruction * s *
                   (c_pt_v0_v0 * c_pt_v1_v2) /
                   (c_pt_v0_v1 * c_pt_v0_v2))
-
 
     def ratio_coordinate(self, tet, v0, v1, pt):
         """
@@ -868,7 +871,6 @@ class PtolemyCoordinates(dict):
                                     m4,
                                     matrix.matrix_mult(m5,m6))))), True)
 
-
     def check_against_manifold(self, M = None, epsilon = None):
         """
         Checks that the given solution really is a solution to the Ptolemy
@@ -931,7 +933,6 @@ class PtolemyCoordinates(dict):
                     total_index = matrix.vector_add(index, addl_index)
                     key = "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet
                     return self[key]
-
 
                 s0 = self._get_obstruction_variable(0, tet)
                 s1 = self._get_obstruction_variable(1, tet)
@@ -1052,7 +1053,6 @@ class Flattenings(dict):
 
     @classmethod
     def from_tetrahedra_shapes_of_manifold(cls, M):
-
         """
         Takes as argument a manifold and produces (weak) flattenings using
         the tetrahedra_shapes of the manifold M.
@@ -1148,7 +1148,6 @@ class Flattenings(dict):
         return self._evenN
 
     def get_zpq_triple(self, key_z):
-
         """
         Gives a flattening as triple [z;p,q] representing an element
         in the generalized Extended Bloch group similar to the way the
@@ -1277,6 +1276,7 @@ class Flattenings(dict):
                 epsilon,
                 "Gluing equation %s" % rows[row])
 
+
 class CrossRatios(dict):
     """
     Represents assigned shape parameters/cross ratios as
@@ -1385,7 +1385,6 @@ class CrossRatios(dict):
             for d in _to_numerical(self) ])
 
     def to_PUR(self):
-
         """
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
@@ -1402,7 +1401,6 @@ class CrossRatios(dict):
             manifold_thunk = self._manifold_thunk)
 
     def multiply_terms_in_RUR(self):
-
         """
         If a cross ratio is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms and
@@ -1420,7 +1418,6 @@ class CrossRatios(dict):
             manifold_thunk = self._manifold_thunk)
 
     def multiply_and_simplify_terms_in_RUR(self):
-
         """
         If a cross ratio is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms,
@@ -1803,9 +1800,7 @@ class CrossRatios(dict):
                            is_numerical = self._is_numerical,
                            manifold_thunk = self._manifold_thunk)
 
-
     def is_real(self, epsilon):
-
         """
         Returns True if all cross ratios are real (have absolute imaginary
         part < epsilon where epsilon is given as argument).
@@ -1821,7 +1816,6 @@ class CrossRatios(dict):
         return True
 
     def is_induced_from_psl2(self, epsilon = None):
-
         """
         For each simplex and each edges, checks that all cross ratios of that
         simplex that are parallel to that each are the same (maximal absolute
@@ -1990,6 +1984,7 @@ class CrossRatios(dict):
                     return True
             return False
 
+
 def _ptolemy_to_cross_ratio(solution_dict,
                             branch_factor = 1,
                             non_trivial_generalized_obstruction_class = False,
@@ -2070,9 +2065,11 @@ def _ptolemy_to_cross_ratio(solution_dict,
              for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
             [])), evenN
 
+
 def _num_tetrahedra(solution_dict):
     return max( [ int(key.split('_')[-1])
                   for key in solution_dict.keys() ] ) + 1
+
 
 def _N_for_shapes(solution_dict):
 
@@ -2087,6 +2084,7 @@ def _N_for_shapes(solution_dict):
         raise Exception("Shape keys for different N")
 
     return l[0]
+
 
 def _N_and_has_obstruction_for_ptolemys(solution_dict):
 
@@ -2111,6 +2109,7 @@ def _N_and_has_obstruction_for_ptolemys(solution_dict):
     for N in l:
         return N, has_obstruction
 
+
 def _get_number_field(d):
     for value in d.values():
 
@@ -2124,6 +2123,7 @@ def _get_number_field(d):
 
     return None
 
+
 def _evaluate_at_root(p, root):
 
     if type(p) == Gen and p.type() == 't_POLMOD':
@@ -2133,6 +2133,7 @@ def _evaluate_at_root(p, root):
         return p.evaluate_at_root(root)
 
     return p
+
 
 def _to_numerical(d):
 
@@ -2170,6 +2171,7 @@ def _to_numerical(d):
 
     return [ evaluate_all_for_root(root) for root in roots ]
 
+
 def _apply_to_RURs(d, RUR_method):
 
     def _apply_to_RUR(v):
@@ -2186,6 +2188,7 @@ def _convert_to_pari_float(z):
         return z * pari('1.0')
 
     return pari(z)
+
 
 def _compute_flattening(a, b, c, d, branch_factor, N = 2):
 
@@ -2211,8 +2214,10 @@ def _compute_flattening(a, b, c, d, branch_factor, N = 2):
 
 # bug in pari
 
+
 def _dilog(z):
     return pari("dilog(%s)" % z)
+
 
 def _L_function(zpq_triple, evenN = 2):
 
@@ -2229,11 +2234,13 @@ def _L_function(zpq_triple, evenN = 2):
             + (z.log() + p * f) * ((1-z).log() + q * f) / 2
             - Pi2 / 6)
 
+
 def _volume(z):
 
     z = _convert_to_pari_float(z)
 
     return (1-z).arg() * z.abs().log() + _dilog(z).imag()
+
 
 def _kronecker_delta(i, j):
     """
@@ -2245,8 +2252,8 @@ def _kronecker_delta(i, j):
     else:
         return 0
 
-def _X(N, k, v):
 
+def _X(N, k, v):
     """
     Returns the NxN matrix with off-diagonal entry v at position k, that
     is the entry at row k and column k+1 is v.
@@ -2260,6 +2267,7 @@ def _X(N, k, v):
     m = [[_kronecker_delta(i,j) for i in range(N)] for j in range(N)]
     m[k-1][k] = v
     return m
+
 
 def _H(N, k, x):
     """

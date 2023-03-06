@@ -7,6 +7,7 @@ from .export_stl import stl
 from . import filedialog
 from plink.ipython_tools import IPythonTkRoot
 
+
 class PolyhedronViewer(ttk.Frame):
     """
     Displays a hyperbolic polyhedron, either in the Poincare or Klein model.
@@ -204,6 +205,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.new_model()
         self.update_idletasks()
         time.sleep(0.5)
+
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

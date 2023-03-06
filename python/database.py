@@ -45,6 +45,7 @@ else:
 
 split_filling_info = re.compile(r'(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 
+
 def connect_to_db(db_path):
     """
     Open the given sqlite database, ideally in read-only mode.
@@ -413,8 +414,10 @@ class ManifoldTable():
 # The below function is used to add ManifoldTables defined in external
 # packages.
 
+
 this_module = sys.modules[__name__]
 __all_tables__ = collections.OrderedDict()
+
 
 def add_tables_from_package(package_name, must_succeed=True):
     """

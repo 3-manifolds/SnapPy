@@ -1,6 +1,7 @@
 from snappy.SnapPy import matrix
 from ..upper_halfspace.ideal_point import Infinity
 
+
 def symmetric_vertices_for_tetrahedron(z):
     """
     Given a tetrahedron shape, returns four (ideal) points spanning
@@ -15,6 +16,7 @@ def symmetric_vertices_for_tetrahedron(z):
 
     w = z.sqrt() + (z - 1).sqrt()
     return [ w, 1/w, -1/w, -w ]
+
 
 def pgl2_matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
     if z0 == Infinity:
@@ -51,6 +53,7 @@ def are_sl_matrices_close(m1, m2, epsilon = 1e-5):
             if abs(m1[i,j] - m2[i,j]) > epsilon:
                 return False
     return True
+
 
 def are_psl_matrices_close(m1, m2, epsilon = 1e-5):
     """

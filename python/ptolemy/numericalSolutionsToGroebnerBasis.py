@@ -13,6 +13,7 @@ def numerical_solutions_with_one(polys):
 
     return solutions
 
+
 class PariPolynomialAndVariables:
     def __init__(self, polynomial, variables = None):
 
@@ -35,10 +36,10 @@ class PariPolynomialAndVariables:
             polynomial = self.pari_polynomial.substpol(var, value),
             variables = [ v for v in self.variables if not v == var ])
 
-
     def get_roots(self):
         return self.pari_polynomial.polroots(
             precision = 3.4 * pari.get_real_precision())
+
 
 def numerical_solutions(polys):
 
@@ -71,13 +72,16 @@ def numerical_solutions(polys):
         else NonZeroDimensionalComponent()
         for solution in solutions]
 
+
 def _get_first(l):
     if l:
         return l[0]
     return None
 
+
 def _remove(l, element):
     return [x for x in l if not x is element]
+
 
 def _numerical_solutions_recursion(polysAndVars, solutionDict):
 

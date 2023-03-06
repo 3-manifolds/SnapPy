@@ -39,6 +39,7 @@ def generate_test_with_shapes_engine(module, engine):
 
     return result
 
+
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':Manifold}
 
@@ -72,6 +73,7 @@ def run_doctests(verbose=False, print_info=True):
             verify.realAlgebra ],
         extraglobs=globs,
         verbose=verbose, print_info=print_info)
+
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

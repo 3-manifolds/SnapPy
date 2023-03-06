@@ -211,6 +211,7 @@ def scan_rows_from_file(infile, width, height, planes, bitdepth):
 
 ##### Prior to this line, everything is identical to
 
+
 def convert_ppm_to_png(infile_object, outfile_object):
     """
     Adapted from the "main" function of "pripamtopng"

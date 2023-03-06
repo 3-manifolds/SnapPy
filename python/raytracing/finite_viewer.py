@@ -10,6 +10,7 @@ from .zoom_slider import Slider, ZoomSlider
 ###############################################################################
 # Main widget
 
+
 class FiniteViewer(ttk.Frame):
     def __init__(self, container, manifold,
                  fillings_changed_callback = None,
@@ -490,6 +491,7 @@ class FiniteViewer(ttk.Frame):
 ###############################################################################
 # Helpers
 
+
 _solution_type_text = [
     'degenerate',
     'geometric',
@@ -498,6 +500,7 @@ _solution_type_text = [
     'degenerate',
     'degenerate',
     'degenerate']
+
 
 def _maximal_cusp_area(mfd):
     # Hack to prevent doctest failure M.browse() where
@@ -534,6 +537,7 @@ def _maximal_cusp_area(mfd):
         print("Exception while trying to compute maximal cusp area:", e)
         return 5.0
 
+
 def _mouse_gestures_text():
     if sys.platform == 'darwin':
         return u"Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
@@ -542,6 +546,7 @@ def _mouse_gestures_text():
 
 ###############################################################################
 # Performance test
+
 
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):
@@ -560,7 +565,6 @@ class PerfTest:
         self.widget.focus_set()
         self.widget.mainloop()
 
-
     def report_time(self, t):
         self.total_time += t
 
@@ -576,6 +580,7 @@ class PerfTest:
 
         self.widget.redraw_if_initialized()
         self.widget.after(250, self.redraw)
+
 
 def run_perf_test():
     from snappy import Manifold

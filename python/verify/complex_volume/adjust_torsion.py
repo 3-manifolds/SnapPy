@@ -20,6 +20,7 @@ _move_from_three = {
     k : ~p for k, p in _move_to_three.items()
 }
 
+
 def _perm_for_q_tet(F, gluing):
     return _move_to_three[gluing.image(F)] * gluing * _move_from_three[F]
 

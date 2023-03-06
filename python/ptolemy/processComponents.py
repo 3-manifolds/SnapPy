@@ -6,11 +6,12 @@ from . import coordinates
 from .polynomial import Polynomial
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 
+
 def contains_ideal_components(text):
     return "IDEAL=COMPONENTS=BEGIN" in text
 
-def decomposition_from_components(text):
 
+def decomposition_from_components(text):
 
     py_eval = processFileBase.get_py_eval(text)
     manifold_thunk = processFileBase.get_manifold_thunk(text)
@@ -41,6 +42,7 @@ def decomposition_from_components(text):
         [ process_component(py_eval, manifold_thunk, variables,
                             component)
           for component in components ])
+
 
 def remove_optional_quotes(s):
     if s[0] in ['"', "'"]:
@@ -88,6 +90,7 @@ def process_component(py_eval, manifold_thunk, variables,
             dimension = dimension,
             free_variables = free_variables)
 
+
 def process_witnesses(py_eval, manifold_thunk, witnesses_section, for_dimension,
                       variables):
 
@@ -95,6 +98,7 @@ def process_witnesses(py_eval, manifold_thunk, witnesses_section, for_dimension,
             py_eval, manifold_thunk, witness_section, for_dimension, variables)
              for witness_section
              in processFileBase.find_section(witnesses_section, "WITNESS") ]
+
 
 def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
                                variables):
@@ -153,6 +157,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
                 manifold_thunk = manifold_thunk))
 
     raise Exception("No parsable solution type given: %s..." % text[:100])
+
 
 class SolutionContainer():
     def __init__(self, solutions):

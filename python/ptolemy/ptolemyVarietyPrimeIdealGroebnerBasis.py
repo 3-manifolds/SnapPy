@@ -3,6 +3,7 @@ from . import numericalSolutionsToGroebnerBasis
 from .component import *
 from .coordinates import PtolemyCoordinates
 
+
 class PtolemyVarietyPrimeIdealGroebnerBasis():
 
     """

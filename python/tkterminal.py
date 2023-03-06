@@ -48,6 +48,7 @@ class Tk(Tk_.Tk):
 #  Some ideas for the TkTerm class were borrowed from code written by
 #  Eitan Isaacson, IBM Corp.
 
+
 class TkTerm:
     """
     A Tkinter terminal window that runs an IPython shell.  This class

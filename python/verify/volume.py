@@ -28,6 +28,7 @@ from . import verifyHyperbolicity
 # We work around this by converting to snappy.Number where a work-around for this was
 # implemented.
 
+
 def _unprotected_volume_from_shape(z):
     """
     Computes the Bloch-Wigner dilogarithm for z assuming z is of a type that
@@ -58,6 +59,7 @@ def _unprotected_volume_from_shape(z):
     # for (1-z).arg() and z.polylog(2).
 
     return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
+
 
 def _volume_from_shape(z):
     """

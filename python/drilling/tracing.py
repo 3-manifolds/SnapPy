@@ -11,6 +11,7 @@ from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List
 
+
 class Endpoint:
     """
     Used to represent an endpoint of a line segment in a tetrahedron
@@ -29,6 +30,7 @@ class Endpoint:
 
     def __repr__(self):
         return "Endpoint(%r, %r)" % (self.r13_point, self.subsimplex)
+
 
 class GeodesicPiece:
     """
@@ -137,6 +139,7 @@ class GeodesicPiece:
     def __repr__(self):
         return "GeodesicPiece(%d, %r, %r)" % (self.index, self.tet, self.endpoints)
 
+
 class GeodesicPieceTracker:
     def __init__(self, geodesic_piece):
         self.set_geodesic_piece(geodesic_piece)
@@ -144,6 +147,7 @@ class GeodesicPieceTracker:
     def set_geodesic_piece(self, geodesic_piece):
         self.geodesic_piece = geodesic_piece
         geodesic_piece.tracker = self
+
 
 def compute_plane_intersection_param(
         plane, # Unnormalised space-like vector/plane equation
@@ -182,6 +186,7 @@ def compute_plane_intersection_param(
             denom = RF(1e-200)
 
     return num / denom
+
 
 def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     """

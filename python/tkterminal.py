@@ -411,7 +411,7 @@ class TkTerm:
             start = '%d.end' % (line - 1)
             end = '%d.end' % (line)
             self.text.mark_set(Tk_.INSERT, start)
-            self.text.delete(start, end)
+            self.text.delete(start, '%s.%s'%(line, self._prompt_size))
             return 'break'
         if self._current_indent >= 4:
             if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':

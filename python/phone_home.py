@@ -4,7 +4,7 @@ from .version import version as current
 from pkg_resources import parse_version
 import ssl
 from urllib import request
-version_url = 'https://raw.githubusercontent.com/3-manifolds/SnapPy/master/current.txt'
+version_url = 'http://snappy.computop.org/current.txt'
 
 class Phoner(Thread):
     def __init__(self):
@@ -15,17 +15,20 @@ class Phoner(Thread):
         this_version = parse_version(current)
         latest = None
         try:
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            with request.urlopen(version_url, context=ctx) as response:
+            # Below code would allow switching to https urls in our
+            # macOS app where certs are broken.
+            #
+            # ctx = ssl.create_default_context()
+            # ctx.check_hostname = False
+            # ctx.verify_mode = ssl.CERT_NONE
+            # with request.urlopen(version_url, context=ctx) as response:
+            with request.urlopen(version_url) as response:
                 latest = response.read().decode('ascii').strip()
                 latest_version = parse_version(latest)
         except Exception:
             return
         if latest and latest_version > this_version:
             self.answer = (latest, current)
-
 
 def update_needed():
     ET = Phoner()
@@ -41,7 +44,7 @@ def update_needed():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        this_version = '0.0.0'
+        current = '0.0.0'
     else:
         print('To provoke an update response add an argument.')
     import time

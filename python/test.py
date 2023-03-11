@@ -20,7 +20,6 @@ from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
 from snappy import numeric_output_checker
 modules = []
 
-snappy.pari.allocatemem(2**24,2**30)
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 # Augment tests for SnapPy with those that Cython missed
@@ -169,6 +168,8 @@ def runtests(verbose = False,
         windows=windows,
         use_modernopengl=use_modernopengl)
 
+    print('Pari stacksize', snappy.pari.stacksize(),
+          'max stack size', snappy.pari.stacksizemax())
     return result.failed + num_graphics_failures
 
 

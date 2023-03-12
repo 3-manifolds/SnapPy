@@ -12,6 +12,7 @@ imports += collect_submodules('snappy_15_knots')
 imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 imports += collect_submodules('pyx')
+imports += collect_submodules('low_index')
 
 datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('pyx')

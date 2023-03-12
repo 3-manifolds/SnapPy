@@ -37,7 +37,7 @@ os.system(this_python + " setup.py pip_install")
 # Now build the .exe
 
 os.chdir("windows_exe")
-os.system("rm -rf build dist InstallSnapPy.exe")
+os.system("rm -rf build dist InstallSnapPy.exe InstallSnapPy-Dbg.exe")
 os.system(this_pyinstaller + " SnapPy_py3.spec")
 os.system("iscc InnoSnapPy_py3.iss")
 os.system(this_pyinstaller + " SnapPy_dbg.spec")

@@ -108,8 +108,12 @@ def valid_index(i, n, format_str):
 # A stream for asynchronous messages
 class MsgIO():
     def __init__(self):
-        self.write = sys.stdout.write
-        self.flush = sys.stdout.flush()
+        if sys.stdout is None:
+            self.write = None
+            self.flush = None
+        else:
+            self.write = sys.stdout.write
+            self.flush = sys.stdout.flush
 
 msg_stream = MsgIO()
 

@@ -60,8 +60,8 @@ class TkTerm:
             io.stdout = sys.stdout = self
         else:
             self.window = window = Tk(self.report_callback_exception)
-            self.encoding = sys.stdout.encoding
-            self.saved_io = (sys.stdout, sys.stderr)
+            # self.encoding = sys.stdout.encoding
+            # self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         self._input_buffer = ''
         self._current_indent = 0

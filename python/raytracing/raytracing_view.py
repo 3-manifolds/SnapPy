@@ -267,10 +267,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 # Then compute end point using depth value.
                 r2 = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
                 ray_end = vector(
-                    [RF((r2 + 1.0)        + depth * r2),
-                     RF( scaled_x         + depth * scaled_x),
-                     RF( scaled_y         + depth * scaled_y),
-                     RF( r2               + depth * (r2 - 1.0))])
+                    [RF((r2 + 1.0) + depth * r2),
+                     RF( scaled_x + depth * scaled_x),
+                     RF( scaled_y + depth * scaled_y),
+                     RF( r2 + depth * (r2 - 1.0))])
             else:
                 pt = R13_normalise(
                     vector([RF(1.0), RF(2.0 * x), RF(2.0 * y), RF(0.0)]))

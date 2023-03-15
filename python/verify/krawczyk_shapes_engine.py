@@ -176,7 +176,7 @@ class KrawczykShapesEngine:
         # Similar to log_gluing_LHS
         BaseField = shapes[0].parent()
         zero = BaseField(0)
-        one  = BaseField(1)
+        one = BaseField(1)
 
         # 1 /    z for each shape z
         shape_inverses = [ one / shape for shape in shapes ]
@@ -214,7 +214,7 @@ class KrawczykShapesEngine:
         # Similar to log_gluing_LHS
         BaseField = shapes[0].parent()
         zero = BaseField(0)
-        one  = BaseField(1)
+        one = BaseField(1)
 
         gluing_LHS_derivatives = []
 
@@ -228,7 +228,7 @@ class KrawczykShapesEngine:
             for r, (a, b) in eqns_column:
                 derivative = zero
                 if not a == 0:
-                    derivative  = BaseField(int(a)) * shape_inverse
+                    derivative = BaseField(int(a)) * shape_inverse
                 if not b == 0:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
                 column.append((r, derivative))

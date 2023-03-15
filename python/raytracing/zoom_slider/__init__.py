@@ -152,11 +152,11 @@ class ZoomSlider(ttk.Frame):
         r_p = frac * r + (1.0 - frac) * l
 
         if value < l_p:
-            self.slider.left_end  = value - (1.0 - frac) * length
+            self.slider.left_end = value - (1.0 - frac) * length
             self.slider.right_end = value + frac * length
 
         if value > r_p:
-            self.slider.left_end  = value - frac * length
+            self.slider.left_end = value - frac * length
             self.slider.right_end = value + (1.0 - frac) * length
 
         self.slider.set_value(value)
@@ -166,22 +166,22 @@ class ZoomSlider(ttk.Frame):
     def _build_icons(self):
         if sys.platform == 'darwin':
             try:
-                self.compress_icon=tk.Image('nsimage', source='NSExitFullScreenTemplate',
+                self.compress_icon = tk.Image('nsimage', source='NSExitFullScreenTemplate',
                                             width=18, height=18)
-                self.expand_icon=tk.Image('nsimage', source='NSEnterFullScreenTemplate',
+                self.expand_icon = tk.Image('nsimage', source='NSEnterFullScreenTemplate',
                                             width=18, height=18)
             except tk.TclError:
-                self.compress_icon=tk.Image('photo', width=18, height=18,
+                self.compress_icon = tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'inward18.png'))
 
-                self.expand_icon=tk.Image('photo', width=18, height=18,
+                self.expand_icon = tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
         else:
             suffix = 'gif' if tk.TkVersion < 8.6 else 'png'
-            self.compress_icon=tk.Image('photo', width=18, height=18,
+            self.compress_icon = tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'inward18.' + suffix))
 
-            self.expand_icon=tk.Image('photo', width=18, height=18,
+            self.expand_icon = tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'outward18.' + suffix))
 
     def _slider_callback(self, value):
@@ -235,7 +235,7 @@ class ZoomSlider(ttk.Frame):
         if r - l < self.min_span:
             return
 
-        self.slider.left_end  = 0.25 * (3.0 * l + r)
+        self.slider.left_end = 0.25 * (3.0 * l + r)
         self.slider.right_end = 0.25 * (3.0 * r + l)
 
         self.set_value(self.current_value)
@@ -248,7 +248,7 @@ class ZoomSlider(ttk.Frame):
         if r - l > self.max_span:
             return
 
-        self.slider.left_end  = 0.5 * (3.0 * l - r)
+        self.slider.left_end = 0.5 * (3.0 * l - r)
         self.slider.right_end = 0.5 * (3.0 * r - l)
         self.slider.set_value(self.current_value)
         self._update_labels()

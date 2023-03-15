@@ -51,7 +51,7 @@ class McomplexWithExpansion(McomplexWithMemory):
         implemented as a compound of four 2<->3 moves.
         """
         assert arrow.axis().valence() == 2
-        assert arrow.equator().valence()==2
+        assert arrow.equator().valence() == 2
         a = arrow.copy()
         a.opposite().next().reverse().opposite()
         if a.Tetrahedron == a.glued().Tetrahedron:

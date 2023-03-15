@@ -42,7 +42,7 @@ NUMERIC_LIST = []
 # Store in dict precision : FLAG
 NUMERIC_DICT = {}
 # All or'ed together
-ALL_NUMERIC  = 0
+ALL_NUMERIC = 0
 
 def init_precisions(precisions):
     """
@@ -88,7 +88,7 @@ exponent_pat = r'(?:\ ?([eE][+-]?[0-9]+))?'
 
 # 4.5?e-3 would split into groups ('4.5?e-3', '4.5', '?", 'e-3').
 number_re = re.compile('(' + mantissa_pat + interval_pat + exponent_pat + ')')
-number_group_count  = 4
+number_group_count = 4
 number_split_stride = number_group_count + 1
 
 # Use whitespace normalization for text pieces
@@ -174,13 +174,13 @@ class NumericOutputChecker(doctest.OutputChecker):
 
         # "[4.5e-9]" yields ('[', '4.5e-9', '4.5', None, 'e-9', ']')
         split_want = re.split(number_re, want)
-        split_got  = re.split(number_re, got)
+        split_got = re.split(number_re, got)
 
         # Check same number of numbers
         if len(split_want) != len(split_got):
             return ('COUNT',
                     (len(split_want) // number_split_stride,
-                     len(split_got)  // number_split_stride))
+                     len(split_got) // number_split_stride))
 
         # Compare text pieces between numbers
         flags = optionflags | NUMERIC_DEFAULT_OPTIONFLAGS

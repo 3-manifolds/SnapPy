@@ -22,7 +22,7 @@ def _compute_holonomy(manifold, shapes):
     """
 
     # Compute z', z''
-    zp  = [ (1 / (1 - z)) for z in shapes ]
+    zp = [ (1 / (1 - z)) for z in shapes ]
     zpp = [ ((z - 1) / z) for z in shapes ]
 
     # A list

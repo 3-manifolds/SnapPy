@@ -266,7 +266,7 @@ class ManifoldTable():
         isosig = m.group(1)
         M._from_isosig(isosig)
 
-        fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
+        fillings = eval( '[' + m.group(2).replace(')(', '),(') + ']', {})
 
         if fillings:
             M.dehn_fill(fillings)

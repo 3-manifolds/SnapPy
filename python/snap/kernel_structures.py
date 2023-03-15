@@ -28,7 +28,7 @@ class TransferKernelStructuresEngine(McomplexEngine):
         """
 
         for tet, z in zip(self.mcomplex.Tetrahedra, shapes):
-            zp  = 1 / (1 - z)
+            zp = 1 / (1 - z)
             zpp = (z - 1) / z
             tet.ShapeParameters = {
                 simplex.E01: z,

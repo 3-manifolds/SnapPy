@@ -17,5 +17,5 @@ class Corner:
         self.Subsimplex = subsimplex
 
     def __repr__(self):
-        return ('<'+SubsimplexName[self.Subsimplex]+ ' of '+
+        return ('<'+SubsimplexName[self.Subsimplex] + ' of ' +
                 str(self.Tetrahedron) + '>')

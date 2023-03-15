@@ -45,11 +45,11 @@ def lifted_ptolemys_from_cross_section(cusp_cross_section,
         # of a tetrahedron
         for i, (tet, perm) in enumerate(edge.embeddings()):
             # The two vertices of the tetrahedron's edge
-            v0   = perm.image(t3m.V0)
-            v1   = perm.image(t3m.V1)
-            v2   = perm.image(t3m.V2)
+            v0 = perm.image(t3m.V0)
+            v1 = perm.image(t3m.V1)
+            v2 = perm.image(t3m.V2)
             # The edge in the tetrahedron
-            e    = v0 | v1
+            e = v0 | v1
             # Face adjacent to the edge
             face = e | v2
 

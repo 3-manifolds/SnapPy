@@ -151,7 +151,7 @@ def exterior_to_link(manifold,
                  f'PL segments; max denom of coor is {M._curr_max_denom()}.')
     print_status('    Embedding in S3...', end='')
     link_in_R3 = put_in_S3.embed_link_in_S3(M)
-    link_in_R3  = link_projection.straighten_link(link_in_R3)
+    link_in_R3 = link_projection.straighten_link(link_in_R3)
     num_seg = sum(len(component) + 1 for component in link_in_R3)
     print_status('got PL link of', num_seg ,'segments.')
     print_status('    Projecting...', end='')

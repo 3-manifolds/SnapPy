@@ -113,9 +113,9 @@ class FinitePoint():
             mat = mat / sqrt(mat.det())
 
         # a * z + b
-        az_b  = mat[0,0] * z + mat[0,1]
+        az_b = mat[0,0] * z + mat[0,1]
         # c * z + d
-        cz_d  = mat[1,0] * z + mat[1,1]
+        cz_d = mat[1,0] * z + mat[1,1]
 
         # Denominator
         # | c * (z + t * j) + d |^2 =
@@ -123,7 +123,7 @@ class FinitePoint():
         # | c * z + d| ^ 2 + |c * t|^2
         denom = _abs_sqr(cz_d) + _abs_sqr(mat[1,0] * self.t)
 
-        num   = ( az_b * cz_d.conjugate() +
+        num = ( az_b * cz_d.conjugate() +
                   mat[0,0] * mat[1,0].conjugate() * self.t ** 2)
 
         return FinitePoint(num / denom, self.t / denom)
@@ -156,7 +156,7 @@ class FinitePoint():
         # t and (x2-x1)^2 is the square of the absolute value of the difference
         # of the two z.
 
-        r = 1 + (((self.t - other.t) ** 2 + _abs_sqr(self.z - other.z))/
+        r = 1 + (((self.t - other.t) ** 2 + _abs_sqr(self.z - other.z)) /
                  (2 * self.t * other.t))
 
         # Due to rounding-errors, we can get a value that is just slightly

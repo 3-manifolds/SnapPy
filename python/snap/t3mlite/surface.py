@@ -368,16 +368,16 @@ class ClosedSurface(Surface):
             q, e = self.is_edge_linking_torus()
             if q:
                 out.write("Normal surface #%d is thin linking torus of edge %s\n"
-                          %(manifold.NormalSurfaces.index(self), manifold.Edges[e]))
+                          % (manifold.NormalSurfaces.index(self), manifold.Edges[e]))
                 return
             out.write("Normal surface #%d of Euler characteristic %d\n"
-                      %(manifold.NormalSurfaces.index(self), self.EulerCharacteristic))
+                      % (manifold.NormalSurfaces.index(self), self.EulerCharacteristic))
             # additional message about bounding subcomplex
             b, d, t = self.BoundingInfo
             if b == 1:
-                out.write("  Bounds %s subcomplex\n"  % t)
+                out.write("  Bounds %s subcomplex\n" % t)
             elif d == 1:
-                out.write("  Double bounds %s subcomplex\n" %t)
+                out.write("  Double bounds %s subcomplex\n" % t)
             else:
                 out.write("  doesn't bound subcomplex\n")
         else:
@@ -416,7 +416,7 @@ class ClosedSurface(Surface):
         complementary manifold.
 
         """
-        M  = manifold
+        M = manifold
         have_quads = [self.has_quad(i) for i in range(len(M))]
         new_tets = {}
         for i in have_quads:
@@ -459,7 +459,7 @@ class SpunSurface(Surface):
     def info(self, manifold, out = sys.stdout):
         out.write("SpunSurface.\n Slope: %s; Boundary components: %d; " %
                   reduce_slope(self.BoundarySlope))
-        out.write("Euler characteristic: %d\n"%
+        out.write("Euler characteristic: %d\n" %
                   self.find_euler_characteristic(manifold))
         out.write(" Incompressible: %s\n" % self.Incompressible)
         for i in range(self.Size):
@@ -469,7 +469,7 @@ class SpunSurface(Surface):
                           (i, self.Quadtypes[i], quad_weight))
             else:
                 weight = "  Tet %d: no quads" % i
-            out.write(weight  + "\n")
+            out.write(weight + "\n")
 
 
 #-------------begin class ClosedSurfaceInCusped------------------------
@@ -493,9 +493,9 @@ class ClosedSurfaceInCusped(ClosedSurface):
         # additional message about bounding subcomplex
         b, d, t = self.BoundingInfo
         if b == 1:
-            out.write("  Bounds %s subcomplex\n"  % t)
+            out.write("  Bounds %s subcomplex\n" % t)
         elif d == 1:
-            out.write("  Double bounds %s subcomplex\n" %t)
+            out.write("  Double bounds %s subcomplex\n" % t)
         else:
             out.write("  Doesn't bound subcomplex\n")
 

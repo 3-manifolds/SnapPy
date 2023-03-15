@@ -248,7 +248,7 @@ class InsideViewer(ttk.Frame):
 
         for i in range(self.widget.manifold.num_cusps()):
             scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
-                                 label_text = 'Cusp %d' %i,
+                                 label_text = 'Cusp %d' % i,
                                  on_change=self.focus_viewer)
             scale_m.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
@@ -375,7 +375,7 @@ class InsideViewer(ttk.Frame):
         button = ttk.Button(
             frame,
             text = "Select geodesics",
-            takefocus  = 0,
+            takefocus = 0,
             command = self.show_geodesics_window)
         button.grid(row = row, column = 2,
                     sticky = tkinter.NE)
@@ -514,7 +514,7 @@ class InsideViewer(ttk.Frame):
         self.rotate_key_label = ttk.Label(frame, text = _rotate_key_labels['QWERTY'])
         self.rotate_key_label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
-        row +=1
+        row += 1
         label = ttk.Label(frame, text = _mouse_gestures_text())
         label.grid(row = row, column = 0, columnspan = 4)
 
@@ -664,7 +664,7 @@ class InsideViewer(ttk.Frame):
     def pick_cohomology_class(self, i):
         cohomology_class = self.widget.ui_parameter_dict['cohomology_class'][1]
         for j in range(len(cohomology_class)):
-            cohomology_class[j] = 1.0 if i ==j else 0.0
+            cohomology_class[j] = 1.0 if i == j else 0.0
         self.widget.recompute_raytracing_data_and_redraw()
         for controller in self.class_controllers:
             controller.update()

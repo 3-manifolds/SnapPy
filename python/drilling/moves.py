@@ -307,12 +307,12 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                 continue
 
             start_subsimplex = old_piece.endpoints[0].subsimplex
-            end_subsimplex   = old_piece.endpoints[1].subsimplex
+            end_subsimplex = old_piece.endpoints[1].subsimplex
 
             if (start_subsimplex | end_subsimplex) in simplex.OneSubsimplices:
                 for i, new_tet in enumerate(new_tets):
                     new_start_subsimplex = old_to_new_tets[j][i].image(start_subsimplex)
-                    new_end_subsimplex   = old_to_new_tets[j][i].image(end_subsimplex)
+                    new_end_subsimplex = old_to_new_tets[j][i].image(end_subsimplex)
 
                     if (new_start_subsimplex | new_end_subsimplex) == simplex.E23:
                         GeodesicPiece.replace_by(
@@ -343,7 +343,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                 end_j = j
 
             r13_endpoints = [
-                O13_embeddings[j]     * old_pieces[ 0].endpoints[0].r13_point,
+                O13_embeddings[j] * old_pieces[ 0].endpoints[0].r13_point,
                 O13_embeddings[end_j] * old_pieces[-1].endpoints[1].r13_point
                 ]
 

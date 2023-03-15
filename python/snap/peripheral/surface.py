@@ -45,7 +45,7 @@ class Edge():
     An oriented edge 0 -> 1.
     """
     def __init__(self, sides = None, vertices=None):
-        self.sides, self.vertices= sides, vertices
+        self.sides, self.vertices = sides, vertices
         self.index = None
 
     def glued_to(self, side):
@@ -129,7 +129,7 @@ class Side():
             t, T = self.triangle, other.triangle
             v, w = self.vertices
             V, W = other.vertices
-            return t==T and v==V and w==W
+            return t == T and v == V and w == W
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -172,7 +172,7 @@ class Corner():
 
     def __eq__(self, other):
         if isinstance(other, Corner):
-            return (self.triangle==other.triangle) and (self.vertex==other.vertex)
+            return (self.triangle == other.triangle) and (self.vertex == other.vertex)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -271,7 +271,7 @@ class Surface():
         for e in self.edges:
             v_init = vertex_to_row[e.vertices[0]]
             v_term = vertex_to_row[e.vertices[1]]
-            D[v_term, e.index]+= 1
+            D[v_term, e.index] += 1
             D[v_init, e.index] += -1
 
         return D
@@ -464,7 +464,7 @@ class OneCycle(Cycle):
         support = [i for i, w in enumerate(W) if w != 0]
         segments = {}
         for i in support:
-            E =S.edges[i]
+            E = S.edges[i]
             w = self.weights[i]
             o = 1 if w > 0 else -1
             segments[i] = [OneCycleSegment(E, o, a) for a in range(abs(w))]

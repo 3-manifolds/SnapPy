@@ -615,7 +615,7 @@ class NTriangulationForPtolemy(NTriangulation):
                     power = 0
 
                 # Get the two corresponding Ptolemy coordinates
-                ptolemy       = ('c_%d%d%d%d' % ptolemy_index +
+                ptolemy = ('c_%d%d%d%d' % ptolemy_index +
                                  '_%d' % tet_index)
                 other_ptolemy = ('c_%d%d%d%d' % other_ptolemy_index +
                                  '_%d' % other_tet_index)

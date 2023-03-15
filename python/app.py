@@ -189,7 +189,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             inputs = self.IP.history_manager.input_hist_raw
             results = self.IP.history_manager.output_hist
             for n in range(1,len(inputs)):
-                savefile.write('\n'+re.sub('\n+','\n',inputs[n]) +'\n')
+                savefile.write('\n'+re.sub('\n+','\n',inputs[n]) + '\n')
                 try:
                     output = repr(results[n]).split('\n')
                 except:

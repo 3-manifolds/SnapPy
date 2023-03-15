@@ -410,7 +410,7 @@ def _compute_fourth_corner(T):
 
     cross_ratio = T.ShapeParameters[ v[0] | v[1] ]
     if z[0] == Infinity:
-        z[3] = z[1] + cross_ratio * (z[2]  - z[1])
+        z[3] = z[1] + cross_ratio * (z[2] - z[1])
     else:
         diff20 = z[2] - z[0]
         diff21 = z[2] - z[1]
@@ -520,7 +520,7 @@ def _matrix_L1_distance_to_kernel(m, snappeaM):
 
 
 def _negate_matrix_to_match_kernel(m, snappeaM):
-    diff_plus  = _matrix_L1_distance_to_kernel(m,  snappeaM)
+    diff_plus = _matrix_L1_distance_to_kernel(m,  snappeaM)
 
     diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 

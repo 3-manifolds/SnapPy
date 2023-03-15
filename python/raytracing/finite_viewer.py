@@ -366,7 +366,7 @@ class FiniteViewer(ttk.Frame):
         label = ttk.Label(frame, text = u"Keys: \u2190\u2191\u2192\u2193xz")
         label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
-        row +=1
+        row += 1
         label = ttk.Label(frame, text = _mouse_gestures_text())
         label.grid(row = row, column = 0, columnspan = 4)
 

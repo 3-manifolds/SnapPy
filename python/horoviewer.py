@@ -77,7 +77,7 @@ Use the View Options to select which components of the scene are drawn.
             widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
         cyglSetStandardLighting()
-        option_frame= ttk.Frame(top_frame)
+        option_frame = ttk.Frame(top_frame)
         view_button = ttk.Menubutton(option_frame, text='View Options')
         self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)
         view_menu.add_checkbutton(label='parallelogram', command=self.view_check,

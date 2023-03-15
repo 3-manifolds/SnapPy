@@ -138,11 +138,11 @@ class SpunSurface:
         return True
 
     def __radd__(self, other):
-        if other==0:
+        if other == 0:
             return self
 
     def __add__(self, other):
-        if other==0:
+        if other == 0:
             return self
         if not self.is_compatible(other):
             raise ValueError('Normal surfaces are not compatible')

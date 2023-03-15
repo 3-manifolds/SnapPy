@@ -814,7 +814,7 @@ def _identified_variables_canonize(identified_variables):
         sign1, power1 = dict1[var1]
         sign2, power2 = dict2[var2]
 
-        new_sign  = sign1  * sign  * sign2
+        new_sign = sign1 * sign * sign2
         new_power = power1 - power - power2
 
         for v2, (s2, p2) in dict2.items():

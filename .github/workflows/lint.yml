@@ -19,7 +19,7 @@ jobs:
       - name: Run pycodestyle
         shell: bash -l {0}
         # We currently only check for some warnings. We should enable & fix more of them.
-        run: pycodestyle --select=E111,E21,E222,E227,E228,E262,E271,E272,E301,E306,E401,E701,E702,E703,E704,E711,E713,E721,W2,W3,W6 python/
+        run: pycodestyle --select=E111,E21,E221,E222,E225,E227,E228,E262,E271,E272,E301,E306,E401,E701,E702,E703,E704,E711,E713,E721,W2,W3,W6 python/
 
 env:
   MAKEFLAGS: -j2

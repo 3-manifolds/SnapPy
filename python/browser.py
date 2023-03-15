@@ -269,7 +269,7 @@ class Browser(Tk_.Toplevel):
                 canvas.configure(background=self.style.groupBG)
             canvas.grid(row=0, column=0, sticky=Tk_.NSEW)
             filling_scrollbar.config(command=canvas.yview)
-        self.filling_vars=[]
+        self.filling_vars = []
 
         # Embedded windows in a canvas are clipped to their parent, not to
         # the canvas.
@@ -387,7 +387,7 @@ class Browser(Tk_.Toplevel):
         ttk.Label(self.length_spectrum_frame, text='Cutoff:').grid(
             row=0, column=0, sticky=Tk_.E, pady=5)
         self.length_cutoff = 1.0
-        self.cutoff_var=Tk_.StringVar(self, self.length_cutoff)
+        self.cutoff_var = Tk_.StringVar(self, self.length_cutoff)
         self.cutoff_entry = cutoff_entry = ttk.Entry(
             self.length_spectrum_frame,
             takefocus=False,

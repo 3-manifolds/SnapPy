@@ -393,7 +393,7 @@ class Matrix:
         return not self.__eq__(other)
 
 def gcd(a, b):
-    a, b= abs(a), abs(b)
+    a, b = abs(a), abs(b)
     if a == 0:
         if b == 0:
             raise ValueError("gcd(0,0) undefined.")

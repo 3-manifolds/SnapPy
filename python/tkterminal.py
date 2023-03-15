@@ -159,7 +159,7 @@ class TkTerm:
             self.banner = shell.banner1
         else:
             cprt = 'Type "copyright", "credits" or "license" for more information.'
-            self.banner = "Python %s on %s\n%s\n(%s)\n" %(
+            self.banner = "Python %s on %s\n%s\n(%s)\n" % (
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
@@ -469,7 +469,7 @@ class TkTerm:
         charwidth = width//self.char_size
         biggest = 2 + max([len(x) for x in comps])
         num_cols = charwidth//biggest
-        num_rows = (len(comps) + num_cols -1)//num_cols
+        num_rows = (len(comps) + num_cols - 1)//num_cols
         rows = []
         format = '%%-%ds' % biggest
         for n in range(num_rows):

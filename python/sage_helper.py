@@ -62,6 +62,7 @@ def sage_methods(obj):
             pass
     return ans
 
+
 # Used for doctesting
 _gui_status = {}
 

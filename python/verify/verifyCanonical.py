@@ -29,11 +29,13 @@ default_exact_bits_prec_and_degrees = [( 212, 10),
 _num_tries_canonize = 3
 _max_tries_verify_penalty = 9
 
+
 class FindExactShapesError(RuntimeError):
     """
     Raised when snap failed to find the exact shapes using the LLL-algorithm
     for a manifold.
     """
+
 
 @sage_method
 def interval_checked_canonical_triangulation(M, bits_prec = None):
@@ -118,6 +120,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
     # Return M
     return M
+
 
 @sage_method
 def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
@@ -228,6 +231,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # Return it without introducing finite vertices.
     return M
 
+
 def _retrying_canonize(M):
     """
     Wrapper for SnapPea kernel's function to compute the proto-canonical
@@ -241,6 +245,7 @@ def _retrying_canonize(M):
         except (RuntimeError, SnapPeaFatalError):
             M.randomize()
     return False
+
 
 def _retrying_high_precision_canonize(M):
     """
@@ -265,8 +270,10 @@ def _retrying_high_precision_canonize(M):
     # Fail
     return None
 
+
 def _print_exception(e):
     print('%s: %s' % (type(e).__name__, e))
+
 
 @sage_method
 def verified_canonical_retriangulation(
@@ -274,7 +281,6 @@ def verified_canonical_retriangulation(
     interval_bits_precs = default_interval_bits_precs,
     exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
     verbose = False):
-
     """
     Given some triangulation of a cusped (possibly non-orientable) manifold ``M``,
     return its canonical retriangulation. Return ``None`` if it could not certify
@@ -433,6 +439,7 @@ def verified_canonical_retriangulation(
             return None
 
     return None
+
 
 def _verified_canonical_retriangulation(
         M, interval_bits_precs, exact_bits_prec_and_degrees,

@@ -22,6 +22,7 @@ from typing import Tuple, Sequence, Optional, Any
 Filling = Tuple[int, int]
 FillingMatrix = Tuple[Filling, Filling]
 
+
 def compute_r13_planes_for_tet(tet : Tetrahedron):
     """
     Computes outward facing normals/plane equations from the vertices of
@@ -36,6 +37,7 @@ def compute_r13_planes_for_tet(tet : Tetrahedron):
         f : space_r13_normalise(plane)
         for f, plane in tet.R13_unnormalised_planes.items() }
 
+
 def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
     """
     Given a triangulation with a R13 geometric structure (that is
@@ -46,6 +48,7 @@ def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
 
     return word_list_to_psl2c_matrix(
         mcomplex, word_as_list(word, mcomplex.num_generators))
+
 
 def word_list_to_psl2c_matrix(mcomplex : Mcomplex, word_list : Sequence[int]):
     """
@@ -191,6 +194,7 @@ def add_r13_geometry(
 ###############################################################################
 # Helpers
 
+
 def _to_matrix(m):
     """
     Necesssary conversion when not SageMath.
@@ -200,6 +204,7 @@ def _to_matrix(m):
     """
     return matrix([[m[0,0],m[0,1]],
                    [m[1,0],m[1,1]]])
+
 
 def _compute_core_curve(
         mcomplex : Mcomplex,
@@ -222,6 +227,7 @@ def _compute_core_curve(
                 result = result * m
 
     return R13LineWithMatrix.from_psl2c_matrix(result)
+
 
 def _find_standard_basepoint(mcomplex : Mcomplex,
                              vertex : Vertex) -> Tuple[Tetrahedron, int]:
@@ -255,6 +261,7 @@ def _find_standard_basepoint(mcomplex : Mcomplex,
                         return tet, v
 
     raise Exception("Could not find basepoint for cusp. This is a bug.")
+
 
 def _develop_core_curve_cusp(
         mcomplex : Mcomplex,
@@ -291,6 +298,8 @@ def _develop_core_curve_cusp(
 # Depending on whether we are using SnapPy inside SageMath or not, we
 # use different python classes to represent numbers, vectors and matrices.
 # Thus, using Any as type annotation for now :(
+
+
 def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
     """
     Given outside-facing normals for the four faces of a

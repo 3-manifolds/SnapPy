@@ -277,7 +277,6 @@ class InfinitesimalArc(Arc):
         return f'InfArc({i}:{v}; {j}:{w})'
 
 
-
 # We consider a bipyramid with a triangular base, i.e. the union of
 # two tetrahedra sharing a face, with vertices A, B, C around the
 # equator and poles N and S.  The orientation convention is that
@@ -299,12 +298,12 @@ class InfinitesimalArc(Arc):
 # typically different unless there is a global affine map taking one
 # bipyramid to the other.  It is thus convenient to us a standard
 # bipyramid which is symmetric with respect to affine maps.
-
 A = Vector3([ 3, 0, 0])
 B = Vector3([ 0, 0, 3])
 C = Vector3([ 0, 3, 0])
 N = Vector3([ 0, 0, 0])
 S = Vector3([ 2, 2, 2])
+
 
 class TetrahedronEmbedding():
     """

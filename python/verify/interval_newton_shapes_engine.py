@@ -9,6 +9,7 @@ if _within_sage:
 
 __all__ = ['IntervalNewtonShapesEngine']
 
+
 class IntervalNewtonShapesEngine:
 
     """
@@ -375,7 +376,6 @@ class IntervalNewtonShapesEngine:
             False
 
         """
-
 
         new_shapes = IntervalNewtonShapesEngine.newton_iteration(
             equations, shape_intervals,

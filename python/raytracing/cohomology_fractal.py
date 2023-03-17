@@ -12,6 +12,7 @@ faces). Some helpers convert weights stored per face class to weights
 stored per face per tetrahedron.
 """
 
+
 def face_var_name_to_index(var_name):
     """
     Convert variable name to index in array of weights.
@@ -26,6 +27,7 @@ def face_var_name_to_index(var_name):
         raise AssertionError(
             "Variable name '%s' for face class invalid" % var_name)
     return 4 * int(tet_index) + int(face_index)
+
 
 def value_for_face_class(weights, face_class):
     """
@@ -46,6 +48,7 @@ def value_for_face_class(weights, face_class):
         raise ValueError("Weights for identified faces do not match")
 
     return val0
+
 
 def check_weights_valid(trig, weights):
     """
@@ -72,6 +75,7 @@ def check_weights_valid(trig, weights):
         [ value_for_face_class(weights, face_class)
           for face_class in face_classes ])
 
+
 def check_face_class_weights_valid(trig, weights):
     """
     Given a SnapPy triangulation and weights per face class, check they
@@ -83,6 +87,7 @@ def check_face_class_weights_valid(trig, weights):
         total = sum(entry * weight for entry, weight in zip(row, weights))
         if abs(total) > 1e-6:
             raise ValueError("Weights are not a 2-cocycle.")
+
 
 def compute_signs_and_face_class_indices(trig):
     """
@@ -98,6 +103,7 @@ def compute_signs_and_face_class_indices(trig):
         result[face_var_name_to_index(repr0)] = ( +1, i)
         result[face_var_name_to_index(repr1)] = (sgn, i)
     return result
+
 
 def rational_cohomology_basis(trig):
     """
@@ -134,6 +140,7 @@ def rational_cohomology_basis(trig):
         [ sgn * two_cocycle[index]
           for sgn, index in signs_and_face_class_indices ]
         for two_cocycle in rational_two_cocycles ]
+
 
 def compute_weights_basis_class(trig, cohomology_class):
     """

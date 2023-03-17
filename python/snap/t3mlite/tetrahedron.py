@@ -11,6 +11,7 @@ from .perm4 import Perm4, inv
 
 import sys
 
+
 class Tetrahedron:
     def __init__(self, name = ''):
         self.Index = -1

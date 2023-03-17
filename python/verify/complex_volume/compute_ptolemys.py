@@ -2,6 +2,7 @@ from ...snap import t3mlite as t3m
 
 __all__ = ['lifted_ptolemys_from_cross_section']
 
+
 def _ptolemy_coordinate_key(tet_index, edge):
     return 'c_%d%d%d%d_%d' % (
         (edge & 8) >> 3,
@@ -9,6 +10,7 @@ def _ptolemy_coordinate_key(tet_index, edge):
         (edge & 2) >> 1,
         (edge & 1),
         tet_index)
+
 
 def lifted_ptolemys_from_cross_section(cusp_cross_section,
                                        lifted_one_cocycle = None):

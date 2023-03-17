@@ -43,9 +43,13 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
+
 def snap_doctester(verbose):
     return snappy.snap.test.run_doctests(verbose, print_info=False)
+
+
 snap_doctester.__name__ = 'snappy.snap'
+
 
 def snappy_database_doctester(verbose):
     # snappy_manifolds's tests is still relying on
@@ -61,7 +65,10 @@ def snappy_database_doctester(verbose):
         snappy.number.use_field_conversion('sage')
 
     return ans
+
+
 snappy_database_doctester.__name__ = 'snappy.database'
+
 
 def spherogram_doctester(verbose):
     ans = spherogram.test.run_doctests(verbose, print_info=False)
@@ -74,10 +81,15 @@ def spherogram_doctester(verbose):
         snappy.number.use_field_conversion('sage')
 
     return ans
+
+
 spherogram_doctester.__name__ = 'spherogram'
+
 
 def ptolemy_doctester(verbose):
     return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
+
+
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
 modules += [numeric_output_checker.run_doctests]
@@ -100,14 +112,18 @@ modules += [snappy.SnapPy,
             ptolemy_doctester,
             spherogram_doctester]
 
+
 def snappy_verify_doctester(verbose):
     return snappy.verify.test.run_doctests(verbose, print_info=False)
+
 
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
+
 def snappy_exterior_to_link_doctester(verbose):
     return snappy.exterior_to_link.test.run_doctests(verbose, print_info=False)
+
 
 snappy_exterior_to_link_doctester.__name__ = 'snappy.exterior_to_link'
 modules.insert(0, snappy_exterior_to_link_doctester)
@@ -141,6 +157,7 @@ def graphics_failures(verbose, windows, use_modernopengl):
         print("***Warning***: CyOpenGL not installed, so not tested")
         result = 0
     return result
+
 
 def runtests(verbose = False,
              quick = False,

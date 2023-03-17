@@ -5,6 +5,7 @@ from collections import deque
 
 from typing import Dict
 
+
 def install_peripheral_curves(start_tet : Tetrahedron) -> None:
     """
     Given a suitable base tetrahedron in the complex obtained by
@@ -18,6 +19,7 @@ def install_peripheral_curves(start_tet : Tetrahedron) -> None:
     # Longitude computed as curve intersecting meridian once, so
     # we need to compute meridian first.
     _install_longitude(start_tet)
+
 
 def _walk_face(tet : Tetrahedron, ml : int, f : int) -> Tetrahedron:
     """
@@ -35,6 +37,7 @@ def _walk_face(tet : Tetrahedron, ml : int, f : int) -> Tetrahedron:
     tet.PeripheralCurves[ml][tet.orientation][simplex.V0][f] = -1
 
     return tet
+
 
 def _install_meridian(start_tet : Tetrahedron) -> None:
     # Before the barycentric subdivision, we can just pick a loop
@@ -75,12 +78,14 @@ def _install_meridian(start_tet : Tetrahedron) -> None:
         if tet is start_tet:
             break
 
+
 def _has_meridian(tet : Tetrahedron) -> bool:
     for sheet in tet.PeripheralCurves[0]:
         for v in sheet[simplex.V0].values():
             if v != 0:
                 return True
     return False
+
 
 def _walk_tet_to_face(start_tet : Tetrahedron,
                       tet_to_face : Dict[Tetrahedron, int]) -> None:
@@ -89,6 +94,7 @@ def _walk_tet_to_face(start_tet : Tetrahedron,
         tet = _walk_face(tet, 1, tet_to_face[tet])
         if tet is start_tet:
             break
+
 
 def _install_longitude(start_tet : Tetrahedron):
     """

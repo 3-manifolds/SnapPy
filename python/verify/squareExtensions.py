@@ -41,6 +41,7 @@ if _within_sage:
 
 from .realAlgebra import field_containing_real_and_imaginary_part_of_number_field
 
+
 def eval_number_field_elt(elt, root):
     # SageMath 7.6 can no longer evaluate a rational polynomial on an
     # arbitrary type that supports the basic arithmetic
@@ -78,6 +79,7 @@ def eval_number_field_elt(elt, root):
 # turns the one complex equation p(z) = 0 defining the number field into two
 # real equations for the real and imaginary part of the complex equation and
 # then uses the resultant to find exact solutions.
+
 
 @sage_method
 def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
@@ -140,6 +142,7 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
     # so translate them to be of the desired return type
     return [ eval_number_field_elt(exact_complex_shape, exact_complex_root)
              for exact_complex_shape in exact_complex_shapes ]
+
 
 class SqrtLinCombination():
     """
@@ -249,7 +252,6 @@ class SqrtLinCombination():
         # is encoded as dictionary
         #
         #   { r_1 : c_1, r_2 : c_2, ..., r_n : c_n }
-
 
         if not value is None:
             if d:
@@ -417,7 +419,6 @@ class SqrtLinCombination():
 
     def __ge__(self, other):
         raise Exception('Not implemented')
-
 
     def _real_mpfi_(self, RIF):
         """
@@ -628,8 +629,10 @@ class ComplexSqrtLinCombination():
         # And just pair
         return CIF(RIF(self._real), RIF(self._imag))
 
+
 class _SqrtException(Exception):
     pass
+
 
 class _FactorizedSqrtLinCombination():
     def __init__(self, d = {}, embed_cache = None):
@@ -838,12 +841,14 @@ def _opposite_signs(left, right, prec):
     # At least one sign couldn't be determined.
     return None
 
+
 def _first(iterable):
     """
     Return first element of iterable.
     """
     for i in iterable:
         return i
+
 
 def _firstfirst(iterable):
     """
@@ -854,12 +859,14 @@ def _firstfirst(iterable):
         for j in i:
             return j
 
+
 def _filter_zero(d):
     """
     Given a dict, filter out all items where the value is 0.
     """
 
     return dict( (k, v) for k, v in d.items() if not v == 0)
+
 
 def _convert_to_allowed_type(number):
     """
@@ -878,6 +885,7 @@ def _convert_to_allowed_type(number):
         return number
 
     raise Exception("Not an allowed type")
+
 
 def _get_embed_cache(l1, l2):
     """
@@ -950,6 +958,7 @@ def _get_interval_embedding_from_cache(nf, RIF, cache):
 
     return interval
 
+
 def _to_RIF(x, RIF, embed_cache = None):
     """
     Given a Sage Integer, Rational or an element x in a
@@ -987,6 +996,7 @@ def _to_RIF(x, RIF, embed_cache = None):
     # Evaluate the polynomial representing the element in the number field
     # at the root
     return x.lift()(root)
+
 
 if __name__ == '__main__':
     import doctest

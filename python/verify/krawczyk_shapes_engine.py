@@ -11,6 +11,7 @@ if _within_sage:
 
 __all__ = ['KrawczykShapesEngine']
 
+
 class KrawczykShapesEngine:
 
     """

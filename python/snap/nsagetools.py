@@ -44,6 +44,7 @@ def search_for_low_rank_triangulation(M, tries=100, target_lower_bound=0):
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
 
+
 class MapToAbelianization(SageObject):
     """
     sage: M = Manifold('v2037')
@@ -107,6 +108,7 @@ class MapToAbelianization(SageObject):
     def __call__(self, word):
         return self._range(self._exponents_of_word(word))
 
+
 class MapToFreeAbelianization(MapToAbelianization):
     def range(self):
         return ZZ**self.elementary_divisors.count(0)
@@ -117,6 +119,7 @@ class MapToFreeAbelianization(MapToAbelianization):
         return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
 # Finding the longitude
+
 
 @sage_method
 def homological_longitude(manifold, cusp=None):
@@ -195,6 +198,7 @@ class MapToGroupRingOfAbelianization(MapToAbelianization):
         v = MapToAbelianization.__call__(self, word)
         return self.R.monomial(v)
 
+
 class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
     def __init__(self, fund_group, base_ring=ZZ):
         MapToFreeAbelianization.__init__(self, fund_group)
@@ -207,6 +211,7 @@ class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
     def __call__(self, word):
         v = MapToFreeAbelianization.__call__(self, word)
         return prod([ g**v[i] for i, g in enumerate(self.R.gens())])
+
 
 def setup_fox_derivative(word, phi, var, involute=False):
     R = phi.range()
@@ -228,6 +233,7 @@ def setup_fox_derivative(word, phi, var, involute=False):
             fox_ders[g] = R.zero() if g.lower() != var else -phi_ims[var.upper()]
 
     return R, phi_ims, fox_ders
+
 
 def fox_derivative(word, phi, var):
     """
@@ -359,22 +365,27 @@ class PhiAlpha():
         M[0,0], M[0,1], M[1,0], M[1,1] = a*A[0,0], a*A[0,1], a*A[1,0], a*A[1,1]
         return M
 
+
 def free_monoid_elt_to_string(elt):
     vars = elt.parent().variable_names()
     return "".join([e*vars[v] for v, e in elt._element_list])
+
 
 def inverse_word(word):
     L = list(word.swapcase())
     L.reverse()
     return "".join(L)
 
+
 def reverse_word(word):
     L = list(word)
     L.reverse()
     return "".join(L)
 
+
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
+
 
 def clean_CC(z, error):
     CC = z.parent()
@@ -572,6 +583,7 @@ def adjoint_action(A):
     a, b, c, d = A.list()
     return matrix( [[a**2, 2*a*b, b**2],[a*c,b*c+a*d,b*d],[c**2,2*c*d,d**2]] )
 
+
 def SL2_to_SLN(A, N):
     F = A.base_ring()
     R = PolynomialRing(F, ['x', 'y'])
@@ -580,6 +592,7 @@ def SL2_to_SLN(A, N):
     monomials = [x**(N - 1 - i) * y**i for i in range(N)]
     image_vectors = [m(X, Y) for m in monomials]
     return matrix(F, [[v.monomial_coefficient(m) for m in monomials] for v in image_vectors])
+
 
 class PhiAlpha3():
     def __init__(self, phi, alpha):
@@ -600,6 +613,7 @@ class PhiAlpha3():
 
         return M
 
+
 class PhiAlphaN():
     def __init__(self, phi, alpha, N):
         self.base_ring = phi.range()
@@ -618,6 +632,7 @@ class PhiAlphaN():
                 M[i,j] = a*A[i,j]
 
         return M
+
 
 def test_rep(G, phialpha):
     def manually_apply_word(w):

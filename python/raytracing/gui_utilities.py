@@ -9,6 +9,7 @@ if sys.platform == 'linux':
 else:
     label_pad, slider_stick = 0, tkinter.NSEW
 
+
 class UniformDictController:
     @staticmethod
     def create_horizontal_scale(container, uniform_dict, key,
@@ -187,6 +188,7 @@ class UniformDictController:
         if self.update_function:
             self.update_function()
 
+
 class FpsLabelUpdater:
     def __init__(self, label):
         self.label = label
@@ -206,6 +208,7 @@ class FpsLabelUpdater:
             self.last_time = current_time
             self.num_iterations = 0
             self.total_time = 0.0
+
 
 class ScrollableFrame(ttk.Frame):
     # From https://blog.teclado.com/tkinter-scrollable-frames/

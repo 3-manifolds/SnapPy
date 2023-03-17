@@ -3,6 +3,7 @@ from .sage_helper import _within_sage
 from . import number
 from .math_basics import is_Interval
 
+
 class SimpleVector(number.SupportsMultiplicationByNumber):
     def __init__(self, list_of_values):
         self.data = list_of_values
@@ -238,7 +239,6 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
                              for j in range(self.shape[1])])
 
-
     def __truediv__(self, other):
         if isinstance(other, number.Number):
             return SimpleMatrix(
@@ -293,12 +293,14 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
     __inv__ = _noalgebra
 
+
 if _within_sage:
     from sage.matrix.constructor import matrix
     from sage.modules.free_module_element import vector
 else:
     matrix = SimpleMatrix
     vector = SimpleVector
+
 
 def mat_solve(m, v, epsilon = 0):
     """
@@ -467,7 +469,6 @@ def mat_solve(m, v, epsilon = 0):
             if i != j:
                 for k in range(i + 1, dim0 + 1):
                     m1[j][k] -= m1[j][i] * m1[i][k]
-
 
     # After iterations, we have
     # [       1        0        0        0|    11/7]

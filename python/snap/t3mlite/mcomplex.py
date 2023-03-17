@@ -160,7 +160,6 @@ class Mcomplex:
     def add_tet(self, tet):
         self.Tetrahedra.append(tet)
 
-
     def clear_tet(self,tet):
         """
         Remove the face, edge and vertex classes of a tetrahedron.
@@ -405,7 +404,6 @@ class Mcomplex:
                         and tet.Gluing[two_subsimplex].sign() == 0):
                     return False
         return True
-
 
     def walk_and_orient(self, tet, sign):
         if tet.Checked == 1:
@@ -654,7 +652,6 @@ class Mcomplex:
         # if (T0 in T0.Neighbor.values()) or (T1 in T1.Neighbor.values()):
         #    return False, 'One tet is glued to itself'
         return True, None
-
 
     def _two_to_zero_hook(self, old_arrow):
         pass
@@ -1272,7 +1269,6 @@ class Mcomplex:
             if g == 1:
                 to_cusp_index[vertex] = torus_cusps
                 torus_cusps += 1
-
 
         tet_data, cusp_indices, peripheral_curves = [], [], []
 

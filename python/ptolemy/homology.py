@@ -1,9 +1,11 @@
 from . import matrix
 
+
 def _gcd(s, t):
     if t == 0:
         return s
     return _gcd(t, s % t)
+
 
 def homology_basis_representatives_with_orders(d1, d2, N):
     """
@@ -119,6 +121,7 @@ def homology_basis_representatives_with_orders(d1, d2, N):
         # is in the kernel. Do not add it
 
     return homology_basis
+
 
 def homology_representatives(d1, d2, N):
     """

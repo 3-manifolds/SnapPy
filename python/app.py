@@ -32,6 +32,7 @@ if 'SNAPPYHOME' in os.environ:
     else:
         os.environ['HOME'] = os.environ['SNAPPYHOME']
 
+
 class SnapPyTerm(TkTerm, ListedWindow):
     """
     The main window of the SnapPy app, which runs an embedded IPython shell.
@@ -204,6 +205,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
 
 # These classes assume that the global variable "terminal" exists
 
+
 class SnapPyBrowser(Browser, ListedWindow):
     def __init__(self, manifold, root=None, main_window=None):
         Browser.__init__(self, manifold, root=root, main_window=terminal)
@@ -218,6 +220,7 @@ class SnapPyBrowser(Browser, ListedWindow):
     def apply_prefs(self):
         if self.inside_view:
             self.inside_view.apply_prefs(self.main_window.prefs)
+
 
 class SnapPyLinkEditor(LinkEditor, ListedWindow):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
@@ -271,6 +274,7 @@ class SnapPyLinkEditor(LinkEditor, ListedWindow):
 
     __repr__ = object.__repr__
 
+
 class SnapPyViewerWindow(ViewerWindow, ListedWindow):
     def __init__(self, *args, **kwargs):
         ViewerWindow.__init__(self, *args, **kwargs)
@@ -288,17 +292,21 @@ class SnapPyViewerWindow(ViewerWindow, ListedWindow):
         self.view = None
         self.destroy()
 
+
 class SnapPyPolyhedronViewer(PolyhedronViewer):
 
     build_menus = dirichlet_menus
+
 
 class SnapPyInsideViewer(InsideViewer):
 
     build_menus = inside_view_menus
 
+
 class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
+
 
 class SnapPyPreferences(Preferences, ListedWindow):
     def __init__(self, terminal):
@@ -325,6 +333,7 @@ class SnapPyPreferences(Preferences, ListedWindow):
         for window in self.window_list:
             window.apply_prefs()
 
+
 app_banner = """
  Hi.  It's SnapPy.
  SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
@@ -333,6 +342,7 @@ app_banner = """
 
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() to view the SnapPy documentation."""
+
 
 class SnapPyExit:
     """
@@ -347,22 +357,31 @@ class SnapPyExit:
 
 # This hack avoids an unnecessary warning from IPython saying that
 # _Helper is not included in the app2py site.py file.
+
+
 class _Helper():
     pass
+
+
 import site
 site._Helper = _Helper
 
 # This will be used for paging by IPython help.
+
+
 def IPython_pager(self, text, start=0, screen_lines=0):
     if isinstance(text, Mapping):
         text = text['text/plain']
     terminal.page(text)
 
+
 # This will be used for paging by pydoc help.
 import pydoc
 
+
 def pydoc_pager(text):
     terminal.page(pydoc.plain(text))
+
 
 pydoc.getpager() # this call creates the global variable pydoc.pager
 pydoc.pager = pydoc_pager
@@ -411,6 +430,7 @@ class SnapPyKernelServer():
         if self._process.is_alive():
             self._process.terminate()
 
+
 def main():
     global terminal
     import snappy
@@ -444,6 +464,7 @@ def main():
     terminal.window.lift()
     terminal.window.mainloop()
     #kernel_server.stop()
+
 
 if __name__ == "__main__":
     main()

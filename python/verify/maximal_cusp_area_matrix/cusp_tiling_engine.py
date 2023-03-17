@@ -29,6 +29,7 @@ _OrientedVerticesForVertex = {
     simplex.V3 : (simplex.V3, simplex.V2, simplex.V1, simplex.V0)
 }
 
+
 class CuspTilingEngine(McomplexEngine):
     """
     Test::

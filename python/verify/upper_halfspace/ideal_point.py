@@ -37,6 +37,7 @@ __all__ = [
 # This should come from snappy.snap.transferKernelStructuresEngine.
 Infinity = 'Infinity'
 
+
 def apply_Moebius(m, z):
     """
     Applies the matrix m to the ideal point z::
@@ -61,6 +62,7 @@ def apply_Moebius(m, z):
         return m[0,0] / m[1,0]
     return (m[0,0] * z + m[0,1]) / (m[1,0] * z + m[1,1])
 
+
 def cross_ratio(z0, z1, z2, z3):
     """
     Computes the cross ratio (according to SnapPea conventions) of
@@ -74,6 +76,7 @@ def cross_ratio(z0, z1, z2, z3):
 
     return ((_diff_1_if_inf(z2, z0) * _diff_1_if_inf(z3, z1)) /
             (_diff_1_if_inf(z2, z1) * _diff_1_if_inf(z3, z0)))
+
 
 def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
     """
@@ -110,6 +113,7 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
 
     return _translate(transformedMidpoint, inv_sl_matrix)
 
+
 def compute_midpoint_two_horospheres_from_triangle(
     idealPoints, intersectionLengths):
 
@@ -128,6 +132,7 @@ def compute_midpoint_two_horospheres_from_triangle(
     transformedMidpoint = _compute_midpoint_helper(b, c, (lb / la).sqrt())
 
     return _translate(transformedMidpoint, inv_sl_matrix)
+
 
 def compute_incenter_of_triangle(idealPoints):
     """
@@ -152,6 +157,7 @@ def compute_incenter_of_triangle(idealPoints):
             transformedIdealPoints))
 
     return _translate(transformedInCenter, inv_sl_matrix)
+
 
 def compute_inradius_and_incenter(idealPoints):
     """
@@ -178,6 +184,7 @@ def compute_inradius_and_incenter(idealPoints):
             transformedIdealPoints))
 
     return inradius, _translate(transformedInCenter, inv_sl_matrix)
+
 
 def Euclidean_height_of_hyperbolic_triangle(idealPoints):
     """
@@ -236,6 +243,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
 #
 # Various helper functions
 
+
 def _transform_points_to_make_one_infinity_and_inv_sl_matrix(idealPoints):
     """
     Returns a pair (transformedIdealPoints, matrix) where matrix has determinant
@@ -251,6 +259,7 @@ def _transform_points_to_make_one_infinity_and_inv_sl_matrix(idealPoints):
     return _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(
         idealPoints)
 
+
 def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
 
     # Determine the matrix
@@ -265,6 +274,7 @@ def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
         [ apply_Moebius(gl_matrix, u) for u in idealPoints[1:] ],
         inv_sl_matrix)
 
+
 def _translate(finitePoint, sl_matrix):
     """
     Apply translation if matrix is not None.
@@ -274,14 +284,17 @@ def _translate(finitePoint, sl_matrix):
         return finitePoint.translate_PSL(sl_matrix)
     return finitePoint
 
+
 def _compute_midpoint_helper(b, c, offset):
     height = abs(c - b) * offset
     return FinitePoint(b, height)
+
 
 def _compute_incenter_of_triangle_with_one_point_at_infinity(nonInfPoints):
     a, b = nonInfPoints
     RIF = a.real().parent()
     return FinitePoint((a + b) / 2, abs(a - b) * RIF(3).sqrt() / 2)
+
 
 def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     """
@@ -351,6 +364,7 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
 
     return radius, FinitePoint(incenter, height)
 
+
 def _adjoint2(m):
     """
     Sage matrix.adjoint() produces an unnecessary large interval for
@@ -358,6 +372,7 @@ def _adjoint2(m):
     """
 
     return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
+
 
 def _diff_1_if_inf(a, b):
     if a == Infinity or b == Infinity:
@@ -367,6 +382,7 @@ def _diff_1_if_inf(a, b):
 ################################################################################
 #
 # TESTING
+
 
 class _IdealPointTester():
 

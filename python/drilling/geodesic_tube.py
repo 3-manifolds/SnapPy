@@ -20,6 +20,7 @@ import heapq
 
 from typing import Sequence, Any
 
+
 def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
     """
     A GeodesicTube can only be built from an Mcomplex if add_r13_geometry
@@ -50,6 +51,7 @@ def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
             f : { e: triangle_bounding_plane(tet, f, e)
                   for e in _face_to_edges[f] }
             for f in simplex.TwoSubsimplices }
+
 
 class _PendingPiece:
     """
@@ -114,6 +116,8 @@ class _PendingPiece:
         return self._key < other._key
 
 # @dataclass
+
+
 class GeodesicTubePiece:
     """
     A class for the pieces produced by GeodesicTube to cover a tube T about
@@ -321,9 +325,11 @@ class GeodesicTube:
                         self.mcomplex.verified),
                     entry_cell = entry_face))
 
+
 def make_r13_unit_tangent_vector(direction, point):
     s = r13_dot(direction, point)
     return space_r13_normalise(direction + s * point)
+
 
 def triangle_bounding_plane(tet, face, edge):
     v = tet.R13_vertices[face - edge]
@@ -335,9 +341,11 @@ def triangle_bounding_plane(tet, face, edge):
 
     return make_r13_unit_tangent_vector(m - v, m)
 
+
 _face_to_edges = { f : [ e for e in simplex.OneSubsimplices
                          if simplex.is_subset(e, f) ]
                    for f in simplex.TwoSubsimplices }
+
 
 def lower_bound_for_distance_line_to_tet_face(
         line, tet, face, verified):
@@ -376,6 +384,7 @@ def lower_bound_for_distance_line_to_tet_face(
                 return distance_r13_lines(line, tet.R13_edges[e])
 
         return RF(0)
+
 
 if __name__ == '__main__':
     from snappy import *

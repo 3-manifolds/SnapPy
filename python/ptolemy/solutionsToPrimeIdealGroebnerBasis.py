@@ -62,6 +62,7 @@ from ..pari import pari
 # the field extension tower, do the substituition to convert them
 # into polynomials in x
 
+
 def _only_var_left_in_poly(poly, extension_vars):
     '''
     Checks whether that there is only one other variable besides
@@ -77,6 +78,7 @@ def _only_var_left_in_poly(poly, extension_vars):
     if no_vars_left > 1:
         return None
     return list(vars_left)[0]
+
 
 def _next_var_and_poly(polys, extension_vars):
     '''
@@ -94,11 +96,13 @@ def _next_var_and_poly(polys, extension_vars):
                     "solve is probably not in lexicographic order or of a "
                     "0-dimensional ideal!")
 
+
 def _remove(l, element):
     '''
     Returns a copy of list without element.
     '''
     return [x for x in l if not x is element]
+
 
 def extensions_and_assignments(polys):
     '''
@@ -185,6 +189,7 @@ def update_assignments_and_merge(assignments, d):
     new_assignments['1'] = pari(1)
 
     return new_assignments
+
 
 def _process_extensions(extensions):
     '''

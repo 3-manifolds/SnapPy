@@ -152,6 +152,7 @@ class SpunSurface:
         return "<Surface %s: %s %s %s>" % (self._index, self._quad_types,
                                            list(self._coefficients), tuple(self._boundary_slopes))
 
+
 class SpunNormalSurfaceEquations:
     def __init__(self, manifold):
         self.manifold = manifold
@@ -190,13 +191,11 @@ class SpunNormalSurfaceEquations:
         else:
             raise ValueError("Algorithm should be one of {'FXrays', 'regina'}")
 
-
     def is_solution(self, quad_vector):
         return self.quad_equations * quad_vector == 0
 
     def boundary_slope_of_solution(self, quad_vector):
         return self.slope_matrix*self.shift_matrix*quad_vector
-
 
 
 # The following methods get monkey patched into the manifold
@@ -208,6 +207,7 @@ def _normal_surface_equations(self):
         eqns = SpunNormalSurfaceEquations(self)
         self._cache[name] = SpunNormalSurfaceEquations(self)
     return self._cache[name]
+
 
 def normal_surfaces(self, algorithm='FXrays'):
     """
@@ -225,6 +225,7 @@ def normal_surfaces(self, algorithm='FXrays'):
         self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
                                           for i, qv in enumerate(eqns.vertex_solutions(algorithm))]
     return self._cache['normal_surfaces']
+
 
 def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
     """
@@ -284,6 +285,7 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
     slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
     slopes.discard( (0, 0) )
     return sorted(slopes)
+
 
 if __name__ == "__main__":
     import doctest

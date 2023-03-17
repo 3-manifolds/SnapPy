@@ -20,6 +20,7 @@ class NonorientableUnsupportedError(RuntimeError):
             ("Inside view for non-orientable manifolds such as %s is not "
              "supported yet.") % mfd.name())
 
+
 _constant_uniform_bindings = {
     'multiScreenShot' : ('int', 0),
     'tile' : ('vec2', [0.0, 0.0]),
@@ -60,6 +61,7 @@ _max_linear_camera_speed = 2.0
 # proportionally small angle. So the user can't even tell we have a limit
 # here.
 _max_depth_for_orbiting = 0.9998
+
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self,
@@ -369,11 +371,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             shader_source,
             uniform_block_names_sizes_and_offsets)
 
+
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }
 
 ##########################################################################
 # Consistency checks
+
 
 def _check_matrices_equal(m1, m2):
     for i in range(4):
@@ -383,6 +387,7 @@ def _check_matrices_equal(m1, m2):
                 print("Matrix not zero as expected")
                 return
 
+
 def _check_matrix_o13(m):
     s = matrix([[-1, 0,0,0],
                 [0, 1, 0, 0],
@@ -391,15 +396,18 @@ def _check_matrix_o13(m):
 
     _check_matrices_equal(s, m * s * m.transpose())
 
+
 def _matrix4_vec(m, p):
     return [sum([ m[i][j] * p[j] for j in range(4)])
             for i in range(4) ]
+
 
 def _diff(v1, v2, label = ''):
     a = sum([(x - y)**2 for x, y in zip(v1, v2) ])
 
     if a > 1e-10:
         print("DIFF!!!", label, v1, v2)
+
 
 def _check_consistency(d):
     planes = d['TetrahedraBasics.planes'][1]

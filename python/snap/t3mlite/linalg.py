@@ -6,6 +6,7 @@ from snappy.pari import pari
 
 PariGen = type(pari(0))
 
+
 def is_iterable(obj):
     try:
         iter(obj)
@@ -13,14 +14,18 @@ def is_iterable(obj):
     except TypeError:
         return False
 
+
 def is_pari_col_vector(obj):
     return isinstance(obj, PariGen) and obj.type() == 't_COL'
+
 
 def is_pari_row_vector(obj):
     return isinstance(obj, PariGen) and obj.type() == 't_VEC'
 
+
 def is_pari_matrix(obj):
     return isinstance(obj, PariGen) and obj.type() == 't_MAT'
+
 
 class Vector:
     """
@@ -392,6 +397,7 @@ class Matrix:
         """
         return not self.__eq__(other)
 
+
 def gcd(a, b):
     a, b = abs(a), abs(b)
     if a == 0:
@@ -406,6 +412,7 @@ def gcd(a, b):
         a = a % b
         if (a == 0):
             return b
+
 
 if __name__ == '__main__':
     import doctest

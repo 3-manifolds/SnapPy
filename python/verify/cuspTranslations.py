@@ -4,6 +4,7 @@ from .cuspCrossSection import ComplexCuspCrossSection
 __all__ = ['cusp_translations_for_manifold',
            'cusp_translations_for_neighborhood']
 
+
 def cusp_translations_for_manifold(manifold, verified, areas = None,
                                    check_std_form = True,
                                    bits_prec = None):
@@ -54,6 +55,7 @@ def cusp_translations_for_manifold(manifold, verified, areas = None,
 
     # The result
     return c.all_normalized_translations()
+
 
 def cusp_translations_for_neighborhood(neighborhood,
                                        verified = False, bits_prec = None):

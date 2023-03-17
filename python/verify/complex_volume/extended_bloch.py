@@ -7,6 +7,7 @@ if _within_sage:
 
     import sage.all
 
+
 @sage_method
 def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
     """
@@ -26,6 +27,7 @@ def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
         raise Exception("Bad flattening %s %s %s" % (w0, w1, len(l)))
 
     return l[0]
+
 
 @sage_method
 def compute_p_from_w_and_parity(w, parity):
@@ -78,6 +80,7 @@ def my_dilog(z):
     CBF = ComplexBallField(CIF.precision())
 
     return CIF(CBF(z).polylog(2))
+
 
 @sage_method
 def is_imaginary_part_bounded(z, v):
@@ -157,6 +160,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
         return (-term1 + term2) / 2 - my_dilog(1 - z)
 
+
 @sage_method
 def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
     """
@@ -178,6 +182,7 @@ def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
 
     # Compute Neumann's version of Roger's dilogarithm from flattening.
     return compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1)
+
 
 @sage_method
 def compute_complex_volume_from_lifted_ptolemys_no_torsion_adjustment(

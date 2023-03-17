@@ -10,6 +10,7 @@ from .simplex import SubsimplexName
 
 # A Corner is a "subsimplex in a tetrahedron".
 
+
 class Corner:
 
     def __init__(self, tetrahedron, subsimplex):

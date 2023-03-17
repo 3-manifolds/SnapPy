@@ -22,7 +22,6 @@ for edge, face in EdgeFacePairs:
     _edge_add_corner_dict[edge, face] = other_arrow.tail(), other_arrow.head()
 
 
-
 # An edge has an initial and terminal vertex, but these are determined
 # arbitrarily when the 1-skeleton is constructed.
 

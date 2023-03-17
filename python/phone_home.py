@@ -6,6 +6,7 @@ import ssl
 from urllib import request
 version_url = 'http://snappy.computop.org/current.txt'
 
+
 class Phoner(Thread):
     def __init__(self):
         Thread.__init__(self)
@@ -30,6 +31,7 @@ class Phoner(Thread):
         if latest and latest_version > this_version:
             self.answer = (latest, current)
 
+
 def update_needed():
     ET = Phoner()
     ET.start()
@@ -41,6 +43,7 @@ def update_needed():
                 "http://snappy.computop.org**\n" % ET.answer)
     else:
         return ''
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:

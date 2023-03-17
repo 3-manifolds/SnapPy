@@ -19,6 +19,7 @@ _VerticesInFace = {
     F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
     for F in simplex.TwoSubsimplices }
 
+
 class FundamentalPolyhedronEngine(McomplexEngine):
     @staticmethod
     def from_manifold_and_shapes(
@@ -364,6 +365,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         else:
             return result
 
+
 def _diff_to_kernel(value, snappeaValue):
     """
     The SnapPea kernel will always give us a number, but we might deal
@@ -374,14 +376,17 @@ def _diff_to_kernel(value, snappeaValue):
     CF = value.parent()
     return value - CF(snappeaValue)
 
+
 def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
     CF = value.parent()
     return abs(_diff_to_kernel(value, snappeaValue)) < CF(error)
+
 
 def _is_vertex_close_to_kernel(vertex, snappeaVertex):
     if vertex == Infinity or snappeaVertex == Infinity:
         return vertex == snappeaVertex
     return _is_number_close_to_kernel(vertex, snappeaVertex)
+
 
 def _are_vertices_close_to_kernel(verts, snappeaVerts):
     for key, vert in verts.items():
@@ -390,10 +395,12 @@ def _are_vertices_close_to_kernel(verts, snappeaVerts):
             return False
     return True
 
+
 _RemainingFace = {  (V0, V1): V3, (V0, V2): V1, (V0, V3): V2,
                     (V1, V0): V2, (V1, V2): V3, (V1, V3): V0,
                     (V2, V0): V3, (V2, V1): V0, (V2, V3): V1,
                     (V3, V0): V1, (V3, V1): V2, (V3, V2): V0}
+
 
 def _compute_fourth_corner(T):
     v = 4 * [ None ]
@@ -423,6 +430,7 @@ def _compute_fourth_corner(T):
 
     T.Class[missing_corner].IdealPoint = z[3]
 
+
 def _normalize_points(a, b):
     """
     Reduce the number of cases involving infinity that we need to
@@ -447,6 +455,7 @@ def _normalize_points(a, b):
 
     a.reverse(), b.reverse()
     return a, b
+
 
 def _matrix_taking_triple_to_triple(a, b):
     """
@@ -534,6 +543,7 @@ def _negate_matrix_to_match_kernel(m, snappeaM):
         return m
     else:
         return -m
+
 
 def _negate_matrices_to_match_kernel(matrices, G):
     """

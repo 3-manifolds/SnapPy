@@ -129,7 +129,6 @@ class FinitePoint():
         return FinitePoint(num / denom, self.t / denom)
 
     def cosh_dist(self, other):
-
         """
         Returns cosh of the distance of this finite point to another
         finite point::
@@ -203,6 +202,7 @@ def _abs_sqr(z):
 ################################################################################
 #
 # TESTING
+
 
 class _FinitePointTester():
     """

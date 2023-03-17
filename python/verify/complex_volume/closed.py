@@ -15,6 +15,7 @@ from ...snap import t3mlite as t3m
 
 __all__ = ['verified_complex_volume_closed_torsion']
 
+
 def _compute_holonomy(manifold, shapes):
     """
     Computes the holonomy for the peripheral curves for the given 1-cusped
@@ -36,6 +37,7 @@ def _compute_holonomy(manifold, shapes):
 
     return [ prod([l ** expo for l, expo in zip(cross_ratios, eqn)])
              for eqn in peripheral_eqns ]
+
 
 @sage_method
 def zero_lifted_holonomy(manifold, m, l, f):

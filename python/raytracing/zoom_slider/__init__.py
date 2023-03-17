@@ -73,6 +73,7 @@ class Slider(ttk.Scale):
             self.set(slider_length * fraction + self._slider_left_end)
             return 'break'
 
+
 class ZoomSlider(ttk.Frame):
     """
     A compound widget containing a Slider, labels and two buttons that
@@ -252,6 +253,7 @@ class ZoomSlider(ttk.Frame):
         self.slider.right_end = 0.5 * (3.0 * r - l)
         self.slider.set_value(self.current_value)
         self._update_labels()
+
 
 def _num_digits(x):
     r = 1

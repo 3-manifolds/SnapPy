@@ -10,9 +10,11 @@ if _within_sage:
     from sage.all import pi
     import sage.all
 
+
 class FalseTuple(tuple):
     def __nonzero__(self):
         return False
+
 
 class NonIntegralFillingsError(RuntimeError):
     """
@@ -25,10 +27,10 @@ class NonIntegralFillingsError(RuntimeError):
     def __str__(self):
         return ('Manifold has non-integral Dehn-filings: %s') % self.manifold
 
+
 @sage_method
 def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shape_intervals):
-
     """
     Given a SnapPy manifold manifold and complex intervals for the shapes
     shape_intervals that are certified to contain a solution to the

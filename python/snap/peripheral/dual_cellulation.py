@@ -8,6 +8,7 @@ from .. import t3mlite as t3m
 if sage_helper._within_sage:
     from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
 
+
 class DualCell():
     """
     A cell in the dual cellulation
@@ -16,10 +17,12 @@ class DualCell():
         self.dual_cell = dual_cell
         self.index = dual_cell.index
 
+
 class Vertex(DualCell):
     """
     A vertex of the dual cellulation.
     """
+
 
 class Edge(DualCell):
     """
@@ -30,6 +33,7 @@ class Edge(DualCell):
     def __init__(self, dual_cell):
         DualCell.__init__(self, dual_cell)
         self.vertices = [None, None]
+
 
 class Face(DualCell):
     """
@@ -45,6 +49,7 @@ class Face(DualCell):
 
     def __repr__(self):
         return "<Face: %s>" % self.index
+
 
 class DualCellulation():
     """
@@ -187,6 +192,7 @@ class OneCycle():
             ans.append(OneCycle(self.cellulation, weights))
         return ans
 
+
 class OneCocycle():
     """
     A cocycle on the 1-skeleton of a DualCellulation.
@@ -205,6 +211,7 @@ class OneCocycle():
 def doctest_globals():
     import link
     return {'LinkSurface':link.LinkSurface}
+
 
 if __name__ == '__main__':
     import doctest

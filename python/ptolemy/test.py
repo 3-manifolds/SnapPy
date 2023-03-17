@@ -50,6 +50,7 @@ else:
 
 vol_tet = pari('1.014941606409653625021202554274520285941689307530299792017489106776597476258244022136470354228256695')
 
+
 def check_volumes(complex_volumes, baseline_complex_volumes,
                   check_real_part_only = False,
                   torsion_imaginary_part = 6, epsilon = 1e-80):
@@ -99,6 +100,7 @@ def check_volumes(complex_volumes, baseline_complex_volumes,
                 print("     ", i)
 
             raise Exception
+
 
 def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
                              expect_non_zero_dimensional = None,
@@ -202,6 +204,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     pari.set_real_precision(old_precision)
 
+
 def testComputeSolutionsForManifold(manifold, N,
                                     compute_solutions = False,
                                     baseline_cvolumes = None,
@@ -224,6 +227,7 @@ def testComputeSolutionsForManifold(manifold, N,
 
     if manifold.name() == 't00000':
         testMatrixMethods(manifold, solutions)
+
 
 def testMatrixMethods(manifold, solutions):
 
@@ -322,6 +326,7 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
     pari.set_real_precision(old_precision)
 
+
 def checkSolutionsForManifoldGeneralizedObstructionClass(
     solutions_trivial, solutions_non_trivial,
     manifold, N, baseline_volumes, baseline_dimensions):
@@ -408,6 +413,7 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
 
     assert dimensions == set(baseline_dimensions)
 
+
 def testComputeSolutionsForManifoldGeneralizedObstructionClass(
     manifold, N, compute_solutions, baseline_volumes, baseline_dimensions):
 
@@ -439,6 +445,7 @@ def testComputeSolutionsForManifoldGeneralizedObstructionClass(
     checkSolutionsForManifoldGeneralizedObstructionClass(
         solutions_trivial, solutions_non_trivial,
         manifold, N, baseline_volumes, baseline_dimensions)
+
 
 def testGeneralizedObstructionClass(compute_solutions):
 
@@ -481,6 +488,7 @@ def testGeneralizedObstructionClass(compute_solutions):
 
         testComputeSolutionsForManifoldGeneralizedObstructionClass(
             manifold, N, compute_solutions, vols, dims)
+
 
 def testMapleLikeRur():
 
@@ -638,6 +646,7 @@ def testNumericalSolutions():
 
     check_volumes(allCVolumes, expected_cvolumes)
 
+
 def testGeometricRep(compute_solutions):
 
     from snappy.ptolemy import geometricRep
@@ -656,18 +665,22 @@ def testGeometricRep(compute_solutions):
     assert any(
         [ abs(vol - 2.9441064867) < 1e-9 for vol in sol.volume_numerical()])
 
+
 def testSageCommandLine():
 
     sage_eval('Manifold("m004").ptolemy_variety(3,0).compute_solutions().check_against_manifold()',
               { 'Manifold' : ManifoldGetter })
+
 
 def get_precomputed_magma(variety, dir):
     magma_file_name = os.path.join(dir,
                         variety.filename_base() + '.magma_out.bz2')
     return bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
 
+
 def compute_using_precomputed_magma(variety, dir = testing_files_directory):
     return solutions_from_magma(get_precomputed_magma(variety, dir))
+
 
 def test_induced_representation():
 
@@ -765,6 +778,7 @@ def test_induced_representation():
         assert v.abs() < 1e-80 or (v.abs() - 4 * m015_volume).abs() < 1e-80, (
             "Did not get expected voluem for induced representation")
 
+
 def test_induced_sl4_representation():
     M = Manifold("m004")
 
@@ -794,6 +808,7 @@ def test_num_obstruction_class_match():
 
         for i in range(2,6):
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
+
 
 modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
            ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
@@ -918,7 +933,6 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     True)   # expect non-zero dimensional components
 
-
     ### Test for 5_2, expect non-trivial CS
     ### Number field has one real embedding with non-trival CS
     ### And one pair of complex embeddings with non-trivial CS
@@ -989,7 +1003,6 @@ def main(verbose=False, doctest=True):
                       2,       # N = 2
                       cvols,   # expected complex volumes
                       False)   # expect non-zero dimensional components
-
 
     ### Test for t00000
     ### This also tests the case of having more than one (here two)

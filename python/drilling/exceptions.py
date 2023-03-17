@@ -1,6 +1,7 @@
 class DrillGeodesicError(RuntimeError):
     pass
 
+
 class WordAppearsToBeParabolic(DrillGeodesicError):
     def __init__(self, word, trace):
         self.word = word
@@ -9,6 +10,7 @@ class WordAppearsToBeParabolic(DrillGeodesicError):
             "Attempting to drill a geodesic corresponding to a matrix "
             "that could be parabolic. "
             "Word: %s, trace: %r." % (word, trace))
+
 
 class GeodesicSystemNotSimpleError(DrillGeodesicError):
     def __init__(self, maximal_tube_radius):
@@ -19,11 +21,13 @@ class GeodesicSystemNotSimpleError(DrillGeodesicError):
             "The maximal tube radius about the given system of geodesics "
             "was estimated to be: %r." % maximal_tube_radius)
 
+
 class GeodesicCloseToCoreCurve(DrillGeodesicError):
     def __init__(self):
         super().__init__(
             "The given geodesic is very close to a core curve and might "
             "intersect it.")
+
 
 class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
@@ -37,6 +41,7 @@ class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):
             "domain or the given geodesic is very close to a core curve of "
             "a filled cusp." % steps)
 
+
 class UnfinishedTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):
         self.steps = steps
@@ -46,11 +51,13 @@ class UnfinishedTraceGeodesicError(DrillGeodesicError):
             "e.g., the geodesic is very close to a core curve of "
             "filled cusp." % steps)
 
+
 class GeodesicHittingOneSkeletonError(DrillGeodesicError):
     """
     Base class for exceptions caused by the geodesic hitting the
     1-skeleton and that can be avoided by perturbing the geodesic.
     """
+
 
 class GeodesicStartPointOnTwoSkeletonError(GeodesicHittingOneSkeletonError):
     """
@@ -58,11 +65,13 @@ class GeodesicStartPointOnTwoSkeletonError(GeodesicHittingOneSkeletonError):
     interior of a tetrahedron.
     """
 
+
 class RayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
     """
     Raised when the geodesic appears to intersect the 1-skeleton of the
     original triangulation.
     """
+
 
 class RetracingRayHittingOneSkeletonError(GeodesicHittingOneSkeletonError):
     """

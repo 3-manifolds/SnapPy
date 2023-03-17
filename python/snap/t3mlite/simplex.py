@@ -41,6 +41,8 @@ E31 = 10
 E23 = 12
 
 # Generate a bitmap from a tuple of vertices.
+
+
 def bitmap(tuple):
     bmap = 0
     for i in tuple:
@@ -48,6 +50,7 @@ def bitmap(tuple):
     return bmap
 
 # This list of subsimplex names can be used for printing.
+
 
 SubsimplexName = ('N', 'V0', 'V1', 'E01', 'V2', 'E02', 'E12', 'F3',
                   'V3', 'E03', 'E31', 'F2', 'E23', 'F1', 'F0', 'T')
@@ -160,12 +163,16 @@ VerticesOfFaceCounterclockwise = {
 }
 
 # Decide if the bitmap x represents a subset of the bitmap y
+
+
 def is_subset(x, y):
     if (x & y == x):
         return 1
     return 0
 
 # Return the complement of a subsimplex
+
+
 def comp(subsimplex):
     return ~subsimplex & 0xf
 

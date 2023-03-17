@@ -34,6 +34,7 @@ def opposite_vertex_from_edge_function( vertices ):
     assert len(vertices) == 2 and len(other) == 1
     return other[0]
 
+
 opposite_vertex_from_edge_dict = {(i,j):opposite_vertex_from_edge_function((i,j))
                                   for i in range(3) for j in range(3) if i != j}
 
@@ -74,6 +75,7 @@ class Edge():
         self.vertices = (self.vertices[1], self.vertices[0])
         self.sides = tuple( [-s for s in self.sides] )
 
+
 class EdgeList():
     """
     A list with one item for each edge in a Triangle.  The contents
@@ -98,6 +100,7 @@ class EdgeList():
     def __repr__(self):
         return '[%s, %s, %s]' % (self.data[0], self.data[1], self.data[2])
 
+
 class Vertex():
     def __init__(self, corners = None):
         self.corners = corners
@@ -106,6 +109,7 @@ class Vertex():
 
     def __repr__(self):
         return "<Vertex %s: %s %s : %s>" % (self.index, [e.index for e in self.incoming], [e.index for e in self.outgoing], self.corners)
+
 
 class Side():
     """
@@ -145,6 +149,7 @@ class Side():
     def opposite_vertex(self):
         return opposite_vertex_from_edge_dict[self.vertices]
 
+
 class Corner():
     """
     A neighborhood of a vertex V in a triangle T.
@@ -176,6 +181,7 @@ class Corner():
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class Surface():
     """
@@ -362,6 +368,7 @@ def first_pair_differing_in_first_component(L):
         if a[0] != b[0]:
             return a, b
 
+
 def segments_into_components(L):
     components = []
     while L:
@@ -377,6 +384,7 @@ def segments_into_components(L):
         components.append(component)
 
     return components
+
 
 def component_to_cycle(surface, component):
     w = len(surface.edges)*[0,]
@@ -441,6 +449,7 @@ class Cycle:
         if isinstance(other, type(self)):
             return self.__class__(self.surface, [s + o for s, o in zip(self.weights, other.weights)],
                                   check=False)
+
 
 class OneCycle(Cycle):
     def check(self):

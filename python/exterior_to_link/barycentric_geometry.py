@@ -400,7 +400,7 @@ def barycentric_edge_embedding(arrow, north_pole=None):
     """
     if north_pole is None:
         north_pole = N
-    assert len(arrow.linking_cycle())==3
+    assert len(arrow.linking_cycle()) == 3
     arrow = arrow.copy()
     verts = [A, B, C, A]
     ans = []

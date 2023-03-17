@@ -42,7 +42,7 @@ class Edge:
             return ('e' + str(self.Index) + self.Name +
                     ' (' + self.IntOrBdry + ')')
         else:
-            return '< floating edge' + str(id(self)) +' >'
+            return '< floating edge' + str(id(self)) + ' >'
 
     # below added by NMD for more detailed printing
 
@@ -64,7 +64,7 @@ class Edge:
         for i in range(self.valence()):
             s = s + repr(a) + "  "
             a.next()
-            if i > 0 and (i +1) % 3 == 0 and i != (self.valence()-1):
+            if i > 0 and (i + 1) % 3 == 0 and i != (self.valence()-1):
                 s = s + "\n\t"
         out.write(s + '\n')
 

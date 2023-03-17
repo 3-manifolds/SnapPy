@@ -25,7 +25,7 @@ class InfoDialog(Dialog):
         if sys.platform == 'darwin':
             message = Tk_.Message(box, text=self.content)
         else:
-            bgColor=self.style.lookup('Button', 'background')
+            bgColor = self.style.lookup('Button', 'background')
             message = Tk_.Message(box, text=self.content, bg=bgColor)
         message.grid(row=0, column=1, padx=20, pady=10)
         box.pack()

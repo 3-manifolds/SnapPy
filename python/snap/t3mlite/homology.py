@@ -19,7 +19,7 @@ def boundary_two(manifold):
     E, F = len(manifold.Edges), len(manifold.Faces)
     ans = Matrix(E, F)
     for F in manifold.Faces:
-        C  = F.Corners[0]
+        C = F.Corners[0]
         tet = C.Tetrahedron
         vertices = VerticesOfFace[C.Subsimplex]
         for i in range(3):

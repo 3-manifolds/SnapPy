@@ -77,8 +77,8 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
                 shape)
 
     # Compute the logarithms of z, z', z''
-    logZ   = [             z.log() for z in shape_intervals ]
-    logZp  = [ (1 / (1 - z)).log() for z in shape_intervals ]
+    logZ = [             z.log() for z in shape_intervals ]
+    logZp = [ (1 / (1 - z)).log() for z in shape_intervals ]
     logZpp = [ ((z - 1) / z).log() for z in shape_intervals ]
 
     # A list

@@ -427,7 +427,7 @@ def _o13_matrix_for_face(tet, F):
 
 def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
-    z  = tet.ShapeParameters[t3m.E01]
+    z = tet.ShapeParameters[t3m.E01]
     CF = z.parent()
 
     triangle = tet.horotriangles[V]
@@ -463,7 +463,7 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
 
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
 
-    tet_vertices  = [ tet.complex_vertices[v] for v in otherVerts ]
+    tet_vertices = [ tet.complex_vertices[v] for v in otherVerts ]
 
     cusp_vertices = [ trig.vertex_positions[vertex | v]
                       for v in otherVerts ]

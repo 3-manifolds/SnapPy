@@ -51,7 +51,7 @@ def _solve_two_equations(eqn1, eqn2, x_val, y_val):
 
     # Ring we work in Q[x][y]
     Rx = PolynomialRing(RationalField(), 'x')
-    R  = PolynomialRing(Rx, 'y')
+    R = PolynomialRing(Rx, 'y')
     Reqn1 = R(eqn1)
 
     # Compute the resultant in Q[x]

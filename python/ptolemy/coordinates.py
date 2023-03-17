@@ -1198,8 +1198,8 @@ class Flattenings(dict):
                 if key[:2] == 'z_' ])
 
         cvol = sum_L_functions / pari('I')
-        vol  = cvol.real()
-        cs   = cvol.imag() % m
+        vol = cvol.real()
+        cs = cvol.imag() % m
 
         if cs > m/2 + pari('1e-12'):
             cs = cs - m
@@ -2030,8 +2030,8 @@ def _ptolemy_to_cross_ratio(solution_dict,
             s1 = get_obstruction_variable(1)
             s2 = get_obstruction_variable(2)
             s3 = get_obstruction_variable(3)
-            z   = s0 * s1 * z
-            zp  = s0 * s2 * zp
+            z = s0 * s1 * z
+            zp = s0 * s2 * zp
             zpp = s0 * s3 * zpp
 
         variable_end = '_%d%d%d%d' % tuple(index) + '_%d' % tet
@@ -2049,14 +2049,14 @@ def _ptolemy_to_cross_ratio(solution_dict,
                                     branch_factor, evenN)
 
             return [
-                ('z'   + variable_end, make_triple(w  ,z  )),
-                ('zp'  + variable_end, make_triple(wp ,zp )),
+                ('z' + variable_end, make_triple(w  ,z  )),
+                ('zp' + variable_end, make_triple(wp ,zp )),
                 ('zpp' + variable_end, make_triple(wpp,zpp)) ]
 
         else:
             return [
-                ('z'   + variable_end, z),
-                ('zp'  + variable_end, zp),
+                ('z' + variable_end, z),
+                ('zp' + variable_end, zp),
                 ('zpp' + variable_end, zpp) ]
 
     return dict(
@@ -2153,12 +2153,12 @@ def _to_numerical(d):
             v = _evaluate_at_root(value, root)
 
             if key[:2] == 'z_':
-                z   = v
-                zp  = 1 / (1 - z)
+                z = v
+                zp = 1 / (1 - z)
                 zpp = 1 - 1 / z
 
                 return [(key,              z),
-                        ('zp_'  + key[2:], zp),
+                        ('zp_' + key[2:], zp),
                         ('zpp_' + key[2:], zpp)]
             elif key[:3] == 'zp_' or key[:4] == 'zpp_':
                 return []

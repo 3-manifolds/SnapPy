@@ -17,13 +17,13 @@ class Tetrahedron:
         self.Index = -1
         self.Name = name
         self.Neighbor = {F0:None,F1:None,F2:None,F3:None}  # Tetrahedra
-        self.Gluing   = {F0:None,F1:None,F2:None,F3:None}  # Permutations
-        self.Class    = [None]*16             # list of equivalence classes
-        self.Checked  = 0                     # flag
+        self.Gluing = {F0:None,F1:None,F2:None,F3:None}  # Permutations
+        self.Class = [None]*16             # list of equivalence classes
+        self.Checked = 0                     # flag
 
     def __repr__(self):
         if self.Index != -1:
-            return ( 'tet'+ str(self.Index) )
+            return ( 'tet' + str(self.Index) )
         else:
             return '< floating tetrahedron ' + ' at ' + str(id(self)) + '>'
 
@@ -74,7 +74,7 @@ class Tetrahedron:
         self.clear_Class()
 
     def clear_Class(self):
-        self.Class    = [None]*16              # list of equivalence classes
+        self.Class = [None]*16              # list of equivalence classes
 
     def info(self, out = sys.stdout):
         if len(self.Name) == 0:

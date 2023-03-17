@@ -75,7 +75,7 @@ class Arrow:
         self.Tetrahedron = tet
 
     def __repr__(self):
-        return ('< '+SubsimplexName[self.Edge]+' | '+
+        return ('< '+SubsimplexName[self.Edge]+' | ' +
                 SubsimplexName[self.Face]+' | '+str(self.Tetrahedron)+' >')
 
     def head(self):

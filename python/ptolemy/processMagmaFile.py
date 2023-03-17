@@ -234,7 +234,7 @@ def run_magma(content,
     else:
         resolved_dir = tempfile.mkdtemp() + '/'
 
-    in_file  = resolved_dir + filename_base + '.magma'
+    in_file = resolved_dir + filename_base + '.magma'
     out_file = resolved_dir + filename_base + '.magma_out'
 
     if verbose:

@@ -73,7 +73,7 @@ def straightenable_tri(points, extra_arcs=None):
     for i in range(n):
         indices = i, (i + 1) % n, (i + 2) % n
         tri = [points[k] for k in indices]
-        other_arcs = [(points[k], points[(k+1)% n])
+        other_arcs = [(points[k], points[(k+1) % n])
                       for k in range(n) if k not in indices[:2]]
         if pl_utils.colinear(*tri):
             return indices
@@ -87,7 +87,7 @@ def arcs_from_points(points_list):
     arcs = []
     for p in points_list:
         n = len(p)
-        arcs += [(p[k], p[(k+1)% n]) for k in range(n)]
+        arcs += [(p[k], p[(k+1) % n]) for k in range(n)]
     return arcs
 
 

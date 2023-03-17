@@ -68,10 +68,10 @@ def _turn_ccw(rot_amount, trans_amount): # z
 
 
 def _add_cursor_keys(d):
-    d['left']  = _turn_left
+    d['left'] = _turn_left
     d['right'] = _turn_right
-    d['up']    = _turn_up
-    d['down']  = _turn_down
+    d['up'] = _turn_up
+    d['down'] = _turn_down
     return d
 
 

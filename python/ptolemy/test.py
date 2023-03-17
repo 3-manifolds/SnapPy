@@ -302,7 +302,7 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
     from snappy import OrientableCuspedCensus
 
-    for M in (list(OrientableCuspedCensus()[0:10])+
+    for M in (list(OrientableCuspedCensus()[0:10]) +
               list(OrientableCuspedCensus()[10000:10010])):
 
         flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)

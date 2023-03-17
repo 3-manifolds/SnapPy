@@ -346,8 +346,8 @@ class McomplexWithLink(McomplexWithExpansion):
                         check = True
                         min_b, max_b = coor_min[b], coor_max[b]
                         for i in range(3):
-                            if (((min_a[i]-max_b[i])**2 >= min_distance_sq and (min_a[i]-max_b[i])>0)
-                            or ((min_b[i]-max_a[i])**2 >= min_distance_sq and (min_b[i]-max_a[i])>0)):
+                            if (((min_a[i]-max_b[i])**2 >= min_distance_sq and (min_a[i]-max_b[i]) > 0)
+                            or ((min_b[i]-max_a[i])**2 >= min_distance_sq and (min_b[i]-max_a[i]) > 0)):
                                 # arcs lie in different regions which are far apart so dont compare
                                 check = False
                                 break

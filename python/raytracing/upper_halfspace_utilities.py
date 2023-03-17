@@ -36,7 +36,7 @@ def pgl2_matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
         return matrix([[ -l, z0 ],
                        [  0, 1  ]], ring = CF)
 
-    l = z0   - z1
+    l = z0 - z1
     m = zinf - z1
 
     return matrix([[ -l * zinf, m * z0 ],

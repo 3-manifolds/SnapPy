@@ -106,10 +106,10 @@ class Mcomplex:
                 tetrahedron_list = tets_from_data(tetrahedron_list)
 
         self.Tetrahedra = tetrahedron_list
-        self.Edges                = []
-        self.Faces                = []
-        self.Vertices             = []
-        self.NormalSurfaces       = []
+        self.Edges = []
+        self.Faces = []
+        self.Vertices = []
+        self.NormalSurfaces = []
         self.AlmostNormalSurfaces = []
         self.build()
 
@@ -348,7 +348,7 @@ class Mcomplex:
         for edge in self.Edges:
             tet = edge.Corners[0].Tetrahedron
             one_subsimplex = edge.Corners[0].Subsimplex
-            tail  = tet.Class[Tail[one_subsimplex]]
+            tail = tet.Class[Tail[one_subsimplex]]
             head = tet.Class[Head[one_subsimplex]]
             edge.Vertices = [tail , head]
             tail.Edges.append(edge)
@@ -615,9 +615,9 @@ class Mcomplex:
 
         self._three_to_two_move_hook(a_orig, (b_orig, b, c))
         if unsafe_mode:
-            tet0  = a_orig.Tetrahedron
-            tet1  = a_orig.next().Tetrahedron
-            tet2  = a_orig.next().Tetrahedron
+            tet0 = a_orig.Tetrahedron
+            tet1 = a_orig.next().Tetrahedron
+            tet2 = a_orig.next().Tetrahedron
             self.delete_tet(tet0)
             self.delete_tet(tet1)
             self.delete_tet(tet2)

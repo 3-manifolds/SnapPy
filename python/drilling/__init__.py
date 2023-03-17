@@ -430,10 +430,10 @@ def drill_words_hp(*args, **kwargs):
 
 def _add_methods(mfld_class, high_precision = False):
     if high_precision:
-        mfld_class.drill_word  = drill_word_hp
+        mfld_class.drill_word = drill_word_hp
         mfld_class.drill_words = drill_words_hp
     else:
-        mfld_class.drill_word  = drill_word
+        mfld_class.drill_word = drill_word
         mfld_class.drill_words = drill_words
 
 

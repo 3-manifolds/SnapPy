@@ -29,7 +29,7 @@ def read_SnapPea_file(file_name=None, data=None):
     perm_match = r"\s*([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s*$"
     snappea_re = re.compile(neighbors_match + perm_match, re.MULTILINE)
 
-    fake_tets =[]
+    fake_tets = []
 
     curr_poss = 0
     while 1:
@@ -199,11 +199,11 @@ def write_spine_file(mcomplex, fileobject):
             A.next()
 
         signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1) % n]) else -1 for i in range(n)]
-        ans= repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
+        ans = repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
         out(ans + "\n")
 
 
-__all__  = ('read_SnapPea_file',
+__all__ = ('read_SnapPea_file',
             'write_SnapPea_file',
             'read_geo_file',
             'write_geo_file',

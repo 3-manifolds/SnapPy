@@ -1,6 +1,6 @@
 __all__ = ['IntervalTree']
 
-LEFT  = 0
+LEFT = 0
 RIGHT = 1
 
 

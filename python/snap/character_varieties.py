@@ -20,7 +20,7 @@ def cycle_sort(l):
     s = l
     for i in range(0,len(l)):
         temp = l[i:] + l[0:i]
-        if temp<s:
+        if temp < s:
             s = temp
     return s
 

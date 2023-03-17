@@ -87,7 +87,7 @@ class HoroTriangleBase:
         sides = t3m.simplex.FacesAroundVertexCounterclockwise[vertex]
         left_side, center_side, right_side = (
             HoroTriangleBase._make_second(sides, side))
-        z_left  = tet.ShapeParameters[left_side   & center_side ]
+        z_left = tet.ShapeParameters[left_side & center_side ]
         z_right = tet.ShapeParameters[center_side & right_side  ]
         return left_side, center_side, right_side, z_left, z_right
 
@@ -524,7 +524,7 @@ class CuspCrossSectionBase(McomplexEngine):
         # Angle at 1 is > pi/2
         if z.real() > 1:
             # So longest edge of the triangle must be opposite of 1
-            return 2 * z.imag() / (abs(z)     ** 2)
+            return 2 * z.imag() / (abs(z) ** 2)
         # Angle at z is > pi/2
         if abs(2 * z - 1) < 1:
             # So longest edge of the triangle must be opposite of z

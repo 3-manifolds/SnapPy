@@ -31,6 +31,7 @@ class Phoner(Thread):
         if latest and latest_version > this_version:
             self.answer = (latest, current)
 
+
 def update_needed():
     ET = Phoner()
     ET.start()

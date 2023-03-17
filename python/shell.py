@@ -6,6 +6,7 @@ try:
 except ImportError:
     from IPython.frontend.terminal.embed import InteractiveShellEmbed
 
+
 class SnapPyPromptDisplayHook(DisplayHook):
     """
     A DisplayHook used when displaying SnapPy's output prompts.  This
@@ -27,6 +28,7 @@ class SnapPyPromptDisplayHook(DisplayHook):
                 self.prompt_end_newline = False
             for token, text in tokens:
                 output.write(text, style=(token[0],))
+
 
 class SnapPyInteractiveShellEmbed(InteractiveShellEmbed):
     """

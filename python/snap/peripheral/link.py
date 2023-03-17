@@ -40,8 +40,10 @@ TruncatedSimplexCorners = {
 VerticesOfFace = { F0 : (V1, V2, V3), F1 : (V0, V3, V2),
                    F2 : (V0, V1, V3), F3 : (V0, V2, V1) }
 
+
 def cusp_corner_label(v, w):
     return TruncatedSimplexCorners[v].index( v | w )
+
 
 class LinkSurface(surface.Surface):
     def __init__(self, t3m_triangulation):

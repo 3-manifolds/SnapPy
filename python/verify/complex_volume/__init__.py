@@ -5,6 +5,7 @@ from .closed import *
 
 __all__ = ['verified_complex_volume_torsion']
 
+
 @sage_method
 def verified_complex_volume_torsion(manifold, bits_prec = None):
 

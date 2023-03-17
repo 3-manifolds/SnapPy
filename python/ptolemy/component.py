@@ -80,8 +80,8 @@ class NonZeroDimensionalComponent(Component):
             else:
                 p.text(base_str)
 
-def _test():
 
+def _test():
     """
 
     >>> a = NonZeroDimensionalComponent(dimension = 1, free_variables='x')

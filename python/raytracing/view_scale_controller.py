@@ -15,6 +15,7 @@ _inverse_scale_function = [
     lambda scale: math.log(scale),
     None ]
 
+
 class ViewScaleController:
     def __init__(self,
                  uniform_dict,
@@ -89,6 +90,7 @@ class ViewScaleController:
     def update(self):
         self.update_label()
         self.update_scale()
+
 
 def _linear_remap(v, src_interval, dst_interval):
     l0, r0 = src_interval

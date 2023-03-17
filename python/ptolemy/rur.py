@@ -245,7 +245,6 @@ class RUR():
         return '%s / ( %s )' % (numerator, denominator)
 
     def number_field(self):
-
         """
         Returns the polynomial c such that evaluating the fraction
         at one of the roots yields the algebraic number this RUR is
@@ -258,7 +257,6 @@ class RUR():
         return None
 
     def evaluate_at_root(self, root):
-
         """
         Given a numerical value for a root of the polynomial returned
         by number_field, evaluates all polynomials at that root and

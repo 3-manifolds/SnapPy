@@ -34,6 +34,7 @@ def vertex_surfaces(regina_triangulation):
     for i in range(surfaces.getNumberOfSurfaces()):
         yield surfaces.getSurface(i)
 
+
 def compare_closed(snappy_manifold):
     N = snappy_manifold.filled_triangulation()
 
@@ -47,11 +48,13 @@ def compare_closed(snappy_manifold):
     all_together = sum(t_hashes, [])
     return t_hashes == r_hashes, len(all_together), sum(all_together)
 
+
 def regina_boundary_slope(surface):
     slope = surface.boundaryIntersections()
     a = int(slope.entry(0,0).stringValue())
     b = int(slope.entry(0,1).stringValue())
     return (b, -a)
+
 
 def compare_cusped(snappy_manifold):
     tri_data = snappy_manifold._to_string()
@@ -74,6 +77,7 @@ def compare_cusped(snappy_manifold):
 def closed_test(N = 10):
     for M in snappy.OrientableClosedCensus[:N]:
         print(M, compare_closed(M))
+
 
 def cusped_test(N = 100):
     for census in [snappy.CensusKnots, snappy.OrientableCuspedCensus(cusps=1)]:

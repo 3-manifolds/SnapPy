@@ -34,8 +34,10 @@ pgl2c in a function name indicates that the function takes any non-degenerate
 complex 2x2-matrix and uses the isomorphism PGL(2,C)=PSL(2,C).
 """
 
+
 def sl2c_inverse(A):
     return matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
+
 
 def psl2c_to_o13(A):
     """
@@ -48,6 +50,7 @@ def psl2c_to_o13(A):
         [ _o13_matrix_column(A, m)
           for m in _basis_vectors_sl2c(A.base_ring()) ]).transpose()
 
+
 def pgl2c_to_o13(m):
     """
     Converts matrix in PGL(2,C) to O13.
@@ -55,6 +58,7 @@ def pgl2c_to_o13(m):
     Python implementation of Moebius_to_O31 in matrix_conversion.c.
     """
     return psl2c_to_o13(m / m.det().sqrt())
+
 
 def _basis_vectors_sl2c(CF):
     return [ matrix([[ 1 , 0 ],

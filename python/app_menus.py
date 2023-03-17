@@ -61,12 +61,14 @@ else: # fall back choice
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
 
+
 def add_menu(root, menu, label, command, state='active'):
     accelerator = scut.get(label, '')
     menu.add_command(label=label, accelerator=accelerator,
                      command=command, state=state)
     if scut_events.get(label, None) and state != 'disabled':
         root.bind(scut_events[label], command)
+
 
 class EditMenu(Tk_.Menu):
     """Edit Menu cascade containing Cut, Copy, Paste and Delete. To use,
@@ -101,6 +103,7 @@ class EditMenu(Tk_.Menu):
                 self.entryconfig(entry, state='normal')
             else:
                 self.entryconfig(entry, state='disabled')
+
 
 class HelpMenu(Tk_.Menu):
     """Help Menu cascade.  Always contains the main SnapPy help entry.
@@ -153,6 +156,7 @@ class HelpMenu(Tk_.Menu):
             if label in self.extra_commands:
                 self.add_command(label=label, command=self.extra_commands[label])
 
+
 class ListedWindow():
     """
     Mixin class that allows emulation of the Apple Window menu. Windows
@@ -187,6 +191,7 @@ class ListedWindow():
         # Subclasses should override this if they use preferences.
         pass
 
+
 class WindowMenu(Tk_.Menu, ListedWindow):
     """
     Menu with a postcommand which shows all listed windows.
@@ -200,6 +205,7 @@ class WindowMenu(Tk_.Menu, ListedWindow):
         self.delete(0, self.index(Tk_.END))
         for object in self.window_list:
             self.add_command(label=object.menu_title, command=object.bring_to_front)
+
 
 def browser_menus(self):
     """
@@ -235,6 +241,7 @@ def browser_menus(self):
     help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 
+
 def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
     self.menubar = menubar = Tk_.Menu(self.window)
@@ -269,6 +276,7 @@ def plink_menus(self):
     Help_menu.add_command(label='PLink Help ...', command=self.howto)
     self.window.config(menu=menubar)
 
+
 def dirichlet_menus(self):
     """
     Menus for the standalone Dirichlet viewer.  Called by the view Frame, not the
@@ -301,6 +309,7 @@ def dirichlet_menus(self):
     help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
+
 def horoball_menus(self):
     """
     Menus for the standalone Horoball viewer.  Called by the view Frame, not the
@@ -328,6 +337,7 @@ def horoball_menus(self):
     help_menu.extra_command(label=help_horoball_viewer_label, command=self.widget.help)
     help_menu.activate([help_horoball_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
+
 
 def inside_view_menus(self):
     """Menus for the standalone Inside viewer.  Called by the view Frame, not the

@@ -5,6 +5,7 @@ from ..math_basics import is_RealIntervalFieldElement # type: ignore
 
 __all__ = ['r13_fixed_points_of_psl2c_matrix']
 
+
 def r13_fixed_points_of_psl2c_matrix(m):
     """
     Given a PSL(2,C)-matrix m acting on the upper halfspace model,
@@ -40,6 +41,7 @@ def r13_fixed_points_of_psl2c_matrix(m):
 
 ###############################################################################
 # Helpers
+
 
 def _r13_fixed_points_of_psl2c_matrix(m):
     """

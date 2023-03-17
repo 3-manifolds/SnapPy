@@ -7,6 +7,7 @@ from ..hyperboloid import ( # type: ignore
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore
 
+
 def balance_end_points_of_line(line_with_matrix : R13LineWithMatrix,
                                point) -> R13LineWithMatrix:
     return R13LineWithMatrix(
@@ -14,6 +15,7 @@ def balance_end_points_of_line(line_with_matrix : R13LineWithMatrix,
             [ endpoint / -r13_dot(point, endpoint)
               for endpoint in line_with_matrix.r13_line.points]),
         line_with_matrix.o13_matrix)
+
 
 class ZQuotientLiftedTetrahedronSet:
     def __init__(self,
@@ -30,6 +32,7 @@ class ZQuotientLiftedTetrahedronSet:
             return False
         tets.add(lifted_tetrahedron.tet)
         return True
+
 
 class _ZQuotientDict(SpatialDict):
     def __init__(self,
@@ -66,6 +69,7 @@ class _ZQuotientDict(SpatialDict):
                 pt[1] * self._weights[1] +
                 pt[2] * self._weights[2])
 
+
 class _O13MatrixPowerCache:
     def __init__(self, m):
         self._positive_cache = _MatrixNonNegativePowerCache(m)
@@ -76,6 +80,7 @@ class _O13MatrixPowerCache:
             return self._positive_cache.power( i)
         else:
             return self._negative_cache.power(-i)
+
 
 class _MatrixNonNegativePowerCache:
     def __init__(self, m):

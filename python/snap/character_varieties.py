@@ -72,6 +72,7 @@ class TracePolynomialRing():
     def __call__(self, poly):
         return pari(poly)
 
+
 class Word():
     """
     The Word class is used to make objects which represent words in a
@@ -181,6 +182,7 @@ class Word():
         if len(s) <= 3 and s.islower():
             return pari("T"+s)
 
+
 def tr(w):
     """Shortcut for the SL2_trace method of a word object"""
     return w.SL2_trace()
@@ -219,6 +221,7 @@ def mult_traceless(a1,a2,a3=None):
                 - pari("1/2")*tr(a2)*tr(a1*a3) - pari("1/2")*tr(a1)*tr(a2*a3)
                 + tr(a1*a2*a3))
 
+
 def s3(a1,a2,a3):
     """
     Accessory function to sum (with sign) "mult_traceless" over all
@@ -228,11 +231,13 @@ def s3(a1,a2,a3):
             + mult_traceless(a3,a1,a2) - mult_traceless(a1,a3,a2)
             - mult_traceless(a3,a2,a1) - mult_traceless(a2,a1,a3))
 
+
 def det(M):
     """Determinant of a 3x3 matrix"""
     return (M[0][0]*M[1][1]*M[2][2] + M[0][1]*M[1][2]*M[2][0]
             + M[1][0]*M[2][1]*M[0][2] - M[0][2]*M[1][1]*M[2][0]
             - M[0][1]*M[1][0]*M[2][2] - M[0][0]*M[1][2]*M[2][1])
+
 
 def rel1(i):
     """Generates type 1 relations for generators (words) i1,i2,i3 j1,j2,j3"""
@@ -242,12 +247,14 @@ def rel1(i):
          [mult_traceless(i2,j1),mult_traceless(i2,j2),mult_traceless(i2,j3)],
          [mult_traceless(i3,j1),mult_traceless(i3,j2),mult_traceless(i3,j3)]]))
 
+
 def rel2(j):
     """Generates type 2 relations for generators (words) i,p0,p1,p2,p3"""
     [i,[p0,p1,p2,p3]] = j
     return (mult_traceless(i,p0)*s3(p1,p2,p3)
             - mult_traceless(i,p1)*s3(p0,p2,p3)
             + mult_traceless(i,p2)*s3(p0,p1,p3) - mult_traceless(i,p3)*s3(p0,p1,p2))
+
 
 def rels_from_rel(R, G):
     """

@@ -609,6 +609,7 @@ for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
 
 Number.argument = Number.arg
 
+
 def use_field_conversion(func):
     global number_to_native_number
 
@@ -642,6 +643,7 @@ def use_field_conversion(func):
             return n
     else:
         number_to_native_number = func
+
 
 if _within_sage:
     use_field_conversion('sage')

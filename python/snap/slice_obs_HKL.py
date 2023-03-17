@@ -59,6 +59,7 @@ if _within_sage:
 
 from .. import SnapPy
 
+
 class MatrixRepresentation():
     """
     A representation from a finitely-presented group to GL(n, R),
@@ -655,6 +656,7 @@ def slice_obstruction_HKL(self, primes_spec,
                         print('   Looking at', (p, q), '...')
                         if slicing_is_obstructed(M, p, q):
                             return (p, q)
+
 
 if __name__ == '__main__':
     import doctest

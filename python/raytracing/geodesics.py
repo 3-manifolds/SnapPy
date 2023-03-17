@@ -6,6 +6,7 @@ from ..drilling.geodesic_tube import add_structures_necessary_for_tube
 from ..snap.t3mlite import Mcomplex, simplex
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
+
 class Geodesics:
     def __init__(self, manifold, words):
         """
@@ -140,6 +141,7 @@ class Geodesics:
 
         return self.mcomplex
 
+
 def compute_geodesic_tube_info_key(geodesic_tube_info):
     l = geodesic_tube_info.complex_length
 
@@ -148,10 +150,12 @@ def compute_geodesic_tube_info_key(geodesic_tube_info):
             l.imag() > 1e-5, # Making the one with negative imag part first
             geodesic_tube_info.index)
 
+
 def _hsv2rgb_helper(hue, saturation, value, x):
     p = abs(((hue + x / 3.0) % 1.0) * 6.0 - 3.0)
     c = min(max(p - 1.0, 0.0), 1.0)
     return value * (1.0 + saturation * (c - 1.0))
+
 
 def hsv2rgb(hue, saturation, value):
     """
@@ -160,6 +164,7 @@ def hsv2rgb(hue, saturation, value):
 
     return [ _hsv2rgb_helper(hue, saturation, value, x)
              for x in [ 0.0, 2.0, 1.0 ] ]
+
 
 def geodesic_index_to_color(i):
     """

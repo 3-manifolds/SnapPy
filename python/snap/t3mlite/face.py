@@ -9,6 +9,7 @@
 from .arrow import Arrow
 from .simplex import PickAnEdge
 
+
 class Face:
     def __init__(self):
         self.Index = -1

@@ -1,6 +1,7 @@
 from ..drilling import compute_geodesic_info
 from ..drilling.geodesic_tube import GeodesicTube
 
+
 class GeodesicTubeInfo:
     def __init__(self, mcomplex, word, index, is_primitive = None):
         # Compute GeodesicTube
@@ -78,6 +79,7 @@ class GeodesicTubeInfo:
                             return False
         return True
 
+
 def _normalize_complex_length(z):
     imag = z.imag()
 
@@ -90,6 +92,7 @@ def _normalize_complex_length(z):
     n = (imag / two_pi - RF("0.00000001")).round()
 
     return z - n * two_pi * I
+
 
 def _are_parallel_light_vectors(a, b, epsilon):
     for i in range(1, 4):

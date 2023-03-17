@@ -78,6 +78,7 @@ class Edge():
     def __repr__(self):
         return type(self).__name__ + "(%r)" % (self._start_point,)
 
+
 class ShortEdge(Edge):
     """
     A short edge of a doubly truncated simplex.
@@ -89,6 +90,7 @@ class ShortEdge(Edge):
         """
         tet, v0, v1, v2 = self._start_point
         return Vertex(tet, v0, v1, 6 - v0 - v1 - v2)
+
 
 class MiddleEdge(Edge):
     """
@@ -103,6 +105,7 @@ class MiddleEdge(Edge):
 
         return Vertex(tet, v0, v2, v1)
 
+
 class LongEdge(Edge):
     """
     A log edge of a doubly truncated simplex.
@@ -114,6 +117,7 @@ class LongEdge(Edge):
         """
         tet, v0, v1, v2 = self._start_point
         return Vertex(tet, v1, v0, v2)
+
 
 class Path(tuple):
     """
@@ -137,6 +141,7 @@ class Path(tuple):
             return Path(self + other)
         return Path(self + (other,))
 
+
 def _penalty_of_path(path, penalties):
 
     def penalty(edge):
@@ -147,6 +152,7 @@ def _penalty_of_path(path, penalties):
         return penalties[2]
 
     return sum([penalty(edge) for edge in path])
+
 
 def _perm4_iterator():
     for v0 in range(4):
@@ -214,6 +220,7 @@ def _compute_point_identification_dict(choose_generators_info):
 
     return d
 
+
 def _compute_point_to_shortest_path(point_identification_dict, origin,
                                     penalties):
     """
@@ -277,6 +284,7 @@ def _compute_point_to_shortest_path(point_identification_dict, origin,
 
     return d
 
+
 def _compute_num_generators(choose_generators_info):
     """
     Compute the number of generators.
@@ -284,10 +292,10 @@ def _compute_num_generators(choose_generators_info):
 
     return max([ max(info['generators']) for info in choose_generators_info ])
 
+
 def _compute_loops_for_generators_from_info(choose_generators_info,
                                             point_to_shortest_path,
                                             penalties):
-
     """
     Using the result of SnapPy's _choose_generators_info() that
     indicates which face pairings correspond to which generators and
@@ -367,6 +375,7 @@ def compute_loops_for_generators(M, penalties):
     return _compute_loops_for_generators_from_info(
         choose_generators_info, point_to_shortest_path, penalties)
 
+
 def _evaluate_path(coordinate_object, path):
     """
     Given PtolemyCoordinates or CrossRatios (or more generally, any object that
@@ -414,6 +423,7 @@ def images_of_original_generators(coordinate_object, penalties):
     return (
         [ _evaluate_path(coordinate_object, loop      ) for loop in loops ],
         [ _evaluate_path(coordinate_object, loop ** -1) for loop in loops ])
+
 
 def _apply_hom_to_word(word, G):
     # No G given means nothing is done to the word

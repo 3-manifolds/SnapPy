@@ -42,6 +42,7 @@ def test_polished(dec_prec=200):
     test_census('closed census', snappy.OrientableClosedCensus()[-100:])
     test_census('4-component links', [M for M in snappy.LinkExteriors(num_cusps=4) if M.solution_type() == 'all tetrahedra positively oriented'])
 
+
 def test_holonomy(dec_prec=200):
     def test_manifold(manifold):
         # This has several internal checks which raise exceptions
@@ -52,6 +53,7 @@ def test_holonomy(dec_prec=200):
         print('Testing holonomy of 100 manifolds in ', census)
         for manifold in census()[-100:]:
             test_manifold(manifold)
+
 
 def test_fields(bits_prec=200, degree=20):
     for census in [snappy.OrientableCuspedCensus, snappy.OrientableClosedCensus]:
@@ -80,6 +82,7 @@ def test_fields(bits_prec=200, degree=20):
                             print('Problem with', manifold,
                                   '(gluing equations violated)')
 
+
 def test_ZHS(bits_prec=500, degree=20):
     for manifold in snappy.OrientableClosedCensus:
         if manifold.homology().order() == 1:
@@ -89,6 +92,7 @@ def test_ZHS(bits_prec=500, degree=20):
                 print(manifold, ans[0].polynomial())
             else:
                 print(manifold, ans)
+
 
 def big_test():
     test_polished()
@@ -138,6 +142,7 @@ def run_doctests(verbose=False, print_info=True):
 
     return doctest_modules(modules, extraglobs=globs,
                            verbose=verbose, print_info=print_info)
+
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

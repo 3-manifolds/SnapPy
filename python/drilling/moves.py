@@ -13,6 +13,7 @@ from typing import Sequence, Optional, Union, Tuple, List, Dict, Mapping
 
 __all__ = ['one_four_move', 'two_three_move']
 
+
 def one_four_move(given_pieces : Sequence[GeodesicPiece],
                   verified : bool) -> Sequence[GeodesicPiece]:
 
@@ -190,6 +191,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
         given_pieces[0], given_pieces[-1], new_pieces)
 
     return new_pieces
+
 
 def two_three_move(given_pieces : Sequence[GeodesicPiece],
                    verified : bool) -> Sequence[GeodesicPiece]:
@@ -399,15 +401,18 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
 
     return new_piece
 
+
 def _swap_perm(i, j):
     result = [0, 1, 2, 3]
     result[i] = j
     result[j] = i
     return result
 
+
 _swap_perms = { (f0, f1) : _swap_perm(i, j)
                 for i, f0 in enumerate(simplex.TwoSubsimplices)
                 for j, f1 in enumerate(simplex.TwoSubsimplices) }
+
 
 def _retrace_geodesic_piece(
         index : int,

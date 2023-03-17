@@ -13,6 +13,7 @@ import shutil
 ###############################################################################
 # functions
 
+
 def decomposition_from_magma(text):
 
     py_eval = processFileBase.get_py_eval(text)
@@ -102,6 +103,7 @@ def decomposition_from_magma(text):
                            witnesses_sections,
                            genuses_sections)) ])
 
+
 def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
                                 free_vars, witnesses, genus):
     match = re.match(
@@ -180,8 +182,8 @@ def contains_magma_output(text):
             "PRIMARY=DECOMPOSITION=BEGINS" in text or
             "RADICAL=DECOMPOSITION=BEGINS" in text)
 
-def solutions_from_magma_file(filename, numerical = False):
 
+def solutions_from_magma_file(filename, numerical = False):
     """
     Obsolete, use processFileDispatch.parse_solutions_from_file instead.
 
@@ -192,6 +194,7 @@ def solutions_from_magma_file(filename, numerical = False):
     """
 
     return solutions_from_magma(open(filename).read(), numerical)
+
 
 def solutions_from_magma(output, numerical = False):
     """
@@ -206,15 +209,16 @@ def solutions_from_magma(output, numerical = False):
     return decomposition_from_magma(output).solutions(
         numerical = numerical)
 
+
 def magma_executable():
     for name in ['magma', 'magma.exe']:
         if shutil.which(name):
             return name
     return None
 
+
 def run_magma(content,
               filename_base, memory_limit, directory, verbose):
-
     """
     call magma on the given content and
     """
@@ -263,6 +267,7 @@ def run_magma(content,
 
 ###############################################################################
 # magma test
+
 
 _magma_output_for_4_1__sl3 = """
 ==TRIANGULATION=BEGINS==

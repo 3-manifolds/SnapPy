@@ -3,6 +3,7 @@ __all__ = ['IntervalTree']
 LEFT  = 0
 RIGHT = 1
 
+
 class IntervalTree():
     """
     A data structure that can store (interval, value) pairs and quickly
@@ -260,6 +261,7 @@ class IntervalTree():
 #
 # TESTING
 
+
 class _IntervalTreeTester(IntervalTree):
     """
     A test rig for IntervalTree. It will keep a separate plain list of all
@@ -388,9 +390,11 @@ class _IntervalTreeTester(IntervalTree):
             raise Exception("Inconsistent number of intervals: %d %d" % (
                     num_true, num_have))
 
+
 def _doctest():
     import doctest
     doctest.testmod()
+
 
 if __name__ == '__main__':
     _doctest()

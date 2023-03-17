@@ -6,6 +6,7 @@ except ImportError:
     from . import plistlib
 from .gui import *
 
+
 class Preferences:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -100,6 +101,7 @@ class Preferences:
     def apply_prefs(self):
         self.text_widget.config(font=self.prefs_dict['font'])
         print(self.prefs_dict)
+
 
 class PreferenceDialog(Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
@@ -365,6 +367,7 @@ class PreferenceDialog(Dialog):
 
     def set_keyboard(self, value):
         self.prefs['keyboard'] = value
+
 
 if __name__ == '__main__':
     parent = Tk_.Tk(className='snappy')

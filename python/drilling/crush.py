@@ -6,6 +6,7 @@ from ..snap.t3mlite import Tetrahedron, Perm4, Mcomplex, simplex
 
 from typing import Dict, Tuple, List, Sequence
 
+
 def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
     """
     Given tetrahedra produced by traverse_geodesics_to_subdivide,
@@ -199,6 +200,7 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
                       for subtet in subtetrahedra
                       if subtet and subtet.orientation == s ])
 
+
 _perm_tuple_to_index : Dict[Tuple[int, int, int, int], int] = {
     perm.tuple() : i for i, perm in enumerate(Perm4.S4()) }
 
@@ -206,8 +208,10 @@ _transpositions : List[Perm4] = [ Perm4((1,0,2,3)),
                                   Perm4((0,2,1,3)),
                                   Perm4((0,1,3,2)) ]
 
+
 def _perm_to_index(perm : Perm4) -> int:
     return _perm_tuple_to_index[perm.tuple()]
+
 
 def _find_perm_for_piece(piece : GeodesicPiece):
     """
@@ -231,6 +235,7 @@ def _find_perm_for_piece(piece : GeodesicPiece):
     for perm in Perm4.A4():
         if perm.image(simplex.V0) == s0 and perm.image(simplex.V1) == s1:
             return perm
+
 
 def _traverse_edge(tet0 : Tetrahedron, perm0 : Perm4, mask : List[bool]):
     """
@@ -260,6 +265,7 @@ def _traverse_edge(tet0 : Tetrahedron, perm0 : Perm4, mask : List[bool]):
         # Stop if back at the first "edge embedding"
         if tet is tet0 and perm.tuple() == perm0.tuple():
             return
+
 
 def _tet_mask_and_peripheral_base_subtet_indices(tetrahedra):
     """
@@ -304,6 +310,7 @@ def _assign_orientations(subtetrahedra):
             if subtet:
                 subtet.orientation = perm.sign()
 
+
 def _fix_peripheral_curves(subtet):
     """
     Traverse the six new cusp triangles shown in one
@@ -324,6 +331,7 @@ def _fix_peripheral_curves(subtet):
                 tri[face1] = -p
                 neighbor.PeripheralCurves[ml][1-sheet][simplex.V0][face1] = p
         subtet = neighbor
+
 
 def _fix_all_peripheral_curves(subtetrahedra):
     """

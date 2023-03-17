@@ -19,6 +19,7 @@ import re
 #      2    5    1   34
 #   3120 0321 0132 0132
 
+
 def read_SnapPea_file(file_name=None, data=None):
     if data is None:
         data = open(file_name).read().decode('ascii')
@@ -126,6 +127,7 @@ conv_back = {V0: "u", V1 : "v", V2 : "w", V3: "x"}
 # starts his indexing of tets at 1 and Jeff starts at 0,
 # we subtract 1.
 
+
 def read_edge(edge):
     m = re.match("([0-9]+)([uvwx])([uvwx])", edge)
     return (int(m.group(1)) - 1, conv[m.group(2)], conv[m.group(3)])
@@ -156,6 +158,7 @@ def read_geo_file(file_name, num_tet=None):
     return Mcomplex(tets)
 
 #---------Code to go from Mcomplex to Geo---------------------
+
 
 def write_geo_file(mcomplex, fileobject):
     out = fileobject.write

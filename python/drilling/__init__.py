@@ -27,7 +27,6 @@ def drill_word(manifold,
                verified : bool = False,
                bits_prec = None,
                verbose : bool = False):
-
     """
     Drills the geodesic corresponding to the given word in the unsimplified
     fundamental group.
@@ -109,6 +108,7 @@ def drill_word(manifold,
                        verified = verified,
                        bits_prec = bits_prec,
                        verbose = verbose)
+
 
 def drill_words(manifold,
                 words : Sequence[str],
@@ -210,6 +210,7 @@ def drill_words(manifold,
             "with the current precision. "
             "Increasing the precision should solve this problem.") from e
 
+
 def drill_words_implementation(
         manifold,
         words,
@@ -299,6 +300,7 @@ def drill_words_implementation(
 
     return drilled_manifold
 
+
 def _verify_not_parabolic(m, mcomplex, word):
     """
     Raise exception when user gives a word corresponding to a parabolic
@@ -313,6 +315,7 @@ def _verify_not_parabolic(m, mcomplex, word):
     tr = m.trace()
     if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
         raise exceptions.WordAppearsToBeParabolic(word, tr)
+
 
 def compute_geodesic_info(mcomplex : Mcomplex,
                           word) -> GeodesicInfo:
@@ -347,6 +350,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     g.find_tet_or_core_curve()
 
     return g
+
 
 def drill_geodesics(mcomplex : Mcomplex,
                     geodesics : Sequence[GeodesicInfo],
@@ -412,13 +416,17 @@ def drill_geodesics(mcomplex : Mcomplex,
 # for ManifoldHP.
 # Use @functools.wraps to carry forward the argument names
 # and default values and the doc string.
+
+
 @functools.wraps(drill_word)
 def drill_word_hp(*args, **kwargs):
     return drill_word(*args, **kwargs).high_precision()
 
+
 @functools.wraps(drill_words)
 def drill_words_hp(*args, **kwargs):
     return drill_words(*args, **kwargs).high_precision()
+
 
 def _add_methods(mfld_class, high_precision = False):
     if high_precision:
@@ -427,6 +435,7 @@ def _add_methods(mfld_class, high_precision = False):
     else:
         mfld_class.drill_word  = drill_word
         mfld_class.drill_words = drill_words
+
 
 def dummy_function_for_additional_doctests():
     """

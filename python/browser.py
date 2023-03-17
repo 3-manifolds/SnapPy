@@ -59,6 +59,7 @@ class SelectableText(ttk.Frame):
     def get(self):
         return self.var.get()
 
+
 class AutoScrollbar(Tk_.Scrollbar):
     # Frederick Lundh's scrollbar that hides itself if it's not needed.
     def set(self, lo, hi):
@@ -67,6 +68,7 @@ class AutoScrollbar(Tk_.Scrollbar):
         else:
             self.grid()
         Tk_.Scrollbar.set(self, lo, hi)
+
 
 class SelectableMessage(ttk.Frame):
     """
@@ -138,6 +140,7 @@ class CuspNeighborhoodTab(HoroballViewer):
             [ app_menus.help_horoball_viewer_label,
               app_menus.help_report_bugs_label])
 
+
 class LinkTab(LinkViewer):
     def __init__(self, data, window):
         self.style = style = SnapPyStyle()
@@ -148,6 +151,7 @@ class LinkTab(LinkViewer):
 
     def close(self, event=None):
         pass
+
 
 class Browser(Tk_.Toplevel):
     """
@@ -754,6 +758,7 @@ class Browser(Tk_.Toplevel):
             self.after(5500, self.close)
         self.wait_window(self)
 
+
 class Driller(SimpleDialog):
     def __init__(self, parent, manifold):
         self.manifold = manifold
@@ -848,6 +853,7 @@ class Driller(SimpleDialog):
                 self.segment_var.set, str(self.max_segments))
             return False
         return True
+
 
 class Coverer(SimpleDialog):
     def __init__(self, parent, manifold):
@@ -972,6 +978,7 @@ class Coverer(SimpleDialog):
     def go(self):
         self.root.grab_set()
         self.root.wait_window()
+
 
 if __name__ == '__main__':
     from snappy import Manifold

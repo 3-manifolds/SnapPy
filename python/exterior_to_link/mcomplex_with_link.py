@@ -26,6 +26,7 @@ import random
 import collections
 import time
 
+
 def arcs_to_add(arcs):
     ans = []
     on_boundary = set()
@@ -53,6 +54,7 @@ def arcs_to_add(arcs):
                 ans.append(trimmed)
 
     return ans
+
 
 def can_straighten_bend(arc_a, arc_b, arcs, return_obstruction=False):
     x = arc_a.start.to_3d_point()
@@ -258,20 +260,17 @@ class McomplexWithLink(McomplexWithExpansion):
         self.connect_arcs()
         self.init_sig = self.isosig()
 
-
     def new_tet(self):
         tet = Tetrahedron()
         tet.arcs = []
         self.add_tet(tet)
         return tet
 
-
     def new_arrow(self):
         tet = Tetrahedron()
         tet.arcs = []
         self.add_tet(tet)
         return Arrow(E01,F3,tet)
-
 
     def _four_to_four_move_hook(self, old_arrow, new_arrows):
         self._add_to_move_memory('four_to_four', old_arrow)
@@ -287,7 +286,6 @@ class McomplexWithLink(McomplexWithExpansion):
 
         raise GeneralPositionError('four_to_four could not find good north pole')
 
-
     def _two_to_three_move_hook(self, old_arrow, new_arrows):
         self._add_to_move_memory('two_to_three', old_arrow)
         for north in [None,
@@ -301,7 +299,6 @@ class McomplexWithLink(McomplexWithExpansion):
 
         raise GeneralPositionError('two_to_three could not find good north pole')
 
-
     def _three_to_two_move_hook(self, old_arrow, new_arrows):
         self._add_to_move_memory('three_to_two', old_arrow)
         for north in [None,
@@ -314,7 +311,6 @@ class McomplexWithLink(McomplexWithExpansion):
                 continue
 
         raise GeneralPositionError('three_to_two could not find good north pole')
-
 
     def check_arcs_are_embedded(self):
         for tet in manifold:
@@ -362,7 +358,6 @@ class McomplexWithLink(McomplexWithExpansion):
 
         return int(4/pl_utils.rational_sqrt(min_distance_sq)) + 1
 
-
     def round(self, careful=True):
         max_denom = self.safe_perturbation() if careful else 2**32
         for tet in self:
@@ -371,7 +366,6 @@ class McomplexWithLink(McomplexWithExpansion):
                 past_arc = arc.past
                 if isinstance(past_arc, InfinitesimalArc):
                     past_arc.start.round(max_denom)
-
 
     def connect_arcs(self, tetrahedra=None):
         if tetrahedra is None:
@@ -405,7 +399,6 @@ class McomplexWithLink(McomplexWithExpansion):
                 x.next = between
                 y.past = between
 
-
     def link_components(self):
         arcs = sum([tet.arcs for tet in self], [])
         num_arcs = len(arcs)
@@ -422,7 +415,6 @@ class McomplexWithLink(McomplexWithExpansion):
             components.append(component)
 
         return components
-
 
     def push_through_face(self, tri, tet0):
         def can_straighten(arc, tri):
@@ -499,7 +491,6 @@ class McomplexWithLink(McomplexWithExpansion):
         tet1.arcs += [uw, wz, zy]
         return True
 
-
     def completely_simplify_link(self, straighten=True, push=True, around_edges=True, limit=10):
         any_success, success, l = False, True, 0
         while success and l < limit:
@@ -509,7 +500,6 @@ class McomplexWithLink(McomplexWithExpansion):
                     success, any_success = True, True
             l += 1
         return any_success
-
 
     def simplify_link(self, tet, straighten=True, push=True):
         if straighten:
@@ -526,7 +516,6 @@ class McomplexWithLink(McomplexWithExpansion):
                     if self.push_through_face(tri, tet):
                         success, any_success = True, True
         return any_success
-
 
     def perform_moves(self, moves, straighten=True, push=True,
                       round=True, careful=True, tet_stop_num=0):
@@ -649,7 +638,6 @@ def link_triangulation(manifold, add_arcs=True, simplify=True,
     if M.cusp_info('is_complete') == n*[True]:
         M.dehn_fill(n*[(1, 0)])
     assert M.cusp_info('is_complete') == n*[False]
-
 
     T = M._unsimplified_filled_triangulation(method='layered_and_marked')
     T.simplify(passes_at_fours=jiggle_limit)

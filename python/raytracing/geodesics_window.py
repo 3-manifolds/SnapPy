@@ -6,6 +6,7 @@ from .geodesics import geodesic_index_to_color
 from ..drilling.exceptions import WordAppearsToBeParabolic
 from ..SnapPy import word_as_list # type: ignore
 
+
 class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
         self.inside_viewer = inside_viewer
@@ -107,7 +108,6 @@ class GeodesicsWindow(tkinter.Toplevel):
                               text = s + ' %.8f * I' % abs_im_length)
                 l.grid(row = row, column = length_column + 1)
 
-
             color = geodesic_index_to_color(geodesic.index)
 
             l = tkinter.Label(self.geodesics_frame,
@@ -175,8 +175,10 @@ class GeodesicsWindow(tkinter.Toplevel):
             self.inside_viewer.update_edge_and_insphere_controllers()
         self.raytracing_view.update_geodesic_data_and_redraw()
 
+
 def color_to_tkinter(color):
     return "#%.3x%.3x%.3x" % tuple([min(max(int(x * 4095), 0), 4095)
                                     for x in color])
+
 
 _default_status_msg = "Words are in unsimplified fundamental group Manifold.fundamental_group(False)"

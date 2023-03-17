@@ -31,6 +31,7 @@ from .raytracing_data import *
 
 __all__ = ['FiniteRaytracingData']
 
+
 class FiniteRaytracingData(RaytracingData):
     @staticmethod
     def from_triangulation(triangulation, weights = None):
@@ -170,11 +171,13 @@ class FiniteRaytracingData(RaytracingData):
 # Helpers
 #
 
+
 _face_to_perm = {
     t3m.F0: t3m.Perm4((1,3,2,0)),
     t3m.F1: t3m.Perm4((0,2,3,1)),
     t3m.F2: t3m.Perm4((0,3,1,2)),
     t3m.F3: t3m.Perm4((0,1,2,3))}
+
 
 def _compute_face_pairing(tet, F):
     tet_perm = _face_to_perm[F]
@@ -186,9 +189,11 @@ def _compute_face_pairing(tet, F):
 
     return pgl2c_to_o13(_adjoint(other_m) * m)
 
+
 def _adjoint(m):
     return matrix([[ m[1,1],-m[0,1]],
                    [-m[1,0], m[0,0]]])
+
 
 _new_perm_edge_type_old_perm = [
     ((1, 0, 2, 3), 'alpha', t3m.Perm4((0, 1, 2, 3))),

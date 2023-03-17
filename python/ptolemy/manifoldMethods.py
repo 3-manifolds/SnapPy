@@ -80,8 +80,8 @@ def get_ptolemy_obstruction_classes(manifold):
             for index, H2_element
             in enumerate(H2_elements)]
 
-def get_generalized_ptolemy_obstruction_classes(manifold, N):
 
+def get_generalized_ptolemy_obstruction_classes(manifold, N):
     """
     See SnapPy.pyx for documentation
 
@@ -174,7 +174,6 @@ class PtolemyVarietyList(list):
 
 def get_ptolemy_variety(manifold, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
-
     """
     Generates Ptolemy variety as described in
     (1) Garoufalidis, Thurston, Zickert

@@ -15,6 +15,7 @@ unicode = str
 
 ### Definition of Monomial Class
 
+
 class Monomial():
 
     @classmethod
@@ -565,6 +566,7 @@ class Polynomial():
 ### The user will rewrite these for other types and supply to
 ### the respective methods of Monomial and Polynomial.
 
+
 def parse_int_coefficient(s):
     coeff, rest = re.match('([0-9]*)(.*)',s).groups()
     if coeff:
@@ -572,6 +574,7 @@ def parse_int_coefficient(s):
     else:
         coeff = None
     return coeff, rest
+
 
 def parse_int_or_fraction(s):
     m = re.match('([0-9]+/[0-9]+)(.*)',s)
@@ -655,6 +658,7 @@ def _operator_type_policy(obj_a, obj_b, op = operator.add):
 
 # Definitions of parsable operators and their precedence
 
+
 _operators = {
     '+' : operator.add,
     '-' : operator.sub,
@@ -670,10 +674,12 @@ _operator_precedence = {
     '^' : 3
     }
 
+
 def _apply_operator(op, l, r):
     return _operators[op](l,r)
 
 ### Helper functions for parsing
+
 
 def _coefficient_is_non_trivial(c):
 
@@ -681,6 +687,7 @@ def _coefficient_is_non_trivial(c):
         return c._monomials
 
     return not c == 0
+
 
 def _parse_variable(s):
     r = re.match(r'([_A-Za-z][_A-Za-z0-9]*)(.*)$',s)
@@ -690,6 +697,7 @@ def _parse_variable(s):
         return None, s
 
 ### Parsing function for Polynomial
+
 
 def _parse_polynomial_from_string(s, parse_coefficient_function):
 

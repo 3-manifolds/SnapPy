@@ -47,6 +47,7 @@ class SnapPyStyle:
         self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
+
 class ViewerWindow(Tk_.Toplevel):
     def __init__(self, view_class, *args, **kwargs):
         window_type = kwargs.pop('window_type', 'untyped')

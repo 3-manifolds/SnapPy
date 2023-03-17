@@ -32,11 +32,13 @@ the time component or being a time-like vector, respectively.
 
 """
 
+
 def r13_dot(u, v):
     """
     -+++ inner product of two 4-vectors.
     """
     return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
+
 
 def distance_unit_time_r13_points(u, v):
     """
@@ -58,6 +60,7 @@ def distance_unit_time_r13_points(u, v):
             d = RF(1)
     return d.arccosh()
 
+
 def time_r13_normalise(u):
     """
     Given a time-like vector in Minkowski space, returns the normalised
@@ -66,6 +69,7 @@ def time_r13_normalise(u):
 
     return u / (-r13_dot(u,u)).sqrt()
 
+
 def space_r13_normalise(u):
     """
     Given a space-like vector in Minkowski space, returns the normalised
@@ -73,6 +77,7 @@ def space_r13_normalise(u):
     """
 
     return u / r13_dot(u,u).sqrt()
+
 
 def o13_inverse(m):
     """
@@ -88,6 +93,7 @@ def o13_inverse(m):
     result[3,0] = -result[3,0]
 
     return result
+
 
 def unit_time_vector_to_o13_hyperbolic_translation(v):
     """
@@ -108,6 +114,7 @@ def unit_time_vector_to_o13_hyperbolic_translation(v):
 
     return matrix(m)
 
+
 def unnormalised_plane_eqn_from_r13_points(pts):
     """
     Given three (finite or ideal) points in the hyperboloid model
@@ -120,6 +127,7 @@ def unnormalised_plane_eqn_from_r13_points(pts):
                      _det_shifted_matrix3(pts, 1),
                    - _det_shifted_matrix3(pts, 2),
                      _det_shifted_matrix3(pts, 3)])
+
 
 def _det_shifted_matrix3(m, i):
     """

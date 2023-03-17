@@ -44,6 +44,7 @@ def check_peripheral_curves(tets):
                             if not a + b == 0:
                                 raise Exception("Peripheral curve not adding up.")
 
+
 def check_vertex_indices(tets):
     for tet in tets:
         for v in simplex.ZeroSubsimplices:
@@ -54,6 +55,7 @@ def check_vertex_indices(tets):
                         print("tet, v face:", tet, v, f)
                         print("index and other index:", index, tet.Neighbor[f].post_drill_infos, [tet.Gluing[f].image(v)])
                         raise Exception("Neighbors don't have same vertex.")
+
 
 def check_points_equal(v0, v1):
     RF = v0[0].parent()
@@ -67,6 +69,7 @@ def check_points_equal(v0, v1):
         if any(abs(x - y) > RF(1e-10) for x, y in zip(v0, v1)):
             raise Exception("Different time-like:", v0, v1)
 
+
 def check_points_consistency(m):
     for tet in m.Tetrahedra:
         for F in simplex.TwoSubsimplices:
@@ -75,6 +78,7 @@ def check_points_consistency(m):
                     check_points_equal(
                         tet.O13_matrices[F] * tet.R13_vertices[V],
                         tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)])
+
 
 def check_edge_consistency(m):
     RF = m.Tetrahedra[0].O13_matrices[simplex.F0].base_ring()
@@ -89,6 +93,7 @@ def check_edge_consistency(m):
             for j in range(4):
                 if abs(t[i,j]) > RF(1e-10):
                     raise Exception("Edge not gluing up")
+
 
 def check_geodesic1(tets):
     RF = tets[0].O13_matrices[simplex.F0].base_ring()
@@ -107,10 +112,12 @@ def check_geodesic1(tets):
                     if abs(r13_dot(ptInClass.r13_point, tet.R13_planes[ptInClass.subsimplex])) > RF(1e-10):
                         raise Exception("Point not on plane")
 
+
 def check_consistency(mcomplex):
     check_edge_consistency(mcomplex)
     check_points_consistency(mcomplex)
     check_geodesic1(mcomplex.Tetrahedra)
+
 
 def check_consistency_segments(segments):
     for i in range(len(segments)):
@@ -130,6 +137,7 @@ def check_consistency_segments(segments):
                 s0.tet.O13_matrices[s0.endpoints[1].subsimplex] * s0.endpoints[1].r13_point,
                 s1.endpoints[0].r13_point)
 
+
 def print_cell(f):
     if f in simplex.ZeroSubsimplices:
         return "V"
@@ -138,6 +146,7 @@ def print_cell(f):
     if f == simplex.T:
         return "T"
     raise Exception("BLAH")
+
 
 def output_linked(x, tets_set):
     y = x
@@ -172,6 +181,7 @@ def output_linked(x, tets_set):
     print()
     print()
 
+
 def flatten_link_list(x):
     y = x
     l = []
@@ -180,6 +190,7 @@ def flatten_link_list(x):
         y = y.next_
         if x is y:
             return l
+
 
 def check_consistency_2(piece):
     tets = _find_all_tetrahedra(piece.tet)

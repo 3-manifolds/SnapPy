@@ -19,6 +19,7 @@ from math import sqrt
 
 __all__ = ['IdealRaytracingData']
 
+
 class IdealRaytracingData(RaytracingData):
     """
     Given a SnapPy manifold, computes data for the shader fragment.glsl
@@ -365,6 +366,7 @@ class IdealRaytracingData(RaytracingData):
                  0.0)),
             _cusp_view_scale(tet, subsimplex, area))
 
+
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
         super(NonGeometricRaytracingData, self).__init__(mcomplex)
@@ -400,6 +402,7 @@ class NonGeometricRaytracingData(McomplexEngine):
         boost = boost * m
         return boost, tet_num, weight
 
+
 def _pgl2_matrix_for_face(tet, F):
     gluing = tet.Gluing[F]
     other_tet = tet.Neighbor[F]
@@ -417,8 +420,10 @@ def _pgl2_matrix_for_face(tet, F):
 
     return m2 * sl2c_inverse(m1)
 
+
 def _o13_matrix_for_face(tet, F):
     return pgl2c_to_o13(_pgl2_matrix_for_face(tet, F))
+
 
 def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
@@ -452,6 +457,7 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
     return log_z0, vertex_positions
 
+
 def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
 
@@ -474,6 +480,7 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
         pgl2c_to_o13(         std_to_tet * cusp_to_std),
         pgl2c_to_o13(sl2c_inverse(std_to_tet * cusp_to_std)))
 
+
 def _compute_margulis_tube_ends(tet, vertex):
 
     if tet.Class[vertex].is_complete:
@@ -481,6 +488,7 @@ def _compute_margulis_tube_ends(tet, vertex):
 
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
+
 
 def _cusp_view_matrix(tet, subsimplex, area):
     # Complex numbers encoding translation of horosphere corresponding
@@ -525,6 +533,7 @@ def _cusp_view_matrix(tet, subsimplex, area):
 
     return o13_matrix
 
+
 def _cusp_view_scale(tet, subsimplex, area):
     # Complex numbers encoding translation of horosphere corresponding
     # to meridian and longitude. Here, the horosphere maps to the
@@ -539,6 +548,7 @@ def _cusp_view_scale(tet, subsimplex, area):
             m_translation.imag())
 
     return area.sqrt() * t
+
 
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:

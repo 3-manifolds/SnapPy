@@ -11,6 +11,7 @@ from . import pl_utils
 from .rational_linear_algebra import QQ, Matrix, Vector3
 from .exceptions import GeneralPositionError
 
+
 def fig8_points():
     # Extracted from put_in_S3.example10, used for testing.
     pts = [(1564, 148, 0, 1117), (765, 1137, 786, 1117), (1117, 1882, 1490, 1117),

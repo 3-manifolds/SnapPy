@@ -326,16 +326,16 @@ class ManifoldTable():
         Return all manifolds in the census which have the same hash value.
         """
         vol = mfld.volume()
-        epsilon = vol/1e5
+        epsilon = vol / 1e5
         v_lower, v_upper = vol - epsilon, vol + epsilon
         cusps = mfld.cusp_info('is_complete').count(True)
         H = mfld.homology()
         betti = H.betti_number()
         torsion = [c for c in H.elementary_divisors() if c != 0]
-        initial_candidates = self.find(
-          "volume between %f and %f and cusps=%d and betti=%d and torsion='%s'"
-          % (v_lower, v_upper, cusps, betti, torsion))
-        if len(initial_candidates) == 0:
+        txt = "volume between %f and %f and cusps=%d and betti=%d and torsion='%s'"
+        initial_candidates = self.find(txt % (v_lower, v_upper, cusps,
+                                              betti, torsion))
+        if not initial_candidates:
             return []
         return self.find("hash = '%s'" % self.mfld_hash(mfld))
 

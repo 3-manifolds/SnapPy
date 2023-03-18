@@ -1,4 +1,4 @@
-#$Id: arrow.py,v 1.3 2003/04/30 19:59:58 t3m Exp $
+# $Id: arrow.py,v 1.3 2003/04/30 19:59:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

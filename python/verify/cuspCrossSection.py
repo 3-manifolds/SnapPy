@@ -247,11 +247,11 @@ class ComplexHoroTriangle:
             return logZ + ((lifted_position - logZ) / twoPi).imag().round() * twoPi * I
 
         self.lifted_vertex_positions = {
-                # Take log of vertex position (assuming fixed point
-                # is at origin).
-                edge : adjust_log(position)
-                for edge, position in self.vertex_positions.items()
-            }
+            # Take log of vertex position
+            # (assuming fixed point is at origin).
+            edge: adjust_log(position)
+            for edge, position in self.vertex_positions.items()
+        }
 
 
 class CuspCrossSectionBase(McomplexEngine):

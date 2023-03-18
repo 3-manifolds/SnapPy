@@ -413,7 +413,7 @@ def barycentric_edge_embedding(arrow, north_pole=None):
     return ans
 
 
-#arrow, tail, head, opp_tail, opp_head
+# arrow, tail, head, opp_tail, opp_head
 def barycentric_quad_embedding0(arrow, north_pole=None):
     """
     Take an arrow with 4 valent axis, then build embedding of the

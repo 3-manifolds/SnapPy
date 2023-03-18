@@ -109,7 +109,7 @@ def refill_and_adjust_peripheral_curves(
     manifold.dehn_fill([ info.filling for info in post_drill_infos])
 
     for info in post_drill_infos:
-        if not info.peripheral_matrix is None:
+        if info.peripheral_matrix is not None:
             manifold.set_peripheral_curves(
                 info.peripheral_matrix, which_cusp = info.index)
 

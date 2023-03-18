@@ -181,9 +181,9 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
     # real equations Re(p(x+y*I)) = 0, Im(p(x+y*I)) = 0.
     # equations are sage symbolic expressions in x and y.
     equations = [
-      _real_or_imaginary_part_for_polynomial_in_complex_variable(
-          number_field.defining_polynomial(), start)
-      for start in [0, 1]]
+        _real_or_imaginary_part_for_polynomial_in_complex_variable(
+            number_field.defining_polynomial(), start)
+        for start in [0, 1]]
 
     # In _solve_two_equations, we implemented a method that can solve
     # a system of two polynomial equations in two variables x and y

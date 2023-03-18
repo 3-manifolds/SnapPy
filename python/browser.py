@@ -20,7 +20,7 @@ except:
 
 
 main_window = None
-#TODO:  Find these dimensions by introspection.
+# TODO:  Find these dimensions by introspection.
 cusp_box_height = 105
 if sys.platform == 'darwin':
     cusp_box_width = 180
@@ -406,7 +406,7 @@ class Browser(Tk_.Toplevel):
             height=6, show='headings', selectmode='none',
             columns=['mult', 'length', 'topology', 'parity'],
             )
-        #TODO: compute column widths by measuring text.
+        # TODO: compute column widths by measuring text.
         geodesics.heading('mult', text='Mult.')
         geodesics.column('mult', stretch=False, width=60)
         geodesics.heading('length', text='Complex Length')

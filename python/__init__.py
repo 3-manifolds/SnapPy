@@ -1,7 +1,7 @@
 # import the SnapPy bindings
-#import logging
-#logging.basicConfig(filename='example.log',level=logging.DEBUG)
-#logging.debug('This message should go to the log file')
+# import logging
+# logging.basicConfig(filename='example.log',level=logging.DEBUG)
+# logging.debug('This message should go to the log file')
 import sys
 from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,

@@ -16,31 +16,31 @@ def _move_left(rot_amount, trans_amount):
 def _move_right(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [ RF(+1),  RF(0),  RF(0) ], trans_amount) # d
+        [ RF(+1), RF(0), RF(0) ], trans_amount) # d
 
 
 def _move_up(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0), RF(+1),  RF(0) ], trans_amount) # e
+        [  RF(0), RF(+1), RF(0) ], trans_amount) # e
 
 
 def _move_down(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0), RF(-1),  RF(0) ], trans_amount) # c
+        [  RF(0), RF(-1), RF(0) ], trans_amount) # c
 
 
 def _move_forward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0),  RF(0), RF(-1) ], trans_amount) # w
+        [  RF(0), RF(0), RF(-1) ], trans_amount) # w
 
 
 def _move_backward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0),  RF(0), RF(+1) ], trans_amount) # s
+        [  RF(0), RF(0), RF(+1) ], trans_amount) # s
 
 
 def _turn_left(rot_amount, trans_amount):

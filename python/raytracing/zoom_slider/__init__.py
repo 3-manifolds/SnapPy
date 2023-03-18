@@ -108,7 +108,7 @@ class ZoomSlider(ttk.Frame):
 
         padding_cheat = -6 if (sys.platform == 'darwin') else 0
 
-        if not label_text is None:
+        if label_text is not None:
             self.title_label = ttk.Label(self, text=label_text, padding=label_pad)
             col_base = 1
             self.columnconfigure(0, weight=0)

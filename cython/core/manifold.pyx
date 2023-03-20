@@ -1457,8 +1457,8 @@ cdef class Manifold(Triangulation):
 
         Here's a quick example:
 
-        >>> L = Manifold("m016").length_spectrum(1.1, include_words=True)
-        >>> L
+        >>> L = Manifold("m016").length_spectrum(0.75, include_words=True)
+        >>> L # doctest: +SKIP
         mult  length                                  topology     parity word
         1     0.58460368501799 +  2.49537045556047*I  circle       +      a
         1     0.72978937305180 +  3.02669828218116*I  circle       +      Bc

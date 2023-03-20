@@ -1,0 +1,48 @@
+name: Windows Wheels
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          python-version: '3.8'
+
+      - name: Install cibuildwheel
+        run: |
+          python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: |
+          python -m cibuildwheel --output-dir wheelhouse
+        env:
+          # Skip Python 2.7, 3.5, 3.11, and PyPy
+          CIBW_SKIP: cp27-* cp35-* pp*
+          CIBW_BEFORE_BUILD: >
+            pip install cython sphinx FXrays &&
+            pip install --index-url https://test.pypi.org/simple cypari &&
+            pip install git+https://github.com/3-manifolds/PLink &&
+            pip install git+https://github.com/3-manifolds/snappy_manifolds &&
+            pip install git+https://github.com/3-manifolds/Spherogram &&
+            pip install git+https://github.com/3-manifolds/low_index
+          CIBW_BEFORE_TEST: >
+            pip install cython &&
+            pip install git+https://github.com/3-manifolds/PLink &&
+            pip install git+https://github.com/3-manifolds/snappy_manifolds &&
+            pip install git+https://github.com/3-manifolds/Spherogram &&
+            pip install git+https://github.com/3-manifolds/low_index
+          CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl

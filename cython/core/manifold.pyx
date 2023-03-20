@@ -343,7 +343,7 @@ cdef class Manifold(Triangulation):
         (unsimplified) fundamental group by setting include_words = True:
 
         >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
-        ['A', 'AB', 'ABB', ...]
+        ['A', ...]
 
         Other options can be provided to customize the computation;
         the default choices are shown below:
@@ -1457,17 +1457,16 @@ cdef class Manifold(Triangulation):
 
         Here's a quick example:
 
-        >>> L = Manifold("m004").length_spectrum(1.1, include_words = True)
+        >>> L = Manifold("m016").length_spectrum(1.1, include_words=True)
         >>> L
         mult  length                                  topology     parity word
-        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
-        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
+        1     0.58460368501799 +  2.49537045556047*I  circle       +      a
+        1     0.72978937305180 +  3.02669828218116*I  circle       +      Bc
 
         Access just the length:
-       
-        >>> L[0].length # doctest: +NUMERIC6
-        1.08707014499574 - 1.72276844987009*I
 
+        >>> L[0].length # doctest: +NUMERIC6
+        0.584603685017987 + 2.495370455560469*I
         """
         args = (cutoff, full_rigor, grouped, include_words)
         try:

@@ -151,6 +151,7 @@ def sign_app():
         for name in filenames:
             base, ext = os.path.splitext(name)
             if ext in ('.so', '.dylib'):
+                print('Signing', os.path.join(dirpath, name))
                 sign(os.path.join(dirpath, name))
     sign(app)
 

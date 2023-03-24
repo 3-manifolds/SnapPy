@@ -34,7 +34,7 @@ def tetrahedra_field_gens(manifold):
 
 
 @sage_method
-def trace_field_gens(manifold, fundamental_group_args = []):
+def trace_field_gens(manifold, fundamental_group_args=[]):
     """
     The generators of the trace field as ApproximateAlgebraicNumbers. Can be
     used to compute the tetrahedra field, where the first two parameters
@@ -54,7 +54,7 @@ def trace_field_gens(manifold, fundamental_group_args = []):
 
 
 @sage_method
-def invariant_trace_field_gens(manifold, fundamental_group_args = []):
+def invariant_trace_field_gens(manifold, fundamental_group_args=[]):
     """
     The generators of the trace field as ApproximateAlgebraicNumbers. Can be
     used to compute the tetrahedra field, where the first two parameters
@@ -74,8 +74,8 @@ def invariant_trace_field_gens(manifold, fundamental_group_args = []):
 
 @sage_method
 def holonomy_matrix_entries(manifold,
-                            fundamental_group_args = [],
-                            match_kernel = True):
+                            fundamental_group_args=[],
+                            match_kernel=True):
     """
     The entries of the matrices of the holonomy as list of ApproximateAlgebraicNumbers
     (four consecutive numbers per matrix). The numbers are guaranteed to lie in the
@@ -93,8 +93,8 @@ def holonomy_matrix_entries(manifold,
     def func(prec):
         G = polished_holonomy(manifold,
                               prec,
-                              fundamental_group_args = fundamental_group_args,
-                              match_kernel = match_kernel)
+                              fundamental_group_args=fundamental_group_args,
+                              match_kernel=match_kernel)
         return sum( [G.SL2C(g).list() for g in G.generators()], [])
     return ListOfApproximateAlgebraicNumbers(func)
 

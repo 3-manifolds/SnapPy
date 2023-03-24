@@ -122,7 +122,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
             return self.type
 
     @staticmethod
-    def identity(ring, n = 0):
+    def identity(ring, n=0):
         return SimpleMatrix(
             [[ 1 if i == j else 0
                for i in range(n) ]
@@ -302,7 +302,7 @@ else:
     vector = SimpleVector
 
 
-def mat_solve(m, v, epsilon = 0):
+def mat_solve(m, v, epsilon=0):
     """
     Given a matrix m and a vector v, return the vector a such that
     v = m * a - computed using Gaussian elimination.
@@ -429,7 +429,7 @@ def mat_solve(m, v, epsilon = 0):
             pivots = [ (j, m1[j][i].abs())
                        for j in range(i, dim0)]
 
-        max_index, max_val = max(pivots, key = lambda x:x[1])
+        max_index, max_val = max(pivots, key=lambda x:x[1])
 
         if not max_val > epsilon:
             raise ZeroDivisionError

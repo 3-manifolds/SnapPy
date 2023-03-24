@@ -168,7 +168,7 @@ def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     failed, attempted = 0, 0
     for module in modules:
         if isinstance(module, types.ModuleType):
-            runner = doctest.DocTestRunner(checker = NumericOutputChecker(), verbose=verbose)
+            runner = doctest.DocTestRunner(checker=NumericOutputChecker(), verbose=verbose)
             for test in finder.find(module, extraglobs=full_extraglobals):
                 runner.run(test)
             result = runner.summarize()

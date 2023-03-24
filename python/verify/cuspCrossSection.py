@@ -259,7 +259,7 @@ class CuspCrossSectionBase(McomplexEngine):
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
     """
 
-    def add_structures(self, one_cocycle = None):
+    def add_structures(self, one_cocycle=None):
         self._add_edge_dict()
         self._add_cusp_cross_sections(one_cocycle)
 
@@ -351,7 +351,7 @@ class CuspCrossSectionBase(McomplexEngine):
         for cusp, scale in zip(self.mcomplex.Vertices, scales):
             CuspCrossSectionBase._scale_cusp(cusp, scale)
 
-    def normalize_cusps(self, areas = None):
+    def normalize_cusps(self, areas=None):
         """
         Scale cusp so that they have the given target area.
         Without argument, each cusp is scaled to have area 1.
@@ -559,7 +559,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
-    def ensure_std_form(self, allow_scaling_up = False):
+    def ensure_std_form(self, allow_scaling_up=False):
         """
         Makes sure that the cusp neighborhoods intersect each tetrahedron
         in standard form by scaling the cusp neighborhoods down if necessary.
@@ -983,7 +983,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
     HoroTriangle = ComplexHoroTriangle
 
     @staticmethod
-    def fromManifoldAndShapes(manifold, shapes, one_cocycle = None):
+    def fromManifoldAndShapes(manifold, shapes, one_cocycle=None):
         if not one_cocycle:
             for cusp_info in manifold.cusp_info():
                 if not cusp_info['complete?']:
@@ -1204,7 +1204,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     active.append( (tet1, vert1) )
                     visited.add((tet1.Index, vert1))
 
-    def _debug_show_horotriangles(self, cusp = 0):
+    def _debug_show_horotriangles(self, cusp=0):
         from sage.all import line, real, imag
 
         self.add_vertex_positions_to_horotriangles()
@@ -1218,7 +1218,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
               for z1 in h.vertex_positions.values()
               if tet.Class[V].Index == cusp ])
 
-    def _debug_show_lifted_horotriangles(self, cusp = 0):
+    def _debug_show_lifted_horotriangles(self, cusp=0):
         from sage.all import line, real, imag
 
         self.add_vertex_positions_to_horotriangles()
@@ -1284,7 +1284,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         # Compute z, p0, p1 for each horotriangle, vertex and edge and pick
         # the one where z is furthest away from one.
         dummy, z, p0, p1 = max(self._compute_cusp_fixed_point_data(cusp),
-                               key = lambda d: d[0])
+                               key=lambda d: d[0])
 
         # Compute fixed point
         return (p1 - z * p0) / (1 - z)

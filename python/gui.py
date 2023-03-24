@@ -65,7 +65,7 @@ class ViewerWindow(Tk_.Toplevel):
     def _get_root(self, window_type):
         if Tk_._default_root:
             return Tk_._default_root
-        root = IPythonTkRoot(window_type = window_type)
+        root = IPythonTkRoot(window_type=window_type)
         root.withdraw()
         return root
 
@@ -80,8 +80,8 @@ class ViewerWindow(Tk_.Toplevel):
             parent=self,
             mode='wb',
             title='Save Image As PNG Image File',
-            defaultextension = '.png',
-            filetypes = [
+            defaultextension='.png',
+            filetypes=[
                 ("PNG image files", "*.png *.PNG", ""),
                 ("All files", "")])
         view.widget.redraw_if_initialized()

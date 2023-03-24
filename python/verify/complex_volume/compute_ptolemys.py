@@ -13,7 +13,7 @@ def _ptolemy_coordinate_key(tet_index, edge):
 
 
 def lifted_ptolemys_from_cross_section(cusp_cross_section,
-                                       lifted_one_cocycle = None):
+                                       lifted_one_cocycle=None):
     """
     Given a cusp cross section, compute lifted Ptolemy coordinates
     (i.e., logarithms of the Ptolemy coordinates) returned as a dictionary

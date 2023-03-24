@@ -136,7 +136,7 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
 
     # The generator of the shape field as the desired return type
     exact_complex_root = ComplexSqrtLinCombination(real_part, imag_part,
-                                                   embed_cache = embed_cache)
+                                                   embed_cache=embed_cache)
 
     # All shapes are given as polynomials in the generator,
     # so translate them to be of the desired return type
@@ -244,7 +244,7 @@ class SqrtLinCombination():
 
     """
 
-    def __init__(self, value = None, d = {}, embed_cache = None):
+    def __init__(self, value=None, d={}, embed_cache=None):
         # Initialize from either a value or a dictionary
 
         #    c_1 * sqrt(r_1) + c_2 * sqrt(r_2) + ... + c_n * sqrt(r_n)
@@ -276,7 +276,7 @@ class SqrtLinCombination():
         # Try to convert other term to SqrtLinCombination if necessary
         if not isinstance(other, SqrtLinCombination):
             return self + SqrtLinCombination(
-                other, embed_cache = _get_embed_cache(self, other))
+                other, embed_cache=_get_embed_cache(self, other))
 
         # Add
         d = {}
@@ -285,14 +285,14 @@ class SqrtLinCombination():
         for k, v in other._dict.items():
             d[k] = d.get(k, 0) + v
         return SqrtLinCombination(
-            d = d,
-            embed_cache = _get_embed_cache(self, other))
+            d=d,
+            embed_cache=_get_embed_cache(self, other))
 
     def __neg__(self):
         # Negate
         return SqrtLinCombination(
-            d = dict( (k, -v) for k, v in self._dict.items() ),
-            embed_cache = self._embed_cache)
+            d=dict( (k, -v) for k, v in self._dict.items() ),
+            embed_cache=self._embed_cache)
 
     def __sub__(self, other):
         # Subtract
@@ -303,7 +303,7 @@ class SqrtLinCombination():
         if not isinstance(other, SqrtLinCombination):
             return self * SqrtLinCombination(
                 other,
-                embed_cache = _get_embed_cache(self, other))
+                embed_cache=_get_embed_cache(self, other))
 
         # Result
         d = {}
@@ -327,7 +327,7 @@ class SqrtLinCombination():
                     m = k1 * k2
                     d[m] = d.get(m, 0) + p
         return SqrtLinCombination(
-            d = d, embed_cache = _get_embed_cache(self, other))
+            d=d, embed_cache=_get_embed_cache(self, other))
 
     def inverse(self):
         # The inverse element of                c_1 * sqrt(r_1)
@@ -344,14 +344,14 @@ class SqrtLinCombination():
         # Iteration over the only term
         for k, v in self._dict.items():
             return SqrtLinCombination(
-                d = { k : 1 / (v * k) },
-                embed_cache = self._embed_cache)
+                d={ k : 1 / (v * k) },
+                embed_cache=self._embed_cache)
 
     def __div__(self, other):
         # Try to convert other term to SqrtLinCombination if necessary
         if not isinstance(other, SqrtLinCombination):
             return self / SqrtLinCombination(
-                other, embed_cache = _get_embed_cache(self, other))
+                other, embed_cache=_get_embed_cache(self, other))
         return self * other.inverse()
 
     def __truediv__(self, other):
@@ -378,7 +378,7 @@ class SqrtLinCombination():
         if l == 0:
             # sqrt of 0
             return SqrtLinCombination(
-                embed_cache = self._embed_cache)
+                embed_cache=self._embed_cache)
         if l == 1:
             # Iterate through only term
             for k, v in self._dict.items():
@@ -387,8 +387,8 @@ class SqrtLinCombination():
                     raise TypeError('SqrtLinCombination sqrt not fully '
                                     'implemented')
                 return SqrtLinCombination(
-                    d = { v: _One},
-                    embed_cache = self._embed_cache)
+                    d={ v: _One},
+                    embed_cache=self._embed_cache)
         raise TypeError('SqrtLinCombination sqrt not fully implemented')
 
     def __repr__(self):
@@ -509,20 +509,20 @@ class ComplexSqrtLinCombination():
     ``abs``, ``conjugate()`` and ``==``.
     """
 
-    def __init__(self, real, imag = 0, embed_cache = None):
+    def __init__(self, real, imag=0, embed_cache=None):
         if isinstance(real, SqrtLinCombination):
             self._real = real
         else:
             self._real = SqrtLinCombination(
                 real,
-                embed_cache = embed_cache)
+                embed_cache=embed_cache)
 
         if isinstance(imag, SqrtLinCombination):
             self._imag = imag
         else:
             self._imag = SqrtLinCombination(
                 imag,
-                embed_cache = embed_cache)
+                embed_cache=embed_cache)
 
     def __repr__(self):
         return "ComplexSqrtLinCombination(%r, %r)" % (self._real, self._imag)
@@ -635,7 +635,7 @@ class _SqrtException(Exception):
 
 
 class _FactorizedSqrtLinCombination():
-    def __init__(self, d = {}, embed_cache = None):
+    def __init__(self, d={}, embed_cache=None):
         #       c_1 * sqrt(r_{1,1}) * sqrt(r_{1,2}) * ... * sqrt(r_{1,k_1})
         #     + c_2 * sqrt(r_{2,1}) * sqrt(r_{2,2}) * ... * sqrt(r_{2,k_2})
         #     + ...
@@ -703,7 +703,7 @@ class _FactorizedSqrtLinCombination():
 
         return _FactorizedSqrtLinCombination(dict(
             (to_set(k), v) for k, v in l._dict.items()),
-            embed_cache = l._embed_cache)
+            embed_cache=l._embed_cache)
 
     def __add__(self, other):
         # Add
@@ -714,12 +714,12 @@ class _FactorizedSqrtLinCombination():
             d[k] = d.get(k, 0) + v
         return _FactorizedSqrtLinCombination(
             d,
-            embed_cache = _get_embed_cache(self, other))
+            embed_cache=_get_embed_cache(self, other))
 
     def __neg__(self):
         return _FactorizedSqrtLinCombination(
             dict((k, -v) for k, v in self._dict.items()),
-            embed_cache = self._embed_cache)
+            embed_cache=self._embed_cache)
 
     def __sub__(self, other):
         return self + (-other)
@@ -744,7 +744,7 @@ class _FactorizedSqrtLinCombination():
                 v = v1 * v2 * prod(k1 & k2, _One)
                 d[k] = d.get(k, 0) + v
         return _FactorizedSqrtLinCombination(
-            d, embed_cache = _get_embed_cache(self, other))
+            d, embed_cache=_get_embed_cache(self, other))
 
     def is_zero(self):
         """
@@ -775,10 +775,10 @@ class _FactorizedSqrtLinCombination():
         # Split the summands into "left" and "right"
         left = _FactorizedSqrtLinCombination(
             dict( (k, v) for k, v in d.items() if term in k ),
-            embed_cache = self._embed_cache)
+            embed_cache=self._embed_cache)
         right = _FactorizedSqrtLinCombination(
             dict( (k, v) for k, v in d.items() if term not in k),
-            embed_cache = self._embed_cache)
+            embed_cache=self._embed_cache)
 
         # Check left^2 - right^2 == 0
         if not (left * left - right * right).is_zero():
@@ -959,7 +959,7 @@ def _get_interval_embedding_from_cache(nf, RIF, cache):
     return interval
 
 
-def _to_RIF(x, RIF, embed_cache = None):
+def _to_RIF(x, RIF, embed_cache=None):
     """
     Given a Sage Integer, Rational or an element x in a
     Sage NumberField with a real embedding and an instance

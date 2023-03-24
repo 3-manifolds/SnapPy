@@ -126,7 +126,7 @@ class ApproximateAlgebraicNumber():
             raise ValueError('Minimal polynomial is not known.')
         q = p.change_ring(QQ)
         q = (1/q.leading_coefficient())*q
-        return NumberField(q, 'z', embedding = self._approx_root)
+        return NumberField(q, 'z', embedding=self._approx_root)
 
     def place(self, prec):
         K = self.number_field()
@@ -241,7 +241,7 @@ class ListOfApproximateAlgebraicNumbers():
             ans.append(p)
         return ans
 
-    def _find_field_uncached(self, prec, degree, verbosity = False):
+    def _find_field_uncached(self, prec, degree, verbosity=False):
         # Works similar to snap's field::generated_by
         #
         # The input elts is a list of approximate algebraic numbers (i.e., high
@@ -329,7 +329,7 @@ class ListOfApproximateAlgebraicNumbers():
         exact_elts = [field(exact_elt) for exact_elt in exact_elts]
         return field, z, exact_elts
 
-    def find_field(self, prec, degree, optimize=False, verbosity = False):
+    def find_field(self, prec, degree, optimize=False, verbosity=False):
 
         # Adding verbosity for now to debug potential problems
 

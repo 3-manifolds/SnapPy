@@ -298,9 +298,9 @@ class GeodesicTube:
         # Emit GeodesicTubePiece
         self.pieces.append(
             GeodesicTubePiece(
-                tet = tet,
-                lifted_geodesic = lifted_geodesic,
-                lower_bound = pending_piece.lower_bound))
+                tet=tet,
+                lifted_geodesic=lifted_geodesic,
+                lower_bound=pending_piece.lower_bound))
 
         # For all faces ...
         for f, new_tet in tet.Neighbor.items():
@@ -323,7 +323,7 @@ class GeodesicTube:
                         tet,
                         f,
                         self.mcomplex.verified),
-                    entry_cell = entry_face))
+                    entry_cell=entry_face))
 
 
 def make_r13_unit_tangent_vector(direction, point):
@@ -390,7 +390,7 @@ if __name__ == '__main__':
     from snappy import *
     from snappy.dev.endpoints import *
     M = Manifold("m015")
-    m = compute_mcomplex_with_R13_geometry(M, verified = True, bits_prec=100)
+    m = compute_mcomplex_with_R13_geometry(M, verified=True, bits_prec=100)
 
     g = GeodesicTube(m, 'b')
 

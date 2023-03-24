@@ -210,8 +210,8 @@ class IntervalNewtonShapesEngine:
 
     @staticmethod
     def newton_iteration(equations, shape_intervals,
-                         point_in_intervals = None,
-                         interval_value_at_point = None):
+                         point_in_intervals=None,
+                         interval_value_at_point=None):
         """
         Perform a Newton interval method of iteration for
         the function f described in log_gluing_LHSs.
@@ -326,8 +326,8 @@ class IntervalNewtonShapesEngine:
 
     @staticmethod
     def certified_newton_iteration(equations, shape_intervals,
-                                   point_in_intervals = None,
-                                   interval_value_at_point = None):
+                                   point_in_intervals=None,
+                                   interval_value_at_point=None):
         """
         Given shape intervals z, performs a Newton interval iteration N(z)
         as described in newton_iteration. Returns a pair (boolean, N(z)) where
@@ -379,15 +379,15 @@ class IntervalNewtonShapesEngine:
 
         new_shapes = IntervalNewtonShapesEngine.newton_iteration(
             equations, shape_intervals,
-            point_in_intervals = point_in_intervals,
-            interval_value_at_point = interval_value_at_point)
+            point_in_intervals=point_in_intervals,
+            interval_value_at_point=interval_value_at_point)
         return (
             IntervalNewtonShapesEngine.interval_vector_is_contained_in(
                 new_shapes, shape_intervals),
             new_shapes)
 
     @sage_method
-    def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
+    def __init__(self, M, initial_shapes, bits_prec=None, dec_prec=None):
         """
         Initializes the IntervalNewtonShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
@@ -456,7 +456,7 @@ class IntervalNewtonShapesEngine:
         # Shapes have not been certified yet
         self.certified_shapes = None
 
-    def expand_until_certified(self, verbose = False):
+    def expand_until_certified(self, verbose=False):
         """
         Try Newton interval iterations, expanding the shape intervals
         until we can certify they contain a true solution.
@@ -494,9 +494,8 @@ class IntervalNewtonShapesEngine:
                 is_certified, shapes = (
                     IntervalNewtonShapesEngine.certified_newton_iteration(
                         self.equations, shapes,
-                        point_in_intervals = self.initial_shapes,
-                        interval_value_at_point =
-                            interval_value_at_initial_shapes))
+                        point_in_intervals=self.initial_shapes,
+                        interval_value_at_point=interval_value_at_initial_shapes))
             except ZeroDivisionError:
                 if verbose:
                     print("Division by zero in interval Gaussian elimination")

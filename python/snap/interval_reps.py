@@ -42,7 +42,7 @@ def could_be_equal(A, B):
 
 
 def holonomy_from_shape_intervals(manifold, shape_intervals,
-                                  fundamental_group_args = [], lift_to_SL2 = True):
+                                  fundamental_group_args=[], lift_to_SL2=True):
     """
     Returns the representation
 
@@ -72,8 +72,8 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
     f = FundamentalPolyhedronEngine.from_manifold_and_shapes(
-        M, shape_intervals, normalize_matrices = True)
-    mats = f.matrices_for_presentation(G, match_kernel = True)
+        M, shape_intervals, normalize_matrices=True)
+    mats = f.matrices_for_presentation(G, match_kernel=True)
     PG = ManifoldGroup(G.generators(), G.relators(),
                        G.peripheral_curves(), mats)
     if lift_to_SL2:

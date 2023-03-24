@@ -31,8 +31,8 @@ def r13_fixed_points_of_psl2c_matrix(m):
         if e0 > e1:
             return _r13_fixed_points_of_psl2c_matrix(m)
 
-    t = matrix([[ 1, 0],[ 1, 1]], ring = m.base_ring())
-    tinv = matrix([[ 1, 0],[-1, 1]], ring = m.base_ring())
+    t = matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
+    tinv = matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
 
     pts = _r13_fixed_points_of_psl2c_matrix(tinv * m * t)
     o13_t = psl2c_to_o13(t)

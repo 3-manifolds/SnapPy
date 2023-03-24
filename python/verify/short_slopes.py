@@ -49,7 +49,7 @@ def short_slopes_from_cusp_shape_and_area(
 
 
 def translations_from_cusp_shape_and_area(
-        cusp_shape, cusp_area, kernel_convention = False):
+        cusp_shape, cusp_area, kernel_convention=False):
     """
     Unfortunately, the short_slopes_from_translations uses the convention
     that the longitude translation is real whereas the SnapPea kernel and

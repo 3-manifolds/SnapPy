@@ -319,13 +319,13 @@ class NumericOutputChecker(doctest.OutputChecker):
             return base_result + '\nReason for failure: ' + compare_result + '\n'
 
 
-def run_doctests(verbose = False):
+def run_doctests(verbose=False):
     failed, attempted = 0, 0
 
     finder = doctest.DocTestFinder()
 
     # Use the default docTest.OutputChecker to test our NumericOutputChecker
-    runner = doctest.DocTestRunner(verbose = verbose)
+    runner = doctest.DocTestRunner(verbose=verbose)
     for test in finder.find(NumericOutputChecker):
         runner.run(test)
     result = runner.summarize()
@@ -333,7 +333,7 @@ def run_doctests(verbose = False):
     attempted += result.attempted
 
     # Test our NumericOutputChecker in action!
-    runner = doctest.DocTestRunner(checker = NumericOutputChecker(), verbose = verbose)
+    runner = doctest.DocTestRunner(checker=NumericOutputChecker(), verbose=verbose)
     for test in finder.find(NumericExample):
         runner.run(test)
         result = runner.summarize()

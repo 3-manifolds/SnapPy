@@ -26,15 +26,15 @@ class PolyhedronViewer(ttk.Frame):
         self.model_var = Tk_.StringVar(self, value='Klein')
         self.sphere_var = Tk_.IntVar(self, value=1)
         self.klein = ttk.Radiobutton(topframe, text='Klein',
-                                     variable = self.model_var,
+                                     variable=self.model_var,
                                      value='Klein',
                                      command=self.new_model)
         self.poincare = ttk.Radiobutton(topframe, text='Poincaré',
-                                        variable = self.model_var,
+                                        variable=self.model_var,
                                         value='Poincare',
                                         command=self.new_model)
         self.sphere = ttk.Checkbutton(topframe, text='',
-                                      variable = self.sphere_var,
+                                      variable=self.sphere_var,
                                       command=self.new_model)
         self.spherelabel = spherelabel = Tk_.Text(topframe, height=1, width=3,
                                                   relief=Tk_.FLAT,
@@ -57,11 +57,11 @@ class PolyhedronViewer(ttk.Frame):
         spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
         self.widget = widget = OpenGLPerspectiveWidget(bottomframe,
-                                                       width = 600,
-                                                       height = 500,
-                                                       double = 1,
-                                                       depth = 1,
-                                                       help = """
+                                                       width=600,
+                                                       height=500,
+                                                       double=1,
+                                                       depth=1,
+                                                       help="""
 Use mouse button 1 to rotate the polyhedron.
 
 Releasing the button while moving will "throw" the polyhedron and make it keep spinning.
@@ -98,18 +98,18 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
-        help = ttk.Button(self.topframe, text = 'Help', width = 4,
-                          command = self.widget.help)
+        help = ttk.Button(self.topframe, text='Help', width=4,
+                          command=self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, padx=18)
-        self.topframe.columnconfigure(3, weight = 1)
+        self.topframe.columnconfigure(3, weight=1)
 
     def export_stl(self):
         model = self.model_var.get()
         file = filedialog.asksaveasfile(
             parent=self.parent,
             title='Save %s model as STL file' % model,
-            defaultextension = '.stl',
-            filetypes = [
+            defaultextension='.stl',
+            filetypes=[
                 ('STL files', '*.stl'),
                 ('All files', '')])
         if file:
@@ -127,8 +127,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         file = filedialog.asksaveasfile(
             parent=self.parent,
             title='Save %s model cutout as STL file' % model,
-            defaultextension = '.stl',
-            filetypes = [
+            defaultextension='.stl',
+            filetypes=[
                 ('STL files', '*.stl'),
                 ('All files', '')])
         if file:

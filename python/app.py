@@ -116,7 +116,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             parent=self.window,
             title='Run Saved Transcript In Current Namespace',
             defaultextension='.py',
-            filetypes = [
+            filetypes=[
                 ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
@@ -153,7 +153,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
         openfile = filedialog.askopenfile(
             title='Load Link Projection File',
             defaultextension='.lnk',
-            filetypes = [
+            filetypes=[
                 ("Link and text files", "*.lnk *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
@@ -178,7 +178,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             mode='w',
             title='Save Transcript as a Python script',
             defaultextension='.py',
-            filetypes = [
+            filetypes=[
                 ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])

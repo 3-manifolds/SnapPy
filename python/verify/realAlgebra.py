@@ -77,7 +77,7 @@ def _solve_two_equations(eqn1, eqn2, x_val, y_val):
     #    _find_unique_good_factor)
 
     result_number_field = NumberField(resultant_factor, 'x',
-                                      embedding = x_val.center())
+                                      embedding=x_val.center())
 
     # Get one of the equations and think of it as an element in NumberField[y]
     yEqn = Reqn1.change_ring(result_number_field)
@@ -93,7 +93,7 @@ def _solve_two_equations(eqn1, eqn2, x_val, y_val):
         """
 
         lift = p.map_coefficients(lambda c:c.lift('x'), Rx)
-        return lift.substitute(x = x_val, y = y_val)
+        return lift.substitute(x=x_val, y=y_val)
 
     yEqn_factor = _find_unique_good_factor(yEqn, eval_factor_yEqn)
 
@@ -105,7 +105,7 @@ def _solve_two_equations(eqn1, eqn2, x_val, y_val):
 
     # The equation of y is of the form
     #     linear_term * y + constant_term = 0
-    constant_term, linear_term = yEqn_factor.coefficients(sparse = False)
+    constant_term, linear_term = yEqn_factor.coefficients(sparse=False)
 
     # Thus, y is given by - constant_term / linear_term
     return result_number_field, - constant_term / linear_term
@@ -145,7 +145,7 @@ def _real_or_imaginary_part_for_polynomial_in_complex_variable(polynomial,
 
     return sum([
         coeff * _real_or_imaginary_part_of_power_of_complex_number(i, start)
-        for i, coeff in enumerate(polynomial.coefficients(sparse = False))])
+        for i, coeff in enumerate(polynomial.coefficients(sparse=False))])
 
 
 @sage_method
@@ -217,7 +217,7 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
 
         # From the equations for x and y, get the equations for x' and y
         # where x' = x + k * y as abover
-        equations_for_xprime = [ eqn.substitute(x = var('x') - k * var('y'))
+        equations_for_xprime = [ eqn.substitute(x=var('x') - k * var('y'))
                                  for eqn in equations ]
 
         try:
@@ -257,7 +257,7 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
     return None
 
 
-def _test_result(number_field, prec = 53, epsilon = 1e-10):
+def _test_result(number_field, prec=53, epsilon=1e-10):
     """
         sage: CF = ComplexField()
         sage: x = var('x')

@@ -150,7 +150,7 @@ def sign_app():
     for dirpath, dirnames, filenames in os.walk(resources):
         for name in filenames:
             base, ext = os.path.splitext(name)
-            if ext in ('.so', '.dylib'):
+            if ext in ('.so', '.dylib', '.o'):
                 print('Signing', os.path.join(dirpath, name))
                 sign(os.path.join(dirpath, name))
     sign(app)

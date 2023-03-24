@@ -21,7 +21,7 @@ from typing import Sequence, List
 def perturb_geodesics(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo],
-        verbose = False):
+        verbose=False):
     """
     Given a triangulation with structures added by add_r13_geometry
     and GeodesicInfo's with start points on the line that is a lift
@@ -81,7 +81,7 @@ def compute_lower_bound_injectivity_radius(
 
     tubes = [ GeodesicTube(mcomplex, g) for g in geodesics ]
     for tube in tubes:
-        tube.add_pieces_for_radius(r = 0)
+        tube.add_pieces_for_radius(r=0)
 
     return compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex, tubes)
@@ -121,8 +121,8 @@ def perturb_geodesic(geodesic : GeodesicInfo,
 
     perturbed_point = perturb_unit_time_point(
         time_r13_normalise(geodesic.unnormalised_start_point),
-        max_amt = injectivity_radius,
-        verified = verified)
+        max_amt=injectivity_radius,
+        verified=verified)
 
     m = geodesic.line.o13_matrix
 

@@ -176,7 +176,7 @@ class MatrixRepresentation():
         target = MatrixSpace(rho.base_ring, n + 1)
         return MatrixRepresentation(gens, rels, target, new_mats)
 
-#----- end class MatrixRepresentation --------------------------------
+# ----- end class MatrixRepresentation --------------------------------
 
 
 def poly_to_rep(f):

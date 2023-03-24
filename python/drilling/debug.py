@@ -30,9 +30,9 @@ def check_peripheral_curves(tets):
                     for sheet_index in range(2):
                         sheet = tet.PeripheralCurves[ml][sheet_index][v]
                         if f == v_comp:
-                            if not sum(sheet.values()) == 0:
+                            if sum(sheet.values()) != 0:
                                 raise Exception("Not adding up to zero. %r" % tet)
-                            if not sheet[v_comp] == 0:
+                            if sheet[v_comp] != 0:
                                 raise Exception("Diagonal entry for peripheral curve.")
                         else:
                             if sgn == 0:
@@ -41,7 +41,7 @@ def check_peripheral_curves(tets):
                                 other_sheet_index = sheet_index
                             a = sheet[f]
                             b = neighbor.PeripheralCurves[ml][other_sheet_index][other_v][other_f]
-                            if not a + b == 0:
+                            if a + b != 0:
                                 raise Exception("Peripheral curve not adding up.")
 
 
@@ -51,7 +51,7 @@ def check_vertex_indices(tets):
             index = tet.post_drill_infos[v]
             for f in simplex.TwoSubsimplices:
                 if v & f:
-                    if not tet.Neighbor[f].post_drill_infos[tet.Gluing[f].image(v)] == index:
+                    if tet.Neighbor[f].post_drill_infos[tet.Gluing[f].image(v)] != index:
                         print("tet, v face:", tet, v, f)
                         print("index and other index:", index, tet.Neighbor[f].post_drill_infos, [tet.Gluing[f].image(v)])
                         raise Exception("Neighbors don't have same vertex.")
@@ -82,7 +82,7 @@ def check_points_consistency(m):
 
 def check_edge_consistency(m):
     RF = m.Tetrahedra[0].O13_matrices[simplex.F0].base_ring()
-    id_matrix = matrix.identity(ring = RF, n = 4)
+    id_matrix = matrix.identity(ring=RF, n=4)
 
     for e in m.Edges:
         t = id_matrix
@@ -100,7 +100,7 @@ def check_geodesic1(tets):
 
     for tet in tets:
         for geodesic_segment in tet.geodesic_pieces:
-            if not geodesic_segment.tet is tet:
+            if geodesic_segment.tet is not tet:
                 raise Exception("Geodesic tet inconsistency")
 
             for ptInClass in geodesic_segment.endpoints:
@@ -124,12 +124,12 @@ def check_consistency_segments(segments):
         s0 = segments[i]
         s1 = segments[(i+1) % len(segments)]
 
-        if not s0.tet.Class[s0.endpoints[1].subsimplex] is s1.tet.Class[s1.endpoints[0].subsimplex]:
+        if s0.tet.Class[s0.endpoints[1].subsimplex] is not s1.tet.Class[s1.endpoints[0].subsimplex]:
             raise Exception("Classes of consecutive segments not matching %i" % i)
 
-        if not s0.next_ is s1:
+        if s0.next_ is not s1:
             raise Exception("Linked list broken (next)")
-        if not s1.prev is s0:
+        if s1.prev is not s0:
             raise Exception("Linked list broken (prev)")
 
         if s0.endpoints[1].subsimplex in simplex.TwoSubsimplices:
@@ -152,7 +152,7 @@ def output_linked(x, tets_set):
     y = x
     while True:
         # print(y)
-        print(print_cell(y.endpoints[0].subsimplex) + "-----" + print_cell(y.endpoints[1].subsimplex), end = " ")
+        print(print_cell(y.endpoints[0].subsimplex) + "-----" + print_cell(y.endpoints[1].subsimplex), end=" ")
         y = y.next_
         if x is y:
             break
@@ -161,7 +161,7 @@ def output_linked(x, tets_set):
 
     y = x
     while True:
-        print("%2d---%2d" % (y.endpoints[0].subsimplex, y.endpoints[1].subsimplex), end = " ")
+        print("%2d---%2d" % (y.endpoints[0].subsimplex, y.endpoints[1].subsimplex), end=" ")
         y = y.next_
         if x is y:
             break
@@ -171,9 +171,9 @@ def output_linked(x, tets_set):
     y = x
     while True:
         if y.tet in tets_set:
-            print("   *   ", end = " ")
+            print("   *   ", end=" ")
         else:
-            print("       ", end = " ")
+            print("       ", end=" ")
         y = y.next_
         if x is y:
             break
@@ -206,17 +206,17 @@ def check_consistency_2(piece):
 
             num_pieces += 1
 
-            if not piece.tet is tet:
+            if piece.tet is not tet:
                 raise Exception("Piece.tet not pointing to tet.")
-            if not piece.next_.prev is piece:
+            if piece.next_.prev is not piece:
                 raise Exception("Link list broken.")
-            if not piece.prev.next_ is piece:
+            if piece.prev.next_ is not piece:
                 raise Exception("Link list broken.")
 
-            if not piece.index == piece.next_.index:
+            if piece.index != piece.next_.index:
                 raise Exception("Index inconsistent.")
 
-            if not piece.index == piece.prev.index:
+            if piece.index != piece.prev.index:
                 raise Exception("Index inconsistent.")
 
             if piece.index not in to_pieces_map:

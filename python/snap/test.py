@@ -35,7 +35,7 @@ def test_polished(dec_prec=200):
         max_error = pari(0)
         for i, M in enumerate(manifolds):
             max_error = max(max_error, test_manifold(M))
-            print('\r   ' + repr( (i, M) ).ljust(35) + '   Max error so far: %.2g' % float(max_error), end = '')
+            print('\r   ' + repr( (i, M) ).ljust(35) + '   Max error so far: %.2g' % float(max_error), end='')
         print()
 
     test_census('cusped census', snappy.OrientableCuspedCensus(filter='cusps>1')[-100:])

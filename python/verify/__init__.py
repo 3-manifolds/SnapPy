@@ -14,4 +14,4 @@ from .maximal_cusp_area_matrix import *
 
 # Choice of algorithm for finding intervals
 CertifiedShapesEngine = KrawczykShapesEngine
-#CertifiedShapesEngine = IntervalNewtonShapesEngine
+# CertifiedShapesEngine = IntervalNewtonShapesEngine

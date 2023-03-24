@@ -1159,7 +1159,7 @@ class Flattenings(dict):
             raise Exception("Need to be called with cross ratio variable z_....")
         key_zp = 'zp_' + key_z[2:]
 
-        w,  z,  p = self[key_z]
+        w, z, p = self[key_z]
         wp, zp, q_canonical_branch_cut = self[key_zp]
 
         # Note that the q in l(z;p,q) and in Definition 3.1 are different if
@@ -1242,8 +1242,8 @@ class Flattenings(dict):
 
         for k in list(self.keys()):
             if k[:2] == 'z_':
-                w,   z,   p = self[k]
-                wp,  zp,  q = self['zp_'+k[2:]]
+                w, z, p = self[k]
+                wp, zp, q = self['zp_'+k[2:]]
                 wpp, zpp, r = self['zpp_'+k[2:]]
                 _check_relation(
                     w + wp + wpp,
@@ -2157,7 +2157,7 @@ def _to_numerical(d):
                 zp = 1 / (1 - z)
                 zpp = 1 - 1 / z
 
-                return [(key,              z),
+                return [(key, z),
                         ('zp_' + key[2:], zp),
                         ('zpp_' + key[2:], zpp)]
             elif key[:3] == 'zp_' or key[:4] == 'zpp_':

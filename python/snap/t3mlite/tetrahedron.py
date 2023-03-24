@@ -1,4 +1,4 @@
-#$Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
+# $Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -13,7 +13,7 @@ import sys
 
 
 class Tetrahedron:
-    def __init__(self, name = ''):
+    def __init__(self, name=''):
         self.Index = -1
         self.Name = name
         self.Neighbor = {F0:None,F1:None,F2:None,F3:None}  # Tetrahedra
@@ -76,7 +76,7 @@ class Tetrahedron:
     def clear_Class(self):
         self.Class = [None]*16              # list of equivalence classes
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         if len(self.Name) == 0:
             out.write(repr(self) + "\t%s\n" %
                       ([self.Neighbor.get(s) for s in TwoSubsimplices]))

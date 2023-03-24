@@ -115,8 +115,8 @@ class HelpMenu(Tk_.Menu):
         # on OS X setting name='help' makes this a system help menu.
         Tk_.Menu.__init__(self, menubar, name='help')
         if sys.platform != 'darwin':
-            self.add_command(label = 'SnapPy Help ...', command=self.show_SnapPy_help)
-        self.add_command(label = help_report_bugs_label,
+            self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
+        self.add_command(label=help_report_bugs_label,
                          command=self.show_bugs_page)
         self.extra_commands = {}
 
@@ -288,8 +288,7 @@ def dirichlet_menus(self):
                             command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
+        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
@@ -348,8 +347,7 @@ def inside_view_menus(self):
                             command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
+        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
@@ -361,7 +359,7 @@ def inside_view_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    #help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
-    #help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
+    # help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
+    # help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     help_menu.activate([help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)

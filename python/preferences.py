@@ -272,11 +272,11 @@ class PreferenceDialog(Dialog):
         next_label = ttk.Label(shell_frame, anchor=Tk_.W,
             text='Which IPython features would you like to enable?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,0))
-        next_check = ttk.Checkbutton(shell_frame, variable = self.autocall,
+        next_check = ttk.Checkbutton(shell_frame, variable=self.autocall,
                                     text='IPython autocall',
                                     command=self.set_autocall)
         next_check.grid(row=1, column=1, sticky=Tk_.W, pady=(10,0))
-        next_check = ttk.Checkbutton(shell_frame, variable = self.automagic,
+        next_check = ttk.Checkbutton(shell_frame, variable=self.automagic,
                                     text='IPython automagic',
                                     command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
@@ -306,23 +306,23 @@ class PreferenceDialog(Dialog):
                                text='Which elements should be visible when you first '
                                'view the cusp neighborhood?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,10))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.horoballs,
+        next_check = ttk.Checkbutton(cusp_frame, variable=self.horoballs,
                                      text='Horoballs',
                                      command=self.set_horoballs)
         next_check.grid(row=1, column=1, sticky=Tk_.W, padx=(30, 0))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.triangulation,
+        next_check = ttk.Checkbutton(cusp_frame, variable=self.triangulation,
                                      text='Triangulation',
                                      command=self.set_triangulation)
         next_check.grid(row=2, column=1, sticky=Tk_.W, padx=(30, 0))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.ford,
+        next_check = ttk.Checkbutton(cusp_frame, variable=self.ford,
                                      text='Ford domain',
                                      command=self.set_ford)
         next_check.grid(row=3, column=1, sticky=Tk_.W, padx=(30, 0))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.labels,
+        next_check = ttk.Checkbutton(cusp_frame, variable=self.labels,
                                      text='Labels',
                                      command=self.set_labels)
         next_check.grid(row=4, column=1, sticky=Tk_.W, padx=(30, 0))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.parallelogram,
+        next_check = ttk.Checkbutton(cusp_frame, variable=self.parallelogram,
                                      text='Parallelogram',
                                      command=self.set_parallelogram)
         next_check.grid(row=5, column=1, sticky=Tk_.W, padx=(30, 0))

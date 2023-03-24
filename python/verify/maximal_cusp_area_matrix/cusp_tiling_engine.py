@@ -119,7 +119,7 @@ class CuspTilingEngine(McomplexEngine):
     @staticmethod
     def from_manifold_and_shapes(snappyManifold, shapes):
         c = ComplexCuspCrossSection.fromManifoldAndShapes(snappyManifold, shapes)
-        c.ensure_std_form(allow_scaling_up = True)
+        c.ensure_std_form(allow_scaling_up=True)
         c.compute_translations()
         m = c.mcomplex
 
@@ -128,7 +128,7 @@ class CuspTilingEngine(McomplexEngine):
 
         t = TransferKernelStructuresEngine(m, snappyManifold)
         t.choose_and_transfer_generators(
-            compute_corners = True, centroid_at_origin = False)
+            compute_corners=True, centroid_at_origin=False)
 
         f = FundamentalPolyhedronEngine(m)
         f.unglue()
@@ -137,7 +137,7 @@ class CuspTilingEngine(McomplexEngine):
         t = TransferKernelStructuresEngine(original_mcomplex, snappyManifold)
         t.reindex_cusps_and_transfer_peripheral_curves()
         t.choose_and_transfer_generators(
-            compute_corners = False, centroid_at_origin = False)
+            compute_corners=False, centroid_at_origin=False)
 
         return CuspTilingEngine(m, original_mcomplex, cusp_areas, translations)
 
@@ -161,9 +161,9 @@ class CuspTilingEngine(McomplexEngine):
 
         CIF = p2.parent()
 
-        return { v0 :   Infinity,
-                 v1 :   CIF(0),
-                 v2 :   p2,
+        return { v0 : Infinity,
+                 v1 : CIF(0),
+                 v2 : p2,
                  v3 : - p3 }
 
     def reset_cusp(self, cusp_index):
@@ -183,7 +183,7 @@ class CuspTilingEngine(McomplexEngine):
         f = FundamentalPolyhedronEngine(self.mcomplex)
         init_vertices = CuspTilingEngine.get_init_vertices(self.vertex_at_infinity)
         f.visit_tetrahedra_to_compute_vertices(tet, init_vertices)
-        f.compute_matrices(normalize_matrices = False)
+        f.compute_matrices(normalize_matrices=False)
 
         self.baseTetInRadius, self.baseTetInCenter = compute_inradius_and_incenter(
             [ tet.Class[v].IdealPoint for v in simplex.ZeroSubsimplices])
@@ -317,7 +317,7 @@ class CuspTilingEngine(McomplexEngine):
 
                 if self.horosphere_at_inf_height is None:
                     self.horosphere_at_inf_height = (
-                        tile.height_of_horosphere(vertex, is_at_infinity = True))
+                        tile.height_of_horosphere(vertex, is_at_infinity=True))
 
                 for neighboring_triangle in self.get_neighboring_cusp_triangles(cusp_triangle):
                     pending_cusp_triangles.append(neighboring_triangle)
@@ -353,7 +353,7 @@ class CuspTilingEngine(McomplexEngine):
 
     def account_horosphere_height(self, tile, vertex):
         horosphere_height = tile.height_of_horosphere(vertex,
-                                                      is_at_infinity = False)
+                                                      is_at_infinity=False)
 
         cusp = vertex.SubsimplexIndexInManifold
 
@@ -364,9 +364,9 @@ class CuspTilingEngine(McomplexEngine):
         heapq.heappush(
             self.unglued_generator_heapq,
             CuspTilingEngine.UngluedGenerator(
-                tile = tile,
-                g = g,
-                height_upper_bound = self.upper_bound_for_height_of_unglued_generator(tile, g)))
+                tile=tile,
+                g=g,
+                height_upper_bound=self.upper_bound_for_height_of_unglued_generator(tile, g)))
 
     def process_next_unglued_generator(self):
         unglued_generator = heapq.heappop(self.unglued_generator_heapq)

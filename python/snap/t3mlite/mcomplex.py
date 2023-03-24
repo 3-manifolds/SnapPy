@@ -1,4 +1,4 @@
-#$Id: mcomplex.py,v 1.14 2009/08/20 15:58:58 t3m Exp $
+# $Id: mcomplex.py,v 1.14 2009/08/20 15:58:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

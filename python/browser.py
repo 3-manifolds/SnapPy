@@ -20,7 +20,7 @@ except:
 
 
 main_window = None
-#TODO:  Find these dimensions by introspection.
+# TODO:  Find these dimensions by introspection.
 cusp_box_height = 105
 if sys.platform == 'darwin':
     cusp_box_width = 180
@@ -226,7 +226,7 @@ class Browser(Tk_.Toplevel):
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer, text='Dirichlet')
         notebook.add(self.horoball_viewer, text='Cusp Nbhds')
-        notebook.add(self.build_inside_view(), text = 'Inside view')
+        notebook.add(self.build_inside_view(), text='Inside view')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')
@@ -406,7 +406,7 @@ class Browser(Tk_.Toplevel):
             height=6, show='headings', selectmode='none',
             columns=['mult', 'length', 'topology', 'parity'],
             )
-        #TODO: compute column widths by measuring text.
+        # TODO: compute column widths by measuring text.
         geodesics.heading('mult', text='Mult.')
         geodesics.column('mult', stretch=False, width=60)
         geodesics.heading('length', text='Complex Length')
@@ -431,7 +431,7 @@ class Browser(Tk_.Toplevel):
         message1 = ttk.Label(frame,
             text='Future releases of SnapPy will show more information here.')
         message2 = ttk.Label(frame,
-            text = 'Type SymmetryGroup.<tab> in the command shell to see '
+            text='Type SymmetryGroup.<tab> in the command shell to see '
             'what is available.')
         message1.grid(row=1, column=0, pady=(40, 10))
         message2.grid(row=2, column=0)
@@ -452,7 +452,7 @@ class Browser(Tk_.Toplevel):
         if not self.manifold.is_orientable():
             text = ("Inside view for non-orientable manifolds such as %s "
                     "is not supported yet.") % self.manifold.name()
-            return ttk.Label(self, text = text)
+            return ttk.Label(self, text=text)
 
         try:
             # delayed import to avoid cycle
@@ -465,7 +465,7 @@ class Browser(Tk_.Toplevel):
             import traceback
             text = ("Could not instantiate inside view. "
                     "Error was:\n\n%s" % traceback.format_exc())
-            return ttk.Label(self, text = text)
+            return ttk.Label(self, text=text)
 
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""

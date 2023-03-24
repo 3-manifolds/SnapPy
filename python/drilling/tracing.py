@@ -314,7 +314,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
                  Endpoint(start_point + hit_param * direction, hit_face)]))
 
         if hit_face == simplex.T:
-            if not tet is geodesic.tet:
+            if tet is not geodesic.tet:
                 raise InsufficientPrecisionError(
                     "Tracing geodesic ended up in a different "
                     "tetrahedron than it started. "

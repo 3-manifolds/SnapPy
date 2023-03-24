@@ -38,7 +38,7 @@ from .linalg import Vector, Matrix
 # NOTE (3) Our plan is to create (at least) three subclasses of the
 # Surface class: Closed_Surface, Spun_Surface, Bounded_Surface.
 
-#Incidence dictionaries for quads, triangles and octagons
+# Incidence dictionaries for quads, triangles and octagons
 
 MeetsQuad = {E01:Vector((1,1,0)), E02:Vector((1,0,1)), E21:Vector((0,1,1)),
              E32:Vector((1,1,0)), E31:Vector((1,0,1)), E03:Vector((0,1,1))}
@@ -144,7 +144,7 @@ class Surface:
                 linked_edges.append(edge.Index)
         return linked_edges
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         if self.type() == "normal":
             out.write("Normal surface\n")
         for i in range(self.Size):
@@ -342,7 +342,7 @@ class ClosedSurface(Surface):
 
         self.BoundingInfo = (bounds_subcomplex, double_bounds_subcomplex, thick_or_thin)
 
-###### It is not a torus unless the edge is a loop!
+# It is not a torus unless the edge is a loop!
     # A surface is an edge linking torus iff all edge weights are 2 except one which
     # is zero.  Returns pair (is linking torus, edge it links around).
 
@@ -359,9 +359,9 @@ class ClosedSurface(Surface):
             elif w != 2:
                 return (0, None)
 
-        return (1,  zero_index)
+        return (1, zero_index)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         if self.type() == "normal":
             # check if really boring:
             q, e = self.is_edge_linking_torus()
@@ -423,10 +423,10 @@ class ClosedSurface(Surface):
         for i in have_quads:
             T = new_tets[i]
 
-#-----------------end class ClosedSurface---------------------------------------
+# -----------------end class ClosedSurface---------------------------------------
 
 
-#-----------------begin class SpunSurface--------------------------------------
+# -----------------begin class SpunSurface--------------------------------------
 
 def dot_product(x,y):
     assert len(x) == len(y)
@@ -456,7 +456,7 @@ class SpunSurface(Surface):
             raise OverflowError('Yikes! A non-integral euler characteristic!')
         return -int(intresult)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("SpunSurface.\n Slope: %s; Boundary components: %d; " %
                   reduce_slope(self.BoundarySlope))
         out.write("Euler characteristic: %d\n" %
@@ -472,7 +472,7 @@ class SpunSurface(Surface):
             out.write(weight + "\n")
 
 
-#-------------begin class ClosedSurfaceInCusped------------------------
+# -------------begin class ClosedSurfaceInCusped------------------------
 
 class ClosedSurfaceInCusped(ClosedSurface):
     def __init__(self, manifold, quadvector):
@@ -480,7 +480,7 @@ class ClosedSurfaceInCusped(ClosedSurface):
         self.Incompressible = None
         self.BoundarySlope = None
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("ClosedSurfaceInCusped #%d:  Euler %d;  Incompressible %s\n" %
                   (manifold.ClosedSurfaces.index(self), self.EulerCharacteristic, self.Incompressible))
         # check if really boring:

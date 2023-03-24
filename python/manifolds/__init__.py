@@ -1,3 +1,3 @@
-#dummy "package" used to set paths for ../SnapPea.py
+# dummy "package" used to set paths for ../SnapPea.py
 
 pass

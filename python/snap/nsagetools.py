@@ -35,11 +35,11 @@ def search_for_low_rank_triangulation(M, tries=100, target_lower_bound=0):
     return rank_upper_bound, rank_lower_bound, curr_best_tri
 
 
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 #
 #  Abelianization of the fundamental group
 #
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
@@ -341,12 +341,12 @@ def alexander_polynomial(manifold, **kwargs):
         ans = -ans
     return ans
 
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 #
 #  Computing the twisted torsion polynomials
 #     for deficiency one presentations.
 #
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 
 
 class PhiAlpha():
@@ -475,7 +475,7 @@ def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_convention
         sage: tau.degree()
         6
     """
-    G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2 = True)
+    G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2=True)
     if not all_lifts:
         return compute_torsion(G, bits_prec, alpha, phi, wada_conventions=wada_conventions)
     else:
@@ -497,8 +497,8 @@ def fast_determinant_of_laurent_poly_matrix(A):
     return Ap.det()
 
 
-def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
-                    return_parts = False, return_as_poly=True,
+def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha=None,
+                    return_parts=False, return_as_poly=True,
                     wada_conventions=False, symmetry_test=True):
     if alpha:
         F = alpha('a').base_ring()
@@ -571,12 +571,12 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
 
     return ans
 
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 #
 #  Computing the torsion polynomials
 #     for the *adjoint* representation
 #     i.e. the poly of Dubois-Yamaguichi
-#--------------------------------------------------------------
+# --------------------------------------------------------------
 
 
 def adjoint_action(A):

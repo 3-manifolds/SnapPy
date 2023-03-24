@@ -113,7 +113,7 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
 
     # Compute tetrahedra shapes to arbitrary precision.
     shapes = manifold.tetrahedra_shapes(
-        'rect', bits_prec = bits_prec, intervals = True)
+        'rect', bits_prec=bits_prec, intervals=True)
 
     # Check it is a valid hyperbolic structure
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(

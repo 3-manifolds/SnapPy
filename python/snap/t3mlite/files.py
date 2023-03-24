@@ -46,7 +46,7 @@ def read_SnapPea_file(file_name=None, data=None):
             curr_poss = m.end(8)
     return fake_tets
 
-#------------End function SnapPea to Mcomplex--------------------
+# ------------End function SnapPea to Mcomplex--------------------
 
 
 # Exports an Mcomplex in SnapPea 2.0 format.
@@ -157,7 +157,7 @@ def read_geo_file(file_name, num_tet=None):
 
     return Mcomplex(tets)
 
-#---------Code to go from Mcomplex to Geo---------------------
+# ---------Code to go from Mcomplex to Geo---------------------
 
 
 def write_geo_file(mcomplex, fileobject):

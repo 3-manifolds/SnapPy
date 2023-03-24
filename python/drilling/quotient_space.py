@@ -85,8 +85,8 @@ class _O13MatrixPowerCache:
 class _MatrixNonNegativePowerCache:
     def __init__(self, m):
         self._m = m
-        self._powers = [ matrix.identity(ring = m.base_ring(),
-                                         n = m.dimensions()[0]) ]
+        self._powers = [ matrix.identity(ring=m.base_ring(),
+                                         n=m.dimensions()[0]) ]
 
     def power(self, i):
         while not i < len(self._powers):

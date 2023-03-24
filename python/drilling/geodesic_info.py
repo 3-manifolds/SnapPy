@@ -195,7 +195,7 @@ class GeodesicInfo:
         # Do some verification work for the above information to fill
         # self.tet, self.lifted_tetrahedra and self.core_curve_cusp.
 
-        if not cusp_curve_vertex is None:
+        if cusp_curve_vertex is not None:
             # Verify that the the geodesic is really the core curve and
             # determine whether the geodesic and core curve or parallel
             # or anti-parallel.
@@ -204,7 +204,7 @@ class GeodesicInfo:
             self.core_curve_cusp = tet.Class[cusp_curve_vertex]
             return
 
-        id_matrix = matrix.identity(ring = self.mcomplex.RF, n = 4)
+        id_matrix = matrix.identity(ring=self.mcomplex.RF, n=4)
 
         if len(faces) == 0:
             # The start point is really inside the given tetrahedron.
@@ -342,7 +342,7 @@ class GeodesicInfo:
                 [ face_and_signed_distance
                   for face_and_signed_distance in faces_and_signed_distances
                   if face_and_signed_distance[0] != entry_cell],
-                key = key)
+                key=key)
 
             self._transform(tet.O13_matrices[face])
             entry_cell = tet.Gluing[face].image(face)

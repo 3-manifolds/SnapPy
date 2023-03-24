@@ -74,12 +74,12 @@ def compare_cusped(snappy_manifold):
     assert t_hashes == r_hashes and t_slopes == r_slopes
 
 
-def closed_test(N = 10):
+def closed_test(N=10):
     for M in snappy.OrientableClosedCensus[:N]:
         print(M, compare_closed(M))
 
 
-def cusped_test(N = 100):
+def cusped_test(N=100):
     for census in [snappy.CensusKnots, snappy.OrientableCuspedCensus(cusps=1)]:
         for M in census:
             print(M)

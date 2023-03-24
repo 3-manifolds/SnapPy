@@ -45,12 +45,12 @@ class Edge():
     """
     An oriented edge 0 -> 1.
     """
-    def __init__(self, sides = None, vertices=None):
+    def __init__(self, sides=None, vertices=None):
         self.sides, self.vertices = sides, vertices
         self.index = None
 
     def glued_to(self, side):
-        for sides in ( [S for S in self.sides],  [-S for S in self.sides] ):
+        for sides in ( [S for S in self.sides], [-S for S in self.sides] ):
             if side in sides:
                 sides.remove(side)
                 return sides[0]
@@ -102,7 +102,7 @@ class EdgeList():
 
 
 class Vertex():
-    def __init__(self, corners = None):
+    def __init__(self, corners=None):
         self.corners = corners
         self.index = None
         self.incoming, self.outgoing = [], []
@@ -115,7 +115,7 @@ class Side():
     """
     A neighborhood of an oriented edge in a triangle
     """
-    def __init__(self, triangle = None, vertices = None):
+    def __init__(self, triangle=None, vertices=None):
         self.triangle, self.vertices = triangle, vertices
         self.index = None
 
@@ -206,7 +206,7 @@ class Surface():
             e1 = (b, a)
 
             S0, S1 = Side(T0, e0), Side(T1, e1)
-            E = Edge( sides = (S0,S1) )
+            E = Edge( sides=(S0,S1) )
 
             T0.edges[opposite_vertex_from_edge_dict[e0]] = E
             T1.edges[opposite_vertex_from_edge_dict[e1]] = E
@@ -394,7 +394,7 @@ def component_to_cycle(surface, component):
 
 
 class OneCycleSegment:
-    def __init__(self, edge, orientation_agrees, family_index, next = None, previous = None):
+    def __init__(self, edge, orientation_agrees, family_index, next=None, previous=None):
         self.edge, self.orientation_agrees = edge, orientation_agrees
         self.next, self.previous = next, previous
         self.family_index = family_index

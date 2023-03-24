@@ -23,7 +23,7 @@ _VerticesInFace = {
 class FundamentalPolyhedronEngine(McomplexEngine):
     @staticmethod
     def from_manifold_and_shapes(
-        manifold, shapes, normalize_matrices = False, match_kernel = True):
+        manifold, shapes, normalize_matrices=False, match_kernel=True):
         """
         Given a SnapPy.Manifold and shapes (which can be numbers or intervals),
         create a t3mlite.Mcomplex for the fundamental polyhedron that the
@@ -109,7 +109,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         t.add_shapes(shapes)
         t.choose_and_transfer_generators(
-            compute_corners = True, centroid_at_origin = False)
+            compute_corners=True, centroid_at_origin=False)
 
         f.unglue()
 
@@ -120,7 +120,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         f.visit_tetrahedra_to_compute_vertices(
             m.ChooseGenInitialTet, init_verts)
-        f.compute_matrices(normalize_matrices = normalize_matrices)
+        f.compute_matrices(normalize_matrices=normalize_matrices)
 
         return f
 
@@ -279,7 +279,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         raise Exception(
             "Could not match vertices to vertices from SnapPea kernel")
 
-    def compute_matrices(self, normalize_matrices = False):
+    def compute_matrices(self, normalize_matrices=False):
         """
         Assuming positions were assigned to the vertices, adds
         GeneratorMatrices to the Mcomplex which assigns a matrix to each
@@ -377,7 +377,7 @@ def _diff_to_kernel(value, snappeaValue):
     return value - CF(snappeaValue)
 
 
-def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
+def _is_number_close_to_kernel(value, snappeaValue, error=10**-6):
     CF = value.parent()
     return abs(_diff_to_kernel(value, snappeaValue)) < CF(error)
 
@@ -529,7 +529,7 @@ def _matrix_L1_distance_to_kernel(m, snappeaM):
 
 
 def _negate_matrix_to_match_kernel(m, snappeaM):
-    diff_plus = _matrix_L1_distance_to_kernel(m,  snappeaM)
+    diff_plus = _matrix_L1_distance_to_kernel(m, snappeaM)
 
     diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 

@@ -9,10 +9,10 @@ def check_certified_intervals():
     for n in ['m009', 'm015', 't02333', 't02333(1,2)',
               'm129(2,3)', 'm129(2,3)(3,4)']:
         M = Manifold(n)
-        high_prec = M.tetrahedra_shapes('rect', bits_prec = 1000)
+        high_prec = M.tetrahedra_shapes('rect', bits_prec=1000)
 
-        intervals = M.tetrahedra_shapes('rect', bits_prec = 100,
-                                        intervals = True)
+        intervals = M.tetrahedra_shapes('rect', bits_prec=100,
+                                        intervals=True)
 
         for z, interval in zip(high_prec, intervals):
             if not abs(interval.center() - z) < 1e-10:
@@ -29,7 +29,7 @@ def generate_test_with_shapes_engine(module, engine):
         original = verify.CertifiedShapesEngine
         verify.CertifiedShapesEngine = engine
 
-        r = doctest_modules([module], extraglobs = globs, verbose = verbose)
+        r = doctest_modules([module], extraglobs=globs, verbose=verbose)
 
         verify.CertifiedShapesEngine = original
 

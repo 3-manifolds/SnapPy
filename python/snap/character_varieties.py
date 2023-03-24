@@ -329,19 +329,19 @@ def character_variety(gens, rels=None):
     rels = [Word(R) for R in rels]
     ring = TracePolynomialRing([g.letters for g in gens])
 
-    #Type 1
+    # Type 1
     triples = list(combinations(gens,3))
     pairsoftriples = list(combinations_with_replacement(triples,2))
 
     t1 = [rel1(i) for i in pairsoftriples]
 
-    #Type 2
+    # Type 2
     fours = list(combinations(gens,4))
     indices = product(gens,fours)
 
     t2 = [rel2(j) for j in indices]
 
-    #Relations from relations
+    # Relations from relations
     r = []
     for R in rels:
         r += rels_from_rel(R,gens)

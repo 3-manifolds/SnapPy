@@ -296,12 +296,12 @@ class ManifoldGroup(MatrixRepresentation):
 
 
 def polished_holonomy(manifold,
-                      bits_prec = 100,
-                      fundamental_group_args = [],
-                      lift_to_SL2 = True,
-                      ignore_solution_type = False,
-                      dec_prec = None,
-                      match_kernel = True):
+                      bits_prec=100,
+                      fundamental_group_args=[],
+                      lift_to_SL2=True,
+                      ignore_solution_type=False,
+                      dec_prec=None,
+                      match_kernel=True):
     """
     Return the fundamental group of M equipt with a high-precision version of the
     holonomy representation::

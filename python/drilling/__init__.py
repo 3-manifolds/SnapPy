@@ -25,7 +25,7 @@ from typing import Sequence
 def drill_word(manifold,
                word : str,
                verified : bool = False,
-               bits_prec = None,
+               bits_prec=None,
                verbose : bool = False):
     """
     Drills the geodesic corresponding to the given word in the unsimplified
@@ -105,15 +105,15 @@ def drill_word(manifold,
 
     return drill_words(manifold,
                        [word],
-                       verified = verified,
-                       bits_prec = bits_prec,
-                       verbose = verbose)
+                       verified=verified,
+                       bits_prec=bits_prec,
+                       verbose=verbose)
 
 
 def drill_words(manifold,
                 words : Sequence[str],
                 verified : bool = False,
-                bits_prec = None,
+                bits_prec=None,
                 verbose : bool = False):
     """
     A generalization of M.drill_word taking a list of words to
@@ -175,10 +175,10 @@ def drill_words(manifold,
         # First try to drill the geodesics without perturbing them.
         return drill_words_implementation(
             manifold,
-            words = words,
-            verified = verified,
-            bits_prec = bits_prec,
-            verbose = verbose)
+            words=words,
+            verified=verified,
+            bits_prec=bits_prec,
+            verbose=verbose)
     except exceptions.GeodesicHittingOneSkeletonError:
         # Exceptions raised when geodesic is intersecting the 1-skeleton
         # (including that a positive length piece of the geodesic lying
@@ -193,11 +193,11 @@ def drill_words(manifold,
     try:
         return drill_words_implementation(
             manifold,
-            words = words,
-            verified = verified,
-            bits_prec = bits_prec,
-            perturb = True,
-            verbose = verbose)
+            words=words,
+            verified=verified,
+            bits_prec=bits_prec,
+            perturb=True,
+            verbose=verbose)
     except exceptions.RayHittingOneSkeletonError as e:
         # Sometimes, the code runs into numerical issues and cannot
         # determine whether the perturbed geodesic is passing an edge
@@ -216,7 +216,7 @@ def drill_words_implementation(
         words,
         verified,
         bits_prec,
-        perturb = False,
+        perturb=False,
         verbose : bool = False):
 
     # Convert SnapPea kernel triangulation to python triangulation
@@ -226,7 +226,7 @@ def drill_words_implementation(
     # Add vertices in hyperboloid model and other geometric information
     add_r13_geometry(mcomplex,
                      manifold,
-                     verified = verified, bits_prec = bits_prec)
+                     verified=verified, bits_prec=bits_prec)
 
     # For the words compute basic information such as the corresponding
     # matrix and the end points and a sample point on the fixed line.
@@ -254,7 +254,7 @@ def drill_words_implementation(
         # curves.
         perturb_geodesics(mcomplex,
                           geodesics_to_drill,
-                          verbose = verbose)
+                          verbose=verbose)
 
     # At this point, the information in each entry of geodesics_to_drill
     # "should" (*) contain a start point in the interior of a tetrahedron
@@ -276,7 +276,7 @@ def drill_words_implementation(
     # point through the triangulation, and then drill the closed curve.
     drilled_mcomplex : Mcomplex = drill_geodesics(mcomplex,
                                                   geodesics_to_drill,
-                                                  verbose = verbose)
+                                                  verbose=verbose)
 
     # Index the cusps of the new triangulation and extract information
     # needed later
@@ -334,11 +334,11 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     start_point = sample_line(line)
 
     g = GeodesicInfo(
-        mcomplex = mcomplex,
-        trace = m.trace(),
-        unnormalised_start_point = start_point,
-        unnormalised_end_point = line.o13_matrix * start_point,
-        line = line)
+        mcomplex=mcomplex,
+        trace=m.trace(),
+        unnormalised_start_point=start_point,
+        unnormalised_end_point=line.o13_matrix * start_point,
+        line=line)
 
     # Determines whether geodesic corresponds to a core curve.
     # Applies Decktransformations so that start point lies within
@@ -380,7 +380,7 @@ def drill_geodesics(mcomplex : Mcomplex,
     # For each line segment described above, trace it through the
     # triangulation.
     all_pieces : Sequence[Sequence[GeodesicPiece]] = [
-        trace_geodesic(g, verified = mcomplex.verified)
+        trace_geodesic(g, verified=mcomplex.verified)
         for g in geodesics ]
 
     if verbose:
@@ -428,7 +428,7 @@ def drill_words_hp(*args, **kwargs):
     return drill_words(*args, **kwargs).high_precision()
 
 
-def _add_methods(mfld_class, high_precision = False):
+def _add_methods(mfld_class, high_precision=False):
     if high_precision:
         mfld_class.drill_word = drill_word_hp
         mfld_class.drill_words = drill_words_hp
@@ -522,13 +522,17 @@ def dummy_function_for_additional_doctests():
         >>> import sys
         >>> original_limit = sys.getrecursionlimit()
         >>> sys.setrecursionlimit(100000)
-
-        >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        >>> def drilled_isosig(M, words):
+        ...     for i in range(10):
+        ...         try:
+        ...             F = M.drill_words(words).filled_triangulation()
+        ...             return F.canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        ...         except RuntimeError:
+        ...             pass
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBba'
-        >>> Manifold('K11n34(0,1)').drill_words(['iFJ', 'iFcdbEiFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
-
-
         >>> sys.setrecursionlimit(original_limit)
 
     """

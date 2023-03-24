@@ -56,8 +56,8 @@ class SnapPyTerm(TkTerm, ListedWindow):
             self.window.createcommand("::tk::mac::OpenDocument", self.OSX_open_filelist)
         else:
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
-            self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
-            self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
+            self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
+            self.window.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
         self.encoding = None
 
     def add_bindings(self):
@@ -116,7 +116,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             parent=self.window,
             title='Run Saved Transcript In Current Namespace',
             defaultextension='.py',
-            filetypes = [
+            filetypes=[
                 ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
@@ -153,7 +153,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
         openfile = filedialog.askopenfile(
             title='Load Link Projection File',
             defaultextension='.lnk',
-            filetypes = [
+            filetypes=[
                 ("Link and text files", "*.lnk *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
@@ -178,7 +178,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             mode='w',
             title='Save Transcript as a Python script',
             defaultextension='.py',
-            filetypes = [
+            filetypes=[
                 ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
@@ -406,7 +406,7 @@ def set_icon(window):
                 window.eval('wm iconphoto . -default %s' % dock_icon)
 
 
-#from multiprocessing import Process
+# from multiprocessing import Process
 class SnapPyKernelServer():
     """
     Placeholder for a real SnapPyKernelServer which the app can use to
@@ -434,12 +434,12 @@ class SnapPyKernelServer():
 def main():
     global terminal
     import snappy
-    #kernel_server = SnapPyKernelServer()
+    # kernel_server = SnapPyKernelServer()
     terminal = SnapPyTerm()
     sys.stdout = terminal
     set_icon(terminal.window)
-    SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
-    #SnapPy_ns['kernel_server'] = kernel_server
+    SnapPy_ns = dict([(x, getattr(snappy, x)) for x in snappy.__all__])
+    # SnapPy_ns['kernel_server'] = kernel_server
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
     helper = pydoc.Helper(input=terminal, output=terminal)
@@ -459,11 +459,11 @@ def main():
     LP.Browser = HP.Browser = SnapPyBrowser
     LP.msg_stream.write = HP.msg_stream.write = terminal.write2
     LP.UI_callback = HP.UI_callback = terminal.SnapPea_callback
-    #if not snappy.SnapPy._within_sage:
+    # if not snappy.SnapPy._within_sage:
     #    snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()
     terminal.window.mainloop()
-    #kernel_server.stop()
+    # kernel_server.stop()
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ class R13Line:
 
     def __init__(self,
                  points, # Two light-like vectors
-                 inner_product = None): # Optional: their inner product
+                 inner_product=None): # Optional: their inner product
         """
         inner_product can be given if known, otherwise, will be computed.
         """

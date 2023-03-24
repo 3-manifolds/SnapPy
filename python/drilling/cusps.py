@@ -60,15 +60,15 @@ def index_geodesics_and_add_post_drill_infos(
 
     for i, v in enumerate(old_vertices):
         v.post_drill_info = CuspPostDrillInfo(
-            index = i, filling = v.filling_matrix[0])
+            index=i, filling=v.filling_matrix[0])
 
     n = len(old_vertices)
 
     for i, g in enumerate(geodesics):
         if g.core_curve_cusp:
             g.core_curve_cusp.post_drill_info = CuspPostDrillInfo(
-                index = n + i,
-                peripheral_matrix = _multiply_filling_matrix(
+                index=n + i,
+                peripheral_matrix=_multiply_filling_matrix(
                     g.core_curve_cusp.filling_matrix,
                     g.core_curve_direction))
         else:
@@ -111,7 +111,7 @@ def refill_and_adjust_peripheral_curves(
     for info in post_drill_infos:
         if info.peripheral_matrix is not None:
             manifold.set_peripheral_curves(
-                info.peripheral_matrix, which_cusp = info.index)
+                info.peripheral_matrix, which_cusp=info.index)
 
 
 def _multiply_filling_matrix(m : FillingMatrix, s : int) -> FillingMatrix:

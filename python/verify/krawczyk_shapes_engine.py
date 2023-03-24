@@ -355,7 +355,7 @@ class KrawczykShapesEngine:
         return vector([a.union(b) for a, b in zip(vecA, vecB)])
 
     @sage_method
-    def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
+    def __init__(self, M, initial_shapes, bits_prec=None, dec_prec=None):
         """
         Initializes the KrawczykShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
@@ -463,7 +463,7 @@ class KrawczykShapesEngine:
         """
         return shapes.apply_map(lambda z: z + (z - z) / 64)
 
-    def expand_until_certified(self, verbose = False):
+    def expand_until_certified(self, verbose=False):
         """
         Try Krawczyk iterations (i.e., expanding the shape intervals [z]
         by the Krawczyk interval K(z0, [z], f)) until we can certify they

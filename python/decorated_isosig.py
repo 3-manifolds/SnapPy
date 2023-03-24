@@ -212,19 +212,19 @@ def supress_minus_zero(x):
 
 
 def decorated_isosig(manifold, triangulation_class,
-                     ignore_cusp_ordering = False,
-                     ignore_curve_orientations = False,
-                     ignore_orientation = True):
+                     ignore_cusp_ordering=False,
+                     ignore_curve_orientations=False,
+                     ignore_orientation=True):
 
     isosig = manifold.triangulation_isosig(
-        decorated = False,
-        ignore_orientation = ignore_orientation)
+        decorated=False,
+        ignore_orientation=ignore_orientation)
 
     # Do not decorate if no cusps
     if manifold.num_cusps() == 0:
         return isosig
 
-    N = triangulation_class(isosig, remove_finite_vertices = False)
+    N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
     # in Python3 range is an iterator
@@ -400,7 +400,7 @@ def test_link_invariant():
     for mfd in mfds[:len(dt_codes)]:
         mfd.reverse_orientation()
 
-    isometry_signatures = [ mfd.isometry_signature(of_link = True)
+    isometry_signatures = [ mfd.isometry_signature(of_link=True)
                             for mfd in mfds ]
 
     # All the links only differ in orientation of complement or components,
@@ -408,15 +408,15 @@ def test_link_invariant():
     assert len(set(isometry_signatures)) == 1
 
     M = snappy.Manifold(isometry_signatures[0])
-    N = snappy.Manifold(M.isometry_signature(of_link = True))
+    N = snappy.Manifold(M.isometry_signature(of_link=True))
 
     # Instantiating a manifold from its decorated isometry_signature should
     # eventually yield to a fixed point
     assert same_peripheral_curves(M, N)
 
     # More sanity checks
-    assert isometry_signatures[0] == M.isometry_signature(of_link = True)
-    assert isometry_signatures[0] == N.isometry_signature(of_link = True)
+    assert isometry_signatures[0] == M.isometry_signature(of_link=True)
+    assert isometry_signatures[0] == N.isometry_signature(of_link=True)
 
     for mfd in mfds:
         assert mfd.is_isometric_to(M, True)[0].extends_to_link()
@@ -446,9 +446,9 @@ def helper_test_by_dehn_filling(M):
     for ignore_cusp_ordering in [ False, True]:
         for ignore_curve_orientations in [ False, True]:
             isosig = M.triangulation_isosig(
-                    decorated = True,
-                    ignore_cusp_ordering = ignore_cusp_ordering,
-                    ignore_curve_orientations = ignore_curve_orientations)
+                    decorated=True,
+                    ignore_cusp_ordering=ignore_cusp_ordering,
+                    ignore_curve_orientations=ignore_curve_orientations)
             N = Manifold(isosig)
             N_filled = N.filled_triangulation()
 

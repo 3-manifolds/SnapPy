@@ -58,14 +58,14 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     gluings : dict[int, Perm4] = {
         f: p for f, p in tet.Gluing.items() }
 
-    id_matrix = matrix.identity(ring = RF, n = 4)
+    id_matrix = matrix.identity(ring=RF, n=4)
 
     for f0, new_tet0 in new_tets.items():
         new_tet0.geodesic_pieces = []
         v0 = simplex.comp(f0)
         new_tet0.R13_vertices = { v0 : new_point }
         new_tet0.post_drill_infos = {
-            v0 : CuspPostDrillInfo(index = given_pieces[0].index) }
+            v0 : CuspPostDrillInfo(index=given_pieces[0].index) }
         new_tet0.O13_matrices = {}
         new_tet0.PeripheralCurves = [
             [ { v : { face : 0 for face in simplex.TwoSubsimplices }
@@ -171,7 +171,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
                 r13_endpoints,
                 retrace_direction,
                 verified,
-                allowed_end_corners = allowed_end_corners))
+                allowed_end_corners=allowed_end_corners))
 
     start_point : Endpoint = given_pieces[0].endpoints[0]
     end_point : Endpoint = given_pieces[-1].endpoints[1]
@@ -180,12 +180,12 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
             given_pieces[0].index,
             new_tets[start_point.subsimplex],
             start_point,
-            direction = +1),
+            direction=+1),
         GeodesicPiece.create_face_to_vertex_and_attach(
             given_pieces[0].index,
             new_tets[end_point.subsimplex],
             end_point,
-            direction = -1) ]
+            direction=-1) ]
 
     GeodesicPiece.replace_by(
         given_pieces[0], given_pieces[-1], new_pieces)
@@ -208,7 +208,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                          for old_tip in old_tips ]
 
     RF = old_tets[0].O13_matrices[simplex.F0].base_ring()
-    id_matrix = matrix.identity(ring = RF, n = 4)
+    id_matrix = matrix.identity(ring=RF, n=4)
 
     O13_embeddings = [ old_tets[0].O13_matrices[old_shared_faces[0]],
                        id_matrix ]
@@ -385,7 +385,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                             r13_endpoints,
                             retrace_direction,
                             verified,
-                            allowed_end_corners = None))
+                            allowed_end_corners=None))
                     break
             else:
                 raise Exception("No match")

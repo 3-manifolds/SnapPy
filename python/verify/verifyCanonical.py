@@ -38,7 +38,7 @@ class FindExactShapesError(RuntimeError):
 
 
 @sage_method
-def interval_checked_canonical_triangulation(M, bits_prec = None):
+def interval_checked_canonical_triangulation(M, bits_prec=None):
     """
     Given a canonical triangulation of a cusped (possibly non-orientable)
     manifold M, return this triangulation if it has tetrahedral cells and can
@@ -83,8 +83,8 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     """
 
     # Get verified shape intervals
-    shapes = M.tetrahedra_shapes('rect', intervals = True,
-                                 bits_prec = bits_prec)
+    shapes = M.tetrahedra_shapes('rect', intervals=True,
+                                 bits_prec=bits_prec)
 
     # Compute cusp cross sections
     c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
@@ -278,9 +278,9 @@ def _print_exception(e):
 @sage_method
 def verified_canonical_retriangulation(
     M,
-    interval_bits_precs = default_interval_bits_precs,
-    exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
-    verbose = False):
+    interval_bits_precs=default_interval_bits_precs,
+    exact_bits_prec_and_degrees=default_exact_bits_prec_and_degrees,
+    verbose=False):
     """
     Given some triangulation of a cusped (possibly non-orientable) manifold ``M``,
     return its canonical retriangulation. Return ``None`` if it could not certify

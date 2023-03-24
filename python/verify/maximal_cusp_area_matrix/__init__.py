@@ -12,7 +12,7 @@ __all__ = ['verified_maximal_cusp_area_matrix',
 
 
 @sage_method
-def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
+def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec=None):
     """
     TESTS::
 
@@ -24,7 +24,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
         [7.00000000000? 7.00000000000?  28.000000000?]
     """
     hyperbolic, shapes = snappy_manifold.verify_hyperbolicity(
-        bits_prec = bits_prec)
+        bits_prec=bits_prec)
 
     if not hyperbolic:
         raise Exception("Could not compute shape intervals for: "
@@ -45,7 +45,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
 
 
 def triangulation_dependent_cusp_area_matrix(
-                            snappy_manifold, verified, bits_prec = None):
+                            snappy_manifold, verified, bits_prec=None):
     """
     Interesting case: t12521
 
@@ -66,7 +66,7 @@ def triangulation_dependent_cusp_area_matrix(
     """
     # Get shapes, as intervals if requested
     shapes = compute_hyperbolic_shapes(
-        snappy_manifold, verified = verified, bits_prec = bits_prec)
+        snappy_manifold, verified=verified, bits_prec=bits_prec)
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.
@@ -78,7 +78,7 @@ def triangulation_dependent_cusp_area_matrix(
 
     # If no areas are given, scale (up or down) all the cusps so that
     # they are in standard form.
-    c.ensure_std_form(allow_scaling_up = True)
+    c.ensure_std_form(allow_scaling_up=True)
 
     areas = c.cusp_areas()
     RIF = areas[0].parent()

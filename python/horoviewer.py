@@ -56,7 +56,7 @@ class HoroballViewer(ttk.Frame):
         self.bottomframe = bottomframe = ttk.Frame(self)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
             width=600, height=500, fovy=3.0, depth=1, double=True, swapinterval=0,
-            help = """
+            help="""
 Use the mouse to drag the scene relative to the fundamental parallelogram.
 
 Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps whom.
@@ -93,7 +93,7 @@ Use the View Options to select which components of the scene are drawn.
         view_button.config(menu=view_menu)
         view_button.grid(row=0, column=0, columnspan=2, sticky=Tk_.W, padx=0, pady=0)
         flip_button = ttk.Checkbutton(option_frame, text='Flip',
-                                      variable = self.flip_var,
+                                      variable=self.flip_var,
                                       takefocus=False,
                                       command=self.flip)
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
@@ -312,9 +312,9 @@ Use the View Options to select which components of the scene are drawn.
 
     # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
-        help = Button(self.top_frame, text = 'Help', width = 4,
+        help = Button(self.top_frame, text='Help', width=4,
                       borderwidth=0, highlightthickness=0,
-                      background=self.bgcolor, command = self.widget.help)
+                      background=self.bgcolor, command=self.widget.help)
         help.grid(row=0, column=5, sticky=E, pady=3)
         self.top_frame.columnconfigure(5, weight=1)
 

@@ -64,7 +64,7 @@ class FinitePoint():
 
         """
 
-        return self._translate(m, normalize_matrix = False)
+        return self._translate(m, normalize_matrix=False)
 
     def translate_PGL(self, m):
         """
@@ -81,7 +81,7 @@ class FinitePoint():
 
         """
 
-        return self._translate(m, normalize_matrix = True)
+        return self._translate(m, normalize_matrix=True)
 
     def _translate(self, m, normalize_matrix):
 

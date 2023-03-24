@@ -82,7 +82,7 @@ def check_points_consistency(m):
 
 def check_edge_consistency(m):
     RF = m.Tetrahedra[0].O13_matrices[simplex.F0].base_ring()
-    id_matrix = matrix.identity(ring = RF, n = 4)
+    id_matrix = matrix.identity(ring=RF, n=4)
 
     for e in m.Edges:
         t = id_matrix
@@ -152,7 +152,7 @@ def output_linked(x, tets_set):
     y = x
     while True:
         # print(y)
-        print(print_cell(y.endpoints[0].subsimplex) + "-----" + print_cell(y.endpoints[1].subsimplex), end = " ")
+        print(print_cell(y.endpoints[0].subsimplex) + "-----" + print_cell(y.endpoints[1].subsimplex), end=" ")
         y = y.next_
         if x is y:
             break
@@ -161,7 +161,7 @@ def output_linked(x, tets_set):
 
     y = x
     while True:
-        print("%2d---%2d" % (y.endpoints[0].subsimplex, y.endpoints[1].subsimplex), end = " ")
+        print("%2d---%2d" % (y.endpoints[0].subsimplex, y.endpoints[1].subsimplex), end=" ")
         y = y.next_
         if x is y:
             break
@@ -171,9 +171,9 @@ def output_linked(x, tets_set):
     y = x
     while True:
         if y.tet in tets_set:
-            print("   *   ", end = " ")
+            print("   *   ", end=" ")
         else:
-            print("       ", end = " ")
+            print("       ", end=" ")
         y = y.next_
         if x is y:
             break

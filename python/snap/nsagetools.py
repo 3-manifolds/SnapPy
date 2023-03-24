@@ -475,7 +475,7 @@ def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_convention
         sage: tau.degree()
         6
     """
-    G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2 = True)
+    G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2=True)
     if not all_lifts:
         return compute_torsion(G, bits_prec, alpha, phi, wada_conventions=wada_conventions)
     else:
@@ -497,8 +497,8 @@ def fast_determinant_of_laurent_poly_matrix(A):
     return Ap.det()
 
 
-def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
-                    return_parts = False, return_as_poly=True,
+def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha=None,
+                    return_parts=False, return_as_poly=True,
                     wada_conventions=False, symmetry_test=True):
     if alpha:
         F = alpha('a').base_ring()

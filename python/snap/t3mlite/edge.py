@@ -52,7 +52,7 @@ class Edge:
         e = self.Corners[0].Subsimplex
         return Arrow(e, RightFace[e], self.Corners[0].Tetrahedron)
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         out.write(repr(self) + "\t Edge of valence %d\tEndpoints %s\n"
                   % (self.valence(), self.Vertices))
         if self.IntOrBdry == 'bdry':

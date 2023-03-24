@@ -92,7 +92,7 @@ def _volume_from_shape(z):
     return z.volume()
 
 
-def compute_volume(manifold, verified, bits_prec = None):
+def compute_volume(manifold, verified, bits_prec=None):
     """
     Computes the volume of the given manifold. If verified is used,
     the hyperbolicity is checked rigorously and the volume is given as
@@ -113,7 +113,7 @@ def compute_volume(manifold, verified, bits_prec = None):
     # verify that this is indeed a solution to the polynomial gluing
     # equations.
     shape_intervals = manifold.tetrahedra_shapes(
-        'rect', bits_prec = bits_prec, intervals = verified)
+        'rect', bits_prec=bits_prec, intervals=verified)
 
     if verified:
         # If requested, check it is a valid hyperbolic structure

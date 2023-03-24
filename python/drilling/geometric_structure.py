@@ -83,14 +83,14 @@ def add_r13_geometry(
     """
 
     shapes = compute_hyperbolic_shapes(
-        manifold, verified = verified, bits_prec = bits_prec)
+        manifold, verified=verified, bits_prec=bits_prec)
     z = shapes[0]
     RF = z.real().parent()
 
     # Develop the vertices in the upper half space model - we will
     # convert them to the hyperboloid model later.
     poly = FundamentalPolyhedronEngine.from_manifold_and_shapes(
-        manifold, shapes, normalize_matrices = True)
+        manifold, shapes, normalize_matrices=True)
 
     # Match the order of the mcomplex.Vertices to the one the SnapPea
     # kernel sees and copy meridians and longitudes to tet.PeripheralCurves.
@@ -162,7 +162,7 @@ def add_r13_geometry(
                 # Make the SnapPea kernel compute peripheral curves the first
                 # time when we need them.
                 G = manifold.fundamental_group(False)
-                all_peripheral_words = G.peripheral_curves(as_int_list = True)
+                all_peripheral_words = G.peripheral_curves(as_int_list=True)
             # Note that a cusp only determines the words for the meridian
             # and longitude only up to conjugacy, we need to pick a lift of the
             # cusp and a path from the basepoint to the lift.

@@ -138,8 +138,8 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 
 
 @sage_method
-def verify_hyperbolicity(manifold, verbose = False, bits_prec = None,
-                         holonomy=False, fundamental_group_args = [], lift_to_SL=True):
+def verify_hyperbolicity(manifold, verbose=False, bits_prec=None,
+                         holonomy=False, fundamental_group_args=[], lift_to_SL=True):
     """
     Given an orientable SnapPy Manifold, verifies its hyperbolicity.
 
@@ -201,7 +201,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = None,
 
     try:
         shape_intervals = manifold.tetrahedra_shapes(
-            'rect', bits_prec = bits_prec, intervals = True)
+            'rect', bits_prec=bits_prec, intervals=True)
     except (ValueError, RuntimeError):
         if verbose:
             print("Could not certify solution to rectangular gluing equations")

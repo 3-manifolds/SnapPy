@@ -358,11 +358,11 @@ class _IntervalTreeTester(IntervalTree):
         if node.isRed:
             align += 3
 
-        print(align * " ", end = " ")
+        print(align * " ", end=" ")
         if node.isRed:
-            print("R", end = " ")
+            print("R", end=" ")
         else:
-            print("B", end = " ")
+            print("B", end=" ")
 
         print(node.interval.lower())
 

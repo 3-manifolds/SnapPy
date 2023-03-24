@@ -7,7 +7,7 @@ __all__ = ['verified_complex_volume_torsion']
 
 
 @sage_method
-def verified_complex_volume_torsion(manifold, bits_prec = None):
+def verified_complex_volume_torsion(manifold, bits_prec=None):
 
     completeness = [
         cusp_info['complete?'] for cusp_info in manifold.cusp_info() ]

@@ -18,19 +18,19 @@ class Slider(ttk.Scale):
     knob to move to the click point.
     """
     def __init__(self, container, left_end, right_end,
-                 orient = tk.HORIZONTAL):
+                 orient=tk.HORIZONTAL):
         ttk.Scale.__init__(self,
-                           master = container,
-                           from_ = self._slider_left_end,
-                           to = self._slider_right_end,
-                           value = 2.0,
-                           orient = orient,
+                           master=container,
+                           from_=self._slider_left_end,
+                           to=self._slider_right_end,
+                           value=2.0,
+                           orient=orient,
                            takefocus=0)
         self.left_end = left_end
         self.right_end = right_end
         self.orient = orient
         self.callback = None
-        self.configure(command = self._command)
+        self.configure(command=self._command)
         self.bind('<Button-1>', self._handle_mouse)
 
     def set_callback(self, callback):
@@ -41,7 +41,7 @@ class Slider(ttk.Scale):
         slider_length = self._slider_right_end - self._slider_left_end
         v = (value - self.left_end) / length
         slider_value = v * slider_length + self._slider_left_end
-        self.configure(value = slider_value)
+        self.configure(value=slider_value)
 
     def _command(self, slider_value):
         if self.callback:
@@ -202,9 +202,9 @@ class ZoomSlider(ttk.Frame):
         format_str1 = '%%.%df' % (num_digits + 1)
         format_str2 = '%%.%df' % num_digits
 
-        self.value_label.configure(text = format_str1 % self.current_value)
-        self.min_label.configure(text = format_str2 % l)
-        self.max_label.configure(text = format_str2 % r)
+        self.value_label.configure(text=format_str1 % self.current_value)
+        self.min_label.configure(text=format_str2 % l)
+        self.max_label.configure(text=format_str2 % r)
         if self.on_change:
             self.on_change()
 

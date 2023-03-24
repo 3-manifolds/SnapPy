@@ -159,10 +159,10 @@ def graphics_failures(verbose, windows, use_modernopengl):
     return result
 
 
-def runtests(verbose = False,
-             quick = False,
-             windows = False,
-             use_modernopengl = True):
+def runtests(verbose=False,
+             quick=False,
+             windows=False,
+             use_modernopengl=True):
 
     DocTestParser.use_modernopengl = use_modernopengl
 
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     except getopt.GetoptError:
         print("Could not parse arguments")
 
-    sys.exit(runtests(verbose = verbose,
-                      quick = quick,
-                      windows = windows,
-                      use_modernopengl = use_modernopengl))
+    sys.exit(runtests(verbose=verbose,
+                      quick=quick,
+                      windows=windows,
+                      use_modernopengl=use_modernopengl))

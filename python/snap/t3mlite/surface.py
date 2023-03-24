@@ -144,7 +144,7 @@ class Surface:
                 linked_edges.append(edge.Index)
         return linked_edges
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         if self.type() == "normal":
             out.write("Normal surface\n")
         for i in range(self.Size):
@@ -361,7 +361,7 @@ class ClosedSurface(Surface):
 
         return (1, zero_index)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         if self.type() == "normal":
             # check if really boring:
             q, e = self.is_edge_linking_torus()
@@ -456,7 +456,7 @@ class SpunSurface(Surface):
             raise OverflowError('Yikes! A non-integral euler characteristic!')
         return -int(intresult)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("SpunSurface.\n Slope: %s; Boundary components: %d; " %
                   reduce_slope(self.BoundarySlope))
         out.write("Euler characteristic: %d\n" %
@@ -480,7 +480,7 @@ class ClosedSurfaceInCusped(ClosedSurface):
         self.Incompressible = None
         self.BoundarySlope = None
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("ClosedSurfaceInCusped #%d:  Euler %d;  Incompressible %s\n" %
                   (manifold.ClosedSurfaces.index(self), self.EulerCharacteristic, self.Incompressible))
         # check if really boring:

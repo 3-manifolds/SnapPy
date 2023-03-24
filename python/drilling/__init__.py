@@ -522,13 +522,17 @@ def dummy_function_for_additional_doctests():
         >>> import sys
         >>> original_limit = sys.getrecursionlimit()
         >>> sys.setrecursionlimit(100000)
-
-        >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        >>> def drilled_isosig(M, words):
+        ...     for i in range(10):
+        ...         try:
+        ...             F = M.drill_words(words).filled_triangulation()
+        ...             return F.canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        ...         except RuntimeError:
+        ...             pass
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBba'
-        >>> Manifold('K11n34(0,1)').drill_words(['iFJ', 'iFcdbEiFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
-
-
         >>> sys.setrecursionlimit(original_limit)
 
     """

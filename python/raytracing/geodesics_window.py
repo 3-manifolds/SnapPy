@@ -12,7 +12,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
         self.headings = (
-            #(text, column, weight, span)
+            # (text, column, weight, span)
             ('Show', 0, 0, 1),
             ('Color', 1, 0, 1),
             ('Word(s)', 2, 0, 1),

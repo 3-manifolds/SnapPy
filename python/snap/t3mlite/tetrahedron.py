@@ -1,4 +1,4 @@
-#$Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
+# $Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

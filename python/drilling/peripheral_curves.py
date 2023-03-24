@@ -163,7 +163,7 @@ def _install_longitude(start_tet : Tetrahedron):
     # first reached. Thus, we can later trace back a path to the starting
     # tetrahedron.
     visited_tet_to_face = { tet1 : simplex.F3 }
-    pending_tets = deque([( tet0,  simplex.F2)])
+    pending_tets = deque([( tet0, simplex.F2)])
     while True:
         tet, entry_f = pending_tets.popleft()
         if tet in visited_tet_to_face:

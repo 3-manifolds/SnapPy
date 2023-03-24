@@ -161,9 +161,9 @@ class CuspTilingEngine(McomplexEngine):
 
         CIF = p2.parent()
 
-        return { v0 :   Infinity,
-                 v1 :   CIF(0),
-                 v2 :   p2,
+        return { v0 : Infinity,
+                 v1 : CIF(0),
+                 v2 : p2,
                  v3 : - p3 }
 
     def reset_cusp(self, cusp_index):

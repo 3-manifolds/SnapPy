@@ -108,7 +108,7 @@ def parse_rs_rur(text, variables):
                    for numerator_str in numerators_str.split(',') ]
 
     fracs = [
-        RUR( [ (  numerator.Mod(extension),  1),
+        RUR( [ (  numerator.Mod(extension), 1),
                (denominator.Mod(extension), -1) ] )
         for numerator in numerators ]
 

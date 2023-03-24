@@ -28,7 +28,7 @@ class NonZeroDimensionalComponent(Component):
                  dimension = 'unknown', free_variables = None, genus = None,
                  p = None):
 
-        if not p is None:
+        if p is not None:
             self.dimension = p.dimension
             self.free_variables = p.free_variables
             self.genus = p.genus
@@ -44,7 +44,7 @@ class NonZeroDimensionalComponent(Component):
         else:
             f = ', free_variables = %r' % self.free_variables
 
-        if not self.genus is None:
+        if self.genus is not None:
             f += ', genus = %d' % self.genus
 
         return "NonZeroDimensionalComponent(dimension = %r%s)" % (

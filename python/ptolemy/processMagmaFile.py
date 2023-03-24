@@ -24,7 +24,7 @@ def decomposition_from_magma(text):
     primary_decomposition = processFileBase.find_section(
         text, "PRIMARY=DECOMPOSITION")
     radical_decomposition = processFileBase.find_section(
-        text,  "RADICAL=DECOMPOSITION")
+        text, "RADICAL=DECOMPOSITION")
 
     if untyped_decomposition:
         decomposition = untyped_decomposition[0]
@@ -52,7 +52,7 @@ def decomposition_from_magma(text):
     if free_variables_section:
         free_variables = eval(free_variables_section[0])
     else:
-        free_variables = len(decomposition_components) * [ None ]
+        free_variables = len(decomposition_components) * [None]
 
     witnesses_section = processFileBase.find_section(
         text, "WITNESSES=FOR=COMPONENTS")
@@ -60,15 +60,15 @@ def decomposition_from_magma(text):
         witnesses_sections = processFileBase.find_section(
             witnesses_section[0], "WITNESSES")
     else:
-        witnesses_sections = len(decomposition_components) * [ "" ]
+        witnesses_sections = len(decomposition_components) * [""]
 
     genuses_section = processFileBase.find_section(
         text, "GENUSES=FOR=COMPONENTS")
     if genuses_section:
         genuses_sections = processFileBase.find_section(
-           genuses_section[0], "GENUS=FOR=COMPONENT")
+            genuses_section[0], "GENUS=FOR=COMPONENT")
     else:
-        genuses_sections = len(decomposition_components) * [ "" ]
+        genuses_sections = len(decomposition_components) * [""]
 
     def process_match(i, comp, free_vars, witnesses_txt, genus_txt):
 

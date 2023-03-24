@@ -44,10 +44,10 @@ def random_transform(steps=5):
     >>> random_transform(5).det()
     1
     """
-    I = Matrix([[1, 0, 0], [0,  1,  0], [ 0,  0,  1]])
-    X = Matrix([[0, 1, 0], [0,  0,  1], [ 1,  0,  0]])
-    Y = Matrix([[1, 0, 1], [0, -1, -1], [ 0,  1,  0]])
-    Z = Matrix([[0, 1, 0], [1,  0,  0], [-1, -1, -1]])
+    I = Matrix([[1, 0, 0], [0, 1, 0], [ 0, 0, 1]])
+    X = Matrix([[0, 1, 0], [0, 0, 1], [ 1, 0, 0]])
+    Y = Matrix([[1, 0, 1], [0, -1, -1], [ 0, 1, 0]])
+    Z = Matrix([[0, 1, 0], [1, 0, 0], [-1, -1, -1]])
     # X and Y have order two and Z order three, so there are
     # symmetric gens:
     gens = [I, X, X*X, Y, Y*Y, Z, Z]
@@ -214,7 +214,7 @@ class LinkProjection():
         self._setup_crossings()
 
     def _setup_crossings(self):
-        #compute the over and under crossings of the link projection
+        # compute the over and under crossings of the link projection
 
         pts = self.points
         crossings, arcs = [], []

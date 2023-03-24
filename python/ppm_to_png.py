@@ -209,7 +209,7 @@ def scan_rows_from_file(infile, width, height, planes, bitdepth):
     for y in range(height):
         yield line()
 
-##### Prior to this line, everything is identical to
+# Prior to this line, everything is identical to
 
 
 def convert_ppm_to_png(infile_object, outfile_object):

@@ -195,7 +195,7 @@ class GeodesicInfo:
         # Do some verification work for the above information to fill
         # self.tet, self.lifted_tetrahedra and self.core_curve_cusp.
 
-        if not cusp_curve_vertex is None:
+        if cusp_curve_vertex is not None:
             # Verify that the the geodesic is really the core curve and
             # determine whether the geodesic and core curve or parallel
             # or anti-parallel.

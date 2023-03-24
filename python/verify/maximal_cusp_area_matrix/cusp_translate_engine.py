@@ -21,7 +21,7 @@ class CuspTranslateEngine():
         det = a * d - b * c
 
         self._matrix = matrix([[ d / det, -b / det],
-                               [-c / det,  a / det]])
+                               [-c / det, a / det]])
 
     def _to_vec(self, z):
         v = self._matrix * vector([z.real(), z.imag()])

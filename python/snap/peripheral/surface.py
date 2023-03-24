@@ -50,7 +50,7 @@ class Edge():
         self.index = None
 
     def glued_to(self, side):
-        for sides in ( [S for S in self.sides],  [-S for S in self.sides] ):
+        for sides in ( [S for S in self.sides], [-S for S in self.sides] ):
             if side in sides:
                 sides.remove(side)
                 return sides[0]

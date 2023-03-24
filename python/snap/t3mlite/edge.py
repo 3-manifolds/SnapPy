@@ -1,4 +1,4 @@
-#$Id: edge.py,v 1.3 2002/09/20 03:52:16 culler Exp $
+# $Id: edge.py,v 1.3 2002/09/20 03:52:16 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

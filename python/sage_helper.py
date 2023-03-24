@@ -162,7 +162,7 @@ def print_results(module, results):
 
 def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())
-    #full_extraglobals = dict(globs.items() + extraglobs.items())
+    # full_extraglobals = dict(globs.items() + extraglobs.items())
     full_extraglobals = globs.copy()
     full_extraglobals.update(extraglobs)
     failed, attempted = 0, 0

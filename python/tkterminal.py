@@ -785,7 +785,7 @@ class TkTerm:
         """
         if self.quiet:
             return
-        #if self.interrupted:
+        # if self.interrupted:
         #    self.interrupted = False
         #    raise KeyboardInterrupt('Writing')
         if mark != Tk_.INSERT:

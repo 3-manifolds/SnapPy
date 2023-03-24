@@ -1,4 +1,4 @@
-#$Id: simplex.py,v 1.4 2010/07/12 21:14:01 t3m Exp $
+# $Id: simplex.py,v 1.4 2010/07/12 21:14:01 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

@@ -1,4 +1,4 @@
-#$Id: vertex.py,v 1.3 2003/03/07 17:29:28 culler Exp $
+# $Id: vertex.py,v 1.3 2003/03/07 17:29:28 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

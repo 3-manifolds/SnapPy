@@ -529,7 +529,7 @@ def _matrix_L1_distance_to_kernel(m, snappeaM):
 
 
 def _negate_matrix_to_match_kernel(m, snappeaM):
-    diff_plus = _matrix_L1_distance_to_kernel(m,  snappeaM)
+    diff_plus = _matrix_L1_distance_to_kernel(m, snappeaM)
 
     diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 

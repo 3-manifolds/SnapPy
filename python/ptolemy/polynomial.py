@@ -7,13 +7,13 @@ long = int
 unicode = str
 
 #######################################################
-### Public Definitions of Monomial and Polynomial class
+# Public Definitions of Monomial and Polynomial class
 
 # The coefficients of a polynomial can be any type, the
 # policy for mixed coefficients is defined in
 # _storage_type_policy and _operator_type_policy.
 
-### Definition of Monomial Class
+# Definition of Monomial Class
 
 
 class Monomial():
@@ -265,7 +265,7 @@ class Polynomial():
         """Construct a polynomial consisting of a single variable."""
         return Polynomial( (Monomial.from_variable_name(var),))
 
-    ### constructor takes a tuple of polynomials which are combined
+    # constructor takes a tuple of polynomials which are combined
 
     def __init__(self, monomials = ()):
 
@@ -561,10 +561,10 @@ class Polynomial():
                                   for monomial in self._monomials]))
 
 ###############################################################
-### Default functions for parsing and printing the coefficients
+# Default functions for parsing and printing the coefficients
 
-### The user will rewrite these for other types and supply to
-### the respective methods of Monomial and Polynomial.
+# The user will rewrite these for other types and supply to
+# the respective methods of Monomial and Polynomial.
 
 
 def parse_int_coefficient(s):
@@ -678,7 +678,7 @@ _operator_precedence = {
 def _apply_operator(op, l, r):
     return _operators[op](l,r)
 
-### Helper functions for parsing
+# Helper functions for parsing
 
 
 def _coefficient_is_non_trivial(c):
@@ -696,7 +696,7 @@ def _parse_variable(s):
     else:
         return None, s
 
-### Parsing function for Polynomial
+# Parsing function for Polynomial
 
 
 def _parse_polynomial_from_string(s, parse_coefficient_function):

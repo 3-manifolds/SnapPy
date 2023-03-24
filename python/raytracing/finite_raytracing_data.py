@@ -83,7 +83,7 @@ class FiniteRaytracingData(RaytracingData):
                 t3m.V3 : _compute_vertex(tet, (3,0,1,2)) }
 
     def _compute_edge_ends(self):
-        cs = [ vector(self.RF,[1,  1, 0, 0]),
+        cs = [ vector(self.RF,[1, 1, 0, 0]),
                vector(self.RF,[1, -1, 0, 0]) ]
 
         def _compute_edge_ends(tet, perm):
@@ -166,7 +166,7 @@ class FiniteRaytracingData(RaytracingData):
         weight = 0.0
         return (boost, tet_num, weight)
 
-################################################################3
+# 3
 #
 # Helpers
 #
@@ -197,25 +197,25 @@ def _adjoint(m):
 
 _new_perm_edge_type_old_perm = [
     ((1, 0, 2, 3), 'alpha', t3m.Perm4((0, 1, 2, 3))),
-    ((0, 2, 1, 3), 'beta',  t3m.Perm4((0, 1, 2, 3))),
+    ((0, 2, 1, 3), 'beta', t3m.Perm4((0, 1, 2, 3))),
     ((0, 1, 3, 2), 'gamma', t3m.Perm4((0, 1, 2, 3))),
-    ((1, 2, 0, 3), 'beta',  t3m.Perm4((1, 0, 2, 3))),
+    ((1, 2, 0, 3), 'beta', t3m.Perm4((1, 0, 2, 3))),
     ((1, 0, 3, 2), 'gamma', t3m.Perm4((1, 0, 2, 3))),
     ((2, 0, 1, 3), 'alpha', t3m.Perm4((0, 2, 1, 3))),
     ((0, 2, 3, 1), 'gamma', t3m.Perm4((0, 2, 1, 3))),
-    ((0, 3, 1, 2), 'beta',  t3m.Perm4((0, 1, 3, 2))),
+    ((0, 3, 1, 2), 'beta', t3m.Perm4((0, 1, 3, 2))),
     ((2, 1, 0, 3), 'alpha', t3m.Perm4((1, 2, 0, 3))),
     ((1, 2, 3, 0), 'gamma', t3m.Perm4((1, 2, 0, 3))),
-    ((1, 3, 0, 2), 'beta',  t3m.Perm4((1, 0, 3, 2))),
+    ((1, 3, 0, 2), 'beta', t3m.Perm4((1, 0, 3, 2))),
     ((2, 0, 3, 1), 'gamma', t3m.Perm4((2, 0, 1, 3))),
-    ((0, 3, 2, 1), 'beta',  t3m.Perm4((0, 2, 3, 1))),
+    ((0, 3, 2, 1), 'beta', t3m.Perm4((0, 2, 3, 1))),
     ((3, 0, 1, 2), 'alpha', t3m.Perm4((0, 3, 1, 2))),
     ((2, 1, 3, 0), 'gamma', t3m.Perm4((2, 1, 0, 3))),
-    ((1, 3, 2, 0), 'beta',  t3m.Perm4((1, 2, 3, 0))),
+    ((1, 3, 2, 0), 'beta', t3m.Perm4((1, 2, 3, 0))),
     ((3, 1, 0, 2), 'alpha', t3m.Perm4((1, 3, 0, 2))),
-    ((2, 3, 0, 1), 'beta',  t3m.Perm4((2, 0, 3, 1))),
+    ((2, 3, 0, 1), 'beta', t3m.Perm4((2, 0, 3, 1))),
     ((3, 0, 2, 1), 'alpha', t3m.Perm4((0, 3, 2, 1))),
-    ((2, 3, 1, 0), 'beta',  t3m.Perm4((2, 1, 3, 0))),
+    ((2, 3, 1, 0), 'beta', t3m.Perm4((2, 1, 3, 0))),
     ((3, 1, 2, 0), 'alpha', t3m.Perm4((1, 3, 2, 0))),
     ((3, 2, 0, 1), 'alpha', t3m.Perm4((2, 3, 0, 1))),
     ((3, 2, 1, 0), 'alpha', t3m.Perm4((2, 3, 1, 0))) ]

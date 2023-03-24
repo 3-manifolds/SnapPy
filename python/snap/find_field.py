@@ -273,7 +273,7 @@ class ListOfApproximateAlgebraicNumbers():
         def message(*args):
             if verbosity:
                 print(*args)
-                #assert False
+                # assert False
 
         # The input list
         elts = self.list()
@@ -289,7 +289,7 @@ class ListOfApproximateAlgebraicNumbers():
         for i, elt in enumerate(elts):
             # Can the newly considered element elt be expressed in the old z
             exact_elt = z.express(elt, prec)
-            if not exact_elt is None:
+            if exact_elt is not None:
                 # If yes, remember it as its exact representation
                 exact_elts.append(exact_elt)
             else:

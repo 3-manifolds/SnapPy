@@ -1,16 +1,16 @@
-### Tests the ptolemy module
+# Tests the ptolemy module
 ###
-### Test in sage with precomputed results in testing_files_directory:
-### sage -python test.py
+# Test in sage with precomputed results in testing_files_directory:
+# sage -python test.py
 ###
-### Test in python with precomputed results:
-### python test.py
+# Test in python with precomputed results:
+# python test.py
 ###
-### Test in sage computing the results:
-### sage -python test.py --compute
+# Test in sage computing the results:
+# sage -python test.py --compute
 ###
-### Test in python computing the results using magma:
-### python test.py --compute
+# Test in python computing the results using magma:
+# python test.py --compute
 
 from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
@@ -419,8 +419,8 @@ def testComputeSolutionsForManifoldGeneralizedObstructionClass(
 
     varieties = manifold.ptolemy_variety(N,
                                         obstruction_class = "all_generalized"
-                                        #, simplify = False
-                                        #, eliminate_fixed_ptolemys = True
+                                        # , simplify = False
+                                        # , eliminate_fixed_ptolemys = True
                                         )
 
     assert len(varieties) == 2
@@ -883,7 +883,7 @@ def main(verbose=False, doctest=True):
 
     print("Running manifold tests...")
 
-    ### Test for a non-hyperbolic manifold
+    # Test for a non-hyperbolic manifold
 
     cvols = [ # Expected Complex volumes
         pari('0') ]
@@ -892,7 +892,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)  # No non-zero dimensional components
 
-    ### Test for 4_1, amphichiral, expect zero CS
+    # Test for 4_1, amphichiral, expect zero CS
 
     cvols = [ # Expected Complex volumes
         2 * vol_tet
@@ -902,7 +902,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect non-zero dimensional components
 
-    ### N = 3
+    # N = 3
 
     cvols = [ # Expected Complex volumes
         pari(0),
@@ -913,7 +913,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect non-zero dimensional components
 
-    ### N = 4
+    # N = 4
 
     cvols = [ # Expected Complex volumes
         2 * 10 * vol_tet,
@@ -933,9 +933,9 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     True)   # expect non-zero dimensional components
 
-    ### Test for 5_2, expect non-trivial CS
-    ### Number field has one real embedding with non-trival CS
-    ### And one pair of complex embeddings with non-trivial CS
+    # Test for 5_2, expect non-trivial CS
+    # Number field has one real embedding with non-trival CS
+    # And one pair of complex embeddings with non-trivial CS
 
     cvols = [ # Expected Complex volumes
         pari('+ 1.113454552473924010022656943451126420312050780921075311799926598907813005362784871512051614741669817*I'),
@@ -946,8 +946,8 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect no non-zero dimensional components
 
-    ### m015 which is isometric to 5_2
-    ### This example is also appearing on the website
+    # m015 which is isometric to 5_2
+    # This example is also appearing on the website
 
     cvols = [ # Expected Complex volumes
         pari('+ 0.4033353624187061319128390413376061001062613536896471642214173008084760853375773296525240139108027276*I'),
@@ -963,8 +963,8 @@ def main(verbose=False, doctest=True):
                      cvols, # expected volumes
                      False)   # expect no non-zero dimensional components
 
-    ### Test for m135
-    ### Ptolemy Variety has one non-zero dimensional component
+    # Test for m135
+    # Ptolemy Variety has one non-zero dimensional component
 
     cvols = [ # Expected Complex volumes
         pari('3.66386237670887606021841405972953644309659749712668853706599247848705207910501907791742605170446042499429769047678479831614359521330343623772637894992 + 4.93480220054467930941724549993807556765684970362039531320667468811002241120960262150088670185927611591201295688701157203888617406101502336380530883900*I')
@@ -975,9 +975,9 @@ def main(verbose=False, doctest=True):
                      cvols,       # expected volumes
                      True)        # expect a non-zero dimensional component
 
-    ### Test for s000
-    ### Number field has one real embedding with non-trival CS
-    ### And two complex embeddings with non-trivial CS
+    # Test for s000
+    # Number field has one real embedding with non-trival CS
+    # And two complex embeddings with non-trivial CS
 
     cvols = [ # Expected Complex volumes
         pari('3.296902414326637335562593088559162089146991699269941951875989849869324250860299302482577730785960256 + 0.4908671850777469648812718224097607532197026477625119178645010117072332396428578681905186509136879130*I'),
@@ -990,9 +990,9 @@ def main(verbose=False, doctest=True):
                      cvols,   # expected complex volumes
                      False)   # expect non-zero dimensional components
 
-    ### Test for v0000
-    ### This also tests the case of having more than one (here two)
-    ### cusps
+    # Test for v0000
+    # This also tests the case of having more than one (here two)
+    # cusps
 
     cvols = [ # Expected Complex volumes
         pari('3.377597408231442496961257171798882829176020069714519460350380851901055794392493960110119513942153791 + 0.3441889979504813554136570264352067044809511501367282461849580661783699588789118851518262199077361427*I'),
@@ -1004,9 +1004,9 @@ def main(verbose=False, doctest=True):
                       cvols,   # expected complex volumes
                       False)   # expect non-zero dimensional components
 
-    ### Test for t00000
-    ### This also tests the case of having more than one (here two)
-    ### cusps
+    # Test for t00000
+    # This also tests the case of having more than one (here two)
+    # cusps
 
     cvols = [ # Expected Complex volumes
         pari('1.801231981344929412976326011175173926741195258454700704383597306674496002389749200442131507334117933 - 0.5490336239273931479260463113980794374780078424892352183284248305887346671477869107359071072271699046*I'),
@@ -1020,8 +1020,8 @@ def main(verbose=False, doctest=True):
                       cvols,      # expected complex volumes
                       False)      # expect non-zero dimensional components
 
-    ### Check a big link
-    ### Also an example from the website
+    # Check a big link
+    # Also an example from the website
 
     magma_file_name = os.path.join(testing_files_directory,
                        'DT_mcbbiceaibjklmdfgh__sl2_c0.magma_out.bz2')

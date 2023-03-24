@@ -15,7 +15,7 @@ def numerical_solutions_with_one(polys):
 
 
 class PariPolynomialAndVariables:
-    def __init__(self, polynomial, variables = None):
+    def __init__(self, polynomial, variables=None):
 
         if isinstance(polynomial, Polynomial):
 
@@ -33,12 +33,12 @@ class PariPolynomialAndVariables:
     def substitute(self, var, value):
 
         return PariPolynomialAndVariables(
-            polynomial = self.pari_polynomial.substpol(var, value),
-            variables = [ v for v in self.variables if not v == var ])
+            polynomial=self.pari_polynomial.substpol(var, value),
+            variables=[ v for v in self.variables if not v == var ])
 
     def get_roots(self):
         return self.pari_polynomial.polroots(
-            precision = 3.4 * pari.get_real_precision())
+            precision=3.4 * pari.get_real_precision())
 
 
 def numerical_solutions(polys):

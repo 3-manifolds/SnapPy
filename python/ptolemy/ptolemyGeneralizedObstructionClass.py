@@ -38,7 +38,7 @@ class PtolemyGeneralizedObstructionClass():
 
     """
 
-    def __init__(self, H2_class, index = None, N = None, manifold = None):
+    def __init__(self, H2_class, index=None, N=None, manifold=None):
 
         self.H2_class = H2_class
         self._index = index

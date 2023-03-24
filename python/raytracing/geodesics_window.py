@@ -24,38 +24,38 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.title('Geodesics')
 
         self.frame = ttk.Frame(self)
-        self.frame.pack(expand = True, fill = tkinter.BOTH)
-        self.frame.columnconfigure(0, weight = 1)
+        self.frame.pack(expand=True, fill=tkinter.BOTH)
+        self.frame.columnconfigure(0, weight=1)
 
         top_frame = ttk.Frame(self.frame)
         top_frame.pack()
 
         left_top_frame = ttk.Frame(top_frame)
-        left_top_frame.pack(side = tkinter.LEFT, padx = 20)
+        left_top_frame.pack(side=tkinter.LEFT, padx=20)
 
         self.length_button = ttk.Button(
-            left_top_frame, text = "Add up to length", command=self.add_length_spectrum)
-        self.length_button.grid(row = 0, column = 0)
+            left_top_frame, text="Add up to length", command=self.add_length_spectrum)
+        self.length_button.grid(row=0, column=0)
 
         self.length_var = tkinter.StringVar(value=1.0)
 
         self.length_box = ttk.Spinbox(
             left_top_frame,
             from_=0.2, to=20.0, increment=0.2,
-            textvariable = self.length_var,
-            width = 4)
-        self.length_box.grid(row = 0, column = 1)
+            textvariable=self.length_var,
+            width=4)
+        self.length_box.grid(row=0, column=1)
 
         right_top_frame = ttk.Frame(top_frame)
-        right_top_frame.pack(side = tkinter.LEFT, padx = 20)
+        right_top_frame.pack(side=tkinter.LEFT, padx=20)
 
         self.word_button = ttk.Button(
-            right_top_frame, text = "Add word", command = self.add_word)
-        self.word_button.grid(row = 0, column = 0)
+            right_top_frame, text="Add word", command=self.add_word)
+        self.word_button.grid(row=0, column=0)
         self.word_entry = ttk.Entry(right_top_frame)
-        self.word_entry.grid(row = 0, column = 1)
+        self.word_entry.grid(row=0, column=1)
 
-        self.status_label = ttk.Label(self.frame, text = _default_status_msg)
+        self.status_label = ttk.Label(self.frame, text=_default_status_msg)
         self.status_label.pack()
 
         self.scrollable_frame = ScrollableFrame(self.frame)
@@ -81,22 +81,22 @@ class GeodesicsWindow(tkinter.Toplevel):
             UniformDictController.create_checkbox(
                 self.geodesics_frame,
                 self.raytracing_view.ui_parameter_dict,
-                key = 'geodesicTubeEnables',
-                index = geodesic.index,
-                row = row,
-                column = checkbox_column,
-                update_function = self.geodesic_checkbox_clicked)
+                key='geodesicTubeEnables',
+                index=geodesic.index,
+                row=row,
+                column=checkbox_column,
+                update_function=self.geodesic_checkbox_clicked)
 
             text = ', '.join(geodesic.words)
             if not geodesic.is_primitive():
                 text += ' (not primitive)'
 
-            l = ttk.Label(self.geodesics_frame, text = text)
-            l.grid(row = row, column = words_column)
+            l = ttk.Label(self.geodesics_frame, text=text)
+            l.grid(row=row, column=words_column)
 
             l = ttk.Label(self.geodesics_frame,
-                          text = '%.8f' % geodesic.complex_length.real())
-            l.grid(row = row, column = length_column)
+                          text='%.8f' % geodesic.complex_length.real())
+            l.grid(row=row, column=length_column)
 
             im_length = geodesic.complex_length.imag()
             abs_im_length = im_length.abs()
@@ -105,28 +105,28 @@ class GeodesicsWindow(tkinter.Toplevel):
                 s = '+' if im_length > 0 else '-'
 
                 l = ttk.Label(self.geodesics_frame,
-                              text = s + ' %.8f * I' % abs_im_length)
-                l.grid(row = row, column = length_column + 1)
+                              text=s + ' %.8f * I' % abs_im_length)
+                l.grid(row=row, column=length_column + 1)
 
             color = geodesic_index_to_color(geodesic.index)
 
             l = tkinter.Label(self.geodesics_frame,
-                              text = "Color",
-                              fg = color_to_tkinter(color),
-                              bg = color_to_tkinter(color))
-            l.grid(row = row, column = color_column, padx = 5)
+                              text="Color",
+                              fg=color_to_tkinter(color),
+                              bg=color_to_tkinter(color))
+            l.grid(row=row, column=color_column, padx=5)
 
             scale = UniformDictController.create_horizontal_scale(
                 self.geodesics_frame,
                 self.raytracing_view.ui_parameter_dict,
-                key = 'geodesicTubeRadii',
-                index = geodesic.index,
-                row = row,
-                column = radius_column,
-                left_end = 0.0,
-                right_end = 1.0,
-                update_function = self.raytracing_view.update_geodesic_data_and_redraw,
-                format_string = '%.3f')
+                key='geodesicTubeRadii',
+                index=geodesic.index,
+                row=row,
+                column=radius_column,
+                left_end=0.0,
+                right_end=1.0,
+                update_function=self.raytracing_view.update_geodesic_data_and_redraw,
+                format_string='%.3f')
 
             # Need to color Scale - but the following code fails.
             # scale.configure(background = color_to_tkinter(color))
@@ -135,7 +135,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.scrollable_frame.set_widths()
 
     def add_length_spectrum(self):
-        self.status_label.configure(text = _default_status_msg)
+        self.status_label.configure(text=_default_status_msg)
 
         self.raytracing_view.geodesics.add_length_spectrum(
             float(self.length_box.get()))
@@ -150,16 +150,16 @@ class GeodesicsWindow(tkinter.Toplevel):
             n = self.raytracing_view.geodesics.get_mcomplex().num_generators
             word_as_list(word, n)
         except ValueError:
-            self.status_label.configure(text = word + " contains non-generators")
+            self.status_label.configure(text=word + " contains non-generators")
             return
 
         try:
             index = self.raytracing_view.geodesics.add_word(word)
         except WordAppearsToBeParabolic:
-            self.status_label.configure(text = word + " is parabolic")
+            self.status_label.configure(text=word + " is parabolic")
             return
 
-        self.status_label.configure(text = _default_status_msg)
+        self.status_label.configure(text=_default_status_msg)
 
         self.raytracing_view.resize_geodesic_params()
         self.raytracing_view.enable_geodesic(index)

@@ -146,7 +146,7 @@ def get_manifold_thunk(text):
     Returned as thunk that evaluates to a snappy manifold.
     """
 
-    def get_manifold(text = text):
+    def get_manifold(text=text):
         triangulation_text = utilities.join_long_lines(
             find_unique_section(text, "TRIANGULATION"))
 

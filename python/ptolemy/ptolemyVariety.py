@@ -229,7 +229,7 @@ class PtolemyVariety():
             def sage_ideal(vars, eqns):
 
                 polynomialRing = PolynomialRing(
-                    RationalField(), vars, order = 'lex')
+                    RationalField(), vars, order='lex')
 
                 return Ideal(
                     polynomialRing, [ sage_eqn(eqn) for eqn in eqns ])
@@ -334,7 +334,7 @@ class PtolemyVariety():
 
     def to_magma_file(
             self, filename,
-            template_path = "magma/default.magma_template"):
+            template_path="magma/default.magma_template"):
         """
         >>> import os, tempfile
         >>> from snappy import Manifold
@@ -348,7 +348,7 @@ class PtolemyVariety():
 
     def to_magma(
             self,
-            template_path = "magma/default.magma_template"):
+            template_path="magma/default.magma_template"):
         """
         Returns a string with the ideal that can be used as input for magma.
 
@@ -398,29 +398,29 @@ class PtolemyVariety():
             utilities.break_long_lines(PREAMBLE))
 
         return Template(template).safe_substitute(
-            PREAMBLE = PREAMBLE,
-            QUOTED_PREAMBLE = QUOTED_PREAMBLE,
+            PREAMBLE=PREAMBLE,
+            QUOTED_PREAMBLE=QUOTED_PREAMBLE,
 
-            VARIABLES = (
+            VARIABLES=(
                 ", ".join(self.variables)),
-            VARIABLES_QUOTED = (
+            VARIABLES_QUOTED=(
                 ", ".join(['"%s"' % v for v in self.variables])),
-            VARIABLE_NUMBER = (
+            VARIABLE_NUMBER=(
                 len(self.variables)),
 
-            VARIABLES_WITH_NON_ZERO_CONDITION = (
+            VARIABLES_WITH_NON_ZERO_CONDITION=(
                 ", ".join(self.variables_with_non_zero_condition)),
-            VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED = (
+            VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED=(
                 ", ".join(['"%s"' % v
                            for v in self.variables_with_non_zero_condition])),
-            VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER = (
+            VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER=(
                 len(self.variables_with_non_zero_condition)),
 
-            EQUATIONS = (
+            EQUATIONS=(
                 ',\n          '.join(
                     [str(eqn)
                      for eqn in self.equations])),
-            EQUATIONS_WITH_NON_ZERO_CONDITION = (
+            EQUATIONS_WITH_NON_ZERO_CONDITION=(
                 ',\n          '.join(
                     [str(eqn)
                      for eqn in self.equations_with_non_zero_condition])))
@@ -495,14 +495,14 @@ class PtolemyVariety():
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
-    def _retrieve_solution_file(self, data_url = None, prefer_rur = False,
-                                verbose = False):
+    def _retrieve_solution_file(self, data_url=None, prefer_rur=False,
+                                verbose=False):
 
         # First try to retrieve solutions from the URL corresponding to
         # the preferred format (i.e., RUR vs magma decomposition)
 
-        url = self._solution_file_url(data_url = data_url,
-                                      rur = prefer_rur)
+        url = self._solution_file_url(data_url=data_url,
+                                      rur=prefer_rur)
         if verbose:
             print("Trying to retrieve solutions from %s ..." % url)
 
@@ -514,15 +514,15 @@ class PtolemyVariety():
             # If that file wasn't there, try to retrieve solutions from URL
             # corresponding to the non-prefered format
 
-            url = self._solution_file_url(data_url = data_url,
-                                          rur = not prefer_rur)
+            url = self._solution_file_url(data_url=data_url,
+                                          rur=not prefer_rur)
             if verbose:
                 print("Retrieving solutions instead from %s ...:" % url)
             return _retrieve_url(url)
 
-    def retrieve_decomposition(self, data_url = None, verbose = True):
+    def retrieve_decomposition(self, data_url=None, verbose=True):
 
-        url = self._solution_file_url(data_url = data_url, rur = False)
+        url = self._solution_file_url(data_url=data_url, rur=False)
         if verbose:
             print("Retrieving decomposition from %s ..." % url)
 
@@ -537,14 +537,14 @@ class PtolemyVariety():
 
         return processMagmaFile.decomposition_from_magma(text)
 
-    def retrieve_solutions(self, numerical = False,
-                           prefer_rur = False,
-                           data_url = None,
-                           verbose = True):
+    def retrieve_solutions(self, numerical=False,
+                           prefer_rur=False,
+                           data_url=None,
+                           verbose=True):
 
-        text = self._retrieve_solution_file(data_url = data_url,
-                                            prefer_rur = prefer_rur,
-                                            verbose = verbose)
+        text = self._retrieve_solution_file(data_url=data_url,
+                                            prefer_rur=prefer_rur,
+                                            verbose=verbose)
         if verbose:
             print("Parsing...")
 
@@ -577,11 +577,11 @@ class PtolemyVariety():
 
     def compute_decomposition(
         self,
-        engine = None,
-        memory_limit = 750000000,
-        directory = None,
-        verbose = False,
-        template_path = "magma/default.magma_template"):
+        engine=None,
+        memory_limit=750000000,
+        directory=None,
+        verbose=False,
+        template_path="magma/default.magma_template"):
         """
         Starts an engine such as magma to compute the
         radical decomposition of the Ptolemy variety.
@@ -604,11 +604,11 @@ class PtolemyVariety():
 
         if engine == 'magma':
             return processMagmaFile.run_magma(
-                self.to_magma(template_path = template_path),
-                filename_base = self.filename_base(),
-                memory_limit = memory_limit,
-                directory = directory,
-                verbose = verbose)
+                self.to_magma(template_path=template_path),
+                filename_base=self.filename_base(),
+                memory_limit=memory_limit,
+                directory=directory,
+                verbose=verbose)
 
         if engine == 'sage':
 
@@ -629,14 +629,14 @@ class PtolemyVariety():
                     polys = []
 
                 return PtolemyVarietyPrimeIdealGroebnerBasis(
-                    polys = polys,
-                    term_order = 'lex',
-                    size = None,
-                    dimension = dimension,
-                    is_prime = component.is_prime(),
-                    free_variables = None,
-                    py_eval = eval(self.py_eval_section()),
-                    manifold_thunk = lambda :M)
+                    polys=polys,
+                    term_order='lex',
+                    size=None,
+                    dimension=dimension,
+                    is_prime=component.is_prime(),
+                    free_variables=None,
+                    py_eval=eval(self.py_eval_section()),
+                    manifold_thunk=lambda :M)
 
             return utilities.MethodMappingList(
                 [ process_component(component)
@@ -644,12 +644,12 @@ class PtolemyVariety():
                   if not component.is_one()])
 
     def compute_solutions(self,
-                          engine = None,
-                          numerical = False,
-                          template_path = "magma/default.magma_template",
-                          memory_limit = 750000000,
-                          directory = None,
-                          verbose = False):
+                          engine=None,
+                          numerical=False,
+                          template_path="magma/default.magma_template",
+                          memory_limit=750000000,
+                          directory=None,
+                          verbose=False):
         """
         Starts an engine such as magma to compute the
         radical decomposition of the ideal and computes exact solutions.
@@ -666,14 +666,14 @@ class PtolemyVariety():
         """
 
         decomposition = self.compute_decomposition(
-            engine = engine,
-            memory_limit = memory_limit,
-            template_path = template_path,
-            directory = directory,
-            verbose = verbose)
+            engine=engine,
+            memory_limit=memory_limit,
+            template_path=template_path,
+            directory=directory,
+            verbose=verbose)
 
         return utilities.MethodMappingList(
-                [ component.solutions(numerical = numerical)
+                [ component.solutions(numerical=numerical)
                   for component in decomposition ])
 
     def degree_to_shapes(self):
@@ -743,7 +743,7 @@ def _fix_decoration(N, action_by_decoration_change):
         action_by_decoration_change)
 
     return matrix.get_independent_rows(
-        action_matrix, ptolemy_coords, desired_determinant = N)
+        action_matrix, ptolemy_coords, desired_determinant=N)
 
 
 def _generate_ptolemy_relations(N, num_tet,
@@ -894,7 +894,7 @@ def _retrieve_url(url):
         if hasattr(signal, 'SIGALRM'):
             sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
         r = Request(url,
-                    headers = {'User-Agent': 'Wget/1.20.3'})
+                    headers={'User-Agent': 'Wget/1.20.3'})
         s = urlopen(r)
 
     except HTTPError as e:

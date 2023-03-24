@@ -185,7 +185,7 @@ class HyperboloidNavigation:
         self.view_state = self.raytracing_data.initial_view_state()
 
         self.cursor = _default_cursor
-        self.configure(cursor = self.cursor)
+        self.configure(cursor=self.cursor)
 
         # Parameters controlling navigation in the same format that
         # get_uniform_binding returns..
@@ -338,7 +338,7 @@ class HyperboloidNavigation:
             self.cursor = _default_cursor
 
         if not self.mouse_mode:
-            self.configure(cursor = self.cursor)
+            self.configure(cursor=self.cursor)
 
     def tkKeyPress(self, event):
         if self.mouse_mode:
@@ -349,7 +349,7 @@ class HyperboloidNavigation:
 
         cursor = _cursor_mappings.get(k)
         if cursor:
-            self.configure(cursor = cursor)
+            self.configure(cursor=cursor)
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
         if last_and_release:
@@ -403,7 +403,7 @@ class HyperboloidNavigation:
             height = 1000
 
             f = tempfile.NamedTemporaryFile(
-                suffix = '.png', delete = False)
+                suffix='.png', delete=False)
 
             self.save_image(width, height, f)
 
@@ -416,7 +416,7 @@ class HyperboloidNavigation:
             if last or release:
                 return
 
-        self.configure(cursor = _default_move_cursor)
+        self.configure(cursor=_default_move_cursor)
 
         self.mouse_pos_when_pressed = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
@@ -511,9 +511,9 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None
-        self.configure(cursor = self.cursor)
+        self.configure(cursor=self.cursor)
 
-    def setup_keymapping(self, keyboard = 'QWERTY'):
+    def setup_keymapping(self, keyboard='QWERTY'):
         self.keymapping = _keymappings[keyboard]
 
         # Key (e.g., 'w', 'a', ...) to pair of time stamps.

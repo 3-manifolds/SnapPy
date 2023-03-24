@@ -62,13 +62,13 @@ def pgl2c_to_o13(m):
 
 def _basis_vectors_sl2c(CF):
     return [ matrix([[ 1 , 0 ],
-                     [ 0, 1 ]], ring = CF),
+                     [ 0, 1 ]], ring=CF),
              matrix([[ 1 , 0 ],
-                     [ 0 ,-1 ]], ring = CF),
+                     [ 0 ,-1 ]], ring=CF),
              matrix([[ 0 , 1 ],
-                     [ 1 , 0 ]], ring = CF),
+                     [ 1 , 0 ]], ring=CF),
              matrix([[ 0 , 1j],
-                     [-1j, 0 ]], ring = CF) ]
+                     [-1j, 0 ]], ring=CF) ]
 
 
 def _adjoint(m):

@@ -86,9 +86,9 @@ def process_component(py_eval, manifold_thunk, variables,
         # process Groebner Basis ???, add to NonZeroDimensionalComponent ???
 
         return NonZeroDimensionalComponent(
-            witnesses = witnesses,
-            dimension = dimension,
-            free_variables = free_variables)
+            witnesses=witnesses,
+            dimension=dimension,
+            free_variables=free_variables)
 
 
 def process_witnesses(py_eval, manifold_thunk, witnesses_section, for_dimension,
@@ -110,9 +110,9 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
         return SolutionContainer(
             coordinates.PtolemyCoordinates(
                 processRurFile.parse_maple_like_rur(rur_section[0]),
-                is_numerical = False,
-                py_eval_section = py_eval,
-                manifold_thunk = manifold_thunk))
+                is_numerical=False,
+                py_eval_section=py_eval,
+                manifold_thunk=manifold_thunk))
 
     gb_section = processFileBase.find_section(text, "GROEBNER=BASIS")
 
@@ -135,14 +135,14 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
         term_order = params["TERM=ORDER"].strip().lower()
 
         return PtolemyVarietyPrimeIdealGroebnerBasis(
-            polys = polys,
-            term_order = term_order,
-            size = None,
-            dimension = 0,
-            is_prime = True,
-            free_variables = None,
-            py_eval = py_eval,
-            manifold_thunk = manifold_thunk)
+            polys=polys,
+            term_order=term_order,
+            size=None,
+            dimension=0,
+            is_prime=True,
+            free_variables=None,
+            py_eval=py_eval,
+            manifold_thunk=manifold_thunk)
 
     rs_rur = processFileBase.find_section(text, "RS=RUR")
 
@@ -152,9 +152,9 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
         return SolutionContainer(
             coordinates.PtolemyCoordinates(
                 processRurFile.parse_rs_rur(rs_rur[0], variables),
-                is_numerical = False,
-                py_eval_section = py_eval,
-                manifold_thunk = manifold_thunk))
+                is_numerical=False,
+                py_eval_section=py_eval,
+                manifold_thunk=manifold_thunk))
 
     raise Exception("No parsable solution type given: %s..." % text[:100])
 
@@ -163,7 +163,7 @@ class SolutionContainer():
     def __init__(self, solutions):
         self._solutions = solutions
 
-    def solutions(self, numerical = False):
+    def solutions(self, numerical=False):
         if numerical:
             return self._solutions.numerical()
         else:

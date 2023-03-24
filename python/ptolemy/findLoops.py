@@ -418,7 +418,7 @@ def images_of_original_generators(coordinate_object, penalties):
     if M is None:
         raise Exception("Need to have a manifold")
 
-    loops = compute_loops_for_generators(M, penalties = penalties)
+    loops = compute_loops_for_generators(M, penalties=penalties)
 
     return (
         [ _evaluate_path(coordinate_object, loop      ) for loop in loops ],

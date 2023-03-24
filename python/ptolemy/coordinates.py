@@ -182,9 +182,9 @@ class PtolemyCoordinates(dict):
     True
     """
 
-    def __init__(self, d, is_numerical = True, py_eval_section = None,
-                 manifold_thunk = lambda : None,
-                 non_trivial_generalized_obstruction_class = False):
+    def __init__(self, d, is_numerical=True, py_eval_section=None,
+                 manifold_thunk=lambda : None,
+                 non_trivial_generalized_obstruction_class=False):
 
         self._manifold_thunk = manifold_thunk
 
@@ -298,9 +298,9 @@ class PtolemyCoordinates(dict):
             return self
         return ZeroDimensionalComponent(
             [ PtolemyCoordinates(
-                    d, is_numerical = True,
-                    manifold_thunk = self._manifold_thunk,
-                    non_trivial_generalized_obstruction_class = (
+                    d, is_numerical=True,
+                    manifold_thunk=self._manifold_thunk,
+                    non_trivial_generalized_obstruction_class=(
                         self._non_trivial_generalized_obstruction_class))
               for d in _to_numerical(self) ])
 
@@ -317,9 +317,9 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.to_PUR),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_terms_in_RUR(self):
@@ -336,9 +336,9 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.multiply_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_and_simplify_terms_in_RUR(self):
@@ -356,9 +356,9 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def cross_ratios(self):
@@ -408,8 +408,8 @@ class PtolemyCoordinates(dict):
         Get information about what one can do with cross ratios
         """
         return CrossRatios(_ptolemy_to_cross_ratio(self)[0],
-                           is_numerical = self._is_numerical,
-                           manifold_thunk = self._manifold_thunk)
+                           is_numerical=self._is_numerical,
+                           manifold_thunk=self._manifold_thunk)
 
     def cross_ratios_numerical(self):
         """
@@ -457,11 +457,11 @@ class PtolemyCoordinates(dict):
                         self,
                         branch_factor,
                         self._non_trivial_generalized_obstruction_class,
-                        as_flattenings = True)
+                        as_flattenings=True)
 
                     return Flattenings(d,
-                                       manifold_thunk = self._manifold_thunk,
-                                       evenN = evenN)
+                                       manifold_thunk=self._manifold_thunk,
+                                       evenN=evenN)
                 except LogToCloseToBranchCutError:
                     # Values to close to the branch cut, just multiply
                     # by a small offset
@@ -472,7 +472,7 @@ class PtolemyCoordinates(dict):
             return ZeroDimensionalComponent(
                 [num.flattenings_numerical() for num in self.numerical()])
 
-    def volume_numerical(self, drop_negative_vols = False):
+    def volume_numerical(self, drop_negative_vols=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only return the one volume.
@@ -491,8 +491,8 @@ class PtolemyCoordinates(dict):
             return vols
 
     def complex_volume_numerical(self,
-                                 drop_negative_vols = False,
-                                 with_modulo = False):
+                                 drop_negative_vols=False,
+                                 with_modulo=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute complex
         volumes. If already numerical, return the volume.
@@ -505,11 +505,11 @@ class PtolemyCoordinates(dict):
 
         if self._is_numerical:
             return self.flattenings_numerical().complex_volume(
-                with_modulo = with_modulo)
+                with_modulo=with_modulo)
         else:
             cvols = ZeroDimensionalComponent(
                 [ num.flattenings_numerical().complex_volume(
-                        with_modulo = with_modulo)
+                        with_modulo=with_modulo)
                   for num in self.numerical()])
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
@@ -775,9 +775,9 @@ class PtolemyCoordinates(dict):
         # no penalty.
         self._matrix_cache, self._inverse_matrix_cache = (
             findLoops.images_of_original_generators(self,
-                                                    penalties = (0, 1, 1)))
+                                                    penalties=(0, 1, 1)))
 
-    def evaluate_word(self, word, G = None):
+    def evaluate_word(self, word, G=None):
         """
         Given a word in the generators of the fundamental group,
         compute the corresponding matrix. By default, these are the
@@ -802,7 +802,7 @@ class PtolemyCoordinates(dict):
             G)
 
     def _testing_assert_identity(self, m,
-                                 allow_sign_if_obstruction_class = False):
+                                 allow_sign_if_obstruction_class=False):
 
         N = self.N()
 
@@ -871,7 +871,7 @@ class PtolemyCoordinates(dict):
                                     m4,
                                     matrix.matrix_mult(m5,m6))))), True)
 
-    def check_against_manifold(self, M = None, epsilon = None):
+    def check_against_manifold(self, M=None, epsilon=None):
         """
         Checks that the given solution really is a solution to the Ptolemy
         variety of a manifold. See help(ptolemy.PtolemyCoordinates) for
@@ -950,7 +950,7 @@ class PtolemyCoordinates(dict):
                                 epsilon,
                                 "Ptolemy relation")
 
-    def is_geometric(self, epsilon = 1e-6):
+    def is_geometric(self, epsilon=1e-6):
         """
         Returns true if all shapes corresponding to this solution have positive
         imaginary part.
@@ -1008,7 +1008,7 @@ class Flattenings(dict):
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
 
-    def __init__(self, d, manifold_thunk = lambda : None, evenN = 2):
+    def __init__(self, d, manifold_thunk=lambda : None, evenN=2):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
         self._manifold_thunk = manifold_thunk
@@ -1069,7 +1069,7 @@ class Flattenings(dict):
         num_tets = M.num_tetrahedra()
 
         z_cross_ratios = M.tetrahedra_shapes(
-            part='rect', dec_prec = pari.get_real_precision())
+            part='rect', dec_prec=pari.get_real_precision())
 
         all_cross_ratios = sum(
             [ [z, 1 / (1-z), 1 - 1/z] for z in z_cross_ratios], [])
@@ -1136,7 +1136,7 @@ class Flattenings(dict):
             dict([ (k, (log + PiI * p, z, p))
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
                                            all_cross_ratios, flattenings)]),
-            manifold_thunk = lambda : Mcopy)
+            manifold_thunk=lambda : Mcopy)
 
     def get_order(self):
         """
@@ -1175,7 +1175,7 @@ class Flattenings(dict):
 
         return (z, p, q_dilog_branch_cut)
 
-    def complex_volume(self, with_modulo = False):
+    def complex_volume(self, with_modulo=False):
         """
         Compute complex volume. The complex volume is defined only up to
         some multiple of m where m = i * pi**2/6 for PSL(2,C) and SL(N,C)
@@ -1213,7 +1213,7 @@ class Flattenings(dict):
             return cvol, m * pari('I')
         return cvol
 
-    def check_against_manifold(self, M = None, epsilon = 1e-10):
+    def check_against_manifold(self, M=None, epsilon=1e-10):
         """
         Checks that the flattening really is a solution to the logarithmic
         PGL(N,C) gluing equations of a manifold. Usage similar to
@@ -1259,7 +1259,7 @@ class Flattenings(dict):
         N = sum([int(x) for x in index]) + 2
 
         matrix_with_explanations = M.gluing_equations_pgl(
-            N, equation_type = 'all')
+            N, equation_type='all')
 
         matrix = matrix_with_explanations.matrix
         rows = matrix_with_explanations.explain_rows
@@ -1297,7 +1297,7 @@ class CrossRatios(dict):
     http://arxiv.org/abs/1207.6711
     """
 
-    def __init__(self, d, is_numerical = True, manifold_thunk = None):
+    def __init__(self, d, is_numerical=True, manifold_thunk=None):
         super(CrossRatios, self).__init__(d)
         self._is_numerical = is_numerical
         self._manifold_thunk = manifold_thunk
@@ -1313,25 +1313,25 @@ class CrossRatios(dict):
         self.dimension = 0
 
     @staticmethod
-    def from_snappy_manifold(M, dec_prec = None, bits_prec = None,
-                             intervals = False):
+    def from_snappy_manifold(M, dec_prec=None, bits_prec=None,
+                             intervals=False):
         """
         Constructs an assignment of shape parameters/cross ratios using
         the tetrahehdra_shapes method of a given SnapPy manifold. The optional
         parameters are the same as that of tetrahedra_shapes.
         """
 
-        shapes = M.tetrahedra_shapes('rect', dec_prec = dec_prec,
-                                     bits_prec = bits_prec,
-                                     intervals = intervals)
+        shapes = M.tetrahedra_shapes('rect', dec_prec=dec_prec,
+                                     bits_prec=bits_prec,
+                                     intervals=intervals)
         d = {}
         for i, shape in enumerate(shapes):
             d['z_0000_%d' % i] = shape
             d['zp_0000_%d' % i] = 1 / (1 - shape)
             d['zpp_0000_%d' % i] = 1 - 1 / shape
 
-        return CrossRatios(d, is_numerical = True,
-                           manifold_thunk = lambda M = M: M)
+        return CrossRatios(d, is_numerical=True,
+                           manifold_thunk=lambda M=M: M)
 
     def __repr__(self):
         dict_repr = dict.__repr__(self)
@@ -1380,8 +1380,8 @@ class CrossRatios(dict):
         if self._is_numerical:
             return self
         return ZeroDimensionalComponent([
-            CrossRatios(d, is_numerical = True,
-                        manifold_thunk = self._manifold_thunk)
+            CrossRatios(d, is_numerical=True,
+                        manifold_thunk=self._manifold_thunk)
             for d in _to_numerical(self) ])
 
     def to_PUR(self):
@@ -1397,8 +1397,8 @@ class CrossRatios(dict):
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.to_PUR),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
     def multiply_terms_in_RUR(self):
         """
@@ -1414,8 +1414,8 @@ class CrossRatios(dict):
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
     def multiply_and_simplify_terms_in_RUR(self):
         """
@@ -1432,10 +1432,10 @@ class CrossRatios(dict):
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
-    def volume_numerical(self, drop_negative_vols = False):
+    def volume_numerical(self, drop_negative_vols=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only compute the one volume.
@@ -1691,9 +1691,9 @@ class CrossRatios(dict):
         # size of any polynomial coefficients. We thus don't give them penalty.
         self._matrix_cache, self._inverse_matrix_cache = (
             findLoops.images_of_original_generators(self,
-                                                    penalties = (0, 1, 1)))
+                                                    penalties=(0, 1, 1)))
 
-    def evaluate_word(self, word, G = None):
+    def evaluate_word(self, word, G=None):
         """
         Given a word in the generators of the fundamental group,
         compute the corresponding matrix. By default, these are the
@@ -1717,7 +1717,7 @@ class CrossRatios(dict):
             word,
             G)
 
-    def check_against_manifold(self, M = None, epsilon = None):
+    def check_against_manifold(self, M=None, epsilon=None):
         """
         Checks that the given solution really is a solution to the PGL(N,C) gluing
         equations of a manifold. Usage similar to check_against_manifold of
@@ -1744,7 +1744,7 @@ class CrossRatios(dict):
         N = sum([int(x) for x in index]) + 2
 
         matrix_with_explanations = M.gluing_equations_pgl(
-            N, equation_type = 'all')
+            N, equation_type='all')
 
         matrix = matrix_with_explanations.matrix
         rows = matrix_with_explanations.explain_rows
@@ -1797,8 +1797,8 @@ class CrossRatios(dict):
               for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
 
         return CrossRatios(d,
-                           is_numerical = self._is_numerical,
-                           manifold_thunk = self._manifold_thunk)
+                           is_numerical=self._is_numerical,
+                           manifold_thunk=self._manifold_thunk)
 
     def is_real(self, epsilon):
         """
@@ -1815,7 +1815,7 @@ class CrossRatios(dict):
                 return False
         return True
 
-    def is_induced_from_psl2(self, epsilon = None):
+    def is_induced_from_psl2(self, epsilon=None):
         """
         For each simplex and each edges, checks that all cross ratios of that
         simplex that are parallel to that each are the same (maximal absolute
@@ -1849,7 +1849,7 @@ class CrossRatios(dict):
 
         return True
 
-    def is_pu_2_1_representation(self, epsilon, epsilon2 = None):
+    def is_pu_2_1_representation(self, epsilon, epsilon2=None):
         r"""
         Returns True if the representation is also a
         PU(2,1)-representation. This uses Proposition 3.5 and the
@@ -1961,7 +1961,7 @@ class CrossRatios(dict):
 
         return True
 
-    def is_geometric(self, epsilon = 1e-6):
+    def is_geometric(self, epsilon=1e-6):
         """
         Returns true if all shapes corresponding to this solution have positive
         imaginary part.
@@ -1986,9 +1986,9 @@ class CrossRatios(dict):
 
 
 def _ptolemy_to_cross_ratio(solution_dict,
-                            branch_factor = 1,
-                            non_trivial_generalized_obstruction_class = False,
-                            as_flattenings = False):
+                            branch_factor=1,
+                            non_trivial_generalized_obstruction_class=False,
+                            as_flattenings=False):
 
     N, has_obstruction = _N_and_has_obstruction_for_ptolemys(solution_dict)
     num_tets = _num_tetrahedra(solution_dict)
@@ -2190,7 +2190,7 @@ def _convert_to_pari_float(z):
     return pari(z)
 
 
-def _compute_flattening(a, b, c, d, branch_factor, N = 2):
+def _compute_flattening(a, b, c, d, branch_factor, N=2):
 
     PiMinusEpsilon = pari(3.141592)
 
@@ -2219,7 +2219,7 @@ def _dilog(z):
     return pari("dilog(%s)" % z)
 
 
-def _L_function(zpq_triple, evenN = 2):
+def _L_function(zpq_triple, evenN=2):
 
     z, p, q = zpq_triple
 

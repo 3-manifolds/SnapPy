@@ -18,9 +18,9 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                  is_prime,
                  free_variables,
                  py_eval,
-                 manifold_thunk = lambda : None,
-                 witnesses = [],
-                 genus = None):
+                 manifold_thunk=lambda : None,
+                 witnesses=[],
+                 genus=None):
 
         # Polynomials making up the groebner basis
         self.polys = polys
@@ -99,9 +99,9 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
 
         return PtolemyCoordinates(
             assignments,
-            is_numerical = False,
-            py_eval_section = self.py_eval,
-            manifold_thunk = self.manifold_thunk)
+            is_numerical=False,
+            py_eval_section=self.py_eval,
+            manifold_thunk=self.manifold_thunk)
 
     def _numerical_solutions(self):
         if not self._is_zero_dim_prime_and_lex():
@@ -117,22 +117,22 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
 
             return PtolemyCoordinates(
                 solution,
-                is_numerical = True,
-                py_eval_section = self.py_eval,
-                manifold_thunk = self.manifold_thunk)
+                is_numerical=True,
+                py_eval_section=self.py_eval,
+                manifold_thunk=self.manifold_thunk)
 
         return ZeroDimensionalComponent(
             [ process_solution(sol) for sol in sols ])
 
-    def solutions(self, numerical = False):
+    def solutions(self, numerical=False):
 
         if self.dimension > 0:
             return NonZeroDimensionalComponent(
-                [ witness.solutions(numerical = numerical)
+                [ witness.solutions(numerical=numerical)
                   for witness in self.witnesses ],
-                dimension = self.dimension,
-                free_variables = self.free_variables,
-                genus = self.genus)
+                dimension=self.dimension,
+                free_variables=self.free_variables,
+                genus=self.genus)
 
         if numerical:
             return self._numerical_solutions()

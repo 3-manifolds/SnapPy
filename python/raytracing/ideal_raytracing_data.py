@@ -67,7 +67,7 @@ class IdealRaytracingData(RaytracingData):
 
     @staticmethod
     def from_manifold(manifold,
-                      areas = None, insphere_scale = 0.05, weights = None):
+                      areas=None, insphere_scale=0.05, weights=None):
 
         if manifold.solution_type() != 'all tetrahedra positively oriented':
             return NonGeometricRaytracingData(
@@ -87,7 +87,7 @@ class IdealRaytracingData(RaytracingData):
         c = ComplexCuspCrossSection.fromManifoldAndShapes(
             manifold,
             manifold.tetrahedra_shapes('rect'),
-            one_cocycle = 'develop')
+            one_cocycle='develop')
         c.normalize_cusps()
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
@@ -394,7 +394,7 @@ class NonGeometricRaytracingData(McomplexEngine):
         return (boost, tet_num, weight)
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0],
+                          m=matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
@@ -516,13 +516,13 @@ def _cusp_view_matrix(tet, subsimplex, area):
     rotation = l_translation / abs(l_translation)
     scale = factor_to_move_inside/area.sqrt()
     borel_transform = matrix([[ scale*rotation, translation ],
-                              [     0, 1 ]], ring = CF)
+                              [     0, 1 ]], ring=CF)
 
     base_camera_matrix = matrix(
         [[ 1, 0, 0, 0],
          [ 0, 0, 0, 1],
          [ 0, 1, 0, 0],
-         [ 0, 0, 1, 0]], ring = RF)
+         [ 0, 0, 1, 0]], ring=RF)
 
     # Apply necessary pre and post O13-transforms to the transform
     # in the upper halfspace we computed above.

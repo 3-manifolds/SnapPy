@@ -23,18 +23,18 @@ def pgl2_matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
         CF = z1.parent()
         m = zinf - z1
         return matrix([[ -zinf, m ],
-                       [ -1, 0 ]], ring = CF)
+                       [ -1, 0 ]], ring=CF)
 
     if z1 == Infinity:
         CF = zinf.parent()
         return matrix([[ -zinf, z0 ],
-                       [ -1, 1  ]], ring = CF)
+                       [ -1, 1  ]], ring=CF)
 
     if zinf == Infinity:
         CF = z0.parent()
         l = z0 - z1
         return matrix([[ -l, z0 ],
-                       [  0, 1  ]], ring = CF)
+                       [  0, 1  ]], ring=CF)
 
     l = z0 - z1
     m = zinf - z1
@@ -43,7 +43,7 @@ def pgl2_matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
                    [ -l, m      ]])
 
 
-def are_sl_matrices_close(m1, m2, epsilon = 1e-5):
+def are_sl_matrices_close(m1, m2, epsilon=1e-5):
     """
     Compute whether two matrices are the same up to given epsilon.
     """
@@ -55,7 +55,7 @@ def are_sl_matrices_close(m1, m2, epsilon = 1e-5):
     return True
 
 
-def are_psl_matrices_close(m1, m2, epsilon = 1e-5):
+def are_psl_matrices_close(m1, m2, epsilon=1e-5):
     """
     Compute whether two matrices are the same up to given epsilon
     and multiplying by -Identity.

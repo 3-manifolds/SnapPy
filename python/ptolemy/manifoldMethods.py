@@ -128,8 +128,8 @@ def get_generalized_ptolemy_obstruction_classes(manifold, N):
                 already_seen.add(
                     tuple([(x * u) % N for x in H2_element]))
 
-    return [PtolemyGeneralizedObstructionClass(H2_element, index = index,
-                                               N = N, manifold = manifold)
+    return [PtolemyGeneralizedObstructionClass(H2_element, index=index,
+                                               N=N, manifold=manifold)
             for index, H2_element
             in enumerate(filtered_H2_elements)]
 
@@ -172,8 +172,8 @@ class PtolemyVarietyList(list):
               for p in self ])
 
 
-def get_ptolemy_variety(manifold, N, obstruction_class = None,
-                        simplify = True, eliminate_fixed_ptolemys = False):
+def get_ptolemy_variety(manifold, N, obstruction_class=None,
+                        simplify=True, eliminate_fixed_ptolemys=False):
     """
     Generates Ptolemy variety as described in
     (1) Garoufalidis, Thurston, Zickert
@@ -340,8 +340,8 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
          isinstance(obstruction_class, PtolemyGeneralizedObstructionClass)):
         return PtolemyVariety(
             manifold, N, obstruction_class,
-            simplify = simplify,
-            eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+            simplify=simplify,
+            eliminate_fixed_ptolemys=eliminate_fixed_ptolemys)
 
     # Will we return a list of obstruction classes versus a list
     list_obstruction_classes = False
@@ -382,8 +382,8 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
         return PtolemyVarietyList([
             PtolemyVariety(
                 manifold, N, obstruction_class,
-                simplify = simplify,
-                eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+                simplify=simplify,
+                eliminate_fixed_ptolemys=eliminate_fixed_ptolemys)
             for obstruction_class in obstruction_classes])
 
     # Otherwise try to interpret obstruction_class as an index
@@ -393,5 +393,5 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
         raise Exception("Bad index for obstruction class")
 
     return PtolemyVariety(manifold, N, obstruction_class,
-                          simplify = simplify,
-                          eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+                          simplify=simplify,
+                          eliminate_fixed_ptolemys=eliminate_fixed_ptolemys)

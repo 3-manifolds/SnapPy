@@ -135,7 +135,7 @@ def test_simultaneous_smith_normal_form(in1, in2, u0, u1, u2, d1, d2):
 
 
 def has_full_rank(matrix):
-    return len(_internal_to_pari(matrix).mattranspose().matker(flag = 1)) == 0
+    return len(_internal_to_pari(matrix).mattranspose().matker(flag=1)) == 0
 
 
 def _debug_print_matrix(m):
@@ -249,14 +249,14 @@ def _inner_product(v1, v2):
 
 
 def smith_normal_form(m):
-    u, v, d = _internal_to_pari(m).matsnf(flag = 1)
+    u, v, d = _internal_to_pari(m).matsnf(flag=1)
     return (_pari_to_internal(u),
             _pari_to_internal(v),
             _pari_to_internal(d))
 
 
 def _smith_normal_form_with_inverse(m):
-    u, v, d = _internal_to_pari(m).matsnf(flag = 1)
+    u, v, d = _internal_to_pari(m).matsnf(flag=1)
     return (_pari_to_internal(u**(-1)),
             _pari_to_internal(v),
             _pari_to_internal(d))
@@ -300,13 +300,13 @@ def _assert_at_most_one_zero_entry_per_row_or_column(m):
 
 
 def get_independent_rows(rows, explain_rows,
-                         desired_determinant = None,
-                         sort_rows_key = None):
+                         desired_determinant=None,
+                         sort_rows_key=None):
 
     row_explain_pairs = list(zip(rows, explain_rows))
     if sort_rows_key:
         row_explain_pairs.sort(
-            key = (
+            key=(
                 lambda row_explain_pair: sort_rows_key(
                     row_explain_pair[1])))
 

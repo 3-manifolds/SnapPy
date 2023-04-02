@@ -47,7 +47,7 @@ def O13_x_rotation(angle):
         [[ 1, 0, 0, 0],
          [ 0, 1, 0, 0],
          [ 0, 0, c, s],
-         [ 0, 0, -s, c]], ring = angle.parent())
+         [ 0, 0, -s, c]], ring=angle.parent())
 
 
 def O13_y_rotation(angle):
@@ -61,7 +61,7 @@ def O13_y_rotation(angle):
         [[ 1, 0, 0, 0],
          [ 0, c, 0, -s],
          [ 0, 0, 1, 0],
-         [ 0, s, 0, c]], ring = angle.parent())
+         [ 0, s, 0, c]], ring=angle.parent())
 
 
 def O13_z_rotation(angle):
@@ -75,7 +75,7 @@ def O13_z_rotation(angle):
         [[ 1, 0, 0, 0],
          [ 0, c, s, 0],
          [ 0, -s, c, 0],
-         [ 0, 0, 0, 1]], ring = angle.parent())
+         [ 0, 0, 0, 1]], ring=angle.parent())
 
 
 def complex_and_height_to_R13_time_vector(z, t):
@@ -157,7 +157,7 @@ def _orthonormalize_row(row, other_rows, row_sign):
         result = [ c - s * other_c
                    for c, other_c in zip(result, other_row) ]
     try:
-        result = R13_normalise(vector(result), sign = row_sign)
+        result = R13_normalise(vector(result), sign=row_sign)
     except ValueError:
         return None
     if not _is_row_sane(result):

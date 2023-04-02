@@ -147,7 +147,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.geodesics_uniform_bindings = {}
         else:
             self.geodesics = Geodesics(manifold, geodesics)
-            self.resize_geodesic_params(enable = True)
+            self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
 
         self.geodesics_disabled_edges = False
@@ -212,13 +212,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         if self.trig_type == 'finite':
             self.raytracing_data = FiniteRaytracingData.from_triangulation(
                 self.manifold,
-                weights = weights)
+                weights=weights)
         else:
             self.raytracing_data = IdealRaytracingData.from_manifold(
                 self.manifold,
-                areas = self.ui_parameter_dict['cuspAreas'][1],
-                insphere_scale = self.ui_parameter_dict['insphere_scale'][1],
-                weights = weights)
+                areas=self.ui_parameter_dict['cuspAreas'][1],
+                insphere_scale=self.ui_parameter_dict['insphere_scale'][1],
+                weights=weights)
 
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
@@ -309,7 +309,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 dir, -dist),
             speed)
 
-    def resize_geodesic_params(self, enable = False):
+    def resize_geodesic_params(self, enable=False):
         num = (len(self.geodesics.geodesic_tube_infos) -
                len(self.ui_parameter_dict['geodesicTubeRadii'][1]))
         self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
@@ -402,7 +402,7 @@ def _matrix4_vec(m, p):
             for i in range(4) ]
 
 
-def _diff(v1, v2, label = ''):
+def _diff(v1, v2, label=''):
     a = sum([(x - y)**2 for x, y in zip(v1, v2) ])
 
     if a > 1e-10:

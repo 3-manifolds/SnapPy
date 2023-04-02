@@ -97,17 +97,17 @@ class Geodesics:
     def add_length_spectrum(self, l):
 
         L = self.manifold.length_spectrum(
-            l, grouped = False, include_words = True)
+            l, grouped=False, include_words=True)
 
         for g in L:
-            self.add_word(g['word'], is_primitive = True)
+            self.add_word(g['word'], is_primitive=True)
 
-    def add_word(self, word, is_primitive = None):
+    def add_word(self, word, is_primitive=None):
         geodesic_tube_info = GeodesicTubeInfo(
             self.get_mcomplex(),
             word,
-            index = len(self.geodesic_tube_infos),
-            is_primitive = is_primitive)
+            index=len(self.geodesic_tube_infos),
+            is_primitive=is_primitive)
 
         for i, other in enumerate(self.geodesic_tube_infos):
             if other == geodesic_tube_info:
@@ -121,7 +121,7 @@ class Geodesics:
 
     def geodesics_sorted_by_length(self):
         return sorted(self.geodesic_tube_infos,
-                      key = compute_geodesic_tube_info_key)
+                      key=compute_geodesic_tube_info_key)
 
     def get_mcomplex(self):
         if self.mcomplex is None:

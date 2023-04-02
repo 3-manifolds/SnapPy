@@ -3,7 +3,7 @@ from ..drilling.geodesic_tube import GeodesicTube
 
 
 class GeodesicTubeInfo:
-    def __init__(self, mcomplex, word, index, is_primitive = None):
+    def __init__(self, mcomplex, word, index, is_primitive=None):
         # Compute GeodesicTube
         geodesic_info = compute_geodesic_info(mcomplex, word)
         self.geodesic_tube = GeodesicTube(mcomplex, geodesic_info)

@@ -55,20 +55,20 @@ class ViewScaleController:
         if perspective_type == 0:
             view_scale = self.uniform_dict['viewScale'][1]
             fov = _inverse_scale_function[perspective_type](view_scale)
-            self.label0.configure(text = 'FOV:')
-            self.label1.configure(text = '%.1f' % fov)
+            self.label0.configure(text='FOV:')
+            self.label1.configure(text='%.1f' % fov)
         elif perspective_type == 1:
             view_scale = self.uniform_dict['viewScale'][1]
-            self.label0.configure(text = 'Euclidean length:')
+            self.label0.configure(text='Euclidean length:')
             if view_scale > 1.0:
-                self.label1.configure(text = '%.1f' % view_scale)
+                self.label1.configure(text='%.1f' % view_scale)
             elif view_scale > 0.1:
-                self.label1.configure(text = '%.2f' % view_scale)
+                self.label1.configure(text='%.2f' % view_scale)
             else:
-                self.label1.configure(text = '%.3f' % view_scale)
+                self.label1.configure(text='%.3f' % view_scale)
         else:
-            self.label0.configure(text = '')
-            self.label1.configure(text = '')
+            self.label0.configure(text='')
+            self.label1.configure(text='')
 
     def update_scale(self):
         perspective_type = self.uniform_dict['perspectiveType'][1]

@@ -59,16 +59,16 @@ def _process_rur_component(text, py_eval, manifold_thunk):
     if dimension is None:
         return NonZeroDimensionalComponent()
     if dimension > 0:
-        return NonZeroDimensionalComponent(dimension = dimension)
+        return NonZeroDimensionalComponent(dimension=dimension)
 
     if format is None:
         raise Exception("No format specified")
 
     if format == "MAPLE-LIKE":
         d = parse_maple_like_rur(body.strip())
-        return PtolemyCoordinates(d, is_numerical = False,
-                                  py_eval_section = py_eval,
-                                  manifold_thunk = manifold_thunk)
+        return PtolemyCoordinates(d, is_numerical=False,
+                                  py_eval_section=py_eval,
+                                  manifold_thunk=manifold_thunk)
     else:
         raise Exception("Unknown format %s" % format)
 
@@ -138,7 +138,7 @@ class SolutionContainer():
     def __init__(self, solutions):
         self._solutions = solutions
 
-    def solutions(self, numerical = False):
+    def solutions(self, numerical=False):
         if numerical:
             return self._solutions.numerical()
         else:

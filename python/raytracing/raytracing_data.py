@@ -80,14 +80,14 @@ class RaytracingData(McomplexEngine):
         return d
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0],
+                          m=matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
 
-        boost = matrix(boost, ring = self.RF)
-        m = matrix(m, ring = self.RF)
+        boost = matrix(boost, ring=self.RF)
+        m = matrix(m, ring=self.RF)
 
         boost = O13_orthonormalize(boost * m)
 

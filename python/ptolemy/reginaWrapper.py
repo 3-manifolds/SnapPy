@@ -62,7 +62,7 @@ class NTriangulationForPtolemy(NTriangulation):
         """
 
         # Create temporary file and write text to it
-        f = tempfile.NamedTemporaryFile(delete = False)
+        f = tempfile.NamedTemporaryFile(delete=False)
         filename = f.name
         f.write(text)
         f.close()
@@ -137,8 +137,8 @@ class NTriangulationForPtolemy(NTriangulation):
             manifoldMethods.get_generalized_ptolemy_obstruction_classes(
                 self, N))
 
-    def ptolemy_variety(self, N, obstruction_class = None,
-                        simplify = True, eliminate_fixed_ptolemys = False):
+    def ptolemy_variety(self, N, obstruction_class=None,
+                        simplify=True, eliminate_fixed_ptolemys=False):
         """
         M.ptolemy_variety(N, obstruction_class = None, simplify = True, eliminate_fixed_ptolemys = False)
 
@@ -169,8 +169,8 @@ class NTriangulationForPtolemy(NTriangulation):
 
         return manifoldMethods.get_ptolemy_variety(
             self, N, obstruction_class,
-            simplify = simplify,
-            eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+            simplify=simplify,
+            eliminate_fixed_ptolemys=eliminate_fixed_ptolemys)
 
     def name(self):
         """
@@ -408,7 +408,7 @@ class NTriangulationForPtolemy(NTriangulation):
 
         for tet_index, tet in enumerate(self.getTetrahedra()):
             for pt in utilities.quadruples_with_fixed_sum_iterator(
-                                                       N, skipVertices = True):
+                                                       N, skipVertices=True):
 
                 row = (N - 1) * self.getNumberOfVertices() * [ 0 ]
 
@@ -563,7 +563,7 @@ class NTriangulationForPtolemy(NTriangulation):
         return ptolemy_index[v1] * e01 + ptolemy_index[v2] * e02
 
     def _ptolemy_equations_identified_coordinates(self, N,
-                                                  obstruction_class = None):
+                                                  obstruction_class=None):
 
         identifications = []
 
@@ -589,7 +589,7 @@ class NTriangulationForPtolemy(NTriangulation):
 
             # Iterate through all the integral points on the face
             for triple in utilities.triples_with_fixed_sum_iterator(
-                                                       N, skipVertices = True):
+                                                       N, skipVertices=True):
                 # The face integral points are obtained by inserting a 0
                 ptolemy_index = triple[0:face] + (0,) + triple[face:]
                 # Get the corresponding integral point on the other tetrahedron

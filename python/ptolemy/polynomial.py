@@ -107,7 +107,7 @@ class Monomial():
         """Return a list containing the variable names."""
         return [var[0] for var in self._vars if var[1] > 0]
 
-    def degree(self, var = None):
+    def degree(self, var=None):
         """Return the total degree of this monomial."""
         return sum([this_degree
                     for this_var, this_degree in self._vars
@@ -267,7 +267,7 @@ class Polynomial():
 
     # constructor takes a tuple of polynomials which are combined
 
-    def __init__(self, monomials = ()):
+    def __init__(self, monomials=()):
 
         # combine monomials with the same variables and exponents
         # and bring them into canonical order
@@ -382,7 +382,7 @@ class Polynomial():
 
     def to_string(self, print_coefficient_method):
         s = " ".join([monomial.to_string(print_coefficient_method,
-                                         force_print_sign = True)
+                                         force_print_sign=True)
                       for monomial in self._monomials])
         if s and s[0] == '+':
             return s[1:].lstrip()
@@ -478,7 +478,7 @@ class Polynomial():
         """Assert univariance; return True iff this polynomial is monic."""
         return self.leading_coefficient() == 1
 
-    def get_coefficients(self, conversion_function = lambda x:x):
+    def get_coefficients(self, conversion_function=lambda x:x):
         """Assert univariance; return the coefficients in degree order."""
         assert self.is_univariate()
         degree = self.degree()
@@ -636,7 +636,7 @@ def _storage_type_policy(type_a, type_b):
     return type_a
 
 
-def _operator_type_policy(obj_a, obj_b, op = operator.add):
+def _operator_type_policy(obj_a, obj_b, op=operator.add):
 
     try:
 
@@ -720,7 +720,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
     # pop the top operator from the stack and apply it to the
     # two top operands from the stack, repeat as long as there are preceding
     # operators left on the stack.
-    def eval_preceding_operators_on_stack(operator = None):
+    def eval_preceding_operators_on_stack(operator=None):
         while operator_stack:
             top_operator = operator_stack[-1]
 

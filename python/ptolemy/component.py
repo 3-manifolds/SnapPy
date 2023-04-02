@@ -12,7 +12,7 @@ class ZeroDimensionalComponent(Component):
     variety (i.e., Galois conjugate solutions).
     """
 
-    def __init__(self, l, p = None):
+    def __init__(self, l, p=None):
         self.dimension = 0
         super(ZeroDimensionalComponent, self).__init__(l)
 
@@ -24,9 +24,9 @@ class NonZeroDimensionalComponent(Component):
     component (witnesses).
     """
 
-    def __init__(self, witnesses = [],
-                 dimension = 'unknown', free_variables = None, genus = None,
-                 p = None):
+    def __init__(self, witnesses=[],
+                 dimension='unknown', free_variables=None, genus=None,
+                 p=None):
 
         if p is not None:
             self.dimension = p.dimension

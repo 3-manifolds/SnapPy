@@ -183,7 +183,7 @@ def contains_magma_output(text):
             "RADICAL=DECOMPOSITION=BEGINS" in text)
 
 
-def solutions_from_magma_file(filename, numerical = False):
+def solutions_from_magma_file(filename, numerical=False):
     """
     Obsolete, use processFileDispatch.parse_solutions_from_file instead.
 
@@ -196,7 +196,7 @@ def solutions_from_magma_file(filename, numerical = False):
     return solutions_from_magma(open(filename).read(), numerical)
 
 
-def solutions_from_magma(output, numerical = False):
+def solutions_from_magma(output, numerical=False):
     """
     Obsolete, use processFileDispatch.parse_solutions instead.
 
@@ -207,7 +207,7 @@ def solutions_from_magma(output, numerical = False):
     """
 
     return decomposition_from_magma(output).solutions(
-        numerical = numerical)
+        numerical=numerical)
 
 
 def magma_executable():
@@ -255,7 +255,7 @@ def run_magma(content,
         print("Command:", cmd)
         print("Starting magma...")
 
-    retcode = subprocess.call(cmd, shell = True)
+    retcode = subprocess.call(cmd, shell=True)
 
     result = open(out_file, 'r').read()
 

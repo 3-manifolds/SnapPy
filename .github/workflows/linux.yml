@@ -31,13 +31,14 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >
             pip install cython sphinx FXrays &&
-            pip install --index-url https://test.pypi.org/simple cypari &&
+            pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram &&
             pip install git+https://github.com/3-manifolds/low_index
           CIBW_BEFORE_TEST: >
             pip install cython &&
+            pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram &&

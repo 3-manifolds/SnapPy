@@ -6,13 +6,13 @@ on: [push, pull_request]
 jobs:
   test:
     name: Test on Sage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-jammy
     strategy:
       matrix:
         version: [9.3, 9.4, 9.5, 9.6, 9.7, 9.8]
 
     container:
-      image: sagemath/sagemath:${{ matrix.version }}
+      image: ghcr.io/sagemath/sage/sage-ubuntu-jammy-standard-with-targets:${{ matrix.version }}
       options: --user root
 
     steps:

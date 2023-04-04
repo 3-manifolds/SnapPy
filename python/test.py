@@ -164,6 +164,10 @@ def runtests(verbose=False,
              windows=False,
              use_modernopengl=True):
 
+    # The default PARI stacksize can (slightly) overflow, causing
+    # doctests to fail.
+    snappy.pari.allocatemem(2**24, 2**25, silent=True)
+
     DocTestParser.use_modernopengl = use_modernopengl
 
     result = doctest_modules(modules, verbose=verbose)

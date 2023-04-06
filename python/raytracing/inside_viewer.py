@@ -58,7 +58,7 @@ class InsideViewer(ttk.Frame):
         self.notebook.add(self.create_skeleton_frame(self),
                           text='Skeleton')
 
-        self.geodesics_frame = self.create_geodesics_frame(self) 
+        self.geodesics_frame = self.create_geodesics_frame(self)
         self.notebook.add(self.geodesics_frame, text='Geodesics')
         self.notebook.add(self.create_quality_frame(self),
                           text='Quality')

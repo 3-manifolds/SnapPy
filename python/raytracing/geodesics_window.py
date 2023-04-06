@@ -141,10 +141,10 @@ class GeodesicsWindow(tkinter.Toplevel):
             self.raytracing_view.geodesics.add_length_spectrum(
                 float(self.length_box.get()))
         except LengthSpectrumError as e:
-            self.status_label.configure(text = ' '.join(e.args))
+            self.status_label.configure(text=' '.join(e.args))
             return
         except Exception as e:
-            self.status_label.configure(text = 'An error has occurred. See terminal for details.')
+            self.status_label.configure(text='An error has occurred. See terminal for details.')
             raise
 
         self.raytracing_view.resize_geodesic_params()

@@ -152,7 +152,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes=None,
 
     # check we encountered non-zero dimensional component if that's
     # expected
-    if not expect_non_zero_dimensional is None:
+    if expect_non_zero_dimensional is not None:
         assert expect_non_zero_dimensional == found_non_zero_dimensional
 
     # check the numerical solutions against the manifold
@@ -199,7 +199,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes=None,
                 abs(geom_vol - vol) < 1e-11 for vol in volumes]
 
     # check that complex volumes match baseline volumes
-    if not baseline_cvolumes is None:
+    if baseline_cvolumes is not None:
         check_volumes(complex_volumes, baseline_cvolumes)
 
     pari.set_real_precision(old_precision)

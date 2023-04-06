@@ -195,7 +195,7 @@ class PtolemyCoordinates(dict):
             non_trivial_generalized_obstruction_class)
         processed_dict = d
 
-        if not py_eval_section is None:
+        if py_eval_section is not None:
             # process the extra information that is given by
             # ptolemyVariety's py_eval_section
 

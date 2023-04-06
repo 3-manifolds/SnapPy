@@ -80,7 +80,7 @@ def _get_first(l):
 
 
 def _remove(l, element):
-    return [x for x in l if not x is element]
+    return [x for x in l if x is not element]
 
 
 def _numerical_solutions_recursion(polysAndVars, solutionDict):
@@ -92,7 +92,7 @@ def _numerical_solutions_recursion(polysAndVars, solutionDict):
                                   for poly in polysAndVars
                                   if poly.get_variable_if_univariate() ])
 
-    if not univariatePoly is None:
+    if univariatePoly is not None:
         variable = univariatePoly.get_variable_if_univariate()
         variableDicts = [ ]
 

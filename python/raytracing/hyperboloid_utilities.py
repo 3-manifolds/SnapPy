@@ -167,10 +167,10 @@ def _orthonormalize_row(row, other_rows, row_sign):
 
 def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
     r = _orthonormalize_row(row, other_rows, sign)
-    if not r is None:
+    if r is not None:
         return r
     r = _orthonormalize_row(fallback_value, other_rows, sign)
-    if not r is None:
+    if r is not None:
         return r
     return fallback_value
 

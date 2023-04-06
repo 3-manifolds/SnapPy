@@ -300,7 +300,7 @@ class HyperboloidNavigation:
                     last_and_release[0] = t
 
             # If there is key press time we need to account for
-            if not dT is None:
+            if dT is not None:
                 RF = m.base_ring()
                 # Compute effect on view matrix
                 m = m * self.keymapping[k](

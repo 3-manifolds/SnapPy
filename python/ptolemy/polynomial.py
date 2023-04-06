@@ -747,7 +747,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
         # parse constants or variables and push them onto the operand stack
         constant, rest = parse_coefficient_function(s)
-        if not constant is None:
+        if constant is not None:
             operand_stack.append(Polynomial.constant_polynomial(constant))
             no_operand_since_opening_parenthesis[0] = False
             return rest

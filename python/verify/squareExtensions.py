@@ -253,7 +253,7 @@ class SqrtLinCombination():
         #
         #   { r_1 : c_1, r_2 : c_2, ..., r_n : c_n }
 
-        if not value is None:
+        if value is not None:
             if d:
                 raise TypeError("SqrtLinCombination has both value and "
                                 "dictionary.")
@@ -333,7 +333,7 @@ class SqrtLinCombination():
         # The inverse element of                c_1 * sqrt(r_1)
         #                     is  (1 / (c_1 * r_1)) * sqrt(r_1)
         l = len(self._dict)
-        if not l == 1:
+        if l != 1:
             # Do not implement other elements.
             if l == 0:
                 # In particular, do not invert 0
@@ -383,7 +383,7 @@ class SqrtLinCombination():
             # Iterate through only term
             for k, v in self._dict.items():
                 # Make sure expression in sqrt is 1
-                if not k == 1:
+                if k != 1:
                     raise TypeError('SqrtLinCombination sqrt not fully '
                                     'implemented')
                 return SqrtLinCombination(
@@ -475,7 +475,7 @@ class SqrtLinCombination():
         # be slow so we try numerically first.
         prec = 106
         numerical_sign, interval_val = self._sign_numerical(prec)
-        if not numerical_sign is None:
+        if numerical_sign is not None:
             # We could determine the sign using interval arithmetics
             # Return the result.
             return numerical_sign, interval_val
@@ -490,7 +490,7 @@ class SqrtLinCombination():
         while True:
             prec *= 2
             numerical_sign, interval_val = self._sign_numerical(prec)
-            if not numerical_sign is None:
+            if numerical_sign is not None:
                 return numerical_sign, interval_val
 
     def sign(self):
@@ -794,7 +794,7 @@ class _FactorizedSqrtLinCombination():
         while True:
             # Determine signs, None indicates the signs couldn't be certified
             opposite_signs = _opposite_signs(left, right, prec)
-            if not opposite_signs is None:
+            if opposite_signs is not None:
                 # Done
                 return opposite_signs
 
@@ -864,8 +864,7 @@ def _filter_zero(d):
     """
     Given a dict, filter out all items where the value is 0.
     """
-
-    return dict( (k, v) for k, v in d.items() if not v == 0)
+    return dict((k, v) for k, v in d.items() if v != 0)
 
 
 def _convert_to_allowed_type(number):
@@ -900,7 +899,7 @@ def _get_embed_cache(l1, l2):
     for l in [l1, l2]:
         if ((isinstance(l, SqrtLinCombination) or
              isinstance(l, _FactorizedSqrtLinCombination)) and
-            not l._embed_cache is None):
+            l._embed_cache is not None):
             return l._embed_cache
 
     return None
@@ -932,27 +931,27 @@ def _get_interval_embedding_from_cache(nf, RIF, cache):
     #     print("Warning: No cache used")
 
     # The key 'gen_embedding' holds the value of nf.gen_embedding()
-    if (not cache is None) and 'gen_embedding' in cache:
+    if cache is not None and 'gen_embedding' in cache:
         # We can read it from cache
         gen_embedding = cache['gen_embedding']
     else:
         # We need to evaluate it
         gen_embedding = nf.gen_embedding()
-        if (not cache is None):
+        if cache is not None:
             # Save in cache for future use
             cache['gen_embedding'] = gen_embedding
 
     # Get the desired precision of the RealIntervalField
     prec = RIF.prec()
     # The precision (which is an int) is the key into the cache
-    if (not cache is None) and prec in cache:
+    if cache is not None and prec in cache:
         # RIF(nf.gen_embedding()) is in the cache
         # We can just return the result
         return cache[prec]
 
     # We need to actually compute it.
     interval = RIF(gen_embedding)
-    if not cache is None:
+    if cache is not None:
         # Save in cache for future use.
         cache[prec] = interval
 

@@ -101,7 +101,7 @@ def _remove(l, element):
     '''
     Returns a copy of list without element.
     '''
-    return [x for x in l if not x is element]
+    return [x for x in l if x is not element]
 
 
 def extensions_and_assignments(polys):
@@ -109,10 +109,9 @@ def extensions_and_assignments(polys):
     Splits into extensions and assignments s in example given above
     in _exact_solutions.
     '''
-
-    extensions = [ ] # extension polynomials
-    extension_vars = [ ]
-    assignments = { } # pure assignments
+    extensions = []  # extension polynomials
+    extension_vars = []
+    assignments = {}  # pure assignments
 
     # Iterate while polys left
     while polys:

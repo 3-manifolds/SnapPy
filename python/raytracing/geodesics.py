@@ -6,6 +6,8 @@ from ..drilling.geodesic_tube import add_structures_necessary_for_tube
 from ..snap.t3mlite import Mcomplex, simplex
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
+class LengthSpectrumError(RuntimeError):
+    pass
 
 class Geodesics:
     def __init__(self, manifold, words):
@@ -96,8 +98,11 @@ class Geodesics:
 
     def add_length_spectrum(self, l):
 
-        L = self.manifold.length_spectrum(
-            l, grouped=False, include_words=True)
+        try:
+            L = self.manifold.length_spectrum(
+                l, grouped=False, include_words=True)
+        except RuntimeError as e:
+            raise LengthSpectrumError(*e.args) from e
 
         for g in L:
             self.add_word(g['word'], is_primitive=True)

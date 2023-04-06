@@ -2,7 +2,7 @@ import tkinter
 from tkinter import ttk
 
 from .gui_utilities import UniformDictController, ScrollableFrame
-from .geodesics import geodesic_index_to_color
+from .geodesics import geodesic_index_to_color, LengthSpectrumError
 from ..drilling.exceptions import WordAppearsToBeParabolic
 from ..SnapPy import word_as_list # type: ignore
 
@@ -137,8 +137,15 @@ class GeodesicsWindow(tkinter.Toplevel):
     def add_length_spectrum(self):
         self.status_label.configure(text=_default_status_msg)
 
-        self.raytracing_view.geodesics.add_length_spectrum(
-            float(self.length_box.get()))
+        try:
+            self.raytracing_view.geodesics.add_length_spectrum(
+                float(self.length_box.get()))
+        except LengthSpectrumError as e:
+            self.status_label.configure(text = ' '.join(e.args))
+            return
+        except Exception as e:
+            self.status_label.configure(text = 'An error has occurred. See terminal for details.')
+            raise
 
         self.raytracing_view.resize_geodesic_params()
 

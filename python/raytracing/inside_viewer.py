@@ -58,9 +58,8 @@ class InsideViewer(ttk.Frame):
         self.notebook.add(self.create_skeleton_frame(self),
                           text='Skeleton')
 
-        self.notebook.add(self.create_geodesics_frame(self),
-                          text='Geodesics')
-
+        self.geodesics_frame = self.create_geodesics_frame(self) 
+        self.notebook.add(self.geodesics_frame, text='Geodesics')
         self.notebook.add(self.create_quality_frame(self),
                           text='Quality')
 
@@ -99,6 +98,12 @@ class InsideViewer(ttk.Frame):
             container.config(menu=self.menubar)
         self.update_idletasks()
         self.focus_viewer()
+
+    def set_geodesics_state(self, dirichlet):
+        if len(dirichlet):
+            self.notebook.tab(self.geodesics_frame, state='normal')
+        else:
+            self.notebook.tab(self.geodesics_frame, state='hidden')
 
     def focus_viewer(self, event=None):
         self.widget.focus_set()

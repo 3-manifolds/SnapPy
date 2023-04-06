@@ -94,6 +94,7 @@ class TkTerm:
         text.bind('<KeyPress>', self.handle_keypress)
         text.bind('<KeyRelease>', self.handle_keyrelease)
         text.bind('<Return>', self.handle_return)
+        text.bind('<Shift-Return>', self.handle_shift_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
@@ -335,13 +336,17 @@ class TkTerm:
         if self.editing_hist and self.multiline:
             self.text.tag_add('history', 'output_end', Tk_.INSERT)
 
-    def handle_return(self, event):
+    def handle_return(self, event=None):
         self.clear_completions()
         self.text.insert(Tk_.INSERT, '\n')
         if not self.running_code:
             cell = self.text.get('output_end', Tk_.INSERT)
             self.process_return(cell)
         return 'break'
+
+    def handle_shift_return(self, event):
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        return self.handle_return()
 
     def process_return(self, cell):
         try:

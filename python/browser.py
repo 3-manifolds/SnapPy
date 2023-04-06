@@ -200,7 +200,6 @@ class Browser(Tk_.Toplevel):
         self.invariants_tab = invariants_tab = self.build_invariants()
         self.dirichlet_viewer = DirichletTab(self)
         self.horoball_viewer = CuspNeighborhoodTab(self)
-
         self.fillings_changed_callback = None
 
         self.bottombar = bottombar = ttk.Frame(self, height=20)
@@ -630,6 +629,8 @@ class Browser(Tk_.Toplevel):
             self.dirichlet = []
         self.update_modeline()
         self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+        if self.inside_view:
+            self.inside_view.set_geodesics_state(self.dirichlet)
 
     def update_cusps(self):
         try:

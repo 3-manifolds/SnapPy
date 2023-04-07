@@ -5,11 +5,13 @@ from ..drilling.geodesic_tube import GeodesicTube
 class GeodesicTubeInfo:
     def __init__(self, mcomplex, word, index, is_primitive=None):
         # Compute GeodesicTube
-        geodesic_info = compute_geodesic_info(mcomplex, word)
-        self.geodesic_tube = GeodesicTube(mcomplex, geodesic_info)
+        self.geodesic_info = compute_geodesic_info(mcomplex, word)
+
+        if not self.geodesic_info.core_curve_cusp:
+            self.geodesic_tube = GeodesicTube(mcomplex, self.geodesic_info)
 
         # Compute complex length from trace
-        t = geodesic_info.trace
+        t = self.geodesic_info.trace
         self.complex_length = _normalize_complex_length(2 * (t / 2).arccosh())
 
         self.words = [ word ]

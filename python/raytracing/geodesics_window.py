@@ -78,14 +78,15 @@ class GeodesicsWindow(tkinter.Toplevel):
         radius_column = 5
 
         for geodesic in self.raytracing_view.geodesics.geodesics_sorted_by_length():
-            UniformDictController.create_checkbox(
-                self.geodesics_frame,
-                self.raytracing_view.ui_parameter_dict,
-                key='geodesicTubeEnables',
-                index=geodesic.index,
-                row=row,
-                column=checkbox_column,
-                update_function=self.geodesic_checkbox_clicked)
+            if not geodesic.geodesic_info.core_curve_cusp:
+                UniformDictController.create_checkbox(
+                    self.geodesics_frame,
+                    self.raytracing_view.ui_parameter_dict,
+                    key='geodesicTubeEnables',
+                    index=geodesic.index,
+                    row=row,
+                    column=checkbox_column,
+                    update_function=self.geodesic_checkbox_clicked)
 
             text = ', '.join(geodesic.words)
             if not geodesic.is_primitive():
@@ -110,26 +111,36 @@ class GeodesicsWindow(tkinter.Toplevel):
 
             color = geodesic_index_to_color(geodesic.index)
 
-            l = tkinter.Label(self.geodesics_frame,
-                              text="Color",
-                              fg=color_to_tkinter(color),
-                              bg=color_to_tkinter(color))
+            if geodesic.geodesic_info.core_curve_cusp:
+                cusp_index = geodesic.geodesic_info.core_curve_cusp.Index
+                l = tkinter.Label(self.geodesics_frame,
+                                  text="Cusp %d" % cusp_index)
+            else:
+                l = tkinter.Label(self.geodesics_frame,
+                                  text="Color",
+                                  fg=color_to_tkinter(color),
+                                  bg=color_to_tkinter(color))
             l.grid(row=row, column=color_column, padx=5)
 
-            scale = UniformDictController.create_horizontal_scale(
-                self.geodesics_frame,
-                self.raytracing_view.ui_parameter_dict,
-                key='geodesicTubeRadii',
-                index=geodesic.index,
-                row=row,
-                column=radius_column,
-                left_end=0.0,
-                right_end=1.0,
-                update_function=self.raytracing_view.update_geodesic_data_and_redraw,
-                format_string='%.3f')
+            if geodesic.geodesic_info.core_curve_cusp:
+                l = tkinter.Label(self.geodesics_frame,
+                                  text="Use Cusp areas tab")
+                l.grid(row=row, column=radius_column, padx=5)
+            else:
+                scale = UniformDictController.create_horizontal_scale(
+                    self.geodesics_frame,
+                    self.raytracing_view.ui_parameter_dict,
+                    key='geodesicTubeRadii',
+                    index=geodesic.index,
+                    row=row,
+                    column=radius_column,
+                    left_end=0.0,
+                    right_end=1.0,
+                    update_function=self.raytracing_view.update_geodesic_data_and_redraw,
+                    format_string='%.3f')
 
-            # Need to color Scale - but the following code fails.
-            # scale.configure(background = color_to_tkinter(color))
+                # Need to color Scale - but the following code fails.
+                # scale.configure(background = color_to_tkinter(color))
 
             row += 1
         self.scrollable_frame.set_widths()

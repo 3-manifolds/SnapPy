@@ -114,6 +114,7 @@ class SnapPyBuildDocs(Command):
         sphinx_cmd = load_entry_point('sphinx>=1.7', 'console_scripts', 'sphinx-build')
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
+        sys.path.insert(0, build_lib_dir())
         status = sphinx_cmd(sphinx_args)
         if status != 0:
             sys.exit(status)
@@ -166,7 +167,6 @@ try:
     from wheel.bdist_wheel import bdist_wheel
     class SnapPyBuildWheel(bdist_wheel):
         def run(self):
-            sys.path.insert(0, build_lib_dir())
             python = sys.executable
             check_call([python, 'setup.py', 'build'])
             check_call([python, 'setup.py', 'build_docs'])

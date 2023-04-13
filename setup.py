@@ -166,6 +166,7 @@ try:
     from wheel.bdist_wheel import bdist_wheel
     class SnapPyBuildWheel(bdist_wheel):
         def run(self):
+            sys.path.insert(0, build_lib_dir())
             python = sys.executable
             check_call([python, 'setup.py', 'build'])
             check_call([python, 'setup.py', 'build_docs'])

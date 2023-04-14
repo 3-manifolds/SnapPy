@@ -81,7 +81,7 @@ class UniformDictController:
                 raise Exception("int/float uniform does not support index")
         elif self.uniform_type == 'float[]':
             self.scalar_type = 'float'
-            if index is None or not component_index is None:
+            if index is None or component_index is not None:
                 raise Exception("Need to specify index for float[] uniform")
         elif self.uniform_type == 'vec2[]':
             self.scalar_type = 'float'
@@ -93,7 +93,7 @@ class UniformDictController:
                 raise Exception("int/float uniform does not support index")
         elif self.uniform_type == 'bool[]':
             self.scalar_type = 'bool'
-            if index is None or not component_index is None:
+            if index is None or component_index is not None:
                 raise Exception("Need to specify index for bool[] uniform")
         else:
             raise Exception("Unsupported uniform type %s" % self.uniform_type)

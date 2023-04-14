@@ -210,7 +210,7 @@ def _get_only_non_zero_entry_in_col(m, col):
             assert (entry is None), (
                 "more than one non-zero entry in column %d" % col)
             entry = row[col]
-    if not entry is None:
+    if entry is not None:
         return entry
     return 0
 
@@ -222,7 +222,7 @@ def _get_only_non_zero_entry_in_row(m, row):
             assert (entry is None), (
                 "more than one non-zero entry in row %d" % row)
             entry = i
-    if not entry is None:
+    if entry is not None:
         return entry
     return 0
 

@@ -242,7 +242,7 @@ class CuspTilingEngine(McomplexEngine):
             other_m = tile.matrix * gen_m
             other_tile = self.find_tile(other_m)
             if other_tile:
-                if not tile is other_tile:
+                if tile is not other_tile:
                     for (corner, other_corner), perm in self.mcomplex.Generators[g]:
                         for v in simplex.VerticesOfFaceCounterclockwise[corner.Subsimplex]:
                             vertex = corner.Tetrahedron.Class[v]

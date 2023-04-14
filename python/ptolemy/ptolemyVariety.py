@@ -444,7 +444,7 @@ class PtolemyVariety():
 
         if self._obstruction_class is None:
             obstruction_class = "0"
-        elif not self._obstruction_class._index is None:
+        elif self._obstruction_class._index is not None:
             obstruction_class = "%d" % self._obstruction_class._index
         # filenames which contain regex special characters cause
         # trouble with PyInstaller's globbing module.

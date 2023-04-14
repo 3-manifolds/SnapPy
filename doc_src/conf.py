@@ -23,7 +23,9 @@ def build_lib_dir():
         machine = platform.machine()
         # Check if we're cross-compiling.  If so, module must already
         # have been built for the host architecture.
-        if target != machine:
+        if target == 'universal2':
+            python_platform = 'macosx-10.9-universal2'
+        elif target != machine:
             python_platform = {'x86_64':'macosx-10.9-x86_64',
                                'arm64': 'macosx-11-arm64'}[machine]
         else:

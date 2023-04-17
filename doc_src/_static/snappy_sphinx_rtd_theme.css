@@ -1,0 +1,11 @@
+h1, h2, h3, h4, h5, h6 {
+    font-family: Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
+}
+
+.wy-side-nav-search {
+    background-color: red;
+}
+
+.wy-menu-vertical a {
+    background-color: purple;
+}

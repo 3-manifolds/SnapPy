@@ -58,6 +58,9 @@ print('Using: ' + snappy.__file__)
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'sphinx.ext.autosectionlabel']
 
+html_awesome_code_headers = False
+html_awesome_headerlinks = False
+
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ['_templates']
 
@@ -158,15 +161,19 @@ def setup(app):
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'classic'
+#html_theme = 'classic'
+#html_theme = 'sphinxawesome_theme'
+#html_theme = 'pydata_sphinx_theme'
+#html_theme = 'python_docs_theme'
 #html_theme = 'sphinx_rtd_theme'
-#html_theme = 'furo'
+html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'body_max_width':'90%'
+    'body_max_width':'90%',
+    'show_prev_next': True,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

@@ -256,7 +256,7 @@ class ManifoldGroup(MatrixRepresentation):
           -0.49024466750661447990098220731 + 2.9794470664789769463726817144*I
 
         """
-        M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])
+        M, L = [self.SL2C(w) for w in self.peripheral_curves()[cusp_num]]
         C = extend_to_basis(parabolic_eigenvector(M))
         M, L = [ make_trace_2( C**(-1)*A*C ) for A in [M, L] ]
         z = L[0][1]/M[0][1]

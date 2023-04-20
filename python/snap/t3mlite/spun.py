@@ -181,7 +181,10 @@ class SpunNormalSurfaceEquations:
             T = regina.Triangulation3(M._to_string())
             ans = []
             tets = range(M.num_tetrahedra())
-            surfaces = regina.NormalSurfaces.enumerate(T, regina.NS_QUAD)
+            if hasattr(regina.NormalSurfaces, 'enumerate'):
+                surfaces = regina.NormalSurfaces.enumerate(T, regina.NS_QUAD)
+            else:
+                surfaces = regina.NormalSurfaces(T, regina.NS_QUAD)
             for i in range(surfaces.size()):
                 S = surfaces.surface(i)
                 coeff_vector = [int(S.quads(tet, quad).stringValue())

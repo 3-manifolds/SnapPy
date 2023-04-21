@@ -3,9 +3,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .wy-side-nav-search {
-    background-color: red;
+    background-color: #27841b;
 }
 
-.wy-menu-vertical a {
-    background-color: purple;
+.wy-nav-top {
+    background-color: #27841b;
 }
+
+.wy-nav-side {
+    background-color: #123418;
+}
+
+.wy-nav-content {
+    max-width: none;
+    background-color: white;
+    color: black;
+}
+
+footer {
+    color: black;
+}
+

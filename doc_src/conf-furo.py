@@ -161,18 +161,17 @@ def setup(app):
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'classic'
+#html_theme = 'classic'
 #html_theme = 'sphinxawesome_theme'
 #html_theme = 'pydata_sphinx_theme'
 #html_theme = 'python_docs_theme'
 #html_theme = 'sphinx_rtd_theme'
-#html_theme = 'furo'
+html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'body_max_width':'90%',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

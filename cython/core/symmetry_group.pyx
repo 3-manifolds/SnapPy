@@ -286,7 +286,6 @@ cdef class SymmetryGroup():
         >>> S.multiply_elements(2, 3)
         1
         """
-        cdef int prod
         order = self.order()
         for x in [i, j]:
             if not (0 <= x < order):

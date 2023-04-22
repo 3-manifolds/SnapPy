@@ -197,7 +197,6 @@ cdef class Manifold(Triangulation):
 
         cdef Boolean *c_opacities
         cdef c_Triangulation *c_retriangulated_triangulation
-        cdef char *c_string
         cdef int n = get_num_tetrahedra(self.c_triangulation)
         cdef result
         cdef Triangulation new_tri
@@ -685,8 +684,6 @@ cdef class Manifold(Triangulation):
         True
         """
         cdef const_char_ptr err_msg=NULL
-        cdef c_Triangulation* copy_c_triangulation
-        cdef c_Triangulation
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
@@ -1321,9 +1318,8 @@ cdef class Manifold(Triangulation):
           >>> M
           m125(0,0)(-1,-2)
         """
-        cdef int a,b,c,d
+        cdef int d
         cdef MatrixInt22 *matrices
-        cdef c_FuncResult result 
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
@@ -1761,7 +1757,7 @@ cdef class Manifold(Triangulation):
         """
         cdef NormalSurfaceList *surfaces
         cdef c_FuncResult result
-        cdef int num_surfaces, i
+        cdef int num_surfaces
         cdef c_Triangulation  *pieces[2]
         cdef Manifold M0, M1
         
@@ -1832,7 +1828,6 @@ cdef class Manifold(Triangulation):
 
     def _cusp_cross_section_info(self):
         cdef c_Tetrahedron *tet
-        cdef Real temp
         allocate_cross_sections(self.c_triangulation)
         compute_cross_sections(self.c_triangulation)
         compute_tilts(self.c_triangulation)

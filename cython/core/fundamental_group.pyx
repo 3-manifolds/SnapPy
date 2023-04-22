@@ -52,18 +52,15 @@ cdef int_to_gen_string(int g, int num_generators, verbose_form):
             ans = 'x' if g > 0 else 'X'
             return ans + '%d' % abs(g)
 
+
 def _letter_seperator(verbose_form):
-    if verbose_form:
-        return '*'
-    else:
-        return ''
+    return '*' if verbose_form else ''
+
 
 cdef c_word_as_string(int *word, int num_generators, verbose_form):
     cdef int n = 0
-    cdef int letter
     word_list = []
     while word[n] != 0:
-        letter = word[n]
         word_list.append(
             int_to_gen_string(word[n], num_generators, verbose_form))
         n += 1

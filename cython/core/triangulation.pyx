@@ -121,8 +121,6 @@ cdef class Triangulation():
               'link complement.')
 
     cdef get_triangulation(self, spec, remove_finite_vertices=True):
-        cdef Triangulation T
-
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
             return self._from_pickle(spec, remove_finite_vertices)
@@ -263,7 +261,6 @@ cdef class Triangulation():
             locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
         except KeyError:
             locations = [os.curdir]
-        found = 0
         for location in locations:
             pathname = os.path.join(location, name)
             if os.path.isfile(pathname):
@@ -1032,8 +1029,6 @@ cdef class Triangulation():
         >>> N == M
         ValueError: Can't compare triangulations of manifolds with Dehn fillings.
         """
-        cdef c_Triangulation *c_triangulation1
-        cdef c_Triangulation *c_triangulation2
         cdef Boolean answer
         if op != 2:
             return NotImplemented
@@ -1043,10 +1038,7 @@ cdef class Triangulation():
                       other.cusp_info('is_complete') ):
             raise ValueError("Can't compare triangulations of manifolds "
                              "with Dehn fillings.")
-        if same_triangulation(self.c_triangulation, other.c_triangulation):
-            return True
-        else:
-            return False
+        return same_triangulation(self.c_triangulation, other.c_triangulation):
 
     def __repr__(self):
         if self.c_triangulation is NULL:
@@ -2271,9 +2263,8 @@ cdef class Triangulation():
         >>> M.homology()
         Z/5 + Z
         """
-        cdef c_AbelianGroup *H
         cdef RelationMatrix R
-        cdef int m, n
+        cdef int n
 
         if self.c_triangulation is NULL:
             return AbelianGroup()

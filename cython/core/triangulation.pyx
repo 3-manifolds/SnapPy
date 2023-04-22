@@ -958,12 +958,11 @@ cdef class Triangulation():
         return (result_cusp_indices, result_curves)
 
     def _get_tetrahedra_gluing_data(self):
-        cdef int i, j, k, v, f
+        cdef int i, j, k
         cdef TriangulationData* data
         triangulation_to_data(self.c_triangulation, &data)
         result = []
         for i from 0 <= i < data.num_tetrahedra:
-            tet = []
             neighbors = [data.tetrahedron_data[i].neighbor_index[j]
                          for j in range(4)]
             perms = [[data.tetrahedron_data[i].gluing[j][k]
@@ -1029,7 +1028,6 @@ cdef class Triangulation():
         >>> N == M
         ValueError: Can't compare triangulations of manifolds with Dehn fillings.
         """
-        cdef Boolean answer
         if op != 2:
             return NotImplemented
         if type(self) != type(other):
@@ -1038,7 +1036,8 @@ cdef class Triangulation():
                       other.cusp_info('is_complete') ):
             raise ValueError("Can't compare triangulations of manifolds "
                              "with Dehn fillings.")
-        return same_triangulation(self.c_triangulation, other.c_triangulation)
+        return bool(same_triangulation(self.c_triangulation,
+                                       other.c_triangulation))
 
     def __repr__(self):
         if self.c_triangulation is NULL:
@@ -1380,7 +1379,6 @@ cdef class Triangulation():
         else:
             raise ValueError("The method must be 'fold' or 'layered' or 'layered_and_marked'")
 
-        marked = True if mark_solid_tori else False
         c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
@@ -2302,7 +2300,7 @@ cdef class Triangulation():
             pass
 
         cdef c_AbelianGroup *H
-        cdef int m, n
+        cdef int n
 
         if self.c_triangulation is NULL:
             return AbelianGroup()
@@ -2633,7 +2631,6 @@ cdef class Triangulation():
         of the geometric generators, for use in constructing a covering
         space.
         """
-        cdef c_Triangulation* cover
         cdef c_Triangulation* c_triangulation
         cdef c_GroupPresentation *c_group_presentation
         cdef RepresentationIntoSn* c_representation

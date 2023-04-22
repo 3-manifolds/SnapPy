@@ -1038,7 +1038,7 @@ cdef class Triangulation():
                       other.cusp_info('is_complete') ):
             raise ValueError("Can't compare triangulations of manifolds "
                              "with Dehn fillings.")
-        return same_triangulation(self.c_triangulation, other.c_triangulation):
+        return same_triangulation(self.c_triangulation, other.c_triangulation)
 
     def __repr__(self):
         if self.c_triangulation is NULL:

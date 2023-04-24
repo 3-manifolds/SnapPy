@@ -29,7 +29,7 @@ jobs:
           # Skip Python 2.7, 3.5, 3.11, and PyPy
           CIBW_SKIP: cp27-* cp35-* pp*
           CIBW_BEFORE_BUILD: >
-            pip install cython sphinx FXrays &&
+            pip install cython FXrays sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&

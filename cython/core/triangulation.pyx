@@ -2530,7 +2530,7 @@ cdef class Triangulation():
         raise ValueError("Supported methods are 'low_index', 'gap', 'magma' "
                          "and 'snappea'")
 
-    def _covers_low_index(self, degree):
+    def _covers_low_index(self, degree, num_threads=0):
         """
         Compute all covers using low_index.
         """
@@ -2539,22 +2539,27 @@ cdef class Triangulation():
 
         G = self.fundamental_group()
 
-        if G.num_relators() > self.num_cusps():
-            num_long_relators = self.num_cusps()
-            num_short_relators = G.num_relators() - num_long_relators
-            relators = sorted(G.relators(as_int_list=True), key = len)
-            short_relators = relators[:num_short_relators]
-            long_relators = relators[num_short_relators:]
-        else:
-            short_relators = G.relators(as_int_list = True)
-            long_relators = []
+        relators = sorted(G.relators(as_int_list=True), key=len)
 
-        return [self.cover(H)
-                for H in low_index.permutation_reps(
-                        G.num_generators(),
-                        short_relators, long_relators,
-                        degree)
-                if len(H[0]) == degree]
+        short_relators, long_relators = [], relators
+        strategy = ''
+
+        if relators:
+            if len(relators[0]) <= 2*degree:
+                short_relators = [rel for rel in relators if len(rel) <= 2*degree]
+                long_relators = relators[len(short_relators):]
+                strategy = 'spin_short'
+            elif len(relators[0]) <= 3*degree:
+                short_relators = [rel for rel in relators if len(rel) <= 3*degree]
+                long_relators = relators[len(short_relators):]
+
+        reps = low_index.permutation_reps(G.num_generators(),
+                                          short_relators,
+                                          long_relators,
+                                          degree,
+                                          strategy=strategy,
+                                          num_threads=num_threads)
+        return [self.cover(H) for H in reps if len(H[0]) == degree]
 
     def _covers_low_index_old(self, degree):
         G = self.fundamental_group()

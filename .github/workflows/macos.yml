@@ -45,6 +45,7 @@ jobs:
             pip install git+https://github.com/3-manifolds/low_index 
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
+          name: snappy_macos_wheels
           path: ./wheelhouse/*.whl

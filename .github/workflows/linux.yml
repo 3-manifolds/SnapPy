@@ -46,6 +46,7 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
+          name: snappy_linux_wheels
           path: ./wheelhouse/*.whl

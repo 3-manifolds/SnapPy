@@ -2453,6 +2453,14 @@ cdef class Triangulation():
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
         degree = len(permutation_rep[0])
+
+        # The next call has the effect of initializing aspects of
+        # self.c_triangulation that are needed to build the cover.  It is *not*
+        # redundant with the preceeding call to self.fundamental_group()
+        # because the resulting FundamentalGroup object calls the kernel
+        # function "fundamental_group" on a copy of self.c_triangulation.
+        free_group_presentation(compute_unsimplified_presentation(self.c_triangulation))
+
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           <int>degree)

@@ -1115,6 +1115,7 @@ extern void free_tetrahedron(Tetrahedron *tet);
 extern void clear_shape_history(Tetrahedron *tet);
 extern void copy_shape_history(ShapeInversion *source, ShapeInversion **dest);
 extern void clear_one_shape_history(Tetrahedron *tet, FillingStatus which_history);
+extern void check_neighbors_and_gluings(Triangulation *manifold);
 /** @} */
 
 extern FuncResult check_Euler_characteristic_of_boundary(Triangulation *manifold);

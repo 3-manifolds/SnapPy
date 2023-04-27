@@ -631,7 +631,7 @@ class Browser(Tk_.Toplevel):
         self.dirichlet_viewer.new_polyhedron(self.dirichlet)
         if self.inside_view:
             self.inside_view.show_failed_dirichlet(
-                show = len(self.dirichlet) == 0)
+                show=len(self.dirichlet) == 0)
 
     def update_cusps(self):
         try:

@@ -111,7 +111,7 @@ class InsideViewer(ttk.Frame):
                 text='')
             self.geodesics_button.configure(
                 state='normal')
-                
+
     def focus_viewer(self, event=None):
         self.widget.focus_set()
 
@@ -636,8 +636,8 @@ class InsideViewer(ttk.Frame):
         self.update_volume_label()
 
     def push_fillings_to_manifold(self):
-        self.show_failed_dirichlet(show = False)
-        
+        self.show_failed_dirichlet(show=False)
+
         self.widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 

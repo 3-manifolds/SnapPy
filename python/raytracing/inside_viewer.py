@@ -99,12 +99,19 @@ class InsideViewer(ttk.Frame):
         self.update_idletasks()
         self.focus_viewer()
 
-    def set_geodesics_state(self, dirichlet):
-        if len(dirichlet):
-            self.notebook.tab(self.geodesics_frame, state='normal')
+    def show_failed_dirichlet(self, show):
+        if show:
+            self.geodesics_status_label.configure(
+                text='Constructing Dirichlet domain failed. Cannot compute length spectrum.',
+                foreground='red')
+            self.geodesics_button.configure(
+                state='disabled')
         else:
-            self.notebook.tab(self.geodesics_frame, state='hidden')
-
+            self.geodesics_status_label.configure(
+                text='')
+            self.geodesics_button.configure(
+                state='normal')
+                
     def focus_viewer(self, event=None):
         self.widget.focus_set()
 
@@ -378,13 +385,16 @@ class InsideViewer(ttk.Frame):
 
         row = 0
 
-        button = ttk.Button(
+        self.geodesics_status_label = ttk.Label(frame, text="")
+        self.geodesics_status_label.grid(row=row, column=1)
+        
+        self.geodesics_button = ttk.Button(
             frame,
             text="Select geodesics",
             takefocus=0,
             command=self.show_geodesics_window)
-        button.grid(row=row, column=2,
-                    sticky=tkinter.NE)
+        self.geodesics_button.grid(row=row, column=2,
+                                   sticky=tkinter.NE)
 
         return frame
 
@@ -594,6 +604,12 @@ class InsideViewer(ttk.Frame):
             pass
 
     def show_geodesics_window(self):
+        try:
+            self.widget.manifold.dirichlet_domain()
+        except RuntimeError:
+            self.show_failed_dirichlet(True)
+            return
+
         from .geodesics_window import GeodesicsWindow
 
         w = GeodesicsWindow(self)
@@ -620,6 +636,8 @@ class InsideViewer(ttk.Frame):
         self.update_volume_label()
 
     def push_fillings_to_manifold(self):
+        self.show_failed_dirichlet(show = False)
+        
         self.widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 

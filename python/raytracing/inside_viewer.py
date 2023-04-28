@@ -387,7 +387,7 @@ class InsideViewer(ttk.Frame):
 
         self.geodesics_status_label = ttk.Label(frame, text="")
         self.geodesics_status_label.grid(row=row, column=1)
-        
+
         self.geodesics_button = ttk.Button(
             frame,
             text="Select geodesics",

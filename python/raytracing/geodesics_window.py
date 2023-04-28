@@ -173,7 +173,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         if len(word) == 0:
             self.status_label.configure(text="Word is empty")
             return
-        
+
         try:
             n = self.raytracing_view.geodesics.get_mcomplex().num_generators
             word_as_list(word, n)

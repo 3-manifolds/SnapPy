@@ -33,12 +33,6 @@ class GeodesicsWindow(tkinter.Toplevel):
         left_top_frame = ttk.Frame(top_frame)
         left_top_frame.pack(side=tkinter.LEFT, padx=20)
 
-        self.length_button = ttk.Button(
-            left_top_frame,
-            text="Add up to length",
-            command=self.add_length_spectrum)
-        self.length_button.grid(row=0, column=0)
-
         self.length_var = tkinter.StringVar(value=1.1)
 
         self.length_box = ttk.Spinbox(
@@ -46,19 +40,26 @@ class GeodesicsWindow(tkinter.Toplevel):
             from_=0.2, to=20.0, increment=0.2,
             textvariable=self.length_var,
             width=4)
-        self.length_box.grid(row=0, column=1)
+        self.length_box.grid(row=0, column=0)
         self.length_box.bind('<Return>', self.add_length_spectrum)
         self.length_box.focus_set()
+
+        self.length_button = ttk.Button(
+            left_top_frame,
+            text="Add up to length",
+            command=self.add_length_spectrum)
+        self.length_button.grid(row=0, column=1)
+
 
         right_top_frame = ttk.Frame(top_frame)
         right_top_frame.pack(side=tkinter.LEFT, padx=20)
 
+        self.word_entry = ttk.Entry(right_top_frame)
+        self.word_entry.grid(row=0, column=0)
+        self.word_entry.bind('<Return>', self.add_word)
         self.word_button = ttk.Button(
             right_top_frame, text="Add word", command=self.add_word)
-        self.word_button.grid(row=0, column=0)
-        self.word_entry = ttk.Entry(right_top_frame)
-        self.word_entry.grid(row=0, column=1)
-        self.word_entry.bind('<Return>', self.add_word)
+        self.word_button.grid(row=0, column=1)
 
         self.status_label = ttk.Label(self.frame, text=_default_status_msg)
         self.status_label.pack()

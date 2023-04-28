@@ -34,10 +34,12 @@ class GeodesicsWindow(tkinter.Toplevel):
         left_top_frame.pack(side=tkinter.LEFT, padx=20)
 
         self.length_button = ttk.Button(
-            left_top_frame, text="Add up to length", command=self.add_length_spectrum)
+            left_top_frame,
+            text="Add up to length",
+            command=self.add_length_spectrum)
         self.length_button.grid(row=0, column=0)
 
-        self.length_var = tkinter.StringVar(value=1.0)
+        self.length_var = tkinter.StringVar(value=1.1)
 
         self.length_box = ttk.Spinbox(
             left_top_frame,
@@ -45,6 +47,8 @@ class GeodesicsWindow(tkinter.Toplevel):
             textvariable=self.length_var,
             width=4)
         self.length_box.grid(row=0, column=1)
+        self.length_box.bind('<Return>', self.add_length_spectrum)
+        self.length_box.focus_set()
 
         right_top_frame = ttk.Frame(top_frame)
         right_top_frame.pack(side=tkinter.LEFT, padx=20)
@@ -54,6 +58,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.word_button.grid(row=0, column=0)
         self.word_entry = ttk.Entry(right_top_frame)
         self.word_entry.grid(row=0, column=1)
+        self.word_entry.bind('<Return>', self.add_word)
 
         self.status_label = ttk.Label(self.frame, text=_default_status_msg)
         self.status_label.pack()
@@ -145,25 +150,30 @@ class GeodesicsWindow(tkinter.Toplevel):
             row += 1
         self.scrollable_frame.set_widths()
 
-    def add_length_spectrum(self):
+    def add_length_spectrum(self, *args, **kwargs):
         self.status_label.configure(text=_default_status_msg)
 
         try:
-            self.raytracing_view.geodesics.add_length_spectrum(
-                float(self.length_box.get()))
+            if not self.raytracing_view.geodesics.add_length_spectrum(
+                    float(self.length_box.get())):
+                self.status_label.configure(text='No new geodesics found.')
         except LengthSpectrumError as e:
             self.status_label.configure(text=' '.join(e.args), foreground='red')
             return
         except Exception as e:
             self.status_label.configure(text='An error has occurred. See terminal for details.')
-            raise
 
         self.raytracing_view.resize_geodesic_params()
 
         self.populate_geodesics_frame()
 
-    def add_word(self):
+    def add_word(self, *args, **kwargs):
         word = self.word_entry.get()
+
+        if len(word) == 0:
+            self.status_label.configure(text="Word is empty")
+            return
+        
         try:
             n = self.raytracing_view.geodesics.get_mcomplex().num_generators
             word_as_list(word, n)

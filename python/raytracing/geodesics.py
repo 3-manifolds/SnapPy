@@ -106,12 +106,22 @@ class Geodesics:
         except RuntimeError as e:
             raise LengthSpectrumError(*e.args) from e
 
+        exception = None
+
+        num_original = len(self.geodesic_tube_infos)
+
         for g in L:
             try:
                 self.add_word(g['word'], is_primitive=True)
             except Exception as e:
                 print(dict(g))
                 print(e)
+                exception = e
+
+        if exception:
+            raise exception
+
+        return len(self.geodesic_tube_infos) > num_original
 
     def add_word(self, word, is_primitive=None):
         geodesic_tube_info = GeodesicTubeInfo(

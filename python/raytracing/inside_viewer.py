@@ -49,8 +49,8 @@ class InsideViewer(ttk.Frame):
             self.notebook.add(self.create_cohomology_class_frame(self),
                               text='Cohomology class')
 
-        self.notebook.add(self.create_cusp_areas_frame(self),
-                          text='Cusp areas')
+        self.notebook.add(self.create_cusps_frame(self),
+                          text='Cusps/Geodesics')
 
         self.notebook.add(self.create_fillings_frame(self),
                           text='Fillings')
@@ -58,8 +58,6 @@ class InsideViewer(ttk.Frame):
         self.notebook.add(self.create_skeleton_frame(self),
                           text='Skeleton')
 
-        self.geodesics_frame = self.create_geodesics_frame(self)
-        self.notebook.add(self.geodesics_frame, text='Geodesics')
         self.notebook.add(self.create_quality_frame(self),
                           text='Quality')
 
@@ -171,7 +169,7 @@ class InsideViewer(ttk.Frame):
 
         return frame
 
-    def create_cusp_areas_frame(self, parent):
+    def create_cusps_frame(self, parent):
         frame = ttk.Frame(parent)
 
         frame.columnconfigure(0, weight=0)
@@ -226,6 +224,18 @@ class InsideViewer(ttk.Frame):
             radio_buttons=radio_buttons,
             update_function=self.perspective_type_changed)
 
+        self.geodesics_button = ttk.Button(
+            frame,
+            text="Geodesics",
+            takefocus=0,
+            command=self.show_geodesics_window)
+        self.geodesics_button.grid(row=row, column=3)
+
+        row += 1
+        
+        self.geodesics_status_label = ttk.Label(frame, text="")
+        self.geodesics_status_label.grid(row=row, column=0, columnspan=4)
+        
         return frame
 
     def perspective_type_changed(self):
@@ -373,28 +383,6 @@ class InsideViewer(ttk.Frame):
             column=1,
             update_function=self.widget.redraw_if_initialized)
         row += 1
-
-        return frame
-
-    def create_geodesics_frame(self, parent):
-        frame = ttk.Frame(parent)
-
-        frame.columnconfigure(0, weight=0)
-        frame.columnconfigure(1, weight=1)
-        frame.columnconfigure(2, weight=0)
-
-        row = 0
-
-        self.geodesics_status_label = ttk.Label(frame, text="")
-        self.geodesics_status_label.grid(row=row, column=1)
-
-        self.geodesics_button = ttk.Button(
-            frame,
-            text="Select geodesics",
-            takefocus=0,
-            command=self.show_geodesics_window)
-        self.geodesics_button.grid(row=row, column=2,
-                                   sticky=tkinter.NE)
 
         return frame
 

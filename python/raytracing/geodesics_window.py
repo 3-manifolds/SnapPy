@@ -50,7 +50,6 @@ class GeodesicsWindow(tkinter.Toplevel):
             command=self.add_length_spectrum)
         self.length_button.grid(row=0, column=1)
 
-
         right_top_frame = ttk.Frame(top_frame)
         right_top_frame.pack(side=tkinter.LEFT, padx=20)
 

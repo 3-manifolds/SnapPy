@@ -232,10 +232,10 @@ class InsideViewer(ttk.Frame):
         self.geodesics_button.grid(row=row, column=3)
 
         row += 1
-        
+
         self.geodesics_status_label = ttk.Label(frame, text="")
         self.geodesics_status_label.grid(row=row, column=0, columnspan=4)
-        
+
         return frame
 
     def perspective_type_changed(self):

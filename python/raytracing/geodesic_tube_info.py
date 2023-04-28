@@ -51,6 +51,14 @@ class GeodesicTubeInfo:
         if not abs(diff) < 1e-3:
             return False
 
+        self_cusp = self.geodesic_info.core_curve_cusp
+        other_cusp = other.geodesic_info.core_curve_cusp
+
+        if self_cusp or other_cusp:
+            if self_cusp and other_cusp:
+                return self_cusp.Index == other_cusp.Index
+            return False
+
         # What if we have a geodesic in the 2-skeleton.
         # We should ask snappy.drilling for the two tetrahedra adjacent to
         # a face.

@@ -738,7 +738,6 @@ class Isometry():
 cdef IsometryListToIsometries(IsometryList *isometries):
     cdef int n, c, i, j, c_cusp_image
     cdef MatrixInt22  c_cusp_map
-    cdef Boolean extends
     n = isometry_list_size(isometries)
     c = isometry_list_num_cusps(isometries)
 

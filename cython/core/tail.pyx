@@ -259,22 +259,22 @@ def get_HT_knot_DT(crossings, alternation, index):
     DT = extract_HT_knot(record, crossings, alternation)
     return DT
 
+
 def get_HT_knot_by_index(alternation, index, manifold_class):
-    DT=[]
     crossings = 16
     if alternation == 'a':
-        for i in range(3,17):
+        for i in range(3, 17):
             if Alternating_offsets[i] > index:
                 crossings = i-1
                 break
         index_within_crossings = index - Alternating_offsets[crossings]
     elif alternation == 'n':
-        for i in range(8,17):
+        for i in range(8, 17):
             if Nonalternating_offsets[i] > index:
                 crossings = i-1
                 break
         index_within_crossings = index - Nonalternating_offsets[crossings]
-    name = '%d'%crossings + alternation + '%d'%(index_within_crossings + 1)
+    name = '%d' % crossings + alternation + '%d' % (index_within_crossings + 1)
     return manifold_class(name)
 
 #   Iterators
@@ -456,7 +456,7 @@ class ObsOrientableClosedCensus(Census):
         cdef Manifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
-        volume, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
+        _, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
         c_triangulation = GetCuspedCensusManifold(
             self.path, int(num_tet), self.orientability, int(index))
         if c_triangulation == NULL:
@@ -466,6 +466,7 @@ class ObsOrientableClosedCensus(Census):
         result.set_c_triangulation(c_triangulation)
         result.dehn_fill(( int(m),int(l)) )
         return result.with_hyperbolic_structure()
+
 
 class ObsNonorientableClosedCensus(Census):
     """
@@ -490,7 +491,7 @@ class ObsNonorientableClosedCensus(Census):
         cdef Manifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
-        volume, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
+        _, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
         c_triangulation = GetCuspedCensusManifold(
             self.path, int(num_tet), self.orientability, int(index))
         if c_triangulation == NULL:

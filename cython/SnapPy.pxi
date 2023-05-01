@@ -306,7 +306,7 @@ cdef extern from "triangulation.h":
         c_TetShape   *shape[2]
         c_VertexCrossSections *cross_section
         EdgeClass *edge_class[6]
-        
+
     ctypedef struct c_Triangulation "Triangulation":
         c_Tetrahedron  tet_list_begin
         c_Tetrahedron  tet_list_end
@@ -747,7 +747,7 @@ cdef extern from "addl_code.h":
     extern void free_cusp_equation(int* equation)
     extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)  except *
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)  except *
-    extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes) 
+    extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes)
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3, int *neighbor0_idx, int *neighbor1_idx, int *neighbor2_idx, int *neighbor3_idx, int *perm0, int *perm1, int *perm2, int *perm3)
@@ -769,7 +769,7 @@ cdef extern from "ptolemy_types.h":
          int *powers
 
      extern void free_identification_of_variables(Identification_of_variables id)
-         
+
      ctypedef struct Integer_matrix_with_explanations:
          int **entries
          int num_rows

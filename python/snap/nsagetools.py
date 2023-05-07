@@ -518,7 +518,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha=None,
         raise ValueError(
             "Algorithm to compute torsion requires a group presentation "
             "with deficiency one")
-    
+
     k = len(gens)
     if phi is None:
         phi = MapToGroupRingOfFreeAbelianization(G, F)

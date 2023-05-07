@@ -335,6 +335,11 @@ def alexander_polynomial(manifold, **kwargs):
     Any provided keyword arguments are passed to fundamental_group and
     so affect the group presentation used in the computation.
     """
+    if manifold.homology().order() != 'infinite':
+        raise ValueError(
+            "Alexander polynomial only defined for manifolds with "
+            "infinite fundamental group")
+
     ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
     coeffs = ans.coefficients()
     if coeffs and coeffs[0] < 0:
@@ -475,6 +480,7 @@ def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_convention
         sage: tau.degree()
         6
     """
+
     G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2=True)
     if not all_lifts:
         return compute_torsion(G, bits_prec, alpha, phi, wada_conventions=wada_conventions)
@@ -507,12 +513,19 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha=None,
     epsilon = ZZ(2)**(-bits_prec//3) if not F.is_exact() else None
     big_epsilon = ZZ(2)**(-bits_prec//5) if not F.is_exact() else None
     gens, rels = G.generators(), G.relators()
+
+    if len(rels) != len(gens) - 1:
+        raise ValueError(
+            "Algorithm to compute torsion requires a group presentation "
+            "with deficiency one")
+    
     k = len(gens)
     if phi is None:
         phi = MapToGroupRingOfFreeAbelianization(G, F)
 
-    # Make sure this special algorithm applies.
-    assert len(rels) == len(gens) - 1 and len(phi.range().gens()) == 1
+    if len(phi.range().gens()) != 1:
+        raise ValueError(
+            "Algorithm to compute torsion requires betti number 1")
 
     # Want the first variable to be homologically nontrivial
     i0 = [i for i, g in enumerate(gens) if phi(g) != 1][0]
@@ -654,7 +667,8 @@ def hyperbolic_SLN_torsion(manifold, N, bits_prec=100):
     G = alpha = polished_holonomy(manifold, bits_prec)
     phi = MapToGroupRingOfFreeAbelianization(G, alpha('a').base_ring())
     phialpha = PhiAlphaN(phi, alpha, N)
-    assert test_rep(G, phialpha) < ZZ(2)**(bits_prec // 2)
+    if not test_rep(G, phialpha) < ZZ(2)**(bits_prec // 2):
+        raise RuntimeError("Invalid representation")
     return compute_torsion(G, bits_prec, phialpha=phialpha, symmetry_test=False)
 
 

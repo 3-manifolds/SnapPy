@@ -466,6 +466,7 @@ def first_square_submatrix(A):
 class TorsionComputationError(Exception):
     pass
 
+
 def fast_determinant_of_laurent_poly_matrix(A):
     """
     Return the determinant of the given matrix up to

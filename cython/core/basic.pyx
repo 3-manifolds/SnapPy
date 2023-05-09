@@ -80,14 +80,14 @@ except ImportError:
     asksaveasfile = None
 
 # This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
     return string
 
 def valid_index(i, n, format_str):
     """
     Return range(n)[i] or raises a nicely formatted IndexError
     using format_str.
-    
+
     This does several things for us::
 
         * avoid that cython happily converts a float to an int, so a call
@@ -96,7 +96,7 @@ def valid_index(i, n, format_str):
         * checks that i is in the right range
         * supports Sage and numpy Integers: they are not python int's but
           have __index__ (see PEP 357)
-    
+
     It is faster than reimplementing these behaviors.
     """
     try:
@@ -157,7 +157,7 @@ def set_test_flag(int value):
     global SnapPy_test_flag
     old = SnapPy_test_flag
     SnapPy_test_flag = value
-    return old 
+    return old
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef public void uFatalError(const_char_ptr function,
@@ -168,7 +168,7 @@ cdef public void uFatalError(const_char_ptr function,
         raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                                 'defined in %s.c.'%(function, file))
 
-# Global variables used for interrupt processing 
+# Global variables used for interrupt processing
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
@@ -234,7 +234,7 @@ cdef public void uAbortMemoryFull():
     sys.stderr.write('Out of memory.\n')
     sys.exit(2)
 
-cdef public int uQuery(const_char_ptr  message, 
+cdef public int uQuery(const_char_ptr  message,
                        const_int       num_responses,
                        const_char_ptr  responses[],
                        const_int       default_response):
@@ -251,7 +251,7 @@ def cy_eval(s):
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
-            M = sage_matrix(M) 
+            M = sage_matrix(M)
         m, n = M.nrows(), M.ncols()
         result = M.elementary_divisors(algorithm='pari')
     else:
@@ -376,11 +376,11 @@ class MatrixWithExplanations():
         def format_explain_list(l):
             if len(l) <= 6:
                 return repr(l)
-            
+
             return "[ %s, ..., %s]" % (
                 ', '.join(map(repr,l[:3])),
                 ', '.join(map(repr,l[-3:])))
-                
+
 
         return (
             "%s(\n"
@@ -395,7 +395,7 @@ class MatrixWithExplanations():
 class NeumannZagierTypeEquations(MatrixWithExplanations):
 
     def __init__(self, mat, explain_rows, explain_columns):
-        MatrixWithExplanations.__init__(self, 
+        MatrixWithExplanations.__init__(self,
                                         mat, explain_rows, explain_columns)
 
     def __repr__(self):
@@ -525,8 +525,8 @@ cdef Complex Object2Complex(obj):
     result.real = real
     result.imag = imag
     return result
-             
-    
+
+
 
 cdef double Real2double(Real R):
     cdef double* quad = <double *>&R
@@ -542,7 +542,7 @@ cdef Complex gen2Complex(g):
 
         py_string = to_byte_str(str(g.real()).replace(' E','E')) # save a reference
         c_string = py_string
-        real_part = <Real>c_string 
+        real_part = <Real>c_string
         py_string = to_byte_str(str(g.imag()).replace(' E','E')) # save a reference
         c_string = py_string
         imag_part = <Real>c_string
@@ -610,16 +610,16 @@ class CuspInfo(Info):
             return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s'%
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
-                 'holonomy precision' : 'holonomy_accuracy', 
+                 'holonomy precision' : 'holonomy_accuracy',
                  'shape precision'    : 'shape_accuracy'}
-    
+
 class DualCurveInfo(Info):
     def __repr__(self):
         return ('%3d: %s curve of length %s'%
                 (self.index, MatrixParity[self.parity], self.filled_length))
     _obsolete = {'complete length' : 'complete_length',
                  'filled length' : 'filled_length'}
-    
+
 def _StrLongestLen(l):
     return str(max(len(e) for e in l))
 
@@ -674,7 +674,7 @@ class NormalSurfaceInfo(Info):
         orient = 'Orientable' if self.orientable else 'Non-orientable'
         sided = 'two-sided' if self.two_sided else 'one-sided'
         return '%s %s with euler = %s' % (orient, sided, self.euler)
-    
+
 class LengthSpectrum(list):
     def __repr__(self):
         if len(self) > 0 and 'word' in self[0]:
@@ -688,7 +688,7 @@ class LengthSpectrum(list):
 class ListOnePerLine(list):
     def __repr__(self):
         return '[' + ',\n '.join([repr(s) for s in self]) + ']'
-    
+
 # Isometry
 
 def format_two_by_two(mat):

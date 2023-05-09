@@ -34,7 +34,7 @@ def bundle_from_string(desc):
         monodromy = monodromy.replace(',', '*').replace('_', '')
         surface = twister.Surface( (g, n) )
         return surface.bundle(monodromy, return_type='string')
-    
+
 def splitting_from_string(desc):
     desc = desc.replace(' ', '')
     m = is_twister_splitting.match(desc)
@@ -43,7 +43,7 @@ def splitting_from_string(desc):
         g, n = int(g), int(n)
         gluing = gluing.replace(',', '*').replace('_', '')
         handles = handles.replace(',', '*').replace('_', '')
-        surface = twister.Surface( (g, n) )        
+        surface = twister.Surface( (g, n) )
         return surface.splitting(gluing, handles, return_type='string')
 
 #Orientability.orientable = 0
@@ -54,9 +54,9 @@ rev_spec_dict = {(5, 0) : 'm',
                  (6, 1) : 'x',
                  (7, 1) : 'y'}
 
-triangulation_help =  """ 
+triangulation_help =  """
     A %s is specified by a string or a byte sequence, according to the
-    conventions detailed in its docstring.  
+    conventions detailed in its docstring.
     """
 
 cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
@@ -91,12 +91,12 @@ cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
     free(c_terse.which_old_tet)
     free(c_terse.which_gluing)
     return c_triangulation
-        
+
 cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
     if c_triangulation == NULL:
         return 0
     if len(fillings) > 0:
-        num_cusps = get_num_cusps(c_triangulation) 
+        num_cusps = get_num_cusps(c_triangulation)
         if len(fillings) > num_cusps:
             raise ValueError('The number of fillings specified exceeds '
                              'the number of cusps.')
@@ -307,7 +307,7 @@ class Census:
 
     def __len__(self):
         return self.length
-    
+
     # subclasses override this
     def __getitem__(self, n):
         pass
@@ -315,7 +315,7 @@ class Census:
 #  Cusped Census
 
 Orientable_lengths = (301, 962, 3552, 12846, 301+962+3552+12846)
-Nonorientable_lengths = (114, 259, 887, 114+259+887) 
+Nonorientable_lengths = (114, 259, 887, 114+259+887)
 
 five_tet_orientable = (
    3, 4, 6, 7, 9, 10, 11, 15, 16, 17, 19, 22, 23, 26, 27, 29, 30, 32, 33,
@@ -395,12 +395,12 @@ class CuspedCensus(Census):
               try:
                   filedata = self.Census_Morwen8.extractfile(tarpath).read()
                   c_triangulation = read_triangulation_from_string(filedata)
-              except: 
+              except:
                   raise IOError('The Morwen 8 tetrahedra manifold %s '
                                 'was not found.'% spec)
               result = Manifold(spec='empty')
               result.set_c_triangulation(c_triangulation)
-              return result              
+              return result
               ###return Manifold('t%d' % census_index)
         else:
             raise IndexError('Index is out of range.')
@@ -524,13 +524,13 @@ class KnotExteriors(Census):
 class AlternatingKnotExteriors(KnotExteriors):
     """
     Iterator/Sequence for Alternating knot exteriors from the
-    Hoste-Thistlethwaite tables.   Goes through 16 crossings. 
+    Hoste-Thistlethwaite tables.   Goes through 16 crossings.
     """
 
 class NonalternatingKnotExteriors(KnotExteriors):
     """
     Iterator/Sequence for nonAlternating knot exteriors from the
-    Hoste-Thistlethwaite tables.  Goes through 16 crossings. 
+    Hoste-Thistlethwaite tables.  Goes through 16 crossings.
     """
     length = sum(Nonalternating_numbers.values())
     alternation = 'n'
@@ -552,7 +552,7 @@ class ObsCensusKnots(Census):
 
     def __repr__(self):
         return 'Knots in S^3 which appear in the SnapPea Census'
-    
+
     def __getitem__(self, n):
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
@@ -625,19 +625,19 @@ class ObsLinkExteriors(Census):
                 filename = 'L%d%.2d%.3d' % (self.components, k, l)
                 if self.components > 1:
                     name = "%d^%d_%d" % (k, self.components, l)
-                else:        
+                else:
                     name = "%d_%d" % (k,  l)
                 tarpath =  'ChristyLinks/%s'%filename
                 try:
                     filedata = self.Christy_links.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
-                except: 
+                except:
                     raise IOError('The link complement %s was not '
                                   'found.'%filename)
                 result =  Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
-                return result.with_hyperbolic_structure()              
+                return result.with_hyperbolic_structure()
 
 #----------------------------------------------------------------
 #
@@ -739,7 +739,7 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
     for i from 0 <= i < P.num_crossings:
         cr_dict = Pycrossings[i]
         neighbor = cr_dict['Xbackward_neighbor']
-        P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPBackward] = &P.crossings[neighbor] 
+        P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPBackward] = &P.crossings[neighbor]
         neighbor =  cr_dict['Xforward_neighbor']
         P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPForward] = &P.crossings[neighbor]
         neighbor = cr_dict['Ybackward_neighbor']

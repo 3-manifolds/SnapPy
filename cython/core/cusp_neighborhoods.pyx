@@ -66,7 +66,7 @@ cdef class CCuspNeighborhood():
         else:
             raise IndexError('The specified cusp (%s) does not '
                              'exist.'%which_cusp)
-        
+
     def num_cusps(self):
         """
         Return the number of cusps.
@@ -146,15 +146,15 @@ cdef class CCuspNeighborhood():
 
     def get_tie(self, which_cusp):
         """
-        Return True if the specified cusp is a member of the tied group. 
-        The displacements of the tied cusps are all the same.        
+        Return True if the specified cusp is a member of the tied group.
+        The displacements of the tied cusps are all the same.
         """
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_tie(self.c_cusp_neighborhood, N)
 
     def set_tie(self, which_cusp, new_tie):
         """
-        Mark the specified cusp as a member of the tied group. 
+        Mark the specified cusp as a member of the tied group.
         """
         N = self.check_index(which_cusp)
         set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
@@ -192,7 +192,7 @@ cdef class CCuspNeighborhood():
         """
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.
-        
+
         If the high_precision flag is set to the default value False, these
         are Python complexes and floats.  Otherwise they are SnapPy Numbers.
         """
@@ -244,7 +244,7 @@ cdef class CCuspNeighborhood():
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                pair = ( 
+                pair = (
                     self._number_(Complex2Number(segment.endpoint[0])),
                     self._number_(Complex2Number(segment.endpoint[1])) )
             else:

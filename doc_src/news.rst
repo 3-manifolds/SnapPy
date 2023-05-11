@@ -4,7 +4,7 @@
 News
 ====
 
-* Version 3.1 (April 2023):
+* Version 3.1 (May 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`
     for going from a link exterior to a link diagram taken from
@@ -13,26 +13,32 @@ News
   - Covers now computed by the stand-alone `low_index
     <https://pypi.org/project/low-index/>`_ module, which uses
     multiple processor cores and is typically much faster than the old
-    code.  In some cases, it is dramatically faster even than GAP or
+    code.  In some cases, it is dramatically faster than even GAP or
     Magma.
 
-  - Drilling any simple geodesic with :meth:`drill_word
-    <snappy.Manifold.drill_word>` and :meth:`drill_words
-    <snappy.Manifold.drill_words>`.
   - Added geodesics to the :meth:`inside_view
-    <snappy.Manifold.inside_view>` (add picture???).
+    <snappy.Manifold.inside_view>`.
+
+  - Added drilling any simple geodesic with :meth:`drill_word
+    <snappy.Manifold.drill_word>` and :meth:`drill_words
+    <snappy.Manifold.drill_words>`, not just those that are
+    :meth:`combinatorially simple <snappy.Manifold.dual_curves>`.
 
   - Added `ignore_orientation` flag to :meth:`triangulation_isosig
     <snappy.Triangulation.triangulation_isosig>`.
 
-  - Added `include_words` to :meth:`length_spectrum
-    <snappy.Manifold.length_spectrum>` showing the word corresponding
-    to a geodesic which can be given to :meth:`drill_word
-    <snappy.Manifold.drill_word>`.
+  - Added `include_words` flag to :meth:`length_spectrum
+    <snappy.Manifold.length_spectrum>` for getting the word
+    corresponding to a geodesic which can be given to
+    :meth:`drill_word <snappy.Manifold.drill_word>`.
+
+  - Support for Python 3.11 and SageMath 10.0.
+
+  - Modernized styling of the documentation.
 
 * Version 3.0.3 (December 2021):
 
-  - Runs natively on Macs with Apple Silicon processors (M1, M1 Pro, M1 Max).
+  - Runs natively on Macs with Apple Silicon processors (M1, M2, and variants).
 
 * Version 3.0.2 (November 2021):
 

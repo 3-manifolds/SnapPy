@@ -1,2 +1,2 @@
-version = '3.1rc2'
-release_date = 'April 2023'
+version = '3.1rc3'
+release_date = 'May 2023'

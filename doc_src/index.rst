@@ -9,8 +9,9 @@ SnapPy
 What is SnapPy?
 ===============
 
-..  image:: images/SnapPy-196.png 
+..  image:: images/SnapPy-196.png
     :align: right
+    :alt: SnapPy logo
 
 
 SnapPy is a program for studying the topology and geometry of
@@ -26,80 +27,47 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.1 (May 2023):
+
+  - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`
+    for going from a link exterior to a link diagram taken from
+    `Dunfield-Obeidin-Rudd <https://arxiv.org/abs/2112.03251>`_.
+
+  - Covers now computed by the stand-alone `low_index
+    <https://pypi.org/project/low-index/>`_ module, which uses
+    multiple processor cores and is typically much faster than the old
+    code.  In some cases, it is dramatically faster than even GAP or
+    Magma.
+
+  - Added geodesics to the :meth:`inside_view
+    <snappy.Manifold.inside_view>`.  Here are some intersecting tubes
+    about closed geodesics in the manifold ``v3539(5,1)``:
+
+    .. image:: images/geodesics.jpg
+       :width: 50%
+       :align: center
+       :alt: Geodesic tubes for v3539(5,1)
+
+  - Added drilling any simple geodesic with :meth:`drill_word
+    <snappy.Manifold.drill_word>` and :meth:`drill_words
+    <snappy.Manifold.drill_words>`, not just those that are
+    :meth:`combinatorially simple <snappy.Manifold.dual_curves>`.
+
+  - Added `ignore_orientation` flag to :meth:`triangulation_isosig
+    <snappy.Triangulation.triangulation_isosig>`.
+
+  - Added `include_words` flag to :meth:`length_spectrum
+    <snappy.Manifold.length_spectrum>` for getting the word
+    corresponding to a geodesic which can be given to
+    :meth:`drill_word <snappy.Manifold.drill_word>`.
+
+  - Support for Python 3.11 and SageMath 10.0.
+
+  - Modernized styling of the documentation.
+
 * Version 3.0.3 (December 2021):
 
-  - Runs natively on Macs with Apple Silicon processors (M1, M1 Pro, M1 Max).
-
-* Version 3.0.2 (November 2021):
-  
-  - Support for SageMath 9.4 and 9.5, Python 3.10, and macOS Monterey.
-
-* Version 3.0 (April 2021): New features include:
-
-  - Incorporates Zoltán Szabó's `program
-    <https://web.math.princeton.edu/~szabo/HFKcalc.html>`_ for
-    computing Knot Floer homology, see :meth:`knot_floer_homology
-    <spherogram.Link.knot_floer_homology>`.  This can compute the
-    Seifert genus of a 25 crossing knot in mere seconds!
-
-  - Topological slice obstructions of Herald-Kirk-Livingston, see
-    :meth:`slice_obstruction_HKL <snappy.Manifold.slice_obstruction_HKL>`.
-
-  - Faster "local" algorithm for :meth:`jones_polynomial
-    <spherogram.Link.jones_polynomial>`.
-
-  - `Cohomology fractals <https://arxiv.org/abs/2010.05840>`_ added to
-    :meth:`inside_view <snappy.Manifold.inside_view>`.
-
-  - Convention changes: Sign of knot signature (now positive knots have
-    negative signatures), choice of braid generators (now positive
-    generators give positive crossings).
-
-  - Updates to methods :meth:`cusp_translations
-    <snappy.Manifold.cusp_translations>`, :meth:`cusp_areas
-    <snappy.Manifold.cusp_areas>`, :meth:`short_slopes
-    <snappy.Manifold.short_slopes>`. Also :meth:`Link <spherogram.Link>`
-    now accepts DT codes.
-
-  - Support for SageMath 9.3, Python 3.9, and macOS Big Sur.
-
-  - macOS app now code-signed and notarized.
-
-  - SnapPy now requires Python 3.6 or newer.
-
-
-* Version 2.8 (June 2020): New features include:
-
-  - Raytraced interior views of a hyperbolic 3-manifold via the 
-    :meth:`inside_view <snappy.Manifold.inside_view>` method, see also
-    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ and
-    `demo video <https://youtu.be/CAERhmUCkRs>`_.
-
-  - :doc:`verify`: Several new features:
-
-    * Complex volume (and thus the Chern-Simons invariant) for both
-      cusped and closed manifolds, see
-      :meth:`complex_volume <snappy.Manifold.complex_volume>`.
-      
-    * Disjoint cusp neighborhoods by the method :meth:`cusp_areas
-      <snappy.Manifold.cusp_areas>` which uses
-      :meth:`cusp_area_matrix <snappy.Manifold.cusp_area_matrix>`.
-
-    * Cusp shapes (see :meth:`cusp_info <snappy.Manifold.cusp_info>`).
-      
-    * Finding all :meth:`short_slopes <snappy.Manifold.short_slopes>`
-      in disjoint embedded cusp neighborhoods.
-
-  - The census :class:`HTLinkExteriors <snappy.HTLinkExteriors>` has
-    been extended to 15 crossing knots (contributed by Malik
-    Obeidin).
-
-  - The census :class:`CensusKnots <snappy.CensusKnots>` has been
-    extended to triangulations with 9 ideal tetrahedra.
-
-  - Support for SageMath 9.0 and macOS Catalina.
-
-  - Development moved to `GitHub <https://github.com/3-manifolds>`_.
+  - Runs natively on Macs with Apple Silicon processors (M1, M2, and variants).
 
 * :doc:`Complete version history <news>`.
 
@@ -109,8 +77,8 @@ Documentation
 .. toctree::
    :maxdepth: 1
 
-   installing 
-   screenshots   
+   installing
+   screenshots
    tutorial
    snappy
    plink

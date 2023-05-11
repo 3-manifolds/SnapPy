@@ -11,7 +11,7 @@ from . import filedialog
 from .exceptions import SnapPeaFatalError
 from .app_menus import HelpMenu, EditMenu, WindowMenu, ListedWindow
 from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink_menus
-from .app_menus import add_menu, scut
+from .app_menus import add_menu, scut, open_html_docs
 from .browser import Browser
 from .horoviewer import HoroballViewer
 from .infodialog import about_snappy
@@ -271,6 +271,9 @@ class SnapPyLinkEditor(LinkEditor, ListedWindow):
 
     def save(self, event=None):
         LinkEditor.save(self)
+
+    def howto(self):
+        open_html_docs('plink.html')
 
     __repr__ = object.__repr__
 

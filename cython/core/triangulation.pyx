@@ -2452,7 +2452,7 @@ cdef class Triangulation():
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
-        degree = len(permutation_rep[0])
+        degree = len(permutation_rep[0]) if len(permutation_rep) > 0 else 1
 
         # The next call has the effect of initializing aspects of
         # self.c_triangulation that are needed to build the cover.  It is *not*
@@ -2542,9 +2542,6 @@ cdef class Triangulation():
         """
         Compute all covers using low_index.
         """
-        if _low_index_version < [1, 2]:
-            return self._covers_low_index_old(degree)
-
         G = self.fundamental_group()
 
         relators = sorted(G.relators(as_int_list=True), key=len)
@@ -2567,18 +2564,9 @@ cdef class Triangulation():
                                           degree,
                                           strategy=strategy,
                                           num_threads=num_threads)
-        return [self.cover(H) for H in reps if len(H[0]) == degree]
-
-    def _covers_low_index_old(self, degree):
-        G = self.fundamental_group()
-
-        if G.num_relators() > self.num_cusps():
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators(),
-                        num_long_relators=self.num_cusps())
-        else:
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators())
-        return [self.cover(H.permutation_rep()) for H in S.list()
-                if H.degree == degree]
+        return [self.cover(H) for H in reps if
+                ((len(H) > 1) and len(H[0]) == degree) or
+                (len(H) == 0 and degree == 1)]
 
     def _covers_gap(self, degree):
         """
@@ -2665,7 +2653,10 @@ cdef class Triangulation():
         cdef int** c_meridians
         cdef int** c_longitudes
 
-        degree = len(perm_list[0])
+        if len(perm_list) == 0:  # implies trivial presentation
+            degree = 1
+        else:
+            degree = len(perm_list[0])
 
         # Sanity check
         S = set(range(degree))
@@ -2678,6 +2669,10 @@ cdef class Triangulation():
         c_triangulation = self.c_triangulation
         G = self.fundamental_group()
         num_generators = G.num_generators()
+        if len(perm_list) != num_generators:
+            raise ValueError('Number of permutations is not the same '
+                             'as the number of generators')
+
         relators = G.relators(as_int_list=True)
         num_relators = len(relators)
         orig_gens = G.original_generators(as_int_list=True)

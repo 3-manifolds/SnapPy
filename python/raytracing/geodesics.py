@@ -19,6 +19,7 @@ class Geodesics:
         >>> M = Manifold("o9_00000")
         >>> g = Geodesics(M, ["b", "c"])
         >>> g.set_enables_and_radii_and_update([True, True], [0.3, 0.4])
+        True
         >>> b = g.get_uniform_bindings()
         >>> len(b['geodesics.geodesicHeads'][1])
         31

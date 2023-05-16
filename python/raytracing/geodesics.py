@@ -63,8 +63,8 @@ class Geodesics:
             if enable:
                 radius = self.RF(radius)
 
-                tets_and_endpoints = (
-                    geodesic_tube.compute_tets_and_R13_endpoints_for_tube(radius))
+                tets_and_endpoints, radius = (
+                    geodesic_tube.compute_tets_and_R13_endpoints_and_radius_for_tube(radius))
 
                 radius_param = radius.cosh() ** 2 / 2
 

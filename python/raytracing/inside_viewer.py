@@ -7,6 +7,7 @@ from . import gui_utilities
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .view_scale_controller import ViewScaleController
 from .raytracing_view import *
+from .geodesics_window import GeodesicsWindow
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
 
@@ -25,13 +26,14 @@ class InsideViewer(ttk.Frame):
                  weights=None,
                  cohomology_basis=None,
                  cohomology_class=None,
-                 geodesics=[],
-                 main_window=None):
+                 geodesics=[]):
         ttk.Frame.__init__(self, container)
-        self.main_window = main_window
         self.bindtags(self.bindtags() + ('inside',))
         self.fillings_changed_callback = fillings_changed_callback
         self.has_weights = bool(weights or cohomology_class)
+        self.geodesics_window = None
+        toplevel = self.winfo_toplevel()
+        toplevel.protocol("WM_DELETE_WINDOW", self.destroy_geodesics_window)
 
         main_frame = self.create_frame_with_main_widget(
             self,
@@ -591,16 +593,32 @@ class InsideViewer(ttk.Frame):
         except AttributeError:
             pass
 
+    def delete_resource(self):
+        self.destroy()
+
+    def destroy_geodesics_window(self):
+        if self.geodesics_window:
+            self.geodesics_window.destroy()
+            self.geodesics_window = None
+        self.winfo_toplevel().close()
+
+    def geodesics_gone(self):
+        self.geodesics_window.destroy()
+        self.geodesics_window = None
+
     def show_geodesics_window(self):
         try:
             self.widget.manifold.dirichlet_domain()
         except RuntimeError:
             self.show_failed_dirichlet(True)
             return
-
-        from .geodesics_window import GeodesicsWindow
-
-        w = GeodesicsWindow(self)
+        if self.geodesics_window is None:
+            self.geodesics_window = GeodesicsWindow(self)
+            self.geodesics_window.transient(self)
+            self.geodesics_window.protocol('WM_DELETE_WINDOW',
+                                               self.geodesics_gone)
+        else:
+            self.geodesics_window.deiconify()
 
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:

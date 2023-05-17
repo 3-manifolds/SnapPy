@@ -262,7 +262,6 @@ static Complex         complex_volume_ordered_manifold(Triangulation *);
 
 static int             neighboring_face(Tetrahedron*, int face);
 static int             evaluate_gluing_on_face(Tetrahedron*, int face, int vertex);
-static void            check_neighbors_and_gluings(Triangulation*);
 static void            initialize_TetShape(TetShape*);
 static void            initialize_flags(Triangulation*);
 
@@ -524,50 +523,6 @@ int evaluate_gluing_on_face(
         vertex--;
     return vertex;
 }
-
-
-static void check_neighbors_and_gluings(
-    Triangulation *manifold)
-{
-    Tetrahedron *tet,
-                *nbr;
-    FaceIndex   f,
-                nbr_f;
-    Permutation this_gluing;
-    char        scratch[256];
-
-    number_the_tetrahedra(manifold);
-    
-    for (tet = manifold->tet_list_begin.next;
-         tet != &manifold->tet_list_end;
-         tet = tet->next)
-
-        for (f = 0; f < 4; f++)
-        {
-            this_gluing = tet->gluing[f];
-            nbr         = tet->neighbor[f];
-            nbr_f       = EVALUATE(this_gluing, f);
-
-            if (nbr->neighbor[nbr_f] != tet)
-            {
-	        snprintf(scratch, 256, "inconsistent neighbor data, tet %d face %d to tet %d face %d",
-                        tet->index, f, nbr->index, nbr_f);
-                uAcknowledge(scratch);
-                uFatalError("check_neighbors_and_gluings", "complex_volume");
-            }
-
-            if (nbr->gluing[nbr_f] != inverse_permutation[this_gluing])
-            {
-	        snprintf(scratch, 256, "inconsistent gluing data, tet %d face %d to tet %d face %d",
-                        tet->index, f, nbr->index, nbr_f);
-                uAcknowledge(scratch);
-                uFatalError("check_neighbors_and_gluings", "complex_volume");
-            }
-        }
-}
-
-
-
 
 /* Initialize_TetShape sets all cross ratios to that of a regular
  * ideal tetrahedron */

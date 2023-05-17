@@ -384,7 +384,7 @@ struct GroupPresentation
 };
 
 
-static GroupPresentation    *compute_unsimplified_presentation(Triangulation *manifold);
+GroupPresentation           *compute_unsimplified_presentation(Triangulation *manifold);
 static void                 compute_matrix_generators(Triangulation *manifold, GroupPresentation *group);
 static void                 compute_relations(Triangulation *manifold, GroupPresentation *group);
 static void                 compute_edge_relations(Triangulation *manifold, GroupPresentation *group);
@@ -529,7 +529,7 @@ GroupPresentation *fundamental_group(
 }
 
 
-static GroupPresentation *compute_unsimplified_presentation(
+GroupPresentation *compute_unsimplified_presentation(
     Triangulation   *manifold)
 {
     GroupPresentation   *group;

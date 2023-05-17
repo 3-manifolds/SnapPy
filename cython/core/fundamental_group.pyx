@@ -144,7 +144,7 @@ cdef class CFundamentalGroup():
         """
         return fg_get_num_orig_gens(self.c_group_presentation)
 
-    def original_generators(self, verbose_form=False):
+    def original_generators(self, verbose_form=False, as_int_list=False):
         """
         Return the original geometric generators (before
         simplification) in terms of the current generators.
@@ -156,12 +156,15 @@ cdef class CFundamentalGroup():
         orig_gens = []
         for n from 0 <= n < num_orig_gens:
             gen = fg_get_original_generator(self.c_group_presentation, n)
-            word = c_word_as_string(gen, num_gen, verbose_form)
+            if as_int_list:
+                word = c_word_as_int_list(gen)
+            else:
+                word = c_word_as_string(gen, num_gen, verbose_form)
             orig_gens.append(word)
             fg_free_relation(gen)
         return orig_gens
 
-    def generators_in_originals(self, verbose_form=False, raw_form =False):
+    def generators_in_originals(self, verbose_form=False, raw_form=False):
         """
         Return the current generators in terms of the original
         geometric generators. Note that by default fundamental_group()

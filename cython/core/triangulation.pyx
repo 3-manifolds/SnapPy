@@ -2504,6 +2504,9 @@ cdef class Triangulation():
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method='magma'.
         """
+        if degree < 1:
+            raise ValueError('Cover degree should be at least 1')
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         if cover_type not in ('cyclic', 'all'):
@@ -2553,9 +2556,10 @@ cdef class Triangulation():
                                           degree,
                                           strategy=strategy,
                                           num_threads=num_threads)
-        return [self.cover(H) for H in reps if
-                ((len(H) > 1) and len(H[0]) == degree) or
-                (len(H) == 0 and degree == 1)]
+        def index(subgroup):
+            return 1 if len(subgroup) == 0 else len(subgroup[0])
+
+        return [self.cover(H) for H in reps if index(H) == degree]
 
     def _covers_gap(self, degree):
         """

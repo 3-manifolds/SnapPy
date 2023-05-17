@@ -103,7 +103,7 @@ cdef class CFundamentalGroup():
                   simplify_presentation=True,
                   fillings_may_affect_generators=True,
                   minimize_number_of_generators=True,
-                  try_hard_to_shorten_relator=True):
+                  try_hard_to_shorten_relators=True):
         if triangulation.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         copy_triangulation(triangulation.c_triangulation,

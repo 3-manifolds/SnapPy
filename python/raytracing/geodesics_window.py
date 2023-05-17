@@ -65,7 +65,8 @@ class GeodesicsWindow(tkinter.Toplevel):
             right_top_frame, text="Add word", command=self.add_word)
         self.word_button.grid(row=0, column=1)
 
-        self.status_label = ttk.Label(self.frame, text=_default_status_msg)
+        self.status_label = ttk.Label(
+            self.frame, text=_default_status_msg)
         self.status_label.pack()
 
         self.scrollable_frame = ScrollableFrame(self.frame)
@@ -158,7 +159,8 @@ class GeodesicsWindow(tkinter.Toplevel):
     def update_geodesic_data(self):
         success = self.raytracing_view.update_geodesic_data_and_redraw()
         if success:
-            self.status_label.configure(text=_default_status_msg)
+            self.status_label.configure(text=_default_status_msg,
+                                        foreground='')
         else:
             self.status_label.configure(
                 text=('Limiting size of geodesic tube to prevent intersection '
@@ -166,17 +168,21 @@ class GeodesicsWindow(tkinter.Toplevel):
                 foreground='red')
 
     def add_length_spectrum(self, *args, **kwargs):
-        self.status_label.configure(text=_default_status_msg)
+        self.status_label.configure(text=_default_status_msg, foreground='')
 
         try:
             if not self.raytracing_view.geodesics.add_length_spectrum(
                     float(self.length_box.get())):
-                self.status_label.configure(text='No new geodesics found.')
+                self.status_label.configure(text='No new geodesics found.',
+                                            foreground='')
         except LengthSpectrumError as e:
-            self.status_label.configure(text=' '.join(e.args), foreground='red')
+            self.status_label.configure(
+                text=' '.join(e.args), foreground='red')
             return
         except Exception as e:
-            self.status_label.configure(text='An error has occurred. See terminal for details.')
+            self.status_label.configure(
+                text='An error has occurred. See terminal for details.',
+                foreground='red')
 
         self.raytracing_view.resize_geodesic_params()
 
@@ -186,23 +192,27 @@ class GeodesicsWindow(tkinter.Toplevel):
         word = self.word_entry.get()
 
         if len(word) == 0:
-            self.status_label.configure(text="Word is empty")
+            self.status_label.configure(text="Word is empty",
+                                        foreground='red')
             return
 
         try:
             n = self.raytracing_view.geodesics.get_mcomplex().num_generators
             word_as_list(word, n)
         except ValueError:
-            self.status_label.configure(text=word + " contains non-generators")
+            self.status_label.configure(text=word + " contains non-generators",
+                                        foreground='red')
             return
 
         try:
             index = self.raytracing_view.geodesics.add_word(word)
         except WordAppearsToBeParabolic:
-            self.status_label.configure(text=word + " is parabolic")
+            self.status_label.configure(text=word + " is parabolic",
+                                        foreground='red')
             return
 
-        self.status_label.configure(text=_default_status_msg)
+        self.status_label.configure(text=_default_status_msg,
+                                    foreground='')
 
         self.raytracing_view.resize_geodesic_params()
         self.raytracing_view.enable_geodesic(index)

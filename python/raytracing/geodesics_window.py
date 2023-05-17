@@ -22,6 +22,11 @@ class GeodesicsWindow(tkinter.Toplevel):
 
         tkinter.Toplevel.__init__(self, class_='snappy')
         self.title('Geodesics')
+        # FIX THIS WHEN WE GO TO 8.7!
+        if self._windowingsystem == "aqua":
+            self.tk.call("::tk::unsupported::MacWindowStyle", "style", self._w,
+                             "utility")
+        self.wm_attributes(buttons=['close'])
 
         self.frame = ttk.Frame(self)
         self.frame.pack(expand=True, fill=tkinter.BOTH)

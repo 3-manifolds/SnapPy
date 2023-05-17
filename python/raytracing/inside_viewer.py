@@ -228,7 +228,7 @@ class InsideViewer(ttk.Frame):
 
         self.geodesics_button = ttk.Button(
             frame,
-            text="Geodesics",
+            text="Geodesics ...",
             takefocus=0,
             command=self.show_geodesics_window)
         self.geodesics_button.grid(row=row, column=3)

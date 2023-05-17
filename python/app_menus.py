@@ -2,9 +2,9 @@
 import sys
 import os
 import webbrowser
-from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir
+from .docserver import SnapPyDocServer
 from .infodialog import about_snappy, InfoDialog
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
@@ -119,6 +119,7 @@ class HelpMenu(Tk_.Menu):
         self.add_command(label=help_report_bugs_label,
                          command=self.show_bugs_page)
         self.extra_commands = {}
+        self.server = None
 
     def show_SnapPy_help(self):
         self.show_page('index.html')
@@ -127,9 +128,11 @@ class HelpMenu(Tk_.Menu):
         self.show_page('bugs.html')
 
     def show_page(self, page):
+        if self.server is None:
+            self.server = SnapPyDocServer()
         path = os.path.join(os.path.dirname(snappy_dir), 'doc', page)
         if os.path.exists(path):
-            url = 'file:' + pathname2url(path)
+            url = '/'.join((self.server.URL, page))
             try:
                 webbrowser.open_new_tab(url)
             except webbrowser.Error:

@@ -711,7 +711,8 @@ static char *StringNewFileFormat(
     char *p;
     char *end;
     
-    size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps + 8*data->num_tetrahedra);
+    size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps +
+        8*data->num_tetrahedra);
     buffer = (char *)malloc(size);
     if ( buffer == NULL)
       uFatalError("StringNewFileFormat", "unix file io");

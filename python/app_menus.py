@@ -7,6 +7,7 @@ from .gui import *
 from . import __file__ as snappy_dir
 from .infodialog import about_snappy, InfoDialog
 from .version import version
+import shutil
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -72,10 +73,20 @@ def open_html_docs(page):
     # the local copy of the docs.
     #
     # For details, see: https://bugs.launchpad.net/snapd/+bug/1979060
-    if sys.platform.startswith('linux'):
-        raise ValueError('Down with snaps! Down with Ubuntu!')
 
-    path = os.path.join(os.path.dirname(snappy_dir), 'doc', page)
+    doc_dir = os.path.join(os.path.dirname(snappy_dir), 'doc')
+
+    # if sys.platform.startswith('linux'):
+    if True:
+        safe_doc_dir = os.path.join(os.environ['HOME'], 'Downloads',
+                                    f'SnapPy_{version}_help_f8205a5')
+        if os.path.exists(safe_doc_dir):
+            shutil.rmtree(safe_doc_dir)
+        shutil.copytree(doc_dir, safe_doc_dir)
+    else:
+        safe_doc_dir = doc_dir
+
+    path = os.path.join(safe_doc_dir, page)
     if os.path.exists(path):
         url = 'file:' + pathname2url(path)
         try:

@@ -33,7 +33,7 @@ class InsideViewer(ttk.Frame):
         self.has_weights = bool(weights or cohomology_class)
         self.geodesics_window = None
         toplevel = self.winfo_toplevel()
-        toplevel.protocol("WM_DELETE_WINDOW", self.destroy_geodesics_window)
+        toplevel.protocol("WM_DELETE_WINDOW", self.close_toplevel)
 
         main_frame = self.create_frame_with_main_widget(
             self,
@@ -252,7 +252,8 @@ class InsideViewer(ttk.Frame):
         extra_scale = 1.1
 
         self.widget.ui_uniform_dict['perspectiveType'][1] = 1
-        self.widget.ui_uniform_dict['viewScale'][1] = float(extra_scale * view_scale)
+        self.widget.ui_uniform_dict['viewScale'][1] = float(
+            extra_scale * view_scale)
 
         self.perspective_type_controller.update()
         self.perspective_type_changed()
@@ -504,7 +505,8 @@ class InsideViewer(ttk.Frame):
             left_end=0.1,
             right_end=1.0)
 
-        self.translate_key_label = ttk.Label(frame, text=_translate_key_labels['QWERTY'])
+        self.translate_key_label = ttk.Label(frame,
+            text=_translate_key_labels['QWERTY'])
         self.translate_key_label.grid(row=row, column=3, sticky=tkinter.NSEW)
 
         row += 1
@@ -517,7 +519,8 @@ class InsideViewer(ttk.Frame):
             left_end=0.1,
             right_end=1.0)
 
-        self.rotate_key_label = ttk.Label(frame, text=_rotate_key_labels['QWERTY'])
+        self.rotate_key_label = ttk.Label(frame,
+            text=_rotate_key_labels['QWERTY'])
         self.rotate_key_label.grid(row=row, column=3, sticky=tkinter.NSEW)
 
         row += 1
@@ -596,13 +599,15 @@ class InsideViewer(ttk.Frame):
     def delete_resource(self):
         self.destroy()
 
-    def destroy_geodesics_window(self):
+    # Called when the close button of the containing toplevel is pressed.
+    def close_toplevel(self):
         if self.geodesics_window:
             self.geodesics_window.destroy()
             self.geodesics_window = None
         self.winfo_toplevel().close()
 
-    def geodesics_gone(self):
+    # Called when the close button of the geodesics window is pressed. 
+    def close_geodesics_window(self):
         self.geodesics_window.destroy()
         self.geodesics_window = None
 
@@ -614,11 +619,12 @@ class InsideViewer(ttk.Frame):
             return
         if self.geodesics_window is None:
             self.geodesics_window = GeodesicsWindow(self)
-            self.geodesics_window.transient(self)
+            #self.geodesics_window.transient(self)
             self.geodesics_window.protocol('WM_DELETE_WINDOW',
-                                               self.geodesics_gone)
+                self.close_geodesics_window)
         else:
             self.geodesics_window.deiconify()
+            self.geodesics_window.wm_attributes('-topmost', True)
 
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:

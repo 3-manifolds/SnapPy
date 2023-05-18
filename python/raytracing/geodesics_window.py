@@ -1,3 +1,4 @@
+import sys
 import tkinter
 from tkinter import ttk
 
@@ -9,6 +10,9 @@ from ..SnapPy import word_as_list # type: ignore
 
 class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
+        # Disable the minimize button when we get to use Tk 8.7
+        tkinter.Toplevel.__init__(self, class_='snappy')
+
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
         self.headings = (
@@ -19,14 +23,6 @@ class GeodesicsWindow(tkinter.Toplevel):
             ('Complex length', 3, 0, 2),
             ('Radius', 5, 0, 1),
             ('    ', 6, 0, 1))
-
-        tkinter.Toplevel.__init__(self, class_='snappy')
-        self.title('Geodesics')
-        # FIX THIS WHEN WE GO TO 8.7!
-        if self._windowingsystem == "aqua":
-            self.tk.call("::tk::unsupported::MacWindowStyle", "style", self._w,
-                             "utility")
-        self.wm_attributes(buttons=['close'])
 
         self.frame = ttk.Frame(self)
         self.frame.pack(expand=True, fill=tkinter.BOTH)

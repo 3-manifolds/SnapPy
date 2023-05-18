@@ -556,7 +556,7 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha=None,
 
     if symmetry_test:
         coeffs = ans.coefficients()
-        error = max( [univ_abs(a-b) for a,b in zip(coeffs, reversed(coeffs))] )
+        error = max([univ_abs(a-b) for a,b in zip(coeffs, reversed(coeffs))], default=0)
         if (not F.is_exact() and error > epsilon) or (F.is_exact() and error != 0):
             raise TorsionComputationError("Torsion polynomial doesn't seem symmetric")
 

@@ -1,7 +1,7 @@
 import os
 import webbrowser
 from threading import Thread
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from . import __path__
 
 class SnapPyDocHandler(SimpleHTTPRequestHandler):
@@ -12,7 +12,7 @@ class SnapPyDocHandler(SimpleHTTPRequestHandler):
     def log_message(self, *args, **kwargs):
         pass
 
-class SnapPyDocServer(HTTPServer):
+class SnapPyDocServer(ThreadingHTTPServer):
     def __init__(self, *args, **kwargs):
         super().__init__(('127.0.0.1', 0), SnapPyDocHandler)
         self.URL = 'http://%s:%s'%(self.server_address)

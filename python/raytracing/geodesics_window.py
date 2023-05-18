@@ -12,6 +12,8 @@ class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
         # Disable the minimize button when we get to use Tk 8.7
         tkinter.Toplevel.__init__(self, class_='snappy')
+        if sys.platform == 'darwin' and tkinter.TkVersion > 8.6:
+            self.wm_attributes('-stylemask', ('titled', 'closable'))
         self.title('Geodesics in %s' % inside_viewer.widget.manifold)
 
         self.inside_viewer = inside_viewer

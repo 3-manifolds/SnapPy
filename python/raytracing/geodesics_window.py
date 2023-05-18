@@ -12,6 +12,7 @@ class GeodesicsWindow(tkinter.Toplevel):
     def __init__(self, inside_viewer, *args, **kwards):
         # Disable the minimize button when we get to use Tk 8.7
         tkinter.Toplevel.__init__(self, class_='snappy')
+        self.title('Geodesics in %s' % inside_viewer.widget.manifold)
 
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget

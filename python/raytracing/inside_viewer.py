@@ -619,7 +619,7 @@ class InsideViewer(ttk.Frame):
             return
         if self.geodesics_window is None:
             self.geodesics_window = GeodesicsWindow(self)
-            #self.geodesics_window.transient(self)
+            self.geodesics_window.transient(self)
             self.geodesics_window.protocol('WM_DELETE_WINDOW',
                 self.close_geodesics_window)
         else:

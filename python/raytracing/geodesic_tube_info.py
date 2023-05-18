@@ -1,5 +1,8 @@
 from ..drilling import compute_geodesic_info
 from ..drilling.geodesic_tube import GeodesicTube
+from ..drilling.line import distance_r13_lines
+
+from ..snap.t3mlite import simplex # type: ignore
 
 
 class GeodesicTubeInfo:
@@ -17,13 +20,43 @@ class GeodesicTubeInfo:
         self.words = [ word ]
         self.index = index
 
+        RF = t.real().parent()
+        self.dist_to_core_curve = RF(1e50)
+
         # Caches enough pieces so that we can compare tetrahedra.
         self._pieces_covering_geodesic = []
 
         self._is_primitive = is_primitive
 
-    def compute_tets_and_R13_endpoints_for_tube(self, radius):
-        self.geodesic_tube.add_pieces_for_radius(radius)
+    def compute_tets_and_R13_endpoints_and_radius_for_tube(self, radius):
+
+        # Only develop tube until the radius is 98% of the distance to
+        # a core curve
+        while True:
+            safe_radius = self.dist_to_core_curve * 0.98
+            if radius > safe_radius:
+                # Stop. Tube is about to intersect a core curve.
+                radius = safe_radius
+                break
+
+            if self.geodesic_tube.covered_radius() > radius:
+                # Done. We covered the tube.
+                break
+
+            self.geodesic_tube._add_next_piece()
+
+            # Get last piece. Compute distance of lifted geodesic to
+            # to core curves.
+            piece = self.geodesic_tube.pieces[-1]
+            for v in simplex.ZeroSubsimplices:
+                core_curve = piece.tet.core_curves.get(v, None)
+                if core_curve:
+                    d = distance_r13_lines(
+                        core_curve.r13_line,
+                        piece.lifted_geodesic)
+
+                    if d < self.dist_to_core_curve:
+                        self.dist_to_core_curve = d
 
         result = []
 
@@ -35,7 +68,7 @@ class GeodesicTubeInfo:
                  [ piece.tet.to_coordinates_in_symmetric_tet * pt
                    for pt in piece.lifted_geodesic.points] ))
 
-        return result
+        return result, radius
 
     def _get_pieces_covering_geodesic(self):
         if not self._pieces_covering_geodesic:

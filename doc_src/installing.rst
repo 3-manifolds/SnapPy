@@ -57,7 +57,7 @@ follow the instructions for `generic Unix`_.
     sudo yum install python3-tkinter python3-pip
     # Note no "sudo" on the next one!
     python3 -m pip install --upgrade --user snappy
-    
+
 + **Red Hat Enterprise Linux/CentOS/SciLinux**: These instructions
   are for version 7 or later, and you need to have the `EPEL packages
   available
@@ -67,7 +67,7 @@ follow the instructions for `generic Unix`_.
     sudo yum install epel-release
 
   Now install via::
-    
+
     sudo yum install python36-tkinter python36-pip
     # Note no "sudo" on the next one!
     python36 -m pip install --upgrade --user snappy
@@ -231,8 +231,8 @@ Things you'll need:
 Now download the `source code`_ listed below, for instance
 
 .. parsed-literal::
-   
-   wget https://pypi.python.org/packages/source/s/snappy/|tarball|  
+
+   wget https://pypi.python.org/packages/source/s/snappy/|tarball|
    tar xfz |tarball|; cd snappy-*
 
 There is one more dependency that may need to be dealt with:
@@ -242,7 +242,7 @@ There is one more dependency that may need to be dealt with:
   subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built
   for 64-bit kernels, and should work on most systems.  If they don't,
   you'll need to edit or follow "build_togl.sh" to build Togl directly.
-  
+
 Finally, compile and install the SnapPy module (which will install
 certain other dependencies) and test::
 

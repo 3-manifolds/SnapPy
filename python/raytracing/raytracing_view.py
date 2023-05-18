@@ -319,16 +319,19 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
 
     def _update_geodesic_data(self):
-        self.geodesics.set_enables_and_radii_and_update(
+        success = self.geodesics.set_enables_and_radii_and_update(
             self.ui_parameter_dict['geodesicTubeEnables'][1],
             self.ui_parameter_dict['geodesicTubeRadii'][1])
         self.geodesics_uniform_bindings = (
             self.geodesics.get_uniform_bindings())
 
+        return success
+
     def update_geodesic_data_and_redraw(self):
-        self._update_geodesic_data()
+        success = self._update_geodesic_data()
         self._update_shader()
         self.redraw_if_initialized()
+        return success
 
     def disable_edges_for_geodesics(self):
         # Only do once

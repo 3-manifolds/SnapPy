@@ -58,7 +58,6 @@
 #include <stdio.h>  /* for snprintf() in check_neighbors_and_gluings() */
 #include "kernel_namespace.h"
 
-static void check_neighbors_and_gluings(Triangulation *manifold);
 static int  count_the_edge_classes(Triangulation *manifold);
 
 
@@ -299,7 +298,7 @@ void data_to_triangulation(
 }
 
 
-static void check_neighbors_and_gluings(
+void check_neighbors_and_gluings(
     Triangulation *manifold)
 {
     Tetrahedron *tet,

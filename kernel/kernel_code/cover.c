@@ -55,12 +55,13 @@ Triangulation *construct_cover(
                     *covering_cusp;
     SolutionType    base_solution_type;
 
+    check_neighbors_and_gluings(base_manifold);
     if (all_cusps_are_complete(base_manifold)) {
         base_solution_type = get_complete_solution_type(base_manifold);
     } else {
         base_solution_type = get_filled_solution_type(base_manifold);
     }
-    
+
     /*
      *  Allocate and initialize the Triangulation structure.
      */
@@ -155,15 +156,16 @@ Triangulation *construct_cover(
                 lifts[sheet]->gluing[face] = base_tetrahedron->gluing[face];
 
         /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */
-        if (base_solution_type != not_attempted){
-        for (sheet = 0; sheet < n; sheet++)
-            for (i = 0; i < 2; i++) /* complete, filled */
-            {
-                lifts[sheet]->shape[i] = NEW_STRUCT(TetShape);
-                *lifts[sheet]->shape[i] = *base_tetrahedron->shape[i];
-                copy_shape_history(base_tetrahedron->shape_history[i], &lifts[sheet]->shape_history[i]);
-            }
-    }
+	if (base_solution_type != not_attempted)
+	{
+	    for (sheet = 0; sheet < n; sheet++)
+	        for (i = 0; i < 2; i++) /* complete, filled */
+		{
+		    lifts[sheet]->shape[i] = NEW_STRUCT(TetShape);
+		    *lifts[sheet]->shape[i] = *base_tetrahedron->shape[i];
+		    copy_shape_history(base_tetrahedron->shape_history[i], &lifts[sheet]->shape_history[i]);
+		}
+	}
     }
 
     /*
@@ -466,7 +468,7 @@ Triangulation *construct_cover(
         compute_the_holonomies(covering_manifold, penultimate);
         compute_cusp_shapes(covering_manifold, initial);
         compute_cusp_shapes(covering_manifold, current);
-    
+
         /*
          *  Lift the Chern-Simons value (if any) from the base manifold,
          *  and use it to compute the fudge factor.

@@ -2441,7 +2441,15 @@ cdef class Triangulation():
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
-        degree = len(permutation_rep[0])
+        degree = len(permutation_rep[0]) if len(permutation_rep) > 0 else 1
+
+        # The next call has the effect of initializing aspects of
+        # self.c_triangulation that are needed to build the cover.  It is *not*
+        # redundant with the preceeding call to self.fundamental_group()
+        # because the resulting FundamentalGroup object calls the kernel
+        # function "fundamental_group" on a copy of self.c_triangulation.
+        free_group_presentation(compute_unsimplified_presentation(self.c_triangulation))
+
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           <int>degree)
@@ -2496,6 +2504,9 @@ cdef class Triangulation():
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method='magma'.
         """
+        if degree < 1:
+            raise ValueError('Cover degree should be at least 1')
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         if cover_type not in ('cyclic', 'all'):
@@ -2523,9 +2534,6 @@ cdef class Triangulation():
         """
         Compute all covers using low_index.
         """
-        if _low_index_version < [1, 2]:
-            return self._covers_low_index_old(degree)
-
         G = self.fundamental_group()
 
         relators = sorted(G.relators(as_int_list=True), key=len)
@@ -2548,18 +2556,10 @@ cdef class Triangulation():
                                           degree,
                                           strategy=strategy,
                                           num_threads=num_threads)
-        return [self.cover(H) for H in reps if len(H[0]) == degree]
+        def index(subgroup):
+            return 1 if len(subgroup) == 0 else len(subgroup[0])
 
-    def _covers_low_index_old(self, degree):
-        G = self.fundamental_group()
-
-        if G.num_relators() > self.num_cusps():
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators(),
-                        num_long_relators=self.num_cusps())
-        else:
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators())
-        return [self.cover(H.permutation_rep()) for H in S.list()
-                if H.degree == degree]
+        return [self.cover(H) for H in reps if index(H) == degree]
 
     def _covers_gap(self, degree):
         """
@@ -2637,17 +2637,18 @@ cdef class Triangulation():
         space.
         """
         cdef c_Triangulation* c_triangulation
-        cdef c_GroupPresentation *c_group_presentation
         cdef RepresentationIntoSn* c_representation
         cdef RepresentationIntoSn* c_repn_in_original_gens = NULL
         cdef int i, j
-        cdef num_generators, num_relators, num_orig_gens, num_cusps
         cdef int** c_original_generators
         cdef int** c_relators
         cdef int** c_meridians
         cdef int** c_longitudes
 
-        degree = len(perm_list[0])
+        if len(perm_list) == 0:  # implies trivial presentation
+            degree = 1
+        else:
+            degree = len(perm_list[0])
 
         # Sanity check
         S = set(range(degree))
@@ -2658,11 +2659,17 @@ cdef class Triangulation():
         # Initialize
         num_cusps = self.num_cusps()
         c_triangulation = self.c_triangulation
-        c_group_presentation = fundamental_group(c_triangulation,
-                                             True, True, True, True)
-        num_generators = fg_get_num_generators(c_group_presentation)
-        num_relators = fg_get_num_relations(c_group_presentation)
-        num_orig_gens = fg_get_num_orig_gens(c_group_presentation)
+        G = self.fundamental_group()
+        num_generators = G.num_generators()
+        if len(perm_list) != num_generators:
+            raise ValueError('Number of permutations is not the same '
+                             'as the number of generators')
+
+        relators = G.relators(as_int_list=True)
+        num_relators = len(relators)
+        orig_gens = G.original_generators(as_int_list=True)
+        num_orig_gens = len(orig_gens)
+        peripheral_curves = G.peripheral_curves(as_int_list=True)
 
         # Allocate a whole bunch of memory, SnapPea and malloc.
         c_representation = initialize_new_representation(
@@ -2674,16 +2681,16 @@ cdef class Triangulation():
                 c_representation.image[i][j] = perm_list[i][j]
         c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*))
         for i from  0 <= i < num_orig_gens:
-            c_original_generators[i] = fg_get_original_generator(
-                c_group_presentation, i)
+            c_original_generators[i] = c_word_from_list(orig_gens[i])
         c_relators = <int**>malloc(num_relators*sizeof(int*))
         for i from  0 <= i < num_relators:
-            c_relators[i] = fg_get_relation(c_group_presentation, i)
+            c_relators[i] = c_word_from_list(relators[i])
         c_meridians = <int**>malloc(num_cusps*sizeof(int*))
         c_longitudes = <int**>malloc(num_cusps*sizeof(int*))
         for i from 0 <= i < num_cusps:
-            c_meridians[i] = fg_get_meridian(c_group_presentation, i)
-            c_longitudes[i] = fg_get_longitude(c_group_presentation, i)
+            meridian, longitude = peripheral_curves[i]
+            c_meridians[i] = c_word_from_list(meridian)
+            c_longitudes[i] = c_word_from_list(longitude)
         # Whew!
 
         failed = False
@@ -2708,15 +2715,15 @@ cdef class Triangulation():
 
         # Now free all that memory
         for i from 0 <= i < num_cusps:
-            fg_free_relation(c_meridians[i])
-            fg_free_relation(c_longitudes[i])
+            free(c_meridians[i])
+            free(c_longitudes[i])
         free(c_meridians)
         free(c_longitudes)
         for i from 0 <= i < num_relators:
-            fg_free_relation(c_relators[i])
+            free(c_relators[i])
         free(c_relators)
         for i from 0 <= i < num_orig_gens:
-            fg_free_relation(c_original_generators[i])
+            free(c_original_generators[i])
         free(c_original_generators)
         free_representation(c_representation, num_generators, num_cusps)
         # Free at last!

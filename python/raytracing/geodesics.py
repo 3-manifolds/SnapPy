@@ -19,6 +19,7 @@ class Geodesics:
         >>> M = Manifold("o9_00000")
         >>> g = Geodesics(M, ["b", "c"])
         >>> g.set_enables_and_radii_and_update([True, True], [0.3, 0.4])
+        True
         >>> b = g.get_uniform_bindings()
         >>> len(b['geodesics.geodesicHeads'][1])
         31
@@ -47,8 +48,13 @@ class Geodesics:
 
     def set_enables_and_radii_and_update(self, enables, radii):
 
+        # Returns false when a tube was so big that it was intersecting
+        # a core curve and it had to be shrunk.
+
+        success = True
+
         if not self.geodesic_tube_infos:
-            return
+            return success
 
         self.data_heads = []
         self.data_tails = []
@@ -63,10 +69,13 @@ class Geodesics:
             if enable:
                 radius = self.RF(radius)
 
-                tets_and_endpoints = (
-                    geodesic_tube.compute_tets_and_R13_endpoints_for_tube(radius))
+                tets_and_endpoints, safe_radius = (
+                    geodesic_tube.compute_tets_and_R13_endpoints_and_radius_for_tube(radius))
 
-                radius_param = radius.cosh() ** 2 / 2
+                if safe_radius < radius:
+                    success = False
+
+                radius_param = safe_radius.cosh() ** 2 / 2
 
                 for tet, endpoints in tets_and_endpoints:
                     tets_to_data[tet].append(
@@ -80,6 +89,8 @@ class Geodesics:
                 self.data_indices.append(i)
                 self.data_radius_params.append(radius_param)
         self.data_offsets.append(len(self.data_heads))
+
+        return success
 
     def get_uniform_bindings(self):
         return {

@@ -141,7 +141,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                     column=radius_column,
                     left_end=0.0,
                     right_end=1.0,
-                    update_function=self.raytracing_view.update_geodesic_data_and_redraw,
+                    update_function=self.update_geodesic_data,
                     format_string='%.3f')
 
                 # Need to color Scale - but the following code fails.
@@ -149,6 +149,16 @@ class GeodesicsWindow(tkinter.Toplevel):
 
             row += 1
         self.scrollable_frame.set_widths()
+
+    def update_geodesic_data(self):
+        success = self.raytracing_view.update_geodesic_data_and_redraw()
+        if success:
+            self.status_label.configure(text=_default_status_msg)
+        else:
+            self.status_label.configure(
+                text=('Limiting size of geodesic tube to prevent intersection '
+                      'with core curve.'),
+                foreground='red')
 
     def add_length_spectrum(self, *args, **kwargs):
         self.status_label.configure(text=_default_status_msg)

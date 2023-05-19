@@ -163,6 +163,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         HyperboloidNavigation.__init__(self)
 
+    def reset_geodesics(self):
+        self.geodesics = Geodesics(self.manifold, [])
+        self.ui_parameter_dict['geodesicTubeRadii'][1] = []
+        self.ui_parameter_dict['geodesicTubeEnables'][1] = []
+        self._update_geodesic_data()
+
     def get_uniform_bindings(self, width, height):
         boost, tet_num, current_weight = self.view_state
 

@@ -646,6 +646,7 @@ class InsideViewer(ttk.Frame):
         self.update_filling_sliders()
         self.widget.recompute_raytracing_data_and_redraw()
         self.update_volume_label()
+        self.reset_geodesics()
 
     def push_fillings_to_manifold(self):
         self.show_failed_dirichlet(show=False)
@@ -655,6 +656,7 @@ class InsideViewer(ttk.Frame):
 
         self.widget.recompute_raytracing_data_and_redraw()
         self.update_volume_label()
+        self.reset_geodesics()
 
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
@@ -674,6 +676,11 @@ class InsideViewer(ttk.Frame):
 
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
+
+    def reset_geodesics(self):
+        self.widget.reset_geodesics()
+        if self.geodesics_window:
+            self.geodesics_window.populate_geodesics_frame()
 
     def make_orbifold(self):
         for f in self.filling_dict['fillings'][1]:

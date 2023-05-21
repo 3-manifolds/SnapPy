@@ -465,6 +465,7 @@ def main():
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
     snappy.ViewerWindow = SnapPyViewerWindow
     snappy.InsideViewer = SnapPyInsideViewer
+    snappy.InsideViewer.main_window = terminal
     LP.Browser = HP.Browser = SnapPyBrowser
     LP.msg_stream.write = HP.msg_stream.write = terminal.write2
     LP.UI_callback = HP.UI_callback = terminal.SnapPea_callback

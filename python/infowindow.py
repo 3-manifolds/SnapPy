@@ -14,10 +14,10 @@ class InfoWindow(Tk_.Toplevel):
     def __init__(self, root, title, content):
         self.root = root
         Tk_.Toplevel.__init__(self, self.root, class_='snappy')
+        self.title(title)
         self.content = content
         self.image = Tk_.PhotoImage(file=icon_file)
         self.style = SnapPyStyle()
-        self.title(title)
         self.body()
 
     def body(self):
@@ -25,11 +25,7 @@ class InfoWindow(Tk_.Toplevel):
         box = ttk.Frame(self)
         icon = ttk.Label(box, image=self.image)
         icon.grid(row=0, column=0, pady=30, sticky=Tk_.N)
-        if sys.platform == 'darwin':
-            message = Tk_.Message(box, text=self.content)
-        else:
-            bgColor = self.style.lookup('Button', 'background')
-            message = Tk_.Message(box, text=self.content, bg=bgColor)
+        message = Tk_.Message(box, text=self.content)
         message.grid(row=0, column=1, padx=20, pady=10)
         box.pack()
 

@@ -9,7 +9,7 @@ include "CyOpenGL.pxi"
 include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
 
-from .infodialog import InfoDialog
+from .infowindow import InfoWindow
 from . import togl
 
 from cpython cimport array
@@ -1326,7 +1326,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Help message for the widget.
         """
-        InfoDialog(self, 'Viewer Help', self.help_text)
+        InfoWindow(self, 'Viewer Help', self.help_text)
 
     def set_background(self, r, g, b):
         """

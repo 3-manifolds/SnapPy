@@ -5,7 +5,7 @@ import webbrowser
 from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir
-from .infodialog import about_snappy, InfoDialog
+from .infowindow import about_snappy, InfoWindow
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -233,11 +233,11 @@ def browser_menus(self):
     help_menu = HelpMenu(menubar)
 
     def dirichlet_help():
-        InfoDialog(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
+        InfoWindow(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
     help_menu.extra_command(label=help_polyhedron_viewer_label, command=dirichlet_help)
 
     def horoball_help():
-        InfoDialog(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
+        InfoWindow(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
     help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 

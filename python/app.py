@@ -14,7 +14,7 @@ from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink
 from .app_menus import add_menu, scut
 from .browser import Browser
 from .horoviewer import HoroballViewer
-from .infodialog import about_snappy
+from .infowindow import about_snappy
 from .polyviewer import PolyhedronViewer
 from .raytracing.inside_viewer import InsideViewer
 from .preferences import Preferences, PreferenceDialog

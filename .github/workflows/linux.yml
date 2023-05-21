@@ -30,19 +30,17 @@ jobs:
           CIBW_SKIP: cp27-* cp35-* *-manylinux_i686 *musllinux* pp*
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >
-            pip install cython FXrays sphinx sphinx_rtd_theme &&
+            pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram &&
-            pip install git+https://github.com/3-manifolds/low_index
           CIBW_BEFORE_TEST: >
-            pip install cython &&
+            pip install cython low_index &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram &&
-            pip install git+https://github.com/3-manifolds/low_index
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
 

@@ -6,19 +6,17 @@ cirrus_wheels_macos_arm64_task:
     CIBW_ARCHS_MACOS: arm64
     CIBW_SKIP: pp* cp38*
     CIBW_BEFORE_BUILD: >            
-      pip install cython FXrays sphinx sphinx_rtd_theme &&
+      pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
       pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
       pip install git+https://github.com/3-manifolds/PLink &&
       pip install git+https://github.com/3-manifolds/snappy_manifolds &&
       pip install git+https://github.com/3-manifolds/Spherogram &&
-      pip install git+https://github.com/3-manifolds/low_index 
     CIBW_BEFORE_TEST: >
-      pip install cython &&
+      pip install cython low_index &&
       pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
       pip install git+https://github.com/3-manifolds/PLink &&
       pip install git+https://github.com/3-manifolds/snappy_manifolds &&
       pip install git+https://github.com/3-manifolds/Spherogram &&
-      pip install git+https://github.com/3-manifolds/low_index 
     CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
   install_pre_requirements_script:
     - brew install python3

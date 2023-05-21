@@ -6,6 +6,8 @@ from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir
 from .infowindow import about_snappy, InfoWindow
+from .version import version
+import shutil
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -60,6 +62,41 @@ elif sys.platform == 'linux2' or sys.platform == 'linux' :
 else: # fall back choice
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
+
+
+def open_html_docs(page):
+    # In some Linux distros that package their webrowsers via snaps
+    # (e.g. Ubuntu 22.04 LTS), it is not possible to open a local HTML
+    # file if it is either (a) outside of $HOME or (b) in a hidden
+    # subdirectory of $HOME.  As Python's default user-site directory
+    # on Linux is in $HOME/.local, this makes it impossible to access
+    # the local copy of the docs.
+    #
+    # For details, see: https://bugs.launchpad.net/snapd/+bug/1979060
+
+    doc_dir = os.path.join(os.path.dirname(snappy_dir), 'doc')
+
+    if sys.platform.startswith('linux'):
+        safe_doc_dir = os.path.join(os.environ['HOME'], 'Downloads',
+                                    f'SnapPy_{version}_help_f8205a5')
+        if os.path.exists(safe_doc_dir):
+            shutil.rmtree(safe_doc_dir)
+        shutil.copytree(doc_dir, safe_doc_dir)
+    else:
+        safe_doc_dir = doc_dir
+
+    path = os.path.join(safe_doc_dir, page)
+    if os.path.exists(path):
+        url = 'file:' + pathname2url(path)
+        try:
+            webbrowser.open_new_tab(url)
+        except webbrowser.Error:
+            from tkinter import messagebox
+            messagebox.showwarning('Error', 'Failed to open the documentation file.')
+    else:
+        from tkinter import messagebox
+        messagebox.showwarning('Not found!',
+                               'The file %s does not exist.' % path)
 
 
 def add_menu(root, menu, label, command, state='active'):
@@ -121,24 +158,10 @@ class HelpMenu(Tk_.Menu):
         self.extra_commands = {}
 
     def show_SnapPy_help(self):
-        self.show_page('index.html')
+        open_html_docs('index.html')
 
     def show_bugs_page(self):
-        self.show_page('bugs.html')
-
-    def show_page(self, page):
-        path = os.path.join(os.path.dirname(snappy_dir), 'doc', page)
-        if os.path.exists(path):
-            url = 'file:' + pathname2url(path)
-            try:
-                webbrowser.open_new_tab(url)
-            except webbrowser.Error:
-                from tkinter import messagebox
-                messagebox.showwarning('Error', 'Failed to open the documentation file.')
-        else:
-            from tkinter import messagebox
-            messagebox.showwarning('Not found!',
-                                   'The file %s does not exist.' % path)
+        open_html_docs('bugs.html')
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command
@@ -246,7 +269,8 @@ def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About PLink...', command=self.about)
+    Python_menu.add_command(label='About SnapPy...',
+                            command=lambda : about_snappy(self.main_window.window))
     Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)

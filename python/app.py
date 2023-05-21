@@ -97,15 +97,21 @@ class SnapPyTerm(TkTerm, ListedWindow):
         menubar.add_cascade(label='Help', menu=help_menu)
 
     def edit_prefs(self):
-        apple_menu = self.menubar.children['apple']
-        apple_menu.entryconfig(2, state='disabled')
+        if sys.platform == 'darwin':
+            self.window.deletecommand('::tk::mac::ShowPreferences')
+        else:
+            apple_menu = self.menubar.children['apple']
+            apple_menu.entryconfig(2, state='disabled')
         dialog = PreferenceDialog(self.window, self.prefs)
         if dialog.okay:
             answer = askyesno('Save?',
                               'Do you want to save these settings?')
             if answer:
                 self.prefs.write_prefs()
-        apple_menu.entryconfig(2, state='active')
+        if sys.platform == 'darwin':
+            self.window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
+        else:
+            apple_menu.entryconfig(2, state='active')
 
     def OSX_open_filelist(self, *args):
         for arg in args:

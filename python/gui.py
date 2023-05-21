@@ -69,7 +69,7 @@ class ViewerWindow(Tk_.Toplevel):
         root.withdraw()
         return root
 
-    def _togl_save_image(self):
+    def save_image(self):
         """
         Helper for the save_image menu command of a ViewerWindow.
         It expects to be passed the view Frame (not the parent Toplevel)
@@ -84,25 +84,14 @@ class ViewerWindow(Tk_.Toplevel):
             filetypes=[
                 ("PNG image files", "*.png *.PNG", ""),
                 ("All files", "")])
-        view.widget.redraw_if_initialized()
         if savefile:
-            _, ppm_file_name = tempfile.mkstemp(suffix='.ppm')
-            PI = Tk_.PhotoImage()
-            view.widget.tk.call(view.widget._w, 'takephoto', PI.name)
-            PI.write(ppm_file_name, format='ppm')
-            with open(ppm_file_name, 'rb') as ppm_file:
-                convert_ppm_to_png(ppm_file, savefile)
-            savefile.close()
-            os.remove(ppm_file_name)
+            view.widget.save_image_window_resolution(savefile)
 
     def close(self, event=None):
         if hasattr(self.view, 'delete_resource'):
             self.view.delete_resource()
         self.view = None
         self.destroy()
-
-    def save_image(self):
-        self._togl_save_image()
 
     def add_help(self):
         pass

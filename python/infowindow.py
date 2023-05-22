@@ -11,8 +11,10 @@ icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
 
 class InfoWindow(Tk_.Toplevel):
-    def __init__(self, root, title, content):
+    def __init__(self, root, title, content, root_attr_name):
         self.root = root
+        self.root_attr_name = root_attr_name
+        setattr(root, root_attr_name, self)
         Tk_.Toplevel.__init__(self, self.root, class_='snappy')
         self.title(title)
         self.content = content
@@ -28,6 +30,11 @@ class InfoWindow(Tk_.Toplevel):
         message = Tk_.Message(box, text=self.content)
         message.grid(row=0, column=1, padx=20, pady=10)
         box.pack()
+
+    def destroy(self):
+        if hasattr(self.root, self.root_attr_name):
+            delattr(self.root, self.root_attr_name)
+        Tk_.Toplevel.destroy(self)
 
 
 about_snappy_text = """
@@ -50,7 +57,7 @@ SnapPy is copyright © 2009-%d by Marc Culler, Nathan Dunfield, Matthias Gӧrner
 
 
 def about_snappy(window):
-    InfoWindow(window, title='About SnapPy', content=about_snappy_text)
+    return InfoWindow(window, 'About SnapPy', about_snappy_text, 'about_snappy')
 
 
 if __name__ == '__main__':

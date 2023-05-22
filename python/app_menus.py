@@ -249,11 +249,11 @@ def browser_menus(self):
     help_menu = HelpMenu(menubar)
 
     def dirichlet_help():
-        InfoWindow(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
+        InfoWindow(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text, 'dirichlet_help')
     help_menu.extra_command(label=help_polyhedron_viewer_label, command=dirichlet_help)
 
     def horoball_help():
-        InfoWindow(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
+        InfoWindow(self, 'Viewer Help', self.horoball_viewer.widget.help_text, 'horoball_help')
     help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 

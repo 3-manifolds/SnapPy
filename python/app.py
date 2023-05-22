@@ -64,12 +64,21 @@ class SnapPyTerm(TkTerm, ListedWindow):
     def add_bindings(self):
         self.window.bind('<<Paste>>', self.edit_paste)
 
+    def about_window(self):
+        window = self.window
+        if not hasattr(window, 'about_snappy'):
+            window.about_snappy = about_snappy(window)
+        else:
+            window.about_snappy.deiconify()
+            window.about_snappy.lift()
+            window.about_snappy.focus_force()
+
     def build_menus(self):
         window = self.window
         self.menubar = menubar = Tk_.Menu(window)
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy...',
-                                command=lambda : about_snappy(window))
+                                command=self.about_window)
         if sys.platform == 'darwin':
             window.createcommand('::tk::mac::ShowPreferences', self.edit_settings)
             # By default, the Quit menu command terminates the Python process.

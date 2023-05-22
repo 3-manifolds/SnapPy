@@ -112,6 +112,7 @@ class PreferenceDialog(Dialog):
         self.okay = False
         Tk_.Toplevel.__init__(self, master=parent, class_='snappy')
         self.grab_set()
+        self.attributes("-topmost", True)
         frame = ttk.Frame(self, padding=(0, 10, 0, 0))
         self.title(title)
         self.notebook = notebook = ttk.Notebook(frame)

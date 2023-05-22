@@ -25,12 +25,6 @@ togl_pixelFormat(Togl *togl)
     }
 #endif
 
-    if (togl->PbufferFlag && !togl->RgbaFlag) {
-        Tcl_SetResult(togl->Interp,
-                "puffer must be RGB[A]", TCL_STATIC);
-        return NULL;
-    }
-
     attribs[na++] = NSOpenGLPFAMinimumPolicy;
     /* ask for hardware-accelerated onscreen */
     /* This is not needed, and can break virtual machines.

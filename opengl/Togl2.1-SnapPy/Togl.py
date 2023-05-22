@@ -79,11 +79,6 @@ class Togl(Tkinter.Widget):
 		"""Make widget the current OpenGL context"""
 		self.tk.call(self._w, 'makecurrent')
 
-	def takephoto(self, imageName):
-		"""Copy current contents of widget into the given photo image
-		"""
-		self.tk.call(self._w, 'takephoto', imageName)
-
 	def loadbitmapfont(self, name):
 		return self.tk.call(self._w, 'loadbitmapfont', name)
 

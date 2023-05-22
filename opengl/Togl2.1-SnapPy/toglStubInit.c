@@ -45,25 +45,24 @@ const ToglStubs toglStubs = {
     Togl_Clear, /* 27 */
     Togl_Frustum, /* 28 */
     Togl_GetToglFromObj, /* 29 */
-    Togl_TakePhoto, /* 30 */
-    Togl_GetProcAddr, /* 31 */
-    Togl_GetToglFromName, /* 32 */
-    Togl_SwapInterval, /* 33 */
-    Togl_Ortho, /* 34 */
-    Togl_NumEyes, /* 35 */
-    Togl_ContextTag, /* 36 */
-    Togl_UpdatePending, /* 37 */
-    Togl_WriteObj, /* 38 */
-    Togl_WriteChars, /* 39 */
-    Togl_HasRGBA, /* 40 */
-    Togl_IsDoubleBuffered, /* 41 */
-    Togl_HasDepthBuffer, /* 42 */
-    Togl_HasAccumulationBuffer, /* 43 */
-    Togl_HasDestinationAlpha, /* 44 */
-    Togl_HasStencilBuffer, /* 45 */
-    Togl_StereoMode, /* 46 */
-    Togl_HasMultisample, /* 47 */
-    Togl_CopyContext, /* 48 */
+    Togl_GetProcAddr, /* 30 */
+    Togl_GetToglFromName, /* 31 */
+    Togl_SwapInterval, /* 32 */
+    Togl_Ortho, /* 33 */
+    Togl_NumEyes, /* 34 */
+    Togl_ContextTag, /* 35 */
+    Togl_UpdatePending, /* 36 */
+    Togl_WriteObj, /* 37 */
+    Togl_WriteChars, /* 38 */
+    Togl_HasRGBA, /* 39 */
+    Togl_IsDoubleBuffered, /* 40 */
+    Togl_HasDepthBuffer, /* 41 */
+    Togl_HasAccumulationBuffer, /* 42 */
+    Togl_HasDestinationAlpha, /* 43 */
+    Togl_HasStencilBuffer, /* 44 */
+    Togl_StereoMode, /* 45 */
+    Togl_HasMultisample, /* 46 */
+    Togl_CopyContext, /* 47 */
 };
 
 /* !END!: Do not edit above this line. */

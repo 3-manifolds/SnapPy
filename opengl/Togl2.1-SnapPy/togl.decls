@@ -20,10 +20,10 @@ declare 2 generic {
 declare 3 generic {
 	void Togl_SwapBuffers(const Togl *togl)
 }
-declare 33 generic {
+declare 32 generic {
 	Bool Togl_SwapInterval(const Togl *togl, int interval)
 }
-declare 48 generic {
+declare 47 generic {
 	int Togl_CopyContext(const Togl *from, const Togl *to, unsigned int mask)
 }
 
@@ -46,42 +46,42 @@ declare 8 generic {
 declare 9 generic {
 	const char *Togl_CommandName(const Togl *togl)
 }
-declare 36 generic {
+declare 35 generic {
 	int Togl_ContextTag(const Togl *togl)
 }
-declare 37 generic {
+declare 36 generic {
 	Bool Togl_UpdatePending(const Togl *togl)
 }
 
-declare 40 generic {
+declare 39 generic {
 	Bool Togl_HasRGBA(const Togl *togl)
 }
 
-declare 41 generic {
+declare 40 generic {
 	Bool Togl_IsDoubleBuffered(const Togl *togl)
 }
 
-declare 42 generic {
+declare 41 generic {
 	Bool Togl_HasDepthBuffer(const Togl *togl)
 }
 
-declare 43 generic {
+declare 42 generic {
 	Bool Togl_HasAccumulationBuffer(const Togl *togl)
 }
 
-declare 44 generic {
+declare 43 generic {
 	Bool Togl_HasDestinationAlpha(const Togl *togl)
 }
 
-declare 45 generic {
+declare 44 generic {
 	Bool Togl_HasStencilBuffer(const Togl *togl)
 }
 
-declare 46 generic {
+declare 45 generic {
 	int Togl_StereoMode(const Togl *togl)
 }
 
-declare 47 generic {
+declare 46 generic {
 	Bool Togl_HasMultisample(const Togl *togl)
 }
 
@@ -106,11 +106,11 @@ declare 14 generic {
 	int Togl_UnloadBitmapFont(const Togl *togl, Tcl_Obj *toglfont)
 }
 
-declare 38 generic {
+declare 37 generic {
 	int Togl_WriteObj(const Togl *togl, const Tcl_Obj *toglfont, Tcl_Obj *obj)
 }
 
-declare 39 generic {
+declare 38 generic {
 	int Togl_WriteChars(const Togl *togl, const Tcl_Obj *toglfont, const char *str, int len)
 }
 
@@ -163,21 +163,16 @@ declare 28 generic {
 	void Togl_Frustum(const Togl *togl, GLdouble left, GLdouble right,
 		GLdouble bottom, GLdouble top, GLdouble near, GLdouble far)
 }
-declare 34 generic {
+declare 33 generic {
 	void Togl_Ortho(const Togl *togl, GLdouble left, GLdouble right,
 		GLdouble bottom, GLdouble top, GLdouble near, GLdouble far)
 }
-declare 35 generic {
+declare 34 generic {
 	int Togl_NumEyes(const Togl *togl)
 }
 
-# save current contents of OpenGL window into photo image
-declare 30 generic {
-	int Togl_TakePhoto(Togl *togl, Tk_PhotoHandle photo)
-}
-
 # platform-independent lookup of OpenGL functions
-declare 31 generic {
+declare 30 generic {
 	Togl_FuncPtr Togl_GetProcAddr(const char *funcname)
 }
 
@@ -185,6 +180,6 @@ declare 31 generic {
 declare 29 generic {
 	int Togl_GetToglFromObj(Tcl_Interp *interp, Tcl_Obj *obj, Togl **toglPtr)
 }
-declare 32 generic {
+declare 31 generic {
 	int Togl_GetToglFromName(Tcl_Interp *interp, const char *cmdName, Togl **toglPtr)
 }

@@ -1107,115 +1107,6 @@ Togl_MakeCurrent(const Togl *togl)
 #endif
 }
 
-/* 
- * Togl_TakePhoto
- *
- *   Take a photo image of the current OpenGL window.  May have problems
- *   if window is partially obscured, either by other windows or by the
- *   edges of the display.
- */
-
-int
-Togl_TakePhoto(Togl *togl, Tk_PhotoHandle photo)
-{
-    GLubyte *buffer;
-    Tk_PhotoImageBlock photoBlock;
-    int     y, midy;
-    unsigned char *cp;
-    int     width = togl->Width, height = togl->Height;
-
-    /* 
-     * TIP #116 altered Tk_PhotoPutBlock API to add interp arg that 8.4
-     * doesn't have.
-     * We need to remove that for compiling with 8.4.
-     */
-#if (TK_MAJOR_VERSION == 8) && (TK_MINOR_VERSION < 5)
-#  define TK_PHOTOPUTBLOCK(interp, hdl, blk, x, y, w, h, cr) \
-   		Tk_PhotoPutBlock(hdl, blk, x, y, w, h, cr)
-#else
-#  define TK_PHOTOPUTBLOCK	Tk_PhotoPutBlock
-#endif
-    buffer = (GLubyte *) ckalloc(width * height * 4);
-    photoBlock.pixelPtr = buffer;
-    photoBlock.width = width;
-    photoBlock.height = height;
-    photoBlock.pitch = width * 4;
-    photoBlock.pixelSize = 4;
-    photoBlock.offset[0] = 0;
-    photoBlock.offset[1] = 1;
-    photoBlock.offset[2] = 2;
-    photoBlock.offset[3] = 3;
-
-    if (!togl->RgbaFlag) {
-#if defined(TOGL_WGL)
-        /* Due to the lack of a unique inverse mapping from the frame buffer to
-         * the logical palette we need a translation map from the complete
-         * logical palette. */
-        int     n, i;
-        TkWinColormap *cmap = (TkWinColormap *) Tk_Colormap(togl->TkWin);
-        LPPALETTEENTRY entry = (LPPALETTEENTRY) malloc(togl->MapSize *
-                sizeof (PALETTEENTRY));
-
-        n = GetPaletteEntries(cmap->palette, 0, togl->MapSize, entry);
-        for (i = 0; i < n; i++) {
-            togl->RedMap[i] = (GLfloat) (entry[i].peRed / 255.0);
-            togl->GreenMap[i] = (GLfloat) (entry[i].peGreen / 255.0);
-            togl->BlueMap[i] = (GLfloat) (entry[i].peBlue / 255.0);
-        }
-        free(entry);
-#endif /* TOGL_WGL */
-
-        glPixelMapfv(GL_PIXEL_MAP_I_TO_R, togl->MapSize, togl->RedMap);
-        glPixelMapfv(GL_PIXEL_MAP_I_TO_G, togl->MapSize, togl->GreenMap);
-        glPixelMapfv(GL_PIXEL_MAP_I_TO_B, togl->MapSize, togl->BlueMap);
-    }
-
-    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-    glPixelStorei(GL_PACK_ALIGNMENT, 4);        /* guarantee performance */
-    glPixelStorei(GL_PACK_SWAP_BYTES, GL_FALSE);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-
-#if 1
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-    /* Some OpenGL drivers are buggy and return zero for Alpha instead of one
-     * for RGB pixel formats.  If that is happening to you, upgrade your
-     * graphics driver. */
-
-    /* OpenGL's origin is bottom-left, Tk Photo image's is top-left, so mirror
-     * the rows around the middle row. */
-    midy = height / 2;
-    cp = buffer;
-    for (y = 0; y < midy; ++y) {
-        int     m_y = height - 1 - y;   /* mirror y */
-        unsigned char *m_cp = buffer + m_y * photoBlock.pitch;
-        int     x;
-
-        for (x = 0; x < photoBlock.pitch; ++x) {
-            unsigned char c = *cp;
-
-            *cp++ = *m_cp;
-            *m_cp++ = c;
-        }
-    }
-#else
-    /* OpenGL's origin is bottom-left, Tk Photo image's is top-left, so save
-     * rows in reverse order. */
-    glPixelStorei(GL_PACK_ROW_LENGTH, width);
-    glPixelStorei(GL_PACK_SKIP_ROWS, -1);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE,
-            buffer + width * (height - 1) * 4);
-#endif
-
-    TK_PHOTOPUTBLOCK(togl->Interp, photo, &photoBlock, 0, 0, width, height,
-            TK_PHOTO_COMPOSITE_SET);
-
-    glPopClientAttrib();        /* restore PACK_ALIGNMENT */
-    ckfree((char *) buffer);
-    return TCL_OK;
-}
-
 Bool
 Togl_SwapInterval(const Togl *togl, int interval)
 {
@@ -1664,7 +1555,7 @@ Togl_ObjWidget(ClientData clientData, Tcl_Interp *interp, int objc,
     const char *commands[] = {
         "cget", "configure", "extensions",
         "postredisplay", "render",
-        "swapbuffers", "makecurrent", "takephoto",
+        "swapbuffers", "makecurrent",
         "loadbitmapfont", "unloadbitmapfont", "write",
         "uselayer", "showoverlay", "hideoverlay",
         "postredisplayoverlay", "renderoverlay",
@@ -1678,7 +1569,7 @@ Togl_ObjWidget(ClientData clientData, Tcl_Interp *interp, int objc,
     {
         TOGL_CGET, TOGL_CONFIGURE, TOGL_EXTENSIONS,
         TOGL_POSTREDISPLAY, TOGL_RENDER,
-        TOGL_SWAPBUFFERS, TOGL_MAKECURRENT, TOGL_TAKEPHOTO,
+        TOGL_SWAPBUFFERS, TOGL_MAKECURRENT,
         TOGL_LOADBITMAPFONT, TOGL_UNLOADBITMAPFONT, TOGL_WRITE,
         TOGL_USELAYER, TOGL_SHOWOVERLAY, TOGL_HIDEOVERLAY,
         TOGL_POSTREDISPLAYOVERLAY, TOGL_RENDEROVERLAY,
@@ -1796,34 +1687,6 @@ Togl_ObjWidget(ClientData clientData, Tcl_Interp *interp, int objc,
               result = TCL_ERROR;
           }
           break;
-
-      case TOGL_TAKEPHOTO:
-      {
-          /* force the widget to be redrawn */
-          if (objc != 3) {
-              Tcl_WrongNumArgs(interp, 2, objv, "name");
-              result = TCL_ERROR;
-          } else {
-              const char *name;
-              Tk_PhotoHandle photo;
-
-              name = Tcl_GetStringFromObj(objv[2], NULL);
-              photo = Tk_FindPhoto(interp, name);
-              if (photo == NULL) {
-                  Tcl_AppendResult(interp, "image \"", name,
-                          "\" doesn't exist or is not a photo image", NULL);
-                  result = TCL_ERROR;
-                  break;
-              }
-              glPushAttrib(GL_PIXEL_MODE_BIT);
-              if (togl->DoubleFlag) {
-                  glReadBuffer(GL_FRONT);
-              }
-              Togl_TakePhoto(togl, photo);
-              glPopAttrib();    /* restore glReadBuffer */
-          }
-          break;
-      }
 
       case TOGL_LOADBITMAPFONT:
 #if TOGL_USE_FONTS != 1

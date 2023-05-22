@@ -173,14 +173,9 @@ EXTERN void		Togl_Frustum(const Togl *togl, GLdouble left,
 EXTERN int		Togl_GetToglFromObj(Tcl_Interp *interp, Tcl_Obj *obj,
 				Togl **toglPtr);
 #endif
-#ifndef Togl_TakePhoto_TCL_DECLARED
-#define Togl_TakePhoto_TCL_DECLARED
-/* 30 */
-EXTERN int		Togl_TakePhoto(Togl *togl, Tk_PhotoHandle photo);
-#endif
 #ifndef Togl_GetProcAddr_TCL_DECLARED
 #define Togl_GetProcAddr_TCL_DECLARED
-/* 31 */
+/* 30 */
 #ifdef TOGL_WGL
        Togl_FuncPtr	Togl_GetProcAddr(const char *funcname);
 #else
@@ -189,93 +184,93 @@ EXTERN Togl_FuncPtr	Togl_GetProcAddr(const char *funcname);
 #endif
 #ifndef Togl_GetToglFromName_TCL_DECLARED
 #define Togl_GetToglFromName_TCL_DECLARED
-/* 32 */
+/* 31 */
 EXTERN int		Togl_GetToglFromName(Tcl_Interp *interp,
 				const char *cmdName, Togl **toglPtr);
 #endif
 #ifndef Togl_SwapInterval_TCL_DECLARED
 #define Togl_SwapInterval_TCL_DECLARED
-/* 33 */
+/* 32 */
 EXTERN Bool		Togl_SwapInterval(const Togl *togl, int interval);
 #endif
 #ifndef Togl_Ortho_TCL_DECLARED
 #define Togl_Ortho_TCL_DECLARED
-/* 34 */
+/* 33 */
 EXTERN void		Togl_Ortho(const Togl *togl, GLdouble left,
 				GLdouble right, GLdouble bottom,
 				GLdouble top, GLdouble near, GLdouble far);
 #endif
 #ifndef Togl_NumEyes_TCL_DECLARED
 #define Togl_NumEyes_TCL_DECLARED
-/* 35 */
+/* 34 */
 EXTERN int		Togl_NumEyes(const Togl *togl);
 #endif
 #ifndef Togl_ContextTag_TCL_DECLARED
 #define Togl_ContextTag_TCL_DECLARED
-/* 36 */
+/* 35 */
 EXTERN int		Togl_ContextTag(const Togl *togl);
 #endif
 #ifndef Togl_UpdatePending_TCL_DECLARED
 #define Togl_UpdatePending_TCL_DECLARED
-/* 37 */
+/* 36 */
 EXTERN Bool		Togl_UpdatePending(const Togl *togl);
 #endif
 #ifndef Togl_WriteObj_TCL_DECLARED
 #define Togl_WriteObj_TCL_DECLARED
-/* 38 */
+/* 37 */
 EXTERN int		Togl_WriteObj(const Togl *togl,
 				const Tcl_Obj *toglfont, Tcl_Obj *obj);
 #endif
 #ifndef Togl_WriteChars_TCL_DECLARED
 #define Togl_WriteChars_TCL_DECLARED
-/* 39 */
+/* 38 */
 EXTERN int		Togl_WriteChars(const Togl *togl,
 				const Tcl_Obj *toglfont, const char *str,
 				int len);
 #endif
 #ifndef Togl_HasRGBA_TCL_DECLARED
 #define Togl_HasRGBA_TCL_DECLARED
-/* 40 */
+/* 39 */
 EXTERN Bool		Togl_HasRGBA(const Togl *togl);
 #endif
 #ifndef Togl_IsDoubleBuffered_TCL_DECLARED
 #define Togl_IsDoubleBuffered_TCL_DECLARED
-/* 41 */
+/* 40 */
 EXTERN Bool		Togl_IsDoubleBuffered(const Togl *togl);
 #endif
 #ifndef Togl_HasDepthBuffer_TCL_DECLARED
 #define Togl_HasDepthBuffer_TCL_DECLARED
-/* 42 */
+/* 41 */
 EXTERN Bool		Togl_HasDepthBuffer(const Togl *togl);
 #endif
 #ifndef Togl_HasAccumulationBuffer_TCL_DECLARED
 #define Togl_HasAccumulationBuffer_TCL_DECLARED
-/* 43 */
+/* 42 */
 EXTERN Bool		Togl_HasAccumulationBuffer(const Togl *togl);
 #endif
 #ifndef Togl_HasDestinationAlpha_TCL_DECLARED
 #define Togl_HasDestinationAlpha_TCL_DECLARED
-/* 44 */
+/* 43 */
 EXTERN Bool		Togl_HasDestinationAlpha(const Togl *togl);
 #endif
 #ifndef Togl_HasStencilBuffer_TCL_DECLARED
 #define Togl_HasStencilBuffer_TCL_DECLARED
-/* 45 */
+/* 44 */
 EXTERN Bool		Togl_HasStencilBuffer(const Togl *togl);
 #endif
 #ifndef Togl_StereoMode_TCL_DECLARED
 #define Togl_StereoMode_TCL_DECLARED
-/* 46 */
+/* 45 */
 EXTERN int		Togl_StereoMode(const Togl *togl);
 #endif
 #ifndef Togl_HasMultisample_TCL_DECLARED
 #define Togl_HasMultisample_TCL_DECLARED
-/* 47 */
+/* 46 */
 EXTERN Bool		Togl_HasMultisample(const Togl *togl);
 #endif
 #ifndef Togl_CopyContext_TCL_DECLARED
 #define Togl_CopyContext_TCL_DECLARED
-/* 48 */
+/* 47 */
 EXTERN int		Togl_CopyContext(const Togl *from, const Togl *to,
 				unsigned int mask);
 #endif
@@ -314,25 +309,24 @@ typedef struct ToglStubs {
      void (*togl_Clear) (const Togl *togl, GLbitfield mask); /* 27 */
      void (*togl_Frustum) (const Togl *togl, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near, GLdouble far); /* 28 */
      int (*togl_GetToglFromObj) (Tcl_Interp *interp, Tcl_Obj *obj, Togl **toglPtr); /* 29 */
-     int (*togl_TakePhoto) (Togl *togl, Tk_PhotoHandle photo); /* 30 */
-     Togl_FuncPtr (*togl_GetProcAddr) (const char *funcname); /* 31 */
-     int (*togl_GetToglFromName) (Tcl_Interp *interp, const char *cmdName, Togl **toglPtr); /* 32 */
-     Bool (*togl_SwapInterval) (const Togl *togl, int interval); /* 33 */
-     void (*togl_Ortho) (const Togl *togl, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near, GLdouble far); /* 34 */
-     int (*togl_NumEyes) (const Togl *togl); /* 35 */
-     int (*togl_ContextTag) (const Togl *togl); /* 36 */
-     Bool (*togl_UpdatePending) (const Togl *togl); /* 37 */
-     int (*togl_WriteObj) (const Togl *togl, const Tcl_Obj *toglfont, Tcl_Obj *obj); /* 38 */
-     int (*togl_WriteChars) (const Togl *togl, const Tcl_Obj *toglfont, const char *str, int len); /* 39 */
-     Bool (*togl_HasRGBA) (const Togl *togl); /* 40 */
-     Bool (*togl_IsDoubleBuffered) (const Togl *togl); /* 41 */
-     Bool (*togl_HasDepthBuffer) (const Togl *togl); /* 42 */
-     Bool (*togl_HasAccumulationBuffer) (const Togl *togl); /* 43 */
-     Bool (*togl_HasDestinationAlpha) (const Togl *togl); /* 44 */
-     Bool (*togl_HasStencilBuffer) (const Togl *togl); /* 45 */
-     int (*togl_StereoMode) (const Togl *togl); /* 46 */
-     Bool (*togl_HasMultisample) (const Togl *togl); /* 47 */
-     int (*togl_CopyContext) (const Togl *from, const Togl *to, unsigned int mask); /* 48 */
+     Togl_FuncPtr (*togl_GetProcAddr) (const char *funcname); /* 30 */
+     int (*togl_GetToglFromName) (Tcl_Interp *interp, const char *cmdName, Togl **toglPtr); /* 31 */
+     Bool (*togl_SwapInterval) (const Togl *togl, int interval); /* 32 */
+     void (*togl_Ortho) (const Togl *togl, GLdouble left, GLdouble right, GLdouble bottom, GLdouble top, GLdouble near, GLdouble far); /* 33 */
+     int (*togl_NumEyes) (const Togl *togl); /* 34 */
+     int (*togl_ContextTag) (const Togl *togl); /* 35 */
+     Bool (*togl_UpdatePending) (const Togl *togl); /* 36 */
+     int (*togl_WriteObj) (const Togl *togl, const Tcl_Obj *toglfont, Tcl_Obj *obj); /* 37 */
+     int (*togl_WriteChars) (const Togl *togl, const Tcl_Obj *toglfont, const char *str, int len); /* 38 */
+     Bool (*togl_HasRGBA) (const Togl *togl); /* 39 */
+     Bool (*togl_IsDoubleBuffered) (const Togl *togl); /* 40 */
+     Bool (*togl_HasDepthBuffer) (const Togl *togl); /* 41 */
+     Bool (*togl_HasAccumulationBuffer) (const Togl *togl); /* 42 */
+     Bool (*togl_HasDestinationAlpha) (const Togl *togl); /* 43 */
+     Bool (*togl_HasStencilBuffer) (const Togl *togl); /* 44 */
+     int (*togl_StereoMode) (const Togl *togl); /* 45 */
+     Bool (*togl_HasMultisample) (const Togl *togl); /* 46 */
+     int (*togl_CopyContext) (const Togl *from, const Togl *to, unsigned int mask); /* 47 */
 } ToglStubs;
 
 #if defined(USE_TOGL_STUBS) && !defined(USE_TOGL_STUB_PROCS)
@@ -465,81 +459,77 @@ extern const ToglStubs *toglStubsPtr;
 #define Togl_GetToglFromObj \
 	(toglStubsPtr->togl_GetToglFromObj) /* 29 */
 #endif
-#ifndef Togl_TakePhoto
-#define Togl_TakePhoto \
-	(toglStubsPtr->togl_TakePhoto) /* 30 */
-#endif
 #ifndef Togl_GetProcAddr
 #define Togl_GetProcAddr \
-	(toglStubsPtr->togl_GetProcAddr) /* 31 */
+	(toglStubsPtr->togl_GetProcAddr) /* 30 */
 #endif
 #ifndef Togl_GetToglFromName
 #define Togl_GetToglFromName \
-	(toglStubsPtr->togl_GetToglFromName) /* 32 */
+	(toglStubsPtr->togl_GetToglFromName) /* 31 */
 #endif
 #ifndef Togl_SwapInterval
 #define Togl_SwapInterval \
-	(toglStubsPtr->togl_SwapInterval) /* 33 */
+	(toglStubsPtr->togl_SwapInterval) /* 32 */
 #endif
 #ifndef Togl_Ortho
 #define Togl_Ortho \
-	(toglStubsPtr->togl_Ortho) /* 34 */
+	(toglStubsPtr->togl_Ortho) /* 33 */
 #endif
 #ifndef Togl_NumEyes
 #define Togl_NumEyes \
-	(toglStubsPtr->togl_NumEyes) /* 35 */
+	(toglStubsPtr->togl_NumEyes) /* 34 */
 #endif
 #ifndef Togl_ContextTag
 #define Togl_ContextTag \
-	(toglStubsPtr->togl_ContextTag) /* 36 */
+	(toglStubsPtr->togl_ContextTag) /* 35 */
 #endif
 #ifndef Togl_UpdatePending
 #define Togl_UpdatePending \
-	(toglStubsPtr->togl_UpdatePending) /* 37 */
+	(toglStubsPtr->togl_UpdatePending) /* 36 */
 #endif
 #ifndef Togl_WriteObj
 #define Togl_WriteObj \
-	(toglStubsPtr->togl_WriteObj) /* 38 */
+	(toglStubsPtr->togl_WriteObj) /* 37 */
 #endif
 #ifndef Togl_WriteChars
 #define Togl_WriteChars \
-	(toglStubsPtr->togl_WriteChars) /* 39 */
+	(toglStubsPtr->togl_WriteChars) /* 38 */
 #endif
 #ifndef Togl_HasRGBA
 #define Togl_HasRGBA \
-	(toglStubsPtr->togl_HasRGBA) /* 40 */
+	(toglStubsPtr->togl_HasRGBA) /* 39 */
 #endif
 #ifndef Togl_IsDoubleBuffered
 #define Togl_IsDoubleBuffered \
-	(toglStubsPtr->togl_IsDoubleBuffered) /* 41 */
+	(toglStubsPtr->togl_IsDoubleBuffered) /* 40 */
 #endif
 #ifndef Togl_HasDepthBuffer
 #define Togl_HasDepthBuffer \
-	(toglStubsPtr->togl_HasDepthBuffer) /* 42 */
+	(toglStubsPtr->togl_HasDepthBuffer) /* 41 */
 #endif
 #ifndef Togl_HasAccumulationBuffer
 #define Togl_HasAccumulationBuffer \
-	(toglStubsPtr->togl_HasAccumulationBuffer) /* 43 */
+	(toglStubsPtr->togl_HasAccumulationBuffer) /* 42 */
 #endif
 #ifndef Togl_HasDestinationAlpha
 #define Togl_HasDestinationAlpha \
-	(toglStubsPtr->togl_HasDestinationAlpha) /* 44 */
+	(toglStubsPtr->togl_HasDestinationAlpha) /* 43 */
 #endif
 #ifndef Togl_HasStencilBuffer
 #define Togl_HasStencilBuffer \
-	(toglStubsPtr->togl_HasStencilBuffer) /* 45 */
+	(toglStubsPtr->togl_HasStencilBuffer) /* 44 */
 #endif
 #ifndef Togl_StereoMode
 #define Togl_StereoMode \
-	(toglStubsPtr->togl_StereoMode) /* 46 */
+	(toglStubsPtr->togl_StereoMode) /* 45 */
 #endif
 #ifndef Togl_HasMultisample
 #define Togl_HasMultisample \
-	(toglStubsPtr->togl_HasMultisample) /* 47 */
+	(toglStubsPtr->togl_HasMultisample) /* 46 */
 #endif
 #ifndef Togl_CopyContext
 #define Togl_CopyContext \
-	(toglStubsPtr->togl_CopyContext) /* 48 */
+	(toglStubsPtr->togl_CopyContext) /* 47 */
 #endif
 
 #endif /* defined(USE_TOGL_STUBS) && !defined(USE_TOGL_STUB_PROCS) */

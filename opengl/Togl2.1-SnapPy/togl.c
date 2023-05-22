@@ -3068,36 +3068,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     CGDisplayRegisterReconfigurationCallback(ReconfigureCB, togl);
 #endif
 
-    if (togl->PbufferFlag) {
-        /* Don't need a colormap, nor overlay, nor be displayed */
-#if defined(TOGL_X11) || defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
-        togl->pbuf = togl_createPbuffer(togl);
-        if (!togl->pbuf) {
-            /* tcl result set in togl_createPbuffer */
-#  ifdef TOGL_AGL
-            if (!togl->ShareContext) {
-                aglDestroyContext(togl->Ctx);
-                aglDestroyPixelFormat((AGLPixelFormat) togl->PixelFormat);
-            }
-            togl->Ctx = NULL;
-            togl->PixelFormat = 0;
-#  endif
-#  ifdef TOGL_NSOPENGL
-            if (!togl->ShareContext) {
-	        [togl->Ctx release];
-		[togl->PixelFormat release];
-            }
-            togl->Ctx = NULL;
-            togl->PixelFormat = 0;
-#  endif
-            goto error;
-        }
-#  ifdef TOGL_X11
-        window = TkpMakeWindow((TkWindow *) tkwin, parent);
-#  endif
-#endif
-        return window;
-    }
 #ifdef TOGL_WGL
     DescribePixelFormat(togl->tglGLHdc, (int) togl->PixelFormat, sizeof (pfd),
             &pfd);
@@ -3174,12 +3144,8 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     swa.border_pixel = 0;
     swa.colormap = cmap;
     swa.event_mask = ALL_EVENTS_MASK;
-    if (togl->PbufferFlag) {
-        width = height = 1;
-    } else {
-        width = togl->Width;
-        height = togl->Height;
-    }
+    width = togl->Width;
+    height = togl->Height;
     window = XCreateWindow(dpy, parent,
             0, 0, width, height,
             0, togl->VisInfo->depth, InputOutput, togl->VisInfo->visual,

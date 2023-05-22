@@ -53,6 +53,8 @@ class Settings:
     def find_settings(self):
         if sys.platform == 'darwin':
             home = os.environ['HOME']
+            # File is 'Preferences' rather than 'Settings' for backwards
+            # compatibility.
             self.setting_file = os.path.join(home, 'Library',
                                            'Preferences',
                                            'org.computop.SnapPy.plist')

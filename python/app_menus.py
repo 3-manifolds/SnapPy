@@ -236,13 +236,6 @@ def browser_menus(self):
     Creates a menubar attribute for the browser.
     """
     self.menubar = menubar = Tk_.Menu(self)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self, File_menu, 'Open...', None, 'disabled')
     add_menu(self, File_menu, 'Save as...', self.save)
@@ -268,13 +261,6 @@ def browser_menus(self):
 def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
     self.menubar = menubar = Tk_.Menu(self.window)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy...',
-                            command=lambda : about_snappy(self.main_window.window))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.window, File_menu, 'Open...', self.load)
     add_menu(self.window, File_menu, 'Save as...', self.save)
@@ -307,13 +293,6 @@ def dirichlet_menus(self):
     parent Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.parent)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -339,14 +318,6 @@ def horoball_menus(self):
     master Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.master)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy',
-                                command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -366,13 +337,6 @@ def inside_view_menus(self):
     """Menus for the standalone Inside viewer.  Called by the view Frame, not the
     master Toplevel."""
     self.menubar = menubar = Tk_.Menu(self.master)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -383,7 +347,5 @@ def inside_view_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    # help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
-    # help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     help_menu.activate([help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)

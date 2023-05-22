@@ -61,12 +61,6 @@ togl_pixelFormat(Togl *togl)
     }
 #endif
 
-    if (togl->PbufferFlag && !togl->RgbaFlag) {
-        Tcl_SetResult(togl->Interp,
-                "puffer must be RGB[A]", TCL_STATIC);
-        return NULL;
-    }
-
     attribs[na++] = AGL_MINIMUM_POLICY;
     /* ask for hardware-accelerated onscreen */
     attribs[na++] = AGL_ACCELERATED;
@@ -213,81 +207,3 @@ togl_describePixelFormat(Togl *togl)
 }
 
 #define isPow2(x) (((x) & ((x) - 1)) == 0)
-
-static AGLPbuffer
-togl_createPbuffer(Togl *togl)
-{
-    GLint   min_size[2], max_size[2];
-    Bool    hasPbuffer;
-    const char *extensions;
-    GLboolean good;
-    GLint   target;
-    GLint   virtualScreen;
-    AGLPbuffer pbuf;
-
-    extensions = (const char *) glGetString(GL_EXTENSIONS);
-    hasPbuffer = (strstr(extensions, "GL_APPLE_pixel_buffer") != NULL);
-    if (!hasPbuffer) {
-        Tcl_SetResult(togl->Interp,
-                "pbuffers are not supported", TCL_STATIC);
-        return NULL;
-    }
-    glGetIntegerv(GL_MIN_PBUFFER_VIEWPORT_DIMS_APPLE, min_size);
-    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_size);
-    virtualScreen = aglGetVirtualScreen(togl->Ctx);
-    for (;;) {
-        /* make sure we don't exceed the maximum size because if we do,
-         * aglCreatePbuffer may succeed and later uses of the pbuffer fail */
-        if (togl->Width < min_size[0])
-            togl->Width = min_size[0];
-        else if (togl->Width > max_size[0]) {
-            if (togl->LargestPbufferFlag)
-                togl->Width = max_size[0];
-            else {
-                Tcl_SetResult(togl->Interp,
-                        "pbuffer too large", TCL_STATIC);
-                return NULL;
-            }
-        }
-        if (togl->Height < min_size[1])
-            togl->Height = min_size[1];
-        else if (togl->Height > max_size[1]) {
-            if (togl->LargestPbufferFlag)
-                togl->Height = max_size[1];
-            else {
-                Tcl_SetResult(togl->Interp,
-                        "pbuffer too large", TCL_STATIC);
-                return NULL;
-            }
-        }
-
-        if (isPow2(togl->Width) && isPow2(togl->Height))
-            target = GL_TEXTURE_2D;
-        else
-            target = GL_TEXTURE_RECTANGLE_ARB;
-
-        good = aglCreatePBuffer(togl->Width, togl->Height, target,
-                togl->AlphaFlag ? GL_RGBA : GL_RGB, 0, &pbuf);
-        if (good) {
-            /* aglSetPbuffer allocates the framebuffer space */
-            if (aglSetPBuffer(togl->Ctx, pbuf, 0, 0, virtualScreen)) {
-                return pbuf;
-            }
-        }
-        if (!togl->LargestPbufferFlag
-                || togl->Width == min_size[0] || togl->Height == min_size[1]) {
-            Tcl_SetResult(togl->Interp,
-                    "unable to create pbuffer", TCL_STATIC);
-            return NULL;
-        }
-        /* largest unavailable, try something smaller */
-        togl->Width = togl->Width / 2 + togl->Width % 2;
-        togl->Height = togl->Width / 2 + togl->Height % 2;
-    }
-}
-
-static void
-togl_destroyPbuffer(Togl *togl)
-{
-    aglDestroyPBuffer(togl->pbuf);
-}

@@ -2674,7 +2674,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     HINSTANCE hInstance;
     PIXELFORMATDESCRIPTOR pfd;
     int     width, height;
-    Bool    createdPbufferDC = False;
 #elif defined(TOGL_AGL)
 #endif
 
@@ -3530,54 +3529,46 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
           break;
       case MapNotify:
 #if defined(TOGL_AGL)
-          if (!togl->PbufferFlag) {
-              /* 
-               * See comment for the UnmapNotify case below.
-               */
-              AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
+          /* 
+           * See comment for the UnmapNotify case below.
+           */
+          AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
 
-              /* aglSetDrawable is deprecated in OS X 10.5 */
-              aglSetDrawable(togl->Ctx, d);
-              SetMacBufRect(togl);
-          }
+          /* aglSetDrawable is deprecated in OS X 10.5 */
+          aglSetDrawable(togl->Ctx, d);
+          SetMacBufRect(togl);
 #endif
 #if defined(TOGL_NSOPENGL)
-          if (!togl->PbufferFlag) {
-              /* 
-               * See comment for the UnmapNotify case below.
-               */
-  	      [togl->nsview setHidden:NO];
-	      [togl->Ctx setView:togl->nsview];
-              SetMacBufRect(togl);
-          }
+          /* 
+           * See comment for the UnmapNotify case below.
+           */
+          [togl->nsview setHidden:NO];
+          [togl->Ctx setView:togl->nsview];
+          SetMacBufRect(togl);
 #endif
           break;
       case UnmapNotify:
 #if defined(TOGL_AGL)
-          if (!togl->PbufferFlag) {
-              /* 
-               * For Mac OS X Aqua, Tk subwindows are not implemented as
-               * separate Aqua windows.  They are just different regions of
-               * a single Aqua window.  To unmap them they are just not drawn.
-               * Have to disconnect the AGL context otherwise they will continue
-               * to be displayed directly by Aqua.
-               */
-              /* aglSetDrawable is deprecated in OS X 10.5 */
-              aglSetDrawable(togl->Ctx, NULL);
-          }
+          /* 
+           * For Mac OS X Aqua, Tk subwindows are not implemented as
+           * separate Aqua windows.  They are just different regions of
+           * a single Aqua window.  To unmap them they are just not drawn.
+           * Have to disconnect the AGL context otherwise they will continue
+           * to be displayed directly by Aqua.
+           */
+          /* aglSetDrawable is deprecated in OS X 10.5 */
+          aglSetDrawable(togl->Ctx, NULL);
 #endif
 #if defined(TOGL_NSOPENGL)
-          if (!togl->PbufferFlag) {
-              /* 
-               * For Mac OS X Aqua, Tk subwindows are not implemented as
-               * separate Aqua windows.  They are just different regions of
-               * a single Aqua window.  To unmap them they are just not drawn.
-               * Have to disconnect the NSView otherwise they will continue
-               * to be displayed directly by Aqua.
-               */
-              [togl->Ctx clearDrawable];
-	      [togl->nsview setHidden:YES];  /* Stolen from Chimera */
-          }
+          /* 
+           * For Mac OS X Aqua, Tk subwindows are not implemented as
+           * separate Aqua windows.  They are just different regions of
+           * a single Aqua window.  To unmap them they are just not drawn.
+           * Have to disconnect the NSView otherwise they will continue
+           * to be displayed directly by Aqua.
+           */
+          [togl->Ctx clearDrawable];
+          [togl->nsview setHidden:YES];  /* Stolen from Chimera */
 #endif
           break;
       case DestroyNotify:

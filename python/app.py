@@ -71,7 +71,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
         Python_menu.add_command(label='About SnapPy...',
                                 command=lambda : about_snappy(window))
         if sys.platform == 'darwin':
-            window.createcommand('::tk::mac::ShowSettings', self.edit_settings)
+            window.createcommand('::tk::mac::ShowPreferences', self.edit_settings)
             # By default, the Quit menu command terminates the Python process.
             # That is not so friendly if cleanup is needed.
             window.createcommand('::tk::mac::Quit', self.close)
@@ -100,7 +100,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
     def edit_settings(self):
         terminal.can_quit = False
         if sys.platform == 'darwin':
-            self.window.deletecommand('::tk::mac::ShowSettings')
+            self.window.deletecommand('::tk::mac::ShowPreferences')
         else:
             apple_menu = self.menubar.children['apple']
             apple_menu.entryconfig(2, state='disabled')
@@ -115,7 +115,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             if answer:
                 self.settings.write_settings()
         if sys.platform == 'darwin':
-            self.window.createcommand('::tk::mac::ShowSettings', self.edit_settings)
+            self.window.createcommand('::tk::mac::ShowPreferences', self.edit_settings)
         else:
             apple_menu.entryconfig(2, state='active')
         self.can_quit = True

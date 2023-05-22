@@ -54,7 +54,7 @@ class Settings:
         if sys.platform == 'darwin':
             home = os.environ['HOME']
             self.setting_file = os.path.join(home, 'Library',
-                                           'Settings',
+                                           'Preferences',
                                            'org.computop.SnapPy.plist')
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             home = os.environ['HOME']

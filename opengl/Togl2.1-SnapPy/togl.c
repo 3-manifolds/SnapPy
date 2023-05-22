@@ -449,7 +449,6 @@ static void SetMacBufRect(Togl *togl);
 #if defined(TOGL_WGL)
 #  include "toglWGL.c"
 #elif defined(TOGL_AGL)
-#  include "toglAGL.c"
 #elif defined(TOGL_NSOPENGL)
 #  include "toglNSOpenGL.c"
 #elif defined(TOGL_X11)

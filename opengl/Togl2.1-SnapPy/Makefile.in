@@ -562,4 +562,4 @@ uninstall-binaries:
 .NOEXPORT:
 
 # Additional dependencies
-togl.$(OBJEXT): toglFont.c toglAGL.c toglGLX.c toglWGL.c
+togl.$(OBJEXT): toglFont.c toglGLX.c toglWGL.c

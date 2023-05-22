@@ -379,17 +379,8 @@ struct Togl
     int     SwapInterval;
     Bool    MultisampleFlag;
     Bool    FullscreenFlag;
-    Bool    PbufferFlag;
-    Bool    LargestPbufferFlag;
 #if defined(TOGL_X11)
     GLXFBConfig fbcfg;          /* cache FBConfig for pbuffer creation */
-    GLXPbuffer pbuf;
-#elif defined(TOGL_WGL)
-    HPBUFFERARB pbuf;
-#elif defined(TOGL_AGL)
-    AGLPbuffer pbuf;
-#elif defined(TOGL_NSOPENGL)
-    NSOpenGLPixelBuffer *pbuf;
 #endif
     const char *ShareList;      /* name (ident) of Togl to share dlists with */
     const char *ShareContext;   /* name (ident) to share OpenGL context with */
@@ -568,11 +559,6 @@ static Tk_OptionSpec optionSpecs[] = {
     {TK_OPTION_BOOLEAN, "-multisample", "multisample", "Multisample",
                 "false", -1, Tk_Offset(Togl, MultisampleFlag), 0, NULL,
             FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, "-pbuffer", "pbuffer", "Pbuffer",
-            "false", -1, Tk_Offset(Togl, PbufferFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, "-largestpbuffer", "largestpbuffer",
-                "LargestPbuffer",
-            "false", -1, Tk_Offset(Togl, LargestPbufferFlag), 0, NULL, 0},
     {TK_OPTION_STRING, "-createcommand", "createCommand",
                 "CallbackCommand", NULL,
             Tk_Offset(Togl, CreateProc), -1, TK_OPTION_NULL_OK, NULL, 0},
@@ -2376,17 +2362,8 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     togl->SwapInterval = 1;
     togl->MultisampleFlag = False;
     togl->FullscreenFlag = False;
-    togl->PbufferFlag = False;
-    togl->LargestPbufferFlag = False;
 #if defined(TOGL_X11)
     togl->fbcfg = NULL;
-    togl->pbuf = NULL;
-#elif defined(TOGL_WGL)
-    togl->pbuf = NULL;
-#elif defined(TOGL_AGL)
-    togl->pbuf = NULL;
-#elif defined(TOGL_NSOPENGL)
-    togl->pbuf = NULL;
 #endif
 
     togl->CreateProc = NULL;

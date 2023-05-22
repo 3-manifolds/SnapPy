@@ -3269,10 +3269,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     }
 #elif defined(TOGL_WGL)
     if (togl->tglGLHdc) {
-        if (createdPbufferDC)
-            releasePbufferDC(togl->pbuf, togl->tglGLHdc);
-        else
-            ReleaseDC(hwnd, togl->tglGLHdc);
+        ReleaseDC(hwnd, togl->tglGLHdc);
         togl->tglGLHdc = NULL;
     }
 #endif
@@ -3291,12 +3288,8 @@ Togl_WorldChanged(ClientData instanceData)
     int     width;
     int     height;
 
-    if (togl->PbufferFlag)
-        width = height = 1;
-    else {
-        width = togl->Width;
-        height = togl->Height;
-    }
+    width = togl->Width;
+    height = togl->Height;
     Tk_GeometryRequest(togl->TkWin, width, height);
     Tk_SetInternalBorder(togl->TkWin, 0);
     if (togl->SetGrid > 0) {
@@ -3406,20 +3399,12 @@ ToglCmdDeletedProc(ClientData clientData)
             }
 #if defined(TOGL_WGL)
             if (togl->tglGLHdc) {
-                if (togl->PbufferFlag) {
-                    releasePbufferDC(togl->pbuf, togl->tglGLHdc);
-                } else {
-                    HWND    hwnd = Tk_GetHWND(Tk_WindowId(tkwin));
+                HWND    hwnd = Tk_GetHWND(Tk_WindowId(tkwin));
 
-                    ReleaseDC(hwnd, togl->tglGLHdc);
-                }
+                ReleaseDC(hwnd, togl->tglGLHdc);
                 togl->tglGLHdc = NULL;
             }
 #endif
-            if (togl->PbufferFlag && togl->pbuf) {
-                togl_destroyPbuffer(togl);
-                togl->pbuf = 0;
-            }
             togl->Ctx = NULL;
             togl->VisInfo = NULL;
         }
@@ -3502,8 +3487,6 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
           }
           break;
       case ConfigureNotify:
-          if (togl->PbufferFlag)
-              break;
           if (togl->Width == Tk_Width(togl->TkWin)
                           && togl->Height == Tk_Height(togl->TkWin)) {
 

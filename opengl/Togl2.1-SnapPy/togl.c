@@ -98,9 +98,6 @@
    /* we want to use glXCreateContextAttribsARB */
 #  define GLX_GLXEXT_PROTOTYPES
 #  include <GL/glxext.h>
-#  ifdef HAVE_AUTOSTEREO
-#    include <autostereo.h>
-#  endif
 
 /*** Mac Cocoa headers ***/
 #elif defined(TOGL_NSOPENGL)
@@ -117,8 +114,6 @@
 #else /* make sure only one platform defined */
 #  error Unsupported platform, or confused platform defines...
 #endif
-
-#define NC3D "NVidia Consumer 3D Stereo"
 
 #ifndef STEREO_BUFFER_NONE
 /* From <X11/extensions/SGIStereo.h>, but we use this constants elsewhere */
@@ -393,10 +388,6 @@ struct Togl
     GLfloat *BlueMap;
     GLint   MapSize;            /* = Number of indices in our Togl */
     int     currentStereoBuffer;
-#ifdef HAVE_AUTOSTEREO
-    int     as_initialized;     /* for autostereo package */
-    ASHandle ash;               /* for autostereo package */
-#endif
     int     badWindow;          /* true when Togl_MakeWindow fails or should
                                  * create a dummy window */
 };
@@ -1302,14 +1293,6 @@ Togl_LeaveStereo(Togl *togl, int oldStereo)
     switch (oldStereo) {
       default:
           break;
-#ifdef HAVE_AUTOSTEREO
-      case TOGL_STEREO_NATIVE:
-          if (togl->ash != -1) {
-              ASClosedStereoWindow(togl->ash);
-              togl->ash = -1;
-          }
-          break;
-#endif
       case TOGL_STEREO_ROW_INTERLEAVED:
           if (togl->riStencilBit) {
               Tk_Window top;
@@ -2110,10 +2093,6 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     togl->Ident = NULL;
     togl->PrivateCmapFlag = False;
     togl->currentStereoBuffer = STEREO_BUFFER_NONE;
-#ifdef HAVE_AUTOSTEREO
-    togl->as_initialized = False;
-    togl->ash = -1;
-#endif
     togl->badWindow = False;
 
     /* Create command event handler */
@@ -2882,24 +2861,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
             togl->BlueMap = (GLfloat *) calloc(index_size, sizeof (GLfloat));
         }
     }
-#ifdef HAVE_AUTOSTEREO
-    if (togl->Stereo == TOGL_STEREO_NATIVE) {
-        if (!togl->as_initialized) {
-            const char *autostereod;
-
-            togl->as_initialized = True;
-            if ((autostereod = getenv("AUTOSTEREOD")) == NULL)
-                autostereod = AUTOSTEREOD;
-            if (autostereod && *autostereod) {
-                if (ASInitialize(togl->display, autostereod) == Success) {
-                    togl->ash = ASCreatedStereoWindow(dpy);
-                }
-            }
-        } else {
-            togl->ash = ASCreatedStereoWindow(dpy);
-        }
-    }
-#endif
 
     return window;
 

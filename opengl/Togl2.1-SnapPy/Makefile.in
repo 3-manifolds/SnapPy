@@ -24,7 +24,7 @@ SHLIB_SUFFIX	= @SHLIB_SUFFIX@
 MATH_LIBS	= @MATH_LIBS@
 LIBGLU		= @LIBGLU@
 
-EXAMPLE_SRCS	= double.c gears.c index.c overlay.c stereo.c texture.c pbuffer.c
+EXAMPLE_SRCS	= double.c gears.c index.c overlay.c stereo.c texture.c
 EXAMPLE_OBJS	= $(EXAMPLE_SRCS:.c=.$(OBJEXT))
 EXAMPLE_SHLIBS	= $(EXAMPLE_SRCS:.c=$(SHLIB_SUFFIX))
 
@@ -254,13 +254,6 @@ texture$(SHLIB_SUFFIX): texture.$(OBJEXT) image.$(OBJEXT) $(PKG_STUB_LIB_FILE)
 		$(MAKE) PKG_OBJECTS="texture.$(OBJEXT) image.$(OBJEXT) $(PKG_STUB_LIB_FILE) $(LIBGLU)" $@ ; \
 	fi
 
-pbuffer$(SHLIB_SUFFIX): pbuffer.$(OBJEXT) $(PKG_STUB_LIB_FILE)
-	-match=`expr 'x$(PKG_OBJECTS)' : '.*togl.*'`; \
-	if [ $$match -eq 0 ]; then \
-		$(MAKE_SHARED_LIB) ; \
-	else \
-		$(MAKE) PKG_OBJECTS="pbuffer.$(OBJEXT) $(PKG_STUB_LIB_FILE) $(LIBGLU)" $@ ; \
-	fi
 
 #========================================================================
 # Stub section.

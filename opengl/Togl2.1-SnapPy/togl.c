@@ -1610,14 +1610,12 @@ Togl_ObjConfigure(Tcl_Interp *interp, Togl *togl,
         }
 
         if (mask & GEOMETRY_MASK) {
-            if (!togl->PbufferFlag) {
-                Togl_WorldChanged((ClientData) togl);
-                /* Reset width and height so ConfigureNotify
-                 * event will call reshape callback */
-                togl->Width = oldWidth;
-                togl->Height = oldHeight;
-                undoMask |= GEOMETRY_MASK;
-            }
+            Togl_WorldChanged((ClientData) togl);
+            /* Reset width and height so ConfigureNotify
+             * event will call reshape callback */
+            togl->Width = oldWidth;
+            togl->Height = oldHeight;
+            undoMask |= GEOMETRY_MASK;
         }
 
         if (mask & OVERLAY_MASK) {
@@ -1704,16 +1702,6 @@ Togl_ObjConfigure(Tcl_Interp *interp, Togl *togl,
             if (togl->ShareContext && togl->ShareList) {
                 Tcl_AppendResult(interp,
                         "only one of -sharelist and -sharecontext allowed",
-                        NULL);
-                continue;
-            }
-            if (togl->PbufferFlag && togl->Stereo) {
-                Tcl_AppendResult(interp, "pbuffer not supported with stereo",
-                        NULL);
-                continue;
-            }
-            if (togl->PbufferFlag && togl->OverlayFlag) {
-                Tcl_AppendResult(interp, "pbuffer not supported with overlay",
                         NULL);
                 continue;
             }
@@ -2468,8 +2456,7 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
         }
     }
 #if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
-    if (!togl->PbufferFlag)
-        SetMacBufRect(togl);
+    SetMacBufRect(togl);
 #endif
     /* If defined, call reshape proc */
     if (togl->ReshapeProc) {
@@ -2639,11 +2626,7 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
           break;
 
       case WM_DISPLAYCHANGE:
-          if (togl->PbufferFlag && hasARBPbuffer && !togl->pbufferLost) {
-              queryPbuffer(togl->pbuf, WGL_PBUFFER_LOST_ARB,
-                      &togl->pbufferLost);
-          }
-	  
+
       default:
           return TkWinChildProc(hwnd, message, wParam, lParam);
     }

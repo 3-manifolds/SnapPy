@@ -1502,7 +1502,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
-    def redraw(self, width, height):
+    def redraw(self, width, height, skip_swap_buffers = False):
         """
         Implements redrawing by calling redraw_impl to draw the scene
         after setting up the viewport, the projection and view matrix
@@ -1525,7 +1525,8 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.redraw_impl()
         glPopMatrix()              # Restore the matrix
 
-        self.swap_buffers()
+        if not skip_swap_buffers:
+            self.swap_buffers()
 
     def redraw_impl(self):
         """

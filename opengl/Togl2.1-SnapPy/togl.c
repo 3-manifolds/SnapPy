@@ -105,17 +105,6 @@
 #    include <autostereo.h>
 #  endif
 
-/*** Mac Carbon headers ***/
-#elif defined(TOGL_AGL)
-/* avoid collision with the kernel panic function */
-#  undef panic
-#  define Cursor QDCursor
-#  include <AGL/agl.h>
-#  undef Cursor
-#  include <tkMacOSXInt.h>      /* usa MacDrawable */
-#  include <ApplicationServices/ApplicationServices.h>
-#  define Togl_MacOSXGetDrawablePort(togl) TkMacOSXGetDrawablePort((Drawable) ((TkWindow *) togl->TkWin)->privatePtr)
-
 /*** Mac Cocoa headers ***/
 #elif defined(TOGL_NSOPENGL)
 /* avoid collision with the kernel panic function */
@@ -159,12 +148,6 @@
 #    error Sorry stub support requires Tcl/Tk ver 8.1 or higher.
 #  endif
 #endif
-
-#if defined(TOGL_AGL)
-#  if TK_MAJOR_VERSION < 8 || (TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 4)
-#    error Sorry Mac Aqua version requires Tcl/Tk ver 8.4.0 or higher.
-#  endif
-#endif /* TOGL_AGL */
 
 #if defined(TOGL_NSOPENGL)
 #  if TK_MAJOR_VERSION < 8 || (TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 6)
@@ -323,8 +306,6 @@ struct Togl
                                  * mode */
 #elif defined(TOGL_X11)
     GLXContext Ctx;             /* Normal planes GLX context */
-#elif defined(TOGL_AGL)
-    AGLContext Ctx;
 #elif defined(TOGL_NSOPENGL)
     NSOpenGLContext *Ctx;
     NSView *nsview;
@@ -442,13 +423,12 @@ static void free_default_color_cells(Display *display, Colormap colormap);
 #endif
 static void ToglCmdDeletedProc(ClientData);
 
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
 static void SetMacBufRect(Togl *togl);
 #endif
 
 #if defined(TOGL_WGL)
 #  include "toglWGL.c"
-#elif defined(TOGL_AGL)
 #elif defined(TOGL_NSOPENGL)
 #  include "toglNSOpenGL.c"
 #elif defined(TOGL_X11)
@@ -1117,17 +1097,6 @@ Togl_MakeCurrent(const Togl *togl)
             drawable = None;
         (void) glXMakeCurrent(display, drawable, drawable ? togl->Ctx : NULL);
     }
-#elif defined(TOGL_AGL)
-    if (togl == NULL || togl->Ctx == NULL) {
-        (void) aglSetCurrentContext(NULL);
-    } else {
-        (void) aglSetCurrentContext(togl->Ctx);
-        if (FindToglWithSameContext(togl) != NULL) {
-            AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
-
-            aglSetDrawable(togl->Ctx, d);
-        }
-    }
 #elif defined(TOGL_NSOPENGL)
     if (togl != NULL && togl->Ctx != NULL) {
         [togl->Ctx makeCurrentContext];
@@ -1250,11 +1219,6 @@ Togl_TakePhoto(Togl *togl, Tk_PhotoHandle photo)
 Bool
 Togl_SwapInterval(const Togl *togl, int interval)
 {
-#ifdef TOGL_AGL
-    GLint   swapInterval = interval;
-
-    return aglSetInteger(togl->Ctx, AGL_SWAP_INTERVAL, &swapInterval);
-#endif
 #ifdef TOGL_NSOPENGL
     GLint   swapInterval = interval;
     [togl->Ctx setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
@@ -1309,58 +1273,6 @@ Togl_SwapInterval(const Togl *togl, int interval)
     return False;
 #endif
 }
-
-#if defined(TOGL_AGL)
-/* tell OpenGL which part of the Mac window to render to */
-static void
-SetMacBufRect(Togl *togl)
-{
-    GLint   wrect[4];
-    Rect    r;
-    MacDrawable *d = ((TkWindow *) togl->TkWin)->privatePtr;
-
-    /* set wrect[0,1] to lower left corner of widget */
-    wrect[2] = Tk_Width(togl->TkWin);
-    wrect[3] = Tk_Height(togl->TkWin);
-    wrect[0] = d->xOff;
-
-    GetPortBounds(Togl_MacOSXGetDrawablePort(togl), &r);
-
-    wrect[1] = r.bottom - wrect[3] - d->yOff;
-
-    if (togl->FullscreenFlag) {
-        aglEnable(togl->Ctx, AGL_FS_CAPTURE_SINGLE);
-        aglSetFullScreen(togl->Ctx, 0, 0, 0, 0);
-    } else {
-        aglUpdateContext(togl->Ctx);
-    }
-    aglSetInteger(togl->Ctx, AGL_BUFFER_RECT, wrect);
-    aglEnable(togl->Ctx, AGL_BUFFER_RECT);
-}
-
-static void
-ReconfigureCB(CGDirectDisplayID display, CGDisplayChangeSummaryFlags flags,
-        void *closure)
-{
-    /* Display reconfiguration callback. Documented as needed by Apple QA1209.
-     * Updated for 10.3 (and later) to use
-     * CGDisplayRegisterReconfigurationCallback. */
-    Togl   *togl = (Togl *) closure;
-
-    if (0 != (flags & kCGDisplayBeginConfigurationFlag))
-        return;                 /* wait until display is reconfigured */
-
-    SetMacBufRect(togl);
-    Togl_MakeCurrent(togl);
-    if (togl->Ctx) {
-        if (togl->ReshapeProc) {
-            Togl_CallCallback(togl, togl->ReshapeProc);
-        } else {
-            glViewport(0, 0, togl->Width, togl->Height);
-        }
-    }
-}
-#endif
 
 #if defined(TOGL_NSOPENGL)
 /*
@@ -1695,13 +1607,11 @@ Togl_ObjConfigure(Tcl_Interp *interp, Togl *togl,
                        "Fullscreen not supported with Cocoa Tk", NULL);
                 continue;
 #endif
-#ifndef TOGL_AGL
 #  if TK_MAJOR_VERSION < 8 || (TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 5)
                 Tcl_AppendResult(interp,
                         "Need Tk 8.5 or later for fullscreen support", NULL);
                 continue;
 #  endif
-#endif
             }
             /* Whether or not the format is okay is figured out when togl tries 
              * to create the window. */
@@ -2429,7 +2339,7 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
             goto error;
         }
     }
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
     SetMacBufRect(togl);
 #endif
     /* If defined, call reshape proc */
@@ -2558,7 +2468,7 @@ SetupOverlay(Togl *togl)
 
     return TCL_OK;
 
-#  elif defined(TOGL_WGL) || defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#  elif defined(TOGL_WGL) || defined(TOGL_NSOPENGL)
     /* not yet implemented on these */
     return TCL_ERROR;
 #  endif
@@ -2648,7 +2558,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     HINSTANCE hInstance;
     PIXELFORMATDESCRIPTOR pfd;
     int     width, height;
-#elif defined(TOGL_AGL)
 #endif
 
     if (togl->badWindow) {
@@ -2673,7 +2582,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
      * Windows and Mac OS X need the window created before OpenGL context
      * is created.  So do that now and set the window variable. 
      */
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
     {
         TkWindow *winPtr = (TkWindow *) tkwin;
 
@@ -2755,7 +2664,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 #if defined(TOGL_X11)
         togl->VisInfo = togl_pixelFormat(togl, scrnum);
         if (togl->VisInfo == NULL)
-#elif defined(TOGL_WGL) || defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#elif defined(TOGL_WGL) || defined(TOGL_NSOPENGL)
 #  ifdef TOGL_WGL
         togl->PixelFormat = togl_pixelFormat(togl, hwnd);
 #  elif defined(TOGL_NSOPENGL)
@@ -2777,7 +2686,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         goto error;
     }
 #endif
-#if defined(TOGL_WGL) || defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_WGL) || defined(TOGL_NSOPENGL)
     if (togl->VisInfo == NULL) {
         /* 
          * Create a new OpenGL rendering context. And check to share lists.
@@ -2921,63 +2830,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
             togl->contextTag = shareWith->contextTag;
         }
     }
-#elif defined(TOGL_AGL)
-    AGLContext shareCtx = NULL;
-
-    if (togl->ShareList) {
-        /* share display lists with existing togl widget */
-        Togl   *shareWith = FindTogl(togl, togl->ShareList);
-
-        if (shareWith) {
-            shareCtx = shareWith->Ctx;
-            togl->contextTag = shareWith->contextTag;
-        }
-    }
-    if (togl->ShareContext && FindTogl(togl, togl->ShareContext)) {
-        /* share OpenGL context with existing Togl widget */
-        Togl   *shareWith = FindTogl(togl, togl->ShareContext);
-
-        if (togl->PixelFormat != shareWith->PixelFormat) {
-            Tcl_SetResult(togl->Interp,
-                    "unable to share OpenGL context", TCL_STATIC);
-            goto error;
-        }
-        togl->Ctx = shareWith->Ctx;
-    } else if ((togl->Ctx = aglCreateContext((AGLPixelFormat) togl->PixelFormat,
-                            shareCtx)) == NULL) {
-        GLenum  err = aglGetError();
-
-        aglDestroyPixelFormat((AGLPixelFormat) togl->PixelFormat);
-        togl->PixelFormat = 0;
-        if (err == AGL_BAD_MATCH)
-            Tcl_SetResult(togl->Interp,
-                    "unable to share display lists"
-                    ": shared context doesn't match", TCL_STATIC);
-        else if (err == AGL_BAD_CONTEXT)
-            Tcl_SetResult(togl->Interp,
-                    "unable to share display lists"
-                    ": bad shared context", TCL_STATIC);
-        else if (err == AGL_BAD_PIXELFMT)
-            Tcl_SetResult(togl->Interp,
-                    "could not create rendering context"
-                    ": bad pixel format", TCL_STATIC);
-        else
-            Tcl_SetResult(togl->Interp,
-                    "could not create rendering context"
-                    ": unknown reason", TCL_STATIC);
-        goto error;
-    }
-
-    if (!aglSetDrawable(togl->Ctx, Togl_MacOSXGetDrawablePort(togl))) {
-        /* aglSetDrawable is deprecated in OS X 10.5 */
-        aglDestroyContext(togl->Ctx);
-        togl->Ctx = NULL;
-        aglDestroyPixelFormat((AGLPixelFormat) togl->PixelFormat);
-        togl->PixelFormat = 0;
-        Tcl_SetResult(togl->Interp,
-                "couldn't set drawable", TCL_STATIC);
-        goto error;
-    }
 #elif defined(TOGL_NSOPENGL)
     NSOpenGLContext *shareCtx = NULL;
     if (togl->ShareList) {
@@ -3037,7 +2889,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
                 "could not create rendering context", TCL_STATIC);
         goto error;
     }
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
     CGDisplayRegisterReconfigurationCallback(ReconfigureCB, togl);
 #endif
 
@@ -3059,7 +2911,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         } else {
             cmap = DefaultColormap(dpy, scrnum);
         }
-#elif defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#elif defined(TOGL_NSOPENGL)
         cmap = DefaultColormap(dpy, scrnum);
 #endif
     } else {
@@ -3084,7 +2936,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
                     togl->VisInfo->visual, AllocAll);
 #elif defined(TOGL_WGL)
             cmap = Win32CreateCiColormap(togl);
-#elif defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#elif defined(TOGL_NSOPENGL)
             /* need to figure out how to do this correctly on Mac... */
             cmap = DefaultColormap(dpy, scrnum);
 #endif
@@ -3180,15 +3032,13 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     }
 #endif
 
-#if !defined(TOGL_AGL)
     /* Request the X window to be displayed */
     (void) XMapWindow(dpy, window);
-#endif
 
     if (!togl->RgbaFlag) {
         int     index_size;
 
-#if defined(TOGL_X11) || defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_X11) || defined(TOGL_NSOPENGL)
         GLint   index_bits;
 
         glGetIntegerv(GL_INDEX_BITS, &index_bits);
@@ -3354,9 +3204,6 @@ ToglCmdDeletedProc(ClientData clientData)
                 glXDestroyContext(togl->display, togl->Ctx);
 #elif defined(TOGL_WGL)
                 wglDeleteContext(togl->Ctx);
-#elif defined(TOGL_AGL)
-                aglDestroyContext(togl->Ctx);
-                CGDisplayRemoveReconfigurationCallback(ReconfigureCB, togl);
 #elif defined(TOGL_NSOPENGL)
 		[togl->Ctx release];
 		togl->Ctx = nil;
@@ -3463,7 +3310,7 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
           if (togl->Width == Tk_Width(togl->TkWin)
                           && togl->Height == Tk_Height(togl->TkWin)) {
 
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
               // Even though the size hasn't changed,
               // it's position on the screen may have.
               if (Tk_IsMapped(togl->TkWin))
@@ -3483,7 +3330,7 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
           }
 #endif
 
-#if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#if defined(TOGL_NSOPENGL)
           SetMacBufRect(togl);
 #endif
 
@@ -3502,16 +3349,6 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
           }
           break;
       case MapNotify:
-#if defined(TOGL_AGL)
-          /* 
-           * See comment for the UnmapNotify case below.
-           */
-          AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
-
-          /* aglSetDrawable is deprecated in OS X 10.5 */
-          aglSetDrawable(togl->Ctx, d);
-          SetMacBufRect(togl);
-#endif
 #if defined(TOGL_NSOPENGL)
           /* 
            * See comment for the UnmapNotify case below.
@@ -3522,17 +3359,6 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
 #endif
           break;
       case UnmapNotify:
-#if defined(TOGL_AGL)
-          /* 
-           * For Mac OS X Aqua, Tk subwindows are not implemented as
-           * separate Aqua windows.  They are just different regions of
-           * a single Aqua window.  To unmap them they are just not drawn.
-           * Have to disconnect the AGL context otherwise they will continue
-           * to be displayed directly by Aqua.
-           */
-          /* aglSetDrawable is deprecated in OS X 10.5 */
-          aglSetDrawable(togl->Ctx, NULL);
-#endif
 #if defined(TOGL_NSOPENGL)
           /* 
            * For Mac OS X Aqua, Tk subwindows are not implemented as
@@ -3594,8 +3420,6 @@ Togl_SwapBuffers(const Togl *togl)
         }
 #elif defined(TOGL_X11)
         glXSwapBuffers(Tk_Display(togl->TkWin), Tk_WindowId(togl->TkWin));
-#elif defined(TOGL_AGL)
-        aglSwapBuffers(togl->Ctx);
 #elif defined(TOGL_NSOPENGL)
         [togl->Ctx flushBuffer];
 #endif
@@ -3921,7 +3745,7 @@ Togl_AllocColor(const Togl *togl, float red, float green, float blue)
 #elif defined(TOGL_WGL)
     return Win32AllocColor(togl, red, green, blue);
 
-#elif defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#elif defined(TOGL_NSOPENGL)
     /* still need to implement this on Mac... */
     return 0;
 
@@ -4040,8 +3864,6 @@ Togl_UseLayer(Togl *togl, int layer)
 #elif defined(TOGL_X11)
         (void) glXMakeCurrent(Tk_Display(togl->TkWin),
                 Tk_WindowId(togl->TkWin), togl->Ctx);
-#elif defined(TOGL_AGL)
-        (void) aglSetCurrentContext(togl->Ctx);
 #elif defined(TOGL_NSOPENGL)
         [togl->Ctx makeCurrentContext];
 #endif
@@ -4055,7 +3877,7 @@ Togl_UseLayer(Togl *togl, int layer)
 #elif defined(TOGL_X11)
         (void) glXMakeCurrent(Tk_Display(togl->TkWin),
                 togl->OverlayWindow, togl->OverlayCtx);
-#elif defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
+#elif defined(TOGL_NSOPENGL)
 #endif
     } else {
         /* error */
@@ -4185,16 +4007,6 @@ Togl_CopyContext(const Togl *from, const Togl *to, unsigned mask)
 
         snprintf(buf, sizeof buf, "unable to copy context: %d", GetLastError());
         Tcl_AppendElement(from->Interp, buf);
-        return TCL_ERROR;
-    }
-#elif defined(TOGL_AGL)
-    int     same = (aglGetCurrentContext() == to->Ctx);
-
-    if (same)
-        (void) aglSetCurrentContext(NULL);
-    if (!aglCopyContext(from->Ctx, to->Ctx, mask)) {
-        Tcl_AppendResult(from->Interp, "unable to copy context: ",
-                aglErrorString(aglGetError()), NULL);
         return TCL_ERROR;
     }
 #elif defined(TOGL_NSOPENGL)

@@ -386,7 +386,6 @@ struct Togl
     GLXPbuffer pbuf;
 #elif defined(TOGL_WGL)
     HPBUFFERARB pbuf;
-    int     pbufferLost;
 #elif defined(TOGL_AGL)
     AGLPbuffer pbuf;
 #elif defined(TOGL_NSOPENGL)
@@ -2384,7 +2383,6 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     togl->pbuf = NULL;
 #elif defined(TOGL_WGL)
     togl->pbuf = NULL;
-    togl->pbufferLost = 0;
 #elif defined(TOGL_AGL)
     togl->pbuf = NULL;
 #elif defined(TOGL_NSOPENGL)

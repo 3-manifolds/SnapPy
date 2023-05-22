@@ -1114,19 +1114,6 @@ Togl_MakeCurrent(const Togl *togl)
         if (hdc != NULL)
             res = wglMakeCurrent(hdc, NULL);
     } else {
-        if (togl->pbufferLost) {
-            Bool    keepContext = FindToglWithSameContext(togl) != NULL;
-            Togl   *t = (Togl *) togl;  /* conceptually const */
-
-            if (!keepContext) {
-                wglDeleteContext(t->Ctx);
-            }
-            togl_destroyPbuffer(t);
-            t->pbuf = togl_createPbuffer(t);
-            if (!keepContext) {
-                t->Ctx = wglCreateContext(t->tglGLHdc);
-            }
-        }
         res = wglMakeCurrent(togl->tglGLHdc, togl->Ctx);
     }
     if (!res) {
@@ -1140,8 +1127,6 @@ Togl_MakeCurrent(const Togl *togl)
 
         if (!togl)
             drawable = None;
-        else if (togl->PbufferFlag)
-            drawable = togl->pbuf;
         else if (togl->TkWin)
             drawable = Tk_WindowId(togl->TkWin);
         else
@@ -1154,28 +1139,16 @@ Togl_MakeCurrent(const Togl *togl)
     } else {
         (void) aglSetCurrentContext(togl->Ctx);
         if (FindToglWithSameContext(togl) != NULL) {
-            if (!togl->PbufferFlag) {
-                AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
+            AGLDrawable d = Togl_MacOSXGetDrawablePort(togl);
 
-                aglSetDrawable(togl->Ctx, d);
-            } else {
-                GLint   virtualScreen = aglGetVirtualScreen(togl->Ctx);
-
-                aglSetPBuffer(togl->Ctx, togl->pbuf, 0, 0, virtualScreen);
-            }
+            aglSetDrawable(togl->Ctx, d);
         }
     }
 #elif defined(TOGL_NSOPENGL)
     if (togl != NULL && togl->Ctx != NULL) {
         [togl->Ctx makeCurrentContext];
         if (FindToglWithSameContext(togl) != NULL) {
-            if (!togl->PbufferFlag) {
-	        [togl->Ctx setView:togl->nsview];
-            } else {
-	        GLint   virtualScreen =	[togl->Ctx currentVirtualScreen];
-                [togl->Ctx setPixelBuffer:togl->pbuf cubeMapFace:0
-		 mipMapLevel:0 currentVirtualScreen:virtualScreen];
-            }
+            [togl->Ctx setView:togl->nsview];
         }
     }
 #endif

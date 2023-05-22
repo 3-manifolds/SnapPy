@@ -249,6 +249,15 @@ class SnapPyLinkEditor(LinkEditor, ListedWindow):
         self.register_window(self)
         self.window.deiconify()
 
+    def deiconify(self):
+        self.window.deiconify()
+
+    def lift(self):
+        self.window.lift()
+
+    def focus_force(self):
+        self.window.focus_force()
+
     def set_title(self):
         # Try to determine the variable associated to the manifold:
         title = 'Plink Editor'

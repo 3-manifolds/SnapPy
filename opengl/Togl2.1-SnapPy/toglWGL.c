@@ -28,15 +28,8 @@
 static PFNWGLGETEXTENSIONSSTRINGARBPROC getExtensionsString = NULL;
 static PFNWGLCHOOSEPIXELFORMATARBPROC choosePixelFormat;
 static PFNWGLGETPIXELFORMATATTRIBIVARBPROC getPixelFormatAttribiv;
-static PFNWGLCREATEPBUFFERARBPROC createPbuffer = NULL;
-static PFNWGLDESTROYPBUFFERARBPROC destroyPbuffer = NULL;
-static PFNWGLGETPBUFFERDCARBPROC getPbufferDC = NULL;
-static PFNWGLRELEASEPBUFFERDCARBPROC releasePbufferDC = NULL;
-static PFNWGLQUERYPBUFFERARBPROC queryPbuffer = NULL;
 static PFNWGLCREATECONTEXTATTRIBSARBPROC createContextAttribs = NULL;
 static int hasMultisampling = FALSE;
-static int hasPbuffer = FALSE;
-static int hasARBPbuffer = FALSE;
 
 static HWND
 toglCreateTestWindow(HWND parent)
@@ -226,55 +219,6 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
                     getPixelFormatAttribiv = NULL;
                 }
             }
-            if (createPbuffer == NULL
-                    && strstr(extensions, "WGL_ARB_pbuffer") != NULL) {
-                createPbuffer = (PFNWGLCREATEPBUFFERARBPROC)
-                        wglGetProcAddress("wglCreatePbufferARB");
-                destroyPbuffer = (PFNWGLDESTROYPBUFFERARBPROC)
-                        wglGetProcAddress("wglDestroyPbufferARB");
-                getPbufferDC = (PFNWGLGETPBUFFERDCARBPROC)
-                        wglGetProcAddress("wglGetPbufferDCARB");
-                releasePbufferDC = (PFNWGLRELEASEPBUFFERDCARBPROC)
-                        wglGetProcAddress("wglReleasePbufferDCARB");
-                queryPbuffer = (PFNWGLQUERYPBUFFERARBPROC)
-                        wglGetProcAddress("wglQueryPbufferARB");
-                if (createPbuffer == NULL || destroyPbuffer == NULL
-                        || getPbufferDC == NULL || releasePbufferDC == NULL
-                        || queryPbuffer == NULL) {
-                    createPbuffer = NULL;
-                    destroyPbuffer = NULL;
-                    getPbufferDC = NULL;
-                    releasePbufferDC = NULL;
-                    queryPbuffer = NULL;
-                } else {
-                    hasPbuffer = TRUE;
-                    hasARBPbuffer = TRUE;
-                }
-            }
-            if (createPbuffer == NULL
-                    && strstr(extensions, "WGL_EXT_pbuffer") != NULL) {
-                createPbuffer = (PFNWGLCREATEPBUFFERARBPROC)
-                        wglGetProcAddress("wglCreatePbufferEXT");
-                destroyPbuffer = (PFNWGLDESTROYPBUFFERARBPROC)
-                        wglGetProcAddress("wglDestroyPbufferEXT");
-                getPbufferDC = (PFNWGLGETPBUFFERDCARBPROC)
-                        wglGetProcAddress("wglGetPbufferDCEXT");
-                releasePbufferDC = (PFNWGLRELEASEPBUFFERDCARBPROC)
-                        wglGetProcAddress("wglReleasePbufferDCEXT");
-                queryPbuffer = (PFNWGLQUERYPBUFFERARBPROC)
-                        wglGetProcAddress("wglQueryPbufferEXT");
-                if (createPbuffer == NULL || destroyPbuffer == NULL
-                        || getPbufferDC == NULL || releasePbufferDC == NULL
-                        || queryPbuffer == NULL) {
-                    createPbuffer = NULL;
-                    destroyPbuffer = NULL;
-                    getPbufferDC = NULL;
-                    releasePbufferDC = NULL;
-                    queryPbuffer = NULL;
-                } else {
-                    hasPbuffer = TRUE;
-                }
-            }
         }
 
         /* No need to confirm multisampling is in glGetString(GL_EXTENSIONS)
@@ -292,12 +236,6 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
                 "multisampling not supported", TCL_STATIC);
-        return 0;
-    }
-
-    if (togl->PbufferFlag && !hasPbuffer) {
-        Tcl_SetResult(togl->Interp,
-                "pbuffers are not supported", TCL_STATIC);
         return 0;
     }
 
@@ -363,10 +301,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
         return 0;
     }
 
-    if (togl->PbufferFlag)
-        attribs[na++] = WGL_DRAW_TO_PBUFFER_ARB;
-    else
-        attribs[na++] = WGL_DRAW_TO_WINDOW_ARB;
+    attribs[na++] = WGL_DRAW_TO_WINDOW_ARB;
     attribs[na++] = GL_TRUE;
     attribs[na++] = WGL_SUPPORT_OPENGL_ARB;
     attribs[na++] = GL_TRUE;
@@ -510,32 +445,6 @@ togl_describePixelFormat(Togl *togl)
     return True;
 }
 
-static HPBUFFERARB
-togl_createPbuffer(Togl *togl)
-{
-    int     attribs[32];
-    int     na = 0;
-    HPBUFFERARB pbuf;
-
-    if (togl->LargestPbufferFlag) {
-        attribs[na++] = WGL_PBUFFER_LARGEST_ARB;
-        attribs[na++] = 1;
-    }
-    attribs[na] = 0;
-    pbuf = createPbuffer(togl->tglGLHdc, (int) togl->PixelFormat, togl->Width,
-            togl->Height, attribs);
-    if (pbuf && togl->LargestPbufferFlag) {
-        queryPbuffer(pbuf, WGL_PBUFFER_WIDTH_ARB, &togl->Width);
-        queryPbuffer(pbuf, WGL_PBUFFER_HEIGHT_ARB, &togl->Height);
-    }
-    return pbuf;
-}
-
-static void
-togl_destroyPbuffer(Togl *togl)
-{
-    destroyPbuffer(togl->pbuf);
-}
 
 #if 0
 // From nvidia.com

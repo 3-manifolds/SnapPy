@@ -380,7 +380,7 @@ struct Togl
     Bool    MultisampleFlag;
     Bool    FullscreenFlag;
 #if defined(TOGL_X11)
-    GLXFBConfig fbcfg;          /* cache FBConfig for pbuffer creation */
+    GLXFBConfig fbcfg;
 #endif
     const char *ShareList;      /* name (ident) of Togl to share dlists with */
     const char *ShareContext;   /* name (ident) to share OpenGL context with */

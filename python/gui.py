@@ -10,7 +10,6 @@ from tkinter.simpledialog import Dialog, SimpleDialog
 from tkinter.messagebox import askyesno
 from plink.ipython_tools import IPythonTkRoot
 from . import filedialog
-from .ppm_to_png import convert_ppm_to_png
 
 if sys.version_info < (3, 7):
     class Spinbox(ttk.Entry):

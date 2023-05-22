@@ -116,12 +116,11 @@ extern "C" {
 #  define TOGL_STEREO_ONE_EYE_MAX	127
 /* These versions need both eyes drawn */
 #  define TOGL_STEREO_NATIVE		128
-#  define TOGL_STEREO_SGIOLDSTYLE	129     /* interlaced, SGI API */
-#  define TOGL_STEREO_ANAGLYPH		130
-#  define TOGL_STEREO_CROSS_EYE		131
-#  define TOGL_STEREO_WALL_EYE		132
-#  define TOGL_STEREO_DTI		133     /* dti3d.com */
-#  define TOGL_STEREO_ROW_INTERLEAVED	134     /* www.vrex.com/developer/interleave.htm */
+#  define TOGL_STEREO_ANAGLYPH		129
+#  define TOGL_STEREO_CROSS_EYE		130
+#  define TOGL_STEREO_WALL_EYE		131
+#  define TOGL_STEREO_DTI		132     /* dti3d.com */
+#  define TOGL_STEREO_ROW_INTERLEAVED	133     /* www.vrex.com/developer/interleave.htm */
 
 /*
  * Enum used for the -profile option.

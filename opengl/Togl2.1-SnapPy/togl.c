@@ -98,9 +98,6 @@
    /* we want to use glXCreateContextAttribsARB */
 #  define GLX_GLXEXT_PROTOTYPES
 #  include <GL/glxext.h>
-#  ifdef __sgi
-#    include <X11/extensions/SGIStereo.h>
-#  endif
 #  ifdef HAVE_AUTOSTEREO
 #    include <autostereo.h>
 #  endif
@@ -1313,17 +1310,6 @@ Togl_LeaveStereo(Togl *togl, int oldStereo)
           }
           break;
 #endif
-#ifdef __sgi
-      case TOGL_STEREO_SGIOLDSTYLE:
-          togl->currentStereoBuffer = STEREO_BUFFER_NONE;
-          glXWaitGL();          /* sync with GL command stream before calling X 
-                                 */
-          XSGISetStereoBuffer(togl->display, Tk_WindowId(togl->TkWin),
-                  togl->currentStereoBuffer);
-          glXWaitX();           /* sync with X command stream before calling GL 
-                                 */
-          break;
-#endif
       case TOGL_STEREO_ROW_INTERLEAVED:
           if (togl->riStencilBit) {
               Tk_Window top;
@@ -1444,32 +1430,6 @@ Togl_ObjConfigure(Tcl_Interp *interp, Togl *togl,
                     || togl->Stereo == TOGL_STEREO_NATIVE) {
                 /* only native stereo affects the visual format */
                 mask |= FORMAT_MASK;
-            }
-            if (togl->Stereo == TOGL_STEREO_SGIOLDSTYLE) {
-#ifndef __sgi
-                Tcl_AppendResult(interp,
-                        "sgioldstyle: only available on SGI computers", NULL);
-                continue;
-#else
-                int     event, error;
-
-                /* Make sure Display supports SGIStereo */
-                if (XSGIStereoQueryExtension(Tk_Display(togl->TkWin), &event,
-                                &error) == False) {
-                    Tcl_AppendResult(interp,
-                            "sgioldstyle: SGIStereo X extension is missing",
-                            NULL);
-                    continue;
-                }
-                /* Make sure Window (Screen) supports SGIStereo */
-                if (XSGIQueryStereoMode(Tk_Display(togl->TkWin),
-                                Tk_WindowId(Tk_Parent(togl->TkWin))) ==
-                        X_STEREO_UNSUPPORTED) {
-                    Tcl_AppendResult(interp,
-                            "sgioldstyle: unsupported by screen", NULL);
-                    continue;
-                }
-#endif
             }
         }
 
@@ -4036,16 +3996,6 @@ Togl_DrawBuffer(Togl *togl, GLenum mode)
     switch (togl->Stereo) {
       default:
           break;
-#ifdef __sgi
-      case TOGL_STEREO_SGIOLDSTYLE:
-          glXWaitGL();          /* sync with GL command stream before calling X 
-                                 */
-          XSGISetStereoBuffer(togl->display, Tk_WindowId(togl->TkWin),
-                  togl->currentStereoBuffer);
-          glXWaitX();           /* sync with X command stream before calling GL 
-                                 */
-          break;
-#endif
       case TOGL_STEREO_ANAGLYPH:
           if (togl->currentStereoBuffer == STEREO_BUFFER_LEFT)
               glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE);
@@ -4244,7 +4194,6 @@ Togl_Frustum(const Togl *togl, GLdouble left, GLdouble right,
     switch (togl->Stereo) {
       default:
           break;
-      case TOGL_STEREO_SGIOLDSTYLE:
       case TOGL_STEREO_DTI:
           /* squished image is expanded, nothing needed */
           break;
@@ -4279,7 +4228,6 @@ Togl_Ortho(const Togl *togl, GLdouble left, GLdouble right,
     switch (togl->Stereo) {
       default:
           break;
-      case TOGL_STEREO_SGIOLDSTYLE:
       case TOGL_STEREO_DTI:
           /* squished image is expanded, nothing needed */
           break;
@@ -4368,9 +4316,6 @@ GetStereo(ClientData clientData, Tk_Window tkwin, char *recordPtr,
       case TOGL_STEREO_NATIVE:
           name = "native";
           break;
-      case TOGL_STEREO_SGIOLDSTYLE:
-          name = "sgioldstyle";
-          break;
       case TOGL_STEREO_ANAGLYPH:
           name = "anaglyph";
           break;
@@ -4449,8 +4394,6 @@ SetStereo(ClientData clientData, Tcl_Interp *interp, Tk_Window tkwin,
                 stereo = TOGL_STEREO_LEFT_EYE;
             } else if (strcasecmp(string, "right eye") == 0) {
                 stereo = TOGL_STEREO_RIGHT_EYE;
-            } else if (strcasecmp(string, "sgioldstyle") == 0) {
-                stereo = TOGL_STEREO_SGIOLDSTYLE;
             } else if (strcasecmp(string, "anaglyph") == 0) {
                 stereo = TOGL_STEREO_ANAGLYPH;
             } else if (strcasecmp(string, "cross-eye") == 0) {

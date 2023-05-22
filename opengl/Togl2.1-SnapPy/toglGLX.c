@@ -154,14 +154,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
       getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
         Togl_GetProcAddr("glXGetVisualFromFBConfig");
     }
-    if (major == 1 && minor == 2) {
-      chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
-        Togl_GetProcAddr("glXChooseFBConfigSGIX");
-      getFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC)
-        Togl_GetProcAddr("glXGetFBConfigAttribSGIX");
-      getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
-        Togl_GetProcAddr("glXGetVisualFromFBConfigSGIX");
-    }
     if (chooseFBConfig) {
       /* verify that chooseFBConfig works (workaround Mesa 6.5 bug) */
       int     n = 0;
@@ -185,8 +177,7 @@ togl_pixelFormat(Togl *togl, int scrnum)
     }
 
     if ((major > 1 || (major == 1 && minor >= 4))
-        || strstr(extensions, "GLX_ARB_multisample") != NULL
-        || strstr(extensions, "GLX_SGIS_multisample") != NULL) {
+        || strstr(extensions, "GLX_ARB_multisample") != NULL) {
       /* Client GLX supports multisampling, but does the server? Well, we 
        * can always ask. */
       hasMultisampling = True;

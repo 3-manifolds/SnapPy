@@ -680,7 +680,7 @@ class TkTerm:
                                  foreground='DarkGreen',
                                  anchor=Tk_.W,
                                  justify=Tk_.LEFT,
-                                 font=self.prefs['font'])
+                                 font=self.settings['font'])
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')

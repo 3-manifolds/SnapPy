@@ -527,5 +527,5 @@ class HyperboloidNavigation:
             for k in self.keymapping
         }
 
-    def apply_prefs(self, prefs):
-        self.setup_keymapping(prefs.get('keyboard', 'QWERTY'))
+    def apply_settings(self, settings):
+        self.setup_keymapping(settings.get('keyboard', 'QWERTY'))

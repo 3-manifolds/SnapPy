@@ -115,16 +115,16 @@ class InsideViewer(ttk.Frame):
     def focus_viewer(self, event=None):
         self.widget.focus_set()
 
-    def apply_prefs(self, prefs):
+    def apply_settings(self, settings):
         # Update labels
-        keyboard = prefs.get('keyboard', 'QWERTY')
+        keyboard = settings.get('keyboard', 'QWERTY')
         self.translate_key_label.configure(
             text=_translate_key_labels[keyboard])
         self.rotate_key_label.configure(
             text=_rotate_key_labels[keyboard])
 
         # Update keymapping performed by hyperbolic navigation
-        self.widget.apply_prefs(prefs)
+        self.widget.apply_settings(settings)
 
     def create_cohomology_class_frame(self, parent):
         frame = ttk.Frame(parent)

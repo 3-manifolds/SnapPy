@@ -187,16 +187,16 @@ class ListedWindow():
     call unregister_window when they close.  The class maintains a list of all
     openwindows.Participating windows should be subclasses of ListedWindow, as
     should objects which need access to its list of all windows in the app, such
-    as the Preferences object.
+    as the Settings object.
     """
     window_list = []
-    prefs = {}
+    settings = {}
 
     @classmethod
     def register_window(cls, window):
         assert isinstance(window, ListedWindow)
         cls.window_list.append(window)
-        window.apply_prefs()
+        window.apply_settings()
 
     @classmethod
     def unregister_window(cls, window):
@@ -210,8 +210,8 @@ class ListedWindow():
         self.lift()
         self.focus_force()
 
-    def apply_prefs(self):
-        # Subclasses should override this if they use preferences.
+    def apply_settings(self):
+        # Subclasses should override this if they use settings.
         pass
 
 

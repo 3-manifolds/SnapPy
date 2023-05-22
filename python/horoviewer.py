@@ -10,15 +10,15 @@ import sys
 class HoroballViewer(ttk.Frame):
     def __init__(self, master, nbhd=None, which_cusp=0, cutoff=None,
                  title='Horoball Viewer',
-                 prefs={'cusp_horoballs' : True,
-                        'cusp_triangulation' : True,
-                        'cusp_ford_domain' : True,
-                        'cusp_labels' : True,
-                        'cusp_parallelogram' : True,
-                        'cusp_cutoff' : '0.1000'},
+                 settings={'cusp_horoballs' : True,
+                           'cusp_triangulation' : True,
+                           'cusp_ford_domain' : True,
+                           'cusp_labels' : True,
+                           'cusp_parallelogram' : True,
+                           'cusp_cutoff' : '0.1000'},
                  bgcolor=None,
                  main_window=None):
-        self.prefs = prefs
+        self.settings = settings
         ttk.Frame.__init__(self, master)
         self.nbhd = nbhd
         self.empty = (self.nbhd is None)
@@ -27,7 +27,7 @@ class HoroballViewer(ttk.Frame):
         self.menubar = None
         self.main_window = main_window
         if cutoff is None:
-            self.cutoff = float(prefs['cusp_cutoff'])
+            self.cutoff = float(settings['cusp_cutoff'])
         else:
             self.cutoff = float(cutoff)
         self.which_cusp = which_cusp
@@ -39,15 +39,15 @@ class HoroballViewer(ttk.Frame):
         self.style = style = SnapPyStyle()
         self.bgcolor = bgcolor if bgcolor else style.groupBG
         self.pgram_var = pgram_var = Tk_.IntVar(self,
-            value=prefs['cusp_parallelogram'])
+            value=settings['cusp_parallelogram'])
         self.Ford_var = Ford_var = Tk_.IntVar(self,
-            value=prefs['cusp_ford_domain'])
+            value=settings['cusp_ford_domain'])
         self.tri_var = tri_var = Tk_.IntVar(self,
-            value=prefs['cusp_triangulation'])
+            value=settings['cusp_triangulation'])
         self.horo_var = horo_var = Tk_.IntVar(self,
-            value=prefs['cusp_horoballs'])
+            value=settings['cusp_horoballs'])
         self.label_var = label_var = Tk_.IntVar(self,
-            value=prefs['cusp_labels'])
+            value=settings['cusp_labels'])
         self.flip_var = flip_var = Tk_.BooleanVar(self)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
@@ -154,17 +154,17 @@ Use the View Options to select which components of the scene are drawn.
         else:
             self.configure_sliders()
 
-    def apply_prefs(self, prefs):
-        for key in self.prefs:
-            value = prefs.get(key, 'missing')
+    def apply_settings(self, settings):
+        for key in self.settings:
+            value = settings.get(key, 'missing')
             if value != 'missing':
-                self.prefs[key] = value
-        self.pgram_var.set(prefs['cusp_parallelogram'])
-        self.Ford_var.set(prefs['cusp_ford_domain'])
-        self.tri_var.set(prefs['cusp_triangulation'])
-        self.horo_var.set(prefs['cusp_horoballs'])
-        self.label_var.set(prefs['cusp_labels'])
-        self.cutoff = float(prefs['cusp_cutoff'])
+                self.settings[key] = value
+        self.pgram_var.set(settings['cusp_parallelogram'])
+        self.Ford_var.set(settings['cusp_ford_domain'])
+        self.tri_var.set(settings['cusp_triangulation'])
+        self.horo_var.set(settings['cusp_horoballs'])
+        self.label_var.set(settings['cusp_labels'])
+        self.cutoff = float(settings['cusp_cutoff'])
         self.cutoff_var.set('%.4f' % self.cutoff)
         self.rebuild()
 

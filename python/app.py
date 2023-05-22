@@ -18,7 +18,7 @@ from .horoviewer import HoroballViewer
 from .infowindow import about_snappy
 from .polyviewer import PolyhedronViewer
 from .raytracing.inside_viewer import InsideViewer
-from .preferences import Preferences, PreferenceDialog
+from .settings import Settings, SettingsDialog
 from .phone_home import update_needed
 from .SnapPy import SnapPea_interrupt, msg_stream
 from .shell import SnapPyInteractiveShellEmbed
@@ -48,7 +48,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
         self.menu_title = 'SnapPy Shell'
         self.register_window(self)
         TkTerm.__init__(self, shell, name='SnapPy Command Shell')
-        self.prefs = SnapPyPreferences(self)
+        self.settings = SnapPySettings(self)
         self.start_interaction()
         if sys.platform == 'darwin':
             assert str(self.window) == "."
@@ -71,14 +71,14 @@ class SnapPyTerm(TkTerm, ListedWindow):
         Python_menu.add_command(label='About SnapPy...',
                                 command=lambda : about_snappy(window))
         if sys.platform == 'darwin':
-            window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
+            window.createcommand('::tk::mac::ShowSettings', self.edit_settings)
             # By default, the Quit menu command terminates the Python process.
             # That is not so friendly if cleanup is needed.
             window.createcommand('::tk::mac::Quit', self.close)
         else:
             Python_menu.add_separator()
-            Python_menu.add_command(label='Preferences...',
-                                    command=self.edit_prefs)
+            Python_menu.add_command(label='Settings...',
+                                    command=self.edit_settings)
             Python_menu.add_separator()
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -97,14 +97,14 @@ class SnapPyTerm(TkTerm, ListedWindow):
             window.createcommand('::tk::mac::ShowHelp', help_menu.show_SnapPy_help)
         menubar.add_cascade(label='Help', menu=help_menu)
 
-    def edit_prefs(self):
+    def edit_settings(self):
         terminal.can_quit = False
         if sys.platform == 'darwin':
-            self.window.deletecommand('::tk::mac::ShowPreferences')
+            self.window.deletecommand('::tk::mac::ShowSettings')
         else:
             apple_menu = self.menubar.children['apple']
             apple_menu.entryconfig(2, state='disabled')
-        dialog = PreferenceDialog(self.window, self.prefs)
+        dialog = SettingsDialog(self.window, self.settings)
         terminal.add_blocker(dialog,
             'Changes to your settings will be lost if you quit SnapPy now.')
         dialog.run()
@@ -113,9 +113,9 @@ class SnapPyTerm(TkTerm, ListedWindow):
             answer = askyesno('Save?',
                               'Do you want to save these settings?')
             if answer:
-                self.prefs.write_prefs()
+                self.settings.write_settings()
         if sys.platform == 'darwin':
-            self.window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
+            self.window.createcommand('::tk::mac::ShowSettings', self.edit_settings)
         else:
             apple_menu.entryconfig(2, state='active')
         self.can_quit = True
@@ -222,7 +222,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
 class SnapPyBrowser(Browser, ListedWindow):
     def __init__(self, manifold, root=None, main_window=None):
         Browser.__init__(self, manifold, root=root, main_window=terminal)
-        self.prefs = terminal.prefs
+        self.settings = terminal.settings
         self.menu_title = self.title()
         self.register_window(self)
 
@@ -230,9 +230,9 @@ class SnapPyBrowser(Browser, ListedWindow):
         self.unregister_window(self)
         self.destroy()
 
-    def apply_prefs(self):
+    def apply_settings(self):
         if self.inside_view:
-            self.inside_view.apply_prefs(self.main_window.prefs)
+            self.inside_view.apply_settings(self.main_window.settings)
 
 
 class SnapPyLinkEditor(LinkEditor, ListedWindow):
@@ -307,10 +307,10 @@ class SnapPyViewerWindow(ViewerWindow, ListedWindow):
         self.menu_title = self.title()
         self.register_window(self)
 
-    def apply_prefs(self):
-        # The view's apply_prefs method has a different signature.  It
-        # expects to be passed a preferences object.
-        self.view.apply_prefs(self.main_window.prefs)
+    def apply_settings(self):
+        # The view's apply_settings method has a different signature.  It
+        # expects to be passed a Settings object.
+        self.view.apply_settings(self.main_window.settings)
 
     def close(self, event=None):
         self.unregister_window(self)
@@ -333,30 +333,30 @@ class SnapPyHoroballViewer(HoroballViewer):
     build_menus = horoball_menus
 
 
-class SnapPyPreferences(Preferences, ListedWindow):
+class SnapPySettings(Settings, ListedWindow):
     def __init__(self, terminal):
         self.terminal = terminal
-        Preferences.__init__(self, terminal.text)
-        self.apply_prefs()
+        Settings.__init__(self, terminal.text)
+        self.apply_settings()
 
-    def apply_prefs(self):
+    def apply_settings(self):
         self.terminal.set_font(self['font'])
         changed = self.changed()
         IP = self.terminal.IP
         self.terminal.quiet = True
         if 'autocall' in changed:
-            if self.prefs_dict['autocall']:
+            if self.settings_dict['autocall']:
                 IP.magics_manager.magics['line']['autocall'](2)
             else:
                 IP.magics_manager.magics['line']['autocall'](0)
         if 'automagic' in changed:
-            if self.prefs_dict['automagic']:
+            if self.settings_dict['automagic']:
                 IP.magics_manager.magics['line']['automagic']('on')
             else:
                 IP.magics_manager.magics['line']['automagic']('off')
         self.terminal.quiet = False
         for window in self.window_list:
-            window.apply_prefs()
+            window.apply_settings()
 
 
 app_banner = """

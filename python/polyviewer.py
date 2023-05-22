@@ -92,8 +92,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         # Added to avoid occasional missing faces in the browser.
         self.update_idletasks()
 
-    def apply_prefs(self, prefs):
-        # We don't have any preferences to apply
+    def apply_settings(self, settings):
+        # We don't have any settings to apply
         return
 
     # Subclasses may override this, e.g. if there is a help menu already.

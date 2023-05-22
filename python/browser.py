@@ -130,10 +130,10 @@ class CuspNeighborhoodTab(HoroballViewer):
         style = SnapPyStyle()
         if main_window:
             HoroballViewer.__init__(self, nbhd, title=title,
-                                    bgcolor=style.groupBG, prefs=main_window.prefs)
+                bgcolor=style.groupBG, settings=main_window.settings)
         else:
             HoroballViewer.__init__(self, nbhd, title=title,
-                                    bgcolor=style.groupBG)
+                bgcolor=style.groupBG)
 
     def update_menus(self, menubar):
         menubar.children['help'].activate(

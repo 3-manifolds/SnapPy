@@ -5,12 +5,12 @@ try:
 except ImportError:
     from . import plistlib
 from .gui import *
+from .app_menus import ListedWindow
 
-
-class Preferences:
+class Settings:
     def __init__(self, text_widget):
         self.text_widget = text_widget
-        self.prefs_dict = {
+        self.setting_dict = {
             'autocall' : False,
             'automagic' : False,
             'font' : self.current_font_tuple(),
@@ -22,24 +22,24 @@ class Preferences:
             'cusp_cutoff' : '0.1000',
             'keyboard' : 'QWERTY'}
         self.cache = {}
-        self.cache_prefs()
-        self.find_prefs()
-        self.read_prefs()
+        self.cache_settings()
+        self.find_settings()
+        self.read_settings()
 
     def __getitem__(self, x):
-        return self.prefs_dict[x]
+        return self.setting_dict[x]
 
     def __setitem__(self, x, y):
-        self.prefs_dict[x] = y
+        self.setting_dict[x] = y
 
     def __repr__(self):
-        return str(self.prefs_dict)
+        return str(self.setting_dict)
 
     def items(self):
-        return self.prefs_dict.items()
+        return self.setting_dict.items()
 
     def get(self, key, default):
-        return self.prefs_dict.get(key, default)
+        return self.setting_dict.get(key, default)
 
     def current_font_dict(self):
         font_string = self.text_widget.cget('font')
@@ -50,69 +50,67 @@ class Preferences:
         style = '%s %s' % (font['weight'], font['slant'])
         return (font['family'], font['size'], style)
 
-    def find_prefs(self):
+    def find_settings(self):
         if sys.platform == 'darwin':
             home = os.environ['HOME']
-            self.prefs_file = os.path.join(home, 'Library',
-                                           'Preferences',
+            self.setting_file = os.path.join(home, 'Library',
+                                           'Settings',
                                            'org.computop.SnapPy.plist')
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             home = os.environ['HOME']
-            self.prefs_file = os.path.join(home, '.SnapPy.plist')
+            self.setting_file = os.path.join(home, '.SnapPy.plist')
         elif sys.platform == 'win32':
             home = os.environ['USERPROFILE']
-            self.prefs_file = os.path.join(home, '.SnapPy.plist')
+            self.setting_file = os.path.join(home, '.SnapPy.plist')
         else:
-            self.prefs_file = None
+            self.setting_file = None
 
-    def read_prefs(self):
-        if self.prefs_file:
+    def read_settings(self):
+        if self.setting_file:
             try:
                 if hasattr(plistlib, 'load'):
-                    with open(self.prefs_file, 'rb') as prefs_file:
-                        self.prefs_dict.update(plistlib.load(prefs_file))
+                    with open(self.setting_file, 'rb') as setting_file:
+                        self.setting_dict.update(plistlib.load(setting_file))
                 else:
-                    self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
+                    self.setting_dict.update(plistlib.readPlist(self.setting_file))
                 # plistlib screws up tuples
-                self.prefs_dict['font'] = tuple(self.prefs_dict['font'])
+                self.setting_dict['font'] = tuple(self.setting_dict['font'])
             except IOError:
                 pass
 
-    def write_prefs(self):
-        if self.prefs_file:
+    def write_settings(self):
+        if self.setting_file:
             if hasattr(plistlib, 'dump'):
-                with open(self.prefs_file, 'wb') as prefs_file:
-                    plistlib.dump(self.prefs_dict, prefs_file)
+                with open(self.setting_file, 'wb') as setting_file:
+                    plistlib.dump(self.setting_dict, setting_file)
             else:
-                plistlib.writePlist(self.prefs_dict, self.prefs_file)
+                plistlib.writePlist(self.setting_dict, self.setting_file)
 
-    def cache_prefs(self):
-        self.cache.update(self.prefs_dict)
+    def cache_settings(self):
+        self.cache.update(self.setting_dict)
 
-    def revert_prefs(self):
-        self.prefs_dict.update(self.cache)
-        self.apply_prefs()
+    def revert_settings(self):
+        self.setting_dict.update(self.cache)
+        self.apply_settings()
 
     def changed(self):
         return [key for key in self.cache.keys() if
-                self.cache[key] != self.prefs_dict[key]]
+                self.cache[key] != self.setting_dict[key]]
 
     # Override this in a subclass.
-    def apply_prefs(self):
-        self.text_widget.config(font=self.prefs_dict['font'])
-        print(self.prefs_dict)
+    def apply_settings(self):
+        self.text_widget.config(font=self.setting_dict['font'])
+        print(self.setting_dict)
 
 
-class PreferenceDialog(Dialog):
-    def __init__(self, parent, prefs, title='SnapPy Preferences'):
+class SettingsDialog(Dialog):
+    def __init__(self, parent, settings, title='SnapPy Settings'):
         self.parent = parent
         self.style = SnapPyStyle()
-        self.prefs = prefs
-        self.prefs.cache_prefs()
+        self.settings = settings
+        self.settings.cache_settings()
         self.okay = False
         Tk_.Toplevel.__init__(self, master=parent, class_='snappy')
-        self.grab_set()
-        self.attributes("-topmost", True)
         frame = ttk.Frame(self, padding=(0, 10, 0, 0))
         self.title(title)
         self.notebook = notebook = ttk.Notebook(frame)
@@ -130,6 +128,7 @@ class PreferenceDialog(Dialog):
         frame.pack()
         self.button_frame.pack(fill=Tk_.X)
         self.protocol('WM_DELETE_WINDOW', self.cancel)
+        self.attributes('-topmost', True)
 
     def run(self):
         self.wait_window(self)
@@ -138,17 +137,17 @@ class PreferenceDialog(Dialog):
         cutoff = self.cutoff.get()
         try:
             float(cutoff)
-            self.prefs['cusp_cutoff'] = cutoff
+            self.settings['cusp_cutoff'] = cutoff
         except ValueError:
             showerror('Invalid input',
                       'Please enter a number for the cutoff.')
             return False
-        self.prefs.apply_prefs()
+        self.settings.apply_settings()
         self.okay = True
         return True
 
     def revert(self):
-        self.prefs.revert_prefs()
+        self.settings.revert_settings()
         self.cancel()
 
     def buttonbox(self):
@@ -159,7 +158,7 @@ class PreferenceDialog(Dialog):
                         default=Tk_.ACTIVE)
         OK.grid(row=0, column=0, sticky=Tk_.NE, padx=5)
         Apply = ttk.Button(box, text="Apply", width=10,
-                           command=self.prefs.apply_prefs)
+                           command=self.settings.apply_settings)
         Apply.grid(row=0, column=1, sticky=Tk_.N, padx=5)
         Cancel = ttk.Button(box, text="Cancel", width=10, command=self.revert)
         Cancel.grid(row=0, column=2, sticky=Tk_.NW, padx=5)
@@ -172,7 +171,7 @@ class PreferenceDialog(Dialog):
         self.body_frame.focus_set()
 
     def build_font_pane(self, master):
-        current_font = self.prefs.current_font_dict()
+        current_font = self.settings.current_font_dict()
         groupBG = self.style.groupBG
         self.font_frame = font_frame = ttk.Frame(master)
         font_frame.columnconfigure(2, weight=1)
@@ -228,7 +227,7 @@ class PreferenceDialog(Dialog):
                                         width=40, height=6,
                                         highlightthickness=0,
                                         relief=Tk_.FLAT,
-                                        font=self.prefs['font'])
+                                        font=self.settings['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
         self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'
                            'abcdefghijklmnopqrstuvwxyz')
@@ -257,14 +256,14 @@ class PreferenceDialog(Dialog):
 
     def set_font_sample(self, event=None):
         new_font = self.get_font()
-        self.prefs['font'] = new_font
+        self.settings['font'] = new_font
         self.sample.tag_config('all', justify=Tk_.CENTER,
                                font=new_font)
 
     def build_shell_pane(self, master):
         groupBG = self.style.groupBG
-        self.autocall = Tk_.BooleanVar(value=self.prefs['autocall'])
-        self.automagic = Tk_.BooleanVar(value=self.prefs['automagic'])
+        self.autocall = Tk_.BooleanVar(value=self.settings['autocall'])
+        self.automagic = Tk_.BooleanVar(value=self.settings['automagic'])
         self.update_idletasks()
         self.shell_frame = shell_frame = ttk.Frame(master)
         shell_frame.rowconfigure(3, weight=1)
@@ -286,20 +285,20 @@ class PreferenceDialog(Dialog):
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
 
     def set_autocall(self):
-        self.prefs['autocall'] = self.autocall.get()
+        self.settings['autocall'] = self.autocall.get()
 
     def set_automagic(self):
-        self.prefs['automagic'] = self.automagic.get()
+        self.settings['automagic'] = self.automagic.get()
 
     def build_cusp_pane(self, master):
         groupBG = self.style.groupBG
         self.cusp_frame = cusp_frame = ttk.Frame(master)
-        self.horoballs = Tk_.BooleanVar(value=self.prefs['cusp_horoballs'])
-        self.triangulation = Tk_.BooleanVar(value=self.prefs['cusp_triangulation'])
-        self.ford = Tk_.BooleanVar(value=self.prefs['cusp_ford_domain'])
-        self.labels = Tk_.BooleanVar(value=self.prefs['cusp_labels'])
-        self.parallelogram = Tk_.BooleanVar(value=self.prefs['cusp_parallelogram'])
-        self.cutoff = Tk_.StringVar(value=self.prefs['cusp_cutoff'])
+        self.horoballs = Tk_.BooleanVar(value=self.settings['cusp_horoballs'])
+        self.triangulation = Tk_.BooleanVar(value=self.settings['cusp_triangulation'])
+        self.ford = Tk_.BooleanVar(value=self.settings['cusp_ford_domain'])
+        self.labels = Tk_.BooleanVar(value=self.settings['cusp_labels'])
+        self.parallelogram = Tk_.BooleanVar(value=self.settings['cusp_parallelogram'])
+        self.cutoff = Tk_.StringVar(value=self.settings['cusp_cutoff'])
         self.update_idletasks()
         cusp_frame.rowconfigure(8, weight=1)
         cusp_frame.columnconfigure(0, weight=1)
@@ -338,23 +337,23 @@ class PreferenceDialog(Dialog):
                           pady=(0,10), padx=(30,0))
 
     def set_horoballs(self):
-        self.prefs['cusp_horoballs'] = self.horoballs.get()
+        self.settings['cusp_horoballs'] = self.horoballs.get()
 
     def set_triangulation(self):
-        self.prefs['cusp_triangulation'] = self.triangulation.get()
+        self.settings['cusp_triangulation'] = self.triangulation.get()
 
     def set_ford(self):
-        self.prefs['cusp_ford_domain'] = self.ford.get()
+        self.settings['cusp_ford_domain'] = self.ford.get()
 
     def set_labels(self):
-        self.prefs['cusp_labels'] = self.labels.get()
+        self.settings['cusp_labels'] = self.labels.get()
 
     def set_parallelogram(self):
-        self.prefs['cusp_parallelogram'] = self.parallelogram.get()
+        self.settings['cusp_parallelogram'] = self.parallelogram.get()
 
     def build_inside_pane(self, master):
         groupBG = self.style.groupBG
-        self.keyboard = Tk_.Variable(value=self.prefs['keyboard'])
+        self.keyboard = Tk_.Variable(value=self.settings['keyboard'])
         self.inside_frame = frame = ttk.Frame(master)
         frame.rowconfigure(3, weight=1)
         frame.columnconfigure(0, weight=1)
@@ -370,7 +369,7 @@ class PreferenceDialog(Dialog):
         keyboard_button.grid(row=1, column=1, columnspan=2, sticky=Tk_.W, pady=(10, 0))
 
     def set_keyboard(self, value):
-        self.prefs['keyboard'] = value
+        self.settings['keyboard'] = value
 
 
 if __name__ == '__main__':
@@ -389,7 +388,7 @@ deserunt mollit anim id est laborum.""")
     text_widget.tag_add('all', '1.0', Tk_.END)
     text_widget.tag_config('all', lmargin1=20, lmargin2=20)
     text_widget.pack()
-    prefs = Preferences(text_widget)
-    prefs.apply_prefs()
-    PreferenceDialog(parent, prefs)
+    settings = Settings(text_widget)
+    settings.apply_settings()
+    SettingsDialog(parent, settings)
     parent.mainloop()

@@ -19,12 +19,7 @@
 static PFNGLXCHOOSEFBCONFIGPROC chooseFBConfig = NULL;
 static PFNGLXGETFBCONFIGATTRIBPROC getFBConfigAttrib = NULL;
 static PFNGLXGETVISUALFROMFBCONFIGPROC getVisualFromFBConfig = NULL;
-static PFNGLXCREATEPBUFFERPROC createPbuffer = NULL;
-static PFNGLXCREATEGLXPBUFFERSGIXPROC createPbufferSGIX = NULL;
-static PFNGLXDESTROYPBUFFERPROC destroyPbuffer = NULL;
-static PFNGLXQUERYDRAWABLEPROC queryPbuffer = NULL;
 static Bool hasMultisampling = False;
-static Bool hasPbuffer = False;
 
 struct FBInfo
 {
@@ -147,15 +142,8 @@ togl_pixelFormat(Togl *togl, int scrnum)
         chooseFBConfig = glXChooseFBConfig;
         getFBConfigAttrib = glXGetFBConfigAttrib;
         getVisualFromFBConfig = glXGetVisualFromFBConfig;
-        createPbuffer = glXCreatePbuffer;
-        destroyPbuffer = glXDestroyPbuffer;
-        queryPbuffer = glXQueryDrawable;
-        hasPbuffer = True;
       } else {
         chooseFBConfig = NULL;
-        createPbuffer = NULL;
-        destroyPbuffer = NULL;
-        queryPbuffer = NULL;
       }
     }
     if (major == 1 && minor == 3) {
@@ -165,19 +153,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
         Togl_GetProcAddr("glXGetFBConfigAttrib");
       getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
         Togl_GetProcAddr("glXGetVisualFromFBConfig");
-      createPbuffer = (PFNGLXCREATEPBUFFERPROC)
-        Togl_GetProcAddr("glXCreatePbuffer");
-      destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
-        Togl_GetProcAddr("glXDestroyPbuffer");
-      queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
-        Togl_GetProcAddr("glXQueryDrawable");
-      if (createPbuffer && destroyPbuffer && queryPbuffer) {
-        hasPbuffer = True;
-      } else {
-        createPbuffer = NULL;
-        destroyPbuffer = NULL;
-        queryPbuffer = NULL;
-      }
     }
     if (major == 1 && minor == 2) {
       chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
@@ -186,21 +161,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
         Togl_GetProcAddr("glXGetFBConfigAttribSGIX");
       getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
         Togl_GetProcAddr("glXGetVisualFromFBConfigSGIX");
-      if (strstr(extensions, "GLX_SGIX_pbuffer") != NULL) {
-        createPbufferSGIX = (PFNGLXCREATEGLXPBUFFERSGIXPROC)
-          Togl_GetProcAddr("glXCreateGLXPbufferSGIX");
-        destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
-          Togl_GetProcAddr("glXDestroyGLXPbufferSGIX");
-        queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
-          Togl_GetProcAddr("glXQueryGLXPbufferSGIX");
-        if (createPbufferSGIX && destroyPbuffer && queryPbuffer) {
-          hasPbuffer = True;
-        } else {
-          createPbufferSGIX = NULL;
-          destroyPbuffer = NULL;
-          queryPbuffer = NULL;
-        }
-      }
     }
     if (chooseFBConfig) {
       /* verify that chooseFBConfig works (workaround Mesa 6.5 bug) */
@@ -223,9 +183,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
       getFBConfigAttrib = NULL;
       getVisualFromFBConfig = NULL;
     }
-    if (hasPbuffer && !chooseFBConfig) {
-      hasPbuffer = False;
-    }
 
     if ((major > 1 || (major == 1 && minor >= 4))
         || strstr(extensions, "GLX_ARB_multisample") != NULL
@@ -238,12 +195,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
                       "multisampling not supported", TCL_STATIC);
-        return NULL;
-    }
-
-    if (togl->PbufferFlag && !hasPbuffer) {
-        Tcl_SetResult(togl->Interp,
-                      "pbuffers are not supported", TCL_STATIC);
         return NULL;
     }
 
@@ -311,10 +262,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
             attribs[na++] = 1;
             attribs[na++] = GLX_SAMPLES_ARB;
             attribs[na++] = 2;
-        }
-        if (togl->PbufferFlag) {
-            attribs[na++] = GLX_DRAWABLE_TYPE;
-            attribs[na++] = GLX_WINDOW_BIT | GLX_PBUFFER_BIT;
         }
         if (togl->AuxNumber != 0) {
             attribs[na++] = GLX_AUX_BUFFERS;
@@ -483,54 +430,4 @@ togl_CheckForXError(const Togl *togl)
     XSync(togl->display, False);
     (void) XSetErrorHandler(data->prevHandler);
     return data->error_code;
-}
-
-static GLXPbuffer
-togl_createPbuffer(Togl *togl)
-{
-    int     attribs[32];
-    int     na = 0;
-    GLXPbuffer pbuf;
-
-    togl_SetupXErrorHandler();
-    if (togl->LargestPbufferFlag) {
-        attribs[na++] = GLX_LARGEST_PBUFFER;
-        attribs[na++] = True;
-    }
-    attribs[na++] = GLX_PRESERVED_CONTENTS;
-    attribs[na++] = True;
-    if (createPbuffer) {
-        attribs[na++] = GLX_PBUFFER_WIDTH;
-        attribs[na++] = togl->Width;
-        attribs[na++] = GLX_PBUFFER_HEIGHT;
-        attribs[na++] = togl->Width;
-        attribs[na++] = None;
-        pbuf = createPbuffer(togl->display, togl->fbcfg, attribs);
-    } else {
-        attribs[na++] = None;
-        pbuf = createPbufferSGIX(togl->display, togl->fbcfg, togl->Width,
-                togl->Height, attribs);
-    }
-    if (togl_CheckForXError(togl) || pbuf == None) {
-        Tcl_SetResult(togl->Interp,
-                      "unable to allocate pbuffer", TCL_STATIC);
-        return None;
-    }
-    if (pbuf && togl->LargestPbufferFlag) {
-        unsigned int     tmp;
-
-        queryPbuffer(togl->display, pbuf, GLX_WIDTH, &tmp);
-        if (tmp != 0)
-            togl->Width = tmp;
-        queryPbuffer(togl->display, pbuf, GLX_HEIGHT, &tmp);
-        if (tmp != 0)
-            togl->Height = tmp;
-    }
-    return pbuf;
-}
-
-static void
-togl_destroyPbuffer(Togl *togl)
-{
-    destroyPbuffer(togl->display, togl->pbuf);
 }

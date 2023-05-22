@@ -9,10 +9,11 @@ from IPython.core.autocall import IPyAutocall
 
 import snappy
 from .gui import *
+from tkinter.messagebox import askyesno
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors = {'0;30m': 'Black',
@@ -175,7 +176,11 @@ class TkTerm:
         self.showing_traceback = False
         self.closed = False
         self._saved_index = Tk_.END
-
+        # This flag is set to prevent quitting the app.
+        self.blockers = {}
+        self.can_quit = True
+        self.close_callback = lambda :None
+        
     # Emulate a ListedWindow.  We are listed, even though we are unique.
     def bring_to_front(self):
         self.window.deiconify()
@@ -259,9 +264,31 @@ class TkTerm:
         text.tag_config('OutPrompt', foreground='#cc0000', font=normal_font)
         text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_font)
 
+    def add_blocker(self, window, message):
+        self.blockers[window] = message
+
+    def remove_blocker(self, window):
+        self.blockers.pop(window)
+
     def close(self, event=None):
-        self.window.quit()
-        self.closed = True
+        can_quit = True
+        topmost = None
+        for blocker in self.blockers:
+            if blocker.attributes('-topmost'):
+                topmost = blocker
+                blocker.attributes('-topmost', False)
+            message = self.blockers[blocker]
+            answer  = askyesno('Quit', message + '\nDo you care?')
+            if answer:
+                can_quit = False
+                break;
+        if topmost:
+            topmost.attributes('-topmost', True)
+        if can_quit:
+            for blocker in self.blockers:
+                blocker.destroy()
+            self.window.quit()
+            self.closed = True
 
     def handle_control_c(self, event):
         self.interrupt()

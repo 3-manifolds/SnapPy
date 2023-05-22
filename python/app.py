@@ -5,6 +5,7 @@ import re
 import time
 from collections.abc import Mapping  # Python 3.5 or newer
 from IPython.core.displayhook import DisplayHook
+from tkinter.messagebox import askyesno
 
 from .gui import *
 from . import filedialog
@@ -97,12 +98,17 @@ class SnapPyTerm(TkTerm, ListedWindow):
         menubar.add_cascade(label='Help', menu=help_menu)
 
     def edit_prefs(self):
+        terminal.can_quit = False
         if sys.platform == 'darwin':
             self.window.deletecommand('::tk::mac::ShowPreferences')
         else:
             apple_menu = self.menubar.children['apple']
             apple_menu.entryconfig(2, state='disabled')
         dialog = PreferenceDialog(self.window, self.prefs)
+        terminal.add_blocker(dialog,
+            'Changes to your settings will be lost if you quit SnapPy now.')
+        dialog.run()
+        terminal.remove_blocker(dialog)
         if dialog.okay:
             answer = askyesno('Save?',
                               'Do you want to save these settings?')
@@ -112,6 +118,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
             self.window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
         else:
             apple_menu.entryconfig(2, state='active')
+        self.can_quit = True
 
     def OSX_open_filelist(self, *args):
         for arg in args:

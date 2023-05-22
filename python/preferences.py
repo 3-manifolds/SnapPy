@@ -130,8 +130,10 @@ class PreferenceDialog(Dialog):
         frame.pack()
         self.button_frame.pack(fill=Tk_.X)
         self.protocol('WM_DELETE_WINDOW', self.cancel)
-        self.wait_window(self)
 
+    def run(self):
+        self.wait_window(self)
+        
     def validate(self):
         cutoff = self.cutoff.get()
         try:

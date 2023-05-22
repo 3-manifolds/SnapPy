@@ -2705,8 +2705,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         TkWindow *winPtr = (TkWindow *) tkwin;
 
         window = TkpMakeWindow(winPtr, parent);
-        if (!togl->PbufferFlag)
-            (void) XMapWindow(dpy, window);
+        (void) XMapWindow(dpy, window);
     }
 #elif defined(TOGL_WGL)
     hInstance = Tk_GetHINSTANCE();
@@ -2739,12 +2738,8 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         parentWin = NULL;
         style = WS_POPUP | WS_CLIPCHILDREN;
     }
-    if (togl->PbufferFlag) {
-        width = height = 1;     /* TODO: demo code mishaves when set to 1000 */
-    } else {
-        width = togl->Width;
-        height = togl->Height;
-    }
+    width = togl->Width;
+    height = togl->Height;
     hwnd = CreateWindowEx(WS_EX_NOPARENTNOTIFY, TOGL_CLASS_NAME, NULL, style,
             0, 0, width, height, parentWin, NULL, hInstance, NULL);
     if (!hwnd) {
@@ -2757,9 +2752,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 		 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     window = Tk_AttachHWND(tkwin, hwnd);
     SetWindowLongPtr(hwnd, 0, (LONG_PTR) togl);
-    if (togl->PbufferFlag) {
-        ShowWindow(hwnd, SW_HIDE);      /* make sure it's hidden */
-    }
 #endif
 
     /* 
@@ -2805,17 +2797,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         }
     }
 #ifdef TOGL_WGL
-    if (togl->PbufferFlag) {
-        togl->pbuf = togl_createPbuffer(togl);
-        if (togl->pbuf == NULL) {
-            Tcl_SetResult(togl->Interp,
-                    "couldn't create pbuffer", TCL_STATIC);
-            goto error;
-        }
-        ReleaseDC(hwnd, togl->tglGLHdc);
-        togl->tglGLHdc = getPbufferDC(togl->pbuf);
-        createdPbufferDC = True;
-    } else if (SetPixelFormat(togl->tglGLHdc, (int) togl->PixelFormat,
+    if (SetPixelFormat(togl->tglGLHdc, (int) togl->PixelFormat,
                     NULL) == FALSE) {
         Tcl_SetResult(togl->Interp, "couldn't set pixel format",
                 TCL_STATIC);
@@ -3013,8 +2995,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         goto error;
     }
 
-    if (!togl->PbufferFlag
-            && !aglSetDrawable(togl->Ctx, Togl_MacOSXGetDrawablePort(togl))) {
+    if (!aglSetDrawable(togl->Ctx, Togl_MacOSXGetDrawablePort(togl))) {
         /* aglSetDrawable is deprecated in OS X 10.5 */
         aglDestroyContext(togl->Ctx);
         togl->Ctx = NULL;
@@ -3065,19 +3046,17 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	}
     }
 
-    if (!togl->PbufferFlag) {
-      togl->nsview = [[NSView alloc] initWithFrame:NSZeroRect];
-      [togl->nsview setWantsBestResolutionOpenGLSurface:NO];
-      MacDrawable *d = ((TkWindow *) togl->TkWin)->privatePtr;
-      NSView *topview = d->toplevel->view;
-      [topview addSubview:togl->nsview];
-      /* TODO: Appears setView has to be deferred until window mapped.
-       * or it gives "invalid drawable" error.  But MapNotify doesn't happen.
-       * I think toplevel is already mapped.  Iconifying and uniconifying
-       * main window makes the graphics work.
-       */
-      /*      [togl->Ctx setView:togl->nsview];*/
-    }
+    togl->nsview = [[NSView alloc] initWithFrame:NSZeroRect];
+    [togl->nsview setWantsBestResolutionOpenGLSurface:NO];
+    MacDrawable *d = ((TkWindow *) togl->TkWin)->privatePtr;
+    NSView *topview = d->toplevel->view;
+    [topview addSubview:togl->nsview];
+    /* TODO: Appears setView has to be deferred until window mapped.
+     * or it gives "invalid drawable" error.  But MapNotify doesn't happen.
+     * I think toplevel is already mapped.  Iconifying and uniconifying
+     * main window makes the graphics work.
+     */
+    /*      [togl->Ctx setView:togl->nsview];*/
 #endif
 
     if (togl->Ctx == NULL) {

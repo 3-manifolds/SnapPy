@@ -159,7 +159,6 @@ class Browser(Tk_.Toplevel):
     a notebook with tabs that show numerical or graphical information
     about the manifold.
     """
-
     def __init__(self, manifold, root=None, main_window=None):
         if root is None:
             if Tk_._default_root:

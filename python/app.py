@@ -15,7 +15,7 @@ from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink
 from .app_menus import add_menu, scut, open_html_docs
 from .browser import Browser
 from .horoviewer import HoroballViewer
-from .infowindow import about_snappy
+from .infowindow import about_snappy, InfoWindow
 from .polyviewer import PolyhedronViewer
 from .raytracing.inside_viewer import InsideViewer
 from .settings import Settings, SettingsDialog
@@ -243,6 +243,26 @@ class SnapPyBrowser(Browser, ListedWindow):
         if self.inside_view:
             self.inside_view.apply_settings(self.main_window.settings)
 
+    def dirichlet_help(self):
+        if not hasattr(self, 'polyhedron_help'):
+            self.polyhedron_help = InfoWindow(self, 'Dirichlet Help',
+                                              self.dirichlet_viewer.widget.help_text,
+                                              'polyhedron_help')
+        else:
+            self.polyhedron_help.deiconify()
+            self.polyhedron_help.lift()
+            self.polyhedron_help.focus_force()
+
+    def horoball_help(self):
+        if not hasattr(self, 'horoviewer_help'):
+            self.horoviewer_help = InfoWindow(self, 'Horoview Help',
+                                              self.horoball_viewer.widget.help_text,
+                                              'horoviewer_help')
+        else:
+            self.horoviewer_help.deiconify()
+            self.horoviewer_help.lift()
+            self.horoviewer_help.focus_force()
+
 
 class SnapPyLinkEditor(LinkEditor, ListedWindow):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
@@ -331,15 +351,39 @@ class SnapPyPolyhedronViewer(PolyhedronViewer):
 
     build_menus = dirichlet_menus
 
+    def help_window(self):
+        window = self.parent
+        if not hasattr(window, 'polyhedron_help'):
+            window.polyhedron_help = InfoWindow(window,  'Dirichlet Help', self.widget.help_text, 'polyhedron_help')
+        else:
+            window.polyhedron_help.deiconify()
+            window.polyhedron_help.lift()
+            window.polyhedron_help.focus_force()
 
-class SnapPyInsideViewer(InsideViewer):
-
-    build_menus = inside_view_menus
+    def add_help(self):
+        help = ttk.Button(self.topframe, text='Help', width=4,
+                          command=self.help_window)
+        help.grid(row=0, column=4, sticky=Tk_.E, padx=18)
+        self.topframe.columnconfigure(3, weight=1)
 
 
 class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
+
+    def help_window(self):
+        window = self.parent
+        if not hasattr(window, 'horoball_help'):
+            window.horoball_help = InfoWindow(window,  'Horoview Help', self.widget.help_text, 'horoball_help')
+        else:
+            window.horoball_help.deiconify()
+            window.horoball_help.lift()
+            window.horoball_help.focus_force()
+
+
+class SnapPyInsideViewer(InsideViewer):
+
+    build_menus = inside_view_menus
 
 
 class SnapPySettings(Settings, ListedWindow):

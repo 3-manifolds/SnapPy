@@ -353,7 +353,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer):
     build_menus = dirichlet_menus
 
     def __init__(self, *args, **kwargs):
-        PolyhedronViewer.__init__(self, *args, **kwargs)
+        PolyhedronViewer.__init__(self, *args, **kwargs, main_window=terminal)
         self.help_button.configure(command=self.help_window)
 
     def help_window(self):
@@ -370,6 +370,10 @@ class SnapPyPolyhedronViewer(PolyhedronViewer):
 class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
+
+    def __init__(self, *args, **kwargs):
+        HoroballViewer.__init__(self, *args, **kwargs, main_window=terminal)
+        self.main_window = terminal
 
     def help_window(self):
         window = self.parent
@@ -534,6 +538,7 @@ def main():
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
     snappy.ViewerWindow = SnapPyViewerWindow
+    snappy.ViewerWindow.main_window = terminal
     snappy.InsideViewer = SnapPyInsideViewer
     snappy.InsideViewer.main_window = terminal
     LP.Browser = HP.Browser = SnapPyBrowser

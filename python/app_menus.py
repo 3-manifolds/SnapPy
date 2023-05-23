@@ -236,6 +236,11 @@ def browser_menus(self):
     Creates a menubar attribute for the browser.
     """
     self.menubar = menubar = Tk_.Menu(self)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self, File_menu, 'Open...', None, 'disabled')
     add_menu(self, File_menu, 'Save as...', self.save)
@@ -257,6 +262,11 @@ def browser_menus(self):
 def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
     self.menubar = menubar = Tk_.Menu(self.window)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.window, File_menu, 'Open...', self.load)
     add_menu(self.window, File_menu, 'Save as...', self.save)
@@ -289,6 +299,11 @@ def dirichlet_menus(self):
     parent Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.parent)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -314,6 +329,11 @@ def horoball_menus(self):
     master Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.master)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -333,6 +353,11 @@ def inside_view_menus(self):
     """Menus for the standalone Inside viewer.  Called by the view Frame, not the
     master Toplevel."""
     self.menubar = menubar = Tk_.Menu(self.master)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')

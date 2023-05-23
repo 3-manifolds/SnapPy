@@ -236,7 +236,7 @@ def browser_menus(self):
     Creates a menubar attribute for the browser.
     """
     self.menubar = menubar = Tk_.Menu(self)
-    if sys.platform == 'darwin':
+    if sys.platform == 'darwin' and self.main_window is not None:
         Python_menu = Tk_.Menu(menubar, name='apple')
         Python_menu.add_command(label='About SnapPy...',
                                 command=self.main_window.about_window)

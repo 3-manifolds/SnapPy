@@ -746,6 +746,12 @@ class Browser(Tk_.Toplevel):
         except:
             pass
 
+    def dirichlet_help(self):
+        self.dirichlet_viewer.widget.help()
+
+    def horoball_help(self):
+        self.horoball_viewer.widget.help()
+
     def test(self):
         self.update_idletasks()
         print('Testing browser')

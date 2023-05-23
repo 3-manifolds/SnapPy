@@ -247,14 +247,10 @@ def browser_menus(self):
         menubar.add_cascade(label='View', menu=Tk_.Menu(menubar, name='view'))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-
-    def dirichlet_help():
-        InfoWindow(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
-    help_menu.extra_command(label=help_polyhedron_viewer_label, command=dirichlet_help)
-
-    def horoball_help():
-        InfoWindow(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
-    help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
+    help_menu.extra_command(label=help_polyhedron_viewer_label,
+                            command=self.dirichlet_help)
+    help_menu.extra_command(label=help_horoball_viewer_label,
+                            command=self.horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 
 
@@ -307,7 +303,7 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
+    help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.help_window)
     help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
@@ -328,7 +324,7 @@ def horoball_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label=help_horoball_viewer_label, command=self.widget.help)
+    help_menu.extra_command(label=help_horoball_viewer_label, command=self.help_window)
     help_menu.activate([help_horoball_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
 

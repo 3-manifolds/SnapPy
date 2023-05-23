@@ -98,8 +98,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
-        help = ttk.Button(self.topframe, text='Help', width=4,
-                          command=self.widget.help)
+        self.help_button = help = ttk.Button(self.topframe, text='Help', width=4,
+                                             command=self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, padx=18)
         self.topframe.columnconfigure(3, weight=1)
 

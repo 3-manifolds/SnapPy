@@ -159,7 +159,6 @@ class Browser(Tk_.Toplevel):
     a notebook with tabs that show numerical or graphical information
     about the manifold.
     """
-
     def __init__(self, manifold, root=None, main_window=None):
         if root is None:
             if Tk_._default_root:
@@ -746,6 +745,12 @@ class Browser(Tk_.Toplevel):
             self.selection_clear()
         except:
             pass
+
+    def dirichlet_help(self):
+        self.dirichlet_viewer.widget.help()
+
+    def horoball_help(self):
+        self.horoball_viewer.widget.help()
 
     def test(self):
         self.update_idletasks()

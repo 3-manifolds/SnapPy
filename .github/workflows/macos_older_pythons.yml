@@ -1,4 +1,4 @@
-name: macOS Wheels
+name: macOS Older Python Wheels
 
 on: [push, pull_request]
 

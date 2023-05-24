@@ -278,8 +278,9 @@ class TkTerm:
                 topmost = blocker
                 blocker.attributes('-topmost', False)
             message = self.blockers[blocker]
-            answer  = askyesno('Quit', message + '\nDo you care?')
-            if answer:
+            answer  = askyesno('Quit',
+                message + '\nDo you want to quit anyway?')
+            if not answer:
                 can_quit = False
                 break;
         if topmost:

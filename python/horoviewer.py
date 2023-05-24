@@ -8,7 +8,7 @@ import sys
 
 
 class HoroballViewer(ttk.Frame):
-    def __init__(self, master, nbhd=None, which_cusp=0, cutoff=None,
+    def __init__(self, parent, nbhd=None, which_cusp=0, cutoff=None,
                  title='Horoball Viewer',
                  settings={'cusp_horoballs' : True,
                            'cusp_triangulation' : True,
@@ -19,7 +19,8 @@ class HoroballViewer(ttk.Frame):
                  bgcolor=None,
                  main_window=None):
         self.settings = settings
-        ttk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, parent)
+        self.parent = parent
         self.nbhd = nbhd
         self.empty = (self.nbhd is None)
         self.mouse_x = 0
@@ -146,8 +147,8 @@ Use the View Options to select which components of the scene are drawn.
             horo_var, label_var, flipped=self.flip_var.get(), cutoff=self.cutoff,
             which_cusp=self.which_cusp,togl_widget=self.widget)
         self.widget.redraw_impl = self.scene.draw
-        if isinstance(master, Tk_.Toplevel):
-            master.config(menu=self.menubar)
+        if isinstance(parent, Tk_.Toplevel):
+            parent.config(menu=self.menubar)
             # hacks needed on Sierra
             self.after(20, self.configure_sliders)
             self.after(50, self.rebuild)

@@ -1357,7 +1357,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Help message for the widget.
         """
-        InfoWindow(self, 'Viewer Help', self.help_text)
+        InfoWindow(self, 'Viewer Help', self.help_text, 'viewer_help')
 
     def set_background(self, r, g, b):
         """

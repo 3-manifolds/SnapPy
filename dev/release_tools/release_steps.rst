@@ -6,21 +6,19 @@ Key tools:
 1. Wheels for all three platforms are built using cibuildwheel as part
    of an automatic GitHub action after each commit.
 
-2. The sdist tarballs are build by a GitHub action of the
+2. The sdist tarballs are built by a GitHub action of the
    "snappy_release" project.
 
-3. The Windows app is also build by a GitHub action of
+3. The Windows and macOS apps is are built by a GitHub actions of
    "snappy_release".
 
-4. Recent macOS apps have been built by Marc directly.
-
-5. The script "test_pypi.py" is a key tool. It creates a virtual
+4. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
 
-6. Testing done on virtual machines running in VMWare Fusion on
+5. Testing done on virtual machines running in VMWare Fusion on
    dehn.math.illinois.edu.
 
-7. Nathan stores current and old versions in "~/Dropbox/pypi/".
+6. Nathan stores current and old versions in "~/Dropbox/pypi/".
 
 
 Warmup

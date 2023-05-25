@@ -142,6 +142,7 @@ cdef class PresentationMatrix():
     A sparse representation of the presentation matrix of an abelian group.
     """
     cdef rows, cols, _row_support, _col_support, _entries, _units, dead_columns
+
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols

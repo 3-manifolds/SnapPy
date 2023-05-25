@@ -761,43 +761,43 @@ cdef extern from "isomorphism_signature.h":
     extern c_Triangulation* triangulation_from_isomorphism_signature(char *isoSig)
 
 cdef extern from "ptolemy_types.h":
-     ctypedef char* Two_identified_variables[2]
+    ctypedef char* Two_identified_variables[2]
 
-     ctypedef struct Identification_of_variables:
-         int num_identifications
-         Two_identified_variables *variables
-         int *signs
-         int *powers
+    ctypedef struct Identification_of_variables:
+        int num_identifications
+        Two_identified_variables *variables
+        int *signs
+        int *powers
 
-     extern void free_identification_of_variables(Identification_of_variables id)
+    extern void free_identification_of_variables(Identification_of_variables id)
 
-     ctypedef struct Integer_matrix_with_explanations:
-         int **entries
-         int num_rows
-         int num_cols
-         char **explain_row
-         char **explain_column
+    ctypedef struct Integer_matrix_with_explanations:
+        int **entries
+        int num_rows
+        int num_cols
+        char **explain_row
+        char **explain_column
 
-     extern void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m)
+    extern void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m)
 
-     extern int number_of_edges(c_Triangulation *manifold)
+    extern int number_of_edges(c_Triangulation *manifold)
 
 cdef extern from "change_peripheral_curves_nonorientable.h":
-     extern c_FuncResult change_peripheral_curves_nonorientable( c_Triangulation *manifold, MatrixInt22 change_matrices[])
+    extern c_FuncResult change_peripheral_curves_nonorientable( c_Triangulation *manifold, MatrixInt22 change_matrices[])
 
 cdef extern from "gluing_equations_pgl.h":
-     extern void get_edge_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_face_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_internal_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_cusp_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N, int cusp_num, int m, int l)
+    extern void get_edge_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+    extern void get_face_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+    extern void get_internal_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+    extern void get_cusp_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N, int cusp_num, int m, int l)
 
 cdef extern from "ptolemy_equations.h":
-     extern void get_ptolemy_equations_identified_coordinates(c_Triangulation *manifold, Identification_of_variables *id, int N, int* obstruction_class)
-     extern void get_ptolemy_equations_identified_face_classes(c_Triangulation *manifold, Identification_of_variables *id)
-     extern void get_ptolemy_equations_action_by_decoration_change(c_Triangulation *manifold, int N, Integer_matrix_with_explanations *m)
-     extern void get_ptolemy_equations_boundary_map_3(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
-     extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
-     extern void get_ptolemy_equations_boundary_map_1(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
+    extern void get_ptolemy_equations_identified_coordinates(c_Triangulation *manifold, Identification_of_variables *id, int N, int* obstruction_class)
+    extern void get_ptolemy_equations_identified_face_classes(c_Triangulation *manifold, Identification_of_variables *id)
+    extern void get_ptolemy_equations_action_by_decoration_change(c_Triangulation *manifold, int N, Integer_matrix_with_explanations *m)
+    extern void get_ptolemy_equations_boundary_map_3(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
+    extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
+    extern void get_ptolemy_equations_boundary_map_1(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
 
 cdef extern from "inline.h":
     pass

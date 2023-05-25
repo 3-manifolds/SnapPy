@@ -322,11 +322,11 @@ cdef class CDirichletDomain():
         vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          vertices.append(
-              ( self._number_(Real2Number(<Real>vertex.x[1])),
-                self._number_(Real2Number(<Real>vertex.x[2])),
-                self._number_(Real2Number(<Real>vertex.x[3])) ) )
-          vertex = vertex.next
+            vertices.append(
+                (self._number_(Real2Number(<Real>vertex.x[1])),
+                 self._number_(Real2Number(<Real>vertex.x[2])),
+                 self._number_(Real2Number(<Real>vertex.x[3]))) )
+            vertex = vertex.next
         return vertices
 
     def _vertex_data_list(self):
@@ -334,14 +334,14 @@ cdef class CDirichletDomain():
         vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          vertices.append(
-              { 'position' : ( self._number_(Real2Number(<Real>vertex.x[1])),
+            vertices.append(
+                {'position': ( self._number_(Real2Number(<Real>vertex.x[1])),
                                self._number_(Real2Number(<Real>vertex.x[2])),
                                self._number_(Real2Number(<Real>vertex.x[3])) ),
-                'ideal' : bool(vertex.ideal),
-                'vertex_class' : vertex.v_class.index
-              })
-          vertex = vertex.next
+                  'ideal': bool(vertex.ideal),
+                  'vertex_class' : vertex.v_class.index
+                 })
+            vertex = vertex.next
         return vertices
 
     def _vertex_to_index_dict(self):
@@ -350,7 +350,7 @@ cdef class CDirichletDomain():
         """
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
 
-        result = { }
+        result = {}
         index = 0
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
@@ -696,6 +696,7 @@ cdef class CDirichletDomain():
             for line in output:
                 if UI_callback is not None: UI_callback()
                 output_file.write(line)
+
 
 class DirichletDomain(CDirichletDomain):
     """

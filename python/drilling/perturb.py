@@ -17,6 +17,21 @@ from ..math_basics import correct_min # type: ignore
 
 from typing import Sequence, List
 
+# For perturbing, it is sufficient to just find some non-trivial
+# lower bound for the embedding radius of a tube about a geodesic.
+# To just any such bound, set _tube_developing_radius = 0.
+# This will develop the tube just to the point where we can verify
+# that it has positive radius.
+#
+# To stress-test our code, we can develop the tube further, by
+# setting _tube_developing_radius > 0. The isotopy type of
+# the drilled curve will not change no matter how large
+# _tube_developing_radius is. In other words, we still compute
+# a lower bound for the embedding radius which eventually will
+# be the embedding radius up to rounding errors as
+# _tube_developing_radius increases.
+#
+_tube_developing_radius = 0
 
 def perturb_geodesics(
         mcomplex : Mcomplex,
@@ -79,9 +94,11 @@ def compute_lower_bound_injectivity_radius(
 
     add_structures_necessary_for_tube(mcomplex)
 
+    r = mcomplex.RF(_tube_developing_radius)
+
     tubes = [ GeodesicTube(mcomplex, g) for g in geodesics ]
     for tube in tubes:
-        tube.add_pieces_for_radius(r=0)
+        tube.add_pieces_for_radius(r=r)
 
     return compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex, tubes)

@@ -2,12 +2,13 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .crush import crush_geodesic_pieces
 from .line import R13LineWithMatrix
 from .geometric_structure import add_r13_geometry, word_to_psl2c_matrix
 from .geodesic_info import GeodesicInfo, sample_line
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
+from .barycentric import mark_subtetrahedra_about_geodesic_pieces
+from .crush import crush_geodesic_pieces
 from .cusps import (
     CuspPostDrillInfo,
     index_geodesics_and_add_post_drill_infos,
@@ -400,10 +401,13 @@ def drill_geodesics(mcomplex : Mcomplex,
         print("Number of tets after subdividing: %d" % (
             len(tetrahedra)))
 
-    # Perform a barycentric subdivision. Then crush all tetrahedra
-    # touching the closed curve we traced. Note that
+    # Mark which subtetrahedra in the barycentric subdivision
+    # are adjacent to the closed curve we traced.
+    mark_subtetrahedra_about_geodesic_pieces(tetrahedra)
+
+    # Perform a barycentric subdivision. Note that
     # crush_geodesic_pieces is actually doing the subdivision and
-    # crushing in just one step.
+    # crushing of the subsimplices marked above in just one step.
     result : Mcomplex = crush_geodesic_pieces(tetrahedra)
 
     # Sanity checks while we are still testing the new features.
@@ -530,7 +534,7 @@ def dummy_function_for_additional_doctests():
         ...         except RuntimeError:
         ...             pass
         >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
-        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBba'
+        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcbDbBba'
         >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
         >>> sys.setrecursionlimit(original_limit)

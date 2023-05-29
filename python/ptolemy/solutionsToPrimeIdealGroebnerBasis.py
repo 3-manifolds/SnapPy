@@ -151,12 +151,12 @@ def update_assignments_and_merge(assignments, d):
     variables = sorted(set(
             sum([poly.variables() for poly in assignments.values()], [])))
 
-    monomial_to_value = { (): pari(1) }
+    monomial_to_value = {(): pari(1)}
 
     for var in variables:
         max_degree = max([poly.degree(var) for poly in assignments.values()])
 
-        old_keys = list(monomial_to_value.keys())
+        old_keys = list(monomial_to_value)
 
         v = d[var]
         power_of_v = pari(1)

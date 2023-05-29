@@ -252,9 +252,7 @@ class BarycentricArc(Arc):
         zeros_e = self.end.zero_coordinates()
         if len(zeros_s) > 1 or len(zeros_e) > 1:
             return True
-        if len(set(zeros_s) & set(zeros_e)) > 0:
-            return True
-        return False
+        return bool(set(zeros_s) & set(zeros_e))
 
     def max_denom(self):
         rationals = list(self.start.vector) + list(self.end.vector)

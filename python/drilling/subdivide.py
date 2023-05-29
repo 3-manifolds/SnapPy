@@ -1,6 +1,5 @@
 from .moves import one_four_move, two_three_move
 from .tracing import GeodesicPiece, GeodesicPieceTracker
-from .exceptions import GeodesicStartingPiecesCrossSameFaceError
 
 from . import debug
 
@@ -137,10 +136,6 @@ def _traverse_geodesic_to_subdivide(
     # "v" over a piece and "^" under a piece means that is currently
     # pointed to by a variable we are interested in where the name
     # the variable if it is not just "piece".
-
-    if (start_piece.prev.endpoints[0].subsimplex ==
-                    start_piece.endpoints[1].subsimplex):
-        raise GeodesicStartingPiecesCrossSameFaceError()
 
     # Following trace_geodesic, we start with
     #

@@ -8,6 +8,7 @@ from .geodesic_info import GeodesicInfo, sample_line
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
 from .barycentric import mark_subtetrahedra_about_geodesic_pieces
+from .shorten import shorten_in_barycentric_subdivision
 from .crush import crush_geodesic_pieces
 from .cusps import (
     CuspPostDrillInfo,
@@ -405,7 +406,14 @@ def drill_geodesics(mcomplex : Mcomplex,
     # are adjacent to the closed curve we traced.
     mark_subtetrahedra_about_geodesic_pieces(tetrahedra)
 
-    # Perform a barycentric subdivision. Note that
+    # If the simple closed curve is having two consecutive pieces
+    # adjacent to the same face, making it shorter by replacing
+    # the two pieces by just one corresponding to the third edge
+    # of the triangle.
+    shorten_in_barycentric_subdivision(tetrahedra, verbose)
+
+    # Perform a barycentric subdivision. Then crush all tetrahedra
+    # touching the closed curve we traced. Note that
     # crush_geodesic_pieces is actually doing the subdivision and
     # crushing of the subsimplices marked above in just one step.
     result : Mcomplex = crush_geodesic_pieces(tetrahedra)
@@ -538,5 +546,28 @@ def dummy_function_for_additional_doctests():
         >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
         >>> sys.setrecursionlimit(original_limit)
+
+    Stress test by using large perturbation. In particular, this is testing the
+    case where two geodesic pieces are adjacent to the same triangle and we
+    need to shorten before crushing. We do white-box testing (verbose = True)
+    to make sure we really hit the shortening case.
+
+        >>> from snappy import Manifold
+        >>> from snappy.drilling import perturb
+        >>> original_radius = perturb._tube_developing_radius
+        >>> perturb._tube_developing_radius = 1
+        >>> Manifold("m307").drill_word('dadadabCdada', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+        Tubes lower bound injectivity radius: 0.380575727320247
+        Number of geodesic pieces: [9]
+        Number of tets after subdividing: 45
+        Shortening geodesic by sweeping across triangle.
+        'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
+        >>> Manifold("m320").drill_word('daaacDA', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+        Tubes lower bound injectivity radius: 0.397319067589326
+        Number of geodesic pieces: [9]
+        Number of tets after subdividing: 49
+        Shortening geodesic by sweeping across triangle.
+        'rLLPwAPvvPQQcccdfehgjiqpooqppqoqffaaaaaaaqaaaqaaa_bBbabaab'
+        >>> perturb._tube_developing_radius = original_radius
 
     """

@@ -162,6 +162,18 @@ VerticesOfFaceCounterclockwise = {
     F3: (V1, V2, V0)
 }
 
+# Dimension of a subsimplex
+def dimension(x):
+    if x in ZeroSubsimplices:
+        return 0
+    if x in OneSubsimplices:
+        return 1
+    if x in TwoSubsimplices:
+        return 2
+    if x == T:
+        return 3
+    raise Exception("%r is not a subsimplex" % x)
+
 # Decide if the bitmap x represents a subset of the bitmap y
 
 

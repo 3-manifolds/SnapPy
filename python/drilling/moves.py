@@ -445,6 +445,10 @@ _swap_perms = { (f0, f1) : _swap_perm(i, j)
 # If such a point is a vertex, we give all pairs of a new tetrahedron
 # and one of its vertices that correspond to this vertex.
 #
+# index identifies to which of the geodesics we want to drill the retraced
+# pieces belong. It is the index of the cusp that the geodesic will become
+# in the drilled manifold.
+#
 def _retrace_geodesic_piece(
         index : int,
         r13_points,

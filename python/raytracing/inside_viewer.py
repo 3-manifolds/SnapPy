@@ -182,17 +182,20 @@ class InsideViewer(ttk.Frame):
 
         cusp_area_maximum = 1.05 * _maximal_cusp_area(self.widget.manifold)
 
+        self.cusp_scales = []
+
         for i in range(self.widget.manifold.num_cusps()):
-            UniformDictController.create_horizontal_scale(
-                frame,
-                uniform_dict=self.widget.ui_parameter_dict,
-                key='cuspAreas',
-                title='Cusp %d' % i,
-                left_end=0.0,
-                right_end=cusp_area_maximum,
-                row=row,
-                update_function=self.widget.recompute_raytracing_data_and_redraw,
-                index=i)
+            self.cusp_scales.append(
+                UniformDictController.create_horizontal_scale(
+                    frame,
+                    uniform_dict=self.widget.ui_parameter_dict,
+                    key='cuspAreas',
+                    title='Cusp %d' % i,
+                    left_end=0.0,
+                    right_end=cusp_area_maximum,
+                    row=row,
+                    update_function=self.widget.recompute_raytracing_data_and_redraw,
+                    index=i))
             cusp_button = ttk.Button(
                 frame,
                 text='View',
@@ -245,6 +248,11 @@ class InsideViewer(ttk.Frame):
         self.widget.redraw_if_initialized()
 
     def set_camera_cusp_view(self, which_cusp):
+        if self.widget.ui_parameter_dict['cuspAreas'][1][which_cusp] < 0.05:
+            self.widget.ui_parameter_dict['cuspAreas'][1][which_cusp] = 0.05
+            self.widget.recompute_raytracing_data_and_redraw()
+            self.cusp_scales[which_cusp].update()
+
         self.widget.view_state, view_scale = (
             self.widget.raytracing_data.cusp_view_state_and_scale(
                 which_cusp))

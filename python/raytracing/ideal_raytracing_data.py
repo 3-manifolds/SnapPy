@@ -5,13 +5,15 @@ from snappy.SnapPy import matrix, vector
 
 from snappy.snap.mcomplex_base import *
 
-from snappy.verify.cuspCrossSection import *
+from ..verify.cuspCrossSection import *
 
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
 from .hyperboloid_utilities import *
 from .upper_halfspace_utilities import *
+
+from ..drilling import geometric_structure
 
 from .raytracing_data import *
 
@@ -154,12 +156,7 @@ class IdealRaytracingData(RaytracingData):
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
-            planes = make_tet_planes(
-                [ tet.R13_vertices[v]
-                  for v in t3m.ZeroSubsimplices])
-            tet.R13_planes = {
-                F : plane
-                for F, plane in zip(t3m.TwoSubsimplices, planes) }
+            geometric_structure.compute_r13_planes_for_tet(tet)
 
     def _compute_R13_horosphere_scale_for_vertex(self, tet, V0):
         vertex = tet.Class[V0]

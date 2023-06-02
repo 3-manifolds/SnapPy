@@ -1,8 +1,7 @@
 from snappy.SnapPy import matrix, vector
 
 from snappy.hyperboloid import (r13_dot,
-                                unit_time_vector_to_o13_hyperbolic_translation,
-                                unnormalised_plane_eqn_from_r13_points)
+                                unit_time_vector_to_o13_hyperbolic_translation)
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -190,26 +189,6 @@ def O13_orthonormalize(m):
     for row, id_row, sign in zip(m, id_matrix, _signature):
         result.append(_orthonormalize_row_sane(row, id_row, result, sign))
     return matrix(result, ring=ring)
-
-
-def R13_plane_from_R13_light_vectors(pts):
-    return R13_normalise(unnormalised_plane_eqn_from_r13_points(pts))
-
-
-def make_tet_planes(tet_vert_positions):
-    """
-    Given four light-like vectors, returns the four normals for the
-    for faces of the ideal tetrahedron spanned by the corresponding
-    ideal points in the 1,3-hyperboloid model.
-
-    Outward facing for positively oriented tetrahedra.
-    """
-
-    v0, v1, v2, v3 = tet_vert_positions
-    return [ R13_plane_from_R13_light_vectors([v1, v3, v2]),
-             R13_plane_from_R13_light_vectors([v0, v2, v3]),
-             R13_plane_from_R13_light_vectors([v0, v3, v1]),
-             R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
 
 def complex_to_pair(z):

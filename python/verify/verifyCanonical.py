@@ -2,6 +2,7 @@ from ..sage_helper import _within_sage, sage_method
 
 from .cuspCrossSection import RealCuspCrossSection
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
+from . import edge_equations
 from . import verifyHyperbolicity
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
@@ -171,10 +172,10 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # Check that the exact solutions form a complete hyperbolic structure
     # We convert to intervals to check that the shapes are positive and
     # the angles add up to 2pi and not some other multiple of 2pi.
-    c.check_polynomial_edge_equations_exactly()
+    edge_equations.check_polynomial_edge_equations_exactly(c.mcomplex)
     c.check_cusp_development_exactly()
     CIF = ComplexIntervalField(bits_prec)
-    c.check_logarithmic_edge_equations_and_positivity(CIF)
+    edge_equations.check_logarithmic_edge_equations_and_positivity(c.mcomplex, CIF)
 
     # Normalize cusp area. This is not needed when only 1 cusp
     if M.num_cusps() > 1:

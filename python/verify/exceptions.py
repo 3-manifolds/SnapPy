@@ -34,9 +34,7 @@ The hierarchy is as follows:
 
       - CuspEquationExactVerifyError
       - CuspEquationLogLiftNumericalVerifyError
-    - CuspDevelopmentType
 
-      - CuspDevelopmentTypeExactVerifyError
   - TiltType
 
     - TiltInequalityNumericalVerifyError
@@ -46,9 +44,6 @@ The hierarchy is as follows:
   - ShapeType
 
     - ShapePositiveImaginaryPartNumericalVerifyError
-  - ConsistencyWithSnapPeaType
-
-    - ConsistencyWithSnapPeaNumericalVerifyError
 """
 
 
@@ -190,32 +185,6 @@ class CuspEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
                 '%r == %r' % (self.value, self.expected_value))
 
 
-class CuspDevelopmentType(CuspConsistencyType):
-    """
-    A base class indicating that there was a failure to find a consistent
-    assignment of side lengths to the Euclidean Horotriangles to form a
-    Euclidean Horotorus for a cusp.
-    """
-
-
-class CuspDevelopmentExactVerifyError(ExactVerifyError,
-                                      CuspDevelopmentType):
-    """
-    Raised when finding a consistent assignment of side lengths to the
-    Euclidean Horotriangles to form a Euclidean Horotorus for a cusp failed
-    using exact arithmetic.
-    """
-
-    def __init__(self, value1, value2):
-        self.value1 = value1
-        self.value2 = value2
-
-    def __str__(self):
-        return ('Inconsistency in the side lengths of the Euclidean '
-                'Horotriangles for a cusp: '
-                '%r = %r' % (self.value1, self.value2))
-
-
 class TiltType(EquationType):
     """
     A base class relating to tilts.
@@ -283,27 +252,3 @@ class ShapePositiveImaginaryPartNumericalVerifyError(
         return ('Numerical verification that shape has positive imaginary '
                 'part has failed: Im(%r) > 0' % self.value)
 
-
-class ConsistencyWithSnapPeaType(EquationType):
-    """
-    A base class for exceptions raised when there is a difference
-    between the values computed by the SnapPea kernel and by this module
-    for a given quantity.
-    """
-
-
-class ConsistencyWithSnapPeaNumericalVerifyError(
-    NumericalVerifyError,
-    ConsistencyWithSnapPeaType):
-    """
-    Exception raised when there is a significant numerical difference
-    between the values computed by the SnapPea kernel and by this module
-    for a given quantity.
-    """
-    def __init__(self, value, snappea_value):
-        self.value = value
-        self.snappea_value = snappea_value
-
-    def __str__(self):
-        return ('Inconsistency between SnapPea kernel and verify: '
-                '%r == %r' % (self.snappea_value, self.value))

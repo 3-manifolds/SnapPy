@@ -21,31 +21,6 @@
 #
 # 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
-from ..sage_helper import _within_sage
-
-if _within_sage:
-    # python's log and sqrt only work for floats
-    # They would fail or convert to float losing precision
-    from sage.functions.log import log
-    from sage.functions.other import sqrt
-else:
-    # Otherwise, define our own log and sqrt which checks whether
-    # the given type defines a log/sqrt method and fallsback
-    # to python's log and sqrt which has the above drawback of
-    # potentially losing precision.
-    import cmath
-    import math
-
-    def log(x):
-        if hasattr(x, 'log'):
-            return x.log()
-        return cmath.log(x)
-
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
-
 from ..math_basics import correct_min
 
 from . import t3mlite as t3m
@@ -271,7 +246,7 @@ class ComplexHoroTriangle:
 
         def adjust_log(z):
             # Compute log and adjust
-            logZ = log(z)
+            logZ = z.log()
             # Add multiplies of 2 * pi * I so that it is close
             # to lifted_position
             return logZ + ((lifted_position - logZ) / twoPi).imag().round() * twoPi * I
@@ -394,7 +369,7 @@ class CuspCrossSectionBase(McomplexEngine):
             areas = [ 1 for area in current_areas ]
         elif not isinstance(areas, list):
             areas = [ areas for area in current_areas ]
-        scales = [ sqrt(area / current_area)
+        scales = [ (area / current_area).sqrt()
                    for area, current_area in zip(areas, current_areas) ]
         self.scale_cusps(scales)
 
@@ -543,7 +518,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         # Compute scale per cusp as sqrt of the minimum of all area scales
         # of all triangles in that cusp
-        scales = [ sqrt(correct_min(s)) for s in area_scales ]
+        scales = [ correct_min(s).sqrt() for s in area_scales ]
 
         self.scale_cusps(scales)
 
@@ -638,7 +613,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 # equivalent dist <= 1. We want to scale down every time
                 # we cannot ensure they are disjoint.
                 if not (dist > 1):
-                    scale = sqrt(dist)
+                    scale = dist.sqrt()
                     # Scale the one cusp
                     ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                         scale)
@@ -657,7 +632,7 @@ class CuspCrossSectionBase(McomplexEngine):
                         # Scale the two cusps by the same amount
                         # We have choices here, for example, we could only
                         # scale one cusp by dist.
-                        scale = sqrt(dist)
+                        scale = dist.sqrt()
                         ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                             scale)
                         ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[j],
@@ -1316,7 +1291,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         # Lift first triangle, picking main branch of logarithm for
         # the first vertex
-        trig0.lift_vertex_positions(log(trig0.vertex_positions[edge0]))
+        trig0.lift_vertex_positions(trig0.vertex_positions[edge0].log())
 
         # Procedure similar to _add_one_cusp_cross_section
         active = [(tet0, vert0)]

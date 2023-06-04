@@ -1,16 +1,15 @@
 from ..sage_helper import _within_sage, sage_method
 
-from .cuspCrossSection import RealCuspCrossSection
+from ..snap.cusp_cross_section import RealCuspCrossSection
+from ..snap.t3mlite import simplex
+
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
 from . import edge_equations
 from . import verifyHyperbolicity
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
 
-from ..snap import t3mlite as t3m
-
 if _within_sage:
-    from sage.rings.real_mpfi import RealIntervalField
     from sage.rings.complex_interval_field import ComplexIntervalField
     from ..pari import prec_dec_to_bits, prec_bits_to_dec
 
@@ -205,7 +204,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
             raise exceptions.TiltProvenPositiveNumericalVerifyError(interval)
 
     def index_of_face_corner(corner):
-        face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
+        face_index = simplex.comp(corner.Subsimplex).bit_length() - 1
         return 4 * corner.Tetrahedron.Index + face_index
 
     # Opacities of all four faces of each tetrahedron, initialize with None.

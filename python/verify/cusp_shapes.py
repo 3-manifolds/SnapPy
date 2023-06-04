@@ -1,4 +1,4 @@
-from .cuspCrossSection import ComplexCuspCrossSection
+from ..snap.cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['NonorientableManifoldError', 'compute_cusp_shapes']

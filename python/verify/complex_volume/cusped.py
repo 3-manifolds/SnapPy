@@ -3,11 +3,11 @@ from ...sage_helper import _within_sage, sage_method
 if _within_sage:
     import sage.all
 
+from .. import verifyHyperbolicity
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
+
 from .adjust_torsion import *
 from .compute_ptolemys import *
-from .. import verifyHyperbolicity
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ...snap import t3mlite as t3m
 
 __all__ = ['verified_complex_volume_cusped_torsion']
 

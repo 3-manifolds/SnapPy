@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage, sage_method
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ..shapes import compute_hyperbolic_shapes
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
 from ...math_basics import correct_min
+from ..shapes import compute_hyperbolic_shapes
 from .cusp_tiling_engine import *
 
 if _within_sage:

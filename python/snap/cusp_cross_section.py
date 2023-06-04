@@ -23,8 +23,6 @@
 
 from ..sage_helper import _within_sage
 
-import math
-
 if _within_sage:
     # python's log and sqrt only work for floats
     # They would fail or convert to float losing precision
@@ -36,6 +34,7 @@ else:
     # to python's log and sqrt which has the above drawback of
     # potentially losing precision.
     import cmath
+    import math
 
     def log(x):
         if hasattr(x, 'log'):
@@ -47,12 +46,12 @@ else:
             return x.sqrt()
         return math.sqrt(x)
 
-from ..snap import t3mlite as t3m
-from ..snap.kernel_structures import *
-from ..snap.mcomplex_base import *
-
 from ..math_basics import correct_min
-from .exceptions import *
+
+from . import t3mlite as t3m
+from .t3mlite import simplex
+from .mcomplex_base import *
+from .kernel_structures import *
 
 __all__ = [
     'IncompleteCuspError',
@@ -115,7 +114,7 @@ class HoroTriangleBase:
 
     @staticmethod
     def _sides_and_cross_ratios(tet, vertex, side):
-        sides = t3m.simplex.FacesAroundVertexCounterclockwise[vertex]
+        sides = simplex.FacesAroundVertexCounterclockwise[vertex]
         left_side, center_side, right_side = (
             HoroTriangleBase._make_second(sides, side))
         z_left = tet.ShapeParameters[left_side & center_side ]
@@ -161,27 +160,27 @@ class RealHoroTriangle:
 _face_edge_face_triples_for_vertex_link = {
     vertex : [ (faces[i], faces[i] & faces[(i+1) % 3], faces[(i+1) % 3])
                for i in range(3) ]
-    for vertex, faces in t3m.simplex.FacesAroundVertexCounterclockwise.items()
+    for vertex, faces in simplex.FacesAroundVertexCounterclockwise.items()
 }
 
 # For each vertex, return an edge connected to it
 _pick_an_edge_for_vertex = {
     vertex : [ edge
-               for edge in t3m.simplex.OneSubsimplices
-               if t3m.simplex.is_subset(vertex, edge) ][0]
-    for vertex in t3m.simplex.ZeroSubsimplices
+               for edge in simplex.OneSubsimplices
+               if simplex.is_subset(vertex, edge) ][0]
+    for vertex in simplex.ZeroSubsimplices
 }
 
 # For each (vertex, face) pair, pick one of the two edges adjacent
 # to both the vertex and face
 _pick_an_edge_for_vertex_and_face = {
     (vertex, face): [ edge
-                      for edge in t3m.simplex.OneSubsimplices
-                      if (t3m.simplex.is_subset(vertex, edge) and
-                          t3m.simplex.is_subset(edge, face)) ][0]
-    for vertex in t3m.simplex.ZeroSubsimplices
-    for face in t3m.simplex.TwoSubsimplices
-    if t3m.simplex.is_subset(vertex, face)
+                      for edge in simplex.OneSubsimplices
+                      if (simplex.is_subset(vertex, edge) and
+                          simplex.is_subset(edge, face)) ][0]
+    for vertex in simplex.ZeroSubsimplices
+    for face in simplex.TwoSubsimplices
+    if simplex.is_subset(vertex, face)
 }
 
 
@@ -224,7 +223,7 @@ class ComplexHoroTriangle:
     def add_vertex_positions(self, vertex, edge, position):
         """
         Adds a dictionary vertex_positions mapping
-        an edge (such as t3m.simplex.E01) to complex position
+        an edge (such as simplex.E01) to complex position
         for the vertex of the horotriangle obtained by
         intersecting the edge with the horosphere.
 
@@ -311,10 +310,10 @@ class CuspCrossSectionBase(McomplexEngine):
     def _add_cusp_cross_sections(self, one_cocycle):
         for T in self.mcomplex.Tetrahedra:
             T.horotriangles = {
-                t3m.simplex.V0 : None,
-                t3m.simplex.V1 : None,
-                t3m.simplex.V2 : None,
-                t3m.simplex.V3 : None
+                simplex.V0 : None,
+                simplex.V1 : None,
+                simplex.V2 : None,
+                simplex.V3 : None
                 }
         for cusp in self.mcomplex.Vertices:
             self._add_one_cusp_cross_section(cusp, one_cocycle)
@@ -329,12 +328,12 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
-        face0 = t3m.simplex.FacesAroundVertexCounterclockwise[vert0][0]
+        face0 = simplex.FacesAroundVertexCounterclockwise[vert0][0]
         tet0.horotriangles[vert0] = self.HoroTriangle(tet0, vert0, face0, 1)
         active = [(tet0, vert0)]
         while active:
             tet0, vert0 = active.pop()
-            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+            for face0 in simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
                 if tet1.horotriangles[vert1] is None:
@@ -407,8 +406,8 @@ class CuspCrossSectionBase(McomplexEngine):
         """
 
         for tet0 in self.mcomplex.Tetrahedra:
-            for vert0 in t3m.simplex.ZeroSubsimplices:
-                for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+            for vert0 in simplex.ZeroSubsimplices:
+                for face0 in simplex.FacesAroundVertexCounterclockwise[vert0]:
                     tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                         tet0, face0, vert0)
                     side0 = tet0.horotriangles[vert0].lengths[face0]
@@ -418,7 +417,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
     def _testing_check_against_snappea(self, epsilon):
         # Short-hand
-        ZeroSubs = t3m.simplex.ZeroSubsimplices
+        ZeroSubs = simplex.ZeroSubsimplices
 
         # SnapPea kernel results
         snappea_tilts, snappea_edges = self.manifold._cusp_cross_section_info()
@@ -432,7 +431,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 for f, snappea_triangle_edge in zip(ZeroSubs,
                                                     snappea_triangle_edges):
                     if v != f:
-                        F = t3m.simplex.comp(f)
+                        F = simplex.comp(f)
                         length = abs(tet.horotriangles[v].lengths[F])
                         if not abs(length - snappea_triangle_edge) < epsilon:
                             raise ConsistencyWithSnapPeaNumericalVerifyError(
@@ -516,7 +515,7 @@ class CuspCrossSectionBase(McomplexEngine):
         in standard form by scaling the cusp neighborhoods down if necessary.
         """
 
-        z = self.mcomplex.Tetrahedra[0].ShapeParameters[t3m.simplex.E01]
+        z = self.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01]
         RF = z.real().parent()
 
         # For each cusp, save the scaling factors for all triangles so that
@@ -529,7 +528,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
-            z = tet.ShapeParameters[t3m.simplex.E01]
+            z = tet.ShapeParameters[simplex.E01]
             max_area = ComplexCuspCrossSection._lower_bound_max_area_triangle_for_std_form(z)
 
             # For all four triangles corresponding to the four vertices of the
@@ -820,10 +819,10 @@ class RealCuspCrossSection(CuspCrossSectionBase):
     def _tet_tilt(tet, face):
         "The tilt of the face of the tetrahedron."
 
-        v = t3m.simplex.comp(face)
+        v = simplex.comp(face)
 
         ans = 0
-        for w in t3m.simplex.ZeroSubsimplices:
+        for w in simplex.ZeroSubsimplices:
             if v == w:
                 c_w = 1
             else:
@@ -838,7 +837,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         """
         Tilt of a face in the trinagulation: this is the sum of
         the two tilts of the two faces of the two tetrahedra that are
-        glued. The argument is a t3m.simplex.Face.
+        glued. The argument is a simplex.Face.
         """
 
         return sum([ RealCuspCrossSection._tet_tilt(corner.Tetrahedron,
@@ -848,7 +847,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
     def compute_tilts(self):
         """
         Computes all tilts. They are written to the instances of
-        t3m.simplex.Face and can be accessed as
+        simplex.Face and can be accessed as
         [ face.Tilt for face in crossSection.Faces].
         """
 
@@ -863,7 +862,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         """
 
         def index_of_face_corner(corner):
-            face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
+            face_index = simplex.comp(corner.Subsimplex).bit_length() - 1
             return 4 * corner.Tetrahedron.Index + face_index
 
         tilts = (4 * len(self.mcomplex.Tetrahedra)) * [ None ]
@@ -898,7 +897,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         CuspCrossSectionBase._testing_check_against_snappea(self, epsilon)
 
         # Short-hand
-        TwoSubs = t3m.simplex.TwoSubsimplices
+        TwoSubs = simplex.TwoSubsimplices
 
         # SnapPea kernel results
         snappea_tilts, snappea_edges = self.manifold._cusp_cross_section_info()
@@ -1002,7 +1001,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             # Get the three faces of the tetrahedron adjacent to that vertex
             # Each one intersects the cusp cross-section in an edge of
             # the triangle.
-            faces = t3m.simplex.FacesAroundVertexCounterclockwise[subsimplex]
+            faces = simplex.FacesAroundVertexCounterclockwise[subsimplex]
             # Get the data for this triangle
             triangle = tet.horotriangles[subsimplex]
 
@@ -1129,7 +1128,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
-        zero = tet0.ShapeParameters[t3m.simplex.E01].parent()(0)
+        zero = tet0.ShapeParameters[simplex.E01].parent()(0)
         tet0.horotriangles[vert0].add_vertex_positions(
             vert0, _pick_an_edge_for_vertex[vert0], zero)
 
@@ -1141,7 +1140,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         while active:
             tet0, vert0 = active.pop()
-            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+            for face0 in simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
                 if not (tet1.Index, vert1) in visited:
@@ -1328,7 +1327,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         while active:
             tet0, vert0 = active.pop()
-            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+            for face0 in simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
                 if not (tet1.Index, vert1) in visited:

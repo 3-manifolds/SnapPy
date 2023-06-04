@@ -1,8 +1,6 @@
 from .interval_newton_shapes_engine import *
 from .krawczyk_shapes_engine import *
 
-from .cuspCrossSection import *
-
 from .verifyHyperbolicity import *
 from .verifyCanonical import *
 from .cuspTranslations import *

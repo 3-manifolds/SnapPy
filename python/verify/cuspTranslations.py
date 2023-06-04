@@ -1,5 +1,5 @@
+from ..snap.cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
-from .cuspCrossSection import ComplexCuspCrossSection
 
 __all__ = ['cusp_translations_for_manifold',
            'cusp_translations_for_neighborhood']

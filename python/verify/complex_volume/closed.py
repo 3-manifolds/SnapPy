@@ -2,19 +2,19 @@ from ...sage_helper import _within_sage, sage_method
 from ...math_basics import prod
 
 from ...snap import peripheral
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
+from ...snap.t3mlite import simplex
 
 if _within_sage:
     from sage.all import pi, xgcd
     import sage.all
 
+from .. import verifyHyperbolicity
+
 from .adjust_torsion import *
 from .compute_ptolemys import *
-from .. import verifyHyperbolicity
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ...snap import t3mlite as t3m
 
 __all__ = ['verified_complex_volume_closed_torsion']
-
 
 def _compute_holonomy(manifold, shapes):
     """
@@ -128,8 +128,8 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
     # Keys for the dual edges in cusp triangulation
     cusp_dual_edges = [ (i, F, V)
              for i in range(manifold.num_tetrahedra())
-             for F in t3m.TwoSubsimplices
-             for V in t3m.ZeroSubsimplices
+             for F in simplex.TwoSubsimplices
+             for V in simplex.ZeroSubsimplices
              if F & V ]
 
     # Compute 1-cocycle in C^1(boundary; C^*) matching the holonomy

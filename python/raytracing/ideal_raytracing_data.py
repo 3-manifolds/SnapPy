@@ -3,21 +3,16 @@ from snappy import Triangulation
 
 from snappy.SnapPy import matrix, vector
 
-from snappy.snap.mcomplex_base import *
-
-from ..verify.cuspCrossSection import *
-
+from ..snap.mcomplex_base import *
+from ..snap.cusp_cross_section import *
+from ..drilling import geometric_structure
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
 from .hyperboloid_utilities import *
 from .upper_halfspace_utilities import *
 
-from ..drilling import geometric_structure
-
 from .raytracing_data import *
-
-from math import sqrt
 
 __all__ = ['IdealRaytracingData']
 

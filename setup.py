@@ -285,7 +285,7 @@ def replace_ext(file, new_ext):
     return root + '.' + new_ext
 
 if have_cython:
-    if [int(x) for x in cython_version.split('.')] < [0, 28]:
+    if [int(x) for x in cython_version.split('.')[:2]] < [0, 28]:
         raise ImportError
 
     if 'clean' not in sys.argv:

@@ -4,7 +4,7 @@
 News
 ====
 
-* Version 3.1 (May 2023):
+* Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`
     for going from a link exterior to a link diagram taken from

@@ -285,12 +285,12 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
         if subset != 'all':
             raise ValueError("Subset must be one of 'all', 'kabaya', or 'brasile'")
 
-    slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
-    slopes.discard( (0, 0) )
+    slopes = {normalize_slope(S.boundary_slopes()) for S in surfaces}
+    slopes.discard((0, 0))
     return sorted(slopes)
 
 
 if __name__ == "__main__":
     import doctest
-    names = {'Manifold':snappy.Manifold}
+    names = {'Manifold': snappy.Manifold}
     doctest.testmod(extraglobs=names)

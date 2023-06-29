@@ -189,10 +189,10 @@ def _compute_point_identification_dict(choose_generators_info):
     the set of equivalent triples.
     """
 
-    # Initialize: each vertex is mapped to set of only it self
-    d = dict( [ (Vertex(tet, v0, v1, v2), set([Vertex(tet, v0, v1, v2)]))
-                for tet in range(len(choose_generators_info))
-                for v0, v1, v2, v3 in _perm4_iterator() ] )
+    # Initialize: each vertex is mapped to set of only itself
+    d = {Vertex(tet, v0, v1, v2): {Vertex(tet, v0, v1, v2)}
+         for tet in range(len(choose_generators_info))
+         for v0, v1, v2, v3 in _perm4_iterator()}
 
     # Go through all points on faces not corresponding to
     # generators

@@ -46,8 +46,8 @@ correct.
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
     from sage.all import (ZZ, PolynomialRing, LaurentPolynomialRing,
-                          GF, QQ, CyclotomicField, vector, matrix,
-                          identity_matrix, block_matrix, diagonal_matrix,
+                          GF, CyclotomicField, vector, matrix,
+                          identity_matrix, block_matrix,
                           MatrixSpace, ChainComplex, prime_range)
 
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,
@@ -81,7 +81,7 @@ class MatrixRepresentation():
         if isinstance(matrices, dict):
             images = matrices
             all_gens = list(generators) + [g.swapcase() for g in generators]
-            assert set(matrices.keys()) == set(all_gens)
+            assert set(matrices) == set(all_gens)
         else:
             assert len(generators) == len(matrices)
             images = dict()
@@ -185,7 +185,6 @@ def poly_to_rep(f):
     left action of x on F[x]/(f).
     """
     assert f.is_monic()
-    x = f.parent().gen()
     d = f.degree()
     last_column = [-f[e] for e in range(d)]
     I = identity_matrix(d)

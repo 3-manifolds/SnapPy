@@ -586,8 +586,8 @@ class PtolemyCoordinates(dict):
         # See Definition 9.23 of
         # Garoufalidis, Thurston, Zickert
         # The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        # http://arxiv.org/abs/1111.2828
-        face = list(set(range(4)) - set([v0, v1, v2]))[0]
+        # https://arxiv.org/abs/1111.2828
+        face = next(iter(set(range(4)) - {v0, v1, v2}))
         obstruction = self._get_obstruction_variable(face, tet)
 
         # The epsilon permutation sign from Definition 10.1 of

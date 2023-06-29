@@ -76,7 +76,6 @@ cdef class Manifold(Triangulation):
       projection file.
     """
 
-
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             self.init_hyperbolic_structure()
@@ -264,7 +263,6 @@ cdef class Manifold(Triangulation):
         Triangulation._from_string(self, string)
         if initialize_structure:
             self.init_hyperbolic_structure()
-
 
     def _from_bytes(self, bytestring, initialize_structure=True):
         """
@@ -507,7 +505,6 @@ cdef class Manifold(Triangulation):
             symmetry_group._set_c_symmetry_group(symmetries_of_manifold)
 
         return self._cache.save(symmetry_group, 'symmetry_group', of_link)
-
 
     def symmetric_triangulation(self):
         """
@@ -770,8 +767,8 @@ cdef class Manifold(Triangulation):
                      &accuracy,
                      &requires_initialization)
         if not is_known:
-           raise ValueError("The Chern-Simons invariant isn't "
-                            "currently known.")
+            raise ValueError("The Chern-Simons invariant isn't "
+                             "currently known.")
         cs = Real2Number(CS)
         cs.accuracy = accuracy
         return cs
@@ -967,12 +964,12 @@ cdef class Manifold(Triangulation):
 
         if part is not None:
             try:
-               return [a[part] for a in result]
+                return [a[part] for a in result]
             except KeyError:
                 raise ValueError('A non-existent shape data type '
                                  'was specified.')
         else:
-           return ListOnePerLine(result)
+            return ListOnePerLine(result)
 
     def _get_tetrahedra_shapes(self, which_solution):
         """
@@ -1578,7 +1575,6 @@ cdef class Manifold(Triangulation):
         except ValueError:
             pass
 
-
         if return_isometries:
             result = compute_isometries(self.c_triangulation,
                                         other.c_triangulation,
@@ -1840,8 +1836,8 @@ cdef class Manifold(Triangulation):
                 one_vertex_lengths = []
                 for f in range(4):
                     if v != f:
-                         one_vertex_lengths.append(self._number_(
-                             Real2Number(<Real>tet.cross_section.edge_length[v][f])))
+                        one_vertex_lengths.append(self._number_(
+                            Real2Number(<Real>tet.cross_section.edge_length[v][f])))
                     else:
                         one_vertex_lengths.append(None)
                 one_tet_lengths.append(one_vertex_lengths)

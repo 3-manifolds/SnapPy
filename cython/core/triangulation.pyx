@@ -612,9 +612,9 @@ cdef class Triangulation():
             savefile = asksaveasfile(
                 mode='w', title='Save Triangulation', defaultextension='.tri',
                 filetypes = [
-                ('Triangulation and text files', '*.tri *.txt', 'TEXT'),
-                ('All text files', '', 'TEXT'),
-                ('All files', '')])
+                    ('Triangulation and text files', '*.tri *.txt', 'TEXT'),
+                    ('All text files', '', 'TEXT'),
+                    ('All files', '')])
             if savefile:
                 filename = savefile.name
                 savefile.close()
@@ -815,7 +815,6 @@ cdef class Triangulation():
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
-
     def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To
@@ -856,7 +855,6 @@ cdef class Triangulation():
 
         if decoration:
             decorated_isosig.set_peripheral_from_decoration(self, decoration)
-
 
     def __reduce__(self):
         """
@@ -934,25 +932,18 @@ cdef class Triangulation():
         triangulation_to_data(self.c_triangulation, &data)
 
         result_cusp_indices = []
-        for i from 0 <= i < self.num_tetrahedra():
-          row = []
-          for v from 0 <= v < 4:
-            row.append(
-               data.tetrahedron_data[i].cusp_index[v]
-               )
-          result_cusp_indices.append(row)
+        for i in range(self.num_tetrahedra()):
+            row = [data.tetrahedron_data[i].cusp_index[v]
+                   for v in range(4)]
+            result_cusp_indices.append(row)
 
         result_curves = []
-        for i from 0 <= i < self.num_tetrahedra():
-          for j from 0 <= j < 2:       # meridian, longitude
-            for k from 0 <= k < 2:     # righthanded, lefthanded
-              row = []
-              for v from 0 <= v < 4:
-                for f from 0 <= f < 4:
-                  row.append(
-                     data.tetrahedron_data[i].curve[j][k][v][f]
-                     )
-              result_curves.append(row)
+        for i in range(self.num_tetrahedra()):
+            for j in range(2):         # meridian, longitude
+                for k in range(2):     # righthanded, lefthanded
+                    data_ijk = data.tetrahedron_data[i].curve[j][k]
+                    row = [data_ijk[v][f] for v in range(4) for f in range(4)]
+                    result_curves.append(row)
 
         free_triangulation_data(data)
         return (result_cusp_indices, result_curves)
@@ -1384,7 +1375,6 @@ cdef class Triangulation():
         for i in range(n):
             fill_cusp_spec[i] = True
 
-
         close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold, mark_solid_tori)
         number_the_tetrahedra(c_new_tri)
         number_the_edge_classes(c_new_tri)
@@ -1508,7 +1498,6 @@ cdef class Triangulation():
           * cusp gluing equations for longitudes: 'longitude'
         """
 
-
         cdef Integer_matrix_with_explanations c_matrix
 
         if N < 2 or N > 15:
@@ -1562,8 +1551,9 @@ cdef class Triangulation():
             for i in range(self.num_cusps()):
                 cusp_info = self.cusp_info(i)
 
-                to_do = [] # keep a todo list where we add (meridian,longitude)
-                           # pairs to process later
+                to_do = []
+                # keep a todo list where we add (meridian, longitude)
+                # pairs to process later
 
                 if cusp_info.is_complete:
 
@@ -1888,8 +1878,6 @@ cdef class Triangulation():
         class and 1 on the fourth face class but zero on every other of the
         four face classes.
         """
-
-
         return (
             ptolemyManifoldMethods.get_generalized_ptolemy_obstruction_classes(
                 self, N))
@@ -2556,6 +2544,7 @@ cdef class Triangulation():
                                           degree,
                                           strategy=strategy,
                                           num_threads=num_threads)
+
         def index(subgroup):
             return 1 if len(subgroup) == 0 else len(subgroup[0])
 
@@ -2870,7 +2859,6 @@ cdef class Triangulation():
             if result == func_bad_input:
                 raise ValueError('The peripheral data %s is not acceptable.' %
                                  peripheral_data)
-
 
     def has_finite_vertices(self):
         """

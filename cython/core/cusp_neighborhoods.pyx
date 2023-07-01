@@ -33,7 +33,7 @@ cdef class CCuspNeighborhood():
 
     def __repr__(self):
         N = self._num_cusps
-        return 'Cusp Neighborhood with %d cusp%s'%(
+        return 'Cusp Neighborhood with %d cusp%s' % (
             N, N != 1 and 's' or '')
 
     def manifold(self):
@@ -65,7 +65,7 @@ cdef class CCuspNeighborhood():
             return N
         else:
             raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%which_cusp)
+                             'exist.' % which_cusp)
 
     def num_cusps(self):
         """
@@ -78,7 +78,7 @@ cdef class CCuspNeighborhood():
         Return the topological type of the specified cusp.
         """
         N = self.check_index(which_cusp)
-        topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood,N)
+        topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood, N)
         return CuspTopology[topology]
 
     def get_displacement(self, which_cusp = 0):
@@ -92,8 +92,8 @@ cdef class CCuspNeighborhood():
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        disp =  Number(Real2gen(get_cusp_neighborhood_displacement(
-                self.c_cusp_neighborhood, N)))
+        disp = Number(Real2gen(get_cusp_neighborhood_displacement(
+            self.c_cusp_neighborhood, N)))
         return self._number_(disp)
 
     def set_displacement(self, new_displacement, which_cusp=0):
@@ -241,15 +241,15 @@ cdef class CCuspNeighborhood():
         if segment_list == NULL:
             raise RuntimeError('The Ford domain construction failed.')
         result = []
-        for n from 0 <= n < segment_list.num_segments:
+        for n in range(segment_list.num_segments):
             segment = segment_list.segment[n]
             if high_precision:
                 pair = (
                     self._number_(Complex2Number(segment.endpoint[0])),
-                    self._number_(Complex2Number(segment.endpoint[1])) )
+                    self._number_(Complex2Number(segment.endpoint[1])))
             else:
-                pair = ( Complex2complex(segment.endpoint[0]),
-                         Complex2complex(segment.endpoint[1]) )
+                pair = (Complex2complex(segment.endpoint[0]),
+                        Complex2complex(segment.endpoint[1]))
             result.append(pair)
         free_cusp_neighborhood_segment_list(segment_list)
         return result
@@ -275,7 +275,7 @@ cdef class CCuspNeighborhood():
             if high_precision:
                 endpoints = (
                     self._number_(Complex2Number(segment.endpoint[0])),
-                    self._number_(Complex2Number(segment.endpoint[1])) )
+                    self._number_(Complex2Number(segment.endpoint[1])))
             else:
                 endpoints = (Complex2complex(segment.endpoint[0]),
                              Complex2complex(segment.endpoint[1]))
@@ -299,10 +299,11 @@ cdef class CCuspNeighborhood():
         which_cusp = self.check_index(which_cusp)
         if HoroballViewer:
             return ViewerWindow(HoroballViewer, self, which_cusp=which_cusp,
-                cutoff=cutoff, title='Cusp neighborhood%s of %s'%(
-                    's' if self.num_cusps() > 1 else '', self.manifold_name))
-        else:
-            raise RuntimeError('The HoroballViewer class was not imported.')
+                                cutoff=cutoff,
+                                title='Cusp neighborhood%s of %s' % (
+                                    's' if self.num_cusps() > 1 else '',
+                                    self.manifold_name))
+        raise RuntimeError('The HoroballViewer class was not imported.')
 
 
 class CuspNeighborhood(CCuspNeighborhood):

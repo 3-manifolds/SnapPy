@@ -33,7 +33,7 @@ def bundle_from_string(desc):
         g, n, monodromy = m.groups()
         g, n = int(g), int(n)
         monodromy = monodromy.replace(',', '*').replace('_', '')
-        surface = twister.Surface( (g, n) )
+        surface = twister.Surface((g, n))
         return surface.bundle(monodromy, return_type='string')
 
 
@@ -45,7 +45,7 @@ def splitting_from_string(desc):
         g, n = int(g), int(n)
         gluing = gluing.replace(',', '*').replace('_', '')
         handles = handles.replace(',', '*').replace('_', '')
-        surface = twister.Surface( (g, n) )
+        surface = twister.Surface((g, n))
         return surface.splitting(gluing, handles, return_type='string')
 
 
@@ -57,7 +57,7 @@ rev_spec_dict = {(5, 0) : 'm',
                  (6, 1) : 'x',
                  (7, 1) : 'y'}
 
-triangulation_help =  """
+triangulation_help = """
     A %s is specified by a string or a byte sequence, according to the
     conventions detailed in its docstring.
     """
@@ -78,7 +78,7 @@ cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
         else:
             c_terse.glues_to_old_tet[n] = 0
         bit += 1
-        if bit%8 == 0:
+        if bit % 8 == 0:
             m += 1
             bit = 0
     if bit:
@@ -173,15 +173,14 @@ def get_triangulation_tester():
 
     M = database.HTLinkExteriors['L13n9331']
     specs = [M._to_string(), 'm003', 'm004', 'v1205(2,3)', 'x012', 'y123',
-         'L13n9331(3,4)(2,3)(2,1)', 'K7_1', '6_1',
-         '5^2_1(3,4)(1,-2)', '8_3^3', 'L104001', '12n123', '16n1235',
-         'b++RL', 'b-+RRL', 'b+-RL', 'b--RRL',
-         'Braid[1,2,-1,-2]', 'DT:'+repr(M.DT_code()), 'DT[4,6,2]',
-         'DT['+M.DT_code(alpha=True) + ']',
-         'DT:'+M.DT_code(alpha=True),
-         'Bundle(S_{1,1}, [a0, B1])', 'Splitting(S_{1,0}, [b1, A0], [a0,B1])',
-         'dLQbcccdxwb',
-         ]
+             'L13n9331(3,4)(2,3)(2,1)', 'K7_1', '6_1',
+             '5^2_1(3,4)(1,-2)', '8_3^3', 'L104001', '12n123', '16n1235',
+             'b++RL', 'b-+RRL', 'b+-RL', 'b--RRL',
+             'Braid[1,2,-1,-2]', 'DT:'+repr(M.DT_code()), 'DT[4,6,2]',
+             'DT['+M.DT_code(alpha=True) + ']',
+             'DT:'+M.DT_code(alpha=True),
+             'Bundle(S_{1,1}, [a0, B1])', 'Splitting(S_{1,0}, [b1, A0], [a0,B1])',
+             'dLQbcccdxwb']
 
     for spec in specs:
         M = Manifold(spec)
@@ -201,22 +200,25 @@ def get_triangulation_tester():
 # number of crossings; the value is the number of knots with that many
 # crossings.
 
-Alternating_numbers = { 3:1, 4:1, 5:2, 6:3, 7:7, 8:18, 9:41, 10:123, 11:367,
-                        12:1288, 13:4878, 14:19536, 15:85263, 16:379799 }
+Alternating_numbers = {3: 1, 4: 1, 5: 2, 6: 3, 7: 7, 8: 18,
+                       9: 41, 10: 123, 11: 367,
+                       12: 1288, 13: 4878, 14: 19536, 15: 85263,
+                       16: 379799}
 
-Nonalternating_numbers = { 8:3, 9:8, 10:42, 11:185, 12:888, 13:5110,
-                           14:27436, 15:168030, 16:1008906 }
+Nonalternating_numbers = {8: 3, 9: 8, 10: 42, 11: 185, 12: 888,
+                          13: 5110,
+                          14: 27436, 15: 168030, 16: 1008906}
 
 Alternating_offsets = {}
 offset = 0
 for i in range(3, 17):
     Alternating_offsets[i] = offset
-    offset +=  Alternating_numbers[i]
+    offset += Alternating_numbers[i]
 Num_Alternating = offset
 
 Nonalternating_offsets = {}
 offset = 0
-for i in range(8,17):
+for i in range(8, 17):
     Nonalternating_offsets[i] = offset
     offset += Nonalternating_numbers[i]
 Num_Nonalternating = offset
@@ -227,10 +229,12 @@ def extract_HT_knot(record, crossings, alternation):
     size = (1+crossings)//2
     for byte in record[:size]:
         first_nybble = (byte & 0xf0) >> 4
-        if first_nybble == 0: first_nybble = 16
+        if first_nybble == 0:
+            first_nybble = 16
         DT.append(2*first_nybble)
         second_nybble = byte & 0x0f
-        if second_nybble == 0: second_nybble = 16
+        if second_nybble == 0:
+            second_nybble = 16
         DT.append(2*second_nybble)
     if alternation == 'n':
         signs = record[-2]<<8 | record[-1]
@@ -244,20 +248,20 @@ def extract_HT_knot(record, crossings, alternation):
 def get_HT_knot_DT(crossings, alternation, index):
     size = (1 + crossings) // 2
     index -= 1
-    if ( alternation == 'a'
-         and crossings in Alternating_numbers.keys()
-         and 0 <= index < Alternating_numbers[crossings] ):
-        offset = 8*(Alternating_offsets[crossings] +  index)
+    if (alternation == 'a'
+            and crossings in Alternating_numbers
+            and 0 <= index < Alternating_numbers[crossings]):
+        offset = 8*(Alternating_offsets[crossings] + index)
         Alternating_table.seek(offset)
         data = Alternating_table.read(size)
-        record = struct.unpack('%dB'%size, data)
-    elif ( alternation == 'n'
-         and crossings in Nonalternating_numbers.keys()
-         and 0 <= index < Nonalternating_numbers[crossings] ):
-        offset = 10*(Nonalternating_offsets[crossings] +  index)
+        record = struct.unpack('%dB' % size, data)
+    elif (alternation == 'n'
+          and crossings in Nonalternating_numbers
+          and 0 <= index < Nonalternating_numbers[crossings]):
+        offset = 10*(Nonalternating_offsets[crossings] + index)
         Nonalternating_table.seek(offset)
         data = Nonalternating_table.read(size+2)
-        record = struct.unpack('%dB'%(size+2), data)
+        record = struct.unpack('%dB' % (size+2), data)
     else:
         raise ValueError('You have specified a Hoste-Thistlethwaite '
                          'knot with an \n'
@@ -294,7 +298,7 @@ class Census:
     # subclasses redefine this
     length = 0
 
-    def __init__(self, indices=(0,0,0)):
+    def __init__(self, indices=(0, 0, 0)):
         myslice = slice(*indices)
         self.start, self.stop, self.step = myslice.indices(self.length)
         self.index = self.start
@@ -400,14 +404,14 @@ class CuspedCensus(Census):
                             - self.seven_length)
             # Make this work without passing the spec to Manifold()
             num = repr(census_index)
-            spec =  "t" + "0"*(5 - len(num)) + num
+            spec = "t" + "0"*(5 - len(num)) + num
             tarpath = "morwen8/" + spec
             try:
                 filedata = self.Census_Morwen8.extractfile(tarpath).read()
                 c_triangulation = read_triangulation_from_string(filedata)
             except:
                 raise IOError('The Morwen 8 tetrahedra manifold %s '
-                              'was not found.'% spec)
+                              'was not found.' % spec)
             result = Manifold(spec='empty')
             result.set_c_triangulation(c_triangulation)
             return result
@@ -454,7 +458,7 @@ class ObsOrientableClosedCensus(Census):
     orientability = Orientability.index('orientable')
     path = str(manifold_path)
 
-    def __init__(self, indices=(0,11031,1)):
+    def __init__(self, indices=(0, 11031, 1)):
         if ObsOrientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
                                     'ClosedOrientableDistinct.txt')
@@ -464,7 +468,7 @@ class ObsOrientableClosedCensus(Census):
         self.length = len(ObsOrientableClosedCensus.data)
         Census.__init__(self, indices)
 
-    def __getitem__(self,n):
+    def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
         cdef Manifold result
         if isinstance(n, slice):
@@ -477,7 +481,7 @@ class ObsOrientableClosedCensus(Census):
             raise RuntimeError('SnapPea failed to read the census manifold.')
         result = Triangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
-        result.dehn_fill(( int(m),int(l)) )
+        result.dehn_fill((int(m), int(l)))
         return result.with_hyperbolic_structure()
 
 
@@ -489,7 +493,7 @@ class ObsNonorientableClosedCensus(Census):
     orientability = Orientability.index('nonorientable')
     path = str(manifold_path)
 
-    def __init__(self, indices=(0,17,1)):
+    def __init__(self, indices=(0, 17, 1)):
         if ObsNonorientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
                                     'ClosedNonorientableDistinct.txt')
@@ -499,7 +503,7 @@ class ObsNonorientableClosedCensus(Census):
         self.length = len(ObsNonorientableClosedCensus.data)
         Census.__init__(self, indices)
 
-    def __getitem__(self,n):
+    def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
         cdef Manifold result
         if isinstance(n, slice):
@@ -512,7 +516,7 @@ class ObsNonorientableClosedCensus(Census):
             raise RuntimeError('SnapPea failed to read the census manifold.')
         result = Triangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
-        result.dehn_fill( (int(m),int(l)) )
+        result.dehn_fill((int(m), int(l)))
         return result.with_hyperbolic_structure()
 
 
@@ -604,18 +608,18 @@ class ObsLinkExteriors(Census):
     """
     # num_links[component][crossings] is the number of links with
     # specified number of components and crossings.
-    num_links= [ [], [0, 0, 0, 1, 1, 2, 3, 7, 21, 49, 166, 552],
-                 [0, 0, 0, 0, 1, 1, 3, 8, 16, 61, 183],
-                 [0, 0, 0, 0, 0, 0, 3, 1, 10, 21, 74],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 24],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]]
+    num_links= [[], [0, 0, 0, 1, 1, 2, 3, 7, 21, 49, 166, 552],
+                [0, 0, 0, 0, 1, 1, 3, 8, 16, 61, 183],
+                [0, 0, 0, 0, 0, 0, 3, 1, 10, 21, 74],
+                [0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 24],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]]
 
     max_crossings = 11
 
-    def __init__(self, components, indices=(0,10000,1)):
+    def __init__(self, components, indices=(0, 10000, 1)):
         self.Christy_links = tarfile.open(link_archive, 'r:*')
 
-        if not (1 <= components < len(self.num_links) ):
+        if not (1 <= components < len(self.num_links)):
             raise IndexError('SnapPy has no data on links with '
                              '%s components.' % components)
 
@@ -631,12 +635,12 @@ class ObsLinkExteriors(Census):
         return ('Christy census of %s-component link complements '
                 'in S^3' % self.components)
 
-    def __getitem__(self,j):
+    def __getitem__(self, j):
         if isinstance(j, slice):
             return self.__class__(j.indices(self.length))
         so_far = 0
         for k in range(self.max_crossings + 1):
-            n =  self.num_links[self.components][k]
+            n = self.num_links[self.components][k]
             so_far = so_far + n
             if so_far > j:
                 l = j - so_far + n + 1
@@ -644,15 +648,15 @@ class ObsLinkExteriors(Census):
                 if self.components > 1:
                     name = "%d^%d_%d" % (k, self.components, l)
                 else:
-                    name = "%d_%d" % (k,  l)
-                tarpath =  'ChristyLinks/%s'%filename
+                    name = "%d_%d" % (k, l)
+                tarpath = 'ChristyLinks/%s' % filename
                 try:
                     filedata = self.Christy_links.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
                 except:
                     raise IOError('The link complement %s was not '
-                                  'found.'%filename)
-                result =  Triangulation('empty')
+                                  'found.' % filename)
+                result = Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
                 return result.with_hyperbolic_structure()
@@ -703,7 +707,7 @@ class ObsMorwenLinks(Census):
                 if strline[1] == second_char:
                     self.DT_codes.append(strline.strip())
 
-        self.length =  len(self.DT_codes)
+        self.length = len(self.DT_codes)
         Census.__init__(self, indices=(0, len(self.DT_codes), 1))
 
     def __getitem__(self, n):
@@ -714,7 +718,7 @@ class ObsMorwenLinks(Census):
             Census.__init__(SC, indices=(0, len(SC.DT_codes), 1))
             return SC
         else:
-            name = str('DT:%s'%self.DT_codes[n])
+            name = str('DT:%s' % self.DT_codes[n])
             result = Manifold(name)
             result.set_name(name)
             return result
@@ -726,7 +730,7 @@ cdef c_Triangulation* get_fibered_manifold_associated_to_braid(num_strands,
                                                                braid_word):
     if num_strands < 2:
         raise ValueError('Braids must have at least 2 strands.')
-    allowed_letters = ([x for x in range(1,num_strands)] +
+    allowed_letters = ([x for x in range(1, num_strands)] +
                        [x for x in range(-num_strands+1, 0)])
     if False in [b in allowed_letters for b in braid_word]:
         raise ValueError('The braid word is invalid.')
@@ -741,28 +745,28 @@ cdef c_Triangulation* get_fibered_manifold_associated_to_braid(num_strands,
     c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
     name = to_byte_str('Braid:' + repr(braid_word))
-    set_triangulation_name(c_triangulation,name)
+    set_triangulation_name(c_triangulation, name)
     return c_triangulation
 
 # Link Editor support
 
-strandtype = {'X': KLPStrandX,     'Y': KLPStrandY}
-signtype =   {'R': KLPHalfTwistCL, 'L': KLPHalfTwistCCL}
+strandtype = {'X': KLPStrandX, 'Y': KLPStrandY}
+signtype = {'R': KLPHalfTwistCL, 'L': KLPHalfTwistCCL}
 
 cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_vertices=True) except *:
     cdef KLPProjection P
-    cdef c_Triangulation  *c_triangulation
+    cdef c_Triangulation *c_triangulation
 
     P.num_crossings, P.num_free_loops, P.num_components, Pycrossings = pythonklp
     P.crossings = <KLPCrossing *>malloc(P.num_crossings * sizeof(KLPCrossing))
     if P.crossings == NULL:
         raise RuntimeError('Could not allocate a crossing table.')
 
-    for i from 0 <= i < P.num_crossings:
+    for i in range(P.num_crossings):
         cr_dict = Pycrossings[i]
         neighbor = cr_dict['Xbackward_neighbor']
         P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPBackward] = &P.crossings[neighbor]
-        neighbor =  cr_dict['Xforward_neighbor']
+        neighbor = cr_dict['Xforward_neighbor']
         P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPForward] = &P.crossings[neighbor]
         neighbor = cr_dict['Ybackward_neighbor']
         P.crossings[i].neighbor[<int>KLPStrandY][<int>KLPBackward] = &P.crossings[neighbor]

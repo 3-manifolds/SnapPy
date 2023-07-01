@@ -85,7 +85,7 @@ class SpatialDict:
                 d = self.distance(rep, other_rep)
                 if d < self._right_distance_value:
                     return value
-                if not (self._left_distance_value < d):
+                if not (d > self._left_distance_value):
                     raise InsufficientPrecisionError(
                         "Could neither verify that the two given tiles are "
                         "the same nor that they are distinct. "

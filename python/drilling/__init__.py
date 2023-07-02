@@ -2,7 +2,6 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .line import R13LineWithMatrix
 from .geometric_structure import add_r13_geometry, word_to_psl2c_matrix
 from .geodesic_info import GeodesicInfo, sample_line
 from .perturb import perturb_geodesics
@@ -15,7 +14,9 @@ from .cusps import (
     index_geodesics_and_add_post_drill_infos,
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
+from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
+from ..tiling.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
@@ -330,7 +331,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     m = word_to_psl2c_matrix(mcomplex, word)
     _verify_not_parabolic(m, mcomplex, word)
     # Line fixed by matrix
-    line = R13LineWithMatrix.from_psl2c_matrix(m)
+    line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
 
     # Pick a point on the line
     start_point = sample_line(line)

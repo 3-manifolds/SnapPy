@@ -1,8 +1,8 @@
 from .spatial_dict import SpatialDict, floor_as_integers
-from .line import R13Line, R13LineWithMatrix
 
 from ..hyperboloid import ( # type: ignore
     r13_dot, o13_inverse, distance_unit_time_r13_points)
+from ..tiling.line import R13Line, R13LineWithMatrix
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore

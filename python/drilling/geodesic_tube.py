@@ -1,7 +1,6 @@
 from . import constants
 from . import exceptions
 from . import epsilons
-from .line import distance_r13_lines, R13Line, R13LineWithMatrix
 from .geodesic_info import GeodesicInfo
 from .quotient_space import balance_end_points_of_line, ZQuotientLiftedTetrahedronSet
 from . import geometric_structure
@@ -9,6 +8,7 @@ from . import geometric_structure
 from ..hyperboloid import ( # type: ignore
     r13_dot,
     o13_inverse)
+from ..tiling.line import distance_r13_lines, R13Line, R13LineWithMatrix
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore

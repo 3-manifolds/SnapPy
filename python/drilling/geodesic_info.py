@@ -1,10 +1,10 @@
-from .line import R13LineWithMatrix
 from . import epsilons
 from . import constants
 from . import exceptions
 
 from ..hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
+from ..tiling.line import R13LineWithMatrix
 from ..snap.t3mlite import simplex # type: ignore
 from ..snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore

@@ -1,4 +1,4 @@
-from .line import R13Line, R13LineWithMatrix
+from .fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..verify.shapes import compute_hyperbolic_shapes # type: ignore
 from ..snap.fundamental_polyhedron import FundamentalPolyhedronEngine # type: ignore
@@ -6,6 +6,7 @@ from ..snap.kernel_structures import TransferKernelStructuresEngine # type: igno
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron, Vertex # type: ignore
 from ..SnapPy import word_as_list # type: ignore
 
+from ..tiling.line import R13Line, R13LineWithMatrix
 from ..hyperboloid import (o13_inverse,  # type: ignore
                            time_r13_normalise,
                            space_r13_normalise,
@@ -254,8 +255,7 @@ def _compute_core_curve(
             for i in range(abs(f)):
                 result = result * m
 
-    return R13LineWithMatrix.from_psl2c_matrix(result)
-
+    return r13_fixed_line_of_psl2c_matrix(result)
 
 def _find_standard_basepoint(mcomplex : Mcomplex,
                              vertex : Vertex) -> Tuple[Tetrahedron, int]:

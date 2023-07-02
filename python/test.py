@@ -6,6 +6,7 @@ import spherogram.test
 import snappy.matrix
 import snappy.verify.test
 import snappy.ptolemy.test
+import snappy.tiling.floor
 import snappy.raytracing.cohomology_fractal
 import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
@@ -103,6 +104,7 @@ modules += [snappy.SnapPy,
             snappy,
             snap_doctester,
             snappy.matrix,
+            snappy.tiling.floor,
             snappy.raytracing.cohomology_fractal,
             snappy.raytracing.geodesic_tube_info,
             snappy.raytracing.geodesics,

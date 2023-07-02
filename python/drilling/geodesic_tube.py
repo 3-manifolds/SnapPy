@@ -2,7 +2,8 @@ from . import constants
 from . import exceptions
 from . import epsilons
 from .geodesic_info import GeodesicInfo
-from .quotient_space import balance_end_points_of_line, ZQuotientLiftedTetrahedronSet
+from .quotient_space import balance_end_points_of_line
+# , ZQuotientLiftedTetrahedronSet
 from . import geometric_structure
 
 from ..hyperboloid import ( # type: ignore
@@ -10,6 +11,7 @@ from ..hyperboloid import ( # type: ignore
     o13_inverse)
 from ..tiling.line import distance_r13_lines, R13Line, R13LineWithMatrix
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
+from ..tiling.lifted_tetrahedron_set import get_lifted_tetrahedron_set
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
@@ -193,7 +195,7 @@ class GeodesicTube:
         # Initialize data structure recording which lifted tetrahedra have
         # already been visited and been added to the result while tiling
         # the quotient space.
-        self._visited_lifted_tetrahedra = ZQuotientLiftedTetrahedronSet(
+        self._visited_lifted_tetrahedra = get_lifted_tetrahedron_set(
             mcomplex,
             balance_end_points_of_line(
                 geodesic.line,

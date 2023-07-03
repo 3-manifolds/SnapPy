@@ -6,10 +6,8 @@ from ..snap.kernel_structures import TransferKernelStructuresEngine # type: igno
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron, Vertex # type: ignore
 from ..SnapPy import word_as_list # type: ignore
 
-from ..tiling.line import R13Line, R13LineWithMatrix
-from ..hyperboloid import (o13_inverse,  # type: ignore
-                           time_r13_normalise,
-                           space_r13_normalise,
+from ..tiling.line import R13LineWithMatrix
+from ..hyperboloid import (space_r13_normalise,
                            r13_dot,
                            unnormalised_plane_eqn_from_r13_points)
 from ..upper_halfspace import sl2c_inverse, psl2c_to_o13 # type: ignore
@@ -193,33 +191,6 @@ def add_r13_geometry(
 
     return mcomplex
 
-_face_to_edges = { f : [ e for e in simplex.OneSubsimplices
-                         if simplex.is_subset(e, f) ]
-                   for f in simplex.TwoSubsimplices }
-
-def add_triangle_bounding_planes(mcomplex : Mcomplex) -> None:
-    """
-    A GeodesicTube can only be built from an Mcomplex if add_r13_geometry
-    and this function (add_structure_necessary_for_tube) was called.
-
-    This function adds R13Line objects for the edges of the tetrahedra.
-    It also adds a bounding plane for each edge of each face of each
-    tetrahedron. Such a bounding plane is perpendicular to the plane supporting
-    the face and intersects the plane in an edge of face. That is, the
-    bounding planes for a face cut out the triangle in the plane supporting
-    the face.
-    """
-
-    for tet in mcomplex.Tetrahedra:
-        tet.R13_edges = {
-            e: R13Line([tet.R13_vertices[simplex.Head[e]],
-                        tet.R13_vertices[simplex.Tail[e]]])
-            for e in simplex.OneSubsimplices }
-        tet.triangle_bounding_planes = {
-            f : { e: _triangle_bounding_plane(tet, f, e)
-                  for e in _face_to_edges[f] }
-            for f in simplex.TwoSubsimplices }
-
 ###############################################################################
 # Helpers
 
@@ -392,17 +363,3 @@ def _filling_matrix(cusp_info : dict) -> FillingMatrix:
 
     return(( m, l),
            (-b, a))
-
-def _make_r13_unit_tangent_vector(direction, point):
-    s = r13_dot(direction, point)
-    return space_r13_normalise(direction + s * point)
-
-def _triangle_bounding_plane(tet, face, edge):
-    v = tet.R13_vertices[face - edge]
-    v0 = tet.R13_vertices[simplex.Head[edge]]
-    v1 = tet.R13_vertices[simplex.Tail[edge]]
-
-    m = time_r13_normalise(
-        v0 / -r13_dot(v0, v) + v1 / -r13_dot(v1, v))
-
-    return _make_r13_unit_tangent_vector(m - v, m)

@@ -1,4 +1,4 @@
-from ..tiling.line import distance_r13_lines
+from ..tiling.distances import distance_r13_lines
 
 from ..drilling.geodesic_tube import GeodesicTube
 from ..drilling.geodesic_info import compute_geodesic_info

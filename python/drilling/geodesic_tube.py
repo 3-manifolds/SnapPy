@@ -3,13 +3,14 @@ from . import exceptions
 from . import epsilons
 from .geodesic_info import GeodesicInfo
 from .quotient_space import balance_end_points_of_line
-# , ZQuotientLiftedTetrahedronSet
-from . import geometric_structure
 
 from ..hyperboloid import ( # type: ignore
     r13_dot,
     o13_inverse)
-from ..tiling.line import distance_r13_lines, R13Line, R13LineWithMatrix
+from ..tiling.line import R13Line, R13LineWithMatrix
+from ..tiling.triangle import add_triangles_to_tetrahedra
+from ..tiling.distances import (distance_r13_lines,
+                                lower_bound_distance_r13_line_triangle)
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..tiling.lifted_tetrahedron_set import get_lifted_tetrahedron_set
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
@@ -35,7 +36,7 @@ def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
     closest to the line is on edge corresponding to the bounding plane.
     """
 
-    geometric_structure.add_triangle_bounding_planes(mcomplex)
+    add_triangles_to_tetrahedra(mcomplex)
 
 class _PendingPiece:
     """
@@ -302,46 +303,12 @@ class GeodesicTube:
                     # Distance of this face to lifted geodesic
                     # (equal to distance of face entry_face of
                     # new_tet)
-                    lower_bound_for_distance_line_to_tet_face(
+                    lower_bound_distance_r13_line_triangle(
                         lifted_geodesic,
-                        tet,
-                        f,
+                        tet.R13_triangles[f],
                         self.mcomplex.verified),
                     entry_cell=entry_face))
 
-
-_face_to_edges = { f : [ e for e in simplex.OneSubsimplices
-                         if simplex.is_subset(e, f) ]
-                   for f in simplex.TwoSubsimplices }
-
-
-def lower_bound_for_distance_line_to_tet_face(
-        line, tet, face, verified):
-
-    RF = line.points[0][0].parent()
-    if verified:
-        epsilon = 0
-    else:
-        epsilon = epsilons.compute_epsilon(RF)
-
-    a0 = r13_dot(tet.R13_planes[face], line.points[0])
-    a1 = r13_dot(tet.R13_planes[face], line.points[1])
-
-    abs0 = abs(a0)
-    abs1 = abs(a1)
-
-    pt = line.points[0] * abs1 + line.points[1] * abs0
-
-    for e in _face_to_edges[face]:
-        if r13_dot(pt, tet.triangle_bounding_planes[face][e]) > epsilon:
-            return distance_r13_lines(line, tet.R13_edges[e])
-
-    p = a0 * a1
-
-    if p > 0:
-        return (-2 * p / line.inner_product).sqrt().arcsinh()
-
-    return RF(0)
 
 if __name__ == '__main__':
     from snappy import *

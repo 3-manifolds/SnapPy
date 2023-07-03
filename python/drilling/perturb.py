@@ -9,7 +9,8 @@ from ..hyperboloid import ( # type: ignore
     r13_dot,
     time_r13_normalise,
     distance_unit_time_r13_points)
-from ..tiling.line import R13Line, distance_r13_lines
+from ..tiling.line import R13Line
+from ..tiling.distances import distance_r13_lines
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore

@@ -406,5 +406,3 @@ def _triangle_bounding_plane(tet, face, edge):
         v0 / -r13_dot(v0, v) + v1 / -r13_dot(v1, v))
 
     return _make_r13_unit_tangent_vector(m - v, m)
-
-

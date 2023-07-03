@@ -6,7 +6,8 @@ from . import exceptions
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 
 from ..hyperboloid import r13_dot # type: ignore
-from ..tiling.line import R13LineWithMatrix, distance_r13_lines
+from ..tiling.line import R13LineWithMatrix
+from ..tiling.distances import distance_r13_lines
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List

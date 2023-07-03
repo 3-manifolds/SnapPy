@@ -1,9 +1,9 @@
+from ..tiling.line import distance_r13_lines
+
 from ..drilling import compute_geodesic_info
 from ..drilling.geodesic_tube import GeodesicTube
-from ..drilling.line import distance_r13_lines
 
 from ..snap.t3mlite import simplex # type: ignore
-
 
 class GeodesicTubeInfo:
     def __init__(self, mcomplex, word, index, is_primitive=None):

@@ -328,29 +328,18 @@ def lower_bound_for_distance_line_to_tet_face(
     abs0 = abs(a0)
     abs1 = abs(a1)
 
-    if abs0 > epsilon and abs1 > epsilon:
-        pt = line.points[0] / abs0 + line.points[1] / abs1
+    pt = line.points[0] * abs1 + line.points[1] * abs0
 
-        for e in _face_to_edges[face]:
-            if r13_dot(pt, tet.triangle_bounding_planes[face][e]) > epsilon:
-                return distance_r13_lines(line, tet.R13_edges[e])
+    for e in _face_to_edges[face]:
+        if r13_dot(pt, tet.triangle_bounding_planes[face][e]) > epsilon:
+            return distance_r13_lines(line, tet.R13_edges[e])
 
-        p = a0 * a1
+    p = a0 * a1
 
-        if p > 0:
-            return (-2 * p / line.inner_product).sqrt().arcsinh()
+    if p > 0:
+        return (-2 * p / line.inner_product).sqrt().arcsinh()
 
-        return RF(0)
-    else:
-        for e in _face_to_edges[face]:
-            p = tet.triangle_bounding_planes[face][e]
-            b0 = r13_dot(line.points[0], p)
-            b1 = r13_dot(line.points[1], p)
-            if b0 > epsilon and b1 > epsilon:
-                return distance_r13_lines(line, tet.R13_edges[e])
-
-        return RF(0)
-
+    return RF(0)
 
 if __name__ == '__main__':
     from snappy import *

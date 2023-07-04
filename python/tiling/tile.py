@@ -1,0 +1,207 @@
+from .line import R13LineWithMatrix
+from .triangle import R13IdealTriangle
+from .lifted_tetrahedron import LiftedTetrahedron
+from .lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                     get_lifted_tetrahedron_set)
+from .distances import lower_bound_distance_r13_line_triangle
+
+from ..hyperboloid import o13_inverse
+from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex
+from ..exceptions import InsufficientPrecisionError # type: ignore
+from ..math_basics import is_RealIntervalFieldElement # type: ignore
+from ..sage_helper import _within_sage # type: ignore
+
+if _within_sage:
+    import sage.all # type: ignore
+
+import heapq
+    
+from typing import Sequence, Union
+
+class Tile:
+    def __init__(self,
+                 tet : Tetrahedron,
+                 lifted_geometric_object : Union[R13LineWithMatrix],
+                 lower_bound_distance):
+        self.tet = tet
+        self.lifted_geometric_object = lifted_geometric_object
+        self.lower_bound_distance = lower_bound_distance
+
+def tile(mcomplex : Mcomplex,
+         geometric_object : Union[R13LineWithMatrix],
+         initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
+         additional_checks = None) -> Sequence[Tile]:
+
+    """
+    Finds the pending piece "closest" to the lifted closed geodesic,
+    adds it to the result and marks the neighboring lifted tetrahedra
+    to the pending queue.
+
+    Here, "closest" is not quite precise because we pick the piece
+    with the lowest lower bound for the distance. Also recall that the
+    distance of a pending piece is the distance between the lifted
+    geodesic L and the entry cell of the lifted tetrahedron, not between
+    L and the lifted tetrahedron itself.
+
+    So the right picture to have in mind is: imagine the 2-skeleton
+    of the triangulation in the quotient space intersecting the boundary
+    of a geodesic tube. As the geodesic tube grows, the intersection
+    sweeps through the 2-skeleton. The pending pieces will be processed in
+    the order the faces of the 2-skeleton are encountered during the
+    sweep.
+    """
+
+    if mcomplex.verified:
+        minus_infinity = mcomplex.RF(-sage.all.Infinity)
+    else:
+        minus_infinity = mcomplex.RF(-1e20)
+
+    # The pending pieces as priority queue - that is, a python list
+    # but we use heapq to access it.
+    pending_lifted_tetrahedra : Sequence[_PendingLiftedTetrahedron] = []
+
+    # Start tiling the tube about the geodesic with the lifted
+    # tetrahedra computed with GeodesicInfo.find_tet_or_core_curve.
+    #
+    # Note that that method guarantees that at least one of the
+    # lifted tetrahedra it intersects the above line. Thus, the tiling
+    # is seeded correctly. That is, we cannot fail in the following way:
+    # assume that the given lifted tetrahedra are far away from the given
+    # line. Then the algorithm below thinks we are done, before we
+    # even started properly tiling - and we obviously get an incomplete
+    # result.
+    #
+    for lifted_tetrahedron in initial_lifted_tetrahedra:
+        heapq.heappush(
+            pending_lifted_tetrahedra,
+            _PendingLiftedTetrahedron(
+                lifted_tetrahedron, minus_infinity))
+
+    # Initialize data structure recording which lifted tetrahedra have
+    # already been visited and been added to the result while tiling
+    # the quotient space.
+    visited_lifted_tetrahedra : LiftedTetrahedronSet = (
+        get_lifted_tetrahedron_set(mcomplex, geometric_object))
+
+    while True:
+        pending_lifted_tetrahedron : _PendingLiftedTetrahedron = (
+            heapq.heappop(pending_lifted_tetrahedra))
+
+        if not visited_lifted_tetrahedra.add(
+                pending_lifted_tetrahedron.lifted_tetrahedron):
+            continue
+
+        tet = pending_lifted_tetrahedron.lifted_tetrahedron.tet
+        m = pending_lifted_tetrahedron.lifted_tetrahedron.o13_matrix
+
+        # Imagine the fixed lift of the given geodesic and how it
+        # relates to the lifted tetrahedron which is the image of
+        # the tetrahedron in the fundamental domain under the matrix.
+        #
+        # Applying the inverse matrix moves the tetrahedron back into
+        # the fundamental domain and thus we obtain the line we want
+        # to record in GeodesicTubePiece.
+        #
+        lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
+
+        if additional_checks:
+            additional_checks(tet, lifted_geometric_object)
+
+        # Emit Tile
+        yield Tile(tet,
+                   lifted_geometric_object,
+                   pending_lifted_tetrahedron.lower_bound_distance)
+
+        # For all faces ...
+        for f, new_tet in tet.Neighbor.items():
+            # ... except the one that was used to reach this lifted tetrahedron
+            if f == pending_lifted_tetrahedron.entry_cell:
+                continue
+
+            entry_face = tet.Gluing[f].image(f)
+            heapq.heappush(
+                pending_lifted_tetrahedra,
+                _PendingLiftedTetrahedron(
+                    LiftedTetrahedron(
+                        new_tet,
+                        # Inverse of tet.O13_matrices[f]
+                        m * new_tet.O13_matrices[entry_face]),
+                    # Distance of this face to lifted geodesic
+                    # (equal to distance of face entry_face of
+                    # new_tet)
+                    _lower_bound_distance_to_triangle(
+                        lifted_geometric_object,
+                        tet.R13_triangles[f],
+                        mcomplex.verified),
+                    entry_cell=entry_face))
+
+def _lower_bound_distance_to_triangle(
+        geometric_object : Union[R13LineWithMatrix],
+        triangle : R13IdealTriangle,
+        verified : bool):
+    if isinstance(geometric_object, R13LineWithMatrix):
+        return lower_bound_distance_r13_line_triangle(
+            geometric_object.r13_line, triangle, verified)
+    raise Exception("Unexpected geometric_object")
+            
+class _PendingLiftedTetrahedron:
+    """
+    A lifted tetrahedron that still needs to be processed by GeodesicTube
+    together with the face through which this lifted tetrahedron was
+    reached.
+
+    The lifted tetrahedron lives in the quotient space of the hyperboloid
+    model by (powers of) the matrix corresponding to the closed geodesic,
+    see ZQuotientLiftedTetrahedronSet.
+
+    The algorithm in GeodesicTube might add the same lifted tetrahedron
+    multiple times to the queue of pending pieces as there are four
+    neighboring lifted tetrahedra from which this lifted tetrahedron can
+    be reached.
+
+    Let L be the line (in the quotient space) about which we develop the
+    geodesic tube. lower_bound is a lower bound on the distance between
+    L and the face through which this lifted tetrahedron was reached.
+    Note that lower_bound might be larger than the distance between L and
+    this lifted tetrahedron (which is the minimum of all distances between
+    L and any of the faces of this lifted tetrahedron).
+
+    The < operator is overloaded so that the piece with the lowest
+    lower_bound will be picked up next by a priority queue.
+
+    If pieces are processed in this order, then the lower_bound of the
+    next piece will actually be a lower bound for the distance between L
+    and the lifted tetrahedron (with other pending pieces for the same
+    lifted tetrahedron having higher values for lower_bound and thus
+    being further down the queue).
+    """
+
+    def __init__(self,
+                 lifted_tetrahedron : LiftedTetrahedron,
+                 lower_bound_distance,
+                 entry_cell : int = simplex.T):
+        self.lifted_tetrahedron = lifted_tetrahedron
+        self.lower_bound_distance = lower_bound_distance
+
+        # Either element of simplex.ZeroSubsimplices (if piece was reached
+        # through another piece) or simplex.T (if this pending piece was
+        # used to start tiling).
+        self.entry_cell = entry_cell
+
+        if is_RealIntervalFieldElement(lower_bound_distance):
+            # For convenience, lower_bound is an interval but it is only
+            # the left value of the interval that is relevant and that we
+            # should use: A < B can be False for two intervals even
+            # when A's left value is lower than B's left value.
+            if lower_bound_distance.is_NaN():
+                raise InsufficientPrecisionError(
+                    "A NaN was encountered while developing a tube about a "
+                    "geodesic. "
+                    "Increasing the precision will probably fix this.")
+
+            self._key = lower_bound_distance.lower()
+        else:
+            self._key = lower_bound_distance
+
+    def __lt__(self, other):
+        return self._key < other._key

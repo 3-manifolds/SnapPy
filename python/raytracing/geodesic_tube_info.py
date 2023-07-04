@@ -53,7 +53,7 @@ class GeodesicTubeInfo:
                 if core_curve:
                     d = distance_r13_lines(
                         core_curve.r13_line,
-                        piece.lifted_geodesic)
+                        piece.lifted_geometric_object.r13_line)
 
                     if d < self.dist_to_core_curve:
                         self.dist_to_core_curve = d
@@ -61,12 +61,12 @@ class GeodesicTubeInfo:
         result = []
 
         for piece in self.geodesic_tube.pieces:
-            if piece.lower_bound > radius:
+            if piece.lower_bound_distance > radius:
                 break
             result.append(
                 (piece.tet.Index,
                  [ piece.tet.to_coordinates_in_symmetric_tet * pt
-                   for pt in piece.lifted_geodesic.points] ))
+                   for pt in piece.lifted_geometric_object.r13_line.points] ))
 
         return result, radius
 
@@ -96,10 +96,10 @@ class GeodesicTubeInfo:
         # We should ask snappy.drilling for the two tetrahedra adjacent to
         # a face.
         piece = self._get_pieces_covering_geodesic()[0]
-        point = piece.lifted_geodesic.points[0]
+        point = piece.lifted_geometric_object.r13_line.points[0]
         for other_piece in other._get_pieces_covering_geodesic():
             if piece.tet == other_piece.tet:
-                for other_point in other_piece.lifted_geodesic.points:
+                for other_point in other_piece.lifted_geometric_object.r13_line.points:
                     if _are_parallel_light_vectors(point, other_point, 1e-5):
                         return True
         return False
@@ -116,8 +116,8 @@ class GeodesicTubeInfo:
                 if i < j:
                     if piece0.tet == piece1.tet:
                         if _are_parallel_light_vectors(
-                                piece0.lifted_geodesic.points[0],
-                                piece1.lifted_geodesic.points[0],
+                                piece0.lifted_geometric_object.r13_line.points[0],
+                                piece1.lifted_geometric_object.r13_line.points[0],
                                 1e-5):
                             return False
         return True

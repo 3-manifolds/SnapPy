@@ -453,7 +453,7 @@ def dummy_function_for_additional_doctests():
         >>> MM.drill_word(bad_word) # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
+        snappy.tiling.exceptions.ObjectCloseToCoreCurve: Geodesic bc is very close to the core curve of cusp 2 and might intersect it.
 
     There are two places where we detect whether the geodesic is close
     to a core curve (rather than tiling forever). Test the other place
@@ -463,7 +463,7 @@ def dummy_function_for_additional_doctests():
         >>> drill_words_implementation(MM, [bad_word], verified = False, bits_prec = 53, perturb = True) # doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
-        snappy.drilling.exceptions.GeodesicCloseToCoreCurve: The given geodesic is very close to a core curve and might intersect it.
+        snappy.tiling.exceptions.ObjectCloseToCoreCurve: Geodesic bc is very close to the core curve of cusp 2 and might intersect it.
 
     A particular tricky case in terms testing that the start piece is correctly
     handled by 2-3 moves (in particular, commit f9879d04 introduced a bug):

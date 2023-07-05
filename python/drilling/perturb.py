@@ -1,8 +1,8 @@
 from . import constants
 from . import epsilons
 from . import exceptions
-from .geodesic_tube import add_structures_necessary_for_tube, GeodesicTube
 from .geodesic_info import GeodesicInfo
+from .geodesic_tube import GeodesicTube
 
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
@@ -11,6 +11,7 @@ from ..hyperboloid import ( # type: ignore
     distance_unit_time_r13_points)
 from ..tiling.line import R13Line
 from ..tiling.distances import distance_r13_lines
+from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore
@@ -93,7 +94,7 @@ def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo]):
 
-    add_structures_necessary_for_tube(mcomplex)
+    add_triangles_to_tetrahedra(mcomplex)
 
     r = mcomplex.RF(_tube_developing_radius)
 

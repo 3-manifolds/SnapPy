@@ -1,18 +1,10 @@
-from . import constants
-from . import exceptions
 from . import epsilons
 from .geodesic_info import GeodesicInfo
-from .quotient_space import balance_end_points_of_line
 
-from ..tiling.tile import tile, Tile
+from ..tiling.tile import Tile, compute_tiles
 from ..tiling.triangle import add_triangles_to_tetrahedra
-from ..tiling.distances import distance_r13_lines
-from ..tiling.lifted_tetrahedron import LiftedTetrahedron
-from ..tiling.lifted_tetrahedron_set import get_lifted_tetrahedron_set
-from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
-from ..matrix import matrix # type: ignore
-
-import heapq
+from ..tiling.check_core_curve import check_away_from_core_curve_iter
+from ..snap.t3mlite import Mcomplex # type: ignore
 
 from typing import Sequence, Any
 
@@ -66,17 +58,20 @@ class GeodesicTube:
                 "GeodesicTube expected GeodesicInfo with lifted_tetrahedra "
                 "set to start developing a tube about the geodesic.")
 
-        self._tile_generator = tile(
-            mcomplex,
-            geodesic.line,
-            geodesic.lifted_tetrahedra,
-            _ensure_away_from_core_curve_function(mcomplex))
+        if mcomplex.verified:
+            core_curve_epsilon = 0
+        else:
+            core_curve_epsilon = (
+                epsilons.compute_tube_injectivity_radius_epsilon(
+                    mcomplex.RF))
 
-        self._visited_lifted_tetrahedra = get_lifted_tetrahedron_set(
-            mcomplex,
-            balance_end_points_of_line(
+        self._tile_generator = check_away_from_core_curve_iter(
+            compute_tiles(
+                mcomplex,
                 geodesic.line,
-                geodesic.unnormalised_start_point))
+                geodesic.lifted_tetrahedra),
+            epsilon = core_curve_epsilon,
+            obj_name = 'Geodesic %s' % geodesic.word)
 
         # The resulting pieces needed to cover the tube.
         self.pieces : Sequence[Tile] = [ ]
@@ -91,6 +86,7 @@ class GeodesicTube:
             self._add_next_piece()
 
     def _add_next_piece(self):
+        
         self.pieces.append(next(self._tile_generator))
 
     def covered_radius(self):
@@ -106,27 +102,6 @@ class GeodesicTube:
 
         return self.pieces[-1].lower_bound_distance
 
-def _ensure_away_from_core_curve_function(mcomplex):
-    if mcomplex.verified:
-        epsilon = 0
-    else:
-        epsilon = epsilons.compute_tube_injectivity_radius_epsilon(
-            mcomplex.RF)
-
-    def result(tet, lifted_geodesic):
-
-        # Check that this line is not intersecting a core curve.
-        for v in simplex.ZeroSubsimplices:
-            core_curve = tet.core_curves.get(v, None)
-            if core_curve:
-                d = distance_r13_lines(
-                    core_curve.r13_line,
-                    lifted_geodesic.r13_line)
-                if not d > epsilon:
-                    raise exceptions.GeodesicCloseToCoreCurve()
-
-    return result
-            
 if __name__ == '__main__':
     from snappy import *
     from snappy.dev.endpoints import *

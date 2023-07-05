@@ -1,7 +1,6 @@
 class DrillGeodesicError(RuntimeError):
     pass
 
-
 class WordAppearsToBeParabolic(DrillGeodesicError):
     def __init__(self, word, trace):
         self.word = word
@@ -11,7 +10,6 @@ class WordAppearsToBeParabolic(DrillGeodesicError):
             "that could be parabolic. "
             "Word: %s, trace: %r." % (word, trace))
 
-
 class GeodesicSystemNotSimpleError(DrillGeodesicError):
     def __init__(self, maximal_tube_radius):
         self.maximal_tube_radius = maximal_tube_radius
@@ -20,13 +18,6 @@ class GeodesicSystemNotSimpleError(DrillGeodesicError):
             "given geodesics might intersect. "
             "The maximal tube radius about the given system of geodesics "
             "was estimated to be: %r." % maximal_tube_radius)
-
-
-class GeodesicCloseToCoreCurve(DrillGeodesicError):
-    def __init__(self):
-        super().__init__(
-            "The given geodesic is very close to a core curve and might "
-            "intersect it.")
 
 
 class UnfinishedGraphTraceGeodesicError(DrillGeodesicError):

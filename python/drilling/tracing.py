@@ -7,7 +7,7 @@ from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 
 from ..hyperboloid import r13_dot # type: ignore
 from ..tiling.line import R13LineWithMatrix
-from ..tiling.distances import distance_r13_lines
+from ..tiling.check_core_curve import check_away_from_core_curve
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List
@@ -207,6 +207,8 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     too close to a core curve.
     """
 
+    obj_name = "Geodesic %s" % geodesic.word
+
     if geodesic.tet is None:
         raise ValueError(
             "Expected geodesic with tetrahedron to start tracing.")
@@ -291,7 +293,9 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
                 "problem.")
 
         # Check geodesic does not intersect core curve - if line is given.
-        _verify_away_from_core_curve(line, tet, hit_face, epsilon)
+        if line is not None:
+            check_away_from_core_curve(
+                line.r13_line, tet, hit_face, epsilon, obj_name)
 
         # The crossing of the ray with the exit face is beyond the given
         # end point. Thus, we are at the last piece.
@@ -345,36 +349,3 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
 
     raise exceptions.UnfinishedTraceGeodesicError(
         constants.trace_max_steps)
-
-
-def _verify_away_from_core_curve(line : Optional[R13LineWithMatrix],
-                                 tet : Tetrahedron,
-                                 face : int,
-                                 epsilon):
-    """
-    If the geodesic is intersecting a core curve, the tracing would
-    fail in that it would never reach the intersection point and thus
-    either hit the iteration limit or breaking down because of
-    rounding-errors.
-
-    This function is catching this case to give a meaningful exception
-    faster. It does so by computing the distance between the lift of
-    the geodesic we are tracing and the lifts of the core curve
-    corresponding to the vertices of the tetrahedra adjacent to the
-    given face.
-    """
-
-    if line is None:
-        return
-
-    for v in simplex.ZeroSubsimplices:
-        if not simplex.is_subset(v, face):
-            continue
-        core_curve : Optional[R13LineWithMatrix] = tet.core_curves.get(v)
-        if core_curve is None:
-            continue
-        d = distance_r13_lines(core_curve.r13_line,
-                               line.r13_line)
-
-        if not d > epsilon:
-            raise exceptions.GeodesicCloseToCoreCurve()

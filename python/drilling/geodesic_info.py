@@ -95,6 +95,9 @@ class GeodesicInfo:
                  # The triangulation
                  mcomplex : Mcomplex,
 
+                 # Word were are drilling
+                 word : str,
+                 
                  # Trace of corresponding PSL(2,C)-matrix.
                  trace : Any,
 
@@ -141,6 +144,7 @@ class GeodesicInfo:
                  index : Optional[int] = None):
 
         self.mcomplex = mcomplex
+        self.word = word
         self.trace = trace
         self.unnormalised_start_point = unnormalised_start_point
         self.unnormalised_end_point = unnormalised_end_point
@@ -476,6 +480,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
 
     g = GeodesicInfo(
         mcomplex=mcomplex,
+        word=word,
         trace=m.trace(),
         unnormalised_start_point=start_point,
         unnormalised_end_point=line.o13_matrix * start_point,

@@ -27,10 +27,10 @@ class Tile:
         self.lifted_geometric_object = lifted_geometric_object
         self.lower_bound_distance = lower_bound_distance
 
-def tile(mcomplex : Mcomplex,
-         geometric_object : Union[R13LineWithMatrix],
-         initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
-         additional_checks = None) -> Sequence[Tile]:
+def compute_tiles(mcomplex : Mcomplex,
+                  geometric_object : Union[R13LineWithMatrix],
+                  initial_lifted_tetrahedra : Sequence[LiftedTetrahedron]
+                  ) -> Sequence[Tile]:
 
     """
     Finds the pending piece "closest" to the lifted closed geodesic,
@@ -103,9 +103,6 @@ def tile(mcomplex : Mcomplex,
         # to record in GeodesicTubePiece.
         #
         lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
-
-        if additional_checks:
-            additional_checks(tet, lifted_geometric_object)
 
         # Emit Tile
         yield Tile(tet,

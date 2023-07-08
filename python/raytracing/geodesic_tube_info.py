@@ -1,9 +1,37 @@
 from ..tiling.distances import distance_r13_lines
+from ..tiling.iterable_cache import IterableCache
+from ..tiling.tile import Tile
 
-from ..drilling.geodesic_tube import GeodesicTube
 from ..drilling.geodesic_info import compute_geodesic_info
+from ..drilling.tiles_for_geodesic import compute_tiles_for_geodesic
 
 from ..snap.t3mlite import simplex # type: ignore
+
+from typing import Sequence
+
+def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
+    """
+    Only develop tube until the radius is 98% of the distance to
+    a core curve
+    """
+
+    dist_to_core_curve = 1e50
+
+    for tile in tiles:
+        if not tile.lower_bound_distance < dist_to_core_curve * 0.98:
+            break
+
+        for v in simplex.ZeroSubsimplices:
+            core_curve = tile.tet.core_curves.get(v, None)
+            if core_curve is None:
+                continue
+            dist_to_core_curve = min(
+                dist_to_core_curve,
+                distance_r13_lines(
+                    core_curve.r13_line,
+                    tile.lifted_geometric_object.r13_line))
+        
+        yield tile
 
 class GeodesicTubeInfo:
     def __init__(self, mcomplex, word, index, is_primitive=None):
@@ -11,7 +39,11 @@ class GeodesicTubeInfo:
         self.geodesic_info = compute_geodesic_info(mcomplex, word)
 
         if not self.geodesic_info.core_curve_cusp:
-            self.geodesic_tube = GeodesicTube(mcomplex, self.geodesic_info)
+            self.tiles = IterableCache(
+                tiles_up_to_core_curve(
+                    compute_tiles_for_geodesic(
+                        mcomplex, self.geodesic_info)))
+            self._tiles_to_cover = []
 
         # Compute complex length from trace
         t = self.geodesic_info.trace
@@ -21,63 +53,30 @@ class GeodesicTubeInfo:
         self.index = index
 
         RF = t.real().parent()
-        self.dist_to_core_curve = RF(1e50)
-
-        # Caches enough pieces so that we can compare tetrahedra.
-        self._pieces_covering_geodesic = []
 
         self._is_primitive = is_primitive
 
     def compute_tets_and_R13_endpoints_and_radius_for_tube(self, radius):
 
-        # Only develop tube until the radius is 98% of the distance to
-        # a core curve
-        while True:
-            safe_radius = self.dist_to_core_curve * 0.98
-            if radius > safe_radius:
-                # Stop. Tube is about to intersect a core curve.
-                radius = safe_radius
-                break
-
-            if self.geodesic_tube.covered_radius() > radius:
-                # Done. We covered the tube.
-                break
-
-            self.geodesic_tube._add_next_piece()
-
-            # Get last piece. Compute distance of lifted geodesic to
-            # to core curves.
-            piece = self.geodesic_tube.pieces[-1]
-            for v in simplex.ZeroSubsimplices:
-                core_curve = piece.tet.core_curves.get(v, None)
-                if core_curve:
-                    d = distance_r13_lines(
-                        core_curve.r13_line,
-                        piece.lifted_geometric_object.r13_line)
-
-                    if d < self.dist_to_core_curve:
-                        self.dist_to_core_curve = d
-
         result = []
 
-        for piece in self.geodesic_tube.pieces:
-            if piece.lower_bound_distance > radius:
+        for tile in self.tiles:
+            if tile.lower_bound_distance > radius:
                 break
             result.append(
-                (piece.tet.Index,
-                 [ piece.tet.to_coordinates_in_symmetric_tet * pt
-                   for pt in piece.lifted_geometric_object.r13_line.points] ))
+                (tile.tet.Index,
+                 [ tile.tet.to_coordinates_in_symmetric_tet * pt
+                   for pt in tile.lifted_geometric_object.r13_line.points] ))
 
-        return result, radius
+        return result, min(tile.lower_bound_distance, radius)
 
     def _get_pieces_covering_geodesic(self):
-        if not self._pieces_covering_geodesic:
-            self.geodesic_tube.add_pieces_for_radius(0)
-            for piece in self.geodesic_tube.pieces:
-                if piece.lower_bound > 0:
+        if not self._tiles_to_cover:
+            for tile in self.tiles:
+                if tile.lower_bound_distance > 0:
                     break
-                self._pieces_covering_geodesic.append(piece)
-        return self._pieces_covering_geodesic
+                self._tiles_to_cover.append(tile)
+        return self._tiles_to_cover
 
     def __eq__(self, other):
         diff = _normalize_complex_length(self.complex_length - other.complex_length)

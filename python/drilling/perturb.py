@@ -2,7 +2,7 @@ from . import constants
 from . import epsilons
 from . import exceptions
 from .geodesic_info import GeodesicInfo
-from .geodesic_tube import GeodesicTube
+from .tiles_for_geodesic import compute_tiles_for_geodesic
 
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
@@ -12,12 +12,13 @@ from ..hyperboloid import ( # type: ignore
 from ..tiling.line import R13Line
 from ..tiling.distances import distance_r13_lines
 from ..tiling.triangle import add_triangles_to_tetrahedra
+from ..tiling.tile import Tile
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore
 from ..math_basics import correct_min # type: ignore
 
-from typing import Sequence, List
+from typing import Sequence, Tuple, List, Any
 
 # For perturbing, it is sufficient to just find some non-trivial
 # lower bound for the embedding radius of a tube about a geodesic.
@@ -89,36 +90,28 @@ def perturb_geodesics(
     for g in geodesics:
         perturb_geodesic(g, r, mcomplex.verified)
 
-
 def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo]):
 
+    if len(geodesics) == 0:
+        raise Exception("No geodesic tubes given")
+    
     add_triangles_to_tetrahedra(mcomplex)
 
-    r = mcomplex.RF(_tube_developing_radius)
-
-    tubes = [ GeodesicTube(mcomplex, g) for g in geodesics ]
-    for tube in tubes:
-        tube.add_pieces_for_radius(r=r)
-
-    return compute_lower_bound_injectivity_radius_from_tubes(
-        mcomplex, tubes)
-
-
-def compute_lower_bound_injectivity_radius_from_tubes(
-        mcomplex : Mcomplex,
-        tubes : Sequence[GeodesicTube]):
-    if len(tubes) == 0:
-        raise Exception("No geodesic tubes given")
+    min_radius = mcomplex.RF(_tube_developing_radius)
 
     distances = []
 
-    tet_to_lines : List[List[R13Line]] = [[] for tet in mcomplex.Tetrahedra]
-    for tube in tubes:
-        distances.append(tube.covered_radius())
-        for p in tube.pieces:
-            tet_to_lines[p.tet.Index].append(p.lifted_geometric_object.r13_line)
+    tet_to_lines : List[List[R13Line]] = [[] for tet in mcomplex.Tetrahedra ]
+
+    for geodesic in geodesics:
+        for tile in compute_tiles_for_geodesic(mcomplex, geodesic):
+            if tile.lower_bound_distance > min_radius:
+                distances.append(tile.lower_bound_distance)
+                break
+            tet_to_lines[tile.tet.Index].append(
+                tile.lifted_geometric_object.r13_line)
 
     for tet in mcomplex.Tetrahedra:
         for curve in tet.core_curves.values():

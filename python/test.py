@@ -1,5 +1,5 @@
 import sys
-import getopt
+import argparse
 import snappy
 import snappy.snap.test
 import spherogram.test
@@ -152,7 +152,7 @@ def graphics_failures(verbose, windows, use_modernopengl):
                     print('Close the root window to finish.')
                 else:
                     print('The windows will close in a few seconds.\n'
-                        'Specify -w or --windows to avoid this.')
+                          'Specify -w or --windows to avoid this.')
                     root.after(7000, root.destroy)
                 root.mainloop()
     else:
@@ -203,26 +203,21 @@ if __name__ == '__main__':
     windows = False
     use_modernopengl = True
 
-    try:
-        useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
-        optlist, args = getopt.getopt(
-            useful_args,
-            'ivqws',
-            ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
-        opts = [o[0] for o in optlist]
-        if '-v' in opts or '--verbose' in opts:
-            verbose = True
-        if '-q' in opts or '--quick' in opts:
-            quick = True
-        if '-w' in opts or '--windows' in opts:
-            windows = True
-        if '-s' in opts or '--skip-modern-opengl' in opts:
-            use_modernopengl = False
+    useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
 
-    except getopt.GetoptError:
-        print("Could not parse arguments")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="show additional information")
+    parser.add_argument("-q", "--quick", action="store_true",
+                        help="skip ptolemy and spherogram.links tests.")
+    parser.add_argument("-w", "--windows", action="store_true",
+                        help="keep windows open until user closes root window.")
+    parser.add_argument("-s", "--skip-modern-opengl", action="store_false",
+                        dest='use_modernopengl',
+                        help="skip tests requiring OpenGL 3.2 or later.")
+    args = parser.parse_args(useful_args)
 
-    sys.exit(runtests(verbose=verbose,
-                      quick=quick,
-                      windows=windows,
-                      use_modernopengl=use_modernopengl))
+    sys.exit(runtests(verbose=args.verbose,
+                      quick=args.quick,
+                      windows=args.windows,
+                      use_modernopengl=args.use_modernopengl))

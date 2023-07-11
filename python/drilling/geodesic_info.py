@@ -6,7 +6,7 @@ from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
-from ..tiling.line import R13LineWithMatrix
+from ..tiling.line import R13Line, R13LineWithMatrix
 from ..snap.t3mlite import simplex # type: ignore
 from ..snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
@@ -16,7 +16,7 @@ from typing import Tuple, Sequence, Optional, Any
 
 __all__ = ['compute_geodsic_info', 'GeodesicInfo']
 
-def _sample_line(line_with_matrix : R13LineWithMatrix):
+def _sample_line(line : R13Line):
     """
     Pick a point on a line in the hyperboloid model.
     Returns an unnormalised time-like vector computed
@@ -30,7 +30,6 @@ def _sample_line(line_with_matrix : R13LineWithMatrix):
     the fixed points computed by r13_fixed_points_of_psl2c_matrix).
     """
 
-    line = line_with_matrix.r13_line
     RF = line.points[0][0].parent()
     bias = RF(constants.start_point_bias)
 
@@ -463,7 +462,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
 
     # Pick a point on the line
-    start_point = _sample_line(line)
+    start_point = _sample_line(line.r13_line)
 
     g = GeodesicInfo(
         mcomplex=mcomplex,

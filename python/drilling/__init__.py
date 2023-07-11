@@ -475,8 +475,8 @@ def dummy_function_for_additional_doctests():
     Tests drilling one geodesic that intersects 1-skeleton::
 
         >>> M = Manifold("m125")
-        >>> M.drill_word('d').triangulation_isosig(ignore_orientation=False)
-        'gLLPQcdefeffpvauppb_acbBbBaaBbacbBa'
+        >>> M.drill_word('d').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'svLvLQLAzQMMQdifhjmlknlopnqpqrrroaaaaaaoaaaaaaoaaao_aBbaBaaBeDBb'
 
     Tests drilling two geodesics that intersect each other:
 
@@ -488,13 +488,13 @@ def dummy_function_for_additional_doctests():
 
     Tests drilling geodesics that are entirely in the 2-skeleton::
 
-        >>> M.drill_words(['a','acAADa']).triangulation_isosig(ignore_orientation=False)
-        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+        >>> M.drill_words(['a','acAADa']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
 
     Same test as verified computation::
 
-        sage: M.drill_words(['a','acAADa'], verified = True).triangulation_isosig(ignore_orientation=False)
-        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+        sage: M.drill_words(['a','acAADa'], verified = True).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
 
     Test error when drilling something close to core curve::
 

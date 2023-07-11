@@ -164,7 +164,8 @@ def graphics_failures(verbose, windows, use_modernopengl):
 def runtests(verbose=False,
              quick=False,
              windows=False,
-             use_modernopengl=True):
+             use_modernopengl=True,
+             graphics=True):
 
     # The default PARI stacksize can (slightly) overflow, causing
     # doctests to fail.
@@ -186,10 +187,13 @@ def runtests(verbose=False,
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
 
-    num_graphics_failures = graphics_failures(
-        verbose=verbose,
-        windows=windows,
-        use_modernopengl=use_modernopengl)
+    if graphics:
+        num_graphics_failures = graphics_failures(
+            verbose=verbose,
+            windows=windows,
+            use_modernopengl=use_modernopengl)
+    else:
+        num_graphics_failures = 0
 
     print('Pari stacksize', snappy.pari.stacksize(),
           'max stack size', snappy.pari.stacksizemax())
@@ -202,22 +206,23 @@ if __name__ == '__main__':
     quick = False
     windows = False
     use_modernopengl = True
+    graphics = True
 
     useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", action="store_true",
-                        help="show additional information")
-    parser.add_argument("-q", "--quick", action="store_true",
-                        help="skip ptolemy and spherogram.links tests.")
-    parser.add_argument("-w", "--windows", action="store_true",
-                        help="keep windows open until user closes root window.")
-    parser.add_argument("-s", "--skip-modern-opengl", action="store_false",
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='show additional information')
+    parser.add_argument('-q', '--quick', action='store_true',
+                        help='skip ptolemy and spherogram.links tests.')
+    parser.add_argument('-w', '--windows', action='store_true',
+                        help='keep windows open until user closes root window.')
+    parser.add_argument('-s', '--skip-modern-opengl', action='store_false',
                         dest='use_modernopengl',
-                        help="skip tests requiring OpenGL 3.2 or later.")
+                        help='skip tests requiring OpenGL 3.2 or later.')
+    parser.add_argument('-g', '--skip-gui', action='store_false',
+                        dest='graphics',
+                        help='skip tests bringing up GUI windows.')
     args = parser.parse_args(useful_args)
 
-    sys.exit(runtests(verbose=args.verbose,
-                      quick=args.quick,
-                      windows=args.windows,
-                      use_modernopengl=args.use_modernopengl))
+    sys.exit(runtests(**vars(args)))

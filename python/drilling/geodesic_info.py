@@ -1,6 +1,8 @@
 from . import epsilons
 from . import constants
 from . import exceptions
+from .geometric_structure import word_to_psl2c_matrix
+from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
@@ -12,8 +14,9 @@ from ..matrix import matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
+__all__ = ['compute_geodsic_info', 'GeodesicInfo']
 
-def sample_line(line_with_matrix : R13LineWithMatrix):
+def _sample_line(line_with_matrix : R13LineWithMatrix):
     """
     Pick a point on a line in the hyperboloid model.
     Returns an unnormalised time-like vector computed
@@ -446,6 +449,39 @@ class GeodesicInfo:
             "Geodesic is very close to a core curve but could not verify it is "
             "the core curve. Increasing the precision will probably fix this.")
 
+def compute_geodesic_info(mcomplex : Mcomplex,
+                          word) -> GeodesicInfo:
+    """
+    Compute basic information about a geodesic given a word.
+
+    add_r13_geometry must have been called on the Mcomplex.
+    """
+
+    m = word_to_psl2c_matrix(mcomplex, word)
+    _verify_not_parabolic(m, mcomplex, word)
+    # Line fixed by matrix
+    line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
+
+    # Pick a point on the line
+    start_point = _sample_line(line)
+
+    g = GeodesicInfo(
+        mcomplex=mcomplex,
+        trace=m.trace(),
+        unnormalised_start_point=start_point,
+        unnormalised_end_point=line.o13_matrix * start_point,
+        line=line)
+
+    # Determines whether geodesic corresponds to a core curve.
+    # Applies Decktransformations so that start point lies within
+    # the interior of one tetrahedron in the fundamental domain or
+    # within the union of two tetrahedra neighboring in the hyperboloid
+    # model.
+    #
+    # See GeodesicInfo for details.
+    g.find_tet_or_core_curve()
+
+    return g
 
 def _graph_trace_key(face_and_signed_distance):
     return face_and_signed_distance[1]
@@ -453,3 +489,18 @@ def _graph_trace_key(face_and_signed_distance):
 
 def _graph_trace_key_verified(face_and_signed_distance):
     return face_and_signed_distance[1].center()
+
+def _verify_not_parabolic(m, mcomplex, word):
+    """
+    Raise exception when user gives a word corresponding to a parabolic
+    matrix.
+    """
+
+    if mcomplex.verified:
+        epsilon = 0
+    else:
+        epsilon = epsilons.compute_epsilon(mcomplex.RF)
+
+    tr = m.trace()
+    if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
+        raise exceptions.WordAppearsToBeParabolic(word, tr)

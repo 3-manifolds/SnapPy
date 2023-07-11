@@ -2,8 +2,8 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .geometric_structure import add_r13_geometry, word_to_psl2c_matrix
-from .geodesic_info import GeodesicInfo, sample_line
+from .geometric_structure import add_r13_geometry
+from .geodesic_info import GeodesicInfo, compute_geodesic_info
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
 from .barycentric import mark_subtetrahedra_about_geodesic_pieces
@@ -14,7 +14,6 @@ from .cusps import (
     index_geodesics_and_add_post_drill_infos,
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
-from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..tiling.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
@@ -302,58 +301,6 @@ def drill_words_implementation(
     drilled_manifold.set_name(manifold.name() + "_drilled")
 
     return drilled_manifold
-
-
-def _verify_not_parabolic(m, mcomplex, word):
-    """
-    Raise exception when user gives a word corresponding to a parabolic
-    matrix.
-    """
-
-    if mcomplex.verified:
-        epsilon = 0
-    else:
-        epsilon = epsilons.compute_epsilon(mcomplex.RF)
-
-    tr = m.trace()
-    if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
-        raise exceptions.WordAppearsToBeParabolic(word, tr)
-
-
-def compute_geodesic_info(mcomplex : Mcomplex,
-                          word) -> GeodesicInfo:
-    """
-    Compute basic information about a geodesic given a word.
-
-    add_r13_geometry must have been called on the Mcomplex.
-    """
-
-    m = word_to_psl2c_matrix(mcomplex, word)
-    _verify_not_parabolic(m, mcomplex, word)
-    # Line fixed by matrix
-    line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
-
-    # Pick a point on the line
-    start_point = sample_line(line)
-
-    g = GeodesicInfo(
-        mcomplex=mcomplex,
-        trace=m.trace(),
-        unnormalised_start_point=start_point,
-        unnormalised_end_point=line.o13_matrix * start_point,
-        line=line)
-
-    # Determines whether geodesic corresponds to a core curve.
-    # Applies Decktransformations so that start point lies within
-    # the interior of one tetrahedron in the fundamental domain or
-    # within the union of two tetrahedra neighboring in the hyperboloid
-    # model.
-    #
-    # See GeodesicInfo for details.
-    g.find_tet_or_core_curve()
-
-    return g
-
 
 def drill_geodesics(mcomplex : Mcomplex,
                     geodesics : Sequence[GeodesicInfo],

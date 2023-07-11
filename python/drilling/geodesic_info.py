@@ -28,6 +28,16 @@ def _sample_line(line : R13Line):
     triangulation (which happens for some geodesics in some
     triangulated hyperbolic manifolds when picking equal weights for
     the fixed points computed by r13_fixed_points_of_psl2c_matrix).
+
+    Note that we want to avoid picking a point that is far away from
+    the fundamental polyhedron. By the choices we made, this is not
+    the case: the fundamental polyhedron is contains the origin in the
+    hyperboloid model. r13_fixed_points_of_psl2c_matrix returns
+    light-like vectors of the form (1, ...) so the average corresponds
+    to taking the mid-point in the Klein model and is thus the point
+    on the line closest to the origin. Furthermore, the bias is close
+    enough to 1 (the log is ~0.22, so we move the point by ~0.11
+    units in hyperbolic space).
     """
 
     RF = line.points[0][0].parent()

@@ -1,7 +1,9 @@
 from .geodesic_tube_info import GeodesicTubeInfo
 from .upper_halfspace_utilities import *
 
-from ..drilling.geometric_structure import add_r13_geometry
+from ..drilling.geometric_structure import (
+    add_r13_geometry,
+    add_filling_information_and_r13_core_curves)
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
@@ -158,8 +160,10 @@ class Geodesics:
     def get_mcomplex(self):
         if self.mcomplex is None:
             self.mcomplex = Mcomplex(self.manifold)
-            add_r13_geometry(self.mcomplex,
-                             self.manifold)
+            add_r13_geometry(
+                self.mcomplex, self.manifold)
+            add_filling_information_and_r13_core_curves(
+                self.mcomplex, self.manifold)
             add_triangles_to_tetrahedra(self.mcomplex)
 
             for tet in self.mcomplex.Tetrahedra:

@@ -125,12 +125,6 @@ def add_r13_geometry(
         tet.O13_matrices = {
             F : psl2c_to_o13(mcomplex.GeneratorMatrices.get(-g))
             for F, g in developed_tet.GeneratorsInfo.items() }
-        # Dict, keys are a subset of simplex.ZeroSubsimplices
-        #
-        # If a vertex of a tet corresponds to a filled cusp, this dictionary
-        # will contain the appropriate lift of the core curve in the
-        # hyperboloid model.
-        tet.core_curves = { }
 
     # Set base tetrahedron and compute its in-radius and center.
     mcomplex.baseTet = mcomplex.Tetrahedra[
@@ -139,6 +133,20 @@ def add_r13_geometry(
         _compute_inradius_and_incenter_from_planes(
             [ mcomplex.baseTet.R13_planes[f]
               for f in simplex.TwoSubsimplices]))
+
+    return mcomplex
+
+def add_filling_information_and_r13_core_curves(
+        mcomplex : Mcomplex,
+        manifold):
+
+    for tet in mcomplex.Tetrahedra:
+        # Dict, keys are a subset of simplex.ZeroSubsimplices
+        #
+        # If a vertex of a tet corresponds to a filled cusp, this dictionary
+        # will contain the appropriate lift of the core curve in the
+        # hyperboloid model.
+        tet.core_curves = { }
 
     # For each cusp, a pair of words for the meridian and longitude as
     # sequence of non-zero integers.
@@ -189,7 +197,6 @@ def add_r13_geometry(
                     all_peripheral_words[v.Index],
                     v.filling_matrix[1]))
 
-    return mcomplex
 
 ###############################################################################
 # Helpers

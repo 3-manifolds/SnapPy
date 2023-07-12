@@ -474,8 +474,10 @@ def fast_determinant_of_laurent_poly_matrix(A):
     polynomial entries.
     """
     R = A.base_ring()
-    minexp = minimum_exponents(A.list())
     P = R.polynomial_ring()
+    if A == 0:
+        return P(0)
+    minexp = minimum_exponents(A.list())
     MS = A.parent().change_ring(P)
     Ap = MS([convert_laurent_to_poly(p, minexp, P) for p in A.list()])
     return Ap.det()

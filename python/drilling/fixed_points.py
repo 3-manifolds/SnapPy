@@ -2,9 +2,10 @@ from ..upper_halfspace import psl2c_to_o13 # type: ignore
 from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
 from ..matrix import matrix # type: ignore
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
+from ..tiling.line import R13Line, R13LineWithMatrix
 
-__all__ = ['r13_fixed_points_of_psl2c_matrix']
-
+__all__ = ['r13_fixed_points_of_psl2c_matrix',
+           'r13_fixed_line_of_psl2c_matrix']
 
 def r13_fixed_points_of_psl2c_matrix(m):
     """
@@ -38,6 +39,18 @@ def r13_fixed_points_of_psl2c_matrix(m):
     o13_t = psl2c_to_o13(t)
 
     return [ o13_t * pt for pt in pts ]
+
+
+def r13_fixed_line_of_psl2c_matrix(m) -> R13LineWithMatrix:
+    """
+    Given a loxodromic PSL(2,C)-matrix m, returns the line (together
+    with the O(1,3)-matrix corresponding to m) fixed by m in
+    the hyperboloid model.
+    """
+
+    return R13LineWithMatrix(
+        R13Line(r13_fixed_points_of_psl2c_matrix(m)),
+        psl2c_to_o13(m))
 
 ###############################################################################
 # Helpers

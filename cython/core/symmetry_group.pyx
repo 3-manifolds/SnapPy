@@ -78,9 +78,8 @@ cdef class SymmetryGroup():
         False
         """
         cdef c_AbelianGroup* abelian_description = NULL
-        ans = B2B(symmetry_group_is_abelian(
-                self.c_symmetry_group, &abelian_description))
-        return ans
+        return B2B(symmetry_group_is_abelian(
+            self.c_symmetry_group, &abelian_description))
 
     def abelian_description(self):
         """
@@ -97,12 +96,11 @@ cdef class SymmetryGroup():
             raise ValueError('The symmetry group is not abelian.')
 
         coeffs = []
-        for n from 0 <= n < A.num_torsion_coefficients:
-                coeffs.append(A.torsion_coefficients[n])
+        for n in range(A.num_torsion_coefficients):
+            coeffs.append(A.torsion_coefficients[n])
 
         # Don't need to free A as it is attached to the symmetry group object
         return AbelianGroup(elementary_divisors=coeffs)
-
 
     def is_dihedral(self):
         """

@@ -1,9 +1,12 @@
-from .line import R13LineWithMatrix
 from . import epsilons
 from . import constants
 from . import exceptions
+from .geometric_structure import word_to_psl2c_matrix
+from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore
+from ..tiling.lifted_tetrahedron import LiftedTetrahedron
+from ..tiling.line import R13Line, R13LineWithMatrix
 from ..snap.t3mlite import simplex # type: ignore
 from ..snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
@@ -11,8 +14,9 @@ from ..matrix import matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
+__all__ = ['compute_geodsic_info', 'GeodesicInfo']
 
-def sample_line(line_with_matrix : R13LineWithMatrix):
+def _sample_line(line : R13Line):
     """
     Pick a point on a line in the hyperboloid model.
     Returns an unnormalised time-like vector computed
@@ -24,35 +28,22 @@ def sample_line(line_with_matrix : R13LineWithMatrix):
     triangulation (which happens for some geodesics in some
     triangulated hyperbolic manifolds when picking equal weights for
     the fixed points computed by r13_fixed_points_of_psl2c_matrix).
+
+    Note that we want to avoid picking a point that is far away from
+    the fundamental polyhedron. By the choices we made, this is not
+    the case: the fundamental polyhedron is contains the origin in the
+    hyperboloid model. r13_fixed_points_of_psl2c_matrix returns
+    light-like vectors of the form (1, ...) so the average corresponds
+    to taking the mid-point in the Klein model and is thus the point
+    on the line closest to the origin. Furthermore, the bias is close
+    enough to 1 (the log is ~0.22, so we move the point by ~0.11
+    units in hyperbolic space).
     """
 
-    line = line_with_matrix.r13_line
     RF = line.points[0][0].parent()
     bias = RF(constants.start_point_bias)
 
     return line.points[0] + bias * line.points[1]
-
-# @dataclass
-
-
-class LiftedTetrahedron:
-    """
-    Represents the lift of a tetrahedron in a manifold to the hyperboloid
-    model.
-
-    That is, if a tetrahedron (as part of the fundamental domain) was assigned
-    vertices by calling add_r13_geometry, then the vertices of a
-    LiftedTetrahedron l will be given by l.o13_matrices * tet.R13_vertices[v]
-    where v in snappy.snap.t3mlite.simplex.ZeroSubsimplices.
-    """
-
-    def __init__(self,
-                 tet : Tetrahedron,
-                 # An O(1,3)-matrix - since this might be a SageMath class or a
-                 # SimpleMatrix, just using Any as type annotation.
-                 o13_matrix):
-        self.tet = tet
-        self.o13_matrix = o13_matrix
 
 # @dataclass
 
@@ -467,6 +458,39 @@ class GeodesicInfo:
             "Geodesic is very close to a core curve but could not verify it is "
             "the core curve. Increasing the precision will probably fix this.")
 
+def compute_geodesic_info(mcomplex : Mcomplex,
+                          word) -> GeodesicInfo:
+    """
+    Compute basic information about a geodesic given a word.
+
+    add_r13_geometry must have been called on the Mcomplex.
+    """
+
+    m = word_to_psl2c_matrix(mcomplex, word)
+    _verify_not_parabolic(m, mcomplex, word)
+    # Line fixed by matrix
+    line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
+
+    # Pick a point on the line
+    start_point = _sample_line(line.r13_line)
+
+    g = GeodesicInfo(
+        mcomplex=mcomplex,
+        trace=m.trace(),
+        unnormalised_start_point=start_point,
+        unnormalised_end_point=line.o13_matrix * start_point,
+        line=line)
+
+    # Determines whether geodesic corresponds to a core curve.
+    # Applies Decktransformations so that start point lies within
+    # the interior of one tetrahedron in the fundamental domain or
+    # within the union of two tetrahedra neighboring in the hyperboloid
+    # model.
+    #
+    # See GeodesicInfo for details.
+    g.find_tet_or_core_curve()
+
+    return g
 
 def _graph_trace_key(face_and_signed_distance):
     return face_and_signed_distance[1]
@@ -474,3 +498,18 @@ def _graph_trace_key(face_and_signed_distance):
 
 def _graph_trace_key_verified(face_and_signed_distance):
     return face_and_signed_distance[1].center()
+
+def _verify_not_parabolic(m, mcomplex, word):
+    """
+    Raise exception when user gives a word corresponding to a parabolic
+    matrix.
+    """
+
+    if mcomplex.verified:
+        epsilon = 0
+    else:
+        epsilon = epsilons.compute_epsilon(mcomplex.RF)
+
+    tr = m.trace()
+    if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
+        raise exceptions.WordAppearsToBeParabolic(word, tr)

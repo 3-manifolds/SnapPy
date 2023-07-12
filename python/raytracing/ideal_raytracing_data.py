@@ -147,7 +147,7 @@ class IdealRaytracingData(RaytracingData):
                 v0 | v1 : r13_dot(pt0, pt1)
                 for v0, pt0 in tet.R13_vertices.items()
                 for v1, pt1 in tet.R13_vertices.items()
-                if v0 != v1 }
+                if v0 > v1 }
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:

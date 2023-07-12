@@ -1,11 +1,12 @@
 import sys
-import getopt
+import argparse
 import snappy
 import snappy.snap.test
 import spherogram.test
 import snappy.matrix
 import snappy.verify.test
 import snappy.ptolemy.test
+import snappy.tiling.floor
 import snappy.raytracing.cohomology_fractal
 import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
@@ -103,6 +104,7 @@ modules += [snappy.SnapPy,
             snappy,
             snap_doctester,
             snappy.matrix,
+            snappy.tiling.floor,
             snappy.raytracing.cohomology_fractal,
             snappy.raytracing.geodesic_tube_info,
             snappy.raytracing.geodesics,
@@ -150,7 +152,7 @@ def graphics_failures(verbose, windows, use_modernopengl):
                     print('Close the root window to finish.')
                 else:
                     print('The windows will close in a few seconds.\n'
-                        'Specify -w or --windows to avoid this.')
+                          'Specify -w or --windows to avoid this.')
                     root.after(7000, root.destroy)
                 root.mainloop()
     else:
@@ -162,7 +164,8 @@ def graphics_failures(verbose, windows, use_modernopengl):
 def runtests(verbose=False,
              quick=False,
              windows=False,
-             use_modernopengl=True):
+             use_modernopengl=True,
+             graphics=True):
 
     # The default PARI stacksize can (slightly) overflow, causing
     # doctests to fail.
@@ -184,10 +187,13 @@ def runtests(verbose=False,
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
 
-    num_graphics_failures = graphics_failures(
-        verbose=verbose,
-        windows=windows,
-        use_modernopengl=use_modernopengl)
+    if graphics:
+        num_graphics_failures = graphics_failures(
+            verbose=verbose,
+            windows=windows,
+            use_modernopengl=use_modernopengl)
+    else:
+        num_graphics_failures = 0
 
     print('Pari stacksize', snappy.pari.stacksize(),
           'max stack size', snappy.pari.stacksizemax())
@@ -200,27 +206,23 @@ if __name__ == '__main__':
     quick = False
     windows = False
     use_modernopengl = True
+    graphics = True
 
-    try:
-        useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
-        optlist, args = getopt.getopt(
-            useful_args,
-            'ivqws',
-            ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
-        opts = [o[0] for o in optlist]
-        if '-v' in opts or '--verbose' in opts:
-            verbose = True
-        if '-q' in opts or '--quick' in opts:
-            quick = True
-        if '-w' in opts or '--windows' in opts:
-            windows = True
-        if '-s' in opts or '--skip-modern-opengl' in opts:
-            use_modernopengl = False
+    useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
 
-    except getopt.GetoptError:
-        print("Could not parse arguments")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='show additional information')
+    parser.add_argument('-q', '--quick', action='store_true',
+                        help='skip ptolemy and spherogram.links tests.')
+    parser.add_argument('-w', '--windows', action='store_true',
+                        help='keep windows open until user closes root window.')
+    parser.add_argument('-s', '--skip-modern-opengl', action='store_false',
+                        dest='use_modernopengl',
+                        help='skip tests requiring OpenGL 3.2 or later.')
+    parser.add_argument('-g', '--skip-gui', action='store_false',
+                        dest='graphics',
+                        help='skip tests bringing up GUI windows.')
+    args = parser.parse_args(useful_args)
 
-    sys.exit(runtests(verbose=verbose,
-                      quick=quick,
-                      windows=windows,
-                      use_modernopengl=use_modernopengl))
+    sys.exit(runtests(**vars(args)))

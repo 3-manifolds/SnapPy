@@ -48,18 +48,6 @@ def floor_as_integers(x) -> Sequence[int]:
         return [ int_f ]
 
 
-class _Entry:
-    """
-    A helper for SpatialDict.
-
-    The implementation of SpatialDict has the same instance of _Entry
-    stored for multiple keys so that updating the value for all keys
-    can be done by assigning the new value to _Entry.value only once.
-    """
-    def __init__(self, value):
-        self.value = value
-
-
 class SpatialDict:
     """
     A python dict-like object appropriate for using numerical points (e.g.,
@@ -93,11 +81,11 @@ class SpatialDict:
         reps_and_ikeys = self._representatives_and_ikeys(point)
 
         for rep, ikey in reps_and_ikeys:
-            for other_rep, entry in self._data.get(ikey, []):
+            for other_rep, value in self._data.get(ikey, []):
                 d = self.distance(rep, other_rep)
                 if d < self._right_distance_value:
-                    return entry.value
-                if not (self._left_distance_value < d):
+                    return value
+                if not (d > self._left_distance_value):
                     raise InsufficientPrecisionError(
                         "Could neither verify that the two given tiles are "
                         "the same nor that they are distinct. "
@@ -105,9 +93,8 @@ class SpatialDict:
                         "Injectivty diameter about basepoint is: %r." % (
                             d, self._min_distance))
 
-        entry = _Entry(default)
         for rep, ikey in reps_and_ikeys:
-            self._data.setdefault(ikey, []).append((rep, entry))
+            self._data.setdefault(ikey, []).append((rep, default))
 
         return default
 

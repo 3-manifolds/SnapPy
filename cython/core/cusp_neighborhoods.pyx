@@ -304,6 +304,7 @@ cdef class CCuspNeighborhood():
         else:
             raise RuntimeError('The HoroballViewer class was not imported.')
 
+
 class CuspNeighborhood(CCuspNeighborhood):
     """
     A CuspNeighborhood object represents an equivariant collection of

@@ -21,31 +21,6 @@
 #
 # 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
-from ..sage_helper import _within_sage
-
-if _within_sage:
-    # python's log and sqrt only work for floats
-    # They would fail or convert to float losing precision
-    from sage.functions.log import log
-    from sage.functions.other import sqrt
-else:
-    # Otherwise, define our own log and sqrt which checks whether
-    # the given type defines a log/sqrt method and fallsback
-    # to python's log and sqrt which has the above drawback of
-    # potentially losing precision.
-    import cmath
-    import math
-
-    def log(x):
-        if hasattr(x, 'log'):
-            return x.log()
-        return cmath.log(x)
-
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
-
 from ..math_basics import correct_min
 
 from . import t3mlite as t3m
@@ -271,7 +246,7 @@ class ComplexHoroTriangle:
 
         def adjust_log(z):
             # Compute log and adjust
-            logZ = log(z)
+            logZ = z.log()
             # Add multiplies of 2 * pi * I so that it is close
             # to lifted_position
             return logZ + ((lifted_position - logZ) / twoPi).imag().round() * twoPi * I
@@ -394,7 +369,7 @@ class CuspCrossSectionBase(McomplexEngine):
             areas = [ 1 for area in current_areas ]
         elif not isinstance(areas, list):
             areas = [ areas for area in current_areas ]
-        scales = [ sqrt(area / current_area)
+        scales = [ (area / current_area).sqrt()
                    for area, current_area in zip(areas, current_areas) ]
         self.scale_cusps(scales)
 
@@ -509,6 +484,33 @@ class CuspCrossSectionBase(McomplexEngine):
 
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
+    @staticmethod
+    def _compute_area_scale_for_std_form(corner : t3m.Corner):
+        """
+        For a tetrahedron and vertex of the tetrahedron, compute how much
+        the cusp neighborhood about the vertex can be scaled for the the
+        tetrahedron to intersect the neighborhood in standard form.
+        """
+
+        tet = corner.Tetrahedron
+        z = tet.ShapeParameters[simplex.E01]
+        max_area = ComplexCuspCrossSection._lower_bound_max_area_triangle_for_std_form(z)
+        area = tet.horotriangles[corner.Subsimplex].area
+        return max_area / area
+
+    def compute_scale_for_std_form(self, v : t3m.Vertex):
+        """
+        Computes scale for cusp neighborhood about given vertex to ensure
+        that each tetrahedron adjacent to the vertex intersects the the
+        cusp neighborhood in standard form.
+        """
+
+        area_scales = [
+            ComplexCuspCrossSection._compute_area_scale_for_std_form(corner)
+            for corner in v.Corners ]
+
+        return correct_min(area_scales).sqrt()
+
     def ensure_std_form(self, allow_scaling_up=False):
         """
         Makes sure that the cusp neighborhoods intersect each tetrahedron
@@ -517,35 +519,13 @@ class CuspCrossSectionBase(McomplexEngine):
 
         z = self.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01]
         RF = z.real().parent()
+        one = RF(1)
 
-        # For each cusp, save the scaling factors for all triangles so that
-        # we can later take the minimum to scale each cusp.
-        if allow_scaling_up:
-            area_scales = [ [] for v in self.mcomplex.Vertices ]
-        else:
-            # Add 1 so that we never scale the cusp area up, just down.
-            area_scales = [ [RF(1)] for v in self.mcomplex.Vertices ]
-
-        for tet in self.mcomplex.Tetrahedra:
-            # Compute maximal area of a triangle for standard form
-            z = tet.ShapeParameters[simplex.E01]
-            max_area = ComplexCuspCrossSection._lower_bound_max_area_triangle_for_std_form(z)
-
-            # For all four triangles corresponding to the four vertices of the
-            # tetrahedron
-            for zeroSubsimplex, triangle in tet.horotriangles.items():
-                # Compute the area scaling factor
-                area_scale = max_area / triangle.area
-                # Get the cusp we need to scale
-                vertex = tet.Class[zeroSubsimplex]
-                # Remember it
-                area_scales[vertex.Index].append(area_scale)
-
-        # Compute scale per cusp as sqrt of the minimum of all area scales
-        # of all triangles in that cusp
-        scales = [ sqrt(correct_min(s)) for s in area_scales ]
-
-        self.scale_cusps(scales)
+        for v in self.mcomplex.Vertices:
+            scale = self.compute_scale_for_std_form(v)
+            if not allow_scaling_up:
+                scale = correct_min([one, scale])
+            ComplexCuspCrossSection._scale_cusp(v, scale)
 
     @staticmethod
     def _exp_distance_edge(edge):
@@ -582,6 +562,20 @@ class CuspCrossSectionBase(McomplexEngine):
         return correct_min(
             [ ComplexCuspCrossSection._exp_distance_edge(edge)
               for edge in edges])
+
+    def exp_distance_neighborhoods_measured_along_edges(self, i, j):
+        """
+        Computes the exp of the smallest (hyperbolic) distance
+        between two cusp neighborhoods about cusp i and j measured
+        along the edges of the triangulation. Returns None if no
+        edge between these two cusps exists.
+        """
+        if i > j:
+            i, j = j, i
+        if not (i, j) in self._edge_dict:
+            return None
+        return ComplexCuspCrossSection._exp_distance_of_edges(
+            self._edge_dict[(i,j)])
 
     def ensure_disjoint_on_edges(self):
         """
@@ -638,7 +632,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 # equivalent dist <= 1. We want to scale down every time
                 # we cannot ensure they are disjoint.
                 if not (dist > 1):
-                    scale = sqrt(dist)
+                    scale = dist.sqrt()
                     # Scale the one cusp
                     ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                         scale)
@@ -648,16 +642,14 @@ class CuspCrossSectionBase(McomplexEngine):
         # along the edges of the triangulation
         for i in range(num_cusps):
             for j in range(i):
-                # Get all edges
-                if (j,i) in self._edge_dict:
-                    dist = ComplexCuspCrossSection._exp_distance_of_edges(
-                        self._edge_dict[(j,i)])
-                    # Above comment applies
+                dist = self.exp_distance_neighborhoods_measured_along_edges(i, j)
+                # Above comment applies
+                if dist is not None:
                     if not (dist > 1):
                         # Scale the two cusps by the same amount
                         # We have choices here, for example, we could only
                         # scale one cusp by dist.
-                        scale = sqrt(dist)
+                        scale = dist.sqrt()
                         ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                             scale)
                         ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[j],
@@ -1316,7 +1308,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         # Lift first triangle, picking main branch of logarithm for
         # the first vertex
-        trig0.lift_vertex_positions(log(trig0.vertex_positions[edge0]))
+        trig0.lift_vertex_positions(trig0.vertex_positions[edge0].log())
 
         # Procedure similar to _add_one_cusp_cross_section
         active = [(tet0, vert0)]

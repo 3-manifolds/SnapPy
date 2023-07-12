@@ -819,7 +819,7 @@ def _identified_variables_canonize(identified_variables):
 
         return dict1
 
-    all_variables = { }
+    all_variables = {}
 
     for sign, power, var1, var2 in identified_variables:
         all_variables[var1] = { var1 : (+1, 0) }
@@ -830,10 +830,10 @@ def _identified_variables_canonize(identified_variables):
             new_dict = merge_two_dicts(sign, power, var1, var2,
                                        all_variables[var1],
                                        all_variables[var2])
-            for var in new_dict.keys():
+            for var in new_dict:
                 all_variables[var] = new_dict
 
-    result = { }
+    result = {}
 
     for variable, variable_dict in all_variables.items():
         if variable not in result:

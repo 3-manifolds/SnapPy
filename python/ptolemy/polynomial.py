@@ -766,7 +766,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
         next_char, rest = s[0], s[1:]
 
-        if next_char in list(_operators.keys()):
+        if next_char in _operators:
             operator = next_char
             eval_preceding_operators_on_stack(operator)
             operator_stack.append(operator)

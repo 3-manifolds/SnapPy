@@ -1,9 +1,9 @@
-from ..upper_halfspace import psl2c_to_o13 # type: ignore
-from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
-from ..matrix import matrix # type: ignore
-from ..math_basics import is_RealIntervalFieldElement # type: ignore
-from ..geometric_structure.geodesic.line import R13LineWithMatrix
-from ..hyperboloid.line import R13Line
+from .line import R13LineWithMatrix
+from ...hyperboloid.line import R13Line
+from ...upper_halfspace import psl2c_to_o13 # type: ignore
+from ...upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
+from ...matrix import matrix # type: ignore
+from ...math_basics import is_RealIntervalFieldElement # type: ignore
 
 __all__ = ['r13_fixed_points_of_psl2c_matrix',
            'r13_fixed_line_of_psl2c_matrix']

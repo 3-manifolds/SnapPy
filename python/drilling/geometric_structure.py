@@ -1,5 +1,4 @@
-from .fixed_points import r13_fixed_line_of_psl2c_matrix
-
+from ..geometric_structure.geodesic.fixed_points import r13_fixed_line_of_psl2c_matrix
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..geometric_structure import word_list_to_psl2c_matrix
 from ..geometric_structure import Filling

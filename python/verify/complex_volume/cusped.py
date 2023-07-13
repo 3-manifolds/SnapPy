@@ -4,7 +4,7 @@ if _within_sage:
     import sage.all
 
 from .. import verifyHyperbolicity
-from ...snap.cusp_cross_section import ComplexCuspCrossSection
+from ...geometric_structure.cusp_cross_section import ComplexCuspCrossSection
 
 from .adjust_torsion import *
 from .compute_ptolemys import *

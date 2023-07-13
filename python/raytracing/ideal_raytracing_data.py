@@ -4,7 +4,7 @@ from snappy import Triangulation
 from snappy.SnapPy import matrix, vector
 
 from ..snap.mcomplex_base import *
-from ..snap.cusp_cross_section import *
+from ..geometric_structure.cusp_cross_section import *
 from ..geometric_structure import compute_r13_planes_for_tet
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13

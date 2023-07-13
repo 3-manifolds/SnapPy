@@ -1,8 +1,8 @@
 from ...sage_helper import _within_sage, sage_method
 from ...math_basics import prod
 
+from ...geometric_structure.cusp_cross_section import ComplexCuspCrossSection
 from ...snap import peripheral
-from ...snap.cusp_cross_section import ComplexCuspCrossSection
 from ...snap.t3mlite import simplex
 
 if _within_sage:

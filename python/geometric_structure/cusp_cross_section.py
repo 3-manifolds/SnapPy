@@ -23,10 +23,10 @@
 
 from ..math_basics import correct_min
 
-from . import t3mlite as t3m
-from .t3mlite import simplex
-from .mcomplex_base import *
-from .kernel_structures import *
+from ..snap import t3mlite as t3m
+from ..snap.t3mlite import simplex
+from ..snap.mcomplex_base import *
+from ..snap.kernel_structures import *
 
 __all__ = [
     'IncompleteCuspError',

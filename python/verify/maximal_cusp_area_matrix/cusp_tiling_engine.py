@@ -1,10 +1,10 @@
 from ...sage_helper import _within_sage
 from ...math_basics import correct_max
 
+from ...geometric_structure.cusp_cross_section import ComplexCuspCrossSection
 from ...snap.kernel_structures import *
 from ...snap.fundamental_polyhedron import *
 from ...snap.mcomplex_base import *
-from ...snap.cusp_cross_section import ComplexCuspCrossSection
 from ...snap.t3mlite import simplex
 from ...snap import t3mlite as t3m
 from ...exceptions import InsufficientPrecisionError

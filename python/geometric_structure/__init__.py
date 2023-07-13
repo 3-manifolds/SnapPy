@@ -11,7 +11,6 @@ from ..verify.shapes import compute_hyperbolic_shapes # type: ignore
 from ..snap.fundamental_polyhedron import FundamentalPolyhedronEngine # type: ignore
 from ..snap.kernel_structures import TransferKernelStructuresEngine # type: ignore
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron # type: ignore
-from ..SnapPy import word_as_list # type: ignore
 
 from ..hyperboloid import (space_r13_normalise,
                            r13_dot,
@@ -48,6 +47,9 @@ def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
     in the simplified fundamental group (given as string), returns
     the corresponding PSL(2,C)-matrix.
     """
+
+    # Delayed import to avoid cyclic dependency
+    from ..SnapPy import word_as_list # type: ignore
 
     return word_list_to_psl2c_matrix(
         mcomplex, word_as_list(word, mcomplex.num_generators))

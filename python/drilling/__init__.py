@@ -2,7 +2,6 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .geometric_structure import add_r13_core_curves
 from .geodesic_info import GeodesicInfo, compute_geodesic_info
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
@@ -17,6 +16,7 @@ from .cusps import (
 
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
+from ..geometric_structure.geodesic.core_curves import add_r13_core_curves
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError

@@ -1,9 +1,9 @@
-from ..geometric_structure.geodesic.fixed_points import r13_fixed_line_of_psl2c_matrix
-from ..geometric_structure.geodesic.line import R13LineWithMatrix
-from ..geometric_structure import word_list_to_psl2c_matrix
-from ..geometric_structure import Filling
-from ..upper_halfspace import sl2c_inverse # type: ignore
-from ..snap.t3mlite import Mcomplex, Vertex, Tetrahedron, simplex
+from .fixed_points import r13_fixed_line_of_psl2c_matrix
+from .line import R13LineWithMatrix
+from .. import word_list_to_psl2c_matrix
+from .. import Filling
+from ...upper_halfspace import sl2c_inverse # type: ignore
+from ...snap.t3mlite import Mcomplex, Vertex, Tetrahedron, simplex
 
 from collections import deque
 

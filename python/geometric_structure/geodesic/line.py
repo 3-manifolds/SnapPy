@@ -1,5 +1,5 @@
-from ..hyperboloid import o13_inverse # type: ignore
-from ..hyperboloid.line import R13Line
+from ...hyperboloid import o13_inverse # type: ignore
+from ...hyperboloid.line import R13Line
 
 __all__ = [ 'R13LineWithMatrix' ]
 

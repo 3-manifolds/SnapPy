@@ -2,8 +2,8 @@ from . import epsilons
 from .geodesic_info import GeodesicInfo
 
 from ..tiling.tile import Tile, compute_tiles
-from ..tiling.check_core_curve import check_away_from_core_curve_iter
-from ..tiling.canonical_keys import canonical_keys_function_for_line
+from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve_iter
+from ..geometric_structure.geodesic.canonical_keys import canonical_keys_function_for_line
 from ..tiling.lifted_tetrahedron_set import get_equality_predicate
 
 from ..snap.t3mlite import Mcomplex # type: ignore

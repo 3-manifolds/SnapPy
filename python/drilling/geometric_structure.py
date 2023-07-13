@@ -1,6 +1,6 @@
 from .fixed_points import r13_fixed_line_of_psl2c_matrix
 
-from ..tiling.line import R13LineWithMatrix
+from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..geometric_structure import word_list_to_psl2c_matrix
 from ..upper_halfspace import sl2c_inverse # type: ignore
 from ..snap.t3mlite import Mcomplex, Vertex, Tetrahedron, simplex

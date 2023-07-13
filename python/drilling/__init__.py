@@ -2,7 +2,7 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .geometric_structure import add_filling_information_and_r13_core_curves
+from .geometric_structure import add_r13_core_curves
 from .geodesic_info import GeodesicInfo, compute_geodesic_info
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
@@ -15,7 +15,8 @@ from .cusps import (
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
-from ..geometric_structure import add_r13_geometry
+from ..geometric_structure import (add_r13_geometry,
+                                   add_filling_information)
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
@@ -230,8 +231,8 @@ def drill_words_implementation(
     add_r13_geometry(mcomplex,
                      manifold,
                      verified=verified, bits_prec=bits_prec)
-
-    add_filling_information_and_r13_core_curves(mcomplex, manifold)
+    add_filling_information(mcomplex, manifold)
+    add_r13_core_curves(mcomplex, manifold)
 
     # For the words compute basic information such as the corresponding
     # matrix and the end points and a sample point on the fixed line.

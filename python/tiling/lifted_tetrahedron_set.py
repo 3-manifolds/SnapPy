@@ -1,13 +1,9 @@
-from .line import R13LineWithMatrix
 from .lifted_tetrahedron import LiftedTetrahedron
 from .real_hash_dict import RealHashDict
 from .canonical_key_dict import CanonicalKeyDict
-from .canonical_keys import canonical_keys_function_for_line
 
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..hyperboloid import distance_unit_time_r13_points
-
-from typing import Union
 
 class ProductSet:
     """
@@ -58,8 +54,10 @@ class LiftedTetrahedronSet:
             lifted_tetrahedron.o13_matrix * self._base_point,
             lifted_tetrahedron.tet.Index)
 
-def get_lifted_tetrahedron_set(mcomplex : Mcomplex,
-                               geometric_object : Union[R13LineWithMatrix]
+def get_lifted_tetrahedron_set(base_point,
+                               canonical_keys_function,
+                               equality_predicate,
+                               verified
                                ) -> LiftedTetrahedronSet:
     """
     Returns a set to store lifted tetrahedra in H^3 or a quotient
@@ -70,24 +68,18 @@ def get_lifted_tetrahedron_set(mcomplex : Mcomplex,
     """
 
     d = RealHashDict(
-        _equality_predicate(mcomplex, geometric_object),
-        _hash_function(mcomplex.RF),
+        equality_predicate,
+        _hash_function(base_point[0].parent()),
         _epsilon_inverse,
-        mcomplex.verified)
+        verified)
 
-    if isinstance(geometric_object, R13LineWithMatrix):
-        d = CanonicalKeyDict(
-            d, canonical_keys_function_for_line(geometric_object))
-
-    if isinstance(geometric_object, R13LineWithMatrix):
-        base_point = mcomplex.R13_baseTetInCenter
+    if canonical_keys_function:
+        d = CanonicalKeyDict(d, canonical_keys_function)
 
     return LiftedTetrahedronSet(d, base_point)
 
-def _equality_predicate(mcomplex, geometric_object):
-    min_distance = mcomplex.baseTetInRadius
-
-    if mcomplex.verified:
+def get_equality_predicate(min_distance, verified):
+    if verified:
         right_dist = min_distance
         left_dist = 0
     else:

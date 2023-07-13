@@ -3,6 +3,8 @@ from .geodesic_info import GeodesicInfo
 
 from ..tiling.tile import Tile, compute_tiles
 from ..tiling.check_core_curve import check_away_from_core_curve_iter
+from ..tiling.canonical_keys import canonical_keys_function_for_line
+from ..tiling.lifted_tetrahedron_set import get_equality_predicate
 
 from ..snap.t3mlite import Mcomplex # type: ignore
 
@@ -49,8 +51,11 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         
     return check_away_from_core_curve_iter(
         compute_tiles(
-            mcomplex,
             geodesic.line,
-            geodesic.lifted_tetrahedra),
+            mcomplex.R13_baseTetInCenter,
+            canonical_keys_function_for_line(geodesic.line),
+            get_equality_predicate(mcomplex.baseTetInRadius, mcomplex.verified),
+            geodesic.lifted_tetrahedra,
+            mcomplex.verified),
         epsilon = core_curve_epsilon,
         obj_name = 'Geodesic %s' % geodesic.word)

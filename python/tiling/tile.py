@@ -27,9 +27,12 @@ class Tile:
         self.lifted_geometric_object = lifted_geometric_object
         self.lower_bound_distance = lower_bound_distance
 
-def compute_tiles(mcomplex : Mcomplex,
-                  geometric_object : Union[R13LineWithMatrix],
-                  initial_lifted_tetrahedra : Sequence[LiftedTetrahedron]
+def compute_tiles(geometric_object,
+                  base_point,
+                  canonical_keys_function,
+                  equality_predicate,
+                  initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
+                  verified
                   ) -> Sequence[Tile]:
 
     """
@@ -51,10 +54,12 @@ def compute_tiles(mcomplex : Mcomplex,
     sweep.
     """
 
-    if mcomplex.verified:
-        minus_infinity = mcomplex.RF(-sage.all.Infinity)
+    RF = base_point[0].parent()
+    
+    if verified:
+        minus_infinity = RF(-sage.all.Infinity)
     else:
-        minus_infinity = mcomplex.RF(-1e20)
+        minus_infinity = RF(-1e20)
 
     # The pending pieces as priority queue - that is, a python list
     # but we use heapq to access it.
@@ -81,7 +86,11 @@ def compute_tiles(mcomplex : Mcomplex,
     # already been visited and been added to the result while tiling
     # the quotient space.
     visited_lifted_tetrahedra : LiftedTetrahedronSet = (
-        get_lifted_tetrahedron_set(mcomplex, geometric_object))
+        get_lifted_tetrahedron_set(
+            base_point,
+            canonical_keys_function,
+            equality_predicate,
+            verified))
 
     while True:
         pending_lifted_tetrahedron : _PendingLiftedTetrahedron = (
@@ -129,7 +138,7 @@ def compute_tiles(mcomplex : Mcomplex,
                     _lower_bound_distance_to_triangle(
                         lifted_geometric_object,
                         tet.R13_triangles[f],
-                        mcomplex.verified),
+                        verified),
                     entry_cell=entry_face))
 
 def _lower_bound_distance_to_triangle(

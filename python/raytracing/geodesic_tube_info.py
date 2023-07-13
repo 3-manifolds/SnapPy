@@ -4,7 +4,7 @@ from ..tiling.tile import Tile
 from ..hyperboloid.distances import distance_r13_lines
 
 from ..geometric_structure.geodesic.geodesic_info import compute_geodesic_info
-from ..drilling.tiles_for_geodesic import compute_tiles_for_geodesic
+from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
 
 from ..snap.t3mlite import simplex # type: ignore
 

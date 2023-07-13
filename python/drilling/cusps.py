@@ -1,4 +1,4 @@
-from .geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
 from ..geometric_structure import Filling, FillingMatrix
 
 from ..snap.t3mlite import Mcomplex, simplex

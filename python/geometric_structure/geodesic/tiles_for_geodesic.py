@@ -1,12 +1,12 @@
-from . import epsilons
+from .check_core_curve import check_away_from_core_curve_iter
+from .canonical_keys import canonical_keys_function_for_line
+from .geodesic_info import GeodesicInfo
 
-from ..tiling.tile import Tile, compute_tiles
-from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve_iter
-from ..geometric_structure.geodesic.canonical_keys import canonical_keys_function_for_line
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
-from ..tiling.lifted_tetrahedron_set import get_equality_predicate
+from ...tiling.tile import Tile, compute_tiles
 
-from ..snap.t3mlite import Mcomplex # type: ignore
+from ...tiling.lifted_tetrahedron_set import get_equality_predicate
+
+from ...snap.t3mlite import Mcomplex # type: ignore
 
 from typing import Sequence
 
@@ -45,9 +45,7 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     if mcomplex.verified:
         core_curve_epsilon = 0
     else:
-        core_curve_epsilon = (
-            epsilons.compute_tube_injectivity_radius_epsilon(
-                mcomplex.RF))
+        core_curve_epsilon = _compute_epsilon(mcomplex.RF)
         
     return check_away_from_core_curve_iter(
         compute_tiles(
@@ -59,3 +57,6 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             mcomplex.verified),
         epsilon = core_curve_epsilon,
         obj_name = 'Geodesic %s' % geodesic.word)
+
+def _compute_epsilon(RF):
+    return RF(0.5) ** (RF.prec() // 2 - 8)

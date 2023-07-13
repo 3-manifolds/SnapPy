@@ -1,9 +1,9 @@
 from . import constants
 from . import epsilons
 from . import exceptions
-from .geodesic_info import GeodesicInfo
-from .tiles_for_geodesic import compute_tiles_for_geodesic
 
+from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
+from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,

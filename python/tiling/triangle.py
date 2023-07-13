@@ -1,15 +1,9 @@
-from ..hyperboloid.line import R13Line
-from ..hyperboloid import (time_r13_normalise,
-                           space_r13_normalise,
-                           r13_dot)
-
 from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex
 
-class R13IdealTriangle:
-    def __init__(self, plane, bounding_planes, edges):
-        self.plane = plane
-        self.bounding_planes = bounding_planes
-        self.edges = edges
+from ..hyperboloid.line import R13Line
+from ..hyperboloid.triangle import R13IdealTriangle, triangle_bounding_plane
+
+__all__ = ['add_triangles_to_tetrahedra']
 
 def add_triangles_to_tetrahedra(mcomplex : Mcomplex) -> None:
     for tet in mcomplex.Tetrahedra:
@@ -24,7 +18,7 @@ def _add_triangles_to_tetrahedron(tet : Tetrahedron) -> None:
     tet.R13_triangles = {
         f : R13IdealTriangle(
             tet.R13_planes[f],
-            [ _triangle_bounding_plane(tet, f, f & other_f)
+            [ _triangle_bounding_plane_for_face_edge(tet, f, f & other_f)
               for other_f in simplex.TwoSubsimplices
               if f != other_f ],
             [ edges[f & other_f]
@@ -32,16 +26,8 @@ def _add_triangles_to_tetrahedron(tet : Tetrahedron) -> None:
               if f != other_f ])
         for f in simplex.TwoSubsimplices }
 
-def _make_r13_unit_tangent_vector(direction, point):
-    s = r13_dot(direction, point)
-    return space_r13_normalise(direction + s * point)
-
-def _triangle_bounding_plane(tet, face, edge):
-    v = tet.R13_vertices[face - edge]
-    v0 = tet.R13_vertices[simplex.Head[edge]]
-    v1 = tet.R13_vertices[simplex.Tail[edge]]
-
-    m = time_r13_normalise(
-        v0 / -r13_dot(v0, v) + v1 / -r13_dot(v1, v))
-
-    return _make_r13_unit_tangent_vector(m - v, m)
+def _triangle_bounding_plane_for_face_edge(tet, face, edge):
+    return triangle_bounding_plane(
+        tet.R13_vertices[face - edge],
+        tet.R13_vertices[simplex.Head[edge]],
+        tet.R13_vertices[simplex.Tail[edge]])

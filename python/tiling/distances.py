@@ -1,4 +1,4 @@
-from .triangle import R13IdealTriangle
+from ..hyperboloid.triangle import R13IdealTriangle
 
 from ..hyperboloid import r13_dot
 from ..hyperboloid.line import R13Line

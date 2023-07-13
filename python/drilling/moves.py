@@ -1,10 +1,10 @@
 from .cusps import CuspPostDrillInfo
-from .geometric_structure import compute_r13_planes_for_tet
 from .tracing import compute_plane_intersection_param, Endpoint, GeodesicPiece
 from .epsilons import compute_epsilon
 from . import constants
 from . import exceptions
 
+from ..geometric_structure import compute_r13_planes_for_tet
 from ..snap.t3mlite import simplex, Perm4, Tetrahedron, Corner # type: ignore
 from ..matrix import matrix # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore

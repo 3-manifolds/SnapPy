@@ -1,140 +1,17 @@
 from .fixed_points import r13_fixed_line_of_psl2c_matrix
 
-from ..verify.shapes import compute_hyperbolic_shapes # type: ignore
-from ..snap.fundamental_polyhedron import FundamentalPolyhedronEngine # type: ignore
-from ..snap.kernel_structures import TransferKernelStructuresEngine # type: ignore
-from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron, Vertex # type: ignore
-from ..SnapPy import word_as_list # type: ignore
-
 from ..tiling.line import R13LineWithMatrix
-from ..hyperboloid import (space_r13_normalise,
-                           r13_dot,
-                           unnormalised_plane_eqn_from_r13_points)
-from ..upper_halfspace import sl2c_inverse, psl2c_to_o13 # type: ignore
-from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
-from ..matrix import vector, matrix, mat_solve # type: ignore
-from ..math_basics import prod, xgcd # type: ignore
+from ..geometric_structure import word_list_to_psl2c_matrix
+from ..upper_halfspace import sl2c_inverse # type: ignore
+from ..snap.t3mlite import Mcomplex, Vertex, Tetrahedron, simplex
+from ..math_basics import xgcd # type: ignore
 
 from collections import deque
 
-from typing import Tuple, Sequence, Optional, Any
+from typing import Tuple, Sequence, Optional
 
 Filling = Tuple[int, int]
 FillingMatrix = Tuple[Filling, Filling]
-
-
-def compute_r13_planes_for_tet(tet : Tetrahedron):
-    """
-    Computes outward facing normals/plane equations from the vertices of
-    positively oriented tetrahedra - all in the hyperboloid model.
-    """
-
-    tet.R13_unnormalised_planes = {
-        f: unnormalised_plane_eqn_from_r13_points(
-            [ tet.R13_vertices[v] for v in verts ])
-        for f, verts in simplex.VerticesOfFaceCounterclockwise.items() }
-    tet.R13_planes = {
-        f : space_r13_normalise(plane)
-        for f, plane in tet.R13_unnormalised_planes.items() }
-
-
-def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
-    """
-    Given a triangulation with a R13 geometric structure (that is
-    the structure attached by calling add_r13_geometry) and a word
-    in the simplified fundamental group (given as string), returns
-    the corresponding PSL(2,C)-matrix.
-    """
-
-    return word_list_to_psl2c_matrix(
-        mcomplex, word_as_list(word, mcomplex.num_generators))
-
-
-def word_list_to_psl2c_matrix(mcomplex : Mcomplex, word_list : Sequence[int]):
-    """
-    Like word_to_psl2c_matrix, but taking the word as a sequence of
-    non-zero integers with positive integers corresponding to generators and
-    negative integers corresponding to their inverses.
-    """
-
-    return prod([mcomplex.GeneratorMatrices[g]
-                 for g in word_list])
-
-
-def add_r13_geometry(
-        mcomplex : Mcomplex,
-        manifold,
-        verified : bool = False,
-        bits_prec : Optional[int] = None):
-    """
-    Given the same triangulation once as Mcomplex and once as SnapPy Manifold,
-    develops the vertices of the tetrahedra (using the same fundamental
-    polyhedron as the SnapPea kernel), computes the face-pairing matrices and
-    the matrices corresponding to the generators of the unsimplified
-    fundamental group, computes the incenter of the base tetrahedron and
-    the core curve for each vertex of each tetrahedron corresponding to a
-    filled cusp.
-
-    The precision can be given by bits_prec (if not given, the precision of
-    the Manifold type is used, i.e., 53 for Manifold and 212 for ManifoldHP).
-
-    If verified is True, intervals will be computed for all the above
-    information.
-    """
-
-    shapes = compute_hyperbolic_shapes(
-        manifold, verified=verified, bits_prec=bits_prec)
-    z = shapes[0]
-    RF = z.real().parent()
-
-    # Develop the vertices in the upper half space model - we will
-    # convert them to the hyperboloid model later.
-    poly = FundamentalPolyhedronEngine.from_manifold_and_shapes(
-        manifold, shapes, normalize_matrices=True)
-
-    # Match the order of the mcomplex.Vertices to the one the SnapPea
-    # kernel sees and copy meridians and longitudes to tet.PeripheralCurves.
-    TransferKernelStructuresEngine(
-        mcomplex, manifold).reindex_cusps_and_transfer_peripheral_curves()
-    mcomplex.verified = verified
-    mcomplex.RF = RF
-    # PSL(2,C)-matrices corresponding to generators of fundamental group.
-    # Positive integers map to the generators, negative integrs to their
-    # inverses and 0 to the identity.
-    mcomplex.GeneratorMatrices = {
-        g : _to_matrix(m)
-        for g, m in poly.mcomplex.GeneratorMatrices.items() }
-    # Number of generators of the fundamental group.
-    mcomplex.num_generators = len(mcomplex.GeneratorMatrices) // 2
-
-    for tet, developed_tet in zip(mcomplex.Tetrahedra, poly.mcomplex):
-        # Shape for each edge, keys are simplex.OneSubsimplices
-        tet.ShapeParameters = developed_tet.ShapeParameters
-        # Vertices in C union infinity on the boundary of
-        # upper halfspace model
-        tet.ideal_vertices = {
-            V: developed_tet.Class[V].IdealPoint
-            for V in simplex.ZeroSubsimplices }
-        # Vertices in hyperboloid model
-        tet.R13_vertices = {
-            V: ideal_point_to_r13(z, RF)
-            for V, z in tet.ideal_vertices.items() }
-        # Add plane equations for faces
-        compute_r13_planes_for_tet(tet)
-        # Compute face-pairing matrices for hyperboloid model
-        tet.O13_matrices = {
-            F : psl2c_to_o13(mcomplex.GeneratorMatrices.get(-g))
-            for F, g in developed_tet.GeneratorsInfo.items() }
-
-    # Set base tetrahedron and compute its in-radius and center.
-    mcomplex.baseTet = mcomplex.Tetrahedra[
-        poly.mcomplex.ChooseGenInitialTet.Index]
-    mcomplex.baseTetInRadius, mcomplex.R13_baseTetInCenter = (
-        _compute_inradius_and_incenter_from_planes(
-            [ mcomplex.baseTet.R13_planes[f]
-              for f in simplex.TwoSubsimplices]))
-
-    return mcomplex
 
 def add_filling_information_and_r13_core_curves(
         mcomplex : Mcomplex,
@@ -200,18 +77,6 @@ def add_filling_information_and_r13_core_curves(
 
 ###############################################################################
 # Helpers
-
-
-def _to_matrix(m):
-    """
-    Necesssary conversion when not SageMath.
-
-    This is needed because we have two matrix types outside of Sage:
-    SimpleMatrix and Matrix2x2. Convert to the former.
-    """
-    return matrix([[m[0,0],m[0,1]],
-                   [m[1,0],m[1,1]]])
-
 
 def _compute_core_curve(
         mcomplex : Mcomplex,
@@ -300,40 +165,6 @@ def _develop_core_curve_cusp(
             new_tet.core_curves[new_vertex] = new_core_curve
             pending_tet_verts.append(
                 (new_tet, new_vertex, new_core_curve))
-
-# Depending on whether we are using SnapPy inside SageMath or not, we
-# use different python classes to represent numbers, vectors and matrices.
-# Thus, using Any as type annotation for now :(
-
-
-def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
-    """
-    Given outside-facing normals for the four faces of a
-    tetrahedron, compute the hyperbolic inradius and the
-    incenter (as unit time vector) of the tetrahedron (in the
-    hyperboloid model).
-    """
-
-    # We need to c and r such that
-    #  * r13_dot(c, c) = -1 and
-    #  * r13_dot(plane, c) = -sinh(r) for every plane
-    #
-    # We instead solve for the following system of linear equations:
-    #  * r13_dot(plane, pt) = -1 for every plane
-
-    RF = planes[0][0].parent()
-    m = matrix([[-plane[0], plane[1], plane[2], plane[3]]
-                for plane in planes])
-    v = vector([RF(-1), RF(-1), RF(-1), RF(-1)])
-
-    pt = mat_solve(m, v)
-
-    # And then use the inverse length of pt to scale pt to be
-    # a unit time vector and to compute the r.
-    scale = 1 / (-r13_dot(pt, pt)).sqrt()
-
-    return scale.arcsinh(), scale * pt
-
 
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """

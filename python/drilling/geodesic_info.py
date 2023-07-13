@@ -1,9 +1,9 @@
 from . import epsilons
 from . import constants
 from . import exceptions
-from .geometric_structure import word_to_psl2c_matrix
 from . fixed_points import r13_fixed_line_of_psl2c_matrix
 
+from ..geometric_structure import word_to_psl2c_matrix
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..tiling.line import R13LineWithMatrix
 from ..hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore

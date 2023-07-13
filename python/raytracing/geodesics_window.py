@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from .gui_utilities import UniformDictController, ScrollableFrame
 from .geodesics import geodesic_index_to_color, LengthSpectrumError
-from ..drilling.exceptions import WordAppearsToBeParabolic
+from ..geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
 from ..SnapPy import word_as_list # type: ignore
 
 

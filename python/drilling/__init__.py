@@ -2,7 +2,6 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .geodesic_info import GeodesicInfo, compute_geodesic_info
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
 from .barycentric import mark_subtetrahedra_about_geodesic_pieces
@@ -14,6 +13,7 @@ from .cusps import (
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
+from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo, compute_geodesic_info
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
 from ..geometric_structure.geodesic.core_curves import add_r13_core_curves

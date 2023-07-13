@@ -2,8 +2,8 @@ from .line import R13LineWithMatrix
 from .lifted_tetrahedron import LiftedTetrahedron
 from .lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                      get_lifted_tetrahedron_set)
-from .distances import lower_bound_distance_r13_line_triangle
 
+from ..hyperboloid.distances import lower_bound_distance_r13_line_triangle
 from ..hyperboloid.triangle import R13IdealTriangle
 from ..hyperboloid import o13_inverse
 from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex

@@ -1,7 +1,7 @@
 from . import exceptions
 from .line import R13LineWithMatrix
-from .distances import distance_r13_lines
 from ..snap.t3mlite import simplex, Tetrahedron
+from ..hyperboloid.distances import distance_r13_lines
 from ..hyperboloid.line import R13Line
 
 from typing import Optional

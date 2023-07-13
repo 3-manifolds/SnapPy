@@ -1,6 +1,7 @@
-from ..tiling.distances import distance_r13_lines
 from ..tiling.iterable_cache import IterableCache
 from ..tiling.tile import Tile
+
+from ..hyperboloid.distances import distance_r13_lines
 
 from ..drilling.geodesic_info import compute_geodesic_info
 from ..drilling.tiles_for_geodesic import compute_tiles_for_geodesic

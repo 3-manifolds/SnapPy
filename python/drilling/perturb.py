@@ -10,7 +10,7 @@ from ..hyperboloid import ( # type: ignore
     time_r13_normalise,
     distance_unit_time_r13_points)
 from ..hyperboloid.line import R13Line
-from ..tiling.distances import distance_r13_lines
+from ..hyperboloid.distances import distance_r13_lines
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..tiling.tile import Tile
 from ..snap.t3mlite import Mcomplex # type: ignore

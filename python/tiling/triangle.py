@@ -1,5 +1,4 @@
-from .line import R13Line
-
+from ..hyperboloid.line import R13Line
 from ..hyperboloid import (time_r13_normalise,
                            space_r13_normalise,
                            r13_dot)

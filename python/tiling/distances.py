@@ -1,7 +1,7 @@
-from .line import R13Line
 from .triangle import R13IdealTriangle
 
 from ..hyperboloid import r13_dot
+from ..hyperboloid.line import R13Line
 
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
 from ..sage_helper import _within_sage # type: ignore

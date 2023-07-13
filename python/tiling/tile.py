@@ -1,9 +1,8 @@
-from .line import R13LineWithMatrix
 from .lifted_tetrahedron import LiftedTetrahedron
 from .lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                      get_lifted_tetrahedron_set)
 
-from ..hyperboloid.distances import lower_bound_distance_r13_line_triangle
+from ..hyperboloid.distances import lower_bound_distance_to_triangle
 from ..hyperboloid.triangle import R13IdealTriangle
 from ..hyperboloid import o13_inverse
 from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex
@@ -21,7 +20,7 @@ from typing import Sequence, Union
 class Tile:
     def __init__(self,
                  tet : Tetrahedron,
-                 lifted_geometric_object : Union[R13LineWithMatrix],
+                 lifted_geometric_object,
                  lower_bound_distance):
         self.tet = tet
         self.lifted_geometric_object = lifted_geometric_object
@@ -135,21 +134,12 @@ def compute_tiles(geometric_object,
                     # Distance of this face to lifted geodesic
                     # (equal to distance of face entry_face of
                     # new_tet)
-                    _lower_bound_distance_to_triangle(
+                    lower_bound_distance_to_triangle(
                         lifted_geometric_object,
                         tet.R13_triangles[f],
                         verified),
                     entry_cell=entry_face))
 
-def _lower_bound_distance_to_triangle(
-        geometric_object : Union[R13LineWithMatrix],
-        triangle : R13IdealTriangle,
-        verified : bool):
-    if isinstance(geometric_object, R13LineWithMatrix):
-        return lower_bound_distance_r13_line_triangle(
-            geometric_object.r13_line, triangle, verified)
-    raise Exception("Unexpected geometric_object")
-            
 class _PendingLiftedTetrahedron:
     """
     A lifted tetrahedron that still needs to be processed by GeodesicTube

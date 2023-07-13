@@ -51,7 +51,7 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         
     return check_away_from_core_curve_iter(
         compute_tiles(
-            geodesic.line,
+            geodesic.line.r13_line,
             mcomplex.R13_baseTetInCenter,
             canonical_keys_function_for_line(geodesic.line),
             get_equality_predicate(mcomplex.baseTetInRadius, mcomplex.verified),

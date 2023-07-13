@@ -30,7 +30,7 @@ def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
                 dist_to_core_curve,
                 distance_r13_lines(
                     core_curve.r13_line,
-                    tile.lifted_geometric_object.r13_line))
+                    tile.lifted_geometric_object))
         
         yield tile
 
@@ -67,7 +67,7 @@ class GeodesicTubeInfo:
             result.append(
                 (tile.tet.Index,
                  [ tile.tet.to_coordinates_in_symmetric_tet * pt
-                   for pt in tile.lifted_geometric_object.r13_line.points] ))
+                   for pt in tile.lifted_geometric_object.points] ))
 
         return result, min(tile.lower_bound_distance, radius)
 
@@ -96,10 +96,10 @@ class GeodesicTubeInfo:
         # We should ask snappy.drilling for the two tetrahedra adjacent to
         # a face.
         piece = self._get_pieces_covering_geodesic()[0]
-        point = piece.lifted_geometric_object.r13_line.points[0]
+        point = piece.lifted_geometric_object.points[0]
         for other_piece in other._get_pieces_covering_geodesic():
             if piece.tet == other_piece.tet:
-                for other_point in other_piece.lifted_geometric_object.r13_line.points:
+                for other_point in other_piece.lifted_geometric_object.points:
                     if _are_parallel_light_vectors(point, other_point, 1e-5):
                         return True
         return False
@@ -116,8 +116,8 @@ class GeodesicTubeInfo:
                 if i < j:
                     if piece0.tet == piece1.tet:
                         if _are_parallel_light_vectors(
-                                piece0.lifted_geometric_object.r13_line.points[0],
-                                piece1.lifted_geometric_object.r13_line.points[0],
+                                piece0.lifted_geometric_object.points[0],
+                                piece1.lifted_geometric_object.points[0],
                                 1e-5):
                             return False
         return True

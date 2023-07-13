@@ -30,6 +30,14 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
 
     return 2 * _safe_sqrt(p).arcsinh()
 
+def lower_bound_distance_to_triangle(
+        geometric_object, triangle : R13IdealTriangle, verified : bool):
+    if isinstance(geometric_object, R13Line):
+        return lower_bound_distance_r13_line_triangle(
+            geometric_object, triangle, verified)
+    raise ValueError(
+        "Distance between %r and triangle not supported" % geometric_object)
+
 def lower_bound_distance_r13_line_triangle(
         line : R13Line, triangle : R13IdealTriangle, verified : bool):
 

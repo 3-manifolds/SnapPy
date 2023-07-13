@@ -9,7 +9,7 @@ from typing import Optional
 def check_away_from_core_curve_iter(iterator, epsilon, obj_name = None):
     for tile in iterator:
         check_away_from_core_curve(
-            tile.lifted_geometric_object.r13_line,
+            tile.lifted_geometric_object,
             tile.tet,
             simplex.T,
             epsilon,

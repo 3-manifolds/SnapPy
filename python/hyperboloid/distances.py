@@ -1,5 +1,6 @@
 from .triangle import R13IdealTriangle
 from .line import R13Line
+from .horoball import R13Horoball
 from . import r13_dot
 
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
@@ -30,21 +31,61 @@ def distance_r13_lines(line0 : R13Line, line1 : R13Line):
 
     return 2 * _safe_sqrt(p).arcsinh()
 
-def lower_bound_distance_to_triangle(
+def distance_r13_horoballs(horoball_defining_vec0,
+                           horoball_defining_vec1):
+    p = -r13_dot(horoball_defining_vec0, horoball_defining_vec1) / 2
+    return _safe_log(p)
+
+def distance_r13_horoball_line(horoball_defining_vec, # Light-like
+                               line : R13Line):
+
+    p = (r13_dot(line.points[0], horoball_defining_vec) *
+         r13_dot(line.points[1], horoball_defining_vec))
+    s = -2 * p / line.inner_product
+
+    return _safe_log(s)/2
+
+def distance_r13_horoball_plane(horoball_defining_vec, # Like-like
+                                plane_defining_vec): # Space-like
+    p = r13_dot(horoball_defining_vec, plane_defining_vec)
+    return p.abs().log()
+
+def lower_bound_distance_to_r13_triangle(
         geometric_object, triangle : R13IdealTriangle, verified : bool):
+    if isinstance(geometric_object, R13Horoball):
+        return lower_bound_distance_r13_horoball_triangle(
+            geometric_object.defining_vec, triangle, verified)
     if isinstance(geometric_object, R13Line):
         return lower_bound_distance_r13_line_triangle(
             geometric_object, triangle, verified)
     raise ValueError(
         "Distance between %r and triangle not supported" % geometric_object)
 
-def lower_bound_distance_r13_line_triangle(
-        line : R13Line, triangle : R13IdealTriangle, verified : bool):
+def lower_bound_distance_r13_horoball_triangle(
+        horoball_defining_vec,
+        triangle : R13IdealTriangle, verified : bool):
 
-    RF = line.points[0][0].parent()
     if verified:
         epsilon = 0
     else:
+        RF = horoball_defining_vec[0].parent()
+        epsilon = _compute_epsilon(RF)
+
+    for bounding_plane, edge in zip(triangle.bounding_planes,
+                                    triangle.edges):
+        if r13_dot(horoball_defining_vec, bounding_plane) > epsilon:
+            return distance_r13_horoball_line(horoball_defining_vec, edge)
+
+    return distance_r13_horoball_plane(
+        horoball_defining_vec, triangle.plane)
+
+def lower_bound_distance_r13_line_triangle(
+        line : R13Line, triangle : R13IdealTriangle, verified : bool):
+
+    if verified:
+        epsilon = 0
+    else:
+        RF = line.points[0][0].parent()
         epsilon = _compute_epsilon(RF)
 
     a0 = r13_dot(triangle.plane, line.points[0])
@@ -65,6 +106,7 @@ def lower_bound_distance_r13_line_triangle(
     if p > 0:
         return (-2 * p / line.inner_product).sqrt().arcsinh()
 
+    RF = line.points[0][0].parent()
     return RF(0)
 
 def _compute_epsilon(RF):
@@ -93,3 +135,12 @@ def _safe_sqrt(p):
             return RF(0)
     return p.sqrt()
 
+def _safe_log(p):
+    if is_RealIntervalFieldElement(p):
+        RIF = p.parent()
+        p = p.intersection(RIF(0, sage.all.Infinity))
+    else:
+        if p < 0:
+            RF = p.parent()
+            return RF(-1e20)
+    return p.log()

@@ -2,7 +2,7 @@ from .lifted_tetrahedron import LiftedTetrahedron
 from .lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                      get_lifted_tetrahedron_set)
 
-from ..hyperboloid.distances import lower_bound_distance_to_triangle
+from ..hyperboloid.distances import lower_bound_distance_to_r13_triangle
 from ..hyperboloid.triangle import R13IdealTriangle
 from ..hyperboloid import o13_inverse
 from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex
@@ -134,7 +134,7 @@ def compute_tiles(geometric_object,
                     # Distance of this face to lifted geodesic
                     # (equal to distance of face entry_face of
                     # new_tet)
-                    lower_bound_distance_to_triangle(
+                    lower_bound_distance_to_r13_triangle(
                         lifted_geometric_object,
                         tet.R13_triangles[f],
                         verified),

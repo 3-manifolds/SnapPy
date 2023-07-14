@@ -191,6 +191,8 @@ class ComplexHoroTriangle:
             self.lengths[face] *= t
         self.area *= t * t
 
+        self._real_lengths_cache = None
+
     @staticmethod
     def direction_sign():
         return -1

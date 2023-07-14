@@ -1,6 +1,6 @@
 from ..sage_helper import _within_sage, sage_method
 
-from ..geometric_structure.cusp_cross_section import RealCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.cusp_cross_section import RealCuspCrossSection
 from ..snap.t3mlite import simplex
 
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations

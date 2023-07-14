@@ -1,4 +1,4 @@
-from ..geometric_structure.cusp_cross_section import ComplexCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['cusp_translations_for_manifold',

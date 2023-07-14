@@ -1,4 +1,4 @@
-from ...geometric_structure.cusp_cross_section import ComplexCuspCrossSection
+from ...geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
 from ...sage_helper import _within_sage, sage_method
 from ...math_basics import correct_min
 from ..shapes import compute_hyperbolic_shapes

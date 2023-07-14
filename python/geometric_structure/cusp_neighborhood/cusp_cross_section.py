@@ -21,12 +21,12 @@
 #
 # 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
-from ..math_basics import correct_min
+from ...math_basics import correct_min
 
-from ..snap import t3mlite as t3m
-from ..snap.t3mlite import simplex
-from ..snap.mcomplex_base import *
-from ..snap.kernel_structures import *
+from ...snap import t3mlite as t3m
+from ...snap.t3mlite import simplex
+from ...snap.mcomplex_base import *
+from ...snap.kernel_structures import *
 
 __all__ = [
     'IncompleteCuspError',

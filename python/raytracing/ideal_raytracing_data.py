@@ -1,11 +1,12 @@
 from snappy.snap import t3mlite as t3m
+from snappy.snap.t3mlite import simplex
 from snappy import Triangulation
 
 from snappy.SnapPy import matrix, vector
 
 from ..snap.mcomplex_base import *
 from ..geometric_structure.cusp_neighborhood.cusp_cross_section import *
-from ..geometric_structure import compute_r13_planes_for_tet
+from ..geometric_structure import add_r13_planes_to_tetrahedra
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
@@ -107,7 +108,7 @@ class IdealRaytracingData(RaytracingData):
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
-        r._add_R13_planes_to_faces()
+        add_r13_planes_to_tetrahedra(c.mcomplex)
         r._add_R13_horosphere_scales_to_vertices()
         r._add_cusp_to_tet_matrices()
         r._add_margulis_tube_ends()
@@ -144,14 +145,9 @@ class IdealRaytracingData(RaytracingData):
                 V: ideal_point_to_r13(z, self.RF)
                 for V, z in tet.complex_vertices.items() }
             tet.R13_vertex_products = {
-                v0 | v1 : r13_dot(pt0, pt1)
-                for v0, pt0 in tet.R13_vertices.items()
-                for v1, pt1 in tet.R13_vertices.items()
-                if v0 > v1 }
-
-    def _add_R13_planes_to_faces(self):
-        for tet in self.mcomplex.Tetrahedra:
-            compute_r13_planes_for_tet(tet)
+                e: r13_dot(tet.R13_vertices[simplex.Head[e]],
+                           tet.R13_vertices[simplex.Tail[e]])
+                for e in simplex.OneSubsimplices }
 
     def _compute_R13_horosphere_scale_for_vertex(self, tet, V0):
         vertex = tet.Class[V0]

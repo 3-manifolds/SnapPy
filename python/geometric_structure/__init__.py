@@ -25,12 +25,16 @@ from typing import Tuple, Sequence, Optional, Any
 Filling = Tuple[int, int]
 FillingMatrix = Tuple[Filling, Filling]
 
-def compute_r13_planes_for_tet(tet : Tetrahedron):
+def add_r13_planes_to_tetrahedra(mcomplex : Mcomplex):
     """
     Computes outward facing normals/plane equations from the vertices of
     positively oriented tetrahedra - all in the hyperboloid model.
     """
 
+    for tet in mcomplex.Tetrahedra:
+        add_r13_planes_to_tetrahedron(tet)
+
+def add_r13_planes_to_tetrahedron(tet : Tetrahedron):
     tet.R13_unnormalised_planes = {
         f: unnormalised_plane_eqn_from_r13_points(
             [ tet.R13_vertices[v] for v in verts ])
@@ -38,7 +42,6 @@ def compute_r13_planes_for_tet(tet : Tetrahedron):
     tet.R13_planes = {
         f : space_r13_normalise(plane)
         for f, plane in tet.R13_unnormalised_planes.items() }
-
 
 def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
     """
@@ -124,7 +127,7 @@ def add_r13_geometry(
             V: ideal_point_to_r13(z, RF)
             for V, z in tet.ideal_vertices.items() }
         # Add plane equations for faces
-        compute_r13_planes_for_tet(tet)
+        add_r13_planes_to_tetrahedron(tet)
         # Compute face-pairing matrices for hyperboloid model
         tet.O13_matrices = {
             F : psl2c_to_o13(mcomplex.GeneratorMatrices.get(-g))

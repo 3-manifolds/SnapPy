@@ -4,7 +4,7 @@ from .epsilons import compute_epsilon
 from . import constants
 from . import exceptions
 
-from ..geometric_structure import compute_r13_planes_for_tet
+from ..geometric_structure import add_r13_planes_to_tetrahedron
 from ..snap.t3mlite import simplex, Perm4, Tetrahedron, Corner # type: ignore
 from ..matrix import matrix # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
@@ -107,7 +107,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
 
         new_tet0.O13_matrices[f0] = tet.O13_matrices[f0]
 
-        compute_r13_planes_for_tet(new_tet0)
+        add_r13_planes_to_tetrahedron(new_tet0)
 
     for ml in range(2):
         for sheet in range(2):
@@ -308,7 +308,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
             simplex.V3 : old_tets[1].post_drill_infos[new_to_old_tets[i][1].image(simplex.V3)],
         }
 
-        compute_r13_planes_for_tet(new_tet)
+        add_r13_planes_to_tetrahedron(new_tet)
 
     old_to_new_tets = [ [ ~new_to_old_tets[j][i] for j in range(3) ]
                         for i in range(2) ]

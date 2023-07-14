@@ -4,8 +4,6 @@ from .geodesic_info import GeodesicInfo
 
 from ...tiling.tile import Tile, compute_tiles
 
-from ...tiling.lifted_tetrahedron_set import get_equality_predicate
-
 from ...snap.t3mlite import Mcomplex # type: ignore
 
 from typing import Sequence
@@ -52,7 +50,7 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             geodesic.line.r13_line,
             mcomplex.R13_baseTetInCenter,
             canonical_keys_function_for_line(geodesic.line),
-            get_equality_predicate(mcomplex.baseTetInRadius, mcomplex.verified),
+            -(mcomplex.baseTetInRadius/2).cosh(),
             geodesic.lifted_tetrahedra,
             mcomplex.verified),
         epsilon = core_curve_epsilon,

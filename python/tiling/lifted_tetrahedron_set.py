@@ -3,7 +3,7 @@ from .real_hash_dict import RealHashDict
 from .canonical_key_dict import CanonicalKeyDict
 
 from ..snap.t3mlite import Mcomplex # type: ignore
-from ..hyperboloid import distance_unit_time_r13_points
+from ..hyperboloid import r13_dot
 
 class ProductSet:
     """
@@ -56,7 +56,7 @@ class LiftedTetrahedronSet:
 
 def get_lifted_tetrahedron_set(base_point,
                                canonical_keys_function,
-                               equality_predicate,
+                               min_inner_product,
                                verified
                                ) -> LiftedTetrahedronSet:
     """
@@ -68,7 +68,7 @@ def get_lifted_tetrahedron_set(base_point,
     """
 
     d = RealHashDict(
-        equality_predicate,
+        _equality_predicate(min_inner_product),
         _hash_function(base_point[0].parent()),
         _epsilon_inverse,
         verified)
@@ -78,28 +78,19 @@ def get_lifted_tetrahedron_set(base_point,
 
     return LiftedTetrahedronSet(d, base_point)
 
-def get_equality_predicate(min_distance, verified):
-    if verified:
-        right_dist = min_distance
-        left_dist = 0
-    else:
-        RF = min_distance.parent()
-        right_dist = min_distance * RF(0.125)
-        left_dist = min_distance * RF(0.5)
-
+def _equality_predicate(min_inner_product):
     def result(point_0, point_1):
-        d = distance_unit_time_r13_points(point_0, point_1)
-        if d < right_dist:
+        inner_product = r13_dot(point_0, point_1)
+        if inner_product > min_inner_product:
             return True
-        if d > left_dist:
+        if inner_product < min_inner_product:
             return False
 
         raise InsufficientPrecisionError(
             "Could neither verify that the two given tiles are "
             "the same nor that they are distinct. "
-            "Distance between basepoint translates is: %r. "
-            "Cut-offs are %r %r." % (
-            d, left_dist, right_dist))
+            "Inner product is: %r, cut-off is: %s. " % (
+                inner_product, min_inner_product))
 
     return result
 

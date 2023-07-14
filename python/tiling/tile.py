@@ -29,7 +29,7 @@ class Tile:
 def compute_tiles(geometric_object,
                   base_point,
                   canonical_keys_function,
-                  equality_predicate,
+                  min_inner_product,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
                   verified
                   ) -> Sequence[Tile]:
@@ -88,7 +88,7 @@ def compute_tiles(geometric_object,
         get_lifted_tetrahedron_set(
             base_point,
             canonical_keys_function,
-            equality_predicate,
+            min_inner_product,
             verified))
 
     while True:

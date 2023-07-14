@@ -19,16 +19,19 @@ from typing import Sequence, Union
 
 class Tile:
     def __init__(self,
-                 tet : Tetrahedron,
+                 lower_bound_distance,
                  lifted_geometric_object,
-                 lower_bound_distance):
-        self.tet = tet
-        self.lifted_geometric_object = lifted_geometric_object
+                 tet : Tetrahedron,
+                 obj = None):
         self.lower_bound_distance = lower_bound_distance
+        self.lifted_geometric_object = lifted_geometric_object
+        self.tet = tet
+        self.obj = obj
 
 def compute_tiles(geometric_object,
                   base_point,
                   canonical_keys_function,
+                  act_on_base_point_by_inverse,
                   min_inner_product,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
                   verified
@@ -88,6 +91,7 @@ def compute_tiles(geometric_object,
         get_lifted_tetrahedron_set(
             base_point,
             canonical_keys_function,
+            act_on_base_point_by_inverse,
             min_inner_product,
             verified))
 
@@ -113,9 +117,9 @@ def compute_tiles(geometric_object,
         lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
 
         # Emit Tile
-        yield Tile(tet,
+        yield Tile(pending_lifted_tetrahedron.lower_bound_distance,
                    lifted_geometric_object,
-                   pending_lifted_tetrahedron.lower_bound_distance)
+                   tet)
 
         # For all faces ...
         for f, new_tet in tet.Neighbor.items():

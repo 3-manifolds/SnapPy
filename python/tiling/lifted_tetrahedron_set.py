@@ -3,7 +3,7 @@ from .real_hash_dict import RealHashDict
 from .canonical_key_dict import CanonicalKeyDict
 
 from ..snap.t3mlite import Mcomplex # type: ignore
-from ..hyperboloid import r13_dot
+from ..hyperboloid import r13_dot, o13_inverse
 
 class ProductSet:
     """
@@ -45,17 +45,24 @@ class LiftedTetrahedronSet:
     given when LiftedTetrahedronSet is constructed.
     """
 
-    def __init__(self, dictionary, base_point):
+    def __init__(self, dictionary, base_point, act_on_base_point_by_inverse):
         self._set = ProductSet(dictionary)
         self._base_point = base_point
+        self._act_on_base_point_by_inverse = act_on_base_point_by_inverse
 
     def add(self, lifted_tetrahedron : LiftedTetrahedron) -> bool:
+        if self._act_on_base_point_by_inverse:
+            m = o13_inverse(lifted_tetrahedron.o13_matrix)
+        else:
+            m = lifted_tetrahedron.o13_matrix
+        
         return self._set.add(
-            lifted_tetrahedron.o13_matrix * self._base_point,
+            m * self._base_point,
             lifted_tetrahedron.tet.Index)
 
 def get_lifted_tetrahedron_set(base_point,
                                canonical_keys_function,
+                               act_on_base_point_by_inverse,
                                min_inner_product,
                                verified
                                ) -> LiftedTetrahedronSet:
@@ -76,7 +83,7 @@ def get_lifted_tetrahedron_set(base_point,
     if canonical_keys_function:
         d = CanonicalKeyDict(d, canonical_keys_function)
 
-    return LiftedTetrahedronSet(d, base_point)
+    return LiftedTetrahedronSet(d, base_point, act_on_base_point_by_inverse)
 
 def _equality_predicate(min_inner_product):
     def result(point_0, point_1):

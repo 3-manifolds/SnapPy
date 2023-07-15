@@ -137,6 +137,16 @@ layout (std140) uniform geodesics
 
 uniform float horosphereScales[4 * ##num_tets##];
 
+#if ##num_additional_horospheres## >0
+layout (std140) uniform additionalHorospheres
+{
+    vec4 horosphereVec[##num_additional_horospheres##];
+    int horosphereCuspIndex[##num_additional_horospheres##];
+    int horosphereOffsets[##num_tets## + 1];
+};
+
+#endif
+
 // cosh(r)^2 where r is the radius of the sphere
 // about the center of the tetrahedron.
 uniform float insphereRadiusParams[##num_tets##];
@@ -233,18 +243,19 @@ triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 
 // Kind of object a ray hit.
 
-const int object_type_nothing             = 0;
-const int object_type_face                = 1;
-const int object_type_edge_cylinder_enter = 2;
-const int object_type_edge_cylinder_exit  = 3;
-const int object_type_horosphere          = 4;
-const int object_type_edge_fan            = 5;
-const int object_type_insphere            = 6;
-const int object_type_vertex_sphere       = 7;
-const int object_type_margulis_tube       = 8;
-const int object_type_elevation_enter     = 9;
-const int object_type_elevation_exit      = 10;
-const int object_type_geodesic_tube       = 11;
+const int object_type_nothing               = 0;
+const int object_type_face                  = 1;
+const int object_type_edge_cylinder_enter   = 2;
+const int object_type_edge_cylinder_exit    = 3;
+const int object_type_horosphere            = 4;
+const int object_type_edge_fan              = 5;
+const int object_type_insphere              = 6;
+const int object_type_vertex_sphere         = 7;
+const int object_type_margulis_tube         = 8;
+const int object_type_elevation_enter       = 9;
+const int object_type_elevation_exit        = 10;
+const int object_type_geodesic_tube         = 11;
+const int object_type_additional_horosphere = 12;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -294,7 +305,8 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_edge_fan ||
         ray_hit.object_type == object_type_elevation_enter ||
         ray_hit.object_type == object_type_elevation_exit ||
-        ray_hit.object_type == object_type_geodesic_tube;
+        ray_hit.object_type == object_type_geodesic_tube ||
+        ray_hit.object_type == object_type_additional_horosphere;
 }
 
 // Advances ray by distance atanh(p).
@@ -556,6 +568,12 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif
 
+#if ##num_additional_horospheres## > 0
+    if (ray_hit.object_type == object_type_additional_horosphere) {
+        return horosphereVec[ray_hit.object_index] - ray_hit.ray.point;
+    }
+#endif
+
 #endif
     
     if(ray_hit.object_type == object_type_edge_fan ||
@@ -766,6 +784,23 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 #endif
 
+#if ##num_additional_horospheres## > 0
+    for (int index = horosphereOffsets[ray_hit.tet_num];
+         index < horosphereOffsets[ray_hit.tet_num + 1];
+         index++) {
+
+        vec2 params = distParamsForHorosphereIntersection(
+            ray_hit.ray,
+            horosphereVec[index]);
+
+        if (params.x < smallest_p) {
+            smallest_p = params.x;
+            ray_hit.object_type = object_type_additional_horosphere;
+            ray_hit.object_index = index;
+        }
+    }
+#endif
+  
 #endif
 
     if (edgeTubeRadiusParam > 0.500001) {
@@ -1035,6 +1070,19 @@ material_params(RayHit ray_hit)
         float goldenAngleBy2Pi = 0.3819660112501051;
 
         result.diffuse = hsv2rgb(vec3(float(index) * goldenAngleBy2Pi + 0.1, 1.0, 1.0));
+
+        result.ambient = 0.5 * result.diffuse;
+    }
+#endif
+
+#if ##num_additional_horospheres## > 0
+    if (ray_hit.object_type == object_type_additional_horosphere) {
+        int index = horosphereCuspIndex[ray_hit.object_index];
+
+        // Similar to geodesic colors.
+        float goldenAngleBy2Pi = 0.3819660112501051;
+
+        result.diffuse = hsv2rgb(vec3(float(index) * goldenAngleBy2Pi + 0.3, 1.0, 1.0));
 
         result.ambient = 0.5 * result.diffuse;
     }
@@ -1422,5 +1470,6 @@ void main(){
 
     // Divide by total number of subsamples.
     out_FragColor = vec4(total_color / float(subpixelCount * subpixelCount), 1);
+
     gl_FragDepth = min_depth;
 }

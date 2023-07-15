@@ -150,6 +150,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
 
+        self.additional_horospheres = None
+
         self.geodesics_disabled_edges = False
         if geodesics:
             self.disable_edges_for_geodesics()
@@ -176,6 +178,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
             self.geodesics_uniform_bindings,
+            (self.additional_horospheres.get_uniform_bindings()
+             if self.additional_horospheres
+             else {}),
             {
                 'currentWeight' : ('float', current_weight),
                 'screenResolution' : ('vec2', [width, height]),
@@ -363,9 +368,18 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 b'##num_geodesic_segments##' : 0
             }
 
+        if self.additional_horospheres:
+            additional_horosphere_compile_time_constants = (
+                self.additional_horospheres.get_compile_time_constants())
+        else:
+            additional_horosphere_compile_time_constants = {
+                b'##num_additional_horospheres##' : 0
+            }
+
         compile_time_constants = _merge_dicts(
             self.raytracing_data.get_compile_time_constants(),
-            geodesic_compile_time_constants)
+            geodesic_compile_time_constants,
+            additional_horosphere_compile_time_constants)
 
         if compile_time_constants == self.compile_time_constants:
             return

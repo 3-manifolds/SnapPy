@@ -27,6 +27,7 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
 
     num_tets = constants_dict[b'##num_tets##']
     num_geodesic_segments = constants_dict[b'##num_geodesic_segments##']
+    num_additional_horospheres = constants_dict[b'##num_additional_horospheres##']
 
     uniform_block_names_sizes_and_offsets = [
         ('TetrahedraCombinatorics',
@@ -60,6 +61,12 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
            'geodesicHeads': 16 * num_geodesic_segments,
            'geodesicIndex': (16 + 16) * num_geodesic_segments,
            'geodesicTubeRadiusParam': (16 + 16 + 16) * num_geodesic_segments,
-           'geodesicOffsets': (16 + 16 + 16 + 16) * num_geodesic_segments }) ]
+           'geodesicOffsets': (16 + 16 + 16 + 16) * num_geodesic_segments }),
+        ('additionalHorospheres',
+         (16 + 16) * num_additional_horospheres + 16 * (num_tets + 1),
+         { 'horosphereVec': 0,
+           'horosphereCuspIndex': 16 * num_additional_horospheres,
+           'horosphereOffsets' : (16 + 16) * num_additional_horospheres})
+         ]
 
     return src, uniform_block_names_sizes_and_offsets

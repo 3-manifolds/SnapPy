@@ -58,12 +58,6 @@ class Geodesics:
         if not self.geodesic_tube_infos:
             return success
 
-        self.data_heads = []
-        self.data_tails = []
-        self.data_indices = []
-        self.data_radius_params = []
-        self.data_offsets = []
-
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
         for i, (enable, radius, geodesic_tube) in enumerate(
@@ -82,6 +76,12 @@ class Geodesics:
                 for tet, endpoints in tets_and_endpoints:
                     tets_to_data[tet].append(
                         (endpoints, i, radius_param))
+
+        self.data_heads = []
+        self.data_tails = []
+        self.data_indices = []
+        self.data_radius_params = []
+        self.data_offsets = []
 
         for data in tets_to_data:
             self.data_offsets.append(len(self.data_heads))

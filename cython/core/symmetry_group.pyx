@@ -47,15 +47,15 @@ cdef class SymmetryGroup():
         if self.is_abelian():
             theText = repr(self.abelian_description())
         elif self.is_dihedral():
-            theText = 'D%d'%(self.order()//2)
+            theText = 'D%d' % (self.order()//2)
         elif self.is_polyhedral():
             theText = self.polyhedral_description()
         elif self.is_S5():
             theText = 'S5'
         elif self.is_direct_product():
-            theText =     '%s x %s' % self.direct_product_description()
+            theText = '%s x %s' % self.direct_product_description()
         else:
-            theText = 'nonabelian group of order %d'%self.order()
+            theText = 'nonabelian group of order %d' % self.order()
 
         return thePretext + theText
 
@@ -126,7 +126,7 @@ cdef class SymmetryGroup():
         polyhedral group, return a description of it.
         """
         cdef Boolean is_binary_group
-        cdef int p,q,r
+        cdef int p, q, r
 
         if not self.is_polyhedral():
             raise ValueError('The symmetry group is not polyhedral.')

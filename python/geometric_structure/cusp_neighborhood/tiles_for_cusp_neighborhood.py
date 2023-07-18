@@ -73,12 +73,16 @@ def _add_cusp_cross_section(mcomplex : Mcomplex):
     for i, (v, area) in enumerate(
             zip(mcomplex.Vertices, c.cusp_areas())):
         v.cusp_area = area
-        lower_bound = c.compute_scale_for_std_form(v)
-        lower_bound_edges = c.exp_distance_neighborhoods_measured_along_edges(i, i)
-        if lower_bound_edges is not None:
-            lower_bound = correct_min([lower_bound,
-                                       lower_bound_edges.sqrt()])
-        v.lower_bound_embedding_scale = lower_bound
+        v.scale_for_std_form = (
+            c.compute_scale_for_std_form(v))
+        v.exp_self_distance_along_edges = (
+            c.exp_distance_neighborhoods_measured_along_edges(i, i))
+        if v.exp_self_distance_along_edges is None:
+            v.lower_bound_embedding_scale = v.scale_for_std_form
+        else:
+            v.lower_bound_embedding_scale = correct_min(
+                [ v.scale_for_std_form,
+                  v.exp_self_distance_along_edges.sqrt() ])
 
 def _scale_vertices(mcomplex):
     for tet in mcomplex.Tetrahedra:

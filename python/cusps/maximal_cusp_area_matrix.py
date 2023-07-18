@@ -70,7 +70,7 @@ def _non_diagonal_scale(tiles0, tiles1, mcomplex, verified):
     obj_to_tet_to_lifts = [ [ [] for tet in mcomplex.Tetrahedra ]
                             for i in range(2) ]
 
-    for tile in merge_tiles([tiles0, tiles1]):
+    for tile in _merge_tiles([tiles0, tiles1]):
         if tile.lower_bound_distance > d:
             return (2 * d).exp()
 
@@ -86,23 +86,25 @@ def _to_matrix(m):
 
     return matrix(m)
 
-def merge_tiles(streams_of_tiles):
+def _merge_tiles(streams_of_tiles):
 
     iters = [ iter(s) for s in streams_of_tiles ]
     tiles = [ next(iter) for iter in iters ]
 
     while True:
-        keys = [ lower(tile.lower_bound_distance)
-                 for tile in tiles ]
-        i = None
-        for j, key in enumerate(keys):
-            if i is None or keys[j] < keys[i]:
-                i = j
+        i = _argmin(*(lower(tile.lower_bound_distance) for tile in tiles))
         tile = tiles[i]
         yield Tile(
+            # Relying on -inf + x = -inf
             sum(t.lower_bound_distance for t in tiles),
             tile.lifted_geometric_object,
             tile.tet,
             i)
 
         tiles[i] = next(iters[i])
+
+def _argmin(v0, v1):
+    if v0 < v1:
+        return 0
+    else:
+        return 1

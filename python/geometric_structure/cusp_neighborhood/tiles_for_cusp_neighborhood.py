@@ -70,6 +70,8 @@ def _add_cusp_cross_section(mcomplex : Mcomplex):
     c = RealCuspCrossSection(mcomplex)
     c.add_structures(None)
 
+    mcomplex.real_cusp_cross_section = c
+
     for i, (v, area) in enumerate(
             zip(mcomplex.Vertices, c.cusp_areas())):
         v.cusp_area = area

@@ -5,8 +5,7 @@ from ..tiling.iterable_cache import IterableCache
 from ..tiling.tile import Tile
 
 from ..sage_helper import _within_sage
-from ..math_basics import correct_min, is_RealIntervalFieldElement
-from ..exceptions import InsufficientPrecisionError # type: ignore
+from ..math_basics import correct_min, is_RealIntervalFieldElement, lower
 
 from ..hyperboloid.distances import distance_r13_horoballs
 
@@ -93,7 +92,7 @@ def merge_tiles(streams_of_tiles):
     tiles = [ next(iter) for iter in iters ]
 
     while True:
-        keys = [ _lower(tile.lower_bound_distance)
+        keys = [ lower(tile.lower_bound_distance)
                  for tile in tiles ]
         i = None
         for j, key in enumerate(keys):
@@ -107,13 +106,3 @@ def merge_tiles(streams_of_tiles):
             i)
 
         tiles[i] = next(iters[i])
-
-def _lower(k):
-    if is_RealIntervalFieldElement(k):
-        if k.is_NaN():
-            raise InsufficientPrecisionError(
-                "A NaN was encountered during a verified computation. "
-                "Increasing the precision will probably fix this.")
-        return k.lower()
-    else:
-        return k

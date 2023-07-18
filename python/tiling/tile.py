@@ -6,8 +6,7 @@ from ..hyperboloid.distances import lower_bound_distance_to_r13_triangle
 from ..hyperboloid.triangle import R13IdealTriangle
 from ..hyperboloid import o13_inverse
 from ..snap.t3mlite import Mcomplex, Tetrahedron, simplex
-from ..exceptions import InsufficientPrecisionError # type: ignore
-from ..math_basics import is_RealIntervalFieldElement # type: ignore
+from ..math_basics import is_RealIntervalFieldElement, lower # type: ignore
 from ..sage_helper import _within_sage # type: ignore
 
 if _within_sage:
@@ -188,20 +187,11 @@ class _PendingLiftedTetrahedron:
         # used to start tiling).
         self.entry_cell = entry_cell
 
-        if is_RealIntervalFieldElement(lower_bound_distance):
-            # For convenience, lower_bound is an interval but it is only
-            # the left value of the interval that is relevant and that we
-            # should use: A < B can be False for two intervals even
-            # when A's left value is lower than B's left value.
-            if lower_bound_distance.is_NaN():
-                raise InsufficientPrecisionError(
-                    "A NaN was encountered while developing a tube about a "
-                    "geodesic. "
-                    "Increasing the precision will probably fix this.")
-
-            self._key = lower_bound_distance.lower()
-        else:
-            self._key = lower_bound_distance
+        # For convenience, lower_bound is an interval but it is only
+        # the left value of the interval that is relevant and that we
+        # should use: A < B can be False for two intervals even
+        # when A's left value is lower than B's left value.
+        self._key = lower(lower_bound_distance)
 
     def __lt__(self, other):
         return self._key < other._key

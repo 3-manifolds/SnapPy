@@ -1,4 +1,5 @@
 from .sage_helper import _within_sage
+from .exceptions import InsufficientPrecisionError
 
 from functools import reduce
 import operator
@@ -8,7 +9,8 @@ __all__ = ['prod',
            'is_RealIntervalFieldElement',
            'is_Interval',
            'correct_min',
-           'correct_max']
+           'correct_max',
+           'lower']
 
 if _within_sage:
     from sage.all import prod, xgcd
@@ -148,3 +150,13 @@ def correct_max(l):
                 raise ValueError(
                     "Trying to compute max of array containing NaN.")
         return max(l)
+
+def lower(x):
+    if is_RealIntervalFieldElement(x):
+        if x.is_NaN():
+            raise InsufficientPrecisionError(
+                "A NaN was encountered during a verified computation. "
+                "Increasing the precision will probably fix this.")
+        return x.lower()
+    else:
+        return x

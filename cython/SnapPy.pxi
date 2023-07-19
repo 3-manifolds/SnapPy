@@ -9,6 +9,9 @@ cdef extern from "Python.h":
 cdef extern from "warnings.h":
     pass
 
+cdef extern from "linkage.h":
+    pass
+
 # C library declarations
 
 cdef extern from *:

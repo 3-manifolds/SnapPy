@@ -13,7 +13,9 @@ def _replace_compile_time_constants(shader_source, constants_dict):
 _triangulation_shader_source = None
 
 
-def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
+def get_triangulation_shader_source_and_ubo_descriptors(
+        constants_dict,
+        defs_dict = {}):
 
     global _triangulation_shader_source
 
@@ -24,6 +26,19 @@ def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
     src = _replace_compile_time_constants(
         _triangulation_shader_source,
         constants_dict)
+
+    if defs_dict:
+        header, footer = src.split('\n', 1)
+        def_block = (
+            '\n\n'
+            '// { Compile time defines\n')
+        for k, v in sorted(defs_dict.items()):
+            def_block += '#define %s' % k
+            if not v is None:
+                def_block += ' %r' % v
+            def_block += '\n'
+        def_block += '// } Compile time defines\n\n'
+        src = header + def_block.encode() + footer
 
     num_tets = constants_dict[b'##num_tets##']
     num_geodesic_segments = constants_dict[b'##num_geodesic_segments##']

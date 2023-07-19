@@ -36,11 +36,16 @@ def _entry(mcomplex, tiles, i, j, verified):
     p = mcomplex.Vertices[i].cusp_area * mcomplex.Vertices[j].cusp_area
 
     if i == j:
-        return p * _diagonal_scale(tiles[i], mcomplex, verified)
+        return p * _diagonal_scale(i, tiles[i], mcomplex, verified)
     else:
-        return p * _non_diagonal_scale(tiles[i], tiles[j], mcomplex, verified)
+        return p * _non_diagonal_scale(i, j, tiles[i], tiles[j], mcomplex, verified)
 
-def _diagonal_scale(tiles, mcomplex, verified):
+def _diagonal_scale(i, tiles, mcomplex, verified):
+    v = mcomplex.Vertices[i]
+    e = v.exp_self_distance_along_edges
+    if not e is None:
+        if e < v.scale_for_std_form ** 2:
+            return e ** 2
 
     if verified:
         d = mcomplex.RF(sage.all.Infinity)
@@ -61,7 +66,14 @@ def _diagonal_scale(tiles, mcomplex, verified):
                              distance_r13_horoballs(new_lift, lift)])
         lifts.append(new_lift)
 
-def _non_diagonal_scale(tiles0, tiles1, mcomplex, verified):
+def _non_diagonal_scale(i, j, tiles0, tiles1, mcomplex, verified):
+    v0 = mcomplex.Vertices[i]
+    v1 = mcomplex.Vertices[j]
+    e = mcomplex.real_cusp_cross_section.exp_distance_neighborhoods_measured_along_edges(i, j)
+    if not e is None:
+        if e < v0.scale_for_std_form * v1.scale_for_std_form:
+            return e ** 2
+
     if verified:
         d = mcomplex.RF(sage.all.Infinity)
     else:

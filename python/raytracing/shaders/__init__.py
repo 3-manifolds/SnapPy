@@ -28,7 +28,7 @@ def get_triangulation_shader_source_and_ubo_descriptors(
         constants_dict)
 
     if defs_dict:
-        header, footer = src.split('\n', 1)
+        header, footer = src.split(b'\n', 1)
         def_block = (
             '\n\n'
             '// { Compile time defines\n')
@@ -40,8 +40,9 @@ def get_triangulation_shader_source_and_ubo_descriptors(
         def_block += '// } Compile time defines\n\n'
         src = header + def_block.encode() + footer
 
+    num_geodesic_segments = defs_dict.get('num_geodesic_segments', 0)
+
     num_tets = constants_dict[b'##num_tets##']
-    num_geodesic_segments = constants_dict[b'##num_geodesic_segments##']
     num_additional_horospheres = constants_dict[b'##num_additional_horospheres##']
 
     uniform_block_names_sizes_and_offsets = [

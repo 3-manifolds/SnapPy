@@ -123,7 +123,7 @@ layout (std140) uniform MargulisTubes
 };
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 
-#if ##num_geodesic_segments## > 0
+#if defined(num_geodesic_segments) && num_geodesic_segments > 0
 layout (std140) uniform geodesics
 {
     vec4 geodesicTails[##num_geodesic_segments##];
@@ -523,7 +523,7 @@ horosphereEqn(int index)
     return horosphereScales[index] * R13Vertices[index];
 }
 
-#if ##num_geodesic_segments## > 0
+#if defined(num_geodesic_segments) && num_geodesic_segments > 0
 // The two endpoints of a geodesic
 vec4[2]
 endpointsForGeodesic(int index)
@@ -560,7 +560,7 @@ normalForRayHit(RayHit ray_hit)
             endpointsForMargulisTube(index));
     }
 
-#if ##num_geodesic_segments## > 0
+#if defined(num_geodesic_segments) && num_geodesic_segments > 0
     if (ray_hit.object_type == object_type_geodesic_tube) {
         return normalForTube(
             ray_hit.ray.point,
@@ -765,7 +765,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-#if ##num_geodesic_segments## > 0
+#if defined(num_geodesic_segments) && num_geodesic_segments > 0
     for (int index = geodesicOffsets[ray_hit.tet_num];
          index < geodesicOffsets[ray_hit.tet_num + 1];
          index++) {
@@ -1052,7 +1052,7 @@ material_params(RayHit ray_hit)
         result.ambient = 0.5 * result.diffuse;
     }
 
-#if ##num_geodesic_segments## > 0
+#if defined(num_geodesic_segments) && num_geodesic_segments > 0
     if (ray_hit.object_type == object_type_geodesic_tube) {
         int index = geodesicIndex[ray_hit.object_index];
 

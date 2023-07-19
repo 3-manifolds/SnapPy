@@ -111,6 +111,15 @@ class Geodesics:
         return {
             b'##num_geodesic_segments##' : num }
 
+    def get_compile_time_defs(self):
+        if self.data_heads:
+            num = max(100, len(self.data_heads))
+        else:
+            num = 0
+
+        return {
+            'num_geodesic_segments' : num }
+
     def add_length_spectrum(self, l):
 
         try:

@@ -135,6 +135,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                     "Expected cohomology_class when given cohomology_basis")
 
         self.compile_time_constants = {}
+        self.compile_time_defs = {}
 
         self.manifold = manifold
 
@@ -360,13 +361,11 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         return True
 
     def _update_shader(self):
+        compile_time_defs = {}
         if self.geodesics:
-            geodesic_compile_time_constants = (
-                self.geodesics.get_compile_time_constants())
-        else:
-            geodesic_compile_time_constants = {
-                b'##num_geodesic_segments##' : 0
-            }
+            compile_time_defs = _merge_dicts(
+                compile_time_defs,
+                self.geodesics.get_compile_time_defs())
 
         if self.additional_horospheres:
             additional_horosphere_compile_time_constants = (
@@ -378,22 +377,23 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         compile_time_constants = _merge_dicts(
             self.raytracing_data.get_compile_time_constants(),
-            geodesic_compile_time_constants,
             additional_horosphere_compile_time_constants)
 
-        if compile_time_constants == self.compile_time_constants:
+        if (compile_time_constants == self.compile_time_constants and
+            compile_time_defs == self.compile_time_defs):
             return
 
         self.compile_time_constants = compile_time_constants
+        self.compile_time_defs = compile_time_defs
 
         shader_source, uniform_block_names_sizes_and_offsets = (
             shaders.get_triangulation_shader_source_and_ubo_descriptors(
-                compile_time_constants))
+                compile_time_constants,
+                compile_time_defs))
 
         self.set_fragment_shader_source(
             shader_source,
             uniform_block_names_sizes_and_offsets)
-
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

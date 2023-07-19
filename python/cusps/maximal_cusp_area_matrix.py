@@ -1,7 +1,6 @@
 from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import (
     mcomplex_for_tiling_cusp_neighborhoods,
     compute_tiles_for_cusp_neighborhood)
-from ..tiling.iterable_cache import IterableCache
 from ..tiling.tile import Tile
 
 from ..sage_helper import _within_sage
@@ -16,15 +15,10 @@ def maximal_cusp_area_matrix(manifold, bits_prec, verified):
     mcomplex = mcomplex_for_tiling_cusp_neighborhoods(
         manifold, bits_prec=bits_prec, verified=verified)
 
-    tiles = [
-        IterableCache(
-            compute_tiles_for_cusp_neighborhood(v, verified))
-        for v in mcomplex.Vertices ]
-
     n = len(mcomplex.Vertices)
 
     lower_entries = [
-        [ _entry(mcomplex, tiles, i, j, verified) for j in range(i + 1) ]
+        [ _entry(mcomplex, i, j) for j in range(i + 1) ]
         for i in range(n) ]
 
     return _to_matrix(
@@ -32,29 +26,29 @@ def maximal_cusp_area_matrix(manifold, bits_prec, verified):
            for j in range(n) ]
          for i in range(n) ])
 
-def _entry(mcomplex, tiles, i, j, verified):
+def _entry(mcomplex, i, j):
     p = mcomplex.Vertices[i].cusp_area * mcomplex.Vertices[j].cusp_area
 
     if i == j:
-        return p * _diagonal_scale(i, tiles[i], mcomplex, verified)
+        return p * _diagonal_scale(mcomplex, i)
     else:
-        return p * _non_diagonal_scale(i, j, tiles[i], tiles[j], mcomplex, verified)
+        return p * _non_diagonal_scale(mcomplex, i, j)
 
-def _diagonal_scale(i, tiles, mcomplex, verified):
+def _diagonal_scale(mcomplex, i):
     v = mcomplex.Vertices[i]
     e = v.exp_self_distance_along_edges
     if not e is None:
         if e < v.scale_for_std_form ** 2:
             return e ** 2
 
-    if verified:
+    if mcomplex.verified:
         d = mcomplex.RF(sage.all.Infinity)
     else:
         d = mcomplex.RF(1e20)
 
     tet_to_lifts = [ [] for tet in mcomplex.Tetrahedra ]
 
-    for tile in tiles:
+    for tile in v.tiles():
         if tile.lower_bound_distance > d / 2:
             return (2 * d).exp() # Area, so need square
 
@@ -66,15 +60,16 @@ def _diagonal_scale(i, tiles, mcomplex, verified):
                              distance_r13_horoballs(new_lift, lift)])
         lifts.append(new_lift)
 
-def _non_diagonal_scale(i, j, tiles0, tiles1, mcomplex, verified):
+def _non_diagonal_scale(mcomplex, i, j):
     v0 = mcomplex.Vertices[i]
     v1 = mcomplex.Vertices[j]
-    e = mcomplex.real_cusp_cross_section.exp_distance_neighborhoods_measured_along_edges(i, j)
+    c = mcomplex.real_cusp_cross_section
+    e = c.exp_distance_neighborhoods_measured_along_edges(i, j)
     if not e is None:
         if e < v0.scale_for_std_form * v1.scale_for_std_form:
             return e ** 2
 
-    if verified:
+    if mcomplex.verified:
         d = mcomplex.RF(sage.all.Infinity)
     else:
         d = mcomplex.RF(1e20)
@@ -82,7 +77,7 @@ def _non_diagonal_scale(i, j, tiles0, tiles1, mcomplex, verified):
     obj_to_tet_to_lifts = [ [ [] for tet in mcomplex.Tetrahedra ]
                             for i in range(2) ]
 
-    for tile in _merge_tiles([tiles0, tiles1]):
+    for tile in _merge_tiles([v0.tiles(), v1.tiles()]):
         if tile.lower_bound_distance > d:
             return (2 * d).exp()
 

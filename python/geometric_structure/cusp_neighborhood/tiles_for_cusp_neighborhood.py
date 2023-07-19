@@ -12,6 +12,7 @@ from ...math_basics import correct_min
 
 from ...tiling.tile import Tile, compute_tiles
 from ...tiling.lifted_tetrahedron import LiftedTetrahedron
+from ...tiling.iterable_cache import IterableCache
 
 from typing import Sequence
 
@@ -59,6 +60,16 @@ def mcomplex_for_tiling_cusp_neighborhoods(manifold, bits_prec, verified):
     add_triangles_to_tetrahedra(mcomplex)
 
     add_cusp_cross_section_and_scale_vertices(mcomplex)
+
+    for v in mcomplex.Vertices:
+        v._tiles = None
+        def tiles(v=v, verified=verified):
+            if v._tiles is None:
+                v._tiles = IterableCache(
+                    compute_tiles_for_cusp_neighborhood(
+                        v, verified))
+            return v._tiles
+        v.tiles = tiles
 
     return mcomplex
 

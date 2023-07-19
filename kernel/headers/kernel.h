@@ -11,8 +11,10 @@
 
 #include "SnapPea.h"
 
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 extern "C" {
+#endif
 #endif
 
 #include <string.h>
@@ -30,8 +32,10 @@ extern "C" {
 #include "kernel_prototypes.h"
 #include "tables.h"
 
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 #endif

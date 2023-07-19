@@ -511,6 +511,9 @@ extern "C" {
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -520,6 +523,9 @@ void uAcknowledge(const char *message);
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -535,6 +541,9 @@ int uQuery(const char *message, const int num_responses,
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -545,6 +554,9 @@ void uFatalError(const char *function, const char *file);
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -555,6 +567,9 @@ void uAbortMemoryFull(void);
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -569,6 +584,9 @@ void uPrepareMemFullMessage(void);
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -632,6 +650,9 @@ void         uLongComputationBegins(const char *message,
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif
@@ -641,6 +662,9 @@ FuncResult   uLongComputationContinues(void);
  */
 
 extern
+#ifdef __cplusplus
+"C++"
+#endif
 #ifdef _MSC_VER
  __declspec(dllexport)
 #endif

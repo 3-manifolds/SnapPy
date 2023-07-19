@@ -15,4 +15,6 @@
  * in terms of CYTHON_EXTERN_C when available in SnapPyHP.cpp.
  */
 
+#ifdef __cplusplus
 #define __PYX_EXTERN_C extern "C"
+#endif

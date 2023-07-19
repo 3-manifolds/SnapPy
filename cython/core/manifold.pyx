@@ -1790,31 +1790,7 @@ cdef class Manifold(Triangulation):
         free_normal_surfaces(surfaces)
         return ans
 
-    def identify(self, extends_to_link=False):
-        """
-        Looks for the manifold in all of the SnapPy databases.
-        For hyperbolic manifolds this is done by searching for isometries:
-
-        >>> M = Manifold('m125')
-        >>> M.identify()
-        [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-
-        By default, there is no restriction on the isometries. One can
-        require that the isometry take meridians to meridians. This
-        might return fewer results:
-
-        >>> M.identify(extends_to_link=True)
-        [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-
-        For closed manifolds, extends_to_link doesn't make sense
-        because of how the kernel code works:
-
-        >>> C = Manifold("m015(1,2)")
-        >>> C.identify()
-        [m006(-5,2)]
-        >>> C.identify(True)
-        []
-        """
+    def _identify(self, extends_to_link=False):
         ans = []
         for table in database.__all_tables__.values():
             match = table.identify(self, extends_to_link)

@@ -272,6 +272,9 @@ class SqrtLinCombination():
         # Set embed cache, see _get_interval_embedding_from_cache for details
         self._embed_cache = embed_cache
 
+    def parent(self):
+        return SqrtLinCombination
+        
     def __add__(self, other):
         # Try to convert other term to SqrtLinCombination if necessary
         if not isinstance(other, SqrtLinCombination):

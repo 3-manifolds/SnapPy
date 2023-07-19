@@ -103,11 +103,16 @@ class RealHoroTriangle:
     The sides of the triangle correspond to faces of the tetrahedron.
     The lengths stored for the triangle are real.
     """
-    def __init__(self, tet, vertex, known_side, length_of_side):
+    def __init__(self, tet, vertex, known_side, length_of_side=None):
         left_side, center_side, right_side, z_left, z_right = (
             HoroTriangleBase._sides_and_cross_ratios(tet, vertex, known_side))
 
-        L = length_of_side
+        if length_of_side is None:
+            RF = z_left.real().parent()
+            L = RF(1)
+        else:
+            L = length_of_side
+
         self.lengths = { center_side : L,
                          left_side   : abs(z_left) * L,
                          right_side  : L / abs(z_right) }
@@ -165,11 +170,15 @@ class ComplexHoroTriangle:
     The sides of the triangle correspond to faces of the tetrahedron.
     The lengths stored for the triangle are complex.
     """
-    def __init__(self, tet, vertex, known_side, length_of_side):
+    def __init__(self, tet, vertex, known_side, length_of_side=None):
         left_side, center_side, right_side, z_left, z_right = (
             HoroTriangleBase._sides_and_cross_ratios(tet, vertex, known_side))
 
-        L = length_of_side
+        if length_of_side is None:
+            CF = z_left.parent()
+            L = CF(1)
+        else:
+            L = length_of_side
         self.lengths = { center_side : L,
                          left_side   : - z_left * L,
                          right_side  : - L / z_right }
@@ -306,7 +315,7 @@ class CuspCrossSectionBase(McomplexEngine):
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
         face0 = simplex.FacesAroundVertexCounterclockwise[vert0][0]
-        tet0.horotriangles[vert0] = self.HoroTriangle(tet0, vert0, face0, 1)
+        tet0.horotriangles[vert0] = self.HoroTriangle(tet0, vert0, face0)
         active = [(tet0, vert0)]
         while active:
             tet0, vert0 = active.pop()

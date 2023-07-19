@@ -368,16 +368,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 self.geodesics.get_compile_time_defs())
 
         if self.additional_horospheres:
-            additional_horosphere_compile_time_constants = (
-                self.additional_horospheres.get_compile_time_constants())
-        else:
-            additional_horosphere_compile_time_constants = {
-                b'##num_additional_horospheres##' : 0
-            }
+            compile_time_defs = _merge_dicts(
+                compile_time_defs,
+                self.additional_horospheres.get_compile_time_defs())
 
-        compile_time_constants = _merge_dicts(
-            self.raytracing_data.get_compile_time_constants(),
-            additional_horosphere_compile_time_constants)
+        compile_time_constants = (
+            self.raytracing_data.get_compile_time_constants())
 
         if (compile_time_constants == self.compile_time_constants and
             compile_time_defs == self.compile_time_defs):

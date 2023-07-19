@@ -102,23 +102,13 @@ class Geodesics:
             'geodesics.geodesicTubeRadiusParam' : ('float[]', self.data_radius_params),
             'geodesics.geodesicOffsets' : ('int[]', self.data_offsets) }
 
-    def get_compile_time_constants(self):
-        if self.data_heads:
-            num = max(100, len(self.data_heads))
-        else:
-            num = 0
-
-        return {
-            b'##num_geodesic_segments##' : num }
-
     def get_compile_time_defs(self):
         if self.data_heads:
             num = max(100, len(self.data_heads))
         else:
             num = 0
 
-        return {
-            'num_geodesic_segments' : num }
+        return { 'num_geodesic_segments' : num }
 
     def add_length_spectrum(self, l):
 

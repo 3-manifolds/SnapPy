@@ -137,11 +137,11 @@ layout (std140) uniform geodesics
 
 uniform float horosphereScales[4 * ##num_tets##];
 
-#if ##num_additional_horospheres## >0
+#if defined(num_additional_horospheres) && num_additional_horospheres > 0
 layout (std140) uniform additionalHorospheres
 {
-    vec4 horosphereVec[##num_additional_horospheres##];
-    int horosphereCuspIndex[##num_additional_horospheres##];
+    vec4 horosphereVec[num_additional_horospheres];
+    int horosphereCuspIndex[num_additional_horospheres];
     int horosphereOffsets[##num_tets## + 1];
 };
 
@@ -568,7 +568,7 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif
 
-#if ##num_additional_horospheres## > 0
+#if defined(num_additional_horospheres) && num_additional_horospheres > 0
     if (ray_hit.object_type == object_type_additional_horosphere) {
         return horosphereVec[ray_hit.object_index] - ray_hit.ray.point;
     }
@@ -784,7 +784,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 #endif
 
-#if ##num_additional_horospheres## > 0
+#if defined(num_additional_horospheres) && num_additional_horospheres > 0
     for (int index = horosphereOffsets[ray_hit.tet_num];
          index < horosphereOffsets[ray_hit.tet_num + 1];
          index++) {
@@ -1075,7 +1075,7 @@ material_params(RayHit ray_hit)
     }
 #endif
 
-#if ##num_additional_horospheres## > 0
+#if defined(num_additional_horospheres) && num_additional_horospheres > 0
     if (ray_hit.object_type == object_type_additional_horosphere) {
         int index = horosphereCuspIndex[ray_hit.object_index];
 

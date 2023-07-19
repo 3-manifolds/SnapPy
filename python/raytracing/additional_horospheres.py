@@ -41,13 +41,12 @@ class AdditionalHorospheres:
         
         self.compute_bindings()
         
-    def get_compile_time_constants(self):
+    def get_compile_time_defs(self):
         if self.data_vecs:
             num = max(100, len(self.data_vecs))
         else:
             num = 0
-        return {
-            b'##num_additional_horospheres##' : num }
+        return { 'num_additional_horospheres' : num }
 
     def get_uniform_bindings(self):
         return self._uniform_bindings

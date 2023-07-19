@@ -41,9 +41,9 @@ def get_triangulation_shader_source_and_ubo_descriptors(
         src = header + def_block.encode() + footer
 
     num_geodesic_segments = defs_dict.get('num_geodesic_segments', 0)
+    num_additional_horospheres = defs_dict.get('num_additional_horospheres', 0)
 
     num_tets = constants_dict[b'##num_tets##']
-    num_additional_horospheres = constants_dict[b'##num_additional_horospheres##']
 
     uniform_block_names_sizes_and_offsets = [
         ('TetrahedraCombinatorics',

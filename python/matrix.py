@@ -79,12 +79,14 @@ class SimpleVector(number.SupportsMultiplicationByNumber):
     def __truediv__(self, other):
         return SimpleVector([ x / other for x in self.data])
 
+    def __neg__(self):
+        return SimpleVector([ -e for e in self.data ])
+
     def base_ring(self):
         try:
             return self.data[0].parent()
         except IndexError:
             return self.type
-
 
 # A very basic matrix class
 class SimpleMatrix(number.SupportsMultiplicationByNumber):

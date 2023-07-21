@@ -10,9 +10,7 @@ v.view.widget.additional_horospheres = a; v.view.widget._update_shader()
 
 from .upper_halfspace_utilities import *
 
-from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import (
-    mcomplex_for_tiling_cusp_neighborhoods,
-    compute_tiles_for_cusp_neighborhood)
+from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import mcomplex_for_tiling_cusp_neighborhoods
 
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
@@ -61,7 +59,7 @@ class AdditionalHorospheres:
 
             d = scale.log()
 
-            for tile in compute_tiles_for_cusp_neighborhood(v, False):
+            for tile in v.tiles():
                 if tile.lower_bound_distance > d:
                     break
 

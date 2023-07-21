@@ -141,18 +141,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self._unguarded_initialize_raytracing_data()
 
-        if self.trig_type == 'finite':
-            # Geodesics in finite triangulations are not yet
-            # supported.
-            self.geodesics = None
-            self.geodesics_uniform_bindings = {}
-        else:
-            self.geodesics = Geodesics(manifold, geodesics)
+        self.additional_structures = {}
+        
+        if self.trig_type == 'ideal':
+            self.additional_structures['geodesics'] = (
+                Geodesics(manifold, geodesics))
             self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
-
-        self.additional_horospheres = None
-
+            
         self.geodesics_disabled_edges = False
         if geodesics:
             self.disable_edges_for_geodesics()
@@ -178,10 +174,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         result = _merge_dicts(
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
-            self.geodesics_uniform_bindings,
-            (self.additional_horospheres.get_uniform_bindings()
-             if self.additional_horospheres
-             else {}),
+            _merge_dicts(
+                *(additional_structure.get_uniform_bindings()
+                  for additional_structure
+                  in self.additional_structures.values())),
             {
                 'currentWeight' : ('float', current_weight),
                 'screenResolution' : ('vec2', [width, height]),
@@ -322,7 +318,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             speed)
 
     def resize_geodesic_params(self, enable=False):
-        num = (len(self.geodesics.geodesic_tube_infos) -
+        num = (len(self.additional_structures['geodesics'].geodesic_tube_infos) -
                len(self.ui_parameter_dict['geodesicTubeRadii'][1]))
         self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
         self.ui_parameter_dict['geodesicTubeEnables'][1] += num * [ enable ]
@@ -331,13 +327,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
 
     def _update_geodesic_data(self):
-        success = self.geodesics.set_enables_and_radii_and_update(
+        return self.additional_structures['geodesics'].set_enables_and_radii_and_update(
             self.ui_parameter_dict['geodesicTubeEnables'][1],
             self.ui_parameter_dict['geodesicTubeRadii'][1])
-        self.geodesics_uniform_bindings = (
-            self.geodesics.get_uniform_bindings())
-
-        return success
 
     def update_geodesic_data_and_redraw(self):
         success = self._update_geodesic_data()
@@ -361,16 +353,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         return True
 
     def _update_shader(self):
-        compile_time_defs = {}
-        if self.geodesics:
-            compile_time_defs = _merge_dicts(
-                compile_time_defs,
-                self.geodesics.get_compile_time_defs())
-
-        if self.additional_horospheres:
-            compile_time_defs = _merge_dicts(
-                compile_time_defs,
-                self.additional_horospheres.get_compile_time_defs())
+        compile_time_defs = _merge_dicts(
+            *(additional_structure.get_compile_time_defs()
+              for additional_structure
+              in self.additional_structures.values()))
 
         compile_time_constants = (
             self.raytracing_data.get_compile_time_constants())

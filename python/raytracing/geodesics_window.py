@@ -87,7 +87,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         length_column = 3
         radius_column = 5
 
-        for geodesic in self.raytracing_view.geodesics.geodesics_sorted_by_length():
+        for geodesic in self.raytracing_view.additional_structures['geodesics'].geodesics_sorted_by_length():
             if not geodesic.geodesic_info.core_curve_cusp:
                 UniformDictController.create_checkbox(
                     self.geodesics_frame,
@@ -170,7 +170,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.status_label.configure(text=_default_status_msg, foreground='')
 
         try:
-            if not self.raytracing_view.geodesics.add_length_spectrum(
+            if not self.raytracing_view.additional_structures['geodesics'].add_length_spectrum(
                     float(self.length_box.get())):
                 self.status_label.configure(text='No new geodesics found.',
                                             foreground='')
@@ -196,7 +196,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             return
 
         try:
-            n = self.raytracing_view.geodesics.get_mcomplex().num_generators
+            n = self.raytracing_view.additional_structures['geodesics'].get_mcomplex().num_generators
             word_as_list(word, n)
         except ValueError:
             self.status_label.configure(text=word + " contains non-generators",
@@ -204,7 +204,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             return
 
         try:
-            index = self.raytracing_view.geodesics.add_word(word)
+            index = self.raytracing_view.additional_structures['geodesics'].add_word(word)
         except WordAppearsToBeParabolic:
             self.status_label.configure(text=word + " is parabolic",
                                         foreground='red')

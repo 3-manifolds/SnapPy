@@ -4,7 +4,7 @@ from snappy import *; from snappy.raytracing.additional_horospheres import *
 M=CubicalOrientableCuspedCensus[0]
 v = M.inside_view()
 a=AdditionalHorospheres(M)
-v.view.widget.additional_horospheres = a; v.view.widget._update_shader()
+v.view.widget.additional_structures['horospheres'] = a; v.view.widget._update_shader()
 
 """
 

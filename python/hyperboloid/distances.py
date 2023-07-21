@@ -48,7 +48,7 @@ def distance_r13_horoball_line(horoball_defining_vec, # Light-like
 def distance_r13_horoball_plane(horoball_defining_vec, # Like-like
                                 plane_defining_vec): # Space-like
     p = r13_dot(horoball_defining_vec, plane_defining_vec)
-    return p.abs().log()
+    return _safe_log_non_neg(p.abs())
 
 def lower_bound_distance_to_r13_triangle(
         geometric_object, triangle : R13IdealTriangle, verified : bool):
@@ -140,7 +140,19 @@ def _safe_log(p):
         RIF = p.parent()
         p = p.intersection(RIF(0, sage.all.Infinity))
     else:
-        if p < 0:
+        if p <= 0:
             RF = p.parent()
             return RF(-1e20)
     return p.log()
+
+def _safe_log_non_neg(p):
+    if p == 0:
+        if is_RealIntervalFieldElement(p):
+            RIF = p.parent()
+            return RIF(-sage.all.Infinity)
+        else:
+            RF = p.parent()
+            return RF(-1e20)
+    else:
+        return p.log()
+

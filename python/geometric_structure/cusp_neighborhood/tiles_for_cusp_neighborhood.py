@@ -97,11 +97,11 @@ def _scale_vertices(mcomplex):
         for v0 in simplex.ZeroSubsimplices:
             v1, v2, _ = simplex.VerticesOfFaceCounterclockwise[simplex.comp(v0)]
 
-            cusp_length = tet.horotriangles[v0].lengths[v0 | v1 | v2]
-
-            scale_for_unit_length = (
+            length_on_cusp = tet.horotriangles[v0].lengths[v0 | v1 | v2]
+            length_on_horosphere = (
                 -2 * R13_vertex_products[v1 | v2] / (
                      R13_vertex_products[v0 | v1] *
                      R13_vertex_products[v0 | v2])).sqrt()
+            s = length_on_horosphere / length_on_cusp
 
-            tet.R13_vertices[v0] *= scale_for_unit_length / cusp_length
+            tet.R13_vertices[v0] = s * tet.R13_vertices[v0]

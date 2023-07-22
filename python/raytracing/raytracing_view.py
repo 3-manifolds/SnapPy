@@ -20,12 +20,13 @@ class NonorientableUnsupportedError(RuntimeError):
             ("Inside view for non-orientable manifolds such as %s is not "
              "supported yet.") % mfd.name())
 
+
 _constant_uniform_bindings = {
     'multiScreenShot' : ('int', 0),
     'tile' : ('vec2', [0.0, 0.0]),
     'numTiles' : ('vec2', [1.0, 1.0]),
 
-    'gradientThreshholds' : ('float[]', [0.0, 0.25, 0.45, 0.75, 1.0]),
+    'gradientThresholds' : ('float[]', [0.0, 0.25, 0.45, 0.75, 1.0]),
     'gradientColours' : ('vec3[]', [[1.0, 1.0, 1.0],
                                     [0.86, 0.92, 0.78],
                                     [0.25, 0.70, 0.83],
@@ -60,6 +61,7 @@ _max_linear_camera_speed = 2.0
 # proportionally small angle. So the user can't even tell we have a limit
 # here.
 _max_depth_for_orbiting = 0.9998
+
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self,
@@ -145,7 +147,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.geodesics_uniform_bindings = {}
         else:
             self.geodesics = Geodesics(manifold, geodesics)
-            self.resize_geodesic_params(enable = True)
+            self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
 
         self.geodesics_disabled_edges = False
@@ -160,6 +162,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.view = 0
 
         HyperboloidNavigation.__init__(self)
+
+    def reset_geodesics(self):
+        self.geodesics = Geodesics(self.manifold, [])
+        self.ui_parameter_dict['geodesicTubeRadii'][1] = []
+        self.ui_parameter_dict['geodesicTubeEnables'][1] = []
+        self._update_geodesic_data()
 
     def get_uniform_bindings(self, width, height):
         boost, tet_num, current_weight = self.view_state
@@ -210,13 +218,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         if self.trig_type == 'finite':
             self.raytracing_data = FiniteRaytracingData.from_triangulation(
                 self.manifold,
-                weights = weights)
+                weights=weights)
         else:
             self.raytracing_data = IdealRaytracingData.from_manifold(
                 self.manifold,
-                areas = self.ui_parameter_dict['cuspAreas'][1],
-                insphere_scale = self.ui_parameter_dict['insphere_scale'][1],
-                weights = weights)
+                areas=self.ui_parameter_dict['cuspAreas'][1],
+                insphere_scale=self.ui_parameter_dict['insphere_scale'][1],
+                weights=weights)
 
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
@@ -267,22 +275,22 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 # Then compute end point using depth value.
                 r2 = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
                 ray_end = vector(
-                    [RF((r2 + 1.0)        + depth * r2),
-                     RF( scaled_x         + depth * scaled_x),
-                     RF( scaled_y         + depth * scaled_y),
-                     RF( r2               + depth * (r2 - 1.0))])
+                    [RF((r2 + 1.0) + depth * r2),
+                     RF( scaled_x + depth * scaled_x),
+                     RF( scaled_y + depth * scaled_y),
+                     RF( r2 + depth * (r2 - 1.0))])
             else:
                 pt = R13_normalise(
                     vector([RF(1.0), RF(2.0 * x), RF(2.0 * y), RF(0.0)]))
                 ray_end = vector([pt[0],pt[1],pt[2],RF(-depth)])
 
             ray_end = R13_normalise(ray_end)
-                
+
             # Distance of ray_end from origin
             dist = ray_end[0].arccosh()
             # Direction from origin to ray_end
             dir = vector([ray_end[1], ray_end[2], ray_end[3]])
-            
+
         # Normalize direction
         dir = dir.normalized()
 
@@ -307,7 +315,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 dir, -dist),
             speed)
 
-    def resize_geodesic_params(self, enable = False):
+    def resize_geodesic_params(self, enable=False):
         num = (len(self.geodesics.geodesic_tube_infos) -
                len(self.ui_parameter_dict['geodesicTubeRadii'][1]))
         self.ui_parameter_dict['geodesicTubeRadii'][1] += num * [ 0.02 ]
@@ -317,16 +325,19 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.ui_parameter_dict['geodesicTubeEnables'][1][index] = True
 
     def _update_geodesic_data(self):
-        self.geodesics.set_enables_and_radii_and_update(
+        success = self.geodesics.set_enables_and_radii_and_update(
             self.ui_parameter_dict['geodesicTubeEnables'][1],
             self.ui_parameter_dict['geodesicTubeRadii'][1])
         self.geodesics_uniform_bindings = (
             self.geodesics.get_uniform_bindings())
 
+        return success
+
     def update_geodesic_data_and_redraw(self):
-        self._update_geodesic_data()
+        success = self._update_geodesic_data()
         self._update_shader()
         self.redraw_if_initialized()
+        return success
 
     def disable_edges_for_geodesics(self):
         # Only do once
@@ -369,11 +380,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             shader_source,
             uniform_block_names_sizes_and_offsets)
 
+
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }
 
 ##########################################################################
 # Consistency checks
+
 
 def _check_matrices_equal(m1, m2):
     for i in range(4):
@@ -383,6 +396,7 @@ def _check_matrices_equal(m1, m2):
                 print("Matrix not zero as expected")
                 return
 
+
 def _check_matrix_o13(m):
     s = matrix([[-1, 0,0,0],
                 [0, 1, 0, 0],
@@ -391,15 +405,18 @@ def _check_matrix_o13(m):
 
     _check_matrices_equal(s, m * s * m.transpose())
 
+
 def _matrix4_vec(m, p):
     return [sum([ m[i][j] * p[j] for j in range(4)])
             for i in range(4) ]
 
-def _diff(v1, v2, label = ''):
+
+def _diff(v1, v2, label=''):
     a = sum([(x - y)**2 for x, y in zip(v1, v2) ])
 
     if a > 1e-10:
         print("DIFF!!!", label, v1, v2)
+
 
 def _check_consistency(d):
     planes = d['TetrahedraBasics.planes'][1]

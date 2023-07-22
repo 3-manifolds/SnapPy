@@ -24,7 +24,7 @@ class ExtendedMatrix():
 
     """
 
-    def __init__(self, matrix, isOrientationReversing = False):
+    def __init__(self, matrix, isOrientationReversing=False):
         if isinstance(matrix, ExtendedMatrix):
             self.matrix = matrix.matrix
             self.isOrientationReversing = (

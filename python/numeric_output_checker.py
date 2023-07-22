@@ -31,6 +31,7 @@ class NumericExample:
 
     """
 
+
 import doctest
 import re
 import decimal
@@ -42,7 +43,8 @@ NUMERIC_LIST = []
 # Store in dict precision : FLAG
 NUMERIC_DICT = {}
 # All or'ed together
-ALL_NUMERIC  = 0
+ALL_NUMERIC = 0
+
 
 def init_precisions(precisions):
     """
@@ -66,8 +68,10 @@ def init_precisions(precisions):
             NUMERIC_DICT[precision] = flag
             ALL_NUMERIC |= flag
 
+
 # The precisions NUMERIC0, ... we support are hard-coded here:
 init_precisions(range(0,33,3))
+
 
 def get_precision(optionflags):
     """
@@ -80,6 +84,7 @@ def get_precision(optionflags):
 # Regular expressions matching numbers and intervals such as
 # 23, 2.3, 3.5e-4, 3.4 E-5, 3.4?, 5.6?e-3
 
+
 mantissa_pat = r'(-?[0-9]+(?:\.[0-9]+)?)'
 # Intervals can be 3.4? or 3.4?e-2, account for the "?"
 interval_pat = r'(\?)?'
@@ -88,7 +93,7 @@ exponent_pat = r'(?:\ ?([eE][+-]?[0-9]+))?'
 
 # 4.5?e-3 would split into groups ('4.5?e-3', '4.5', '?", 'e-3').
 number_re = re.compile('(' + mantissa_pat + interval_pat + exponent_pat + ')')
-number_group_count  = 4
+number_group_count = 4
 number_split_stride = number_group_count + 1
 
 # Use whitespace normalization for text pieces
@@ -96,6 +101,8 @@ NUMERIC_DEFAULT_OPTIONFLAGS = doctest.NORMALIZE_WHITESPACE
 
 # Given the above groups, e.g., ('4.5?e-3', '4.5', '?", 'e-3'), return
 # decimal.Decimal("4.5E-3")
+
+
 def to_decimal(groups):
     number, mantissa, interval, exponent = groups
     if exponent:
@@ -103,6 +110,7 @@ def to_decimal(groups):
     else:
         n = mantissa
     return decimal.Decimal(n)
+
 
 class NumericOutputChecker(doctest.OutputChecker):
     """
@@ -147,7 +155,7 @@ class NumericOutputChecker(doctest.OutputChecker):
     >>> b   = "[4.5000001, 67.00000001, 2.0000000000000000001e+3]"
     >>> N.compare_numeric(a, b, NUMERIC_DICT[6])
     ('OK', None)
-    >>> N.compare_numeric(a, b, NUMERIC_DICT[12])    
+    >>> N.compare_numeric(a, b, NUMERIC_DICT[12])
     ('NUMERIC', ([('4.5', '4.5000001', True, Decimal('1E-7')), ('6.7e1', '67.00000001', True, Decimal('1E-8')), ('2e+3', '2.0000000000000000001e+3', False, Decimal('1E-16'))], Decimal('1E-7')))
 
     Account for pari adding a space before the E::
@@ -174,13 +182,13 @@ class NumericOutputChecker(doctest.OutputChecker):
 
         # "[4.5e-9]" yields ('[', '4.5e-9', '4.5', None, 'e-9', ']')
         split_want = re.split(number_re, want)
-        split_got  = re.split(number_re, got)
+        split_got = re.split(number_re, got)
 
         # Check same number of numbers
         if len(split_want) != len(split_got):
             return ('COUNT',
                     (len(split_want) // number_split_stride,
-                     len(split_got)  // number_split_stride))
+                     len(split_got) // number_split_stride))
 
         # Compare text pieces between numbers
         flags = optionflags | NUMERIC_DEFAULT_OPTIONFLAGS
@@ -198,17 +206,17 @@ class NumericOutputChecker(doctest.OutputChecker):
         for i in range(1, len(split_want), number_split_stride):
             # Number how it literally appears
             number_want = split_want[i]
-            number_got  = split_got [i]
+            number_got = split_got[i]
 
             # Check whether both intervals or numbers
             is_interval_want = bool(split_want[i + 2])
-            is_interval_got  = bool(split_got [i + 2])
+            is_interval_got = bool(split_got[i + 2])
             if is_interval_want != is_interval_got:
                 return ('TYPE', (is_interval_want, number_got))
 
             # Number (or crushed interval) as decimal.Decimal
-            decimal_want = to_decimal(split_want[i : i + number_group_count])
-            decimal_got  = to_decimal(split_got [i : i + number_group_count])
+            decimal_want = to_decimal(split_want[i: i + number_group_count])
+            decimal_got = to_decimal(split_got[i: i + number_group_count])
 
             # Compute diff
             diff = abs(decimal_want - decimal_got)
@@ -310,13 +318,14 @@ class NumericOutputChecker(doctest.OutputChecker):
             # Concatenate together
             return base_result + '\nReason for failure: ' + compare_result + '\n'
 
-def run_doctests(verbose = False):
+
+def run_doctests(verbose=False):
     failed, attempted = 0, 0
 
     finder = doctest.DocTestFinder()
 
     # Use the default docTest.OutputChecker to test our NumericOutputChecker
-    runner = doctest.DocTestRunner(verbose = verbose)
+    runner = doctest.DocTestRunner(verbose=verbose)
     for test in finder.find(NumericOutputChecker):
         runner.run(test)
     result = runner.summarize()
@@ -324,7 +333,7 @@ def run_doctests(verbose = False):
     attempted += result.attempted
 
     # Test our NumericOutputChecker in action!
-    runner = doctest.DocTestRunner(checker = NumericOutputChecker(), verbose = verbose)
+    runner = doctest.DocTestRunner(checker=NumericOutputChecker(), verbose=verbose)
     for test in finder.find(NumericExample):
         runner.run(test)
         result = runner.summarize()
@@ -332,5 +341,6 @@ def run_doctests(verbose = False):
         attempted += result.attempted
 
     return doctest.TestResults(failed, attempted)
+
 
 run_doctests.__name__ = 'NumericOutputChecker'

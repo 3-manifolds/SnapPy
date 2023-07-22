@@ -1,0 +1,42 @@
+h1, h2, h3, h4, h5, h6 {
+    font-family: Lato,proxima-nova,Helvetica Neue,Arial,sans-serif;
+}
+
+.wy-side-nav-search>a {
+    color: black;
+}
+
+.wy-side-nav-search>div.version{
+    color: black;
+}
+
+.wy-side-nav-search {
+    color: black;
+    background-color: #e8f8e8;
+}
+
+.wy-nav-top {
+    background-color: #80a080;
+}
+
+.wy-nav-side {
+    background-color: #80a080;
+}
+
+.wy-menu-vertical a {
+    color: white;
+}
+
+.wy-menu-vertical li.current>a {
+    color: black;
+}
+
+.wy-nav-content {
+    max-width: none;
+    background-color: white;
+    color: black;
+}
+
+footer {
+    color: black;
+}

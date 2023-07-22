@@ -1,12 +1,13 @@
-from snappy.drilling import drill_words
-
 from snappy import OrientableCuspedCensus
+from snappy import SnapPeaFatalError
+
+from snappy.drilling import drill_words
+from snappy.drilling import exceptions
+from snappy.drilling import perturb
 
 from sage.all import pi
 
-from snappy.drilling import exceptions
-
-from snappy import SnapPeaFatalError
+# perturb._tube_developing_radius = 1
 
 def compute_length_spectrum(M, n = 18):
     c = 1.0

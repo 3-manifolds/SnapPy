@@ -7,13 +7,14 @@ long = int
 unicode = str
 
 #######################################################
-### Public Definitions of Monomial and Polynomial class
+# Public Definitions of Monomial and Polynomial class
 
 # The coefficients of a polynomial can be any type, the
 # policy for mixed coefficients is defined in
 # _storage_type_policy and _operator_type_policy.
 
-### Definition of Monomial Class
+# Definition of Monomial Class
+
 
 class Monomial():
 
@@ -106,7 +107,7 @@ class Monomial():
         """Return a list containing the variable names."""
         return [var[0] for var in self._vars if var[1] > 0]
 
-    def degree(self, var = None):
+    def degree(self, var=None):
         """Return the total degree of this monomial."""
         return sum([this_degree
                     for this_var, this_degree in self._vars
@@ -264,9 +265,9 @@ class Polynomial():
         """Construct a polynomial consisting of a single variable."""
         return Polynomial( (Monomial.from_variable_name(var),))
 
-    ### constructor takes a tuple of polynomials which are combined
+    # constructor takes a tuple of polynomials which are combined
 
-    def __init__(self, monomials = ()):
+    def __init__(self, monomials=()):
 
         # combine monomials with the same variables and exponents
         # and bring them into canonical order
@@ -381,7 +382,7 @@ class Polynomial():
 
     def to_string(self, print_coefficient_method):
         s = " ".join([monomial.to_string(print_coefficient_method,
-                                         force_print_sign = True)
+                                         force_print_sign=True)
                       for monomial in self._monomials])
         if s and s[0] == '+':
             return s[1:].lstrip()
@@ -395,11 +396,10 @@ class Polynomial():
                  for monomial in self._monomials]))
 
     def substitute(self, d):
-        """ 
+        """
         Take a dictionary mapping variable name -> polynomial and
         replace each variable by the corresponding polynomial.
         """
-
         variables = self.variables()
 
         skip_computation = True
@@ -478,7 +478,7 @@ class Polynomial():
         """Assert univariance; return True iff this polynomial is monic."""
         return self.leading_coefficient() == 1
 
-    def get_coefficients(self, conversion_function = lambda x:x):
+    def get_coefficients(self, conversion_function=lambda x:x):
         """Assert univariance; return the coefficients in degree order."""
         assert self.is_univariate()
         degree = self.degree()
@@ -561,10 +561,11 @@ class Polynomial():
                                   for monomial in self._monomials]))
 
 ###############################################################
-### Default functions for parsing and printing the coefficients
+# Default functions for parsing and printing the coefficients
 
-### The user will rewrite these for other types and supply to
-### the respective methods of Monomial and Polynomial.
+# The user will rewrite these for other types and supply to
+# the respective methods of Monomial and Polynomial.
+
 
 def parse_int_coefficient(s):
     coeff, rest = re.match('([0-9]*)(.*)',s).groups()
@@ -573,6 +574,7 @@ def parse_int_coefficient(s):
     else:
         coeff = None
     return coeff, rest
+
 
 def parse_int_or_fraction(s):
     m = re.match('([0-9]+/[0-9]+)(.*)',s)
@@ -634,7 +636,7 @@ def _storage_type_policy(type_a, type_b):
     return type_a
 
 
-def _operator_type_policy(obj_a, obj_b, op = operator.add):
+def _operator_type_policy(obj_a, obj_b, op=operator.add):
 
     try:
 
@@ -656,6 +658,7 @@ def _operator_type_policy(obj_a, obj_b, op = operator.add):
 
 # Definitions of parsable operators and their precedence
 
+
 _operators = {
     '+' : operator.add,
     '-' : operator.sub,
@@ -671,10 +674,12 @@ _operator_precedence = {
     '^' : 3
     }
 
+
 def _apply_operator(op, l, r):
     return _operators[op](l,r)
 
-### Helper functions for parsing
+# Helper functions for parsing
+
 
 def _coefficient_is_non_trivial(c):
 
@@ -683,6 +688,7 @@ def _coefficient_is_non_trivial(c):
 
     return not c == 0
 
+
 def _parse_variable(s):
     r = re.match(r'([_A-Za-z][_A-Za-z0-9]*)(.*)$',s)
     if r:
@@ -690,7 +696,8 @@ def _parse_variable(s):
     else:
         return None, s
 
-### Parsing function for Polynomial
+# Parsing function for Polynomial
+
 
 def _parse_polynomial_from_string(s, parse_coefficient_function):
 
@@ -713,7 +720,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
     # pop the top operator from the stack and apply it to the
     # two top operands from the stack, repeat as long as there are preceding
     # operators left on the stack.
-    def eval_preceding_operators_on_stack(operator = None):
+    def eval_preceding_operators_on_stack(operator=None):
         while operator_stack:
             top_operator = operator_stack[-1]
 
@@ -740,7 +747,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
         # parse constants or variables and push them onto the operand stack
         constant, rest = parse_coefficient_function(s)
-        if not constant is None:
+        if constant is not None:
             operand_stack.append(Polynomial.constant_polynomial(constant))
             no_operand_since_opening_parenthesis[0] = False
             return rest
@@ -759,7 +766,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
         next_char, rest = s[0], s[1:]
 
-        if next_char in list(_operators.keys()):
+        if next_char in _operators:
             operator = next_char
             eval_preceding_operators_on_stack(operator)
             operator_stack.append(operator)

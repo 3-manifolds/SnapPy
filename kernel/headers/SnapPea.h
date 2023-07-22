@@ -9,7 +9,7 @@
  *  @file SnapPea.h
  *
  *  @brief The public interface to the SnapPea kernel.
- * 
+ *
  *  This file defines the interface between SnapPea's computational kernel
  *  ("the kernel") and the user-interface ("the UI").  Both parts
  *  must \#include this file, and anything shared between the two parts
@@ -342,12 +342,12 @@ typedef enum
  *
  *  If negative_determinant is TRUE, the product is left-multiplied by
  *
- *                          ( 0  1 ) 
- *                          ( 1  0 ) 
+ *                          ( 0  1 )
+ *                          ( 1  0 )
  *
  *  If negative_trace is TRUE, the product is left-multiplied by
  *
- *                          (-1  0 ) 
+ *                          (-1  0 )
  *                          ( 0 -1 )
  *
  *  When the factorization is unavailable, is_available is set to FALSE,
@@ -497,9 +497,10 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
 #define CONST
 /* #define CONST const */
 
-
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 extern "C" {
+#endif
 #endif
 
 /************************************************************************/
@@ -1011,7 +1012,7 @@ extern Real get_cusp_neighborhood_displacement(
 /**<
  *  Returns the (linear) displacement of the horospherical cross
  *  section of the given cusp from its home position.  At the home
- *  position the cusp cross section has area (3/8)sqrt(3) and 
+ *  position the cusp cross section has area (3/8)sqrt(3) and
  *  encloses a volume of (3/16)sqrt(3) in the cusp.  At its home
  *  position, a cusp cannot overlap itself, nor can it overlap any
  *  other cusp which does not already overlap itself.  Please see
@@ -1433,6 +1434,13 @@ extern GroupPresentation *fundamental_group(
  *  Computes the fundamental group of the manifold, taking into account
  *  Dehn fillings, and returns a pointer to it.  Please see
  *  fundamental_group.c for an explanation of the arguments.
+ */
+
+extern GroupPresentation *compute_unsimplified_presentation(Triangulation *manifold);
+
+/**<
+ *  Computes the an unsimplified fundamental group of the manifold, taking into
+ *  account Dehn fillings, and returns a pointer to it.
  */
 
 extern int fg_get_num_generators(GroupPresentation *group);
@@ -2257,11 +2265,11 @@ RepresentationIntoSn *initialize_new_representation(
  */
 
 RepresentationIntoSn *convert_candidateSn_to_original_generators(
-     int **candidateSn, 
-     int n, 
-     int num_original_generators, 
-     int **original_generators, 
-     Triangulation *manifold, 
+     int **candidateSn,
+     int n,
+     int num_original_generators,
+     int **original_generators,
+     Triangulation *manifold,
      int **meridians,
      int **longitudes);
 /**<
@@ -2390,7 +2398,7 @@ extern void randomize_triangulation_with_options(
 /**<
  * Same as randomize_triangulation but with more control.
  */
-   
+
 
 /************************************************************************/
 /*                                                                      */
@@ -2724,8 +2732,10 @@ extern Real volume(Triangulation *manifold, int *precision);
 
 #include "end_namespace.h"
 
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 #endif

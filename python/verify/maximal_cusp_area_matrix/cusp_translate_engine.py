@@ -7,6 +7,7 @@ if _within_sage:
 
 __all__ = ['CuspTranslateEngine']
 
+
 class CuspTranslateEngine():
     def __init__(self, t0, t1):
         self.t0 = t0
@@ -20,7 +21,7 @@ class CuspTranslateEngine():
         det = a * d - b * c
 
         self._matrix = matrix([[ d / det, -b / det],
-                               [-c / det,  a / det]])
+                               [-c / det, a / det]])
 
     def _to_vec(self, z):
         v = self._matrix * vector([z.real(), z.imag()])
@@ -141,14 +142,11 @@ class CuspTranslateEngine():
         FinitePoint(0.3? + 0.430000000000000?*I, 5)
         FinitePoint(0.3? + 0.430000000?*I, 5)
         FinitePoint(0.3? + 0.430000000?*I, 5)
-        
+
         sage: perturb = CIF(0.1, 0)
         sage: c.translate_to_match(FinitePoint(z + 2 * t0 + 1 * t1 + perturb, t), FinitePoint(z, t)) is None
         True
-        
-        
         """
-
         z = self._translate_to_match(finitePoint.z, targetFinitePoint.z)
         if z is None:
             return None

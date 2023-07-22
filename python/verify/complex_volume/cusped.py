@@ -3,16 +3,17 @@ from ...sage_helper import _within_sage, sage_method
 if _within_sage:
     import sage.all
 
+from .. import verifyHyperbolicity
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
+
 from .adjust_torsion import *
 from .compute_ptolemys import *
-from .. import verifyHyperbolicity
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ...snap import t3mlite as t3m
 
 __all__ = ['verified_complex_volume_cusped_torsion']
 
+
 @sage_method
-def verified_complex_volume_cusped_torsion(manifold, bits_prec = None):
+def verified_complex_volume_cusped_torsion(manifold, bits_prec=None):
     """
     Computes the verified complex volume (where the real part is the
     volume and the imaginary part is the Chern-Simons) for a given
@@ -28,7 +29,7 @@ def verified_complex_volume_cusped_torsion(manifold, bits_prec = None):
 
     # Compute tetrahedra shapes to arbitrary precision.
     shapes = manifold.tetrahedra_shapes(
-        'rect', bits_prec = bits_prec, intervals = True)
+        'rect', bits_prec=bits_prec, intervals=True)
 
     # Check it is a valid hyperbolic structure
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(

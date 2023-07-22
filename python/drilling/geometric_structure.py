@@ -1,4 +1,4 @@
-from .line import R13LineWithMatrix
+from .fixed_points import r13_fixed_line_of_psl2c_matrix
 
 from ..verify.shapes import compute_hyperbolic_shapes # type: ignore
 from ..snap.fundamental_polyhedron import FundamentalPolyhedronEngine # type: ignore
@@ -6,7 +6,9 @@ from ..snap.kernel_structures import TransferKernelStructuresEngine # type: igno
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron, Vertex # type: ignore
 from ..SnapPy import word_as_list # type: ignore
 
+from ..tiling.line import R13Line, R13LineWithMatrix
 from ..hyperboloid import (o13_inverse,  # type: ignore
+                           time_r13_normalise,
                            space_r13_normalise,
                            r13_dot,
                            unnormalised_plane_eqn_from_r13_points)
@@ -22,6 +24,7 @@ from typing import Tuple, Sequence, Optional, Any
 Filling = Tuple[int, int]
 FillingMatrix = Tuple[Filling, Filling]
 
+
 def compute_r13_planes_for_tet(tet : Tetrahedron):
     """
     Computes outward facing normals/plane equations from the vertices of
@@ -36,6 +39,7 @@ def compute_r13_planes_for_tet(tet : Tetrahedron):
         f : space_r13_normalise(plane)
         for f, plane in tet.R13_unnormalised_planes.items() }
 
+
 def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
     """
     Given a triangulation with a R13 geometric structure (that is
@@ -46,6 +50,7 @@ def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
 
     return word_list_to_psl2c_matrix(
         mcomplex, word_as_list(word, mcomplex.num_generators))
+
 
 def word_list_to_psl2c_matrix(mcomplex : Mcomplex, word_list : Sequence[int]):
     """
@@ -80,14 +85,14 @@ def add_r13_geometry(
     """
 
     shapes = compute_hyperbolic_shapes(
-        manifold, verified = verified, bits_prec = bits_prec)
+        manifold, verified=verified, bits_prec=bits_prec)
     z = shapes[0]
     RF = z.real().parent()
 
     # Develop the vertices in the upper half space model - we will
     # convert them to the hyperboloid model later.
     poly = FundamentalPolyhedronEngine.from_manifold_and_shapes(
-        manifold, shapes, normalize_matrices = True)
+        manifold, shapes, normalize_matrices=True)
 
     # Match the order of the mcomplex.Vertices to the one the SnapPea
     # kernel sees and copy meridians and longitudes to tet.PeripheralCurves.
@@ -159,7 +164,7 @@ def add_r13_geometry(
                 # Make the SnapPea kernel compute peripheral curves the first
                 # time when we need them.
                 G = manifold.fundamental_group(False)
-                all_peripheral_words = G.peripheral_curves(as_int_list = True)
+                all_peripheral_words = G.peripheral_curves(as_int_list=True)
             # Note that a cusp only determines the words for the meridian
             # and longitude only up to conjugacy, we need to pick a lift of the
             # cusp and a path from the basepoint to the lift.
@@ -188,8 +193,36 @@ def add_r13_geometry(
 
     return mcomplex
 
+_face_to_edges = { f : [ e for e in simplex.OneSubsimplices
+                         if simplex.is_subset(e, f) ]
+                   for f in simplex.TwoSubsimplices }
+
+def add_triangle_bounding_planes(mcomplex : Mcomplex) -> None:
+    """
+    A GeodesicTube can only be built from an Mcomplex if add_r13_geometry
+    and this function (add_structure_necessary_for_tube) was called.
+
+    This function adds R13Line objects for the edges of the tetrahedra.
+    It also adds a bounding plane for each edge of each face of each
+    tetrahedron. Such a bounding plane is perpendicular to the plane supporting
+    the face and intersects the plane in an edge of face. That is, the
+    bounding planes for a face cut out the triangle in the plane supporting
+    the face.
+    """
+
+    for tet in mcomplex.Tetrahedra:
+        tet.R13_edges = {
+            e: R13Line([tet.R13_vertices[simplex.Head[e]],
+                        tet.R13_vertices[simplex.Tail[e]]])
+            for e in simplex.OneSubsimplices }
+        tet.triangle_bounding_planes = {
+            f : { e: _triangle_bounding_plane(tet, f, e)
+                  for e in _face_to_edges[f] }
+            for f in simplex.TwoSubsimplices }
+
 ###############################################################################
 # Helpers
+
 
 def _to_matrix(m):
     """
@@ -200,6 +233,7 @@ def _to_matrix(m):
     """
     return matrix([[m[0,0],m[0,1]],
                    [m[1,0],m[1,1]]])
+
 
 def _compute_core_curve(
         mcomplex : Mcomplex,
@@ -221,7 +255,7 @@ def _compute_core_curve(
             for i in range(abs(f)):
                 result = result * m
 
-    return R13LineWithMatrix.from_psl2c_matrix(result)
+    return r13_fixed_line_of_psl2c_matrix(result)
 
 def _find_standard_basepoint(mcomplex : Mcomplex,
                              vertex : Vertex) -> Tuple[Tetrahedron, int]:
@@ -255,6 +289,7 @@ def _find_standard_basepoint(mcomplex : Mcomplex,
                         return tet, v
 
     raise Exception("Could not find basepoint for cusp. This is a bug.")
+
 
 def _develop_core_curve_cusp(
         mcomplex : Mcomplex,
@@ -291,6 +326,8 @@ def _develop_core_curve_cusp(
 # Depending on whether we are using SnapPy inside SageMath or not, we
 # use different python classes to represent numbers, vectors and matrices.
 # Thus, using Any as type annotation for now :(
+
+
 def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
     """
     Given outside-facing normals for the four faces of a
@@ -319,11 +356,12 @@ def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
 
     return scale.arcsinh(), scale * pt
 
+
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """
     Given one of the dictionaries returned by Manifold.cusp_info(),
     returns the "filling matrix" filling_matrix.
-    
+
     filling_matrix is a matrix of integers (as list of lists) such that
     filling_matrix[0] contains the filling coefficients
     (e.g., [3,4] for m004(3,4)) and the determinant is 1 if the cusp is
@@ -354,3 +392,19 @@ def _filling_matrix(cusp_info : dict) -> FillingMatrix:
 
     return(( m, l),
            (-b, a))
+
+def _make_r13_unit_tangent_vector(direction, point):
+    s = r13_dot(direction, point)
+    return space_r13_normalise(direction + s * point)
+
+def _triangle_bounding_plane(tet, face, edge):
+    v = tet.R13_vertices[face - edge]
+    v0 = tet.R13_vertices[simplex.Head[edge]]
+    v1 = tet.R13_vertices[simplex.Tail[edge]]
+
+    m = time_r13_normalise(
+        v0 / -r13_dot(v0, v) + v1 / -r13_dot(v1, v))
+
+    return _make_r13_unit_tangent_vector(m - v, m)
+
+

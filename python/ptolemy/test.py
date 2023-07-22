@@ -1,16 +1,16 @@
-### Tests the ptolemy module
+# Tests the ptolemy module
 ###
-### Test in sage with precomputed results in testing_files_directory:
-### sage -python test.py
+# Test in sage with precomputed results in testing_files_directory:
+# sage -python test.py
 ###
-### Test in python with precomputed results:
-### python test.py
+# Test in python with precomputed results:
+# python test.py
 ###
-### Test in sage computing the results:
-### sage -python test.py --compute
+# Test in sage computing the results:
+# sage -python test.py --compute
 ###
-### Test in python computing the results using magma:
-### python test.py --compute
+# Test in python computing the results using magma:
+# python test.py --compute
 
 from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
@@ -50,9 +50,10 @@ else:
 
 vol_tet = pari('1.014941606409653625021202554274520285941689307530299792017489106776597476258244022136470354228256695')
 
+
 def check_volumes(complex_volumes, baseline_complex_volumes,
-                  check_real_part_only = False,
-                  torsion_imaginary_part = 6, epsilon = 1e-80):
+                  check_real_part_only=False,
+                  torsion_imaginary_part=6, epsilon=1e-80):
 
     # add complex volumes from complex conjugation to baseline
 
@@ -100,9 +101,10 @@ def check_volumes(complex_volumes, baseline_complex_volumes,
 
             raise Exception
 
-def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
-                             expect_non_zero_dimensional = None,
-                             against_geometric = True):
+
+def testSolutionsForManifold(M, N, solutions, baseline_cvolumes=None,
+                             expect_non_zero_dimensional=None,
+                             against_geometric=True):
 
     old_precision = pari.set_real_precision(100)
 
@@ -150,23 +152,23 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     # check we encountered non-zero dimensional component if that's
     # expected
-    if not expect_non_zero_dimensional is None:
+    if expect_non_zero_dimensional is not None:
         assert expect_non_zero_dimensional == found_non_zero_dimensional
 
     # check the numerical solutions against the manifold
     for s in numerical_solutions:
-        s.check_against_manifold(M, epsilon = 1e-80)
+        s.check_against_manifold(M, epsilon=1e-80)
 
         # check that they make a flattening
         if not test_regina:
-            s.flattenings_numerical().check_against_manifold(M, epsilon = 1e-80)
+            s.flattenings_numerical().check_against_manifold(M, epsilon=1e-80)
 
     if not test_regina:
         for s in numerical_cross_ratios:
-            s.check_against_manifold(M, epsilon = 1e-80)
+            s.check_against_manifold(M, epsilon=1e-80)
 
         for s in numerical_cross_ratios_alt:
-            s.check_against_manifold(M, epsilon = 1e-80)
+            s.check_against_manifold(M, epsilon=1e-80)
 
     # compute complex volumes and volumes
     complex_volumes = [s.complex_volume_numerical() for s in numerical_solutions]
@@ -185,8 +187,8 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     # volumes should be equal
     assert len(volumes) == len(volumes_alt)
-    volumes.sort(key = float)
-    volumes_alt.sort(key = float)
+    volumes.sort(key=float)
+    volumes_alt.sort(key=float)
     for vol1, vol2 in zip(volumes, volumes_alt):
         assert (vol1 - vol2).abs() < 1e-80
 
@@ -197,17 +199,18 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
                 abs(geom_vol - vol) < 1e-11 for vol in volumes]
 
     # check that complex volumes match baseline volumes
-    if not baseline_cvolumes is None:
+    if baseline_cvolumes is not None:
         check_volumes(complex_volumes, baseline_cvolumes)
 
     pari.set_real_precision(old_precision)
 
-def testComputeSolutionsForManifold(manifold, N,
-                                    compute_solutions = False,
-                                    baseline_cvolumes = None,
-                                    expect_non_zero_dimensional = None):
 
-    varieties = manifold.ptolemy_variety(N, obstruction_class = "all_original")
+def testComputeSolutionsForManifold(manifold, N,
+                                    compute_solutions=False,
+                                    baseline_cvolumes=None,
+                                    expect_non_zero_dimensional=None):
+
+    varieties = manifold.ptolemy_variety(N, obstruction_class="all_original")
 
     if compute_solutions:
         def compute(variety):
@@ -225,6 +228,7 @@ def testComputeSolutionsForManifold(manifold, N,
     if manifold.name() == 't00000':
         testMatrixMethods(manifold, solutions)
 
+
 def testMatrixMethods(manifold, solutions):
 
     def matrix_is_diagonal(m):
@@ -239,8 +243,8 @@ def testMatrixMethods(manifold, solutions):
 
     print("Testing matrix methods...")
 
-    G = manifold.fundamental_group(simplify_presentation = True)
-    Graw = manifold.fundamental_group(simplify_presentation = False)
+    G = manifold.fundamental_group(simplify_presentation=True)
+    Graw = manifold.fundamental_group(simplify_presentation=False)
 
     for solution in solutions:
         if solution.dimension == 0:
@@ -298,29 +302,30 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
     from snappy import OrientableCuspedCensus
 
-    for M in (list(OrientableCuspedCensus()[0:10])+
+    for M in (list(OrientableCuspedCensus()[0:10]) +
               list(OrientableCuspedCensus()[10000:10010])):
 
         flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
-        flattening.check_against_manifold(M, epsilon = 1e-80)
+        flattening.check_against_manifold(M, epsilon=1e-80)
 
         if not is_close(flattening.complex_volume(),
                         M.complex_volume(), # returns only double precision
-                        epsilon = 1e-13):
+                        epsilon=1e-13):
             raise Exception("Wrong volume")
 
     # test high precision
 
     M = ManifoldGetter("5_2")
     flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
-    flattening.check_against_manifold(M, epsilon = 1e-80)
+    flattening.check_against_manifold(M, epsilon=1e-80)
 
     if not is_close(flattening.complex_volume(),
                     pari('2.828122088330783162763898809276634942770981317300649477043520327258802548322471630936947017929999108 - 3.024128376509301659719951221694600993984450242270735312503300643508917708286193746506469158300472966*I'),
-                    epsilon = 1e-80):
+                    epsilon=1e-80):
         raise Exception("Wrong volume")
 
     pari.set_real_precision(old_precision)
+
 
 def checkSolutionsForManifoldGeneralizedObstructionClass(
     solutions_trivial, solutions_non_trivial,
@@ -331,7 +336,7 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
 
     solutions = (
         [ (s, False) for s in solutions_trivial ] +
-        [ (s, True)  for s in solutions_non_trivial ])
+        [ (s, True) for s in solutions_non_trivial ])
 
     # Dimensions and volumes encountered
     dimensions = set()
@@ -359,9 +364,9 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
             for f in fl:
                 if not test_regina:
                     # Not supported yet in regina
-                    f.check_against_manifold(epsilon = 1e-80)
+                    f.check_against_manifold(epsilon=1e-80)
 
-                cvol, modulo = f.complex_volume(with_modulo = True)
+                cvol, modulo = f.complex_volume(with_modulo=True)
 
                 if sol_is_non_trivial and N == 3:
                     assert (modulo - torsionNonTrivial).abs() < 1e-80, (
@@ -408,13 +413,14 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
 
     assert dimensions == set(baseline_dimensions)
 
+
 def testComputeSolutionsForManifoldGeneralizedObstructionClass(
     manifold, N, compute_solutions, baseline_volumes, baseline_dimensions):
 
     varieties = manifold.ptolemy_variety(N,
-                                        obstruction_class = "all_generalized"
-                                        #, simplify = False
-                                        #, eliminate_fixed_ptolemys = True
+                                        obstruction_class="all_generalized"
+                                        # , simplify = False
+                                        # , eliminate_fixed_ptolemys = True
                                         )
 
     assert len(varieties) == 2
@@ -426,7 +432,7 @@ def testComputeSolutionsForManifoldGeneralizedObstructionClass(
     else:
         def compute(variety):
             return compute_using_precomputed_magma(
-                variety, dir = testing_files_generalized_directory)
+                variety, dir=testing_files_generalized_directory)
 
     # Solutions for the trivial obstruction class
     solutions_trivial = compute(varieties[0])
@@ -439,6 +445,7 @@ def testComputeSolutionsForManifoldGeneralizedObstructionClass(
     checkSolutionsForManifoldGeneralizedObstructionClass(
         solutions_trivial, solutions_non_trivial,
         manifold, N, baseline_volumes, baseline_dimensions)
+
 
 def testGeneralizedObstructionClass(compute_solutions):
 
@@ -482,6 +489,7 @@ def testGeneralizedObstructionClass(compute_solutions):
         testComputeSolutionsForManifoldGeneralizedObstructionClass(
             manifold, N, compute_solutions, vols, dims)
 
+
 def testMapleLikeRur():
 
     M = ManifoldGetter("m052")
@@ -514,11 +522,11 @@ def testMapleLikeRur():
 
     old_precision = pari.set_real_precision(60)
 
-    sols.numerical().check_against_manifold(epsilon = 1e-50)
-    sols.numerical().cross_ratios().check_against_manifold(epsilon = 1e-50)
-    cross_ratios.numerical().check_against_manifold(epsilon = 1e-50)
-    sol_pur.numerical().check_against_manifold(epsilon = 1e-50)
-    cross_ratio_pur.numerical().check_against_manifold(epsilon = 1e-50)
+    sols.numerical().check_against_manifold(epsilon=1e-50)
+    sols.numerical().cross_ratios().check_against_manifold(epsilon=1e-50)
+    cross_ratios.numerical().check_against_manifold(epsilon=1e-50)
+    sol_pur.numerical().check_against_manifold(epsilon=1e-50)
+    cross_ratio_pur.numerical().check_against_manifold(epsilon=1e-50)
 
     expected_cvols = [
         pari('-0.78247122081308825152609555186377860994691907952043*I'),
@@ -556,11 +564,11 @@ def testMapleLikeRur():
 
     cvols = sols.complex_volume_numerical().flatten(2) # Include witnesses
 
-    check_volumes(cvols, expected_cvols, epsilon = 1e-40)
+    check_volumes(cvols, expected_cvols, epsilon=1e-40)
 
     vols = sols.volume_numerical().flatten(2) # Include witnesses
 
-    check_volumes(vols, expected_cvols, check_real_part_only = True, epsilon = 1e-40)
+    check_volumes(vols, expected_cvols, check_real_part_only=True, epsilon=1e-40)
 
     pari.set_real_precision(old_precision)
 
@@ -570,13 +578,13 @@ def testNumericalSolutions():
     M = ManifoldGetter("m003")
     N = 3
 
-    varieties = M.ptolemy_variety(N, obstruction_class = 'all')
+    varieties = M.ptolemy_variety(N, obstruction_class='all')
 
     solutions = [
         solutions_from_magma(
             get_precomputed_magma(variety,
-                                  dir = testing_files_generalized_directory),
-            numerical = True)
+                                  dir=testing_files_generalized_directory),
+            numerical=True)
         for variety in varieties ]
 
     for obstruction_index, obstruction in enumerate(solutions):
@@ -584,7 +592,7 @@ def testNumericalSolutions():
             for solution in component:
                 flattenings = solution.flattenings_numerical()
                 if not test_regina:
-                    flattenings.check_against_manifold(epsilon = 1e-80)
+                    flattenings.check_against_manifold(epsilon=1e-80)
                 order = flattenings.get_order()
 
                 if obstruction_index:
@@ -593,8 +601,8 @@ def testNumericalSolutions():
                     assert order == 2
 
                 cross_ratios = solution.cross_ratios()
-                is_cr = cross_ratios.is_pu_2_1_representation(epsilon = 1e-80,
-                                                              epsilon2 = 1e-10)
+                is_cr = cross_ratios.is_pu_2_1_representation(epsilon=1e-80,
+                                                              epsilon2=1e-10)
 
                 if cross_ratios.volume_numerical().abs() < 1e-10:
                     # Every volume 0 representation of m003 happens to be
@@ -638,6 +646,7 @@ def testNumericalSolutions():
 
     check_volumes(allCVolumes, expected_cvolumes)
 
+
 def testGeometricRep(compute_solutions):
 
     from snappy.ptolemy import geometricRep
@@ -656,35 +665,39 @@ def testGeometricRep(compute_solutions):
     assert any(
         [ abs(vol - 2.9441064867) < 1e-9 for vol in sol.volume_numerical()])
 
+
 def testSageCommandLine():
 
     sage_eval('Manifold("m004").ptolemy_variety(3,0).compute_solutions().check_against_manifold()',
               { 'Manifold' : ManifoldGetter })
+
 
 def get_precomputed_magma(variety, dir):
     magma_file_name = os.path.join(dir,
                         variety.filename_base() + '.magma_out.bz2')
     return bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
 
-def compute_using_precomputed_magma(variety, dir = testing_files_directory):
+
+def compute_using_precomputed_magma(variety, dir=testing_files_directory):
     return solutions_from_magma(get_precomputed_magma(variety, dir))
+
 
 def test_induced_representation():
 
     M = ManifoldGetter("m015")
-    variety__sl2_c1 = M.ptolemy_variety(2, obstruction_class = 1)
-    variety__sl3_c0 = M.ptolemy_variety(3, obstruction_class = 0)
+    variety__sl2_c1 = M.ptolemy_variety(2, obstruction_class=1)
+    variety__sl3_c0 = M.ptolemy_variety(3, obstruction_class=0)
 
     solutions__sl2_c1 = compute_using_precomputed_magma(
-        variety__sl2_c1, dir = testing_files_generalized_directory)
+        variety__sl2_c1, dir=testing_files_generalized_directory)
     solutions__sl3_c0 = compute_using_precomputed_magma(
-        variety__sl3_c0, dir = testing_files_generalized_directory)
+        variety__sl3_c0, dir=testing_files_generalized_directory)
 
     # Check that is_real
 
     got_exception = False
     try:
-        solutions__sl3_c0[0].cross_ratios().is_real(epsilon = 1e-80)
+        solutions__sl3_c0[0].cross_ratios().is_real(epsilon=1e-80)
     except:
         got_exception = True
     assert got_exception, (
@@ -698,7 +711,7 @@ def test_induced_representation():
         number_real = 0
         number_all = 0
         for z in component.cross_ratios_numerical():
-            if z.is_real(epsilon = 1e-80):
+            if z.is_real(epsilon=1e-80):
                 number_real += 1
             number_all += 1
         numbers_all_and_real.append((number_all, number_real))
@@ -765,6 +778,7 @@ def test_induced_representation():
         assert v.abs() < 1e-80 or (v.abs() - 4 * m015_volume).abs() < 1e-80, (
             "Did not get expected voluem for induced representation")
 
+
 def test_induced_sl4_representation():
     M = Manifold("m004")
 
@@ -794,6 +808,7 @@ def test_num_obstruction_class_match():
 
         for i in range(2,6):
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
+
 
 modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
            ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
@@ -868,7 +883,7 @@ def main(verbose=False, doctest=True):
 
     print("Running manifold tests...")
 
-    ### Test for a non-hyperbolic manifold
+    # Test for a non-hyperbolic manifold
 
     cvols = [ # Expected Complex volumes
         pari('0') ]
@@ -877,7 +892,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)  # No non-zero dimensional components
 
-    ### Test for 4_1, amphichiral, expect zero CS
+    # Test for 4_1, amphichiral, expect zero CS
 
     cvols = [ # Expected Complex volumes
         2 * vol_tet
@@ -887,7 +902,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect non-zero dimensional components
 
-    ### N = 3
+    # N = 3
 
     cvols = [ # Expected Complex volumes
         pari(0),
@@ -898,7 +913,7 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect non-zero dimensional components
 
-    ### N = 4
+    # N = 4
 
     cvols = [ # Expected Complex volumes
         2 * 10 * vol_tet,
@@ -918,10 +933,9 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     True)   # expect non-zero dimensional components
 
-
-    ### Test for 5_2, expect non-trivial CS
-    ### Number field has one real embedding with non-trival CS
-    ### And one pair of complex embeddings with non-trivial CS
+    # Test for 5_2, expect non-trivial CS
+    # Number field has one real embedding with non-trival CS
+    # And one pair of complex embeddings with non-trivial CS
 
     cvols = [ # Expected Complex volumes
         pari('+ 1.113454552473924010022656943451126420312050780921075311799926598907813005362784871512051614741669817*I'),
@@ -932,8 +946,8 @@ def main(verbose=False, doctest=True):
                     cvols,  # expected complex volumes
                     False)   # expect no non-zero dimensional components
 
-    ### m015 which is isometric to 5_2
-    ### This example is also appearing on the website
+    # m015 which is isometric to 5_2
+    # This example is also appearing on the website
 
     cvols = [ # Expected Complex volumes
         pari('+ 0.4033353624187061319128390413376061001062613536896471642214173008084760853375773296525240139108027276*I'),
@@ -949,8 +963,8 @@ def main(verbose=False, doctest=True):
                      cvols, # expected volumes
                      False)   # expect no non-zero dimensional components
 
-    ### Test for m135
-    ### Ptolemy Variety has one non-zero dimensional component
+    # Test for m135
+    # Ptolemy Variety has one non-zero dimensional component
 
     cvols = [ # Expected Complex volumes
         pari('3.66386237670887606021841405972953644309659749712668853706599247848705207910501907791742605170446042499429769047678479831614359521330343623772637894992 + 4.93480220054467930941724549993807556765684970362039531320667468811002241120960262150088670185927611591201295688701157203888617406101502336380530883900*I')
@@ -961,9 +975,9 @@ def main(verbose=False, doctest=True):
                      cvols,       # expected volumes
                      True)        # expect a non-zero dimensional component
 
-    ### Test for s000
-    ### Number field has one real embedding with non-trival CS
-    ### And two complex embeddings with non-trivial CS
+    # Test for s000
+    # Number field has one real embedding with non-trival CS
+    # And two complex embeddings with non-trivial CS
 
     cvols = [ # Expected Complex volumes
         pari('3.296902414326637335562593088559162089146991699269941951875989849869324250860299302482577730785960256 + 0.4908671850777469648812718224097607532197026477625119178645010117072332396428578681905186509136879130*I'),
@@ -976,9 +990,9 @@ def main(verbose=False, doctest=True):
                      cvols,   # expected complex volumes
                      False)   # expect non-zero dimensional components
 
-    ### Test for v0000
-    ### This also tests the case of having more than one (here two)
-    ### cusps
+    # Test for v0000
+    # This also tests the case of having more than one (here two)
+    # cusps
 
     cvols = [ # Expected Complex volumes
         pari('3.377597408231442496961257171798882829176020069714519460350380851901055794392493960110119513942153791 + 0.3441889979504813554136570264352067044809511501367282461849580661783699588789118851518262199077361427*I'),
@@ -990,10 +1004,9 @@ def main(verbose=False, doctest=True):
                       cvols,   # expected complex volumes
                       False)   # expect non-zero dimensional components
 
-
-    ### Test for t00000
-    ### This also tests the case of having more than one (here two)
-    ### cusps
+    # Test for t00000
+    # This also tests the case of having more than one (here two)
+    # cusps
 
     cvols = [ # Expected Complex volumes
         pari('1.801231981344929412976326011175173926741195258454700704383597306674496002389749200442131507334117933 - 0.5490336239273931479260463113980794374780078424892352183284248305887346671477869107359071072271699046*I'),
@@ -1007,8 +1020,8 @@ def main(verbose=False, doctest=True):
                       cvols,      # expected complex volumes
                       False)      # expect non-zero dimensional components
 
-    ### Check a big link
-    ### Also an example from the website
+    # Check a big link
+    # Also an example from the website
 
     magma_file_name = os.path.join(testing_files_directory,
                        'DT_mcbbiceaibjklmdfgh__sl2_c0.magma_out.bz2')
@@ -1059,9 +1072,9 @@ def main(verbose=False, doctest=True):
 
         testComputeSolutionsForManifold(
             manifold, N,
-            compute_solutions = compute_solutions,
-            baseline_cvolumes = cvols,
-            expect_non_zero_dimensional = expect_non_zero_dim)
+            compute_solutions=compute_solutions,
+            baseline_cvolumes=cvols,
+            expect_non_zero_dimensional=expect_non_zero_dim)
 
 
 if __name__ == '__main__':

@@ -20,15 +20,17 @@ else:
     Object = object
     from .utilities import Matrix2x2 as matrix, powerset
     from ..number import Number
+
     def identity(A):
         return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
     abelian_group_elt = lambda v: v
 
-#----------------------------------------------------------------
+
+# ----------------------------------------------------------------
 #
 #  Abelianization of the fundamental group
 #
-#----------------------------------------------------------------
+# ----------------------------------------------------------------
 
 class MapToFreeAbelianization(Object):
     """
@@ -67,8 +69,10 @@ class MapToFreeAbelianization(Object):
 
 # General code for storing high-precision representations.
 
+
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
+
 
 if _within_sage:
     def clean_CC(z, error, prec):
@@ -81,29 +85,37 @@ else:
         clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
         return Number(clean_z, precision=prec)
 
+
 def clean_matrix(A, error, prec):
     return matrix([[clean_CC(A[x], error, prec) for x in ((i,0),(i,1))]
                    for i in (0,1)])
 
+
 def SL2C_inverse(A):
     return matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
+
 
 def matrix_norm(A):
     return max( [abs(a) for a in A.list()])
 
+
 def matrix_difference_norm(A, B):
-    return max([abs(a - b) for a,b in zip(A.list(), B.list())])
+    return max([abs(a - b) for a, b in zip(A.list(), B.list())])
+
 
 def projective_distance(A, B):
     return min( matrix_norm(A-B), matrix_norm(A+B) )
 
+
 def compare_matrices(Mats0, Mats1):
-    return  max([projective_distance(A, B) for A,B in zip(Mats0, Mats1)])
+    return max([projective_distance(A, B) for A, B in zip(Mats0, Mats1)])
+
 
 def make_epsilon(A):
     prec = A.base_ring().precision()
     RR = RealField(prec)
     return RR(2)**(RR(-0.6)*prec)
+
 
 def make_trace_2(A):
     P = A if A.trace() > 0 else - A
@@ -111,6 +123,7 @@ def make_trace_2(A):
         return P
     else:
         raise ValueError("Matrix of peripheral element doesn't seem to be parabolic")
+
 
 def parabolic_eigenvector(A):
     P, CC, epsilon = make_trace_2(A), A.base_ring(), make_epsilon(A)
@@ -217,6 +230,7 @@ class MatrixRepresentation(Object):
         enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
         return [self(w).trace() for w in enough_elts]
 
+
 class ManifoldGroup(MatrixRepresentation):
     def __init__(self, gens, relators, peripheral_curves=None, matrices=None):
         MatrixRepresentation.__init__(self, gens, relators, matrices)
@@ -229,8 +243,8 @@ class ManifoldGroup(MatrixRepresentation):
         return self(word)
 
     def check_representation(self):
-        relator_matrices = [self.SL2C(R) for R in self.relators()]
-        return  max([projective_distance(A, identity(A)) for A in relator_matrices])
+        relator_matrices = (self.SL2C(R) for R in self.relators())
+        return max(projective_distance(A, identity(A)) for A in relator_matrices)
 
     def cusp_shape(self, cusp_num=0):
         """
@@ -242,7 +256,7 @@ class ManifoldGroup(MatrixRepresentation):
           -0.49024466750661447990098220731 + 2.9794470664789769463726817144*I
 
         """
-        M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])
+        M, L = [self.SL2C(w) for w in self.peripheral_curves()[cusp_num]]
         C = extend_to_basis(parabolic_eigenvector(M))
         M, L = [ make_trace_2( C**(-1)*A*C ) for A in [M, L] ]
         z = L[0][1]/M[0][1]
@@ -276,17 +290,18 @@ class ManifoldGroup(MatrixRepresentation):
         return ans
 
     def __repr__(self):
-        return 'Generators:\n   %s\nRelators:\n   %s'%(
+        return 'Generators:\n   %s\nRelators:\n   %s' % (
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
 
+
 def polished_holonomy(manifold,
-                      bits_prec = 100,
-                      fundamental_group_args = [],
-                      lift_to_SL2 = True,
-                      ignore_solution_type = False,
-                      dec_prec = None,
-                      match_kernel = True):
+                      bits_prec=100,
+                      fundamental_group_args=[],
+                      lift_to_SL2=True,
+                      ignore_solution_type=False,
+                      dec_prec=None,
+                      match_kernel=True):
     """
     Return the fundamental group of M equipt with a high-precision version of the
     holonomy representation::

@@ -9,7 +9,7 @@ include "CyOpenGL.pxi"
 include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
 
-from .infodialog import InfoDialog
+from .infowindow import InfoWindow
 from . import togl
 
 from cpython cimport array
@@ -178,7 +178,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         """
         self.tk.call(self._w, 'swapbuffers')
 
-    def redraw(self, width, height):
+    def redraw(self, width, height,
+               skip_swap_buffers = False):
         """
         Redrawing to be implemented by subclass.
 
@@ -213,6 +214,36 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.make_current()
         self.redraw(width = self.winfo_width(),
                     height = self.winfo_height())
+
+    def save_image_window_resolution(self, outfile):
+        cdef array.array c_array
+
+        width = self.winfo_width()
+        height = self.winfo_height()
+
+        self.make_current()
+        self.redraw(width = width,
+                    height = height,
+                    skip_swap_buffers = True)
+        glFinish()
+
+        c_array = array.array('B')
+        array.resize(c_array, 3 * width * height)
+        glReadPixels(0, 0, width, height,
+                     GL_RGB,
+                     GL_UNSIGNED_BYTE,
+                     c_array.data.as_voidptr)
+
+        stride = 3 * width
+        rows = [ c_array[i * stride : (i+1) * stride]
+                 for i in range(height - 1, -1, -1) ]
+
+        writer = png.Writer(
+            width, height,
+            greyscale = False,
+            bitdepth = 8,
+            alpha = False)
+        writer.write(outfile, rows)
 
 ##############################################################################
 # Non-OpenGL classes
@@ -1326,7 +1357,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Help message for the widget.
         """
-        InfoDialog(self, 'Viewer Help', self.help_text)
+        InfoWindow(self, 'Viewer Help', self.help_text, 'viewer_help')
 
     def set_background(self, r, g, b):
         """
@@ -1471,7 +1502,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
-    def redraw(self, width, height):
+    def redraw(self, width, height, skip_swap_buffers = False):
         """
         Implements redrawing by calling redraw_impl to draw the scene
         after setting up the viewport, the projection and view matrix
@@ -1494,7 +1525,8 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.redraw_impl()
         glPopMatrix()              # Restore the matrix
 
-        self.swap_buffers()
+        if not skip_swap_buffers:
+            self.swap_buffers()
 
     def redraw_impl(self):
         """
@@ -2649,13 +2681,14 @@ ELSE:
         def add_object(self, obj):
             self.objects.append(obj)
 
-        def redraw(self, width, height):
+        def redraw(self, width, height, skip_swap_buffers = False):
             glViewport(0, 0, width, height)
             glClearColor(0.0, 0.0, 0.0, 1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             for object in self.objects:
                 object.draw(width, height)
-            self.swap_buffers()
+            if not skip_swap_buffers:
+                self.swap_buffers()
 
     cdef class Triangle:
         """

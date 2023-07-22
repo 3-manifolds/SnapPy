@@ -31,9 +31,10 @@ from .raytracing_data import *
 
 __all__ = ['FiniteRaytracingData']
 
+
 class FiniteRaytracingData(RaytracingData):
     @staticmethod
-    def from_triangulation(triangulation, weights = None):
+    def from_triangulation(triangulation, weights=None):
 
         if not _within_sage:
             raise Exception("Only supported within SageMath :(")
@@ -41,7 +42,7 @@ class FiniteRaytracingData(RaytracingData):
         hyperbolic_structure = compute_approx_hyperbolic_structure_orb(triangulation)
         hyperbolic_structure.pick_exact_and_var_edges()
         hyperbolic_structure = polish_approx_hyperbolic_structure(
-            hyperbolic_structure, bits_prec = 212)
+            hyperbolic_structure, bits_prec=212)
 
         r = FiniteRaytracingData(hyperbolic_structure)
 
@@ -82,7 +83,7 @@ class FiniteRaytracingData(RaytracingData):
                 t3m.V3 : _compute_vertex(tet, (3,0,1,2)) }
 
     def _compute_edge_ends(self):
-        cs = [ vector(self.RF,[1,  1, 0, 0]),
+        cs = [ vector(self.RF,[1, 1, 0, 0]),
                vector(self.RF,[1, -1, 0, 0]) ]
 
         def _compute_edge_ends(tet, perm):
@@ -165,16 +166,18 @@ class FiniteRaytracingData(RaytracingData):
         weight = 0.0
         return (boost, tet_num, weight)
 
-################################################################3
+# 3
 #
 # Helpers
 #
+
 
 _face_to_perm = {
     t3m.F0: t3m.Perm4((1,3,2,0)),
     t3m.F1: t3m.Perm4((0,2,3,1)),
     t3m.F2: t3m.Perm4((0,3,1,2)),
     t3m.F3: t3m.Perm4((0,1,2,3))}
+
 
 def _compute_face_pairing(tet, F):
     tet_perm = _face_to_perm[F]
@@ -186,31 +189,33 @@ def _compute_face_pairing(tet, F):
 
     return pgl2c_to_o13(_adjoint(other_m) * m)
 
+
 def _adjoint(m):
     return matrix([[ m[1,1],-m[0,1]],
                    [-m[1,0], m[0,0]]])
 
+
 _new_perm_edge_type_old_perm = [
     ((1, 0, 2, 3), 'alpha', t3m.Perm4((0, 1, 2, 3))),
-    ((0, 2, 1, 3), 'beta',  t3m.Perm4((0, 1, 2, 3))),
+    ((0, 2, 1, 3), 'beta', t3m.Perm4((0, 1, 2, 3))),
     ((0, 1, 3, 2), 'gamma', t3m.Perm4((0, 1, 2, 3))),
-    ((1, 2, 0, 3), 'beta',  t3m.Perm4((1, 0, 2, 3))),
+    ((1, 2, 0, 3), 'beta', t3m.Perm4((1, 0, 2, 3))),
     ((1, 0, 3, 2), 'gamma', t3m.Perm4((1, 0, 2, 3))),
     ((2, 0, 1, 3), 'alpha', t3m.Perm4((0, 2, 1, 3))),
     ((0, 2, 3, 1), 'gamma', t3m.Perm4((0, 2, 1, 3))),
-    ((0, 3, 1, 2), 'beta',  t3m.Perm4((0, 1, 3, 2))),
+    ((0, 3, 1, 2), 'beta', t3m.Perm4((0, 1, 3, 2))),
     ((2, 1, 0, 3), 'alpha', t3m.Perm4((1, 2, 0, 3))),
     ((1, 2, 3, 0), 'gamma', t3m.Perm4((1, 2, 0, 3))),
-    ((1, 3, 0, 2), 'beta',  t3m.Perm4((1, 0, 3, 2))),
+    ((1, 3, 0, 2), 'beta', t3m.Perm4((1, 0, 3, 2))),
     ((2, 0, 3, 1), 'gamma', t3m.Perm4((2, 0, 1, 3))),
-    ((0, 3, 2, 1), 'beta',  t3m.Perm4((0, 2, 3, 1))),
+    ((0, 3, 2, 1), 'beta', t3m.Perm4((0, 2, 3, 1))),
     ((3, 0, 1, 2), 'alpha', t3m.Perm4((0, 3, 1, 2))),
     ((2, 1, 3, 0), 'gamma', t3m.Perm4((2, 1, 0, 3))),
-    ((1, 3, 2, 0), 'beta',  t3m.Perm4((1, 2, 3, 0))),
+    ((1, 3, 2, 0), 'beta', t3m.Perm4((1, 2, 3, 0))),
     ((3, 1, 0, 2), 'alpha', t3m.Perm4((1, 3, 0, 2))),
-    ((2, 3, 0, 1), 'beta',  t3m.Perm4((2, 0, 3, 1))),
+    ((2, 3, 0, 1), 'beta', t3m.Perm4((2, 0, 3, 1))),
     ((3, 0, 2, 1), 'alpha', t3m.Perm4((0, 3, 2, 1))),
-    ((2, 3, 1, 0), 'beta',  t3m.Perm4((2, 1, 3, 0))),
+    ((2, 3, 1, 0), 'beta', t3m.Perm4((2, 1, 3, 0))),
     ((3, 1, 2, 0), 'alpha', t3m.Perm4((1, 3, 2, 0))),
     ((3, 2, 0, 1), 'alpha', t3m.Perm4((2, 3, 0, 1))),
     ((3, 2, 1, 0), 'alpha', t3m.Perm4((2, 3, 1, 0))) ]

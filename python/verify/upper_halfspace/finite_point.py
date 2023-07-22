@@ -64,7 +64,7 @@ class FinitePoint():
 
         """
 
-        return self._translate(m, normalize_matrix = False)
+        return self._translate(m, normalize_matrix=False)
 
     def translate_PGL(self, m):
         """
@@ -81,7 +81,7 @@ class FinitePoint():
 
         """
 
-        return self._translate(m, normalize_matrix = True)
+        return self._translate(m, normalize_matrix=True)
 
     def _translate(self, m, normalize_matrix):
 
@@ -113,9 +113,9 @@ class FinitePoint():
             mat = mat / sqrt(mat.det())
 
         # a * z + b
-        az_b  = mat[0,0] * z + mat[0,1]
+        az_b = mat[0,0] * z + mat[0,1]
         # c * z + d
-        cz_d  = mat[1,0] * z + mat[1,1]
+        cz_d = mat[1,0] * z + mat[1,1]
 
         # Denominator
         # | c * (z + t * j) + d |^2 =
@@ -123,17 +123,16 @@ class FinitePoint():
         # | c * z + d| ^ 2 + |c * t|^2
         denom = _abs_sqr(cz_d) + _abs_sqr(mat[1,0] * self.t)
 
-        num   = ( az_b * cz_d.conjugate() +
+        num = ( az_b * cz_d.conjugate() +
                   mat[0,0] * mat[1,0].conjugate() * self.t ** 2)
 
         return FinitePoint(num / denom, self.t / denom)
 
     def cosh_dist(self, other):
-
         """
         Returns cosh of the distance of this finite point to another
         finite point::
-        
+
             sage: from sage.all import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
@@ -156,7 +155,7 @@ class FinitePoint():
         # t and (x2-x1)^2 is the square of the absolute value of the difference
         # of the two z.
 
-        r = 1 + (((self.t - other.t) ** 2 + _abs_sqr(self.z - other.z))/
+        r = 1 + (((self.t - other.t) ** 2 + _abs_sqr(self.z - other.z)) /
                  (2 * self.t * other.t))
 
         # Due to rounding-errors, we can get a value that is just slightly
@@ -182,17 +181,17 @@ class FinitePoint():
             sage: from sage.all import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
-            sage: a.dist(b) # doctest: +NUMERIC12 
+            sage: a.dist(b) # doctest: +NUMERIC12
             1.158810360429947?
 
         """
-
         # Note: SageMath 8.1 doesn't compute arccosh correctly for a
         # complex interval, but at least it does so for a real interval.
         return self.cosh_dist(other).arccosh()
 
     def __repr__(self):
         return 'FinitePoint(%r, %r)' % (self.z, self.t)
+
 
 ###############################################################################
 # Various helpers
@@ -203,6 +202,7 @@ def _abs_sqr(z):
 ################################################################################
 #
 # TESTING
+
 
 class _FinitePointTester():
     """

@@ -4,11 +4,11 @@ from ...math_basics import correct_max
 from ...snap.kernel_structures import *
 from ...snap.fundamental_polyhedron import *
 from ...snap.mcomplex_base import *
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
 from ...snap.t3mlite import simplex
 from ...snap import t3mlite as t3m
 from ...exceptions import InsufficientPrecisionError
 
-from ..cuspCrossSection import ComplexCuspCrossSection
 from ..upper_halfspace.ideal_point import *
 from ..interval_tree import *
 
@@ -28,6 +28,7 @@ _OrientedVerticesForVertex = {
     simplex.V2 : (simplex.V2, simplex.V3, simplex.V0, simplex.V1),
     simplex.V3 : (simplex.V3, simplex.V2, simplex.V1, simplex.V0)
 }
+
 
 class CuspTilingEngine(McomplexEngine):
     """
@@ -118,7 +119,7 @@ class CuspTilingEngine(McomplexEngine):
     @staticmethod
     def from_manifold_and_shapes(snappyManifold, shapes):
         c = ComplexCuspCrossSection.fromManifoldAndShapes(snappyManifold, shapes)
-        c.ensure_std_form(allow_scaling_up = True)
+        c.ensure_std_form(allow_scaling_up=True)
         c.compute_translations()
         m = c.mcomplex
 
@@ -127,7 +128,7 @@ class CuspTilingEngine(McomplexEngine):
 
         t = TransferKernelStructuresEngine(m, snappyManifold)
         t.choose_and_transfer_generators(
-            compute_corners = True, centroid_at_origin = False)
+            compute_corners=True, centroid_at_origin=False)
 
         f = FundamentalPolyhedronEngine(m)
         f.unglue()
@@ -136,7 +137,7 @@ class CuspTilingEngine(McomplexEngine):
         t = TransferKernelStructuresEngine(original_mcomplex, snappyManifold)
         t.reindex_cusps_and_transfer_peripheral_curves()
         t.choose_and_transfer_generators(
-            compute_corners = False, centroid_at_origin = False)
+            compute_corners=False, centroid_at_origin=False)
 
         return CuspTilingEngine(m, original_mcomplex, cusp_areas, translations)
 
@@ -160,9 +161,9 @@ class CuspTilingEngine(McomplexEngine):
 
         CIF = p2.parent()
 
-        return { v0 :   Infinity,
-                 v1 :   CIF(0),
-                 v2 :   p2,
+        return { v0 : Infinity,
+                 v1 : CIF(0),
+                 v2 : p2,
                  v3 : - p3 }
 
     def reset_cusp(self, cusp_index):
@@ -182,7 +183,7 @@ class CuspTilingEngine(McomplexEngine):
         f = FundamentalPolyhedronEngine(self.mcomplex)
         init_vertices = CuspTilingEngine.get_init_vertices(self.vertex_at_infinity)
         f.visit_tetrahedra_to_compute_vertices(tet, init_vertices)
-        f.compute_matrices(normalize_matrices = False)
+        f.compute_matrices(normalize_matrices=False)
 
         self.baseTetInRadius, self.baseTetInCenter = compute_inradius_and_incenter(
             [ tet.Class[v].IdealPoint for v in simplex.ZeroSubsimplices])
@@ -241,7 +242,7 @@ class CuspTilingEngine(McomplexEngine):
             other_m = tile.matrix * gen_m
             other_tile = self.find_tile(other_m)
             if other_tile:
-                if not tile is other_tile:
+                if tile is not other_tile:
                     for (corner, other_corner), perm in self.mcomplex.Generators[g]:
                         for v in simplex.VerticesOfFaceCounterclockwise[corner.Subsimplex]:
                             vertex = corner.Tetrahedron.Class[v]
@@ -316,7 +317,7 @@ class CuspTilingEngine(McomplexEngine):
 
                 if self.horosphere_at_inf_height is None:
                     self.horosphere_at_inf_height = (
-                        tile.height_of_horosphere(vertex, is_at_infinity = True))
+                        tile.height_of_horosphere(vertex, is_at_infinity=True))
 
                 for neighboring_triangle in self.get_neighboring_cusp_triangles(cusp_triangle):
                     pending_cusp_triangles.append(neighboring_triangle)
@@ -345,14 +346,14 @@ class CuspTilingEngine(McomplexEngine):
         for height in heights:
             if height.is_NaN():
                 raise InsufficientPrecisionError(
-                    "A NaN occured when computing the height of a triangle "
+                    "A NaN occurred when computing the height of a triangle "
                     "face. This can most likely be avoided by increasing the "
                     "precision.")
         return max(heights)
 
     def account_horosphere_height(self, tile, vertex):
         horosphere_height = tile.height_of_horosphere(vertex,
-                                                      is_at_infinity = False)
+                                                      is_at_infinity=False)
 
         cusp = vertex.SubsimplexIndexInManifold
 
@@ -363,9 +364,9 @@ class CuspTilingEngine(McomplexEngine):
         heapq.heappush(
             self.unglued_generator_heapq,
             CuspTilingEngine.UngluedGenerator(
-                tile = tile,
-                g = g,
-                height_upper_bound = self.upper_bound_for_height_of_unglued_generator(tile, g)))
+                tile=tile,
+                g=g,
+                height_upper_bound=self.upper_bound_for_height_of_unglued_generator(tile, g)))
 
     def process_next_unglued_generator(self):
         unglued_generator = heapq.heappop(self.unglued_generator_heapq)

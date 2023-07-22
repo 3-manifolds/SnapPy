@@ -38,7 +38,7 @@ from .linalg import Vector, Matrix
 # NOTE (3) Our plan is to create (at least) three subclasses of the
 # Surface class: Closed_Surface, Spun_Surface, Bounded_Surface.
 
-#Incidence dictionaries for quads, triangles and octagons
+# Incidence dictionaries for quads, triangles and octagons
 
 MeetsQuad = {E01:Vector((1,1,0)), E02:Vector((1,0,1)), E21:Vector((0,1,1)),
              E32:Vector((1,1,0)), E31:Vector((1,0,1)), E03:Vector((0,1,1))}
@@ -46,8 +46,8 @@ MeetsQuad = {E01:Vector((1,1,0)), E02:Vector((1,0,1)), E21:Vector((0,1,1)),
 MeetsTri = {E01:Vector((1,1,0,0)), E02:Vector((1,0,1,0)), E21:Vector((0,1,1,0)),
             E32:Vector((0,0,1,1)), E31:Vector((0,1,0,1)), E03:Vector((1,0,0,1))}
 
-MeetsOct =  {E01:Vector((1,1,2)), E02:Vector((1,2,1)), E21:Vector((2,1,1)),
-             E32:Vector((1,1,2)), E31:Vector((1,2,1)), E03:Vector((2,1,1))}
+MeetsOct = {E01:Vector((1,1,2)), E02:Vector((1,2,1)), E21:Vector((2,1,1)),
+            E32:Vector((1,1,2)), E31:Vector((1,2,1)), E03:Vector((2,1,1))}
 
 DisjointQuad = {E01:2, E02:1, E21:0,
                 E32:2, E31:1, E03:0}
@@ -71,6 +71,7 @@ NonInteger = 'Error'
 
 # NOTE: The convention is that the order of the quads is (Q03, Q13, Q23)
 
+
 def gcd(x, y):
     if x == 0:
         if y == 0:
@@ -80,10 +81,11 @@ def gcd(x, y):
     x = abs(x)
     y = abs(y)
     while y != 0:
-        r = x%y
+        r = x % y
         x = y
         y = r
     return x
+
 
 def reduce_slope( slope ):
     a, b = slope
@@ -92,6 +94,7 @@ def reduce_slope( slope ):
     g = gcd(a,b)
     a, b = a/g, b/g
     return (a,b), g
+
 
 class Surface:
 
@@ -141,7 +144,7 @@ class Surface:
                 linked_edges.append(edge.Index)
         return linked_edges
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         if self.type() == "normal":
             out.write("Normal surface\n")
         for i in range(self.Size):
@@ -266,7 +269,6 @@ class ClosedSurface(Surface):
 
         self.EdgeWeights = Matrix(edge_matrix).dot(self.Weights)
 
-
     def find_euler_characteristic(self, manifold):
         # An EdgeValence is the number of tetrahedra that meet the edge.
         # The number of 2-simplices that meet the edge is larger by 1 in
@@ -321,7 +323,6 @@ class ClosedSurface(Surface):
             if not (bounds_subcomplex or double_bounds_subcomplex):
                 break
 
-
         if bounds_subcomplex or double_bounds_subcomplex:
             thick_or_thin = "thin"
             for tet in manifold.Tetrahedra:
@@ -341,7 +342,7 @@ class ClosedSurface(Surface):
 
         self.BoundingInfo = (bounds_subcomplex, double_bounds_subcomplex, thick_or_thin)
 
-###### It is not a torus unless the edge is a loop!
+# It is not a torus unless the edge is a loop!
     # A surface is an edge linking torus iff all edge weights are 2 except one which
     # is zero.  Returns pair (is linking torus, edge it links around).
 
@@ -358,24 +359,24 @@ class ClosedSurface(Surface):
             elif w != 2:
                 return (0, None)
 
-        return (1,  zero_index)
+        return (1, zero_index)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         if self.type() == "normal":
             # check if really boring:
             q, e = self.is_edge_linking_torus()
             if q:
                 out.write("Normal surface #%d is thin linking torus of edge %s\n"
-                          %(manifold.NormalSurfaces.index(self), manifold.Edges[e]))
+                          % (manifold.NormalSurfaces.index(self), manifold.Edges[e]))
                 return
             out.write("Normal surface #%d of Euler characteristic %d\n"
-                      %(manifold.NormalSurfaces.index(self), self.EulerCharacteristic))
+                      % (manifold.NormalSurfaces.index(self), self.EulerCharacteristic))
             # additional message about bounding subcomplex
             b, d, t = self.BoundingInfo
             if b == 1:
-                out.write("  Bounds %s subcomplex\n"  % t)
+                out.write("  Bounds %s subcomplex\n" % t)
             elif d == 1:
-                out.write("  Double bounds %s subcomplex\n" %t)
+                out.write("  Double bounds %s subcomplex\n" % t)
             else:
                 out.write("  doesn't bound subcomplex\n")
         else:
@@ -414,7 +415,7 @@ class ClosedSurface(Surface):
         complementary manifold.
 
         """
-        M  = manifold
+        M = manifold
         have_quads = [self.has_quad(i) for i in range(len(M))]
         new_tets = {}
         for i in have_quads:
@@ -422,10 +423,10 @@ class ClosedSurface(Surface):
         for i in have_quads:
             T = new_tets[i]
 
-#-----------------end class ClosedSurface---------------------------------------
+# -----------------end class ClosedSurface---------------------------------------
 
 
-#-----------------begin class SpunSurface--------------------------------------
+# -----------------begin class SpunSurface--------------------------------------
 
 def dot_product(x,y):
     assert len(x) == len(y)
@@ -433,6 +434,7 @@ def dot_product(x,y):
     for i in range(len(x)):
         dot += x[i]*y[i]
     return dot
+
 
 class SpunSurface(Surface):
 
@@ -454,10 +456,10 @@ class SpunSurface(Surface):
             raise OverflowError('Yikes! A non-integral euler characteristic!')
         return -int(intresult)
 
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("SpunSurface.\n Slope: %s; Boundary components: %d; " %
                   reduce_slope(self.BoundarySlope))
-        out.write("Euler characteristic: %d\n"%
+        out.write("Euler characteristic: %d\n" %
                   self.find_euler_characteristic(manifold))
         out.write(" Incompressible: %s\n" % self.Incompressible)
         for i in range(self.Size):
@@ -467,10 +469,10 @@ class SpunSurface(Surface):
                           (i, self.Quadtypes[i], quad_weight))
             else:
                 weight = "  Tet %d: no quads" % i
-            out.write(weight  + "\n")
+            out.write(weight + "\n")
 
 
-#-------------begin class ClosedSurfaceInCusped------------------------
+# -------------begin class ClosedSurfaceInCusped------------------------
 
 class ClosedSurfaceInCusped(ClosedSurface):
     def __init__(self, manifold, quadvector):
@@ -478,8 +480,7 @@ class ClosedSurfaceInCusped(ClosedSurface):
         self.Incompressible = None
         self.BoundarySlope = None
 
-
-    def info(self, manifold, out = sys.stdout):
+    def info(self, manifold, out=sys.stdout):
         out.write("ClosedSurfaceInCusped #%d:  Euler %d;  Incompressible %s\n" %
                   (manifold.ClosedSurfaces.index(self), self.EulerCharacteristic, self.Incompressible))
         # check if really boring:
@@ -491,9 +492,9 @@ class ClosedSurfaceInCusped(ClosedSurface):
         # additional message about bounding subcomplex
         b, d, t = self.BoundingInfo
         if b == 1:
-            out.write("  Bounds %s subcomplex\n"  % t)
+            out.write("  Bounds %s subcomplex\n" % t)
         elif d == 1:
-            out.write("  Double bounds %s subcomplex\n" %t)
+            out.write("  Double bounds %s subcomplex\n" % t)
         else:
             out.write("  Doesn't bound subcomplex\n")
 

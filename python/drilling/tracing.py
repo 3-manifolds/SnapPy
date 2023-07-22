@@ -1,5 +1,4 @@
 from .geodesic_info import GeodesicInfo
-from .line import R13LineWithMatrix, distance_r13_lines
 from . import constants
 from . import epsilons
 from . import exceptions
@@ -7,9 +6,11 @@ from . import exceptions
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 
 from ..hyperboloid import r13_dot # type: ignore
+from ..tiling.line import R13LineWithMatrix, distance_r13_lines
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List
+
 
 class Endpoint:
     """
@@ -29,6 +30,7 @@ class Endpoint:
 
     def __repr__(self):
         return "Endpoint(%r, %r)" % (self.r13_point, self.subsimplex)
+
 
 class GeodesicPiece:
     """
@@ -137,6 +139,7 @@ class GeodesicPiece:
     def __repr__(self):
         return "GeodesicPiece(%d, %r, %r)" % (self.index, self.tet, self.endpoints)
 
+
 class GeodesicPieceTracker:
     def __init__(self, geodesic_piece):
         self.set_geodesic_piece(geodesic_piece)
@@ -144,7 +147,8 @@ class GeodesicPieceTracker:
     def set_geodesic_piece(self, geodesic_piece):
         self.geodesic_piece = geodesic_piece
         geodesic_piece.tracker = self
-    
+
+
 def compute_plane_intersection_param(
         plane, # Unnormalised space-like vector/plane equation
         point, # Unnormalised time-like vector
@@ -182,6 +186,7 @@ def compute_plane_intersection_param(
             denom = RF(1e-200)
 
     return num / denom
+
 
 def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     """
@@ -231,7 +236,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
     # Result
     pieces : List[GeodesicPiece] = [ ]
 
-    # Parameterizes ray. That is, we are start_point + param * direction.
+    # Parametrizes ray. That is, we are start_point + param * direction.
     param = RF(0)
 
     # Trace
@@ -272,7 +277,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
                     hit_param = candidate_param
                     hit_face = candidate_face
                 elif not candidate_param > hit_param + epsilon:
-                    # If there is any ambiguitiy whether this face was
+                    # If there is any ambiguity whether this face was
                     # crossed before the other face, fail!
                     # Most likely, this is because the ray is close to
                     # or crossing an edge of the triangulation.
@@ -309,7 +314,7 @@ def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
                  Endpoint(start_point + hit_param * direction, hit_face)]))
 
         if hit_face == simplex.T:
-            if not tet is geodesic.tet:
+            if tet is not geodesic.tet:
                 raise InsufficientPrecisionError(
                     "Tracing geodesic ended up in a different "
                     "tetrahedron than it started. "

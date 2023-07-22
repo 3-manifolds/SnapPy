@@ -16,6 +16,7 @@ def facet_stl(triangle):
         '  endfacet\n'
         ])
 
+
 def subdivide_triangles(triangles, num_subdivisions):
     if num_subdivisions == 0:
         for triangle in triangles:
@@ -33,6 +34,7 @@ def subdivide_triangles(triangles, num_subdivisions):
             yield triangle
     return
 
+
 def projection(triangle, cutoff_radius):
     ''' Return the projection of a point in the Klein model to the Poincare model. '''
     x, y, z = triangle
@@ -48,9 +50,10 @@ def klein_stl(face_dicts):
             yield (vertices[0], vertices[i+1], vertices[i+2])
     return
 
+
 def klein_cutout_stl(face_dicts, shrink_factor=0.9):
     ''' Yield triangles describing these faces after removing a fraction of the interior.
-    
+
     The fraction removed is given by shrink_factor. '''
     for face in face_dicts:
         vertices = face['vertices']
@@ -67,11 +70,13 @@ def klein_cutout_stl(face_dicts, shrink_factor=0.9):
             yield tuple(tuple(shrink_factor * coord for coord in point) for point in (vertices[i], new_vertices[(i+1) % len(vertices)], vertices[(i+1) % len(vertices)]))
     return
 
+
 def poincare_stl(face_dicts, num_subdivisions=5, cutoff_radius=0.9):
     ''' Yield the output of klein_stl(face_dicts, ...) after applying projection to every vertex produced. '''
     for triangle in subdivide_triangles(klein_stl(face_dicts), num_subdivisions):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
+
 
 def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     ''' Yield the output of klein_cutout_stl(face_dicts, ...) after applying projection to every vertex produced. '''
@@ -83,7 +88,7 @@ def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutof
 def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     """
     Yield the lines of an stl file corresponding to the solid given by face_dicts that is suitable for 3d printing.
-    
+
     Arguments can be given to modify the model produced:
 
     - model='klein' -- (alt. 'poincare') the model of HH^3 to use.

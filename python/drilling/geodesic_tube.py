@@ -1,16 +1,15 @@
 from . import constants
 from . import exceptions
 from . import epsilons
-from .line import distance_r13_lines, R13Line, R13LineWithMatrix
-from .geodesic_info import GeodesicInfo, LiftedTetrahedron
+from .geodesic_info import GeodesicInfo
 from .quotient_space import balance_end_points_of_line, ZQuotientLiftedTetrahedronSet
+from . import geometric_structure
 
 from ..hyperboloid import ( # type: ignore
     r13_dot,
-    o13_inverse,
-    time_r13_normalise,
-    space_r13_normalise,
-    distance_unit_time_r13_points)
+    o13_inverse)
+from ..tiling.line import distance_r13_lines, R13Line, R13LineWithMatrix
+from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore
 from ..math_basics import is_RealIntervalFieldElement # type: ignore
@@ -25,13 +24,6 @@ def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
     A GeodesicTube can only be built from an Mcomplex if add_r13_geometry
     and this function (add_structure_necessary_for_tube) was called.
 
-    This function adds R13Line objects for the edges of the tetrahedra.
-    It also adds a bounding plane for each edge of each face of each
-    tetrahedron. Such a bounding plane is perpendicular to the plane supporting
-    the face and intersects the plane in an edge of face. That is, the
-    bounding planes for a face cut out the triangle in the plane supporting
-    the face.
-
     This information is used to compute the distance (or at least a lower bound
     for the distance) of a hyperbolic line L to a (triangular) face of a
     tetrahedron.
@@ -41,15 +33,7 @@ def add_structures_necessary_for_tube(mcomplex : Mcomplex) -> None:
     closest to the line is on edge corresponding to the bounding plane.
     """
 
-    for tet in mcomplex.Tetrahedra:
-        tet.R13_edges = {
-            e: R13Line([tet.R13_vertices[simplex.Head[e]],
-                        tet.R13_vertices[simplex.Tail[e]]])
-            for e in simplex.OneSubsimplices }
-        tet.triangle_bounding_planes = {
-            f : { e: triangle_bounding_plane(tet, f, e)
-                  for e in _face_to_edges[f] }
-            for f in simplex.TwoSubsimplices }
+    geometric_structure.add_triangle_bounding_planes(mcomplex)
 
 class _PendingPiece:
     """
@@ -114,6 +98,8 @@ class _PendingPiece:
         return self._key < other._key
 
 # @dataclass
+
+
 class GeodesicTubePiece:
     """
     A class for the pieces produced by GeodesicTube to cover a tube T about
@@ -149,26 +135,26 @@ class GeodesicTubePiece:
         self.lifted_geodesic = lifted_geodesic
         self.lower_bound = lower_bound
 
+
 class GeodesicTube:
     """
     Computes all GeodesicPiece's needed to cover a tube about the
     given closed geodesic in the given manifold. The geodesic cannot be
     a core curve of a filled cusp.
-    
+
     A GeodesicTube is constructed from a triangulation with a suitable
     geometric structure and a suitable GeodesicInfo object.
 
     To add the necessary geometric structure to a triangulation, call
-    add_r13_geometry and add_structures_necessary_for_tube.
+    add_r13_geometry and .
 
     The GeodesicInfo object needs to be constructed with a line and
     GeodesicInfo.find_tet_or_core_curve be called on it.
-    
+
     Calling GeodesicInfo.add_pieces_for_radius will then add the
     necessary pieces to GeodesicInfo.pieces to cover the tube of the
     given radius.
     """
-
     def __init__(self, mcomplex : Mcomplex, geodesic : GeodesicInfo):
         self.mcomplex = mcomplex
 
@@ -294,9 +280,9 @@ class GeodesicTube:
         # Emit GeodesicTubePiece
         self.pieces.append(
             GeodesicTubePiece(
-                tet = tet,
-                lifted_geodesic = lifted_geodesic,
-                lower_bound = pending_piece.lower_bound))
+                tet=tet,
+                lifted_geodesic=lifted_geodesic,
+                lower_bound=pending_piece.lower_bound))
 
         # For all faces ...
         for f, new_tet in tet.Neighbor.items():
@@ -319,25 +305,13 @@ class GeodesicTube:
                         tet,
                         f,
                         self.mcomplex.verified),
-                    entry_cell = entry_face))
+                    entry_cell=entry_face))
 
-def make_r13_unit_tangent_vector(direction, point):
-    s = r13_dot(direction, point)
-    return space_r13_normalise(direction + s * point)
-
-def triangle_bounding_plane(tet, face, edge):
-    v = tet.R13_vertices[face - edge]
-    v0 = tet.R13_vertices[simplex.Head[edge]]
-    v1 = tet.R13_vertices[simplex.Tail[edge]]
-
-    m = time_r13_normalise(
-        v0 / -r13_dot(v0, v) + v1 / -r13_dot(v1, v))
-
-    return make_r13_unit_tangent_vector(m - v, m)
 
 _face_to_edges = { f : [ e for e in simplex.OneSubsimplices
                          if simplex.is_subset(e, f) ]
                    for f in simplex.TwoSubsimplices }
+
 
 def lower_bound_for_distance_line_to_tet_face(
         line, tet, face, verified):
@@ -377,11 +351,12 @@ def lower_bound_for_distance_line_to_tet_face(
 
         return RF(0)
 
+
 if __name__ == '__main__':
     from snappy import *
     from snappy.dev.endpoints import *
     M = Manifold("m015")
-    m = compute_mcomplex_with_R13_geometry(M, verified = True, bits_prec=100)
+    m = compute_mcomplex_with_R13_geometry(M, verified=True, bits_prec=100)
 
     g = GeodesicTube(m, 'b')
 

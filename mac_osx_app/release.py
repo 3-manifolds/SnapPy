@@ -137,20 +137,20 @@ def sign_app():
     identity = config['developer']['identity']
     codesign = ['codesign', '-v', '-s', identity, '--timestamp', '--entitlements', 'entitlement.plist',
                 '--options', 'runtime', '--force']
-    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
+    app = os.path.join('dist', 'SnapPy.app')
+    contents = os.path.join(app, 'Contents')
     resources = os.path.join(contents, 'Resources')
     python_exe = os.path.join(contents, 'MacOS', 'python')
-    app = os.path.join('dist', 'SnapPy.app')
 
     def sign(path):
         subprocess.run(codesign + [path])
 
-    subprocess.run(['codesign', '--remove-signature', python_exe])
     sign(python_exe)
     for dirpath, dirnames, filenames in os.walk(resources):
         for name in filenames:
             base, ext = os.path.splitext(name)
             if ext in ('.so', '.dylib'):
+                print('Signing', os.path.join(dirpath, name))
                 sign(os.path.join(dirpath, name))
     sign(app)
 

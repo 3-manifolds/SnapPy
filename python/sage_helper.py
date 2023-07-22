@@ -62,6 +62,7 @@ def sage_methods(obj):
             pass
     return ans
 
+
 # Used for doctesting
 _gui_status = {}
 
@@ -155,17 +156,19 @@ def print_results(module, results):
         else:
             root.update()
     print(module.__name__ + ':')
-    print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
+    print('   %s failures out of %s tests.' % (results.failed,
+                                               results.attempted))
+
 
 def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())
-    #full_extraglobals = dict(globs.items() + extraglobs.items())
+    # full_extraglobals = dict(globs.items() + extraglobs.items())
     full_extraglobals = globs.copy()
     full_extraglobals.update(extraglobs)
     failed, attempted = 0, 0
     for module in modules:
         if isinstance(module, types.ModuleType):
-            runner = doctest.DocTestRunner(checker = NumericOutputChecker(), verbose=verbose)
+            runner = doctest.DocTestRunner(checker=NumericOutputChecker(), verbose=verbose)
             for test in finder.find(module, extraglobs=full_extraglobals):
                 runner.run(test)
             result = runner.summarize()

@@ -13,6 +13,7 @@ import shutil
 ###############################################################################
 # functions
 
+
 def decomposition_from_magma(text):
 
     py_eval = processFileBase.get_py_eval(text)
@@ -23,7 +24,7 @@ def decomposition_from_magma(text):
     primary_decomposition = processFileBase.find_section(
         text, "PRIMARY=DECOMPOSITION")
     radical_decomposition = processFileBase.find_section(
-        text,  "RADICAL=DECOMPOSITION")
+        text, "RADICAL=DECOMPOSITION")
 
     if untyped_decomposition:
         decomposition = untyped_decomposition[0]
@@ -51,7 +52,7 @@ def decomposition_from_magma(text):
     if free_variables_section:
         free_variables = eval(free_variables_section[0])
     else:
-        free_variables = len(decomposition_components) * [ None ]
+        free_variables = len(decomposition_components) * [None]
 
     witnesses_section = processFileBase.find_section(
         text, "WITNESSES=FOR=COMPONENTS")
@@ -59,15 +60,15 @@ def decomposition_from_magma(text):
         witnesses_sections = processFileBase.find_section(
             witnesses_section[0], "WITNESSES")
     else:
-        witnesses_sections = len(decomposition_components) * [ "" ]
+        witnesses_sections = len(decomposition_components) * [""]
 
     genuses_section = processFileBase.find_section(
         text, "GENUSES=FOR=COMPONENTS")
     if genuses_section:
         genuses_sections = processFileBase.find_section(
-           genuses_section[0], "GENUS=FOR=COMPONENT")
+            genuses_section[0], "GENUS=FOR=COMPONENT")
     else:
-        genuses_sections = len(decomposition_components) * [ "" ]
+        genuses_sections = len(decomposition_components) * [""]
 
     def process_match(i, comp, free_vars, witnesses_txt, genus_txt):
 
@@ -101,6 +102,7 @@ def decomposition_from_magma(text):
                            free_variables,
                            witnesses_sections,
                            genuses_sections)) ])
+
 
 def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
                                 free_vars, witnesses, genus):
@@ -145,17 +147,17 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
 
     is_prime = (prime_str is None) or (prime_str.lower() == 'prime')
 
-    return  PtolemyVarietyPrimeIdealGroebnerBasis(
-        polys = polys,
-        term_order = term_order,
-        size = processFileBase.parse_int_or_empty(size_str),
-        dimension = dimension,
-        is_prime = is_prime,
-        free_variables = free_vars,
-        py_eval = py_eval,
-        manifold_thunk = manifold_thunk,
-        witnesses = witnesses,
-        genus = genus)
+    return PtolemyVarietyPrimeIdealGroebnerBasis(
+        polys=polys,
+        term_order=term_order,
+        size=processFileBase.parse_int_or_empty(size_str),
+        dimension=dimension,
+        is_prime=is_prime,
+        free_variables=free_vars,
+        py_eval=py_eval,
+        manifold_thunk=manifold_thunk,
+        witnesses=witnesses,
+        genus=genus)
 
 
 def triangulation_from_magma(text):
@@ -180,8 +182,8 @@ def contains_magma_output(text):
             "PRIMARY=DECOMPOSITION=BEGINS" in text or
             "RADICAL=DECOMPOSITION=BEGINS" in text)
 
-def solutions_from_magma_file(filename, numerical = False):
 
+def solutions_from_magma_file(filename, numerical=False):
     """
     Obsolete, use processFileDispatch.parse_solutions_from_file instead.
 
@@ -193,7 +195,8 @@ def solutions_from_magma_file(filename, numerical = False):
 
     return solutions_from_magma(open(filename).read(), numerical)
 
-def solutions_from_magma(output, numerical = False):
+
+def solutions_from_magma(output, numerical=False):
     """
     Obsolete, use processFileDispatch.parse_solutions instead.
 
@@ -204,7 +207,8 @@ def solutions_from_magma(output, numerical = False):
     """
 
     return decomposition_from_magma(output).solutions(
-        numerical = numerical)
+        numerical=numerical)
+
 
 def magma_executable():
     for name in ['magma', 'magma.exe']:
@@ -212,11 +216,11 @@ def magma_executable():
             return name
     return None
 
+
 def run_magma(content,
               filename_base, memory_limit, directory, verbose):
-
     """
-    call magma on the given content and 
+    call magma on the given content and
     """
 
     magma = magma_executable()
@@ -230,7 +234,7 @@ def run_magma(content,
     else:
         resolved_dir = tempfile.mkdtemp() + '/'
 
-    in_file  = resolved_dir + filename_base + '.magma'
+    in_file = resolved_dir + filename_base + '.magma'
     out_file = resolved_dir + filename_base + '.magma_out'
 
     if verbose:
@@ -251,7 +255,7 @@ def run_magma(content,
         print("Command:", cmd)
         print("Starting magma...")
 
-    retcode = subprocess.call(cmd, shell = True)
+    retcode = subprocess.call(cmd, shell=True)
 
     result = open(out_file, 'r').read()
 
@@ -263,6 +267,7 @@ def run_magma(content,
 
 ###############################################################################
 # magma test
+
 
 _magma_output_for_4_1__sl3 = """
 ==TRIANGULATION=BEGINS==
@@ -276,18 +281,18 @@ CS_known -0.0000000000000001
     torus   0.000000000000   0.000000000000
 
 2
-   1    1    1    1 
+   1    1    1    1
  0132 1302 1023 2031
-   0    0    0    0 
+   0    0    0    0
   0  0  0  0  0  0  1 -1  0  0  0  0  0  0  0  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  1  0 -1 -1  0  2 -1  0 -1  0  1  0  1 -1  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0.500000000000   0.866025403784
 
-   0    0    0    0 
+   0    0    0    0
  0132 1302 1023 2031
-   0    0    0    0 
+   0    0    0    0
   0  1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
   0  1 -2  1  1  0  0 -1  0  1  0 -1  0 -1  1  0
@@ -297,7 +302,7 @@ CS_known -0.0000000000000001
 
 ==TRIANGULATION=ENDS==
 PY=EVAL=SECTION=BEGINS=HERE
-{'variable_dict' : 
+{'variable_dict' :
      (lambda d, negation = (lambda x:-x): {
           'c_1020_0' : d['c_0012_1'],
           'c_1020_1' : d['1'],

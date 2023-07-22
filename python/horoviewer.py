@@ -8,18 +8,19 @@ import sys
 
 
 class HoroballViewer(ttk.Frame):
-    def __init__(self, master, nbhd=None, which_cusp=0, cutoff=None,
+    def __init__(self, parent, nbhd=None, which_cusp=0, cutoff=None,
                  title='Horoball Viewer',
-                 prefs={'cusp_horoballs' : True,
-                        'cusp_triangulation' : True,
-                        'cusp_ford_domain' : True,
-                        'cusp_labels' : True,
-                        'cusp_parallelogram' : True,
-                        'cusp_cutoff' : '0.1000'},
+                 settings={'cusp_horoballs' : True,
+                           'cusp_triangulation' : True,
+                           'cusp_ford_domain' : True,
+                           'cusp_labels' : True,
+                           'cusp_parallelogram' : True,
+                           'cusp_cutoff' : '0.1000'},
                  bgcolor=None,
                  main_window=None):
-        self.prefs = prefs
-        ttk.Frame.__init__(self, master)
+        self.settings = settings
+        ttk.Frame.__init__(self, parent)
+        self.parent = parent
         self.nbhd = nbhd
         self.empty = (self.nbhd is None)
         self.mouse_x = 0
@@ -27,7 +28,7 @@ class HoroballViewer(ttk.Frame):
         self.menubar = None
         self.main_window = main_window
         if cutoff is None:
-            self.cutoff = float(prefs['cusp_cutoff'])
+            self.cutoff = float(settings['cusp_cutoff'])
         else:
             self.cutoff = float(cutoff)
         self.which_cusp = which_cusp
@@ -39,15 +40,15 @@ class HoroballViewer(ttk.Frame):
         self.style = style = SnapPyStyle()
         self.bgcolor = bgcolor if bgcolor else style.groupBG
         self.pgram_var = pgram_var = Tk_.IntVar(self,
-            value=prefs['cusp_parallelogram'])
+            value=settings['cusp_parallelogram'])
         self.Ford_var = Ford_var = Tk_.IntVar(self,
-            value=prefs['cusp_ford_domain'])
+            value=settings['cusp_ford_domain'])
         self.tri_var = tri_var = Tk_.IntVar(self,
-            value=prefs['cusp_triangulation'])
+            value=settings['cusp_triangulation'])
         self.horo_var = horo_var = Tk_.IntVar(self,
-            value=prefs['cusp_horoballs'])
+            value=settings['cusp_horoballs'])
         self.label_var = label_var = Tk_.IntVar(self,
-            value=prefs['cusp_labels'])
+            value=settings['cusp_labels'])
         self.flip_var = flip_var = Tk_.BooleanVar(self)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
@@ -56,7 +57,7 @@ class HoroballViewer(ttk.Frame):
         self.bottomframe = bottomframe = ttk.Frame(self)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
             width=600, height=500, fovy=3.0, depth=1, double=True, swapinterval=0,
-            help = """
+            help="""
 Use the mouse to drag the scene relative to the fundamental parallelogram.
 
 Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps whom.
@@ -77,7 +78,7 @@ Use the View Options to select which components of the scene are drawn.
             widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
         cyglSetStandardLighting()
-        option_frame= ttk.Frame(top_frame)
+        option_frame = ttk.Frame(top_frame)
         view_button = ttk.Menubutton(option_frame, text='View Options')
         self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)
         view_menu.add_checkbutton(label='parallelogram', command=self.view_check,
@@ -93,13 +94,13 @@ Use the View Options to select which components of the scene are drawn.
         view_button.config(menu=view_menu)
         view_button.grid(row=0, column=0, columnspan=2, sticky=Tk_.W, padx=0, pady=0)
         flip_button = ttk.Checkbutton(option_frame, text='Flip',
-                                      variable = self.flip_var,
+                                      variable=self.flip_var,
                                       takefocus=False,
                                       command=self.flip)
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
         self.cutoff_label = ttk.Label(option_frame, text='Cutoff: ')
         self.cutoff_var = cutoff_var = Tk_.StringVar(self,
-            value='%.4f'%self.cutoff)
+            value='%.4f' % self.cutoff)
         self.cutoff_entry = ttk.Entry(option_frame, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
@@ -146,26 +147,26 @@ Use the View Options to select which components of the scene are drawn.
             horo_var, label_var, flipped=self.flip_var.get(), cutoff=self.cutoff,
             which_cusp=self.which_cusp,togl_widget=self.widget)
         self.widget.redraw_impl = self.scene.draw
-        if isinstance(master, Tk_.Toplevel):
-            master.config(menu=self.menubar)
+        if isinstance(parent, Tk_.Toplevel):
+            parent.config(menu=self.menubar)
             # hacks needed on Sierra
             self.after(20, self.configure_sliders)
             self.after(50, self.rebuild)
         else:
             self.configure_sliders()
 
-    def apply_prefs(self, prefs):
-        for key in self.prefs:
-            value = prefs.get(key, 'missing')
+    def apply_settings(self, settings):
+        for key in self.settings:
+            value = settings.get(key, 'missing')
             if value != 'missing':
-                self.prefs[key] = value
-        self.pgram_var.set(prefs['cusp_parallelogram'])
-        self.Ford_var.set(prefs['cusp_ford_domain'])
-        self.tri_var.set(prefs['cusp_triangulation'])
-        self.horo_var.set(prefs['cusp_horoballs'])
-        self.label_var.set(prefs['cusp_labels'])
-        self.cutoff = float(prefs['cusp_cutoff'])
-        self.cutoff_var.set('%.4f'%self.cutoff)
+                self.settings[key] = value
+        self.pgram_var.set(settings['cusp_parallelogram'])
+        self.Ford_var.set(settings['cusp_ford_domain'])
+        self.tri_var.set(settings['cusp_triangulation'])
+        self.horo_var.set(settings['cusp_horoballs'])
+        self.label_var.set(settings['cusp_labels'])
+        self.cutoff = float(settings['cusp_cutoff'])
+        self.cutoff_var.set('%.4f' % self.cutoff)
         self.rebuild()
 
     def view_check(self):
@@ -207,7 +208,7 @@ Use the View Options to select which components of the scene are drawn.
                 tie_button.grid(row=n+1, column=1)
                 self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(nbhd.original_index(n))
-            self.cusp_colors.append('#%.3x%.3x%.3x'%(
+            self.cusp_colors.append('#%.3x%.3x%.3x' % (
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self))
             self.slider_frames.append(Tk_.Frame(self.slider_frame, borderwidth=0))
@@ -230,7 +231,7 @@ Use the View Options to select which components of the scene are drawn.
             volume_label.grid(row=n+1, column=3, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
 
-    def new_scene (self, new_nbhd):
+    def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
         self.empty = (self.nbhd is None)
         self.set_ties()
@@ -295,7 +296,7 @@ Use the View Options to select which components of the scene are drawn.
             # print stop, length, disp position
             self.cusp_sliders[n].set(position)
             self.slider_frames[n].config(background=stopper_color)
-            self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
+            self.volume_labels[n].config(text='%.4f' % nbhd.volume(n))
             self.cusp_sliders[n].config(length=length,
                                         command=self.update_radius)
         self.update_idletasks()
@@ -312,17 +313,17 @@ Use the View Options to select which components of the scene are drawn.
 
     # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
-        help = Button(self.top_frame, text = 'Help', width = 4,
+        help = Button(self.top_frame, text='Help', width=4,
                       borderwidth=0, highlightthickness=0,
-                      background=self.bgcolor, command = self.widget.help)
+                      background=self.bgcolor, command=self.widget.help)
         help.grid(row=0, column=5, sticky=E, pady=3)
         self.top_frame.columnconfigure(5, weight=1)
 
-  # Subclasses may override this to provide menus.
+    # Subclasses may override this to provide menus.
     def build_menus(self):
         pass
 
-  # Subclasses may override this to update menus, e.g. when embedded in a larger window.
+    # Subclasses may override this to update menus, e.g. when embedded in a larger window.
     def update_menus(self, menubar):
         pass
 

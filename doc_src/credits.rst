@@ -20,7 +20,10 @@ Additional contributions:
 
 * Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.
 
-* Malik Obeidin, improvements to Spherogram and the manifold databases.
+* Malik Obeidin, improvements to Spherogram and the manifold
+  databases.
+
+* Malik Obeidin and Cameron Rudd, exterior to link diagram code.
 
 * Jose Sanchez, 3D printing code.
 
@@ -35,6 +38,8 @@ Additional contributions:
 
 *  `QD quad-double library
    <http://crd-legacy.lbl.gov/~dhbailey/mpdist/>`_.
+
+* Frédéric Chapoton, code cleanup and linting.
 
 * Others, please let Marc or Nathan know if we've forgotten you. 
 

@@ -52,18 +52,15 @@ cdef int_to_gen_string(int g, int num_generators, verbose_form):
             ans = 'x' if g > 0 else 'X'
             return ans + '%d' % abs(g)
 
+
 def _letter_seperator(verbose_form):
-    if verbose_form:
-        return '*'
-    else:
-        return ''
+    return '*' if verbose_form else ''
+
 
 cdef c_word_as_string(int *word, int num_generators, verbose_form):
     cdef int n = 0
-    cdef int letter
     word_list = []
     while word[n] != 0:
-        letter = word[n]
         word_list.append(
             int_to_gen_string(word[n], num_generators, verbose_form))
         n += 1
@@ -103,10 +100,10 @@ cdef class CFundamentalGroup():
     cdef readonly num_cusps
 
     def __cinit__(self, Triangulation triangulation,
-                  simplify_presentation = True,
-                  fillings_may_affect_generators = True,
-                  minimize_number_of_generators = True,
-                  try_hard_to_shorten_relators = True):
+                  simplify_presentation=True,
+                  fillings_may_affect_generators=True,
+                  minimize_number_of_generators=True,
+                  try_hard_to_shorten_relators=True):
         if triangulation.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         copy_triangulation(triangulation.c_triangulation,
@@ -147,10 +144,15 @@ cdef class CFundamentalGroup():
         """
         return fg_get_num_orig_gens(self.c_group_presentation)
 
-    def original_generators(self, verbose_form=False):
+    def original_generators(self, verbose_form=False, as_int_list=False):
         """
         Return the original geometric generators (before
         simplification) in terms of the current generators.
+
+        >>> M = Manifold('v0000')
+        >>> G = M.fundamental_group()
+        >>> G.original_generators(as_int_list=True)
+        [[1], [-1, -2, 1, 2], [-1, 2], [-2, -1, 2], [2]]
         """
         cdef int n
         cdef int *gen
@@ -159,12 +161,15 @@ cdef class CFundamentalGroup():
         orig_gens = []
         for n from 0 <= n < num_orig_gens:
             gen = fg_get_original_generator(self.c_group_presentation, n)
-            word = c_word_as_string(gen, num_gen, verbose_form)
+            if as_int_list:
+                word = c_word_as_int_list(gen)
+            else:
+                word = c_word_as_string(gen, num_gen, verbose_form)
             orig_gens.append(word)
             fg_free_relation(gen)
         return orig_gens
 
-    def generators_in_originals(self, verbose_form=False, raw_form =False):
+    def generators_in_originals(self, verbose_form=False, raw_form=False, as_int_list=False):
         """
         Return the current generators in terms of the original
         geometric generators. Note that by default fundamental_group()
@@ -174,7 +179,13 @@ cdef class CFundamentalGroup():
         instructions for expressing the current generators in terms of
         the original ones.  This is sometimes much more concise, though
         the format is somewhat obscure.  See the source code of this
-        function in SnapPy.pyx for details.
+        function in fundamental_group.pyx for details.
+
+        >>> M = Manifold('K7_1')
+        >>> G = M.fundamental_group()
+        >>> G.generators_in_originals()   #doctest: +NORMALIZE_WHITESPACE
+        ['DBcACbABcaCbDBcACbABcaCbACbaBcaCbd',
+         'DBcACbABcaCbDBcACbABcaCbCbDBcACbABcaBcACbaBcaCbdACbaBcaCbdBcBcACbaBcaCbd']
         """
         moves = self._word_moves()
         if raw_form:
@@ -191,10 +202,9 @@ cdef class CFundamentalGroup():
                 # word is the expression of the new generator in terms
                 # of the old ones
                 word, moves = moves[:n], moves[n+1:]
-                words.append( reduce_list_word(''.join(
-                    [words[g] if g > 0 else inverse_list_word(words[-g])
-                     for g in word]
-                    )))
+                parts = [words[g] if g > 0 else inverse_list_word(words[-g])
+                         for g in word]
+                words.append(reduce_list_word(sum(parts, [])))
             else:
                 b = moves.pop(0)
                 if a == b:  # generator removed
@@ -206,13 +216,16 @@ cdef class CFundamentalGroup():
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
                         B = inverse_list_word(B)
-                    words[abs(a)] = reduce_list_word(  A+B if a > 0 else B+A )
+                    words[abs(a)] = reduce_list_word(A+B if a > 0 else B+A)
 
-        return [
-            _letter_seperator(verbose_form).join(
-                int_to_gen_string(g, n, verbose_form)
-                for g in word)
-            for word in words[1:] ]
+        if as_int_list:
+            return words[1:]
+        else:
+            n = self.num_original_generators()
+            return [_letter_seperator(verbose_form).join(
+                            int_to_gen_string(g, n, verbose_form)
+                            for g in word)
+                    for word in words[1:]]
 
     def _word_moves(self):
         cdef int *c_moves
@@ -262,10 +275,10 @@ cdef class CFundamentalGroup():
         5
         """
         n = self.num_generators()
-        return [ int_to_gen_string(i, n, verbose_form = False)
+        return [ int_to_gen_string(i, n, verbose_form=False)
                  for i in range(1, 1+n) ]
 
-    def relators(self, verbose_form = False, as_int_list = False):
+    def relators(self, verbose_form = False, as_int_list=False):
         """
         Return a list of words representing the relators in the presentation.
 
@@ -288,7 +301,7 @@ cdef class CFundamentalGroup():
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp=0, as_int_list = False):
+    def meridian(self, int which_cusp=0, as_int_list=False):
         """
         Returns a word representing a conjugate of the current
         meridian for the given cusp.  Guaranteed to commute with the
@@ -313,7 +326,7 @@ cdef class CFundamentalGroup():
                self.num_generators(),
                verbose_form = False)
 
-    def longitude(self, int which_cusp=0, as_int_list = False):
+    def longitude(self, int which_cusp=0, as_int_list=False):
         """
         Returns a word representing a conjugate of the current
         longitude for the given cusp.  Guaranteed to commute with the
@@ -339,7 +352,7 @@ cdef class CFundamentalGroup():
                self.num_generators(),
                verbose_form = False)
 
-    def peripheral_curves(self, as_int_list = False):
+    def peripheral_curves(self, as_int_list=False):
         """
         Returns a list of meridian-longitude pairs for all cusps.
 
@@ -356,7 +369,7 @@ cdef class CFundamentalGroup():
         Returns a string which will define this group within MAGMA.
         """
         return ('Group<' + ','.join(self.generators()) + '|' +
-                ', '.join(self.relators(verbose_form = True)) + '>')
+                ', '.join(self.relators(verbose_form=True)) + '>')
 
     def gap_string(self):
         """
@@ -376,7 +389,7 @@ cdef class CFundamentalGroup():
         """
         gens = ', '.join(self.generators())
         gen_names = ', '.join(['"' + x + '"' for x in self.generators()])
-        relators = ', '.join(self.relators(verbose_form = True))
+        relators = ', '.join(self.relators(verbose_form=True))
         assignments = ''.join(
             ['%s := F.%d; ' % (x, i+1)
              for (i, x) in enumerate(self.generators())]

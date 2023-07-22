@@ -1,4 +1,4 @@
-""" 
+"""
 Computing the defining equations of the SL(2, C) character variety
 in terms of the trace coordinates.
 
@@ -11,6 +11,7 @@ from ..pari import pari
 import string
 from itertools import combinations, combinations_with_replacement, product
 
+
 def cycle_sort(l):
     """
     Utility function which takes a list l and returns the minimum
@@ -19,7 +20,7 @@ def cycle_sort(l):
     s = l
     for i in range(0,len(l)):
         temp = l[i:] + l[0:i]
-        if temp<s:
+        if temp < s:
             s = temp
     return s
 
@@ -70,6 +71,7 @@ class TracePolynomialRing():
 
     def __call__(self, poly):
         return pari(poly)
+
 
 class Word():
     """
@@ -180,6 +182,7 @@ class Word():
         if len(s) <= 3 and s.islower():
             return pari("T"+s)
 
+
 def tr(w):
     """Shortcut for the SL2_trace method of a word object"""
     return w.SL2_trace()
@@ -218,6 +221,7 @@ def mult_traceless(a1,a2,a3=None):
                 - pari("1/2")*tr(a2)*tr(a1*a3) - pari("1/2")*tr(a1)*tr(a2*a3)
                 + tr(a1*a2*a3))
 
+
 def s3(a1,a2,a3):
     """
     Accessory function to sum (with sign) "mult_traceless" over all
@@ -227,11 +231,13 @@ def s3(a1,a2,a3):
             + mult_traceless(a3,a1,a2) - mult_traceless(a1,a3,a2)
             - mult_traceless(a3,a2,a1) - mult_traceless(a2,a1,a3))
 
+
 def det(M):
     """Determinant of a 3x3 matrix"""
     return (M[0][0]*M[1][1]*M[2][2] + M[0][1]*M[1][2]*M[2][0]
             + M[1][0]*M[2][1]*M[0][2] - M[0][2]*M[1][1]*M[2][0]
             - M[0][1]*M[1][0]*M[2][2] - M[0][0]*M[1][2]*M[2][1])
+
 
 def rel1(i):
     """Generates type 1 relations for generators (words) i1,i2,i3 j1,j2,j3"""
@@ -241,12 +247,14 @@ def rel1(i):
          [mult_traceless(i2,j1),mult_traceless(i2,j2),mult_traceless(i2,j3)],
          [mult_traceless(i3,j1),mult_traceless(i3,j2),mult_traceless(i3,j3)]]))
 
+
 def rel2(j):
     """Generates type 2 relations for generators (words) i,p0,p1,p2,p3"""
     [i,[p0,p1,p2,p3]] = j
     return (mult_traceless(i,p0)*s3(p1,p2,p3)
             - mult_traceless(i,p1)*s3(p0,p2,p3)
             + mult_traceless(i,p2)*s3(p0,p1,p3) - mult_traceless(i,p3)*s3(p0,p1,p2))
+
 
 def rels_from_rel(R, G):
     """
@@ -321,19 +329,19 @@ def character_variety(gens, rels=None):
     rels = [Word(R) for R in rels]
     ring = TracePolynomialRing([g.letters for g in gens])
 
-    #Type 1
+    # Type 1
     triples = list(combinations(gens,3))
     pairsoftriples = list(combinations_with_replacement(triples,2))
 
     t1 = [rel1(i) for i in pairsoftriples]
 
-    #Type 2
+    # Type 2
     fours = list(combinations(gens,4))
     indices = product(gens,fours)
 
     t2 = [rel2(j) for j in indices]
 
-    #Relations from relations
+    # Relations from relations
     r = []
     for R in rels:
         r += rels_from_rel(R,gens)

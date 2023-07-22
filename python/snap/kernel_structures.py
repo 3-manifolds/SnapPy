@@ -6,12 +6,14 @@ Infinity = "Infinity"
 __all__ = ['Infinity',
            'TransferKernelStructuresEngine']
 
+
 def _clean_ideal_vertices(vertices):
     """
     The SnapPea kernel gives us a large number for infinity.
     Convert it to infinity.
     """
     return [ x if abs(x) < 10.0E20 else Infinity for x in vertices]
+
 
 class TransferKernelStructuresEngine(McomplexEngine):
     def __init__(self, mcomplex, snappyTriangulation):
@@ -28,7 +30,7 @@ class TransferKernelStructuresEngine(McomplexEngine):
         """
 
         for tet, z in zip(self.mcomplex.Tetrahedra, shapes):
-            zp  = 1 / (1 - z)
+            zp = 1 / (1 - z)
             zpp = (z - 1) / z
             tet.ShapeParameters = {
                 simplex.E01: z,

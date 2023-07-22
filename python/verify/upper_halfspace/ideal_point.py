@@ -1,7 +1,7 @@
 """
 We have two representations of a point in the boundary of the upper half space model
 **H**\\ :sup:`3`:
- 
+
   - :class:`ProjectivePoint` encapsulate it as an element in **CP**\\ :sup:`1`. It uses intervals
     and can thus represent a neighborhood of infinity.
   - as a one point compactification of **C**.
@@ -37,6 +37,7 @@ __all__ = [
 # This should come from snappy.snap.transferKernelStructuresEngine.
 Infinity = 'Infinity'
 
+
 def apply_Moebius(m, z):
     """
     Applies the matrix m to the ideal point z::
@@ -61,6 +62,7 @@ def apply_Moebius(m, z):
         return m[0,0] / m[1,0]
     return (m[0,0] * z + m[0,1]) / (m[1,0] * z + m[1,1])
 
+
 def cross_ratio(z0, z1, z2, z3):
     """
     Computes the cross ratio (according to SnapPea conventions) of
@@ -75,6 +77,7 @@ def cross_ratio(z0, z1, z2, z3):
     return ((_diff_1_if_inf(z2, z0) * _diff_1_if_inf(z3, z1)) /
             (_diff_1_if_inf(z2, z1) * _diff_1_if_inf(z3, z0)))
 
+
 def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
     """
     The inputs are a list of three IdealPoint's [a, b, c] and an element
@@ -84,10 +87,10 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
     from c perpendicular to the side a b. Call the intersection of the line
     with the side a b the midpoint. This function returns this point moved
     towards a by hyperbolic distance log(offset)::
-    
+
         sage: from sage.all import CIF, RIF
         sage: compute_midpoint_of_triangle_edge_with_offset( # doctest: +NUMERIC12
-        ...       [ CIF(0), Infinity, CIF(1) ], RIF(5.0)) 
+        ...       [ CIF(0), Infinity, CIF(1) ], RIF(5.0))
         FinitePoint(0, 0.2000000000000000?)
 
     """
@@ -110,11 +113,12 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
 
     return _translate(transformedMidpoint, inv_sl_matrix)
 
+
 def compute_midpoint_two_horospheres_from_triangle(
     idealPoints, intersectionLengths):
 
     a, b, c = idealPoints
-    la, lb  = intersectionLengths
+    la, lb = intersectionLengths
 
     if a == Infinity:
         return _compute_midpoint_helper(b, c, (lb / la).sqrt())
@@ -128,6 +132,7 @@ def compute_midpoint_two_horospheres_from_triangle(
     transformedMidpoint = _compute_midpoint_helper(b, c, (lb / la).sqrt())
 
     return _translate(transformedMidpoint, inv_sl_matrix)
+
 
 def compute_incenter_of_triangle(idealPoints):
     """
@@ -147,11 +152,12 @@ def compute_incenter_of_triangle(idealPoints):
     transformedIdealPoints, inv_sl_matrix = (
         _transform_points_to_make_one_infinity_and_inv_sl_matrix(idealPoints))
 
-    transformedInCenter =(
+    transformedInCenter = (
         _compute_incenter_of_triangle_with_one_point_at_infinity(
             transformedIdealPoints))
 
     return _translate(transformedInCenter, inv_sl_matrix)
+
 
 def compute_inradius_and_incenter(idealPoints):
     """
@@ -179,6 +185,7 @@ def compute_inradius_and_incenter(idealPoints):
 
     return inradius, _translate(transformedInCenter, inv_sl_matrix)
 
+
 def Euclidean_height_of_hyperbolic_triangle(idealPoints):
     """
     Computes the Euclidean height of the hyperbolic triangle spanned by three
@@ -191,10 +198,10 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
         sage: z1 = CIF(1)
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, Infinity])
         [+infinity .. +infinity]
-        
+
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, CIF(0.5, 0.8)]) # doctest: +NUMERIC12
         0.556250000000000?
-        
+
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, CIF(10, 0.001)]) # doctest: +NUMERIC12
         5.000000025000000?
 
@@ -218,7 +225,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
             return lengths[i] / 2
 
     # a + b + c
-    length_total   = sum(lengths)
+    length_total = sum(lengths)
     # a * b * c
     length_product = lengths[0] * lengths[1] * lengths[2]
 
@@ -236,6 +243,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
 #
 # Various helper functions
 
+
 def _transform_points_to_make_one_infinity_and_inv_sl_matrix(idealPoints):
     """
     Returns a pair (transformedIdealPoints, matrix) where matrix has determinant
@@ -251,12 +259,13 @@ def _transform_points_to_make_one_infinity_and_inv_sl_matrix(idealPoints):
     return _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(
         idealPoints)
 
+
 def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
 
     # Determine the matrix
     z = idealPoints[0]
     CIF = z.parent()
-    gl_matrix = matrix(CIF, [[ 0,  1], [ 1, -z]])
+    gl_matrix = matrix(CIF, [[ 0, 1], [ 1, -z]])
     sl_matrix = CIF(sage.all.I) * gl_matrix
     inv_sl_matrix = _adjoint2(sl_matrix)
 
@@ -264,6 +273,7 @@ def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
     return (
         [ apply_Moebius(gl_matrix, u) for u in idealPoints[1:] ],
         inv_sl_matrix)
+
 
 def _translate(finitePoint, sl_matrix):
     """
@@ -274,14 +284,17 @@ def _translate(finitePoint, sl_matrix):
         return finitePoint.translate_PSL(sl_matrix)
     return finitePoint
 
+
 def _compute_midpoint_helper(b, c, offset):
     height = abs(c - b) * offset
     return FinitePoint(b, height)
+
 
 def _compute_incenter_of_triangle_with_one_point_at_infinity(nonInfPoints):
     a, b = nonInfPoints
     RIF = a.real().parent()
     return FinitePoint((a + b) / 2, abs(a - b) * RIF(3).sqrt() / 2)
+
 
 def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     """
@@ -300,7 +313,7 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     lengths = [ abs(nonInfPoints[(i+2) % 3] - nonInfPoints[(i+1) % 3])
                 for i in range(3) ]
     # a + b + c
-    length_total   = sum(lengths)
+    length_total = sum(lengths)
     # a * b * c
     length_product = lengths[0] * lengths[1] * lengths[2]
 
@@ -313,8 +326,8 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # Heron's formula gives us the area as of the Euclidean triangle as
     # A = sqrt(length_total * terms_product / 16) = r * length_total / 2
     # Thus, we can compute the inradius r as:
-    inRadiusSqr  = terms_product / length_total / 4
-    inRadius     = inRadiusSqr.sqrt()
+    inRadiusSqr = terms_product / length_total / 4
+    inRadius = inRadiusSqr.sqrt()
 
     # The circumradius R of the Euclidean triangle is given by
     # a * b * c / (4 * A), so we can compute it as:
@@ -331,25 +344,26 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # R. The other leg of the right triangle which is the Euclidean height h
     # of the Euclidean center of the inscribed sphere is given by Pythagoras
     # h^2 + d^2 = (r + R)^2, so h = r^2 + 4 * r * R
-    eHeightSqr   = inRadiusSqr + 4 * inRadius * circumRadius
-    eHeight      = eHeightSqr.sqrt()
+    eHeightSqr = inRadiusSqr + 4 * inRadius * circumRadius
+    eHeight = eHeightSqr.sqrt()
 
     # Next, we compute the Euclidean height of hyperbolic center of the
     # inscribed sphere
     # We use the geometric mean of the Euclidean heights of the lowest and
     # highest point of the inscribed sphere
     # sqrt( (h + r) * (h - r))
-    height       = ( eHeightSqr - inRadiusSqr ).sqrt()
+    height = ( eHeightSqr - inRadiusSqr ).sqrt()
 
     # Taking the logarithm of the ratio of these two highest gives the
     # hyperbolic diameter of the inscribed sphere.
-    radius       = ( (eHeight + inRadius) / (eHeight - inRadius) ).log() / 2
+    radius = ( (eHeight + inRadius) / (eHeight - inRadius) ).log() / 2
 
     # The barycentric coordinates of the circumcenter are simply a : b : c.
     incenter = sum([ pt * l
                      for pt, l in zip(nonInfPoints, lengths)]) / length_total
 
     return radius, FinitePoint(incenter, height)
+
 
 def _adjoint2(m):
     """
@@ -359,6 +373,7 @@ def _adjoint2(m):
 
     return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
+
 def _diff_1_if_inf(a, b):
     if a == Infinity or b == Infinity:
         return 1
@@ -367,6 +382,7 @@ def _diff_1_if_inf(a, b):
 ################################################################################
 #
 # TESTING
+
 
 class _IdealPointTester():
 

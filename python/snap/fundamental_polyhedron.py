@@ -19,10 +19,11 @@ _VerticesInFace = {
     F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
     for F in simplex.TwoSubsimplices }
 
+
 class FundamentalPolyhedronEngine(McomplexEngine):
     @staticmethod
     def from_manifold_and_shapes(
-        manifold, shapes, normalize_matrices = False, match_kernel = True):
+        manifold, shapes, normalize_matrices=False, match_kernel=True):
         """
         Given a SnapPy.Manifold and shapes (which can be numbers or intervals),
         create a t3mlite.Mcomplex for the fundamental polyhedron that the
@@ -108,7 +109,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         t.add_shapes(shapes)
         t.choose_and_transfer_generators(
-            compute_corners = True, centroid_at_origin = False)
+            compute_corners=True, centroid_at_origin=False)
 
         f.unglue()
 
@@ -119,7 +120,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         f.visit_tetrahedra_to_compute_vertices(
             m.ChooseGenInitialTet, init_verts)
-        f.compute_matrices(normalize_matrices = normalize_matrices)
+        f.compute_matrices(normalize_matrices=normalize_matrices)
 
         return f
 
@@ -278,7 +279,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         raise Exception(
             "Could not match vertices to vertices from SnapPea kernel")
 
-    def compute_matrices(self, normalize_matrices = False):
+    def compute_matrices(self, normalize_matrices=False):
         """
         Assuming positions were assigned to the vertices, adds
         GeneratorMatrices to the Mcomplex which assigns a matrix to each
@@ -364,6 +365,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         else:
             return result
 
+
 def _diff_to_kernel(value, snappeaValue):
     """
     The SnapPea kernel will always give us a number, but we might deal
@@ -374,14 +376,17 @@ def _diff_to_kernel(value, snappeaValue):
     CF = value.parent()
     return value - CF(snappeaValue)
 
-def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
+
+def _is_number_close_to_kernel(value, snappeaValue, error=10**-6):
     CF = value.parent()
     return abs(_diff_to_kernel(value, snappeaValue)) < CF(error)
+
 
 def _is_vertex_close_to_kernel(vertex, snappeaVertex):
     if vertex == Infinity or snappeaVertex == Infinity:
         return vertex == snappeaVertex
     return _is_number_close_to_kernel(vertex, snappeaVertex)
+
 
 def _are_vertices_close_to_kernel(verts, snappeaVerts):
     for key, vert in verts.items():
@@ -390,10 +395,12 @@ def _are_vertices_close_to_kernel(verts, snappeaVerts):
             return False
     return True
 
+
 _RemainingFace = {  (V0, V1): V3, (V0, V2): V1, (V0, V3): V2,
                     (V1, V0): V2, (V1, V2): V3, (V1, V3): V0,
                     (V2, V0): V3, (V2, V1): V0, (V2, V3): V1,
                     (V3, V0): V1, (V3, V1): V2, (V3, V2): V0}
+
 
 def _compute_fourth_corner(T):
     v = 4 * [ None ]
@@ -410,7 +417,7 @@ def _compute_fourth_corner(T):
 
     cross_ratio = T.ShapeParameters[ v[0] | v[1] ]
     if z[0] == Infinity:
-        z[3] = z[1] + cross_ratio * (z[2]  - z[1])
+        z[3] = z[1] + cross_ratio * (z[2] - z[1])
     else:
         diff20 = z[2] - z[0]
         diff21 = z[2] - z[1]
@@ -422,6 +429,7 @@ def _compute_fourth_corner(T):
             z[3] = numerator/denominator
 
     T.Class[missing_corner].IdealPoint = z[3]
+
 
 def _normalize_points(a, b):
     """
@@ -448,6 +456,7 @@ def _normalize_points(a, b):
     a.reverse(), b.reverse()
     return a, b
 
+
 def _matrix_taking_triple_to_triple(a, b):
     """
     To quote Jeff:
@@ -462,7 +471,6 @@ def _matrix_taking_triple_to_triple(a, b):
 
         k = [(b2-b0)/(b2-b1)] * [(a2-a1)/(a2-a0)]
     """
-
     # Let's make it so that a[0], a[1], and b[0] are never infinite
 
     (a0, a1, a2), (b0, b1, b2) = _normalize_points(a,b)
@@ -472,23 +480,22 @@ def _matrix_taking_triple_to_triple(a, b):
     if b1 == Infinity:
         kb, b1kb = 0, -(b2 - b0)
     else:
-        kb =  (b2 - b0)/(b2 - b1) if b2 != Infinity else 1
+        kb = (b2 - b0)/(b2 - b1) if b2 != Infinity else 1
         b1kb = b1 * kb
 
-    k = kb*ka
+    k = kb * ka
 
-    A = matrix( [  ( b1kb * ka - b0,   b0*a1 - a0*b1kb*ka),
-                   (k - 1, a1 - k*a0)])
+    return matrix([(b1kb * ka - b0, b0 * a1 - a0 * b1kb * ka),
+                   (k - 1, a1 - k * a0)])
 
-    return A
 
 def _adjoint2(m):
     """
     Sage matrix.adjoint() produces an unnecessary large interval for
     ComplexIntervalField entries.
     """
+    return matrix([[m[1, 1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
-    return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
 def _perform_word_moves(matrices, G):
     mats = [ None ] + matrices
@@ -504,9 +511,9 @@ def _perform_word_moves(matrices, G):
             if a == b:  # generator removed
                 mats[a] = mats[-1]
                 mats = mats[:-1]
-            elif a == -b: # invert generator
+            elif a == -b:  # invert generator
                 mats[a] = _adjoint2(mats[a])
-            else: #handle slide
+            else:  # handle slide
                 A, B = mats[abs(a)], mats[abs(b)]
                 if a*b < 0:
                     B = _adjoint2(B)
@@ -514,13 +521,15 @@ def _perform_word_moves(matrices, G):
 
     return mats[1 : G.num_generators() + 1]
 
+
 def _matrix_L1_distance_to_kernel(m, snappeaM):
     return sum([ abs(_diff_to_kernel(m[i,j], snappeaM[i,j]))
                  for i in range(2)
                  for j in range(2)])
 
+
 def _negate_matrix_to_match_kernel(m, snappeaM):
-    diff_plus  = _matrix_L1_distance_to_kernel(m,  snappeaM)
+    diff_plus = _matrix_L1_distance_to_kernel(m, snappeaM)
 
     diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 
@@ -531,9 +540,10 @@ def _negate_matrix_to_match_kernel(m, snappeaM):
     # choice that the SnapPea kernel made.
 
     if diff_plus < diff_minus:
-        return  m
+        return m
     else:
         return -m
+
 
 def _negate_matrices_to_match_kernel(matrices, G):
     """

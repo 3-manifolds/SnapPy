@@ -9,29 +9,31 @@ from IPython.core.autocall import IPyAutocall
 
 import snappy
 from .gui import *
+from tkinter.messagebox import askyesno
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
-ansi_colors =  {'0;30m': 'Black',
-                '0;31m': 'Red',
-                '0;32m': 'Green',
-                '0;33m': 'Brown',
-                '0;34m': 'Blue',
-                '0;35m': 'Purple',
-                '0;36m': 'Cyan',
-                '0;37m': 'LightGray',
-                '1;30m': 'Black', #'DarkGray',
-                '1;31m': 'DarkRed',
-                '1;32m': 'SeaGreen',
-                '1;33m': 'Yellow',
-                '1;34m': 'LightBlue',
-                '1;35m': 'MediumPurple',
-                '1;36m': 'LightCyan',
-                '1;37m': 'White'}
+ansi_colors = {'0;30m': 'Black',
+               '0;31m': 'Red',
+               '0;32m': 'Green',
+               '0;33m': 'Brown',
+               '0;34m': 'Blue',
+               '0;35m': 'Purple',
+               '0;36m': 'Cyan',
+               '0;37m': 'LightGray',
+               '1;30m': 'Black',  # 'DarkGray',
+               '1;31m': 'DarkRed',
+               '1;32m': 'SeaGreen',
+               '1;33m': 'Yellow',
+               '1;34m': 'LightBlue',
+               '1;35m': 'MediumPurple',
+               '1;36m': 'LightCyan',
+               '1;37m': 'White'}
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
+
 
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
@@ -47,6 +49,7 @@ class Tk(Tk_.Tk):
 #  Some ideas for the TkTerm class were borrowed from code written by
 #  Eitan Isaacson, IBM Corp.
 
+
 class TkTerm:
     """
     A Tkinter terminal window that runs an IPython shell.  This class
@@ -59,8 +62,8 @@ class TkTerm:
             io.stdout = sys.stdout = self
         else:
             self.window = window = Tk(self.report_callback_exception)
-            self.encoding = sys.stdout.encoding
-            self.saved_io = (sys.stdout, sys.stderr)
+            # self.encoding = sys.stdout.encoding
+            # self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         self._input_buffer = ''
         self._current_indent = 0
@@ -92,6 +95,7 @@ class TkTerm:
         text.bind('<KeyPress>', self.handle_keypress)
         text.bind('<KeyRelease>', self.handle_keyrelease)
         text.bind('<Return>', self.handle_return)
+        text.bind('<Shift-Return>', self.handle_shift_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
@@ -158,7 +162,7 @@ class TkTerm:
             self.banner = shell.banner1
         else:
             cprt = 'Type "copyright", "credits" or "license" for more information.'
-            self.banner = "Python %s on %s\n%s\n(%s)\n" %(
+            self.banner = "Python %s on %s\n%s\n(%s)\n" % (
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
@@ -172,7 +176,11 @@ class TkTerm:
         self.showing_traceback = False
         self.closed = False
         self._saved_index = Tk_.END
-
+        # This flag is set to prevent quitting the app.
+        self.blockers = {}
+        self.can_quit = True
+        self.close_callback = lambda :None
+        
     # Emulate a ListedWindow.  We are listed, even though we are unique.
     def bring_to_front(self):
         self.window.deiconify()
@@ -195,7 +203,7 @@ class TkTerm:
         traceback = '\n' + self.IP.InteractiveTB.stb2text(stb)
         if etype == KeyboardInterrupt:
             self.write('KeyboardInterrupt: ', style='msg')
-            self.write('%s'%evalue)
+            self.write('%s' % evalue)
         else:
             self.write(traceback)
         self.reset()
@@ -256,9 +264,32 @@ class TkTerm:
         text.tag_config('OutPrompt', foreground='#cc0000', font=normal_font)
         text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_font)
 
+    def add_blocker(self, window, message):
+        self.blockers[window] = message
+
+    def remove_blocker(self, window):
+        self.blockers.pop(window)
+
     def close(self, event=None):
-        self.window.quit()
-        self.closed = True
+        can_quit = True
+        topmost = None
+        for blocker in self.blockers:
+            if blocker.attributes('-topmost'):
+                topmost = blocker
+                blocker.attributes('-topmost', False)
+            message = self.blockers[blocker]
+            answer  = askyesno('Quit',
+                message + '\nDo you want to quit anyway?')
+            if not answer:
+                can_quit = False
+                break;
+        if topmost:
+            topmost.attributes('-topmost', True)
+        if can_quit:
+            for blocker in self.blockers:
+                blocker.destroy()
+            self.window.quit()
+            self.closed = True
 
     def handle_control_c(self, event):
         self.interrupt()
@@ -278,20 +309,20 @@ class TkTerm:
                 prompt_line = int(self.text.index('output_end').split('.')[0])
                 insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
                 if line > prompt_line:
-                    self.text.mark_set(Tk_.INSERT, '%s.0-1c'%insert_line)
+                    self.text.mark_set(Tk_.INSERT, '%s.0-1c' % insert_line)
                 else:
                     self.window.bell()
                 return 'break'
             return
         if keysym == 'Right':
             # Don't go into a continuation prompt or past the end
-            insert_pos = int(self.text.index('%s+1c'%Tk_.INSERT).split('.')[1])
+            insert_pos = int(self.text.index('%s+1c' % Tk_.INSERT).split('.')[1])
             if insert_pos < self._prompt_size:
                 insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
-                if self.text.compare(Tk_.INSERT, '>=', '%s-2c'%Tk_.END):
+                if self.text.compare(Tk_.INSERT, '>=', '%s-2c' % Tk_.END):
                     self.window.bell()
                 else:
-                    self.text.mark_set(Tk_.INSERT, '%d.%d'%(
+                    self.text.mark_set(Tk_.INSERT, '%d.%d' % (
                         insert_line + 1, self._prompt_size))
                 return 'break'
             return
@@ -333,13 +364,17 @@ class TkTerm:
         if self.editing_hist and self.multiline:
             self.text.tag_add('history', 'output_end', Tk_.INSERT)
 
-    def handle_return(self, event):
+    def handle_return(self, event=None):
         self.clear_completions()
         self.text.insert(Tk_.INSERT, '\n')
         if not self.running_code:
             cell = self.text.get('output_end', Tk_.INSERT)
             self.process_return(cell)
         return 'break'
+
+    def handle_shift_return(self, event):
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        return self.handle_return()
 
     def process_return(self, cell):
         try:
@@ -407,10 +442,10 @@ class TkTerm:
         line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
         first_line = int(self.text.index('output_end').split('.')[0])
         if pos <= self._prompt_size + 1 and line != first_line:
-            start = '%d.end'%(line - 1)
-            end = '%d.end'%(line)
+            start = '%d.end' % (line - 1)
+            end = '%d.end' % (line)
             self.text.mark_set(Tk_.INSERT, start)
-            self.text.delete(start, end)
+            self.text.delete(start, '%s.%s' % (line, self._prompt_size))
             return 'break'
         if self._current_indent >= 4:
             if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':
@@ -443,7 +478,7 @@ class TkTerm:
             self.do_completion(word, stem)
         elif len(completions) > 60 and self.tab_count == 1:
             self.show_completions(
-                ['%s possibilities -- hit tab again to view them all'%
+                ['%s possibilities -- hit tab again to view them all' %
                      len(completions)])
         else:
             self.show_completions(completions)
@@ -468,11 +503,11 @@ class TkTerm:
         charwidth = width//self.char_size
         biggest = 2 + max([len(x) for x in comps])
         num_cols = charwidth//biggest
-        num_rows = (len(comps) + num_cols -1)//num_cols
+        num_rows = (len(comps) + num_cols - 1)//num_cols
         rows = []
-        format = '%%-%ds'%biggest
-        for n in range(0, num_rows):
-            rows.append(''.join([format%x for x in comps[n:len(comps):num_rows]]))
+        format = '%%-%ds' % biggest
+        for n in range(num_rows):
+            rows.append(''.join(format % x for x in comps[n:len(comps):num_rows]))
         view = '\n'.join(rows)
         self.text.insert(self.tab_index, '\n'+view)
         self.text.mark_set(Tk_.INSERT, self.tab_index)
@@ -646,11 +681,11 @@ class TkTerm:
                                  foreground='DarkGreen',
                                  anchor=Tk_.W,
                                  justify=Tk_.LEFT,
-                                 font=self.prefs['font'])
+                                 font=self.settings['font'])
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')
-         # Set a reasonable default directory for files to be saved to.
+        # Set a reasonable default directory for files to be saved to.
         try:
             home = os.environ['HOME']
         except KeyError:
@@ -663,7 +698,7 @@ class TkTerm:
 
     def _input_prompt(self):
         result = [('Prompt', 'In['),
-                  ('PromptNum', '%d'%self.IP.execution_count),
+                  ('PromptNum', '%d' % self.IP.execution_count),
                   ('Prompt', ']: ')]
         self._prompt_size = sum(len(token[1]) for token in result)
         return result
@@ -740,7 +775,7 @@ class TkTerm:
         # last line of the input and that line is blank.
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
         prompt_line = int(self.text.index('output_end').split('.')[0])
-        tail = self.text.get('%d.%d'%(insert_line, self._prompt_size), Tk_.END)
+        tail = self.text.get('%d.%d' % (insert_line, self._prompt_size), Tk_.END)
         if not tail.strip():
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
@@ -753,7 +788,7 @@ class TkTerm:
             last_line = insert_line - 1
             if last_line > prompt_line:
                 # Delete the last continuation prompt.
-                self.text.delete('%d.0'%last_line, '%d.0 lineend'%last_line)
+                self.text.delete('%d.0' % last_line, '%d.0 lineend' % last_line)
             self.IP.run_cell(self._input_buffer, store_history=True)
             # Add a newline after the output.
             self.write('\n')
@@ -783,7 +818,7 @@ class TkTerm:
         """
         if self.quiet:
             return
-        #if self.interrupted:
+        # if self.interrupted:
         #    self.interrupted = False
         #    raise KeyboardInterrupt('Writing')
         if mark != Tk_.INSERT:
@@ -848,7 +883,6 @@ class TkTerm:
         #     self.text.mark_set(Tk_.INSERT, 'output_end')
         # else:
         #     self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))
-
 
     def flush(self):
         """

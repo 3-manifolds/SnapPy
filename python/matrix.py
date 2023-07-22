@@ -3,6 +3,7 @@ from .sage_helper import _within_sage
 from . import number
 from .math_basics import is_Interval
 
+
 class SimpleVector(number.SupportsMultiplicationByNumber):
     def __init__(self, list_of_values):
         self.data = list_of_values
@@ -78,12 +79,14 @@ class SimpleVector(number.SupportsMultiplicationByNumber):
     def __truediv__(self, other):
         return SimpleVector([ x / other for x in self.data])
 
+    def __neg__(self):
+        return SimpleVector([ -e for e in self.data ])
+
     def base_ring(self):
         try:
             return self.data[0].parent()
         except IndexError:
             return self.type
-
 
 # A very basic matrix class
 class SimpleMatrix(number.SupportsMultiplicationByNumber):
@@ -121,7 +124,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
             return self.type
 
     @staticmethod
-    def identity(ring, n = 0):
+    def identity(ring, n=0):
         return SimpleMatrix(
             [[ 1 if i == j else 0
                for i in range(n) ]
@@ -135,7 +138,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
+            str_row = ['% *s' % (size, x) for x in row]
             str_rows.append('[' + ' '.join(str_row) + ']')
         result = '\n'.join(str_rows)
         return result
@@ -145,7 +148,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
         size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['% *s'%(size, x) for x in row]
+            str_row = ['% *s' % (size, x) for x in row]
             str_rows.append(' [' + ' '.join(str_row) + ']')
         result = '\n'.join(str_rows)
         result = '[' + ('\n'.join(str_rows))[1:] + ']'
@@ -188,6 +191,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def _noalgebra(self, other):
         raise TypeError('To do matrix algebra, please install numpy '
                         'or run SnapPy in Sage.')
+
     def entries(self):
         return [x for row in self.data for x in row]
 
@@ -236,7 +240,6 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     def transpose(self):
         return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
                              for j in range(self.shape[1])])
-
 
     def __truediv__(self, other):
         if isinstance(other, number.Number):
@@ -292,6 +295,7 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
 
     __inv__ = _noalgebra
 
+
 if _within_sage:
     from sage.matrix.constructor import matrix
     from sage.modules.free_module_element import vector
@@ -299,7 +303,8 @@ else:
     matrix = SimpleMatrix
     vector = SimpleVector
 
-def mat_solve(m, v, epsilon = 0):
+
+def mat_solve(m, v, epsilon=0):
     """
     Given a matrix m and a vector v, return the vector a such that
     v = m * a - computed using Gaussian elimination.
@@ -323,7 +328,7 @@ def mat_solve(m, v, epsilon = 0):
 
     Our implementation improves on this by swapping rows so that the
     element with the largest (lower bound of the) absolute value is
-    usied as pivot.
+    used as pivot.
 
     Setup a complex interval for example::
 
@@ -426,7 +431,7 @@ def mat_solve(m, v, epsilon = 0):
             pivots = [ (j, m1[j][i].abs())
                        for j in range(i, dim0)]
 
-        max_index, max_val = max(pivots, key = lambda x:x[1])
+        max_index, max_val = max(pivots, key=lambda x:x[1])
 
         if not max_val > epsilon:
             raise ZeroDivisionError
@@ -466,7 +471,6 @@ def mat_solve(m, v, epsilon = 0):
             if i != j:
                 for k in range(i + 1, dim0 + 1):
                     m1[j][k] -= m1[j][i] * m1[i][k]
-
 
     # After iterations, we have
     # [       1        0        0        0|    11/7]

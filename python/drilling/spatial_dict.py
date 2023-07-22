@@ -5,6 +5,7 @@ from typing import Sequence
 
 __all__ = ['floor_as_intergers', 'SpatialDict']
 
+
 def floor_as_integers(x) -> Sequence[int]:
     """
     Computes floor of a number or interval, returning a list of integers
@@ -46,16 +47,6 @@ def floor_as_integers(x) -> Sequence[int]:
             return [ int_f, int_f + 1 ]
         return [ int_f ]
 
-class _Entry:
-    """
-    A helper for SpatialDict.
-
-    The implementation of SpatialDict has the same instance of _Entry
-    stored for multiple keys so that updating the value for all keys
-    can be done by assigning the new value to _Entry.value only once.
-    """
-    def __init__(self, value):
-        self.value = value
 
 class SpatialDict:
     """
@@ -64,7 +55,7 @@ class SpatialDict:
     the same entry for points that are almost but not exactly the
     same due to rounding-errors.
 
-    To achieve this, the points are asumed to be in some lattice
+    To achieve this, the points are assumed to be in some lattice
     and the minimal distance between any two points in the lattice
     must be given.
     """
@@ -90,11 +81,11 @@ class SpatialDict:
         reps_and_ikeys = self._representatives_and_ikeys(point)
 
         for rep, ikey in reps_and_ikeys:
-            for other_rep, entry in self._data.get(ikey, []):
+            for other_rep, value in self._data.get(ikey, []):
                 d = self.distance(rep, other_rep)
                 if d < self._right_distance_value:
-                    return entry.value
-                if not (self._left_distance_value < d):
+                    return value
+                if not (d > self._left_distance_value):
                     raise InsufficientPrecisionError(
                         "Could neither verify that the two given tiles are "
                         "the same nor that they are distinct. "
@@ -102,9 +93,8 @@ class SpatialDict:
                         "Injectivty diameter about basepoint is: %r." % (
                             d, self._min_distance))
 
-        entry = _Entry(default)
         for rep, ikey in reps_and_ikeys:
-            self._data.setdefault(ikey, []).append((rep, entry))
+            self._data.setdefault(ikey, []).append((rep, default))
 
         return default
 

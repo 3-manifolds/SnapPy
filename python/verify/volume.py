@@ -5,6 +5,7 @@ if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     try:
         import sage.rings.abc
+
         def is_ComplexIntervalField(z):
             return isinstance(z, sage.rings.abc.ComplexIntervalField)
     except ImportError:
@@ -26,6 +27,7 @@ from . import verifyHyperbolicity
 #
 # We work around this by converting to snappy.Number where a work-around for this was
 # implemented.
+
 
 def _unprotected_volume_from_shape(z):
     """
@@ -58,6 +60,7 @@ def _unprotected_volume_from_shape(z):
 
     return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
 
+
 def _volume_from_shape(z):
     """
     Computes the Bloch-Wigner dilogarithm for z which gives the volume of a
@@ -88,29 +91,29 @@ def _volume_from_shape(z):
     # precision.
     return z.volume()
 
-def compute_volume(manifold, verified, bits_prec = None):
+
+def compute_volume(manifold, verified, bits_prec=None):
     """
     Computes the volume of the given manifold. If verified is used,
     the hyperbolicity is checked rigorously and the volume is given as
     verified interval.
 
     >>> M = Manifold('m004')
-    >>> vol = M.volume(bits_prec=100)   
+    >>> vol = M.volume(bits_prec=100)
     >>> vol # doctest: +ELLIPSIS
     2.029883212819307250042405108...
-    
+
     sage: ver_vol = M.volume(verified=True)
     sage: vol in ver_vol
     True
     sage: 2.02988321283 in ver_vol
     False
     """
-
     # Compute tetrahedra shapes to arbitrary precision.  If requested,
     # verify that this is indeed a solution to the polynomial gluing
     # equations.
     shape_intervals = manifold.tetrahedra_shapes(
-        'rect', bits_prec = bits_prec, intervals = verified)
+        'rect', bits_prec=bits_prec, intervals=verified)
 
     if verified:
         # If requested, check it is a valid hyperbolic structure

@@ -4,6 +4,7 @@ from ..snap.t3mlite.arrow import Arrow
 from ..snap.t3mlite.mcomplex import Mcomplex, VERBOSE, edge_and_arrow
 from ..snap.t3mlite.tetrahedron import Tetrahedron
 
+
 class McomplexWithMemory(Mcomplex):
     """
     A version of Mcomplex which remembers what Pachner moves have been
@@ -58,7 +59,6 @@ class McomplexWithMemory(Mcomplex):
             T = arrow.Tetrahedron
             tet_index = self.Tetrahedra.index(T)
             self.move_memory.append((move, arrow.Edge, arrow.Face, tet_index))
-
 
     def _relabel_tetrahedra(self):
         for i, tet in enumerate(self):
@@ -125,7 +125,6 @@ class McomplexWithMemory(Mcomplex):
                 ('zero_to_two', arrow.Edge, arrow.Face, tet_index, gap))
         return success
 
-
     def _edge_permits_four_to_four(self, edge):
         possible, reason = Mcomplex._edge_permits_four_to_four(self, edge)
         if possible:
@@ -156,6 +155,7 @@ class McomplexWithMemory(Mcomplex):
         (15, 9)
         """
         return Mcomplex.easy_simplify(self)
+
 
 if __name__ == '__main__':
     import doctest

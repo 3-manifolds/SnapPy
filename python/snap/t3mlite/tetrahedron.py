@@ -1,4 +1,4 @@
-#$Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
+# $Id: tetrahedron.py,v 1.2 2002/09/20 03:52:16 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -11,18 +11,19 @@ from .perm4 import Perm4, inv
 
 import sys
 
+
 class Tetrahedron:
-    def __init__(self, name = ''):
+    def __init__(self, name=''):
         self.Index = -1
         self.Name = name
         self.Neighbor = {F0:None,F1:None,F2:None,F3:None}  # Tetrahedra
-        self.Gluing   = {F0:None,F1:None,F2:None,F3:None}  # Permutations
-        self.Class    = [None]*16             # list of equivalence classes
-        self.Checked  = 0                     # flag
+        self.Gluing = {F0:None,F1:None,F2:None,F3:None}  # Permutations
+        self.Class = [None]*16             # list of equivalence classes
+        self.Checked = 0                     # flag
 
     def __repr__(self):
         if self.Index != -1:
-            return ( 'tet'+ str(self.Index) )
+            return ( 'tet' + str(self.Index) )
         else:
             return '< floating tetrahedron ' + ' at ' + str(id(self)) + '>'
 
@@ -36,9 +37,9 @@ class Tetrahedron:
             self.Gluing[two_subsimplex] = perm
             tet.Neighbor[perm.image(two_subsimplex)] = self
             tet.Gluing[perm.image(two_subsimplex)] = inv(self.Gluing[two_subsimplex])
-# Reverse the orientation.  Vertices are relabelled by a transposition
-# and gluings are adjusted.
-#
+
+    # Reverse the orientation.  Vertices are relabelled by a transposition
+    # and gluings are adjusted.
     def reverse(self):
         transpo = Perm4((1, 0, 2, 3))
         nhbr = self.Neighbor.copy()
@@ -46,13 +47,12 @@ class Tetrahedron:
         for two_subsimplex in TwoSubsimplices:
             relabeled = transpo.image(two_subsimplex)
             if nhbr[two_subsimplex] is not None:
-                perm = (gluing[two_subsimplex]*transpo).tuple()
+                perm = (gluing[two_subsimplex] * transpo).tuple()
             else:
                 perm = None
             self.attach(relabeled, nhbr[two_subsimplex], perm)
 
-# Unglues and removes references to self from neighbor.
-#
+    # Unglues and removes references to self from neighbor.
     def detach(self, two_subsimplex):
         neighbor = self.Neighbor[two_subsimplex]
         if neighbor is None:
@@ -74,9 +74,9 @@ class Tetrahedron:
         self.clear_Class()
 
     def clear_Class(self):
-        self.Class    = [None]*16              # list of equivalence classes
+        self.Class = [None]*16              # list of equivalence classes
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         if len(self.Name) == 0:
             out.write(repr(self) + "\t%s\n" %
                       ([self.Neighbor.get(s) for s in TwoSubsimplices]))

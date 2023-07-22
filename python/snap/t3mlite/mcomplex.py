@@ -1,4 +1,4 @@
-#$Id: mcomplex.py,v 1.14 2009/08/20 15:58:58 t3m Exp $
+# $Id: mcomplex.py,v 1.14 2009/08/20 15:58:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -106,10 +106,10 @@ class Mcomplex:
                 tetrahedron_list = tets_from_data(tetrahedron_list)
 
         self.Tetrahedra = tetrahedron_list
-        self.Edges                = []
-        self.Faces                = []
-        self.Vertices             = []
-        self.NormalSurfaces       = []
+        self.Edges = []
+        self.Faces = []
+        self.Vertices = []
+        self.NormalSurfaces = []
         self.AlmostNormalSurfaces = []
         self.build()
 
@@ -159,7 +159,6 @@ class Mcomplex:
 
     def add_tet(self, tet):
         self.Tetrahedra.append(tet)
-
 
     def clear_tet(self,tet):
         """
@@ -288,8 +287,8 @@ class Mcomplex:
                         newEdge._add_corner(a)
                         a.Tetrahedron.Class[a.Edge] = newEdge
                         if a.next() is None:
-                           # We hit the boundary!
-                           # Go back to the beginning and walk to the right.
+                            # We hit the boundary!
+                            # Go back to the beginning and walk to the right.
                             # If this is our second boundary hit, we are done.
                             if not boundary_hits == 0:
                                 newEdge.RightBdryArrow = a.copy()
@@ -349,7 +348,7 @@ class Mcomplex:
         for edge in self.Edges:
             tet = edge.Corners[0].Tetrahedron
             one_subsimplex = edge.Corners[0].Subsimplex
-            tail  = tet.Class[Tail[one_subsimplex]]
+            tail = tet.Class[Tail[one_subsimplex]]
             head = tet.Class[Head[one_subsimplex]]
             edge.Vertices = [tail , head]
             tail.Edges.append(edge)
@@ -405,7 +404,6 @@ class Mcomplex:
                         and tet.Gluing[two_subsimplex].sign() == 0):
                     return False
         return True
-
 
     def walk_and_orient(self, tet, sign):
         if tet.Checked == 1:
@@ -551,7 +549,7 @@ class Mcomplex:
         a_orig = a.copy()
         new = self.new_arrows(3)
         for i in range(3):
-            new[i].glue(new[(i+1)%3])
+            new[i].glue(new[(i + 1) % 3])
         a.reverse()
         for c in new:
             c.opposite().glue(a.glued())
@@ -617,9 +615,9 @@ class Mcomplex:
 
         self._three_to_two_move_hook(a_orig, (b_orig, b, c))
         if unsafe_mode:
-            tet0  = a_orig.Tetrahedron
-            tet1  = a_orig.next().Tetrahedron
-            tet2  = a_orig.next().Tetrahedron
+            tet0 = a_orig.Tetrahedron
+            tet1 = a_orig.next().Tetrahedron
+            tet2 = a_orig.next().Tetrahedron
             self.delete_tet(tet0)
             self.delete_tet(tet1)
             self.delete_tet(tet2)
@@ -654,7 +652,6 @@ class Mcomplex:
         # if (T0 in T0.Neighbor.values()) or (T1 in T1.Neighbor.values()):
         #    return False, 'One tet is glued to itself'
         return True, None
-
 
     def _two_to_zero_hook(self, old_arrow):
         pass
@@ -761,7 +758,7 @@ class Mcomplex:
         c = self.new_arrows(4)
         c_orig = [x.copy() for x in c]
         for i in range(4):
-            c[i].glue( c[(i+1)%4] )
+            c[i].glue(c[(i + 1) % 4])
         b = a.glued().reverse()
         c[0].opposite().glue(a.rotate(1).glued())
         c[1].opposite().glue(b.rotate(-1).glued())
@@ -1273,7 +1270,6 @@ class Mcomplex:
                 to_cusp_index[vertex] = torus_cusps
                 torus_cusps += 1
 
-
         tet_data, cusp_indices, peripheral_curves = [], [], []
 
         for tet in self.Tetrahedra:
@@ -1467,7 +1463,7 @@ class Mcomplex:
                             tet_queue = tet_queue + [t]
 
                 # did we succeed, or do we need to reset everything
-                if None not in list(iso.values()): #we succeeed!
+                if None not in list(iso.values()):  # we succeed!
                     isomorphisms.append(iso.copy())
                     if at_most_one:
                         return isomorphisms

@@ -16,6 +16,7 @@ class PtolemyCannotBeCheckedError(Exception):
             "class is not supported.")
         Exception.__init__(self, msg)
 
+
 class LogToCloseToBranchCutError(Exception):
     """
     An exception raised when taking log(-x) for some real number x
@@ -23,6 +24,7 @@ class LogToCloseToBranchCutError(Exception):
     -Pi or Pi as imaginary part.
     """
     pass
+
 
 class RelationViolationError(Exception):
     """
@@ -42,6 +44,7 @@ class RelationViolationError(Exception):
             return r + " (exact values)"
         return r + " (epsilon = %s)" % self.epsilon
 
+
 class NotPU21Representation:
     """
     Returned by is_pu_2_1_representation if cross ratios do not fulfill
@@ -52,6 +55,7 @@ class NotPU21Representation:
 
     def __init__(self, reason):
         self.reason = reason
+
     def __repr__(self):
         return "NotPU21Representation(reason = %r)" % self.reason
 
@@ -60,17 +64,22 @@ class NotPU21Representation:
 
     __nonzero__ = __bool__ # backwards compatibility python 2x
 
+
 class NumericalMethodError(Exception):
     def __init__(self, method):
         self.method = method
+
     def __str__(self):
         return "Method %s only supported for numerical values" % self.method
+
 
 class ExactMethodError(Exception):
     def __init__(self, method):
         self.method = method
+
     def __str__(self):
         return "Method %s only supported for exact values" % self.method
+
 
 def _check_relation(value, epsilon, comment):
     if epsilon is None:
@@ -79,6 +88,7 @@ def _check_relation(value, epsilon, comment):
     else:
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
+
 
 class PtolemyCoordinates(dict):
     """
@@ -125,7 +135,7 @@ class PtolemyCoordinates(dict):
 
     >>> old_precision = pari.set_real_precision(100) # with high precision
     >>> numerical_solutions = solution.numerical()
-    
+
     Check that it is a solution, numerically:
 
     >>> numerical_solutions[0].check_against_manifold(M, 1e-80)
@@ -151,7 +161,7 @@ class PtolemyCoordinates(dict):
     True
 
     Compute flattenings:
-    
+
     >>> flattenings = solution.flattenings_numerical()
 
     Compute complex volumes:
@@ -167,14 +177,14 @@ class PtolemyCoordinates(dict):
     >>> normalized = chernSimons * 6 / (pari('Pi')**2)
 
     Check that Chern Simons is zero up to 6 torsion:
-    
+
     >>> normalized - normalized.round() < 1e-9
     True
     """
 
-    def __init__(self, d, is_numerical = True, py_eval_section = None,
-                 manifold_thunk = lambda : None,
-                 non_trivial_generalized_obstruction_class = False):
+    def __init__(self, d, is_numerical=True, py_eval_section=None,
+                 manifold_thunk=lambda : None,
+                 non_trivial_generalized_obstruction_class=False):
 
         self._manifold_thunk = manifold_thunk
 
@@ -185,7 +195,7 @@ class PtolemyCoordinates(dict):
             non_trivial_generalized_obstruction_class)
         processed_dict = d
 
-        if not py_eval_section is None:
+        if py_eval_section is not None:
             # process the extra information that is given by
             # ptolemyVariety's py_eval_section
 
@@ -245,7 +255,7 @@ class PtolemyCoordinates(dict):
     def has_obstruction(self):
         """
         Whether the Ptolemy variety has legacy obstruction class that
-        modifies the Ptolemy relation to 
+        modifies the Ptolemy relation to
         """
         N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
         return has_obstruction
@@ -272,7 +282,7 @@ class PtolemyCoordinates(dict):
         >>> solution = solutions[2]
 
         Turn into a numerical solution:
-        
+
         >>> old_precision = pari.set_real_precision(100) # with high precision
         >>> numerical_solutions = solution.numerical()
         >>> pari.set_real_precision(old_precision) # reset pari engine
@@ -288,19 +298,18 @@ class PtolemyCoordinates(dict):
             return self
         return ZeroDimensionalComponent(
             [ PtolemyCoordinates(
-                    d, is_numerical = True,
-                    manifold_thunk = self._manifold_thunk,
-                    non_trivial_generalized_obstruction_class = (
+                    d, is_numerical=True,
+                    manifold_thunk=self._manifold_thunk,
+                    non_trivial_generalized_obstruction_class=(
                         self._non_trivial_generalized_obstruction_class))
               for d in _to_numerical(self) ])
 
     def to_PUR(self):
-
         """
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
         return the result.
-        
+
         See to_PUR of RUR.
 
         This conversion might lead to very large coefficients.
@@ -308,13 +317,12 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.to_PUR),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_terms_in_RUR(self):
-
         """
         If a Ptolemy coordinate is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms and
@@ -328,13 +336,12 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.multiply_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def multiply_and_simplify_terms_in_RUR(self):
-
         """
         If a Ptolemy coordinate is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms,
@@ -349,27 +356,27 @@ class PtolemyCoordinates(dict):
 
         return PtolemyCoordinates(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk,
-            non_trivial_generalized_obstruction_class = (
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk,
+            non_trivial_generalized_obstruction_class=(
                 self._non_trivial_generalized_obstruction_class))
 
     def cross_ratios(self):
         """
         Compute cross ratios from Ptolemy coordinates. The cross ratios are
         according to the SnapPy convention, so we have::
-        
+
              z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-             
+
         where::
-        
+
              z   is at the edge 01 and equal to   s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
              zp  is at the edge 02 and equal to - s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
              zpp is at the edge 03 and equal to   s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
 
-        Note that this is different from the convention used in 
+        Note that this is different from the convention used in
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         Take an exact solution:
@@ -381,14 +388,14 @@ class PtolemyCoordinates(dict):
         Turn into cross Ratios:
 
         >>> crossRatios = solution.cross_ratios()
-        
+
         Get a cross ratio:
-        
+
         >>> crossRatios['zp_0010_0']
         Mod(-x, x^2 + x + 1)
 
         Check the relationship between cross ratios:
-        
+
         >>> crossRatios['z_0010_0'] == 1 - 1 / crossRatios['zp_0010_0']
         True
 
@@ -401,8 +408,8 @@ class PtolemyCoordinates(dict):
         Get information about what one can do with cross ratios
         """
         return CrossRatios(_ptolemy_to_cross_ratio(self)[0],
-                           is_numerical = self._is_numerical,
-                           manifold_thunk = self._manifold_thunk)
+                           is_numerical=self._is_numerical,
+                           manifold_thunk=self._manifold_thunk)
 
     def cross_ratios_numerical(self):
         """
@@ -418,7 +425,7 @@ class PtolemyCoordinates(dict):
 
     def flattenings_numerical(self):
         """
-        Turn into numerical solutions and compute flattenings, see 
+        Turn into numerical solutions and compute flattenings, see
         help(snappy.ptolemy.coordinates.Flattenings)
         Also see numerical()
 
@@ -428,7 +435,7 @@ class PtolemyCoordinates(dict):
         >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
         >>> solution = solutions[2]
 
-        Compute a numerical soluton
+        Compute a numerical solution
 
         >>> flattenings = solution.flattenings_numerical()
 
@@ -450,11 +457,11 @@ class PtolemyCoordinates(dict):
                         self,
                         branch_factor,
                         self._non_trivial_generalized_obstruction_class,
-                        as_flattenings = True)
+                        as_flattenings=True)
 
                     return Flattenings(d,
-                                       manifold_thunk = self._manifold_thunk,
-                                       evenN = evenN)
+                                       manifold_thunk=self._manifold_thunk,
+                                       evenN=evenN)
                 except LogToCloseToBranchCutError:
                     # Values to close to the branch cut, just multiply
                     # by a small offset
@@ -465,7 +472,7 @@ class PtolemyCoordinates(dict):
             return ZeroDimensionalComponent(
                 [num.flattenings_numerical() for num in self.numerical()])
 
-    def volume_numerical(self, drop_negative_vols = False):
+    def volume_numerical(self, drop_negative_vols=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only return the one volume.
@@ -484,8 +491,8 @@ class PtolemyCoordinates(dict):
             return vols
 
     def complex_volume_numerical(self,
-                                 drop_negative_vols = False,
-                                 with_modulo = False):
+                                 drop_negative_vols=False,
+                                 with_modulo=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute complex
         volumes. If already numerical, return the volume.
@@ -498,11 +505,11 @@ class PtolemyCoordinates(dict):
 
         if self._is_numerical:
             return self.flattenings_numerical().complex_volume(
-                with_modulo = with_modulo)
+                with_modulo=with_modulo)
         else:
             cvols = ZeroDimensionalComponent(
                 [ num.flattenings_numerical().complex_volume(
-                        with_modulo = with_modulo)
+                        with_modulo=with_modulo)
                   for num in self.numerical()])
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
@@ -555,7 +562,7 @@ class PtolemyCoordinates(dict):
 
         See Definition 10.1:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -579,8 +586,8 @@ class PtolemyCoordinates(dict):
         # See Definition 9.23 of
         # Garoufalidis, Thurston, Zickert
         # The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        # http://arxiv.org/abs/1111.2828
-        face = list(set(range(4)) - set([v0, v1, v2]))[0]
+        # https://arxiv.org/abs/1111.2828
+        face = next(iter(set(range(4)) - {v0, v1, v2}))
         obstruction = self._get_obstruction_variable(face, tet)
 
         # The epsilon permutation sign from Definition 10.1 of
@@ -594,7 +601,6 @@ class PtolemyCoordinates(dict):
                   (c_pt_v0_v0 * c_pt_v1_v2) /
                   (c_pt_v0_v1 * c_pt_v0_v2))
 
-
     def ratio_coordinate(self, tet, v0, v1, pt):
         """
         Returns the ratio coordinate for tetrahedron with index tet
@@ -603,7 +609,7 @@ class PtolemyCoordinates(dict):
 
         See Definition 10.2:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         Note that this definition turned out to have the wrong sign. Multiply
@@ -643,7 +649,7 @@ class PtolemyCoordinates(dict):
         This matrix was labeled alpha^{v0v1v2} (v2 does not matter for non
         double-truncated simplex) in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4. Note that the ratio coordinate
@@ -687,7 +693,7 @@ class PtolemyCoordinates(dict):
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4.
@@ -713,7 +719,7 @@ class PtolemyCoordinates(dict):
                 # Get integral point for diamond coordinate
                 pt = [ a1 * _kronecker_delta(v0, i) +
                        a2 * _kronecker_delta(v1, i) +
-                       a0 * _kronecker_delta(v2, i)    for i in range(4) ]
+                       a0 * _kronecker_delta(v2, i) for i in range(4) ]
 
                 # Compute diamond coordinate
                 diamond = self.diamond_coordinate(tet, v0, v1, v2, pt)
@@ -733,9 +739,9 @@ class PtolemyCoordinates(dict):
         can be though of as doubly truncated simplices where all short edges
         are collapsed, hence labeled by the identity.
 
-        See equation 10.4 in 
+        See equation 10.4 in
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -769,9 +775,9 @@ class PtolemyCoordinates(dict):
         # no penalty.
         self._matrix_cache, self._inverse_matrix_cache = (
             findLoops.images_of_original_generators(self,
-                                                    penalties = (0, 1, 1)))
+                                                    penalties=(0, 1, 1)))
 
-    def evaluate_word(self, word, G = None):
+    def evaluate_word(self, word, G=None):
         """
         Given a word in the generators of the fundamental group,
         compute the corresponding matrix. By default, these are the
@@ -796,7 +802,7 @@ class PtolemyCoordinates(dict):
             G)
 
     def _testing_assert_identity(self, m,
-                                 allow_sign_if_obstruction_class = False):
+                                 allow_sign_if_obstruction_class=False):
 
         N = self.N()
 
@@ -865,8 +871,7 @@ class PtolemyCoordinates(dict):
                                     m4,
                                     matrix.matrix_mult(m5,m6))))), True)
 
-
-    def check_against_manifold(self, M = None, epsilon = None):
+    def check_against_manifold(self, M=None, epsilon=None):
         """
         Checks that the given solution really is a solution to the Ptolemy
         variety of a manifold. See help(ptolemy.PtolemyCoordinates) for
@@ -929,7 +934,6 @@ class PtolemyCoordinates(dict):
                     key = "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet
                     return self[key]
 
-
                 s0 = self._get_obstruction_variable(0, tet)
                 s1 = self._get_obstruction_variable(1, tet)
                 s2 = self._get_obstruction_variable(2, tet)
@@ -946,7 +950,7 @@ class PtolemyCoordinates(dict):
                                 epsilon,
                                 "Ptolemy relation")
 
-    def is_geometric(self, epsilon = 1e-6):
+    def is_geometric(self, epsilon=1e-6):
         """
         Returns true if all shapes corresponding to this solution have positive
         imaginary part.
@@ -973,9 +977,9 @@ class Flattenings(dict):
 
     We assign to each pair of parallel edges of each simplex a triple (w, z, p)
     such that::
-    
+
            w = log(z) + p * (2 * pi * i / N)   where N is fixed and even.
-           
+
     For N = 2, the three triples belonging to a simplex form a combinatorial
     flattening (w0, w1, w2) as defined in Definition 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
@@ -985,7 +989,7 @@ class Flattenings(dict):
     (w0, w1, w2) that gives an element in the generalized Extended Bloch group
     which is the Extended Bloch group corresponding to the Riemann surface
     given by::
-    
+
                  u1 * e^w0 + u2 * e^w1 = 1
 
     where u1^N = u2^N = 1.
@@ -998,13 +1002,13 @@ class Flattenings(dict):
     This work has not been published yet.
 
     If f is a flattening, then in the notation of Neumann, the value of::
-    
+
         f['z_xxxx_y']    is (w0, z, p)
         f['zp_xxxx_y']   is (w1, z', q)
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
 
-    def __init__(self, d, manifold_thunk = lambda : None, evenN = 2):
+    def __init__(self, d, manifold_thunk=lambda : None, evenN=2):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
         self._manifold_thunk = manifold_thunk
@@ -1049,7 +1053,6 @@ class Flattenings(dict):
 
     @classmethod
     def from_tetrahedra_shapes_of_manifold(cls, M):
-
         """
         Takes as argument a manifold and produces (weak) flattenings using
         the tetrahedra_shapes of the manifold M.
@@ -1066,7 +1069,7 @@ class Flattenings(dict):
         num_tets = M.num_tetrahedra()
 
         z_cross_ratios = M.tetrahedra_shapes(
-            part='rect', dec_prec = pari.get_real_precision())
+            part='rect', dec_prec=pari.get_real_precision())
 
         all_cross_ratios = sum(
             [ [z, 1 / (1-z), 1 - 1/z] for z in z_cross_ratios], [])
@@ -1074,9 +1077,9 @@ class Flattenings(dict):
         log_all_cross_ratios = [ z.log() for z in all_cross_ratios ]
 
         def flattening_condition(r):
-            return (   3 *                 r  * [0]
-                     + 3 *                      [1]
-                     + 3 * (num_tets - r - 1) * [0])
+            return (3 * r * [0]
+                    + 3 * [1]
+                    + 3 * (num_tets - r - 1) * [0])
 
         flattening_conditions = [
             flattening_condition(r) for r in range(num_tets)]
@@ -1133,7 +1136,7 @@ class Flattenings(dict):
             dict([ (k, (log + PiI * p, z, p))
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
                                            all_cross_ratios, flattenings)]),
-            manifold_thunk = lambda : Mcopy)
+            manifold_thunk=lambda : Mcopy)
 
     def get_order(self):
         """
@@ -1145,11 +1148,10 @@ class Flattenings(dict):
         return self._evenN
 
     def get_zpq_triple(self, key_z):
-
         """
         Gives a flattening as triple [z;p,q] representing an element
         in the generalized Extended Bloch group similar to the way the
-        triple [z;p,q] is used in Lemma 3.2 in 
+        triple [z;p,q] is used in Lemma 3.2 in
         Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
         http://arxiv.org/abs/math.GT/0307092
         """
@@ -1157,7 +1159,7 @@ class Flattenings(dict):
             raise Exception("Need to be called with cross ratio variable z_....")
         key_zp = 'zp_' + key_z[2:]
 
-        w,  z,  p = self[key_z]
+        w, z, p = self[key_z]
         wp, zp, q_canonical_branch_cut = self[key_zp]
 
         # Note that the q in l(z;p,q) and in Definition 3.1 are different if
@@ -1173,7 +1175,7 @@ class Flattenings(dict):
 
         return (z, p, q_dilog_branch_cut)
 
-    def complex_volume(self, with_modulo = False):
+    def complex_volume(self, with_modulo=False):
         """
         Compute complex volume. The complex volume is defined only up to
         some multiple of m where m = i * pi**2/6 for PSL(2,C) and SL(N,C)
@@ -1196,8 +1198,8 @@ class Flattenings(dict):
                 if key[:2] == 'z_' ])
 
         cvol = sum_L_functions / pari('I')
-        vol  = cvol.real()
-        cs   = cvol.imag() % m
+        vol = cvol.real()
+        cs = cvol.imag() % m
 
         if cs > m/2 + pari('1e-12'):
             cs = cs - m
@@ -1211,11 +1213,11 @@ class Flattenings(dict):
             return cvol, m * pari('I')
         return cvol
 
-    def check_against_manifold(self, M = None, epsilon = 1e-10):
+    def check_against_manifold(self, M=None, epsilon=1e-10):
         """
         Checks that the flattening really is a solution to the logarithmic
-        PGL(N,C) gluing equations of a manifold. Usage similar to 
-        check_against_manifold of Ptolemy Coordinates, see 
+        PGL(N,C) gluing equations of a manifold. Usage similar to
+        check_against_manifold of Ptolemy Coordinates, see
         help(ptolemy.Coordinates) for similar examples.
 
         === Arguments ===
@@ -1240,8 +1242,8 @@ class Flattenings(dict):
 
         for k in list(self.keys()):
             if k[:2] == 'z_':
-                w,   z,   p = self[k]
-                wp,  zp,  q = self['zp_'+k[2:]]
+                w, z, p = self[k]
+                wp, zp, q = self['zp_'+k[2:]]
                 wpp, zpp, r = self['zpp_'+k[2:]]
                 _check_relation(
                     w + wp + wpp,
@@ -1257,7 +1259,7 @@ class Flattenings(dict):
         N = sum([int(x) for x in index]) + 2
 
         matrix_with_explanations = M.gluing_equations_pgl(
-            N, equation_type = 'all')
+            N, equation_type='all')
 
         matrix = matrix_with_explanations.matrix
         rows = matrix_with_explanations.explain_rows
@@ -1274,27 +1276,28 @@ class Flattenings(dict):
                 epsilon,
                 "Gluing equation %s" % rows[row])
 
+
 class CrossRatios(dict):
     """
     Represents assigned shape parameters/cross ratios as
     dictionary. The cross ratios are according to SnapPy convention, so we
     have::
-    
+
         z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-        
+
     where::
-    
+
         z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
         zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
         zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
 
-    Note that this is different from the convention used in 
+    Note that this is different from the convention used in
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 
-    def __init__(self, d, is_numerical = True, manifold_thunk = None):
+    def __init__(self, d, is_numerical=True, manifold_thunk=None):
         super(CrossRatios, self).__init__(d)
         self._is_numerical = is_numerical
         self._manifold_thunk = manifold_thunk
@@ -1310,25 +1313,25 @@ class CrossRatios(dict):
         self.dimension = 0
 
     @staticmethod
-    def from_snappy_manifold(M, dec_prec = None, bits_prec = None,
-                             intervals = False):
+    def from_snappy_manifold(M, dec_prec=None, bits_prec=None,
+                             intervals=False):
         """
         Constructs an assignment of shape parameters/cross ratios using
         the tetrahehdra_shapes method of a given SnapPy manifold. The optional
         parameters are the same as that of tetrahedra_shapes.
         """
 
-        shapes = M.tetrahedra_shapes('rect', dec_prec = dec_prec,
-                                     bits_prec = bits_prec,
-                                     intervals = intervals)
+        shapes = M.tetrahedra_shapes('rect', dec_prec=dec_prec,
+                                     bits_prec=bits_prec,
+                                     intervals=intervals)
         d = {}
         for i, shape in enumerate(shapes):
             d['z_0000_%d' % i] = shape
             d['zp_0000_%d' % i] = 1 / (1 - shape)
             d['zpp_0000_%d' % i] = 1 - 1 / shape
 
-        return CrossRatios(d, is_numerical = True,
-                           manifold_thunk = lambda M = M: M)
+        return CrossRatios(d, is_numerical=True,
+                           manifold_thunk=lambda M=M: M)
 
     def __repr__(self):
         dict_repr = dict.__repr__(self)
@@ -1377,29 +1380,27 @@ class CrossRatios(dict):
         if self._is_numerical:
             return self
         return ZeroDimensionalComponent([
-            CrossRatios(d, is_numerical = True,
-                        manifold_thunk = self._manifold_thunk)
+            CrossRatios(d, is_numerical=True,
+                        manifold_thunk=self._manifold_thunk)
             for d in _to_numerical(self) ])
 
     def to_PUR(self):
-
         """
         If any Ptolemy coordinates are given as Rational Univariate
         Representation, convert them to Polynomial Univariate Representation and
         return the result.
 
         See to_PUR of RUR.
-        
+
         This conversion might lead to very large coefficients.
         """
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.to_PUR),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
     def multiply_terms_in_RUR(self):
-
         """
         If a cross ratio is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms and
@@ -1413,11 +1414,10 @@ class CrossRatios(dict):
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
     def multiply_and_simplify_terms_in_RUR(self):
-
         """
         If a cross ratio is given as Rational Univariate Representation
         with numerator and denominator being a product, multiply the terms,
@@ -1432,10 +1432,10 @@ class CrossRatios(dict):
 
         return CrossRatios(
             _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
-            is_numerical = self._is_numerical,
-            manifold_thunk = self._manifold_thunk)
+            is_numerical=self._is_numerical,
+            manifold_thunk=self._manifold_thunk)
 
-    def volume_numerical(self, drop_negative_vols = False):
+    def volume_numerical(self, drop_negative_vols=False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only compute the one volume.
@@ -1474,7 +1474,7 @@ class CrossRatios(dict):
         and the conventions in Definition 4.2 of
 
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -1498,7 +1498,7 @@ class CrossRatios(dict):
 
         See Definition 10.9:
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
         """
 
@@ -1507,7 +1507,7 @@ class CrossRatios(dict):
         for v0 in range(4):
             for v1 in range(v0 + 1, 4):
                 e = [ _kronecker_delta(v0, i) +
-                      _kronecker_delta(v1, i)   for i in range(4) ]
+                      _kronecker_delta(v1, i) for i in range(4) ]
                 p = [ x1 - x2 for x1, x2 in zip(pt, e) ]
                 if all(x >= 0 for x in p):
                     result *= self._shape_at_tet_point_and_edge(tet, p, e)
@@ -1529,11 +1529,11 @@ class CrossRatios(dict):
 
         This matrix was labeled alpha^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -1563,11 +1563,11 @@ class CrossRatios(dict):
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -1631,11 +1631,11 @@ class CrossRatios(dict):
 
         This matrix was labeled gamma^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
         http://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
-        
+
         The resulting matrix is given as a python list of lists.
         """
 
@@ -1646,7 +1646,7 @@ class CrossRatios(dict):
         if key not in self._edge_cache:
 
             edge = [ _kronecker_delta(v0, i) +
-                     _kronecker_delta(v1, i)   for i in range(4) ]
+                     _kronecker_delta(v1, i) for i in range(4) ]
 
             # The epsilon permutation sign
             sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
@@ -1661,7 +1661,7 @@ class CrossRatios(dict):
             for a0 in range(N-1):
                 a1 = N - 2 - a0
                 pt = [ a0 * _kronecker_delta(v0, i) +
-                       a1 * _kronecker_delta(v1, i)   for i in range(4) ]
+                       a1 * _kronecker_delta(v1, i) for i in range(4) ]
 
                 cross_ratio = self._shape_at_tet_point_and_edge(tet, pt, edge)
 
@@ -1691,9 +1691,9 @@ class CrossRatios(dict):
         # size of any polynomial coefficients. We thus don't give them penalty.
         self._matrix_cache, self._inverse_matrix_cache = (
             findLoops.images_of_original_generators(self,
-                                                    penalties = (0, 1, 1)))
+                                                    penalties=(0, 1, 1)))
 
-    def evaluate_word(self, word, G = None):
+    def evaluate_word(self, word, G=None):
         """
         Given a word in the generators of the fundamental group,
         compute the corresponding matrix. By default, these are the
@@ -1717,7 +1717,7 @@ class CrossRatios(dict):
             word,
             G)
 
-    def check_against_manifold(self, M = None, epsilon = None):
+    def check_against_manifold(self, M=None, epsilon=None):
         """
         Checks that the given solution really is a solution to the PGL(N,C) gluing
         equations of a manifold. Usage similar to check_against_manifold of
@@ -1744,7 +1744,7 @@ class CrossRatios(dict):
         N = sum([int(x) for x in index]) + 2
 
         matrix_with_explanations = M.gluing_equations_pgl(
-            N, equation_type = 'all')
+            N, equation_type='all')
 
         matrix = matrix_with_explanations.matrix
         rows = matrix_with_explanations.explain_rows
@@ -1797,12 +1797,10 @@ class CrossRatios(dict):
               for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
 
         return CrossRatios(d,
-                           is_numerical = self._is_numerical,
-                           manifold_thunk = self._manifold_thunk)
-
+                           is_numerical=self._is_numerical,
+                           manifold_thunk=self._manifold_thunk)
 
     def is_real(self, epsilon):
-
         """
         Returns True if all cross ratios are real (have absolute imaginary
         part < epsilon where epsilon is given as argument).
@@ -1817,8 +1815,7 @@ class CrossRatios(dict):
                 return False
         return True
 
-    def is_induced_from_psl2(self, epsilon = None):
-
+    def is_induced_from_psl2(self, epsilon=None):
         """
         For each simplex and each edges, checks that all cross ratios of that
         simplex that are parallel to that each are the same (maximal absolute
@@ -1852,7 +1849,7 @@ class CrossRatios(dict):
 
         return True
 
-    def is_pu_2_1_representation(self, epsilon, epsilon2 = None):
+    def is_pu_2_1_representation(self, epsilon, epsilon2=None):
         r"""
         Returns True if the representation is also a
         PU(2,1)-representation. This uses Proposition 3.5 and the
@@ -1964,7 +1961,7 @@ class CrossRatios(dict):
 
         return True
 
-    def is_geometric(self, epsilon = 1e-6):
+    def is_geometric(self, epsilon=1e-6):
         """
         Returns true if all shapes corresponding to this solution have positive
         imaginary part.
@@ -1987,10 +1984,11 @@ class CrossRatios(dict):
                     return True
             return False
 
+
 def _ptolemy_to_cross_ratio(solution_dict,
-                            branch_factor = 1,
-                            non_trivial_generalized_obstruction_class = False,
-                            as_flattenings = False):
+                            branch_factor=1,
+                            non_trivial_generalized_obstruction_class=False,
+                            as_flattenings=False):
 
     N, has_obstruction = _N_and_has_obstruction_for_ptolemys(solution_dict)
     num_tets = _num_tetrahedra(solution_dict)
@@ -2023,17 +2021,17 @@ def _ptolemy_to_cross_ratio(solution_dict,
         c1100 = get_ptolemy_coordinate((1,1,0,0))
         c0011 = get_ptolemy_coordinate((0,0,1,1))
 
-        z   =   (c1010 * c0101) / (c1001 * c0110)
-        zp  = - (c1001 * c0110) / (c1100 * c0011)
-        zpp =   (c1100 * c0011) / (c1010 * c0101)
+        z = (c1010 * c0101) / (c1001 * c0110)
+        zp = - (c1001 * c0110) / (c1100 * c0011)
+        zpp = (c1100 * c0011) / (c1010 * c0101)
 
         if has_obstruction:
             s0 = get_obstruction_variable(0)
             s1 = get_obstruction_variable(1)
             s2 = get_obstruction_variable(2)
             s3 = get_obstruction_variable(3)
-            z   = s0 * s1 * z
-            zp  = s0 * s2 * zp
+            z = s0 * s1 * z
+            zp = s0 * s2 * zp
             zpp = s0 * s3 * zpp
 
         variable_end = '_%d%d%d%d' % tuple(index) + '_%d' % tet
@@ -2051,14 +2049,14 @@ def _ptolemy_to_cross_ratio(solution_dict,
                                     branch_factor, evenN)
 
             return [
-                ('z'   + variable_end, make_triple(w  ,z  )),
-                ('zp'  + variable_end, make_triple(wp ,zp )),
+                ('z' + variable_end, make_triple(w  ,z  )),
+                ('zp' + variable_end, make_triple(wp ,zp )),
                 ('zpp' + variable_end, make_triple(wpp,zpp)) ]
 
         else:
             return [
-                ('z'   + variable_end, z),
-                ('zp'  + variable_end, zp),
+                ('z' + variable_end, z),
+                ('zp' + variable_end, zp),
                 ('zpp' + variable_end, zpp) ]
 
     return dict(
@@ -2067,9 +2065,11 @@ def _ptolemy_to_cross_ratio(solution_dict,
              for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
             [])), evenN
 
+
 def _num_tetrahedra(solution_dict):
     return max( [ int(key.split('_')[-1])
                   for key in solution_dict.keys() ] ) + 1
+
 
 def _N_for_shapes(solution_dict):
 
@@ -2084,6 +2084,7 @@ def _N_for_shapes(solution_dict):
         raise Exception("Shape keys for different N")
 
     return l[0]
+
 
 def _N_and_has_obstruction_for_ptolemys(solution_dict):
 
@@ -2108,6 +2109,7 @@ def _N_and_has_obstruction_for_ptolemys(solution_dict):
     for N in l:
         return N, has_obstruction
 
+
 def _get_number_field(d):
     for value in d.values():
 
@@ -2121,6 +2123,7 @@ def _get_number_field(d):
 
     return None
 
+
 def _evaluate_at_root(p, root):
 
     if type(p) == Gen and p.type() == 't_POLMOD':
@@ -2130,6 +2133,7 @@ def _evaluate_at_root(p, root):
         return p.evaluate_at_root(root)
 
     return p
+
 
 def _to_numerical(d):
 
@@ -2149,12 +2153,12 @@ def _to_numerical(d):
             v = _evaluate_at_root(value, root)
 
             if key[:2] == 'z_':
-                z   = v
-                zp  = 1 / (1 - z)
+                z = v
+                zp = 1 / (1 - z)
                 zpp = 1 - 1 / z
 
-                return [(key,              z),
-                        ('zp_'  + key[2:], zp),
+                return [(key, z),
+                        ('zp_' + key[2:], zp),
                         ('zpp_' + key[2:], zpp)]
             elif key[:3] == 'zp_' or key[:4] == 'zpp_':
                 return []
@@ -2167,6 +2171,7 @@ def _to_numerical(d):
 
     return [ evaluate_all_for_root(root) for root in roots ]
 
+
 def _apply_to_RURs(d, RUR_method):
 
     def _apply_to_RUR(v):
@@ -2174,7 +2179,7 @@ def _apply_to_RURs(d, RUR_method):
             return RUR_method(v)
         return v
 
-    return dict( [ (k, _apply_to_RUR(v)) for  k, v in d.items() ] )
+    return {k: _apply_to_RUR(v) for k, v in d.items()}
 
 
 def _convert_to_pari_float(z):
@@ -2184,7 +2189,8 @@ def _convert_to_pari_float(z):
 
     return pari(z)
 
-def _compute_flattening(a, b, c, d, branch_factor, N = 2):
+
+def _compute_flattening(a, b, c, d, branch_factor, N=2):
 
     PiMinusEpsilon = pari(3.141592)
 
@@ -2208,10 +2214,12 @@ def _compute_flattening(a, b, c, d, branch_factor, N = 2):
 
 # bug in pari
 
+
 def _dilog(z):
     return pari("dilog(%s)" % z)
 
-def _L_function(zpq_triple, evenN = 2):
+
+def _L_function(zpq_triple, evenN=2):
 
     z, p, q = zpq_triple
 
@@ -2226,11 +2234,13 @@ def _L_function(zpq_triple, evenN = 2):
             + (z.log() + p * f) * ((1-z).log() + q * f) / 2
             - Pi2 / 6)
 
+
 def _volume(z):
 
     z = _convert_to_pari_float(z)
 
     return (1-z).arg() * z.abs().log() + _dilog(z).imag()
+
 
 def _kronecker_delta(i, j):
     """
@@ -2242,15 +2252,15 @@ def _kronecker_delta(i, j):
     else:
         return 0
 
-def _X(N, k, v):
 
+def _X(N, k, v):
     """
     Returns the NxN matrix with off-diagonal entry v at position k, that
     is the entry at row k and column k+1 is v.
 
     See (10.2) of
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 
@@ -2258,14 +2268,15 @@ def _X(N, k, v):
     m[k-1][k] = v
     return m
 
+
 def _H(N, k, x):
     """
     Returns the NxN diagonal matrix where the first k diagonal entries are x
     and all other entries are 1.
-    
+
     See (10.1) of
     Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
     http://arxiv.org/abs/1207.6711
     """
 

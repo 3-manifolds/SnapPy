@@ -1,4 +1,4 @@
-#$Id: arrow.py,v 1.3 2003/04/30 19:59:58 t3m Exp $
+# $Id: arrow.py,v 1.3 2003/04/30 19:59:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -52,7 +52,7 @@ _arrow_opposite_dict = dict()
 for edge, face in EdgeFacePairs:
     tail = comp(face)
     head = face & comp(edge)
-    new_face =  comp(OppTail[(tail, head)])
+    new_face = comp(OppTail[(tail, head)])
     new_edge = comp(edge)
     _arrow_opposite_dict[edge, face] = (new_edge, new_face)
 
@@ -75,7 +75,7 @@ class Arrow:
         self.Tetrahedron = tet
 
     def __repr__(self):
-        return ('< '+SubsimplexName[self.Edge]+' | '+
+        return ('< '+SubsimplexName[self.Edge]+' | ' +
                 SubsimplexName[self.Face]+' | '+str(self.Tetrahedron)+' >')
 
     def head(self):
@@ -159,19 +159,17 @@ class Arrow:
         tet1.Neighbor[glued_face] = tet0
         tet1.Gluing[glued_face] = inv_perm
 
-
-
-# Returns a COPY of self.next(), or a null arrow in the case of a boundary
-# face.
-# DOES create a new arrow.
+    # Returns a COPY of self.next(), or a null arrow in the case of a boundary
+    # face.
+    # DOES create a new arrow.
     def glued(self):
         a = self.copy()
         if a.next() is None:
             a.Tetrahedron = None
         return a
 
-# Changes the arrow into its opposite.
-# Does NOT create a new arrow.
+    # Changes the arrow into its opposite.
+    # Does NOT create a new arrow.
     def opposite(self):
         # Equivalent to
         # self.Face = comp(OppTail[(self.tail(),self.head())])
@@ -179,24 +177,23 @@ class Arrow:
         self.Edge, self.Face = _arrow_opposite_dict[self.Edge, self.Face]
         return self
 
-# Rotate arrow n/3 turns clockwise about self.head()
-# Does NOT create a new arrow
-    def rotate(self,n):
-        for i in range(n%3):
+    # Rotate arrow n/3 turns clockwise about self.head()
+    # Does NOT create a new arrow
+    def rotate(self, n):
+        for i in range(n % 3):
             head = self.head()
             tail = self.tail()
-            self.Edge = tail | OppTail[(tail,head)]
+            self.Edge = tail | OppTail[(tail, head)]
             self.Face = self.Edge | head
         return self
 
-# DOES create a new arrow.
+    # DOES create a new arrow.
     def copy(self):
         return Arrow(self.Edge, self.Face, self.Tetrahedron)
 
-# Two arrows are equal if their attributes are equal.  The
-# null arrows must be handled separately.  This also allows
-# comparison with None.
-
+    # Two arrows are equal if their attributes are equal.  The
+    # null arrows must be handled separately.  This also allows
+    # comparison with None.
     def __eq__(self, other):
         if other is None:
             return False

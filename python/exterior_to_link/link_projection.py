@@ -1,16 +1,16 @@
 """
 For a PL link in R^3, produce a link diagram by projecting it onto a
-plane (by default a randomly choosen one).  Also includes code for
+plane (by default a randomly chosen one).  Also includes code for
 simplifying a PL link by basic straightening moves.
 """
 
 import spherogram
 import random
 import itertools
-import sys
 from . import pl_utils
 from .rational_linear_algebra import QQ, Matrix, Vector3
 from .exceptions import GeneralPositionError
+
 
 def fig8_points():
     # Extracted from put_in_S3.example10, used for testing.
@@ -31,7 +31,7 @@ def twist_knot_points():
     return [[Vector3(pt) for pt in pts]]
 
 
-def proj(point): #projection onto z = 0
+def proj(point):  # projection onto z = 0
     return Vector3([point[i] for i in [0,1]]+[0])
 
 
@@ -44,10 +44,10 @@ def random_transform(steps=5):
     >>> random_transform(5).det()
     1
     """
-    I = Matrix([[1, 0, 0], [0,  1,  0], [ 0,  0,  1]])
-    X = Matrix([[0, 1, 0], [0,  0,  1], [ 1,  0,  0]])
-    Y = Matrix([[1, 0, 1], [0, -1, -1], [ 0,  1,  0]])
-    Z = Matrix([[0, 1, 0], [1,  0,  0], [-1, -1, -1]])
+    I = Matrix([[1, 0, 0], [0, 1, 0], [ 0, 0, 1]])
+    X = Matrix([[0, 1, 0], [0, 0, 1], [ 1, 0, 0]])
+    Y = Matrix([[1, 0, 1], [0, -1, -1], [ 0, 1, 0]])
+    Z = Matrix([[0, 1, 0], [1, 0, 0], [-1, -1, -1]])
     # X and Y have order two and Z order three, so there are
     # symmetric gens:
     gens = [I, X, X*X, Y, Y*Y, Z, Z]
@@ -73,7 +73,7 @@ def straightenable_tri(points, extra_arcs=None):
     for i in range(n):
         indices = i, (i + 1) % n, (i + 2) % n
         tri = [points[k] for k in indices]
-        other_arcs = [(points[k], points[(k+1)% n])
+        other_arcs = [(points[k], points[(k+1) % n])
                       for k in range(n) if k not in indices[:2]]
         if pl_utils.colinear(*tri):
             return indices
@@ -87,7 +87,7 @@ def arcs_from_points(points_list):
     arcs = []
     for p in points_list:
         n = len(p)
-        arcs += [(p[k], p[(k+1)% n]) for k in range(n)]
+        arcs += [(p[k], p[(k+1) % n]) for k in range(n)]
     return arcs
 
 
@@ -214,7 +214,7 @@ class LinkProjection():
         self._setup_crossings()
 
     def _setup_crossings(self):
-        #compute the over and under crossings of the link projection
+        # compute the over and under crossings of the link projection
 
         pts = self.points
         crossings, arcs = [], []

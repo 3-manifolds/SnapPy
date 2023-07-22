@@ -25,14 +25,16 @@ modules = [rational_linear_algebra,
            put_in_S3,
            main]
 
+
 def run_doctests(verbose=False, print_info=True):
-    globs = {'Manifold':snappy.Manifold,
-             'Triangulation':snappy.Triangulation}
-    results =  snappy.sage_helper.doctest_modules(modules,
-                                                  verbose=verbose,
-                                                  extraglobs=globs,
-                                                  print_info=print_info)
+    globs = {'Manifold': snappy.Manifold,
+             'Triangulation': snappy.Triangulation}
+    results = snappy.sage_helper.doctest_modules(modules,
+                                                 verbose=verbose,
+                                                 extraglobs=globs,
+                                                 print_info=print_info)
     return results
+
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

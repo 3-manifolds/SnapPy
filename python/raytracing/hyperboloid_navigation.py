@@ -6,60 +6,74 @@ import png
 
 __all__ = ['HyperboloidNavigation']
 
+
 def _move_left(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
         [ RF(-1), RF(0), RF(0) ], trans_amount) # a
 
+
 def _move_right(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [ RF(+1),  RF(0),  RF(0) ], trans_amount) # d
+        [ RF(+1), RF(0), RF(0) ], trans_amount) # d
+
 
 def _move_up(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0), RF(+1),  RF(0) ], trans_amount) # e
+        [  RF(0), RF(+1), RF(0) ], trans_amount) # e
+
 
 def _move_down(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0), RF(-1),  RF(0) ], trans_amount) # c
+        [  RF(0), RF(-1), RF(0) ], trans_amount) # c
+
 
 def _move_forward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0),  RF(0), RF(-1) ], trans_amount) # w
+        [  RF(0), RF(0), RF(-1) ], trans_amount) # w
+
 
 def _move_backward(rot_amount, trans_amount):
     RF = trans_amount.parent()
     return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-        [  RF(0),  RF(0), RF(+1) ], trans_amount) # s
+        [  RF(0), RF(0), RF(+1) ], trans_amount) # s
+
 
 def _turn_left(rot_amount, trans_amount):
     return O13_y_rotation(-rot_amount)
 
+
 def _turn_right(rot_amount, trans_amount):
     return O13_y_rotation(rot_amount)
+
 
 def _turn_up(rot_amount, trans_amount):
     return O13_x_rotation(-rot_amount)
 
+
 def _turn_down(rot_amount, trans_amount):
     return O13_x_rotation(rot_amount)
+
 
 def _turn_cw(rot_amount, trans_amount): # x
     return O13_z_rotation(-rot_amount)
 
+
 def _turn_ccw(rot_amount, trans_amount): # z
     return O13_z_rotation(rot_amount)
 
+
 def _add_cursor_keys(d):
-    d['left']  = _turn_left
+    d['left'] = _turn_left
     d['right'] = _turn_right
-    d['up']    = _turn_up
-    d['down']  = _turn_down
+    d['up'] = _turn_up
+    d['down'] = _turn_down
     return d
+
 
 _keymappings = {
     'QWERTY' : _add_cursor_keys(
@@ -133,7 +147,7 @@ class HyperboloidNavigation:
 
     - self.raytracing_data has to be an instance of, e.g.,
       IdealRaytracingData. This is needed to update data
-      such as the view matrix 
+      such as the view matrix
       using self.raytracing_data.update_view_state(...).
     - self.redraw_if_initialized() to redraw.
     - self.read_depth_value(x, y) to return the depth value at a pixel.
@@ -171,7 +185,7 @@ class HyperboloidNavigation:
         self.view_state = self.raytracing_data.initial_view_state()
 
         self.cursor = _default_cursor
-        self.configure(cursor = self.cursor)
+        self.configure(cursor=self.cursor)
 
         # Parameters controlling navigation in the same format that
         # get_uniform_binding returns..
@@ -286,7 +300,7 @@ class HyperboloidNavigation:
                     last_and_release[0] = t
 
             # If there is key press time we need to account for
-            if not dT is None:
+            if dT is not None:
                 RF = m.base_ring()
                 # Compute effect on view matrix
                 m = m * self.keymapping[k](
@@ -324,7 +338,7 @@ class HyperboloidNavigation:
             self.cursor = _default_cursor
 
         if not self.mouse_mode:
-            self.configure(cursor = self.cursor)
+            self.configure(cursor=self.cursor)
 
     def tkKeyPress(self, event):
         if self.mouse_mode:
@@ -335,7 +349,7 @@ class HyperboloidNavigation:
 
         cursor = _cursor_mappings.get(k)
         if cursor:
-            self.configure(cursor = cursor)
+            self.configure(cursor=cursor)
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
         if last_and_release:
@@ -389,7 +403,7 @@ class HyperboloidNavigation:
             height = 1000
 
             f = tempfile.NamedTemporaryFile(
-                suffix = '.png', delete = False)
+                suffix='.png', delete=False)
 
             self.save_image(width, height, f)
 
@@ -402,7 +416,7 @@ class HyperboloidNavigation:
             if last or release:
                 return
 
-        self.configure(cursor = _default_move_cursor)
+        self.configure(cursor=_default_move_cursor)
 
         self.mouse_pos_when_pressed = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
@@ -497,9 +511,9 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None
-        self.configure(cursor = self.cursor)
+        self.configure(cursor=self.cursor)
 
-    def setup_keymapping(self, keyboard = 'QWERTY'):
+    def setup_keymapping(self, keyboard='QWERTY'):
         self.keymapping = _keymappings[keyboard]
 
         # Key (e.g., 'w', 'a', ...) to pair of time stamps.
@@ -513,5 +527,5 @@ class HyperboloidNavigation:
             for k in self.keymapping
         }
 
-    def apply_prefs(self, prefs):
-        self.setup_keymapping(prefs.get('keyboard', 'QWERTY'))
+    def apply_settings(self, settings):
+        self.setup_keymapping(settings.get('keyboard', 'QWERTY'))

@@ -92,7 +92,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
     return result + bytes(tri_data.name)
 
 cdef pickle_tetrahedron_data(c_TetrahedronData* data, int flag):
-    cdef int i, j, k, v, f
+    cdef int i, j, v, f
     cdef Py_ssize_t n = 0
     cdef unsigned short mask, bit
     cdef int x, count, curve

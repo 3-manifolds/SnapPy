@@ -1,7 +1,8 @@
 __all__ = ['IntervalTree']
 
-LEFT  = 0
+LEFT = 0
 RIGHT = 1
+
 
 class IntervalTree():
     """
@@ -260,6 +261,7 @@ class IntervalTree():
 #
 # TESTING
 
+
 class _IntervalTreeTester(IntervalTree):
     """
     A test rig for IntervalTree. It will keep a separate plain list of all
@@ -356,11 +358,11 @@ class _IntervalTreeTester(IntervalTree):
         if node.isRed:
             align += 3
 
-        print(align * " ", end = " ")
+        print(align * " ", end=" ")
         if node.isRed:
-            print("R", end = " ")
+            print("R", end=" ")
         else:
-            print("B", end = " ")
+            print("B", end=" ")
 
         print(node.interval.lower())
 
@@ -388,9 +390,11 @@ class _IntervalTreeTester(IntervalTree):
             raise Exception("Inconsistent number of intervals: %d %d" % (
                     num_true, num_have))
 
+
 def _doctest():
     import doctest
     doctest.testmod()
+
 
 if __name__ == '__main__':
     _doctest()

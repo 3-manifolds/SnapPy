@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage, sage_method
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ..shapes import compute_hyperbolic_shapes
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
 from ...math_basics import correct_min
+from ..shapes import compute_hyperbolic_shapes
 from .cusp_tiling_engine import *
 
 if _within_sage:
@@ -10,8 +10,9 @@ if _within_sage:
 __all__ = ['verified_maximal_cusp_area_matrix',
            'triangulation_dependent_cusp_area_matrix']
 
+
 @sage_method
-def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
+def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec=None):
     """
     TESTS::
 
@@ -23,7 +24,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
         [7.00000000000? 7.00000000000?  28.000000000?]
     """
     hyperbolic, shapes = snappy_manifold.verify_hyperbolicity(
-        bits_prec = bits_prec)
+        bits_prec=bits_prec)
 
     if not hyperbolic:
         raise Exception("Could not compute shape intervals for: "
@@ -44,7 +45,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
 
 
 def triangulation_dependent_cusp_area_matrix(
-                            snappy_manifold, verified, bits_prec = None):
+                            snappy_manifold, verified, bits_prec=None):
     """
     Interesting case: t12521
 
@@ -54,10 +55,10 @@ def triangulation_dependent_cusp_area_matrix(
     [11.40953140648583915022197187043644048603871960228564151087?     91.1461442179608339668518063027198489593908228325190920?]
 
     This result:
-    
+
     [  77.553762651?   11.409531407?]
     [  11.409531407? 5.508968850234?]
-    
+
     After M.canonize:
 
     [  62.42018359?  11.409531407?]
@@ -65,7 +66,7 @@ def triangulation_dependent_cusp_area_matrix(
     """
     # Get shapes, as intervals if requested
     shapes = compute_hyperbolic_shapes(
-        snappy_manifold, verified = verified, bits_prec = bits_prec)
+        snappy_manifold, verified=verified, bits_prec=bits_prec)
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.
@@ -77,7 +78,7 @@ def triangulation_dependent_cusp_area_matrix(
 
     # If no areas are given, scale (up or down) all the cusps so that
     # they are in standard form.
-    c.ensure_std_form(allow_scaling_up = True)
+    c.ensure_std_form(allow_scaling_up=True)
 
     areas = c.cusp_areas()
     RIF = areas[0].parent()

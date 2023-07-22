@@ -11,19 +11,21 @@ def error(poly, z, a=ZZ(0)):
 
         poly(z) = a
 
-    fails to hold.  
+    fails to hold.
     """
     err = poly(z) - a
     if err == 0:
         return 0
     return z.prec() + ceil(log(abs(poly(z) - a), 2))
 
+
 def acceptable_error(poly, z, a, portion_bad):
     """
-    A error is judged as acceptable if poly(z) = a to within 
+    A error is judged as acceptable if poly(z) = a to within
     2^-(portion_bad*z.prec())
     """
     return error(poly, z, a) <= floor(portion_bad*z.prec())
+
 
 def best_algdep_factor(z, degree):
     if hasattr(z, 'algebraic_dependency'): # Sage >= 8.0
@@ -50,9 +52,9 @@ def complex_to_lattice(z, d, a, N=None):
 
 class ApproximateAlgebraicNumber():
     """
-    An algebraic number which we can compute 
+    An algebraic number which we can compute
     to arbitrary precision.  Specified by a function
-    where f(prec) is the number to 2^prec bits.  
+    where f(prec) is the number to 2^prec bits.
     """
     def __init__(self, defining_function):
         if defining_function in QQ:
@@ -62,7 +64,7 @@ class ApproximateAlgebraicNumber():
         self._min_poly = None
 
     def __repr__(self):
-        return  '<ApproxAN: %s>' % CDF(self(100))
+        return '<ApproxAN: %s>' % CDF(self(100))
 
     @cached_method
     def __call__(self, prec):
@@ -124,7 +126,7 @@ class ApproximateAlgebraicNumber():
             raise ValueError('Minimal polynomial is not known.')
         q = p.change_ring(QQ)
         q = (1/q.leading_coefficient())*q
-        return NumberField(q, 'z', embedding = self._approx_root)
+        return NumberField(q, 'z', embedding=self._approx_root)
 
     def place(self, prec):
         K = self.number_field()
@@ -204,6 +206,7 @@ def optimize_field_generator(z):
     f = f.denominator() * f
     return ExactAlgebraicNumber(f.change_ring(ZZ), w)
 
+
 class ListOfApproximateAlgebraicNumbers():
     def __init__(self, defining_function):
         self.f = defining_function
@@ -238,7 +241,7 @@ class ListOfApproximateAlgebraicNumbers():
             ans.append(p)
         return ans
 
-    def _find_field_uncached(self, prec, degree, verbosity = False):
+    def _find_field_uncached(self, prec, degree, verbosity=False):
         # Works similar to snap's field::generated_by
         #
         # The input elts is a list of approximate algebraic numbers (i.e., high
@@ -270,7 +273,7 @@ class ListOfApproximateAlgebraicNumbers():
         def message(*args):
             if verbosity:
                 print(*args)
-                #assert False
+                # assert False
 
         # The input list
         elts = self.list()
@@ -286,7 +289,7 @@ class ListOfApproximateAlgebraicNumbers():
         for i, elt in enumerate(elts):
             # Can the newly considered element elt be expressed in the old z
             exact_elt = z.express(elt, prec)
-            if not exact_elt is None:
+            if exact_elt is not None:
                 # If yes, remember it as its exact representation
                 exact_elts.append(exact_elt)
             else:
@@ -326,7 +329,7 @@ class ListOfApproximateAlgebraicNumbers():
         exact_elts = [field(exact_elt) for exact_elt in exact_elts]
         return field, z, exact_elts
 
-    def find_field(self, prec, degree, optimize=False, verbosity = False):
+    def find_field(self, prec, degree, optimize=False, verbosity=False):
 
         # Adding verbosity for now to debug potential problems
 

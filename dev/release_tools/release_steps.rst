@@ -4,23 +4,24 @@ Overview
 Key tools:
 
 1. Wheels for all three platforms are built using cibuildwheel as part
-   of an automatic GitHub action after each commit.
+   of an automatic GitHub action after each commit.  Can download in
+   bulk using::
 
-2. The sdist tarballs are build by a GitHub action of the
+     gh run download -R 3-manifolds/snappy
+
+2. The sdist tarballs are built by a GitHub action of the
    "snappy_release" project.
 
-3. The Windows app is also build by a GitHub action of
+3. The Windows and macOS apps is are built by a GitHub actions of
    "snappy_release".
 
-4. Recent macOS apps have been built by Marc directly.
-
-5. The script "test_pypi.py" is a key tool. It creates a virtual
+4. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
 
-6. Testing done on virtual machines running in VMWare Fusion on
+5. Testing done on virtual machines running in VMWare Fusion on
    dehn.math.illinois.edu.
 
-7. Nathan stores current and old versions in "~/Dropbox/pypi/".
+6. Nathan stores current and old versions in "~/Dropbox/pypi/".
 
 
 Warmup
@@ -101,21 +102,16 @@ Announce to the world
 Application Download Counts
 ===========================
 
-a. Version 2.3.*:  796 Mac,  955 Windows.
-b. Version 2.4.*:  471 Mac, 1048 Windows.
-c. Version 2.5.*:  433 Mac,  729 Windows.
-d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
-e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
-f. Version 2.7:    986 Mac,  636 Windows (89% Python 3).
-g. Version 2.8:   295* Mac,  573 Windows (85% Python 3).
-
-   Mac app was silently replaced a couple times to deal with Big Sur
-   and Tk issues.  So missing downloads from Oct 11 through Feb 21; 295
-   is estimate based on 175 known downloads.
-
-h. Version 3.0(.1): 292 Mac, 434 Windows.
-i. Version 3.0.2:    68 Mac,  70 Windows.
-j. Version 3.0.3:   350 Mac  645 Windows. (Through Oct 11)
+a. Version 2.3.*:   796 Mac,  955 Windows.
+b. Version 2.4.*:   471 Mac, 1048 Windows.
+c. Version 2.5.*:   433 Mac,  729 Windows.
+d. Version 2.6.0:   383 Mac,  699 Windows (28% Python 3).
+e. Version 2.6.1:  1018 Mac, 1129 Windows (15% Python 3).
+f. Version 2.7:     986 Mac,  636 Windows (89% Python 3).
+g. Version 2.8:     295 Mac,  573 Windows (85% Python 3).
+h. Version 3.0(.1): 292 Mac,  434 Windows.
+i. Version 3.0.2:    68 Mac,   70 Windows.
+j. Version 3.0.3:   667 Mac, 1333 Windows.
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

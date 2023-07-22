@@ -2,16 +2,17 @@ from ...sage_helper import _within_sage, sage_method
 from ...math_basics import prod
 
 from ...snap import peripheral
+from ...snap.cusp_cross_section import ComplexCuspCrossSection
+from ...snap.t3mlite import simplex
 
 if _within_sage:
     from sage.all import pi, xgcd
     import sage.all
 
+from .. import verifyHyperbolicity
+
 from .adjust_torsion import *
 from .compute_ptolemys import *
-from .. import verifyHyperbolicity
-from ..cuspCrossSection import ComplexCuspCrossSection
-from ...snap import t3mlite as t3m
 
 __all__ = ['verified_complex_volume_closed_torsion']
 
@@ -22,7 +23,7 @@ def _compute_holonomy(manifold, shapes):
     """
 
     # Compute z', z''
-    zp  = [ (1 / (1 - z)) for z in shapes ]
+    zp = [ (1 / (1 - z)) for z in shapes ]
     zpp = [ ((z - 1) / z) for z in shapes ]
 
     # A list
@@ -36,6 +37,7 @@ def _compute_holonomy(manifold, shapes):
 
     return [ prod([l ** expo for l, expo in zip(cross_ratios, eqn)])
              for eqn in peripheral_eqns ]
+
 
 @sage_method
 def zero_lifted_holonomy(manifold, m, l, f):
@@ -83,8 +85,9 @@ def zero_lifted_holonomy(manifold, m, l, f):
 
     return m, l
 
+
 @sage_method
-def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
+def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
     """
     Computes the verified complex volume (where the real part is the
     volume and the imaginary part is the Chern-Simons) for a given
@@ -92,7 +95,7 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
 
     Note that the result is correct only up to two torsion, i.e.,
     up to multiples of pi^2/2. The method expects an oriented manifold
-    with exactly one cusp which is filled, othewise it raises an exception.
+    with exactly one cusp which is filled, otherwise it raises an exception.
 
     If bits_prec is unspecified, the default precision of
     SnapPy.Manifold or SnapPy.ManifoldHP, respectively, will be used.
@@ -110,7 +113,7 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
 
     # Compute tetrahedra shapes to arbitrary precision.
     shapes = manifold.tetrahedra_shapes(
-        'rect', bits_prec = bits_prec, intervals = True)
+        'rect', bits_prec=bits_prec, intervals=True)
 
     # Check it is a valid hyperbolic structure
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
@@ -125,8 +128,8 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec = None):
     # Keys for the dual edges in cusp triangulation
     cusp_dual_edges = [ (i, F, V)
              for i in range(manifold.num_tetrahedra())
-             for F in t3m.TwoSubsimplices
-             for V in t3m.ZeroSubsimplices
+             for F in simplex.TwoSubsimplices
+             for V in simplex.ZeroSubsimplices
              if F & V ]
 
     # Compute 1-cocycle in C^1(boundary; C^*) matching the holonomy

@@ -5,7 +5,9 @@ import webbrowser
 from urllib.request import pathname2url
 from .gui import *
 from . import __file__ as snappy_dir
-from .infodialog import about_snappy, InfoDialog
+from .infowindow import about_snappy, InfoWindow
+from .version import version
+import shutil
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -61,12 +63,49 @@ else: # fall back choice
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
 
+
+def open_html_docs(page):
+    # In some Linux distros that package their webrowsers via snaps
+    # (e.g. Ubuntu 22.04 LTS), it is not possible to open a local HTML
+    # file if it is either (a) outside of $HOME or (b) in a hidden
+    # subdirectory of $HOME.  As Python's default user-site directory
+    # on Linux is in $HOME/.local, this makes it impossible to access
+    # the local copy of the docs.
+    #
+    # For details, see: https://bugs.launchpad.net/snapd/+bug/1979060
+
+    doc_dir = os.path.join(os.path.dirname(snappy_dir), 'doc')
+
+    if sys.platform.startswith('linux'):
+        safe_doc_dir = os.path.join(os.environ['HOME'], 'Downloads',
+                                    f'SnapPy_{version}_help_f8205a5')
+        if os.path.exists(safe_doc_dir):
+            shutil.rmtree(safe_doc_dir)
+        shutil.copytree(doc_dir, safe_doc_dir)
+    else:
+        safe_doc_dir = doc_dir
+
+    path = os.path.join(safe_doc_dir, page)
+    if os.path.exists(path):
+        url = 'file:' + pathname2url(path)
+        try:
+            webbrowser.open_new_tab(url)
+        except webbrowser.Error:
+            from tkinter import messagebox
+            messagebox.showwarning('Error', 'Failed to open the documentation file.')
+    else:
+        from tkinter import messagebox
+        messagebox.showwarning('Not found!',
+                               'The file %s does not exist.' % path)
+
+
 def add_menu(root, menu, label, command, state='active'):
     accelerator = scut.get(label, '')
     menu.add_command(label=label, accelerator=accelerator,
                      command=command, state=state)
     if scut_events.get(label, None) and state != 'disabled':
         root.bind(scut_events[label], command)
+
 
 class EditMenu(Tk_.Menu):
     """Edit Menu cascade containing Cut, Copy, Paste and Delete. To use,
@@ -102,6 +141,7 @@ class EditMenu(Tk_.Menu):
             else:
                 self.entryconfig(entry, state='disabled')
 
+
 class HelpMenu(Tk_.Menu):
     """Help Menu cascade.  Always contains the main SnapPy help entry.
     Additional help entries for specific tools, such as a Dirichlet
@@ -112,30 +152,16 @@ class HelpMenu(Tk_.Menu):
         # on OS X setting name='help' makes this a system help menu.
         Tk_.Menu.__init__(self, menubar, name='help')
         if sys.platform != 'darwin':
-            self.add_command(label = 'SnapPy Help ...', command=self.show_SnapPy_help)
-        self.add_command(label = help_report_bugs_label,
+            self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
+        self.add_command(label=help_report_bugs_label,
                          command=self.show_bugs_page)
         self.extra_commands = {}
 
     def show_SnapPy_help(self):
-        self.show_page('index.html')
+        open_html_docs('index.html')
 
     def show_bugs_page(self):
-        self.show_page('bugs.html')
-
-    def show_page(self, page):
-        path = os.path.join(os.path.dirname(snappy_dir), 'doc', page)
-        if os.path.exists(path):
-            url = 'file:' + pathname2url(path)
-            try:
-                webbrowser.open_new_tab(url)
-            except webbrowser.Error:
-                from tkinter import messagebox
-                messagebox.showwarning('Error', 'Failed to open the documentation file.')
-        else:
-            from tkinter import messagebox
-            messagebox.showwarning('Not found!',
-                                   'The file %s does not exist.'%path)
+        open_html_docs('bugs.html')
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command
@@ -153,6 +179,7 @@ class HelpMenu(Tk_.Menu):
             if label in self.extra_commands:
                 self.add_command(label=label, command=self.extra_commands[label])
 
+
 class ListedWindow():
     """
     Mixin class that allows emulation of the Apple Window menu. Windows
@@ -160,16 +187,16 @@ class ListedWindow():
     call unregister_window when they close.  The class maintains a list of all
     openwindows.Participating windows should be subclasses of ListedWindow, as
     should objects which need access to its list of all windows in the app, such
-    as the Preferences object.
+    as the Settings object.
     """
     window_list = []
-    prefs = {}
+    settings = {}
 
     @classmethod
     def register_window(cls, window):
         assert isinstance(window, ListedWindow)
         cls.window_list.append(window)
-        window.apply_prefs()
+        window.apply_settings()
 
     @classmethod
     def unregister_window(cls, window):
@@ -183,9 +210,10 @@ class ListedWindow():
         self.lift()
         self.focus_force()
 
-    def apply_prefs(self):
-        # Subclasses should override this if they use preferences.
+    def apply_settings(self):
+        # Subclasses should override this if they use settings.
         pass
+
 
 class WindowMenu(Tk_.Menu, ListedWindow):
     """
@@ -201,19 +229,18 @@ class WindowMenu(Tk_.Menu, ListedWindow):
         for object in self.window_list:
             self.add_command(label=object.menu_title, command=object.bring_to_front)
 
+
 def browser_menus(self):
     """
     Menus for the browser window.  Used as Browser.build_menus.
     Creates a menubar attribute for the browser.
     """
     self.menubar = menubar = Tk_.Menu(self)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    if sys.platform == 'darwin' and self.main_window is not None:
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self, File_menu, 'Open...', None, 'disabled')
     add_menu(self, File_menu, 'Save as...', self.save)
@@ -225,25 +252,21 @@ def browser_menus(self):
         menubar.add_cascade(label='View', menu=Tk_.Menu(menubar, name='view'))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-
-    def dirichlet_help():
-        InfoDialog(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
-    help_menu.extra_command(label=help_polyhedron_viewer_label, command=dirichlet_help)
-
-    def horoball_help():
-        InfoDialog(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
-    help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
+    help_menu.extra_command(label=help_polyhedron_viewer_label,
+                            command=self.dirichlet_help)
+    help_menu.extra_command(label=help_horoball_viewer_label,
+                            command=self.horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
+
 
 def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
     self.menubar = menubar = Tk_.Menu(self.window)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About PLink...', command=self.about)
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.window, File_menu, 'Open...', self.load)
     add_menu(self.window, File_menu, 'Save as...', self.save)
@@ -269,20 +292,18 @@ def plink_menus(self):
     Help_menu.add_command(label='PLink Help ...', command=self.howto)
     self.window.config(menu=menubar)
 
+
 def dirichlet_menus(self):
     """
     Menus for the standalone Dirichlet viewer.  Called by the view Frame, not the
     parent Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.parent)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -297,9 +318,10 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
+    help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.help_window)
     help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
+
 
 def horoball_menus(self):
     """
@@ -307,14 +329,11 @@ def horoball_menus(self):
     master Toplevel.
     """
     self.menubar = menubar = Tk_.Menu(self.master)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy',
-                                command=self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -325,22 +344,20 @@ def horoball_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label=help_horoball_viewer_label, command=self.widget.help)
+    help_menu.extra_command(label=help_horoball_viewer_label, command=self.help_window)
     help_menu.activate([help_horoball_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
+
 
 def inside_view_menus(self):
     """Menus for the standalone Inside viewer.  Called by the view Frame, not the
     master Toplevel."""
     self.menubar = menubar = Tk_.Menu(self.master)
-    Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
-    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    if sys.platform == 'darwin':
+        Python_menu = Tk_.Menu(menubar, name='apple')
+        Python_menu.add_command(label='About SnapPy...',
+                                command=self.main_window.about_window)
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
@@ -351,7 +368,5 @@ def inside_view_menus(self):
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    #help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
-    #help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
     help_menu.activate([help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)

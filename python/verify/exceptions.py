@@ -34,9 +34,7 @@ The hierarchy is as follows:
 
       - CuspEquationExactVerifyError
       - CuspEquationLogLiftNumericalVerifyError
-    - CuspDevelopmentType
 
-      - CuspDevelopmentTypeExactVerifyError
   - TiltType
 
     - TiltInequalityNumericalVerifyError
@@ -46,15 +44,14 @@ The hierarchy is as follows:
   - ShapeType
 
     - ShapePositiveImaginaryPartNumericalVerifyError
-  - ConsistencyWithSnapPeaType
-
-    - ConsistencyWithSnapPeaNumericalVerifyError
 """
+
 
 class VerifyErrorBase(RuntimeError):
     """
     The base for all exceptions related to verification.
     """
+
 
 class NumericalVerifyError(VerifyErrorBase):
     """
@@ -63,11 +60,13 @@ class NumericalVerifyError(VerifyErrorBase):
     (typically by interval arithmetics).
     """
 
+
 class InequalityNumericalVerifyError(NumericalVerifyError):
     """
     The base for all exceptions resulting from a failed numerical
     verification of an inequality (typically by interval arithmetics).
     """
+
 
 class LogLiftNumericalVerifyError(NumericalVerifyError):
     """
@@ -84,11 +83,13 @@ class LogLiftNumericalVerifyError(NumericalVerifyError):
     failed.
     """
 
+
 class ExactVerifyError(VerifyErrorBase):
     """
     The base for all exceptions resulting from a failed verification of an
     equation using exact arithmetics.
     """
+
 
 class IsZeroExactVerifyError(VerifyErrorBase):
     """
@@ -96,16 +97,19 @@ class IsZeroExactVerifyError(VerifyErrorBase):
     quantity is zero using exact arithmetics.
     """
 
+
 class EquationType():
     """
     A base class to derive subclasses which indicate what kind of
     equation failed to be verified.
     """
 
+
 class EdgeEquationType(EquationType):
     """
     A base class indicating that an edge equation could not be verified.
     """
+
 
 class EdgeEquationExactVerifyError(ExactVerifyError,
                                    EdgeEquationType):
@@ -121,6 +125,7 @@ class EdgeEquationExactVerifyError(ExactVerifyError,
         return ('Verification of a polynomial edge equation using exact '
                 'arithmetic failed: %r == 1' % self.value)
 
+
 class EdgeEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
                                               EdgeEquationType):
     """
@@ -134,17 +139,20 @@ class EdgeEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
         return ('Numerical verification that logarthmic edge equation has '
                 'small error failed: %r == 2 Pi I' % self.value)
 
+
 class CuspConsistencyType(EquationType):
     """
     A base class indicating that verificatin of an equation involving a cusp
     failed.
     """
 
+
 class CuspEquationType(CuspConsistencyType):
     """
     A base class indicating that a cusp gluing equation (involving the
     shapes) failed.
     """
+
 
 class CuspEquationExactVerifyError(ExactVerifyError,
                                    CuspEquationType):
@@ -159,6 +167,7 @@ class CuspEquationExactVerifyError(ExactVerifyError,
     def __str__(self):
         return ('Verification of a polynomial cusp equation using exact '
                 'arithmetic failed: %r == 1' % self.value)
+
 
 class CuspEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
                                               CuspEquationType):
@@ -176,34 +185,11 @@ class CuspEquationLogLiftNumericalVerifyError(LogLiftNumericalVerifyError,
                 '%r == %r' % (self.value, self.expected_value))
 
 
-class CuspDevelopmentType(CuspConsistencyType):
-    """
-    A base class indicating that there was a failure to find a consistent
-    assignment of side lengths to the Euclidean Horotriangles to form a
-    Euclidean Horotorus for a cusp.
-    """
-
-class CuspDevelopmentExactVerifyError(ExactVerifyError,
-                                      CuspDevelopmentType):
-    """
-    Raised when finding a consistent assignment of side lengths to the
-    Euclidean Horotriangles to form a Euclidean Horotorus for a cusp failed
-    using exact arithmetic.
-    """
-
-    def __init__(self, value1, value2):
-        self.value1 = value1
-        self.value2 = value2
-
-    def __str__(self):
-        return ('Inconsistency in the side lengths of the Euclidean '
-                'Horotriangles for a cusp: '
-                '%r = %r' % (self.value1, self.value2))
-
 class TiltType(EquationType):
     """
     A base class relating to tilts.
     """
+
 
 class TiltInequalityNumericalVerifyError(InequalityNumericalVerifyError,
                                          TiltType):
@@ -233,6 +219,7 @@ class TiltProvenPositiveNumericalVerifyError(
                 'failed, tilt is actually positive. This is provably '
                 'not the proto-canonical triangulation: %r <= 0' % self.value)
 
+
 class TiltIsZeroExactVerifyError(IsZeroExactVerifyError,
                                  TiltType):
     """
@@ -245,10 +232,12 @@ class TiltIsZeroExactVerifyError(IsZeroExactVerifyError,
         return ('Verification that tilt is zero has failed using exact '
                 'arithmetic: %r == 0' % self.value)
 
+
 class ShapeType(EquationType):
     """
     Base class for failed verification of legal shapes.
     """
+
 
 class ShapePositiveImaginaryPartNumericalVerifyError(
     InequalityNumericalVerifyError,
@@ -263,25 +252,3 @@ class ShapePositiveImaginaryPartNumericalVerifyError(
         return ('Numerical verification that shape has positive imaginary '
                 'part has failed: Im(%r) > 0' % self.value)
 
-class ConsistencyWithSnapPeaType(EquationType):
-    """
-    A base class for exceptions raised when there is a difference
-    between the values computed by the SnapPea kernel and by this module
-    for a given quantity.
-    """
-
-class ConsistencyWithSnapPeaNumericalVerifyError(
-    NumericalVerifyError,
-    ConsistencyWithSnapPeaType):
-    """
-    Exception raised when there is a significant numerical difference
-    between the values computed by the SnapPea kernel and by this module
-    for a given quantity.
-    """
-    def __init__(self, value, snappea_value):
-        self.value = value
-        self.snappea_value = snappea_value
-
-    def __str__(self):
-        return ('Inconsistency between SnapPea kernel and verify: '
-                '%r == %r' % (self.snappea_value, self.value))

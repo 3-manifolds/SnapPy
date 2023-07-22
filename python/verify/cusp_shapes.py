@@ -1,7 +1,8 @@
-from .cuspCrossSection import ComplexCuspCrossSection
+from ..snap.cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['NonorientableManifoldError', 'compute_cusp_shapes']
+
 
 class NonorientableManifoldError(RuntimeError):
     """
@@ -15,7 +16,8 @@ class NonorientableManifoldError(RuntimeError):
         return (('Cannot compute cusp shapes for non-orientable '
                  'manifold %s') % self.manifold)
 
-def compute_cusp_shapes(manifold, verified, bits_prec = None):
+
+def compute_cusp_shapes(manifold, verified, bits_prec=None):
     """
     Compute verified cusp shapes (following the SnapPea kernel convention,
     it returns the conjugate of the quotient of the translations
@@ -28,7 +30,7 @@ def compute_cusp_shapes(manifold, verified, bits_prec = None):
     sage: M = Manifold('s843')
     sage: M.cusp_info('shape', verified = True) # doctest: +NUMERIC12
     [0.46738227587? + 1.19036005068?*I, 0.0841873244146? + 1.0506945576790?*I]
-    
+
     sage: M.cusp_info('shape', verified = True, bits_prec = 100) # doctest: +NUMERIC21
     [0.4673822758634149679181698? + 1.1903600506742881207098974?*I, 0.084187324414612694374797272? + 1.050694557679002004845675723?*I]
     """
@@ -37,7 +39,7 @@ def compute_cusp_shapes(manifold, verified, bits_prec = None):
         raise NonorientableManifoldError(manifold)
 
     shapes = compute_hyperbolic_shapes(
-        manifold, verified = verified, bits_prec = bits_prec)
+        manifold, verified=verified, bits_prec=bits_prec)
 
     # Compute cusp cross section
     c = ComplexCuspCrossSection.fromManifoldAndShapes(manifold, shapes)

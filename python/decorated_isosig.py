@@ -54,7 +54,7 @@ separator = '_'
 # Pattern matching decorated isosigs
 
 base64_pat = r'([a-zA-Z0-9\+\-]+)'
-separator_pat = '[%s]{1}'%separator
+separator_pat = '[%s]{1}' % separator
 base64_opt_pat = r'([a-zA-Z0-9\+\-]*)'
 isosig_pattern = re.compile(base64_pat + separator_pat + base64_opt_pat + '$')
 
@@ -67,6 +67,7 @@ in_one = string.ascii_lowercase[:16] + string.ascii_lowercase[1:16].upper()
 
 int_to_letter = dict(enumerate(base64_letters))
 letter_to_int = dict((a, i) for i, a in enumerate(base64_letters))
+
 
 def encode_nonnegative_int(x):
     """
@@ -83,17 +84,19 @@ def encode_nonnegative_int(x):
             break
     return ''.join([int_to_letter[b] for b in six_bits])
 
+
 def decode_nonnegative_int(s):
     return sum( letter_to_int[a] << 6*i for i, a in enumerate(s))
+
 
 def encode_int(x):
     """
     Encodes an integer in the range [-2**90 + 1, 2**90 - 1] with a "stop"
-    at the end so a concatenation of such encodings is easily decodable.  
+    at the end so a concatenation of such encodings is easily decodable.
     The basic format is:
-    
+
     If x in [0...15], encode as a single letter in [a...p].
-    If x in [-15...-1] encode as a single letter in [P...B]. 
+    If x in [-15...-1] encode as a single letter in [P...B].
 
     Otherwise, the first letter specifies the length of
     encode_nonnegative_int(abs(x)) as well as sign(x), followed by the
@@ -113,8 +116,10 @@ def encode_int(x):
     except IndexError:
         raise ValueError('The given integer is too large to encode')
 
+
 def encode_integer_list(L):
     return ''.join(map(encode_int, L))
+
 
 def decode_integer_list(encoded):
     ans = []
@@ -135,8 +140,10 @@ def decode_integer_list(encoded):
 
 # Some helper functions
 
+
 def det(A):
     return A[0][0]*A[1][1] - A[0][1]*A[1][0]
+
 
 def inverse_perm(L):
     ans = len(L)*[None]
@@ -203,20 +210,21 @@ def supress_minus_zero(x):
 
 # main two functions
 
+
 def decorated_isosig(manifold, triangulation_class,
-                     ignore_cusp_ordering = False,
-                     ignore_curve_orientations = False,
-                     ignore_orientation = True):
+                     ignore_cusp_ordering=False,
+                     ignore_curve_orientations=False,
+                     ignore_orientation=True):
 
     isosig = manifold.triangulation_isosig(
-        decorated = False,
-        ignore_orientation = ignore_orientation)
+        decorated=False,
+        ignore_orientation=ignore_orientation)
 
     # Do not decorate if no cusps
     if manifold.num_cusps() == 0:
         return isosig
 
-    N = triangulation_class(isosig, remove_finite_vertices = False)
+    N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
     # in Python3 range is an iterator
@@ -288,10 +296,11 @@ def decorated_isosig(manifold, triangulation_class,
 
     return ans
 
+
 def set_peripheral_from_decoration(manifold, decoration):
     """
     The manifold is assumed to already have a triangulation created
-    from the "bare" isosig.    
+    from the "bare" isosig.
     """
     dec = decode_integer_list(decoration)
     manifold.set_peripheral_curves('combinatorial')
@@ -326,11 +335,13 @@ def same_peripheral_curves(M, N):
             return True
     return False
 
+
 asymmetric = ['v3372', 't10397', 't10448', 't11289', 't11581',
               't11780', 't11824', 't12685', 'o9_34328', 'o9_35609', 'o9_35746',
               'o9_36591', 'o9_37290', 'o9_37552', 'o9_38147', 'o9_38375',
               'o9_38845', 'o9_39220', 'o9_41039', 'o9_41063', 'o9_41329',
               'o9_43248']
+
 
 def main_test():
     import snappy
@@ -389,7 +400,7 @@ def test_link_invariant():
     for mfd in mfds[:len(dt_codes)]:
         mfd.reverse_orientation()
 
-    isometry_signatures = [ mfd.isometry_signature(of_link = True)
+    isometry_signatures = [ mfd.isometry_signature(of_link=True)
                             for mfd in mfds ]
 
     # All the links only differ in orientation of complement or components,
@@ -397,15 +408,15 @@ def test_link_invariant():
     assert len(set(isometry_signatures)) == 1
 
     M = snappy.Manifold(isometry_signatures[0])
-    N = snappy.Manifold(M.isometry_signature(of_link = True))
+    N = snappy.Manifold(M.isometry_signature(of_link=True))
 
     # Instantiating a manifold from its decorated isometry_signature should
     # eventually yield to a fixed point
     assert same_peripheral_curves(M, N)
 
     # More sanity checks
-    assert isometry_signatures[0] == M.isometry_signature(of_link = True)
-    assert isometry_signatures[0] == N.isometry_signature(of_link = True)
+    assert isometry_signatures[0] == M.isometry_signature(of_link=True)
+    assert isometry_signatures[0] == N.isometry_signature(of_link=True)
 
     for mfd in mfds:
         assert mfd.is_isometric_to(M, True)[0].extends_to_link()
@@ -426,6 +437,7 @@ def helper_are_isometric(M, N):
 
     raise Exception("Could not find isometry")
 
+
 def helper_test_by_dehn_filling(M):
     from snappy import Manifold
 
@@ -434,9 +446,9 @@ def helper_test_by_dehn_filling(M):
     for ignore_cusp_ordering in [ False, True]:
         for ignore_curve_orientations in [ False, True]:
             isosig = M.triangulation_isosig(
-                    decorated = True,
-                    ignore_cusp_ordering = ignore_cusp_ordering,
-                    ignore_curve_orientations = ignore_curve_orientations)
+                    decorated=True,
+                    ignore_cusp_ordering=ignore_cusp_ordering,
+                    ignore_curve_orientations=ignore_curve_orientations)
             N = Manifold(isosig)
             N_filled = N.filled_triangulation()
 
@@ -466,6 +478,7 @@ def test_by_dehn_filling():
                 helper_test_by_dehn_filling(M)
 
     print("Tested %d randomly Dehn filled manifolds" % count)
+
 
 if __name__ == '__main__':
     test_integer_list_encoder()

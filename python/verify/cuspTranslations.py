@@ -1,15 +1,16 @@
+from ..snap.cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
-from .cuspCrossSection import ComplexCuspCrossSection
 
 __all__ = ['cusp_translations_for_manifold',
            'cusp_translations_for_neighborhood']
 
-def cusp_translations_for_manifold(manifold, verified, areas = None,
-                                   check_std_form = True,
-                                   bits_prec = None):
+
+def cusp_translations_for_manifold(manifold, verified, areas=None,
+                                   check_std_form=True,
+                                   bits_prec=None):
 
     shapes = compute_hyperbolic_shapes(
-        manifold, verified = verified, bits_prec = bits_prec)
+        manifold, verified=verified, bits_prec=bits_prec)
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.
@@ -42,7 +43,7 @@ def cusp_translations_for_manifold(manifold, verified, areas = None,
     else:
         # If no areas are given, scale (up or down) all the cusps so that
         # they are in standard form.
-        c.ensure_std_form(allow_scaling_up = True)
+        c.ensure_std_form(allow_scaling_up=True)
 
     # Note: the only code path avoiding ensure_std_form is through calling
     # all_translations on a CuspNeighborhood with verified = False,
@@ -55,8 +56,9 @@ def cusp_translations_for_manifold(manifold, verified, areas = None,
     # The result
     return c.all_normalized_translations()
 
+
 def cusp_translations_for_neighborhood(neighborhood,
-                                       verified = False, bits_prec = None):
+                                       verified=False, bits_prec=None):
 
     # Use the proto-canonical triangulation corresponding to the given
     # neighborhood and use Proposition 1 from cusp_neighborhoods.c to compute

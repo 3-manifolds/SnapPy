@@ -6,6 +6,8 @@ from ..snap.t3mlite import Mcomplex, simplex
 from typing import Tuple, Optional, Sequence
 
 # @dataclass
+
+
 class CuspPostDrillInfo:
     """
     Information carried around to be applied after drilling
@@ -45,6 +47,7 @@ class CuspPostDrillInfo:
                 self.filling == self.filling and
                 self.peripheral_matrix == self.peripheral_matrix)
 
+
 def index_geodesics_and_add_post_drill_infos(
         geodesics : Sequence[GeodesicInfo],
         mcomplex : Mcomplex) -> None:
@@ -57,15 +60,15 @@ def index_geodesics_and_add_post_drill_infos(
 
     for i, v in enumerate(old_vertices):
         v.post_drill_info = CuspPostDrillInfo(
-            index = i, filling = v.filling_matrix[0])
+            index=i, filling=v.filling_matrix[0])
 
     n = len(old_vertices)
 
     for i, g in enumerate(geodesics):
         if g.core_curve_cusp:
             g.core_curve_cusp.post_drill_info = CuspPostDrillInfo(
-                index = n + i,
-                peripheral_matrix = _multiply_filling_matrix(
+                index=n + i,
+                peripheral_matrix=_multiply_filling_matrix(
                     g.core_curve_cusp.filling_matrix,
                     g.core_curve_direction))
         else:
@@ -75,6 +78,7 @@ def index_geodesics_and_add_post_drill_infos(
         tet.post_drill_infos = {
             V : tet.Class[V].post_drill_info
             for V in simplex.ZeroSubsimplices }
+
 
 def reorder_vertices_and_get_post_drill_infos(
         mcomplex : Mcomplex) -> Sequence[CuspPostDrillInfo]:
@@ -97,6 +101,7 @@ def reorder_vertices_and_get_post_drill_infos(
 
     return [ v.post_drill_info for v in cusp_vertices ]
 
+
 def refill_and_adjust_peripheral_curves(
         manifold,
         post_drill_infos : Sequence[CuspPostDrillInfo]) -> None:
@@ -104,9 +109,10 @@ def refill_and_adjust_peripheral_curves(
     manifold.dehn_fill([ info.filling for info in post_drill_infos])
 
     for info in post_drill_infos:
-        if not info.peripheral_matrix is None:
+        if info.peripheral_matrix is not None:
             manifold.set_peripheral_curves(
-                info.peripheral_matrix, which_cusp = info.index)
+                info.peripheral_matrix, which_cusp=info.index)
+
 
 def _multiply_filling_matrix(m : FillingMatrix, s : int) -> FillingMatrix:
     return ((s * m[0][0], s * m[0][1]),

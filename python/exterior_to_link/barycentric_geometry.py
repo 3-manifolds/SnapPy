@@ -252,9 +252,7 @@ class BarycentricArc(Arc):
         zeros_e = self.end.zero_coordinates()
         if len(zeros_s) > 1 or len(zeros_e) > 1:
             return True
-        if len(set(zeros_s) & set(zeros_e)) > 0:
-            return True
-        return False
+        return bool(set(zeros_s) & set(zeros_e))
 
     def max_denom(self):
         rationals = list(self.start.vector) + list(self.end.vector)
@@ -275,7 +273,6 @@ class InfinitesimalArc(Arc):
         v, i = self.start, self.start_tet
         w, j = self.end, self.end_tet
         return f'InfArc({i}:{v}; {j}:{w})'
-
 
 
 # We consider a bipyramid with a triangular base, i.e. the union of
@@ -299,12 +296,12 @@ class InfinitesimalArc(Arc):
 # typically different unless there is a global affine map taking one
 # bipyramid to the other.  It is thus convenient to us a standard
 # bipyramid which is symmetric with respect to affine maps.
-
 A = Vector3([ 3, 0, 0])
 B = Vector3([ 0, 0, 3])
 C = Vector3([ 0, 3, 0])
 N = Vector3([ 0, 0, 0])
 S = Vector3([ 2, 2, 2])
+
 
 class TetrahedronEmbedding():
     """
@@ -401,7 +398,7 @@ def barycentric_edge_embedding(arrow, north_pole=None):
     """
     if north_pole is None:
         north_pole = N
-    assert len(arrow.linking_cycle())==3
+    assert len(arrow.linking_cycle()) == 3
     arrow = arrow.copy()
     verts = [A, B, C, A]
     ans = []
@@ -414,7 +411,7 @@ def barycentric_edge_embedding(arrow, north_pole=None):
     return ans
 
 
-#arrow, tail, head, opp_tail, opp_head
+# arrow, tail, head, opp_tail, opp_head
 def barycentric_quad_embedding0(arrow, north_pole=None):
     """
     Take an arrow with 4 valent axis, then build embedding of the
@@ -433,14 +430,15 @@ def barycentric_quad_embedding0(arrow, north_pole=None):
     verts = [e, b, w, a, e]
     for i in range(4):
         bdry_map = [None, None, f'x{i}', f'y{i}']
-        tet_verts =  [verts[i], verts[i+1], s, n]
+        tet_verts = [verts[i], verts[i + 1], s, n]
         ans.append((arrow.Tetrahedron,
                     tetrahedron_embedding(arrow, tet_verts, bdry_map)))
         arrow.next()
 
     return ans
 
-#arrow, tail, head, opp_tail, opp_head
+
+# arrow, tail, head, opp_tail, opp_head
 def barycentric_quad_embedding1(arrow, north_pole=None):
     """
     Take an arrow with 4 valent axis, then build embedding of the

@@ -1,11 +1,12 @@
 from .spatial_dict import SpatialDict, floor_as_integers
-from .line import R13Line, R13LineWithMatrix
-from .geodesic_info import LiftedTetrahedron
 
 from ..hyperboloid import ( # type: ignore
     r13_dot, o13_inverse, distance_unit_time_r13_points)
+from ..tiling.line import R13Line, R13LineWithMatrix
+from ..tiling.lifted_tetrahedron import LiftedTetrahedron
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..matrix import matrix # type: ignore
+
 
 def balance_end_points_of_line(line_with_matrix : R13LineWithMatrix,
                                point) -> R13LineWithMatrix:
@@ -14,6 +15,7 @@ def balance_end_points_of_line(line_with_matrix : R13LineWithMatrix,
             [ endpoint / -r13_dot(point, endpoint)
               for endpoint in line_with_matrix.r13_line.points]),
         line_with_matrix.o13_matrix)
+
 
 class ZQuotientLiftedTetrahedronSet:
     def __init__(self,
@@ -30,6 +32,7 @@ class ZQuotientLiftedTetrahedronSet:
             return False
         tets.add(lifted_tetrahedron.tet)
         return True
+
 
 class _ZQuotientDict(SpatialDict):
     def __init__(self,
@@ -66,6 +69,7 @@ class _ZQuotientDict(SpatialDict):
                 pt[1] * self._weights[1] +
                 pt[2] * self._weights[2])
 
+
 class _O13MatrixPowerCache:
     def __init__(self, m):
         self._positive_cache = _MatrixNonNegativePowerCache(m)
@@ -77,11 +81,12 @@ class _O13MatrixPowerCache:
         else:
             return self._negative_cache.power(-i)
 
+
 class _MatrixNonNegativePowerCache:
     def __init__(self, m):
         self._m = m
-        self._powers = [ matrix.identity(ring = m.base_ring(),
-                                         n = m.dimensions()[0]) ]
+        self._powers = [ matrix.identity(ring=m.base_ring(),
+                                         n=m.dimensions()[0]) ]
 
     def power(self, i):
         while not i < len(self._powers):

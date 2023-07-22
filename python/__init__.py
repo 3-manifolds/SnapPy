@@ -1,7 +1,7 @@
 # import the SnapPy bindings
-#import logging
-#logging.basicConfig(filename='example.log',level=logging.DEBUG)
-#logging.debug('This message should go to the log file')
+# import logging
+# logging.basicConfig(filename='example.log',level=logging.DEBUG)
+# logging.debug('This message should go to the log file')
 import sys
 from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,
@@ -23,14 +23,45 @@ import time
 from .SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
 
+
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
+
 
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
+
 class Manifold(_ManifoldLP):
     __doc__ = _ManifoldLP.__doc__
+
+    def identify(self, extends_to_link=False):
+        """
+        Looks for the manifold in all of the SnapPy databases.
+        For hyperbolic manifolds this is done by searching for isometries:
+
+        >>> M = Manifold('m125')
+        >>> M.identify()
+        [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
+
+        By default, there is no restriction on the isometries. One can
+        require that the isometry take meridians to meridians. This
+        might return fewer results:
+
+        >>> M.identify(extends_to_link=True)
+        [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
+
+        For closed manifolds, extends_to_link doesn't make sense
+        because of how the kernel code works:
+
+        >>> C = Manifold("m015(1,2)")
+        >>> C.identify()
+        [m006(-5,2)]
+        >>> C.identify(True)
+        []
+        """
+        return self._identify(extends_to_link)
+
     def high_precision(self):
         """
         Return a high precision version of this manifold.
@@ -55,8 +86,17 @@ class Manifold(_ManifoldLP):
     def low_precision(self):
         return self.copy()
 
+    def is_isometric_to(self, other, return_isometries=False):
+        __doc__ = _ManifoldLP.is_isometric_to.__doc__
+        if other.__class__ is ManifoldHP:
+            return _ManifoldHP.is_isometric_to(self.high_precision(), other,
+                                                  return_isometries)
+        return _ManifoldLP.is_isometric_to(self, other, return_isometries)
+
+
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
+
     def low_precision(self):
         """
         Return a low precision version of this high precision manifold.
@@ -82,25 +122,32 @@ class ManifoldHP(_ManifoldHP):
     def high_precision(self):
         return self.copy()
 
+    def is_isometric_to(self, other, return_isometries=False):
+        __doc__ = _ManifoldHP.is_isometric_to.__doc__
+        if other.__class__ is Manifold:
+            return _ManifoldHP.is_isometric_to(self, other.high_precision(),
+                                                   return_isometries)
+        return _ManifoldHP.is_isometric_to(self, other, return_isometries)
+
     def identify(self, extends_to_link=False):
         """
         Looks for the manifold in all of the SnapPy databases.
-        For hyperbolic manifolds this is done by searching for isometries: 
+        For hyperbolic manifolds this is done by searching for isometries:
 
         >>> M = ManifoldHP('m125')
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-        
+
         By default, there is no restriction on the isometries. One can require
         that the isometry take meridians to meridians. This might return
         fewer results:
 
         >>> M.identify(extends_to_link=True)
         [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-        
+
         For closed manifolds, extends_to_link doesn't make sense because
         of how the kernel code works:
-        
+
         >>> C = Manifold("m015(1,2)")
         >>> C.identify()
         [m006(-5,2)]
@@ -108,7 +155,8 @@ class ManifoldHP(_ManifoldHP):
         []
 
         """
-        return self.low_precision().identify(extends_to_link)
+        return self.low_precision()._identify(extends_to_link)
+
 
 SnapPy._manifold_class = Manifold
 SnapPy._triangulation_class = Triangulation
@@ -141,15 +189,15 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
-def canonical_retriangulation(
-    manifold, verified = False,
-    interval_bits_precs = verify.default_interval_bits_precs,
-    exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
-    verbose = False):
 
+def canonical_retriangulation(
+    manifold, verified=False,
+    interval_bits_precs=verify.default_interval_bits_precs,
+    exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
+    verbose=False):
     """
     The canonical retriangulation which is closely related to the canonical
-    cell decomposition and described in more detail `here 
+    cell decomposition and described in more detail `here
     <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
 
        >>> M = Manifold("m412")
@@ -165,7 +213,7 @@ def canonical_retriangulation(
       sage: K = M.canonical_retriangulation(verified = True)
       sage: len(K.isomorphisms_to(K)) # Verified size of the isometry group.
       8
-   
+
     See :py:meth:`verify.verified_canonical_retriangulation` for the
     additional options.
     """
@@ -175,25 +223,26 @@ def canonical_retriangulation(
     if verified:
         return verify.verified_canonical_retriangulation(
             manifold,
-            interval_bits_precs = interval_bits_precs,
-            exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
-            verbose = verbose)
+            interval_bits_precs=interval_bits_precs,
+            exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
+            verbose=verbose)
     else:
         return manifold._canonical_retriangulation()
+
 
 Manifold.canonical_retriangulation = canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical_retriangulation
 
-def isometry_signature(
-    manifold, of_link = False, verified = False,
-    interval_bits_precs = verify.default_interval_bits_precs,
-    exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
-    verbose = False):
 
+def isometry_signature(
+    manifold, of_link=False, verified=False,
+    interval_bits_precs=verify.default_interval_bits_precs,
+    exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
+    verbose=False):
     """
     The isomorphism signature of the canonical retriangulation. This is a
     complete invariant of the isometry type of a hyperbolic 3-manifold and
-    described in more detail `here 
+    described in more detail `here
     <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
 
         >>> M = Manifold("m125")
@@ -236,17 +285,18 @@ def isometry_signature(
         raise ValueError('isometry_signature needs all cusps to be complete')
 
     retrig = manifold.canonical_retriangulation(
-         verified = verified,
-         interval_bits_precs = interval_bits_precs,
-         exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
-         verbose = verbose)
+         verified=verified,
+         interval_bits_precs=interval_bits_precs,
+         exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
+         verbose=verbose)
 
     if not retrig:
         return None
 
-    return retrig.triangulation_isosig(decorated = of_link,
-                                       ignore_cusp_ordering = True,
-                                       ignore_curve_orientations = True)
+    return retrig.triangulation_isosig(decorated=of_link,
+                                       ignore_cusp_ordering=True,
+                                       ignore_curve_orientations=True)
+
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
@@ -333,28 +383,29 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
                                       "available as verified computation. "
                                       "Pass verified = True.")
         return verify.verified_maximal_cusp_area_matrix(
-            manifold, bits_prec = bits_prec)
+            manifold, bits_prec=bits_prec)
     if method in ['trigDependent', 'trigDependentTryCanonize']:
         if method == 'trigDependentTryCanonize':
             manifold = manifold.copy()
             manifold.canonize()
 
         return verify.triangulation_dependent_cusp_area_matrix(
-            manifold, verified = verified, bits_prec = bits_prec)
+            manifold, verified=verified, bits_prec=bits_prec)
 
     raise ValueError("method passed to cusp_area_matrix must be "
                        "'trigDependent', 'trigDependentTryCanonize', "
                        "or 'maximal'.")
+
 
 Manifold.cusp_area_matrix = cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix
 
 from .verify import cusp_areas as verify_cusp_areas
 
-def cusp_areas(manifold, policy = 'unbiased',
-               method = 'trigDependentTryCanonize',
-               verified = False, bits_prec = None, first_cusps=[]):
 
+def cusp_areas(manifold, policy='unbiased',
+               method='trigDependentTryCanonize',
+               verified=False, bits_prec=None, first_cusps=[]):
     """
     Picks areas for the cusps such that the corresponding cusp
     neighborhoods are disjoint. By default, the ``policy`` is
@@ -392,7 +443,7 @@ def cusp_areas(manifold, policy = 'unbiased',
         [7.053940530873898, 2.3513135103, 3.7690945490]
         >>> M.cusp_areas(policy='greedy', first_cusps=[1,]) # doctest: +NUMERIC9
         [4.0302253322, 5.725527974287718, 1.5478612583]
-    
+
     ``cusp_areas`` is implemented using
     :py:meth:`Manifold.cusp_area_matrix` and the same arguments
     (``method``, ``verified``, ``bits_prec``) are accepted. For
@@ -428,15 +479,17 @@ def cusp_areas(manifold, policy = 'unbiased',
     else:
         return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
+
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
 
 from .verify import short_slopes as verify_short_slopes
 
+
 def short_slopes(manifold,
-                 length = 6,
-                 policy = 'unbiased', method = 'trigDependentTryCanonize',
-                 verified = False, bits_prec = None, first_cusps=[]):
+                 length=6,
+                 policy='unbiased', method='trigDependentTryCanonize',
+                 verified=False, bits_prec=None, first_cusps=[]):
     """
     Picks disjoint cusp neighborhoods (using
     :py:meth:`Manifold.cusp_areas`, thus the same arguments can be
@@ -447,7 +500,7 @@ def short_slopes(manifold,
         >>> M = Manifold("otet20_00022")
         >>> M.short_slopes()
         [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
-    
+
     When ``verified=True``, the result is guaranteed
     to contain all slopes of length less or equal to given ``length``
     (and could contain additional slopes if precision is not high
@@ -455,7 +508,7 @@ def short_slopes(manifold,
 
         sage: M.short_slopes(verified = True)
         [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
-    
+
     The ten exceptional slopes of the figure-eight knot::
 
         >>> M = Manifold("4_1")
@@ -463,34 +516,36 @@ def short_slopes(manifold,
         [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
 
     Two more slopes appear when increasing length to 2 pi::
-        
+
         >>> M.short_slopes(length = 6.283185307179586)
         [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
 
     When using verified computations, ``length`` is converted into the ``RealIntervalField`` of requested precision::
 
         sage: from sage.all import pi
-        sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100) 
+        sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100)
         [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
 
     """
 
     return [
         verify_short_slopes.short_slopes_from_cusp_shape_and_area(
-            shape, area, length = length)
+            shape, area, length=length)
         for shape, area
         in zip(manifold.cusp_info(
-                'shape', verified = verified, bits_prec = bits_prec),
+                'shape', verified=verified, bits_prec=bits_prec),
                manifold.cusp_areas(
-                policy = policy, method = method,
-                   verified = verified, bits_prec = bits_prec, first_cusps=first_cusps)) ]
+                policy=policy, method=method,
+                   verified=verified, bits_prec=bits_prec, first_cusps=first_cusps)) ]
+
 
 Manifold.short_slopes = short_slopes
 ManifoldHP.short_slopes = short_slopes
 
-def cusp_translations(manifold, policy = 'unbiased',
-                      method = 'trigDependentTryCanonize',
-                      verified = False, bits_prec = None, first_cusps=[]):
+
+def cusp_translations(manifold, policy='unbiased',
+                      method='trigDependentTryCanonize',
+                      verified=False, bits_prec=None, first_cusps=[]):
     """
     Picks disjoint cusp neighborhoods and returns the respective
     (complex) Euclidean translations of the meridian and longitude for
@@ -520,7 +575,7 @@ def cusp_translations(manifold, policy = 'unbiased',
 
     **Remark:** The default ``method = 'trigDependentTryCanonize'`` is
     (potentially) non-deterministic and thus the result of
-    
+
         [ M.cusp_translations()[i] for i in range(M.num_cusps()) ]
 
     might not correspond to disjoint cusp neighborhoods.
@@ -528,23 +583,25 @@ def cusp_translations(manifold, policy = 'unbiased',
 
     return [
         verify_short_slopes.translations_from_cusp_shape_and_area(
-            shape, area, kernel_convention = True)
+            shape, area, kernel_convention=True)
         for shape, area
         in zip(manifold.cusp_info(
-                'shape', verified = verified, bits_prec = bits_prec),
+                'shape', verified=verified, bits_prec=bits_prec),
                manifold.cusp_areas(
-                policy = policy, method = method,
-                   verified = verified, bits_prec = bits_prec, first_cusps=first_cusps)) ]
+                policy=policy, method=method,
+                   verified=verified, bits_prec=bits_prec, first_cusps=first_cusps)) ]
+
 
 Manifold.cusp_translations = cusp_translations
 ManifoldHP.cusp_translations = cusp_translations
 
-def complex_volume(manifold, verified_modulo_2_torsion = False,
-                   bits_prec = None):
+
+def complex_volume(manifold, verified_modulo_2_torsion=False,
+                   bits_prec=None):
     """
     Returns the complex volume, i.e.
     volume + i 2 pi^2 (chern simons)
-    
+
     >>> M = Manifold('5_2')
     >>> M.complex_volume() # doctest: +NUMERIC6
     2.82812209 - 3.02412838*I
@@ -575,7 +632,7 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
     """
     if verified_modulo_2_torsion:
         return verify.verified_complex_volume_torsion(
-            manifold, bits_prec = bits_prec)
+            manifold, bits_prec=bits_prec)
 
     if bits_prec:
         raise Exception("Arbitrary precision for complex volume only "
@@ -584,12 +641,13 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 
     return manifold._complex_volume()
 
+
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
 from . import drilling
 drilling._add_methods(Manifold)
-drilling._add_methods(ManifoldHP, high_precision = True)
+drilling._add_methods(ManifoldHP, high_precision=True)
 
 try:
     from .gui import ViewerWindow
@@ -600,10 +658,11 @@ except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
 
-def manifold_inside_view(self, cohomology_class = None, geodesics = []):
+
+def manifold_inside_view(self, cohomology_class=None, geodesics=[]):
     """
     Show raytraced inside view of hyperbolic manifold. See
-    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ 
+    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_
     and `demo video <https://youtu.be/CAERhmUCkRs>`_.
 
         >>> M = Manifold("m004")
@@ -642,16 +701,18 @@ def manifold_inside_view(self, cohomology_class = None, geodesics = []):
     return ViewerWindow(
         InsideViewer,
         self,
-        title = "Inside view of %s" % self.name(),
-        weights = weights,
-        cohomology_basis = cohomology_basis,
-        cohomology_class = cohomology_class,
-        geodesics = geodesics)
+        title="Inside view of %s" % self.name(),
+        weights=weights,
+        cohomology_basis=cohomology_basis,
+        cohomology_class=cohomology_class,
+        geodesics=geodesics)
+
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view
 
-def all_translations(self, verified = False, bits_prec = None):
+
+def all_translations(self, verified=False, bits_prec=None):
     """
     Returns the (complex) Euclidean translations of the meridian
     and longitude for each cusp measured with respect to the cusp neighborhood.
@@ -671,10 +732,10 @@ def all_translations(self, verified = False, bits_prec = None):
         >>> N.set_displacement(100,2)
         >>> N.all_translations() # doctest: +NUMERIC9
         [(-0.477656250512815 + 2.33461303362557*I, 2.71240613125259), (-0.259696455247511 + 1.26930345526993*I, 1.47470541152065), (0.131389112265699 + 0.991330873713731*I, 1.22318540718077)]
-        
+
     This can also be achieved by :py:meth:`Manifold.cusp_translations` which
     would have made a different choice of disjoint cusp neighborhoods though::
-        
+
         >>> M.cusp_translations() # doctest: +NUMERIC6
         [(-0.315973594129651 + 1.54436599614183*I, 1.79427928161946), (-0.315973594129649 + 1.54436599614182*I, 1.79427928161946), (0.198620491993677 + 1.49859164484929*I, 1.84908538602825)]
 
@@ -711,10 +772,11 @@ def all_translations(self, verified = False, bits_prec = None):
         # Use the implementation in verify.cuspTranslations that uses
         # tetrahedra_shapes and ComplexCuspNeighborhood
         return verify.cusp_translations_for_neighborhood(
-            self, verified = verified, bits_prec = bits_prec)
+            self, verified=verified, bits_prec=bits_prec)
 
     # Use the implementation in the SnapPea kernel
     return [ self.translations(i) for i in range(self.num_cusps()) ]
+
 
 CuspNeighborhood.all_translations = all_translations
 CuspNeighborhoodHP.all_translations = all_translations
@@ -745,11 +807,12 @@ __all__ += database_objects
 
 from spherogram.codecs import DTcodec
 
+
 def _link_exterior(self, with_hyperbolic_structure=True,
                    remove_finite_vertices=True):
     """
     The exterior or complement of the link L, that is, S^3 minus L.
-    
+
     >>> K = Link('4_1')
     >>> M = K.exterior()
     >>> M.volume() # doctest: +NUMERIC6
@@ -764,7 +827,7 @@ def _link_exterior(self, with_hyperbolic_structure=True,
     >>> M = K.exterior(False, False)
     >>> (M.num_cusps(), M._num_fake_cusps())
     (1, 2)
-    
+
     """
     M = Triangulation('empty')
     M._get_from_link_data(self.KLPProjection(), remove_finite_vertices)
@@ -775,6 +838,7 @@ def _link_exterior(self, with_hyperbolic_structure=True,
     if self.name:
         M.set_name(self.name)
     return M
+
 
 link_objects = []
 
@@ -811,14 +875,16 @@ SnapPy is a Cython wrapping of Jeff Weeks' SnapPea kernel.
 The module defines the following classes:
 %s""" % textwrap.fill(
     ', '.join(__all__) + '.',
-    width = 78,
-    initial_indent = '    ',
-    subsequent_indent = '    ')
+    width=78,
+    initial_indent='    ',
+    subsequent_indent='    ')
 
 # Add easy way to get the version info
 from .version import version as release_info
 
+
 def version():
     return release_info
+
 
 __version__ = version()

@@ -3,13 +3,13 @@ from . import epsilons
 from . import exceptions
 from .geodesic_tube import add_structures_necessary_for_tube, GeodesicTube
 from .geodesic_info import GeodesicInfo
-from .line import R13Line, distance_r13_lines
 
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,
     time_r13_normalise,
     distance_unit_time_r13_points)
+from ..tiling.line import R13Line, distance_r13_lines
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore
@@ -17,10 +17,26 @@ from ..math_basics import correct_min # type: ignore
 
 from typing import Sequence, List
 
+# For perturbing, it is sufficient to just find some non-trivial
+# lower bound for the embedding radius of a tube about a geodesic.
+# To just any such bound, set _tube_developing_radius = 0.
+# This will develop the tube just to the point where we can verify
+# that it has positive radius.
+#
+# To stress-test our code, we can develop the tube further, by
+# setting _tube_developing_radius > 0. The isotopy type of
+# the drilled curve will not change no matter how large
+# _tube_developing_radius is. In other words, we still compute
+# a lower bound for the embedding radius which eventually will
+# be the embedding radius up to rounding errors as
+# _tube_developing_radius increases.
+#
+_tube_developing_radius = 0
+
 def perturb_geodesics(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo],
-        verbose = False):
+        verbose=False):
     """
     Given a triangulation with structures added by add_r13_geometry
     and GeodesicInfo's with start points on the line that is a lift
@@ -34,7 +50,7 @@ def perturb_geodesics(
     If several GeodesicInfo's are given and/or there are filled
     cusps with core curves, the system of simple closed curves
     resulting from the perturbation together with the core curves
-    is guarenteed to be isotopic to the original system of closed
+    is guaranteed to be isotopic to the original system of closed
     geodesics together with the core curves.
 
     Through the perturbation, the simple closed curve should avoid
@@ -71,18 +87,22 @@ def perturb_geodesics(
     for g in geodesics:
         perturb_geodesic(g, r, mcomplex.verified)
 
+
 def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
         geodesics : Sequence[GeodesicInfo]):
 
     add_structures_necessary_for_tube(mcomplex)
 
+    r = mcomplex.RF(_tube_developing_radius)
+
     tubes = [ GeodesicTube(mcomplex, g) for g in geodesics ]
     for tube in tubes:
-        tube.add_pieces_for_radius(r = 0)
+        tube.add_pieces_for_radius(r=r)
 
     return compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex, tubes)
+
 
 def compute_lower_bound_injectivity_radius_from_tubes(
         mcomplex : Mcomplex,
@@ -109,6 +129,7 @@ def compute_lower_bound_injectivity_radius_from_tubes(
 
     return correct_min(distances) / 2
 
+
 def perturb_geodesic(geodesic : GeodesicInfo,
                      injectivity_radius,
                      verified : bool):
@@ -117,8 +138,8 @@ def perturb_geodesic(geodesic : GeodesicInfo,
 
     perturbed_point = perturb_unit_time_point(
         time_r13_normalise(geodesic.unnormalised_start_point),
-        max_amt = injectivity_radius,
-        verified = verified)
+        max_amt=injectivity_radius,
+        verified=verified)
 
     m = geodesic.line.o13_matrix
 
@@ -127,6 +148,7 @@ def perturb_geodesic(geodesic : GeodesicInfo,
     geodesic.line = None
 
     geodesic.find_tet_or_core_curve()
+
 
 def perturb_unit_time_point(point, max_amt, verified : bool):
 

@@ -3,10 +3,9 @@ from snappy import Triangulation
 
 from snappy.SnapPy import matrix, vector
 
-from snappy.snap.mcomplex_base import *
-
-from snappy.verify.cuspCrossSection import *
-
+from ..snap.mcomplex_base import *
+from ..snap.cusp_cross_section import *
+from ..drilling import geometric_structure
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
 
@@ -15,9 +14,8 @@ from .upper_halfspace_utilities import *
 
 from .raytracing_data import *
 
-from math import sqrt
-
 __all__ = ['IdealRaytracingData']
+
 
 class IdealRaytracingData(RaytracingData):
     """
@@ -35,7 +33,7 @@ class IdealRaytracingData(RaytracingData):
         {...}
 
     The compile time constants can similarly be obtained as dictionary::
-    
+
         >>> data.get_compile_time_constants() # doctest: +ELLIPSIS
         {...}
 
@@ -55,7 +53,7 @@ class IdealRaytracingData(RaytracingData):
         ...             [ 0.0 , 1.0 , 0.0 , 0.0 ],
         ...             [ 2.82, 0.0 , 3.0 , 0.0 ],
         ...             [ 0.0 , 0.0 , 0.0 , 1.0 ]])
-        >>> view_state = data.update_view_state(view_state, m) 
+        >>> view_state = data.update_view_state(view_state, m)
         >>> view_state    # doctest: +NUMERIC6
         ([     1.08997684        1e-16   0.43364676        1e-16 ]
         [          1e-16  -1.00000000         1e-16       1e-16 ]
@@ -66,7 +64,7 @@ class IdealRaytracingData(RaytracingData):
 
     @staticmethod
     def from_manifold(manifold,
-                      areas = None, insphere_scale = 0.05, weights = None):
+                      areas=None, insphere_scale=0.05, weights=None):
 
         if manifold.solution_type() != 'all tetrahedra positively oriented':
             return NonGeometricRaytracingData(
@@ -86,7 +84,7 @@ class IdealRaytracingData(RaytracingData):
         c = ComplexCuspCrossSection.fromManifoldAndShapes(
             manifold,
             manifold.tetrahedra_shapes('rect'),
-            one_cocycle = 'develop')
+            one_cocycle='develop')
         c.normalize_cusps()
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
@@ -149,16 +147,11 @@ class IdealRaytracingData(RaytracingData):
                 v0 | v1 : r13_dot(pt0, pt1)
                 for v0, pt0 in tet.R13_vertices.items()
                 for v1, pt1 in tet.R13_vertices.items()
-                if v0 != v1 }
+                if v0 > v1 }
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
-            planes = make_tet_planes(
-                [ tet.R13_vertices[v]
-                  for v in t3m.ZeroSubsimplices])
-            tet.R13_planes = {
-                F : plane
-                for F, plane in zip(t3m.TwoSubsimplices, planes) }
+            geometric_structure.compute_r13_planes_for_tet(tet)
 
     def _compute_R13_horosphere_scale_for_vertex(self, tet, V0):
         vertex = tet.Class[V0]
@@ -365,6 +358,7 @@ class IdealRaytracingData(RaytracingData):
                  0.0)),
             _cusp_view_scale(tet, subsimplex, area))
 
+
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
         super(NonGeometricRaytracingData, self).__init__(mcomplex)
@@ -392,13 +386,14 @@ class NonGeometricRaytracingData(McomplexEngine):
         return (boost, tet_num, weight)
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0],
+                          m=matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
         boost = boost * m
         return boost, tet_num, weight
+
 
 def _pgl2_matrix_for_face(tet, F):
     gluing = tet.Gluing[F]
@@ -417,12 +412,14 @@ def _pgl2_matrix_for_face(tet, F):
 
     return m2 * sl2c_inverse(m1)
 
+
 def _o13_matrix_for_face(tet, F):
     return pgl2c_to_o13(_pgl2_matrix_for_face(tet, F))
 
+
 def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
-    z  = tet.ShapeParameters[t3m.E01]
+    z = tet.ShapeParameters[t3m.E01]
     CF = z.parent()
 
     triangle = tet.horotriangles[V]
@@ -452,12 +449,13 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
     return log_z0, vertex_positions
 
+
 def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
 
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
 
-    tet_vertices  = [ tet.complex_vertices[v] for v in otherVerts ]
+    tet_vertices = [ tet.complex_vertices[v] for v in otherVerts ]
 
     cusp_vertices = [ trig.vertex_positions[vertex | v]
                       for v in otherVerts ]
@@ -474,6 +472,7 @@ def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
         pgl2c_to_o13(         std_to_tet * cusp_to_std),
         pgl2c_to_o13(sl2c_inverse(std_to_tet * cusp_to_std)))
 
+
 def _compute_margulis_tube_ends(tet, vertex):
 
     if tet.Class[vertex].is_complete:
@@ -481,6 +480,7 @@ def _compute_margulis_tube_ends(tet, vertex):
 
     return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
+
 
 def _cusp_view_matrix(tet, subsimplex, area):
     # Complex numbers encoding translation of horosphere corresponding
@@ -501,20 +501,20 @@ def _cusp_view_matrix(tet, subsimplex, area):
     #    respectively.
 
     translation = (m_translation + l_translation) / 2
-    
+
     # A small factor to move the camera a little bit into the cusp neighborhood
     # to avoid z-Fighting.
     factor_to_move_inside = 1.0001
     rotation = l_translation / abs(l_translation)
     scale = factor_to_move_inside/area.sqrt()
     borel_transform = matrix([[ scale*rotation, translation ],
-                              [     0, 1 ]], ring = CF)
+                              [     0, 1 ]], ring=CF)
 
     base_camera_matrix = matrix(
         [[ 1, 0, 0, 0],
          [ 0, 0, 0, 1],
          [ 0, 1, 0, 0],
-         [ 0, 0, 1, 0]], ring = RF)
+         [ 0, 0, 1, 0]], ring=RF)
 
     # Apply necessary pre and post O13-transforms to the transform
     # in the upper halfspace we computed above.
@@ -524,6 +524,7 @@ def _cusp_view_matrix(tet, subsimplex, area):
         base_camera_matrix)
 
     return o13_matrix
+
 
 def _cusp_view_scale(tet, subsimplex, area):
     # Complex numbers encoding translation of horosphere corresponding
@@ -537,9 +538,10 @@ def _cusp_view_scale(tet, subsimplex, area):
     t = max(real_l_translation + m_translation.real(),
             real_l_translation - m_translation.real(),
             m_translation.imag())
-    
+
     return area.sqrt() * t
-    
+
+
 def _check_consistency(mcomplex):
     for tet in mcomplex.Tetrahedra:
         for F in t3m.TwoSubsimplices:

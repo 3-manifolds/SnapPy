@@ -46,8 +46,8 @@ correct.
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
     from sage.all import (ZZ, PolynomialRing, LaurentPolynomialRing,
-                          GF, QQ, CyclotomicField, vector, matrix,
-                          identity_matrix, block_matrix, diagonal_matrix,
+                          GF, CyclotomicField, vector, matrix,
+                          identity_matrix, block_matrix,
                           MatrixSpace, ChainComplex, prime_range)
 
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,
@@ -58,6 +58,7 @@ if _within_sage:
                              first_square_submatrix)
 
 from .. import SnapPy
+
 
 class MatrixRepresentation():
     """
@@ -80,7 +81,7 @@ class MatrixRepresentation():
         if isinstance(matrices, dict):
             images = matrices
             all_gens = list(generators) + [g.swapcase() for g in generators]
-            assert set(matrices.keys()) == set(all_gens)
+            assert set(matrices) == set(all_gens)
         else:
             assert len(generators) == len(matrices)
             images = dict()
@@ -122,7 +123,7 @@ class MatrixRepresentation():
         gens, rels, rho = self.generators, self.relators, self
         d2 = [ [fox_derivative_with_involution(R, rho, g) for R in rels] for g in gens]
         d2 = block_matrix(d2, nrows=len(gens), ncols=len(rels))
-        d1 = [rho(g.swapcase()) - 1  for g in gens]
+        d1 = [rho(g.swapcase()) - 1 for g in gens]
         d1 = block_matrix(d1, nrows=1, ncols=len(gens))
         C = ChainComplex({1:d1, 2:d2}, degree_of_differential=-1, check=True)
         return C
@@ -135,7 +136,7 @@ class MatrixRepresentation():
         gens, rels, rho = self.generators, self.relators, self
         d1 = [[fox_derivative(R, rho, g) for g in gens] for R in rels]
         d1 = block_matrix(d1, nrows=len(rels), ncols=len(gens))
-        d0 = [rho(g) - 1  for g in gens]
+        d0 = [rho(g) - 1 for g in gens]
         d0 = block_matrix(d0, nrow=len(gens), ncols=1)
         C = ChainComplex({0:d0, 1:d1}, check=True)
         return C
@@ -175,7 +176,7 @@ class MatrixRepresentation():
         target = MatrixSpace(rho.base_ring, n + 1)
         return MatrixRepresentation(gens, rels, target, new_mats)
 
-#----- end class MatrixRepresentation --------------------------------
+# ----- end class MatrixRepresentation --------------------------------
 
 
 def poly_to_rep(f):
@@ -184,7 +185,6 @@ def poly_to_rep(f):
     left action of x on F[x]/(f).
     """
     assert f.is_monic()
-    x = f.parent().gen()
     d = f.degree()
     last_column = [-f[e] for e in range(d)]
     I = identity_matrix(d)
@@ -415,7 +415,7 @@ def twisted_alexander_polynomial(alpha, reduced=False):
 
     d2 = [ [fox_derivative_with_involution(R, alpha, g) for R in rels] for g in gens]
     d2 = block_matrix(d2, nrows=k, ncols=k-1)
-    d1 = [alpha(g.swapcase())  - 1  for g in gens]
+    d1 = [alpha(g.swapcase()) - 1 for g in gens]
     d1 = block_matrix(d1, nrows=1, ncols=k)
     assert d1 * d2 == 0
 
@@ -655,6 +655,7 @@ def slice_obstruction_HKL(self, primes_spec,
                         print('   Looking at', (p, q), '...')
                         if slicing_is_obstructed(M, p, q):
                             return (p, q)
+
 
 if __name__ == '__main__':
     import doctest

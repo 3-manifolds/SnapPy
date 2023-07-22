@@ -55,10 +55,9 @@
  */
 
 #include "kernel.h"
-#include <stdio.h>  /* for sprintf() in check_neighbors_and_gluings() */
+#include <stdio.h>  /* for snprintf() in check_neighbors_and_gluings() */
 #include "kernel_namespace.h"
 
-static void check_neighbors_and_gluings(Triangulation *manifold);
 static int  count_the_edge_classes(Triangulation *manifold);
 
 
@@ -299,7 +298,7 @@ void data_to_triangulation(
 }
 
 
-static void check_neighbors_and_gluings(
+void check_neighbors_and_gluings(
     Triangulation *manifold)
 {
     Tetrahedron *tet,
@@ -323,7 +322,7 @@ static void check_neighbors_and_gluings(
 
             if (nbr->neighbor[nbr_f] != tet)
             {
-                sprintf(scratch, "inconsistent neighbor data, tet %d face %d to tet %d face %d",
+	        snprintf(scratch, 256, "inconsistent neighbor data, tet %d face %d to tet %d face %d",
                         tet->index, f, nbr->index, nbr_f);
                 uAcknowledge(scratch);
                 uFatalError("check_neighbors_and_gluings", "triangulations");
@@ -331,7 +330,7 @@ static void check_neighbors_and_gluings(
 
             if (nbr->gluing[nbr_f] != inverse_permutation[this_gluing])
             {
-                sprintf(scratch, "inconsistent gluing data, tet %d face %d to tet %d face %d",
+	        snprintf(scratch, 256, "inconsistent gluing data, tet %d face %d to tet %d face %d",
                         tet->index, f, nbr->index, nbr_f);
                 uAcknowledge(scratch);
                 uFatalError("check_neighbors_and_gluings", "triangulations");

@@ -1,4 +1,4 @@
-#$Id: edge.py,v 1.3 2002/09/20 03:52:16 culler Exp $
+# $Id: edge.py,v 1.3 2002/09/20 03:52:16 culler Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -22,7 +22,6 @@ for edge, face in EdgeFacePairs:
     _edge_add_corner_dict[edge, face] = other_arrow.tail(), other_arrow.head()
 
 
-
 # An edge has an initial and terminal vertex, but these are determined
 # arbitrarily when the 1-skeleton is constructed.
 
@@ -43,7 +42,7 @@ class Edge:
             return ('e' + str(self.Index) + self.Name +
                     ' (' + self.IntOrBdry + ')')
         else:
-            return '< floating edge' + str(id(self)) +' >'
+            return '< floating edge' + str(id(self)) + ' >'
 
     # below added by NMD for more detailed printing
 
@@ -53,7 +52,7 @@ class Edge:
         e = self.Corners[0].Subsimplex
         return Arrow(e, RightFace[e], self.Corners[0].Tetrahedron)
 
-    def info(self, out = sys.stdout):
+    def info(self, out=sys.stdout):
         out.write(repr(self) + "\t Edge of valence %d\tEndpoints %s\n"
                   % (self.valence(), self.Vertices))
         if self.IntOrBdry == 'bdry':
@@ -65,7 +64,7 @@ class Edge:
         for i in range(self.valence()):
             s = s + repr(a) + "  "
             a.next()
-            if i > 0 and (i +1) % 3 == 0 and i != (self.valence()-1):
+            if i > 0 and (i + 1) % 3 == 0 and i != (self.valence()-1):
                 s = s + "\n\t"
         out.write(s + '\n')
 

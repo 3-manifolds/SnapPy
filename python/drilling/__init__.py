@@ -2,31 +2,33 @@ from . import exceptions
 from . import epsilons
 from . import debug
 from .tracing import trace_geodesic
-from .crush import crush_geodesic_pieces
-from .line import R13LineWithMatrix
-from .geometric_structure import add_r13_geometry, word_to_psl2c_matrix
-from .geodesic_info import GeodesicInfo, sample_line
+from .geometric_structure import add_r13_geometry
+from .geodesic_info import GeodesicInfo, compute_geodesic_info
 from .perturb import perturb_geodesics
 from .subdivide import traverse_geodesics_to_subdivide
+from .barycentric import mark_subtetrahedra_about_geodesic_pieces
+from .shorten import shorten_in_barycentric_subdivision
+from .crush import crush_geodesic_pieces
 from .cusps import (
     CuspPostDrillInfo,
     index_geodesics_and_add_post_drill_infos,
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
+from ..tiling.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
 
-import functools, pickle
+import functools
 from typing import Sequence
+
 
 def drill_word(manifold,
                word : str,
                verified : bool = False,
-               bits_prec = None,
+               bits_prec=None,
                verbose : bool = False):
-
     """
     Drills the geodesic corresponding to the given word in the unsimplified
     fundamental group.
@@ -105,14 +107,15 @@ def drill_word(manifold,
 
     return drill_words(manifold,
                        [word],
-                       verified = verified,
-                       bits_prec = bits_prec,
-                       verbose = verbose)
+                       verified=verified,
+                       bits_prec=bits_prec,
+                       verbose=verbose)
+
 
 def drill_words(manifold,
                 words : Sequence[str],
                 verified : bool = False,
-                bits_prec = None,
+                bits_prec=None,
                 verbose : bool = False):
     """
     A generalization of M.drill_word taking a list of words to
@@ -174,10 +177,10 @@ def drill_words(manifold,
         # First try to drill the geodesics without perturbing them.
         return drill_words_implementation(
             manifold,
-            words = words,
-            verified = verified,
-            bits_prec = bits_prec,
-            verbose = verbose)
+            words=words,
+            verified=verified,
+            bits_prec=bits_prec,
+            verbose=verbose)
     except exceptions.GeodesicHittingOneSkeletonError:
         # Exceptions raised when geodesic is intersecting the 1-skeleton
         # (including that a positive length piece of the geodesic lying
@@ -192,11 +195,11 @@ def drill_words(manifold,
     try:
         return drill_words_implementation(
             manifold,
-            words = words,
-            verified = verified,
-            bits_prec = bits_prec,
-            perturb = True,
-            verbose = verbose)
+            words=words,
+            verified=verified,
+            bits_prec=bits_prec,
+            perturb=True,
+            verbose=verbose)
     except exceptions.RayHittingOneSkeletonError as e:
         # Sometimes, the code runs into numerical issues and cannot
         # determine whether the perturbed geodesic is passing an edge
@@ -209,12 +212,13 @@ def drill_words(manifold,
             "with the current precision. "
             "Increasing the precision should solve this problem.") from e
 
+
 def drill_words_implementation(
         manifold,
         words,
         verified,
         bits_prec,
-        perturb = False,
+        perturb=False,
         verbose : bool = False):
 
     # Convert SnapPea kernel triangulation to python triangulation
@@ -224,7 +228,7 @@ def drill_words_implementation(
     # Add vertices in hyperboloid model and other geometric information
     add_r13_geometry(mcomplex,
                      manifold,
-                     verified = verified, bits_prec = bits_prec)
+                     verified=verified, bits_prec=bits_prec)
 
     # For the words compute basic information such as the corresponding
     # matrix and the end points and a sample point on the fixed line.
@@ -252,7 +256,7 @@ def drill_words_implementation(
         # curves.
         perturb_geodesics(mcomplex,
                           geodesics_to_drill,
-                          verbose = verbose)
+                          verbose=verbose)
 
     # At this point, the information in each entry of geodesics_to_drill
     # "should" (*) contain a start point in the interior of a tetrahedron
@@ -274,7 +278,7 @@ def drill_words_implementation(
     # point through the triangulation, and then drill the closed curve.
     drilled_mcomplex : Mcomplex = drill_geodesics(mcomplex,
                                                   geodesics_to_drill,
-                                                  verbose = verbose)
+                                                  verbose=verbose)
 
     # Index the cusps of the new triangulation and extract information
     # needed later
@@ -297,55 +301,6 @@ def drill_words_implementation(
     drilled_manifold.set_name(manifold.name() + "_drilled")
 
     return drilled_manifold
-
-def _verify_not_parabolic(m, mcomplex, word):
-    """
-    Raise exception when user gives a word corresponding to a parabolic
-    matrix.
-    """
-
-    if mcomplex.verified:
-        epsilon = 0
-    else:
-        epsilon = epsilons.compute_epsilon(mcomplex.RF)
-
-    tr = m.trace()
-    if not (abs(tr - 2) > epsilon and abs(tr + 2) > epsilon):
-        raise exceptions.WordAppearsToBeParabolic(word, tr)
-
-def compute_geodesic_info(mcomplex : Mcomplex,
-                          word) -> GeodesicInfo:
-    """
-    Compute basic information about a geodesic given a word.
-
-    add_r13_geometry must have been called on the Mcomplex.
-    """
-
-    m = word_to_psl2c_matrix(mcomplex, word)
-    _verify_not_parabolic(m, mcomplex, word)
-    # Line fixed by matrix
-    line = R13LineWithMatrix.from_psl2c_matrix(m)
-
-    # Pick a point on the line
-    start_point = sample_line(line)
-
-    g = GeodesicInfo(
-        mcomplex = mcomplex,
-        trace = m.trace(),
-        unnormalised_start_point = start_point,
-        unnormalised_end_point = line.o13_matrix * start_point,
-        line = line)
-
-    # Determines whether geodesic corresponds to a core curve.
-    # Applies Decktransformations so that start point lies within
-    # the interior of one tetrahedron in the fundamental domain or
-    # within the union of two tetrahedra neighboring in the hyperboloid
-    # model.
-    #
-    # See GeodesicInfo for details.
-    g.find_tet_or_core_curve()
-
-    return g
 
 def drill_geodesics(mcomplex : Mcomplex,
                     geodesics : Sequence[GeodesicInfo],
@@ -375,7 +330,7 @@ def drill_geodesics(mcomplex : Mcomplex,
     # For each line segment described above, trace it through the
     # triangulation.
     all_pieces : Sequence[Sequence[GeodesicPiece]] = [
-        trace_geodesic(g, verified = mcomplex.verified)
+        trace_geodesic(g, verified=mcomplex.verified)
         for g in geodesics ]
 
     if verbose:
@@ -395,10 +350,20 @@ def drill_geodesics(mcomplex : Mcomplex,
         print("Number of tets after subdividing: %d" % (
             len(tetrahedra)))
 
+    # Mark which subtetrahedra in the barycentric subdivision
+    # are adjacent to the closed curve we traced.
+    mark_subtetrahedra_about_geodesic_pieces(tetrahedra)
+
+    # If the simple closed curve is having two consecutive pieces
+    # adjacent to the same face, making it shorter by replacing
+    # the two pieces by just one corresponding to the third edge
+    # of the triangle.
+    shorten_in_barycentric_subdivision(tetrahedra, verbose)
+
     # Perform a barycentric subdivision. Then crush all tetrahedra
     # touching the closed curve we traced. Note that
     # crush_geodesic_pieces is actually doing the subdivision and
-    # crushing in just one step.
+    # crushing of the subsimplices marked above in just one step.
     result : Mcomplex = crush_geodesic_pieces(tetrahedra)
 
     # Sanity checks while we are still testing the new features.
@@ -411,21 +376,26 @@ def drill_geodesics(mcomplex : Mcomplex,
 # for ManifoldHP.
 # Use @functools.wraps to carry forward the argument names
 # and default values and the doc string.
+
+
 @functools.wraps(drill_word)
 def drill_word_hp(*args, **kwargs):
     return drill_word(*args, **kwargs).high_precision()
+
 
 @functools.wraps(drill_words)
 def drill_words_hp(*args, **kwargs):
     return drill_words(*args, **kwargs).high_precision()
 
-def _add_methods(mfld_class, high_precision = False):
+
+def _add_methods(mfld_class, high_precision=False):
     if high_precision:
-        mfld_class.drill_word  = drill_word_hp
+        mfld_class.drill_word = drill_word_hp
         mfld_class.drill_words = drill_words_hp
     else:
-        mfld_class.drill_word  = drill_word
+        mfld_class.drill_word = drill_word
         mfld_class.drill_words = drill_words
+
 
 def dummy_function_for_additional_doctests():
     """
@@ -452,8 +422,8 @@ def dummy_function_for_additional_doctests():
     Tests drilling one geodesic that intersects 1-skeleton::
 
         >>> M = Manifold("m125")
-        >>> M.drill_word('d').triangulation_isosig(ignore_orientation=False)
-        'gLLPQcdefeffpvauppb_acbBbBaaBbacbBa'
+        >>> M.drill_word('d').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'svLvLQLAzQMMQdifhjmlknlopnqpqrrroaaaaaaoaaaaaaoaaao_aBbaBaaBeDBb'
 
     Tests drilling two geodesics that intersect each other:
 
@@ -465,13 +435,13 @@ def dummy_function_for_additional_doctests():
 
     Tests drilling geodesics that are entirely in the 2-skeleton::
 
-        >>> M.drill_words(['a','acAADa']).triangulation_isosig(ignore_orientation=False)
-        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+        >>> M.drill_words(['a','acAADa']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
 
     Same test as verified computation::
 
-        sage: M.drill_words(['a','acAADa'], verified = True).triangulation_isosig(ignore_orientation=False)
-        'iLMvPQcbbdfhgghhpuabpauab_acbdaBbaBbaBcBBbcbbb'
+        sage: M.drill_words(['a','acAADa'], verified = True).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
 
     Test error when drilling something close to core curve::
 
@@ -512,13 +482,40 @@ def dummy_function_for_additional_doctests():
         >>> import sys
         >>> original_limit = sys.getrecursionlimit()
         >>> sys.setrecursionlimit(100000)
-
-        >>> Manifold('K11n34(0,1)').drill_words(['iFcdbEiFJ', 'iFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBba'
-        >>> Manifold('K11n34(0,1)').drill_words(['iFJ', 'iFcdbEiFJ']).filled_triangulation().canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        >>> def drilled_isosig(M, words):
+        ...     for i in range(10):
+        ...         try:
+        ...             F = M.drill_words(words).filled_triangulation()
+        ...             return F.canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+        ...         except RuntimeError:
+        ...             pass
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
+        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcbDbBba'
+        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
         'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
-
-
         >>> sys.setrecursionlimit(original_limit)
+
+    Stress test by using large perturbation. In particular, this is testing the
+    case where two geodesic pieces are adjacent to the same triangle and we
+    need to shorten before crushing. We do white-box testing (verbose = True)
+    to make sure we really hit the shortening case.
+
+        >>> from snappy import Manifold
+        >>> from snappy.drilling import perturb
+        >>> original_radius = perturb._tube_developing_radius
+        >>> perturb._tube_developing_radius = 1
+        >>> Manifold("m307").drill_word('dadadabCdada', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+        Tubes lower bound injectivity radius: 0.380575727320247
+        Number of geodesic pieces: [9]
+        Number of tets after subdividing: 45
+        Shortening geodesic by sweeping across triangle.
+        'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
+        >>> Manifold("m320").drill_word('daaacDA', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+        Tubes lower bound injectivity radius: 0.397319067589326
+        Number of geodesic pieces: [9]
+        Number of tets after subdividing: 49
+        Shortening geodesic by sweeping across triangle.
+        'rLLPwAPvvPQQcccdfehgjiqpooqppqoqffaaaaaaaqaaaqaaa_bBbabaab'
+        >>> perturb._tube_developing_radius = original_radius
 
     """

@@ -27,8 +27,10 @@ try:
     from sage.interfaces.magma import magma
     try:
         from sage.interfaces.abc import GapElement, MagmaElement
+
         def is_GapElement(elt):
             return isinstance(elt, GapElement)
+
         def is_MagmaElement(elt):
             return isinstance(elt, MagmaElement)
     except:
@@ -80,14 +82,15 @@ except ImportError:
     asksaveasfile = None
 
 # This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
     return string
+
 
 def valid_index(i, n, format_str):
     """
     Return range(n)[i] or raises a nicely formatted IndexError
     using format_str.
-    
+
     This does several things for us::
 
         * avoid that cython happily converts a float to an int, so a call
@@ -96,7 +99,7 @@ def valid_index(i, n, format_str):
         * checks that i is in the right range
         * supports Sage and numpy Integers: they are not python int's but
           have __index__ (see PEP 357)
-    
+
     It is faster than reimplementing these behaviors.
     """
     try:
@@ -108,20 +111,32 @@ def valid_index(i, n, format_str):
 # A stream for asynchronous messages
 class MsgIO():
     def __init__(self):
-        self.write = sys.stdout.write
-        self.flush = sys.stdout.flush()
+        if sys.stdout is None:
+            self.write = None
+            self.flush = None
+        else:
+            self.write = sys.stdout.write
+            self.flush = sys.stdout.flush
+
 
 msg_stream = MsgIO()
 
+
 # string testing for Python 3
 basestring = unicode = str
+
+
 def to_str(s):
     return s.decode()
+
+
 def bytearray_to_bytes(x):
     return bytes(x)
 
+
 def to_byte_str(s):
     return s.encode('utf-8') if type(s) != bytes else s
+
 
 # Types of covering spaces
 cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
@@ -148,12 +163,14 @@ Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.g
 
 cdef public int SnapPy_test_flag = 0
 
+
 def set_test_flag(int value):
     cdef int old
     global SnapPy_test_flag
     old = SnapPy_test_flag
     SnapPy_test_flag = value
-    return old 
+    return old
+
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef public void uFatalError(const_char_ptr function,
@@ -164,7 +181,7 @@ cdef public void uFatalError(const_char_ptr function,
         raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                                 'defined in %s.c.'%(function, file))
 
-# Global variables used for interrupt processing 
+# Global variables used for interrupt processing
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
@@ -172,6 +189,7 @@ cdef public gLongComputationTicker
 # If not None, this will be called in gLongComputationContinues.
 # This enables a GUI to do updates during long computations.
 UI_callback = None
+
 
 def SnapPea_interrupt():
     """
@@ -184,6 +202,7 @@ def SnapPea_interrupt():
     if gLongComputationInProgress:
         gLongComputationCancelled = True
     return gLongComputationInProgress
+
 
 cdef public void uLongComputationBegins(const_char_ptr message,
                                         Boolean is_abortable):
@@ -230,7 +249,7 @@ cdef public void uAbortMemoryFull():
     sys.stderr.write('Out of memory.\n')
     sys.exit(2)
 
-cdef public int uQuery(const_char_ptr  message, 
+cdef public int uQuery(const_char_ptr  message,
                        const_int       num_responses,
                        const_char_ptr  responses[],
                        const_int       default_response):
@@ -241,13 +260,15 @@ cdef public int uQuery(const_char_ptr  message,
     sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
     return <int> default_response
 
+
 def cy_eval(s):
     return eval(s)
+
 
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
-            M = sage_matrix(M) 
+            M = sage_matrix(M)
         m, n = M.nrows(), M.ncols()
         result = M.elementary_divisors(algorithm='pari')
     else:
@@ -284,9 +305,11 @@ SolutionType = ['not attempted', 'all tetrahedra positively oriented',
                 'unrecognized solution type', 'no solution found',
                 'tetrahedra shapes were inserted']
 
+
 # SnapPea memory usage
 def check_SnapPea_memory():
     verify_my_malloc_usage()
+
 
 def set_rand_seed(seed):
     """
@@ -294,6 +317,7 @@ def set_rand_seed(seed):
     triangulation moves.
     """
     srand(seed)
+
 
 # Ptolemy utility functions
 # convert and free an identification of variables structure
@@ -309,6 +333,7 @@ cdef convert_and_free_identification_of_variables(
                    to_str(c_vars.variables[i][0]),
                    to_str(c_vars.variables[i][1])))
     return var_list
+
 
 # convert and free an integer matrix from C
 cdef convert_and_free_integer_matrix(
@@ -372,11 +397,10 @@ class MatrixWithExplanations():
         def format_explain_list(l):
             if len(l) <= 6:
                 return repr(l)
-            
+
             return "[ %s, ..., %s]" % (
-                ', '.join(map(repr,l[:3])),
-                ', '.join(map(repr,l[-3:])))
-                
+                ', '.join(map(repr, l[:3])),
+                ', '.join(map(repr, l[-3:])))
 
         return (
             "%s(\n"
@@ -388,10 +412,11 @@ class MatrixWithExplanations():
                               format_explain_list(self.explain_columns),
                               format_explain_list(self.explain_rows))
 
+
 class NeumannZagierTypeEquations(MatrixWithExplanations):
 
     def __init__(self, mat, explain_rows, explain_columns):
-        MatrixWithExplanations.__init__(self, 
+        MatrixWithExplanations.__init__(self,
                                         mat, explain_rows, explain_columns)
 
     def __repr__(self):
@@ -404,6 +429,7 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
         return NeumannZagierTypeEquations(
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
+
 from .number import Number as RawNumber
 
 # Conversions between various numerical types.
@@ -413,6 +439,7 @@ IF HIGH_PRECISION:
 ELSE:
     class Number(RawNumber):
         _default_precision=53
+
 
 cdef Real2gen_direct(Real R):
     """
@@ -463,7 +490,7 @@ cdef Complex2gen(Complex C):
     return pari.complex(real_part, imag_part)
 
 cdef RealImag2gen(Real R, Real I):
-        return pari.complex(Real2gen(R), Real2gen(I))
+    return pari.complex(Real2gen(R), Real2gen(I))
 
 cdef Complex2complex(Complex C):
     """
@@ -521,12 +548,12 @@ cdef Complex Object2Complex(obj):
     result.real = real
     result.imag = imag
     return result
-             
-    
+
 
 cdef double Real2double(Real R):
     cdef double* quad = <double *>&R
     return quad[0]
+
 
 cdef Complex gen2Complex(g):
     cdef Complex result
@@ -538,7 +565,7 @@ cdef Complex gen2Complex(g):
 
         py_string = to_byte_str(str(g.real()).replace(' E','E')) # save a reference
         c_string = py_string
-        real_part = <Real>c_string 
+        real_part = <Real>c_string
         py_string = to_byte_str(str(g.imag()).replace(' E','E')) # save a reference
         c_string = py_string
         imag_part = <Real>c_string
@@ -585,13 +612,17 @@ class Info(dict):
                 pass
         super(Info, self).__init__(content)
         self.__dict__.update(kwargs)
+
     def _immutable(self, *args):
         raise AttributeError('Info objects are immutable.')
+
     def keys(self):
         return self.__dict__.keys()
+
     __setattr__ = __delattr__ = __setitem__ = __delitem__ = _immutable
     pop = popitem = clear = update = _immutable
     _obsolete = {}
+
 
 class CuspInfo(Info):
     def __repr__(self):
@@ -606,18 +637,21 @@ class CuspInfo(Info):
             return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s'%
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
-                 'holonomy precision' : 'holonomy_accuracy', 
+                 'holonomy precision' : 'holonomy_accuracy',
                  'shape precision'    : 'shape_accuracy'}
-    
+
+
 class DualCurveInfo(Info):
     def __repr__(self):
         return ('%3d: %s curve of length %s'%
                 (self.index, MatrixParity[self.parity], self.filled_length))
     _obsolete = {'complete length' : 'complete_length',
                  'filled length' : 'filled_length'}
-    
+
+
 def _StrLongestLen(l):
     return str(max(len(e) for e in l))
+
 
 LengthSpectrumFormatStringBase = (
     '%-4s '                                   # Multiplicity
@@ -634,6 +668,7 @@ LengthSpectrumFormatStringWithWord = (
     '%s')                                     # Word
 
 ShortMatrixParity = { MatrixParity[0] : '-', MatrixParity[1] : '+' }
+
 
 class LengthSpectrumInfo(Info):
     def __repr__(self):
@@ -660,17 +695,21 @@ class LengthSpectrumInfo(Info):
                 self.topology,
                 ShortMatrixParity[self.parity] )
 
+
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
+
     def __repr__(self):
         return repr(self.__dict__)
+
 
 class NormalSurfaceInfo(Info):
     def __repr__(self):
         orient = 'Orientable' if self.orientable else 'Non-orientable'
         sided = 'two-sided' if self.two_sided else 'one-sided'
         return '%s %s with euler = %s' % (orient, sided, self.euler)
-    
+
+
 class LengthSpectrum(list):
     def __repr__(self):
         if len(self) > 0 and 'word' in self[0]:
@@ -681,10 +720,12 @@ class LengthSpectrum(list):
                 'mult', ' length', 'topology', 'parity')
         return '\n'.join([base] + [repr(s) for s in self])
 
+
 class ListOnePerLine(list):
     def __repr__(self):
         return '[' + ',\n '.join([repr(s) for s in self]) + ']'
-    
+
+
 # Isometry
 
 def format_two_by_two(mat):
@@ -734,7 +775,6 @@ class Isometry():
 cdef IsometryListToIsometries(IsometryList *isometries):
     cdef int n, c, i, j, c_cusp_image
     cdef MatrixInt22  c_cusp_map
-    cdef Boolean extends
     n = isometry_list_size(isometries)
     c = isometry_list_num_cusps(isometries)
 
@@ -779,6 +819,7 @@ def _plink_callback(LE):
         manifold._cache.clear(message='plink_callback')
         msg_stream.write('\nNew triangulation received from PLink!\n')
 
+
 # Conversion functions Manifold <-> Triangulation
 
 def Manifold_from_Triangulation(Triangulation T, recompute=True,
@@ -805,6 +846,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     M.set_name(T.name())
     M._cover_info = T._cover_info
     return M
+
 
 def Triangulation_from_Manifold(Manifold M):
     cdef c_Triangulation *c_triangulation

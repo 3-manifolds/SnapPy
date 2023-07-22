@@ -9,6 +9,7 @@ if _within_sage:
 
 __all__ = ['IntervalNewtonShapesEngine']
 
+
 class IntervalNewtonShapesEngine:
 
     """
@@ -40,14 +41,14 @@ class IntervalNewtonShapesEngine:
        We simply use Sage's complex interval type avoiding the need of
        converting n x n complex matrices into 2n x 2n real matrices as
        described Section 3.4 of the HIKMOT paper.
-       
+
     3. We avoid automatic differentiation.  We pick an independent set of
        equations of the following form and try to solve them:
 
                log(LHS) = 0
 
        where
-       
+
                LHS =  c * z0^a0 * (1-z0)^b0 *  z1^a1 * (1-z1)^b1 * ...
 
        with a, b and c's as returned by Manifold.gluing_equations('rect').
@@ -55,11 +56,11 @@ class IntervalNewtonShapesEngine:
        The derivative of log (LHS) with respect to zj is simply given by
 
                             aj/zj - bj/(1-zj)
-         
+
        and thus no need for automatic differentiation.
 
     In contrast to HIKMOT, we use and return Sage's native implementation of
-    (complex) interval arithmetic here, which allows for increased interoperability. 
+    (complex) interval arithmetic here, which allows for increased interoperability.
     Another advantage is that Sage supports arbitrary precision. Unfortunately,
     performance suffers and this implementation is 5-10 times slower than HIKMOT.
 
@@ -163,16 +164,16 @@ class IntervalNewtonShapesEngine:
             [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]
             [ 0.5400? - 0.63...?*I -0.5400? + 0.63...?*I                    0]
             [...-0.4963? - 2.068?*I  1.0800? - 1.26...?*I   0.752? - 1.034...?*I]
-        
+
         """
 
         # Similar to log_gluing_LHS
         BaseField = shapes[0].parent()
         zero = BaseField(0)
-        one  = BaseField(1)
+        one = BaseField(1)
 
         # 1 /    z for each shape z
-        shape_inverses           = [ one / shape         for shape in shapes ]
+        shape_inverses = [ one / shape for shape in shapes ]
 
         # 1 / (1-z) for each shape z
         one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ]
@@ -180,13 +181,13 @@ class IntervalNewtonShapesEngine:
         gluing_LHS_derivatives = []
         for A, B, c in equations:
             row = []
-            for a, b, shape_inverse,  one_minus_shape_inverse in zip(
+            for a, b, shape_inverse, one_minus_shape_inverse in zip(
                 A, B, shape_inverses, one_minus_shape_inverses):
                 # Equation for the derivative
                 #     derivative = (   a /      z -  b / (1-z) )
                 derivative = zero
                 if not a == 0:
-                    derivative  = BaseField(int(a)) * shape_inverse
+                    derivative = BaseField(int(a)) * shape_inverse
                 if not b == 0:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
 
@@ -209,12 +210,12 @@ class IntervalNewtonShapesEngine:
 
     @staticmethod
     def newton_iteration(equations, shape_intervals,
-                         point_in_intervals = None,
-                         interval_value_at_point = None):
+                         point_in_intervals=None,
+                         interval_value_at_point=None):
         """
         Perform a Newton interval method of iteration for
         the function f described in log_gluing_LHSs.
-        
+
         Let z denote the shape intervals.
         Let z_center be a point close to the center point of the shape
         intervals (in the implementation, z_center is an interval of
@@ -236,7 +237,7 @@ class IntervalNewtonShapesEngine:
             sage: shapes = [ 0.7+1j, 0.7+1j, 0.5+0.5j ]
 
         Get the equations and initialize zero-length intervals from it::
-        
+
             sage: C = IntervalNewtonShapesEngine(M, shapes, bits_prec = 80)
             sage: C.initial_shapes
             (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
@@ -256,19 +257,19 @@ class IntervalNewtonShapesEngine:
 
             sage: M.tetrahedra_shapes('rect')
             [0.780552527850725 + 0.914473662967726*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
-        
+
         Start with a rather big interval, note that the Newton interval method is
         stable in the sense that the interval size decreases::
-        
+
             sage: box = C.CIF(C.RIF(-0.0001,0.0001),C.RIF(-0.0001,0.0001))
             sage: shape_intervals = C.initial_shapes.apply_map(lambda shape: shape + box)
             sage: shape_intervals
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
-            sage: for i in range(7): 
+            sage: for i in range(7):
             ...     shape_intervals = IntervalNewtonShapesEngine.newton_iteration(C.equations, shape_intervals)
             sage: print(shape_intervals) # doctest: +ELLIPSIS
             (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
-        
+
 
         """
 
@@ -325,8 +326,8 @@ class IntervalNewtonShapesEngine:
 
     @staticmethod
     def certified_newton_iteration(equations, shape_intervals,
-                                   point_in_intervals = None,
-                                   interval_value_at_point = None):
+                                   point_in_intervals=None,
+                                   interval_value_at_point=None):
         """
         Given shape intervals z, performs a Newton interval iteration N(z)
         as described in newton_iteration. Returns a pair (boolean, N(z)) where
@@ -338,10 +339,10 @@ class IntervalNewtonShapesEngine:
         See newton_iteration for the other parameters.
 
         This follows from Theorem 1 of `Zgliczynski's notes
-        <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.  
+        <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.
 
         Some examples::
-        
+
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
             sage: C = IntervalNewtonShapesEngine(M, M.tetrahedra_shapes('rect'),
@@ -376,18 +377,17 @@ class IntervalNewtonShapesEngine:
 
         """
 
-
         new_shapes = IntervalNewtonShapesEngine.newton_iteration(
             equations, shape_intervals,
-            point_in_intervals = point_in_intervals,
-            interval_value_at_point = interval_value_at_point)
+            point_in_intervals=point_in_intervals,
+            interval_value_at_point=interval_value_at_point)
         return (
             IntervalNewtonShapesEngine.interval_vector_is_contained_in(
                 new_shapes, shape_intervals),
             new_shapes)
 
     @sage_method
-    def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
+    def __init__(self, M, initial_shapes, bits_prec=None, dec_prec=None):
         """
         Initializes the IntervalNewtonShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
@@ -422,7 +422,7 @@ class IntervalNewtonShapesEngine:
 
 
         Or some non-hyperbolic manifolds::
-        
+
             sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True)
             Traceback (most recent call last):
             ...
@@ -456,7 +456,7 @@ class IntervalNewtonShapesEngine:
         # Shapes have not been certified yet
         self.certified_shapes = None
 
-    def expand_until_certified(self, verbose = False):
+    def expand_until_certified(self, verbose=False):
         """
         Try Newton interval iterations, expanding the shape intervals
         until we can certify they contain a true solution.
@@ -494,9 +494,8 @@ class IntervalNewtonShapesEngine:
                 is_certified, shapes = (
                     IntervalNewtonShapesEngine.certified_newton_iteration(
                         self.equations, shapes,
-                        point_in_intervals = self.initial_shapes,
-                        interval_value_at_point =
-                            interval_value_at_initial_shapes))
+                        point_in_intervals=self.initial_shapes,
+                        interval_value_at_point=interval_value_at_initial_shapes))
             except ZeroDivisionError:
                 if verbose:
                     print("Division by zero in interval Gaussian elimination")

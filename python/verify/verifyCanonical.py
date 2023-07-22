@@ -1,15 +1,15 @@
 from ..sage_helper import _within_sage, sage_method
 
-from .cuspCrossSection import RealCuspCrossSection
+from ..snap.cusp_cross_section import RealCuspCrossSection
+from ..snap.t3mlite import simplex
+
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
+from . import edge_equations
 from . import verifyHyperbolicity
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
 
-from ..snap import t3mlite as t3m
-
 if _within_sage:
-    from sage.rings.real_mpfi import RealIntervalField
     from sage.rings.complex_interval_field import ComplexIntervalField
     from ..pari import prec_dec_to_bits, prec_bits_to_dec
 
@@ -29,20 +29,22 @@ default_exact_bits_prec_and_degrees = [( 212, 10),
 _num_tries_canonize = 3
 _max_tries_verify_penalty = 9
 
+
 class FindExactShapesError(RuntimeError):
     """
     Raised when snap failed to find the exact shapes using the LLL-algorithm
     for a manifold.
     """
 
+
 @sage_method
-def interval_checked_canonical_triangulation(M, bits_prec = None):
+def interval_checked_canonical_triangulation(M, bits_prec=None):
     """
     Given a canonical triangulation of a cusped (possibly non-orientable)
     manifold M, return this triangulation if it has tetrahedral cells and can
     be verified using interval arithmetics with the optional, given precision.
     Otherwise, raises an Exception.
-    
+
     It fails when we call it on something which is not the canonical
     triangulation::
 
@@ -68,7 +70,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
       Traceback (most recent call last):
       ...
       TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
-    
+
     Has a cubical canonical cell::
 
        sage: M = Manifold("m412")
@@ -77,12 +79,12 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
        Traceback (most recent call last):
        ...
        TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
-    
+
     """
 
     # Get verified shape intervals
-    shapes = M.tetrahedra_shapes('rect', intervals = True,
-                                 bits_prec = bits_prec)
+    shapes = M.tetrahedra_shapes('rect', intervals=True,
+                                 bits_prec=bits_prec)
 
     # Compute cusp cross sections
     c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
@@ -119,6 +121,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     # Return M
     return M
 
+
 @sage_method
 def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     """
@@ -134,12 +137,12 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
        sage: K = exactly_checked_canonical_retriangulation(M, 300, 4)
 
     M's canonical cell decomposition has a cube, so non-tetrahedral::
-    
+
        sage: K.has_finite_vertices()
        True
 
     Has 12 tetrahedra after the retrianglation::
-    
+
       sage: K.num_tetrahedra()
       12
 
@@ -168,10 +171,10 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # Check that the exact solutions form a complete hyperbolic structure
     # We convert to intervals to check that the shapes are positive and
     # the angles add up to 2pi and not some other multiple of 2pi.
-    c.check_polynomial_edge_equations_exactly()
+    edge_equations.check_polynomial_edge_equations_exactly(c.mcomplex)
     c.check_cusp_development_exactly()
     CIF = ComplexIntervalField(bits_prec)
-    c.check_logarithmic_edge_equations_and_positivity(CIF)
+    edge_equations.check_logarithmic_edge_equations_and_positivity(c.mcomplex, CIF)
 
     # Normalize cusp area. This is not needed when only 1 cusp
     if M.num_cusps() > 1:
@@ -201,7 +204,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
             raise exceptions.TiltProvenPositiveNumericalVerifyError(interval)
 
     def index_of_face_corner(corner):
-        face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
+        face_index = simplex.comp(corner.Subsimplex).bit_length() - 1
         return 4 * corner.Tetrahedron.Index + face_index
 
     # Opacities of all four faces of each tetrahedron, initialize with None.
@@ -228,6 +231,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # Return it without introducing finite vertices.
     return M
 
+
 def _retrying_canonize(M):
     """
     Wrapper for SnapPea kernel's function to compute the proto-canonical
@@ -241,6 +245,7 @@ def _retrying_canonize(M):
         except (RuntimeError, SnapPeaFatalError):
             M.randomize()
     return False
+
 
 def _retrying_high_precision_canonize(M):
     """
@@ -265,26 +270,27 @@ def _retrying_high_precision_canonize(M):
     # Fail
     return None
 
+
 def _print_exception(e):
     print('%s: %s' % (type(e).__name__, e))
+
 
 @sage_method
 def verified_canonical_retriangulation(
     M,
-    interval_bits_precs = default_interval_bits_precs,
-    exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
-    verbose = False):
-
+    interval_bits_precs=default_interval_bits_precs,
+    exact_bits_prec_and_degrees=default_exact_bits_prec_and_degrees,
+    verbose=False):
     """
     Given some triangulation of a cusped (possibly non-orientable) manifold ``M``,
     return its canonical retriangulation. Return ``None`` if it could not certify
     the result.
 
-    To compute the canonical retriangulation, it first prepares the manifold 
+    To compute the canonical retriangulation, it first prepares the manifold
     (filling all Dehn-filled cusps and trying to find a proto-canonical
     triangulation).
     It then tries to certify the canonical triangulation using interval
-    arithmetics. If this fails, it uses snap (using `LLL-algorithm 
+    arithmetics. If this fails, it uses snap (using `LLL-algorithm
     <http://en.wikipedia.org/wiki/Lenstra%E2%80%93Lenstra%E2%80%93Lov%C3%A1sz_lattice_basis_reduction_algorithm>`_)
     to guess
     exact representations of the shapes in the shape field and then certifies
@@ -312,7 +318,7 @@ def verified_canonical_retriangulation(
     ``exact_bits_prec_and_degrees = None``.
 
     More information on the canonical retriangulation can be found in the
-    SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of 
+    SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of
     `Fominykh, Garoufalidis, Goerner, Tarkaev, Vesnin <http://arxiv.org/abs/1502.00383>`_.
 
     Canonical cell decomposition of ``m004`` has 2 tetrahedral cells::
@@ -333,7 +339,7 @@ def verified_canonical_retriangulation(
        True
        sage: K.num_tetrahedra()
        18
-    
+
     Canonical cell decomposition of ``m412`` is a cube and has exactly 8
     symmetries::
 
@@ -433,6 +439,7 @@ def verified_canonical_retriangulation(
             return None
 
     return None
+
 
 def _verified_canonical_retriangulation(
         M, interval_bits_precs, exact_bits_prec_and_degrees,

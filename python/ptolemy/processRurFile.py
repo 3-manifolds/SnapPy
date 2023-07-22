@@ -7,8 +7,10 @@ from .rur import RUR
 from . import processFileBase
 from ..pari import pari
 
+
 def contains_rur(text):
     return 'RUR=DECOMPOSITION=BEGINS' in text
+
 
 def decomposition_from_rur(text):
 
@@ -25,6 +27,7 @@ def decomposition_from_rur(text):
           for rur in rurs ])
 
     return result
+
 
 def _process_rur_component(text, py_eval, manifold_thunk):
     lines = text.split('\n')
@@ -56,16 +59,16 @@ def _process_rur_component(text, py_eval, manifold_thunk):
     if dimension is None:
         return NonZeroDimensionalComponent()
     if dimension > 0:
-        return NonZeroDimensionalComponent(dimension = dimension)
+        return NonZeroDimensionalComponent(dimension=dimension)
 
     if format is None:
         raise Exception("No format specified")
 
     if format == "MAPLE-LIKE":
         d = parse_maple_like_rur(body.strip())
-        return PtolemyCoordinates(d, is_numerical = False,
-                                  py_eval_section = py_eval,
-                                  manifold_thunk = manifold_thunk)
+        return PtolemyCoordinates(d, is_numerical=False,
+                                  py_eval_section=py_eval,
+                                  manifold_thunk=manifold_thunk)
     else:
         raise Exception("Unknown format %s" % format)
 
@@ -86,6 +89,7 @@ def parse_maple_like_rur(text):
     return dict([_parse_assignment(assignment, poly)
                  for assignment in assignments_text.split(',')])
 
+
 def parse_rs_rur(text, variables):
 
     m = re.match(r'\[([^,\]]+),\s*([^,\]]+),\s*\[([^\]]+)\]\s*,\s*\[\s*\]\s*\]',
@@ -104,14 +108,16 @@ def parse_rs_rur(text, variables):
                    for numerator_str in numerators_str.split(',') ]
 
     fracs = [
-        RUR( [ (  numerator.Mod(extension),  1),
+        RUR( [ (  numerator.Mod(extension), 1),
                (denominator.Mod(extension), -1) ] )
         for numerator in numerators ]
 
     return dict(list(zip(variables, fracs)) + [('1', RUR.from_int(1))])
 
+
 def _find_var_of_poly(text):
     return re.search(r'[_A-Za-z][_A-Za-z0-9]*',text).group(0)
+
 
 def _parse_assignment(text, poly):
     var, expression = re.match(r'\s*([_A-Za-z][_A-Za-z0-9]*)\s*=\s*(.*)$',
@@ -120,6 +126,7 @@ def _parse_assignment(text, poly):
     return (
         var,
         RUR.from_pari_fraction_and_number_field(pari(expression), poly))
+
 
 _test_case = """
 _Z^6-3*_Z^5+3*_Z^4-2*_Z^3+_Z-1 = 0,
@@ -131,7 +138,7 @@ class SolutionContainer():
     def __init__(self, solutions):
         self._solutions = solutions
 
-    def solutions(self, numerical = False):
+    def solutions(self, numerical=False):
         if numerical:
             return self._solutions.numerical()
         else:

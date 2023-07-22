@@ -1,7 +1,9 @@
 from . import utilities
 
+
 class Component(utilities.MethodMappingList):
     pass
+
 
 class ZeroDimensionalComponent(Component):
     """
@@ -10,23 +12,23 @@ class ZeroDimensionalComponent(Component):
     variety (i.e., Galois conjugate solutions).
     """
 
-    def __init__(self, l, p = None):
+    def __init__(self, l, p=None):
         self.dimension = 0
         super(ZeroDimensionalComponent, self).__init__(l)
 
 
 class NonZeroDimensionalComponent(Component):
     """
-    Represents a non-zero dimensinal component in the
+    Represents a non-zero dimensional component in the
     Ptolemy variety. It is a list that can hold points sampled from that
     component (witnesses).
     """
 
-    def __init__(self, witnesses = [],
-                 dimension = 'unknown', free_variables = None, genus = None,
-                 p = None):
+    def __init__(self, witnesses=[],
+                 dimension='unknown', free_variables=None, genus=None,
+                 p=None):
 
-        if not p is None:
+        if p is not None:
             self.dimension = p.dimension
             self.free_variables = p.free_variables
             self.genus = p.genus
@@ -42,7 +44,7 @@ class NonZeroDimensionalComponent(Component):
         else:
             f = ', free_variables = %r' % self.free_variables
 
-        if not self.genus is None:
+        if self.genus is not None:
             f += ', genus = %d' % self.genus
 
         return "NonZeroDimensionalComponent(dimension = %r%s)" % (
@@ -78,8 +80,8 @@ class NonZeroDimensionalComponent(Component):
             else:
                 p.text(base_str)
 
-def _test():
 
+def _test():
     """
 
     >>> a = NonZeroDimensionalComponent(dimension = 1, free_variables='x')

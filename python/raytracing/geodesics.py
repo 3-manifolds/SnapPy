@@ -6,6 +6,11 @@ from ..drilling.geodesic_tube import add_structures_necessary_for_tube
 from ..snap.t3mlite import Mcomplex, simplex
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
+
+class LengthSpectrumError(RuntimeError):
+    pass
+
+
 class Geodesics:
     def __init__(self, manifold, words):
         """
@@ -14,6 +19,7 @@ class Geodesics:
         >>> M = Manifold("o9_00000")
         >>> g = Geodesics(M, ["b", "c"])
         >>> g.set_enables_and_radii_and_update([True, True], [0.3, 0.4])
+        True
         >>> b = g.get_uniform_bindings()
         >>> len(b['geodesics.geodesicHeads'][1])
         31
@@ -42,8 +48,13 @@ class Geodesics:
 
     def set_enables_and_radii_and_update(self, enables, radii):
 
+        # Returns false when a tube was so big that it was intersecting
+        # a core curve and it had to be shrunk.
+
+        success = True
+
         if not self.geodesic_tube_infos:
-            return
+            return success
 
         self.data_heads = []
         self.data_tails = []
@@ -58,10 +69,13 @@ class Geodesics:
             if enable:
                 radius = self.RF(radius)
 
-                tets_and_endpoints = (
-                    geodesic_tube.compute_tets_and_R13_endpoints_for_tube(radius))
+                tets_and_endpoints, safe_radius = (
+                    geodesic_tube.compute_tets_and_R13_endpoints_and_radius_for_tube(radius))
 
-                radius_param = radius.cosh() ** 2 / 2
+                if safe_radius < radius:
+                    success = False
+
+                radius_param = safe_radius.cosh() ** 2 / 2
 
                 for tet, endpoints in tets_and_endpoints:
                     tets_to_data[tet].append(
@@ -75,6 +89,8 @@ class Geodesics:
                 self.data_indices.append(i)
                 self.data_radius_params.append(radius_param)
         self.data_offsets.append(len(self.data_heads))
+
+        return success
 
     def get_uniform_bindings(self):
         return {
@@ -95,18 +111,35 @@ class Geodesics:
 
     def add_length_spectrum(self, l):
 
-        L = self.manifold.length_spectrum(
-            l, grouped = False, include_words = True)
+        try:
+            L = self.manifold.length_spectrum(
+                l, grouped=False, include_words=True)
+        except RuntimeError as e:
+            raise LengthSpectrumError(*e.args) from e
+
+        exception = None
+
+        num_original = len(self.geodesic_tube_infos)
 
         for g in L:
-            self.add_word(g['word'], is_primitive = True)
+            try:
+                self.add_word(g['word'], is_primitive=True)
+            except Exception as e:
+                print(dict(g))
+                print(e)
+                exception = e
 
-    def add_word(self, word, is_primitive = None):
+        if exception:
+            raise exception
+
+        return len(self.geodesic_tube_infos) > num_original
+
+    def add_word(self, word, is_primitive=None):
         geodesic_tube_info = GeodesicTubeInfo(
             self.get_mcomplex(),
             word,
-            index = len(self.geodesic_tube_infos),
-            is_primitive = is_primitive)
+            index=len(self.geodesic_tube_infos),
+            is_primitive=is_primitive)
 
         for i, other in enumerate(self.geodesic_tube_infos):
             if other == geodesic_tube_info:
@@ -120,7 +153,7 @@ class Geodesics:
 
     def geodesics_sorted_by_length(self):
         return sorted(self.geodesic_tube_infos,
-                      key = compute_geodesic_tube_info_key)
+                      key=compute_geodesic_tube_info_key)
 
     def get_mcomplex(self):
         if self.mcomplex is None:
@@ -140,6 +173,7 @@ class Geodesics:
 
         return self.mcomplex
 
+
 def compute_geodesic_tube_info_key(geodesic_tube_info):
     l = geodesic_tube_info.complex_length
 
@@ -148,10 +182,12 @@ def compute_geodesic_tube_info_key(geodesic_tube_info):
             l.imag() > 1e-5, # Making the one with negative imag part first
             geodesic_tube_info.index)
 
+
 def _hsv2rgb_helper(hue, saturation, value, x):
     p = abs(((hue + x / 3.0) % 1.0) * 6.0 - 3.0)
     c = min(max(p - 1.0, 0.0), 1.0)
     return value * (1.0 + saturation * (c - 1.0))
+
 
 def hsv2rgb(hue, saturation, value):
     """
@@ -160,6 +196,7 @@ def hsv2rgb(hue, saturation, value):
 
     return [ _hsv2rgb_helper(hue, saturation, value, x)
              for x in [ 0.0, 2.0, 1.0 ] ]
+
 
 def geodesic_index_to_color(i):
     """

@@ -4,8 +4,8 @@ cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
-    compact 3-manifold with torus boundary components, where each 
-    tetrahedron has been assigned the geometry of an ideal tetrahedron 
+    compact 3-manifold with torus boundary components, where each
+    tetrahedron has been assigned the geometry of an ideal tetrahedron
     in hyperbolic 3-space. A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds,
     some orbifolds and cone 3-manifolds. Here's a quick example:
@@ -39,7 +39,7 @@ cdef class Manifold(Triangulation):
       filling (4,5).
     - Manifold() : Opens a link editor window where can you
       specify a link complement.
-    
+
     In general, the specification can be from among the below, with
     information on Dehn fillings added.
 
@@ -54,7 +54,7 @@ cdef class Manifold(Triangulation):
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
     - Fibered manifold associated to a braid: 'Braid[1,2,-3,4]'
-    
+
       Here, the braid is thought of as a mapping class of the
       punctured disc, and this manifold is the corresponding
       mapping torus.  If you want the braid closure, do (1,0) filling
@@ -64,18 +64,17 @@ cdef class Manifold(Triangulation):
 
       'Bundle(S_{1,1}, [a0, B1])' or 'Splitting(S_{1,0}, [b1, A0], [a0,B1])'
 
-      See the help for the 'twister' module for more.  
+      See the help for the 'twister' module for more.
 
     - A SnapPea triangulation or link projection file: 'filename'
 
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
       See :py:meth:`Manifold.save` for details.
- 
+
    - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
-
 
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
@@ -90,7 +89,7 @@ cdef class Manifold(Triangulation):
     def use_field_conversion(cls, func):
         """
         A class method for specifying a numerical conversion function.
-        This method is deprecated: SnapPy will automatically use 
+        This method is deprecated: SnapPy will automatically use
         SageMath number types or its own SnapPy number type depending on
         whether SageMath is available or not.
 
@@ -152,7 +151,7 @@ cdef class Manifold(Triangulation):
         4
 
         Note: due to rounding error, it is possible that this is not
-        actually the canonical triangulation.          
+        actually the canonical triangulation.
         """
         cdef c_FuncResult result
         result = proto_canonize(self.c_triangulation)
@@ -178,7 +177,7 @@ cdef class Manifold(Triangulation):
         cube. The canonical retriangulation thus has 12 simplices.
 
         >>> M = Manifold("m412")
-        
+
         Some isometries of M are not visible in this triangulation (not
         even after calling M.canonize())
 
@@ -197,7 +196,6 @@ cdef class Manifold(Triangulation):
 
         cdef Boolean *c_opacities
         cdef c_Triangulation *c_retriangulated_triangulation
-        cdef char *c_string
         cdef int n = get_num_tetrahedra(self.c_triangulation)
         cdef result
         cdef Triangulation new_tri
@@ -242,7 +240,7 @@ cdef class Manifold(Triangulation):
         >>> Manifold('L6a4')._canonical_cells_are_tetrahedra()
         False
         """
-       
+
         cdef Manifold M
         M = self.copy()
         M.canonize()
@@ -265,7 +263,6 @@ cdef class Manifold(Triangulation):
         Triangulation._from_string(self, string)
         if initialize_structure:
             self.init_hyperbolic_structure()
-
 
     def _from_bytes(self, bytestring, initialize_structure=True):
         """
@@ -309,7 +306,7 @@ cdef class Manifold(Triangulation):
         Returns information about the cusp neighborhoods of the
         manifold, in the form of data about the corresponding horoball
         diagrams in hyperbolic 3-space.
-        
+
         >>> M = Manifold('s000')
         >>> CN = M.cusp_neighborhood()
         >>> CN.volume() # doctest: +NUMERIC6
@@ -337,13 +334,13 @@ cdef class Manifold(Triangulation):
         >>> D
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         >>> D.view()   #Shows 3d-graphical view.  #doctest: +CYOPENGL
-        
+
         The group elements for the face-pairings of the Dirichlet domain
         can be given as words in the original generators of the
         (unsimplified) fundamental group by setting include_words = True:
 
         >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
-        ['A', 'AB', 'ABB', ...]
+        ['A', ...]
 
         Other options can be provided to customize the computation;
         the default choices are shown below:
@@ -366,7 +363,7 @@ cdef class Manifold(Triangulation):
             return self._cache.lookup('dirichlet_domain', *args)
         except KeyError:
             pass
-        
+
         return self._cache.save(DirichletDomain(self, *args),
                                 'dirichlet_domain', *args)
 
@@ -379,29 +376,29 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m125')
         >>> M.browse()  #doctest: +CYOPENGL
-        
-        This does not work when using SnapPy in a Docker container. 
+
+        This does not work when using SnapPy in a Docker container.
         """
         if Browser is None:
             raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")
         return Browser(self)
-        
+
     def filled_triangulation(self, cusps_to_fill='all'):
         """
         Return a new Manifold where the specified cusps have been
-        permanently filled in.  
+        permanently filled in.
 
         Filling all the cusps results in a Triangulation rather
         than a Manifold, since SnapPea can't deal with hyperbolic
-        structures when there are no cusps. 
+        structures when there are no cusps.
 
         Examples:
-        
+
         >>> M = Manifold('m125(1,2)(3,4)')
         >>> N = M.filled_triangulation()
         >>> N.num_cusps()
         0
-        
+
         Filling cusps 0 and 2 :
 
         >>> M = Manifold('v3227(1,2)(3,4)(5,6)')
@@ -412,7 +409,7 @@ cdef class Manifold(Triangulation):
         if filled.num_cusps() == 0:
             return Triangulation_from_Manifold(filled)
         return filled
-       
+
     def fundamental_group(self,
                    simplify_presentation = True,
                    fillings_may_affect_generators = True,
@@ -484,7 +481,7 @@ cdef class Manifold(Triangulation):
             return self._cache.lookup('symmetry_group', of_link)
         except KeyError:
             pass
-        
+
         result = compute_symmetry_group(self.c_triangulation,
                                         &symmetries_of_manifold,
                                         &symmetries_of_link,
@@ -507,8 +504,7 @@ cdef class Manifold(Triangulation):
             free_symmetry_group(symmetries_of_link)
             symmetry_group._set_c_symmetry_group(symmetries_of_manifold)
 
-        return self._cache.save(symmetry_group, 'symmetry_group', of_link) 
-        
+        return self._cache.save(symmetry_group, 'symmetry_group', of_link)
 
     def symmetric_triangulation(self):
         """
@@ -530,7 +526,7 @@ cdef class Manifold(Triangulation):
         except KeyError:
             self.symmetry_group()
             return self._cache.lookup('symmetric_triangulation')
-            
+
     def cover(self, permutation_rep):
         """
         M.cover(permutation_rep)
@@ -547,7 +543,7 @@ cdef class Manifold(Triangulation):
         >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
         >>> abs(N0.volume()/M.volume() - 5) < 0.0000000001
         True
-        
+
 
         If within Sage, the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
@@ -557,11 +553,11 @@ cdef class Manifold(Triangulation):
           sage: M = Manifold('m004')
 
         The basic method::
-        
+
           sage: N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
 
         From a Gap subgroup::
-        
+
           sage: G = gap(M.fundamental_group())
           sage: H = G.LowIndexSubgroupsFpGroup(5)[9]
           sage: N1 = M.cover(H)
@@ -582,7 +578,7 @@ cdef class Manifold(Triangulation):
           168.00000000
 
         Check the homology against what Gap computes directly::
-        
+
           sage: N3.homology().betti_number()
           32
           sage: len([ x for x in f.Kernel().AbelianInvariants().sage() if x == 0])
@@ -646,7 +642,7 @@ cdef class Manifold(Triangulation):
                                             recompute=False,
                                             manifold_class=self.__class__)
                 for cover in covers]
-    
+
     cdef _real_volume(self):
         """
         Return the (real) volume as a Number.
@@ -685,8 +681,6 @@ cdef class Manifold(Triangulation):
         True
         """
         cdef const_char_ptr err_msg=NULL
-        cdef c_Triangulation* copy_c_triangulation
-        cdef c_Triangulation
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
@@ -716,7 +710,7 @@ cdef class Manifold(Triangulation):
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
         this is the sum of the volumes of the hyperbolic pieces in
-        the geometric decomposition of the manifold. 
+        the geometric decomposition of the manifold.
 
         >>> M = Manifold('m004')
         >>> M.volume() # doctest: +NUMERIC6
@@ -746,7 +740,7 @@ cdef class Manifold(Triangulation):
                 raise ValueError(
                     'SnapPea kernel style estimation of accuracy not available '
                     'for arbitrary precision/interval arithmetic.')
-            
+
             return verify.compute_volume(
                 self, verified=verified, bits_prec=bits_prec)
 
@@ -773,8 +767,8 @@ cdef class Manifold(Triangulation):
                      &accuracy,
                      &requires_initialization)
         if not is_known:
-           raise ValueError("The Chern-Simons invariant isn't "
-                            "currently known.")
+            raise ValueError("The Chern-Simons invariant isn't "
+                             "currently known.")
         cs = Real2Number(CS)
         cs.accuracy = accuracy
         return cs
@@ -821,7 +815,7 @@ cdef class Manifold(Triangulation):
         By default, when the manifold has at least one cusp, Zickert's
         algorithm is used; when the manifold is closed we use SnapPea's
         original algorithm, which is based on Meyerhoff-Hodgson-Neumann.
-        
+
         Note: When computing the Chern-Simons invariant of a closed
         manifold, one must sometimes compute it first for the unfilled
         manifold so as to initialize SnapPea's internals.  For instance,
@@ -843,7 +837,7 @@ cdef class Manifold(Triangulation):
             return (self._number_(cs), cs.accuracy)
         else:
             return self._number_(cs)
-            
+
     def without_hyperbolic_structure(self):
         """
         Returns self as a Triangulation, forgetting the hyperbolic
@@ -877,7 +871,7 @@ cdef class Manifold(Triangulation):
 
         If the optional variable 'part' is set to one of the above,
         then the function returns only that component of the data.
-        
+
         If the flag 'fixed_alignment' is set to False, then the edges
         used to report the shape parameters are chosen so as to
         normalize the triangle.
@@ -889,11 +883,11 @@ cdef class Manifold(Triangulation):
         [{'accuracies': (11, 11, 12, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I},
          {'accuracies': (11, 11, 11, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I},
          {'accuracies': (11, 11, 11, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I}]
-        """        
+        """
         cdef Real rect_re, rect_im, log_re, log_im
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
         cdef Boolean is_geometric
-        
+
         if self.c_triangulation is NULL: return []
 
         # The SnapPea kernel itself supports non-orientable manifolds,
@@ -936,7 +930,7 @@ cdef class Manifold(Triangulation):
                 log_shape=Number(RealImag2gen(log_re, log_im))
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 if part in ['rect', 'log', 'accuracies']:
-                    # Don't compute volumes as they will be thrown away. 
+                    # Don't compute volumes as they will be thrown away.
                     result.append(ShapeInfo(
                             rect=self._number_(rect_shape),
                             log=self._number_(log_shape),
@@ -970,12 +964,12 @@ cdef class Manifold(Triangulation):
 
         if part is not None:
             try:
-               return [a[part] for a in result]
+                return [a[part] for a in result]
             except KeyError:
                 raise ValueError('A non-existent shape data type '
                                  'was specified.')
         else:
-           return ListOnePerLine(result)
+            return ListOnePerLine(result)
 
     def _get_tetrahedra_shapes(self, which_solution):
         """
@@ -1032,7 +1026,7 @@ cdef class Manifold(Triangulation):
                 complete_shape_array[i] = complex2Complex(complex(shape))
         if fillings:
             set_cusps(self.c_triangulation, fillings)
-        set_tet_shapes(self.c_triangulation, 
+        set_tet_shapes(self.c_triangulation,
                        filled_shape_array,
                        complete_shape_array)
         compute_holonomies(self.c_triangulation)
@@ -1051,21 +1045,21 @@ cdef class Manifold(Triangulation):
         returned. The possible answers are:
 
         - 0: 'not attempted'
-        
+
         - 1: 'all tetrahedra positively oriented' aka 'geometric_solution'
           Should correspond to a genuine hyperbolic structure.
 
         - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
           Probably corresponds to a hyperbolic structure but some
           simplices have reversed orientations.
-             
+
         - 3: 'contains flat tetrahedra' All tetrahedra have shape in R - {0, 1}.
 
         - 4: 'contains degenerate tetrahedra' Some shapes are close to
-          {0,1, or infinity}.  
-        
+          {0,1, or infinity}.
+
         - 5: 'unrecognized solution type'
-        
+
         - 6: 'no solution found'
 
         >>> M = Manifold('m007')
@@ -1100,9 +1094,9 @@ cdef class Manifold(Triangulation):
         """
         cdef Complex c_target
         c_target = Object2Complex(target)
-        set_target_holonomy(self.c_triangulation, 
+        set_target_holonomy(self.c_triangulation,
                             which_cusp, c_target, recompute)
-        
+
     def cusp_info(self, data_spec=None, verified = False, bits_prec = None):
         """
         Returns an info object containing information about the given
@@ -1129,14 +1123,14 @@ cdef class Manifold(Triangulation):
         ( (second shortest translation)/(shortest translation)).
         For cusps that are filled, one instead cares about the
         holonomies:
-        
+
         >>> M.cusp_info(-1)['holonomies'] # doctest: +NUMERIC6
         (-0.59883089 + 1.09812548*I, 0.89824633 + 1.49440443*I)
 
         The complex numbers returned for the shape and for the two
         holonomies have an extra attribute, accuracy, which is
         SnapPea's *estimate* of their accuracy.
-        
+
         You can also get information about multiple cusps at once:
 
         >>> M.cusp_info() # doctest: +NUMERIC6
@@ -1147,7 +1141,7 @@ cdef class Manifold(Triangulation):
         [True, False, False]
 
         The cusp shapes can be verified::
-        
+
             sage: M = Manifold('m292')
             sage: M.cusp_info('shape', verified = True, bits_prec = 60) # doctest: +NUMERIC12
             [-0.1766049820997? + 1.2028208192855?*I,
@@ -1216,7 +1210,7 @@ cdef class Manifold(Triangulation):
 
         core_geodesic(self.c_triangulation, cusp_index,
                       &singularity_index, &c_core_length, &accuracy)
-            
+
         if singularity_index != 0:
             core_length = Complex2Number(c_core_length)
             core_length.accuracy = accuracy
@@ -1224,14 +1218,14 @@ cdef class Manifold(Triangulation):
                 'core_length' : self._number_(core_length),
                 'singularity_index':singularity_index
             })
-                
+
         return CuspInfo(**info)
-                
+
     def dehn_fill(self, filling_data, which_cusp=None):
         """
         Set the Dehn filling coefficients of the cusps.  This can be
         specified in the following ways, where the cusps are numbered
-        by 0,1,...,(num_cusps - 1).  
+        by 0,1,...,(num_cusps - 1).
 
         - Fill cusp 2:
 
@@ -1245,7 +1239,7 @@ cdef class Manifold(Triangulation):
           >>> M.dehn_fill((1,5), -1)
           >>> M
           8^4_1(0,0)(0,0)(2,3)(1,5)
-        
+
         - Fill the first two cusps:
 
           >>> M.dehn_fill( [ (3,0), (1, -4) ])
@@ -1258,7 +1252,7 @@ cdef class Manifold(Triangulation):
           >>> N.dehn_fill( (-3,4) )
           >>> N
           m004(-3,4)
-        
+
         Does not return a new Manifold.
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
@@ -1281,7 +1275,7 @@ cdef class Manifold(Triangulation):
         as peripheral_data.
 
         - Make the shortest curves the meridians, and the second
-          shortest curves the longitudes.  
+          shortest curves the longitudes.
 
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape') # doctest: +NUMERIC6
@@ -1295,25 +1289,25 @@ cdef class Manifold(Triangulation):
           >>> M.cusp_info('shape') # doctest: +NUMERIC6
           [-2.49024467 + 2.97944707*I]
 
-          You can also make just the meridians as short as 
+          You can also make just the meridians as short as
           possible while fixing the longitudes via the option
           'shortest_meridians', and conversely with
-          'shortest_longitudes'.  
-          
-        - If cusps are Dehn filled, make those curves meridians.  
+          'shortest_longitudes'.
+
+        - If cusps are Dehn filled, make those curves meridians.
 
           >>> M = Manifold('m125(0,0)(2,5)')
           >>> M.set_peripheral_curves('fillings')
           >>> M
           m125(0,0)(1,0)
-        
+
         - Change the basis of a particular cusp, say the first one:
 
           >>> M.set_peripheral_curves( [ (1,2), (1,3) ] , 0)
 
           Here (1,2) is the new meridian written in the old basis, and
           (1,3) the new longitude.
-          
+
         - Change the basis of all the cusps at once
 
           >>> new_curves = [ [(1,-1), (1,0)],  [(3,2), (-2,-1)] ]
@@ -1321,9 +1315,8 @@ cdef class Manifold(Triangulation):
           >>> M
           m125(0,0)(-1,-2)
         """
-        cdef int a,b,c,d
+        cdef int d
         cdef MatrixInt22 *matrices
-        cdef c_FuncResult result 
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
@@ -1379,7 +1372,7 @@ cdef class Manifold(Triangulation):
         else:
             return Triangulation.set_peripheral_curves(
                 self, peripheral_data, which_cusp,return_matrices)
-        
+
     def dual_curves(self, max_segments=6):
         """
         Constructs a *reasonable* selection of simple closed curves in
@@ -1397,17 +1390,17 @@ cdef class Manifold(Triangulation):
            4: orientation-preserving curve of length 1.68719745 + 2.81543089*I]
 
         Each curve is returned as an info object with these keys
-        
+
         >>> sorted(curves[0].keys())
         ['complete_length', 'filled_length', 'index', 'max_segments', 'parity']
-        
+
         We can drill out any of these curves to get a new manifold
         with one more cusp.
 
         >>> N = M.drill(curves[0])
         >>> (M.num_cusps(), N.num_cusps())
         (1, 2)
-        
+
         By default, this function only finds curves of length 6; this
         can be changed by specifying the optional argument
         max_segments
@@ -1429,7 +1422,7 @@ cdef class Manifold(Triangulation):
         result = []
         for i from 0 <= i < num_curves:
             get_dual_curve_info(
-                curve_list[i], 
+                curve_list[i],
                 &complete_length,
                 &filled_length,
                 &parity
@@ -1438,14 +1431,14 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=i,
                     parity=parity,
-                    filled_length=self._number_(Complex2Number(filled_length)), 
+                    filled_length=self._number_(Complex2Number(filled_length)),
                     complete_length=self._number_(Complex2Number(complete_length)),
                     max_segments=max_segments
                   )
                )
         free_dual_curves(num_curves, curve_list)
         return ListOnePerLine(result)
-    
+
     def length_spectrum(self,
                         cutoff=1.0,
                         full_rigor=True,
@@ -1457,17 +1450,16 @@ cdef class Manifold(Triangulation):
 
         Here's a quick example:
 
-        >>> L = Manifold("m004").length_spectrum(1.1, include_words = True)
-        >>> L
+        >>> L = Manifold("m016").length_spectrum(0.75, include_words=True)
+        >>> L # doctest: +SKIP
         mult  length                                  topology     parity word
-        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
-        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
+        1     0.58460368501799 +  2.49537045556047*I  circle       +      a
+        1     0.72978937305180 +  3.02669828218116*I  circle       +      Bc
 
         Access just the length:
-       
-        >>> L[0].length # doctest: +NUMERIC6
-        1.08707014499574 - 1.72276844987009*I
 
+        >>> L[0].length # doctest: +NUMERIC6
+        0.584603685017987 + 2.495370455560469*I
         """
         args = (cutoff, full_rigor, grouped, include_words)
         try:
@@ -1482,7 +1474,7 @@ cdef class Manifold(Triangulation):
                 grouped = grouped),
             'length_spectrum',
             *args)
-        
+
     def drill(self, which_curve, max_segments=6):
         """
         Drills out the specified dual curve from among all dual curves
@@ -1495,7 +1487,7 @@ cdef class Manifold(Triangulation):
         >>> (M.num_cusps(), N.num_cusps())
         (1, 2)
         """
-        
+
         cdef int num_curves
         cdef DualOneSkeletonCurve **curve_list
         cdef c_Triangulation *c_triangulation
@@ -1517,7 +1509,7 @@ cdef class Manifold(Triangulation):
         if which_curve not in range(num_curves):
             raise IndexError('The drilling curve requested is not '
                              'in range(%d).' % num_curves)
-        
+
         c_triangulation = drill_cusp(self.c_triangulation,
                                      curve_list[which_curve],
                                      c_new_name)
@@ -1582,18 +1574,17 @@ cdef class Manifold(Triangulation):
                     return False
         except ValueError:
             pass
-        
 
         if return_isometries:
             result = compute_isometries(self.c_triangulation,
-                                        other.c_triangulation, 
+                                        other.c_triangulation,
                                         &are_isometric,
                                         &isometries, NULL)
         else:
             result = compute_isometries(self.c_triangulation,
-                                        other.c_triangulation, 
+                                        other.c_triangulation,
                                         &are_isometric, NULL, NULL)
-            
+
         if FuncResult[result] == 'func_bad_input':
             raise ValueError('The Dehn filling coefficients must be '
                              'relatively prime integers.')
@@ -1601,7 +1592,7 @@ cdef class Manifold(Triangulation):
         if FuncResult[result] == 'func_failed':
             raise RuntimeError('The SnapPea kernel was not able to '
                                'determine if the manifolds are isometric.')
-        
+
         ans = bool(are_isometric)
 
         if return_isometries:
@@ -1613,7 +1604,7 @@ cdef class Manifold(Triangulation):
                 ans = IsometryListToIsometries(isometries)
                 free_isometry_list(isometries)
 
-        return ans 
+        return ans
 
     def is_two_bridge(self):
         """
@@ -1627,7 +1618,7 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m016')
         >>> M.is_two_bridge()
         False
-        
+
         Note: An answer of 'True' is rigorous, but not the answer
         'False', as there could be numerical errors resulting in
         finding an incorrect canonical triangulation.
@@ -1635,7 +1626,7 @@ cdef class Manifold(Triangulation):
         cdef Boolean is_two_bridge
         cdef long int p, q
         cdef c_Triangulation *c_canonized_triangulation
-        
+
         if self.c_triangulation is NULL: return False
 
         copy_triangulation(self.c_triangulation, &c_canonized_triangulation)
@@ -1698,17 +1689,17 @@ cdef class Manifold(Triangulation):
         that all such normal surfaces will be found nor that any given
         surface is incompressible.  The search is confined to surfaces
         whose quads are in the tetrahedra that have degenerate shapes.
-        
+
         You can split the manifold open along one of these surfaces
         using the method "split".
-        
+
         A connect sum of two trefoils:
 
         >>> M1 = Manifold('DT: fafBCAEFD')
         >>> len(M1.splitting_surfaces())
         2
 
-        First satellite knot in the table. 
+        First satellite knot in the table.
 
         >>> M2 = Manifold('K13n4587')
         >>> M2.splitting_surfaces()
@@ -1716,7 +1707,7 @@ cdef class Manifold(Triangulation):
         """
         cdef NormalSurfaceList *surfaces
         cdef c_FuncResult result
-                
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         result = find_normal_surfaces(self.c_triangulation, &surfaces)
@@ -1730,17 +1721,17 @@ cdef class Manifold(Triangulation):
                 two_sided=B2B(normal_surface_is_two_sided(surfaces, i)),
                 euler=normal_surface_Euler_characteristic(surfaces, i),
                 index=i))
-        
-        free_normal_surfaces(surfaces)        
+
+        free_normal_surfaces(surfaces)
         return ListOnePerLine(ans)
 
     def split(self, which_surface):
         """
         Split the manifold open along a surface of positive characteristic found
-        by the method "splitting_surfaces".  Returns a list of the pieces, with any 
+        by the method "splitting_surfaces".  Returns a list of the pieces, with any
         sphere boundary components filled in.
-        
-        Here's an example of a Whitehead double on the trefoil.        
+
+        Here's an example of a Whitehead double on the trefoil.
 
         >>> M = Manifold('K14n26039')
         >>> S = M.splitting_surfaces()[0]
@@ -1753,19 +1744,19 @@ cdef class Manifold(Triangulation):
         3.66386238
         >>> pieces[1].fundamental_group().relators()
         ['aabbb']
-                
+
         You can also specify a surface by its index.
 
-        >>> M = Manifold('L10n111') 
+        >>> M = Manifold('L10n111')
         >>> max( P.volume() for P in M.split(0) ) # doctest: +NUMERIC6
         5.33348957
         """
         cdef NormalSurfaceList *surfaces
         cdef c_FuncResult result
-        cdef int num_surfaces, i
+        cdef int num_surfaces
         cdef c_Triangulation  *pieces[2]
         cdef Manifold M0, M1
-        
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
@@ -1783,7 +1774,7 @@ cdef class Manifold(Triangulation):
         result =  split_along_normal_surface(surfaces, which_surface, pieces)
         if result != func_OK:
             raise RuntimeError('SnapPea kernel failed when splitting open along the given surface.')
-        
+
         ans = []
         if pieces[0] != NULL:
             M0 = self.__class__('empty')
@@ -1799,31 +1790,7 @@ cdef class Manifold(Triangulation):
         free_normal_surfaces(surfaces)
         return ans
 
-    def identify(self, extends_to_link=False):
-        """
-        Looks for the manifold in all of the SnapPy databases.
-        For hyperbolic manifolds this is done by searching for isometries: 
-
-        >>> M = Manifold('m125')
-        >>> M.identify()
-        [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-        
-        By default, there is no restriction on the isometries. One can
-        require that the isometry take meridians to meridians. This
-        might return fewer results:
-
-        >>> M.identify(extends_to_link=True)
-        [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
-        
-        For closed manifolds, extends_to_link doesn't make sense
-        because of how the kernel code works:
-        
-        >>> C = Manifold("m015(1,2)")
-        >>> C.identify()
-        [m006(-5,2)]
-        >>> C.identify(True)
-        []
-        """
+    def _identify(self, extends_to_link=False):
         ans = []
         for table in database.__all_tables__.values():
             match = table.identify(self, extends_to_link)
@@ -1833,7 +1800,6 @@ cdef class Manifold(Triangulation):
 
     def _cusp_cross_section_info(self):
         cdef c_Tetrahedron *tet
-        cdef Real temp
         allocate_cross_sections(self.c_triangulation)
         compute_cross_sections(self.c_triangulation)
         compute_tilts(self.c_triangulation)
@@ -1846,14 +1812,14 @@ cdef class Manifold(Triangulation):
                 one_vertex_lengths = []
                 for f in range(4):
                     if v != f:
-                         one_vertex_lengths.append(self._number_(
-                             Real2Number(<Real>tet.cross_section.edge_length[v][f])))
+                        one_vertex_lengths.append(self._number_(
+                            Real2Number(<Real>tet.cross_section.edge_length[v][f])))
                     else:
                         one_vertex_lengths.append(None)
                 one_tet_lengths.append(one_vertex_lengths)
             tilts.append(one_tet_tilts)
             side_lengths.append(one_tet_lengths)
             tet = tet.next
-                
+
         free_cross_sections(self.c_triangulation)
         return tilts, side_lengths

@@ -62,6 +62,7 @@ from ..pari import pari
 # the field extension tower, do the substituition to convert them
 # into polynomials in x
 
+
 def _only_var_left_in_poly(poly, extension_vars):
     '''
     Checks whether that there is only one other variable besides
@@ -77,6 +78,7 @@ def _only_var_left_in_poly(poly, extension_vars):
     if no_vars_left > 1:
         return None
     return list(vars_left)[0]
+
 
 def _next_var_and_poly(polys, extension_vars):
     '''
@@ -94,21 +96,22 @@ def _next_var_and_poly(polys, extension_vars):
                     "solve is probably not in lexicographic order or of a "
                     "0-dimensional ideal!")
 
+
 def _remove(l, element):
     '''
     Returns a copy of list without element.
     '''
-    return [x for x in l if not x is element]
+    return [x for x in l if x is not element]
+
 
 def extensions_and_assignments(polys):
     '''
     Splits into extensions and assignments s in example given above
     in _exact_solutions.
     '''
-
-    extensions = [ ] # extension polynomials
-    extension_vars = [ ]
-    assignments = { } # pure assignments
+    extensions = []  # extension polynomials
+    extension_vars = []
+    assignments = {}  # pure assignments
 
     # Iterate while polys left
     while polys:
@@ -148,12 +151,12 @@ def update_assignments_and_merge(assignments, d):
     variables = sorted(set(
             sum([poly.variables() for poly in assignments.values()], [])))
 
-    monomial_to_value = { (): pari(1) }
+    monomial_to_value = {(): pari(1)}
 
     for var in variables:
         max_degree = max([poly.degree(var) for poly in assignments.values()])
 
-        old_keys = list(monomial_to_value.keys())
+        old_keys = list(monomial_to_value)
 
         v = d[var]
         power_of_v = pari(1)
@@ -185,6 +188,7 @@ def update_assignments_and_merge(assignments, d):
     new_assignments['1'] = pari(1)
 
     return new_assignments
+
 
 def _process_extensions(extensions):
     '''

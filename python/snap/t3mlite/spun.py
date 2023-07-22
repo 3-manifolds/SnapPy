@@ -63,11 +63,12 @@ def shift_matrix(n):
             shifts[i+j, i+((j+1) % 3)] = -1
     return shifts
 
+
 def quad_vector_to_type_and_coeffs(quad_vector):
     """
     For an n-tetrahedra manifold, take a full quad vector
     of length 3n and store the quad type and weight for
-    each tetrahedron.  
+    each tetrahedron.
     """
     quad_types, coefficients = [], []
     quad_vector = list(quad_vector)
@@ -85,6 +86,7 @@ def quad_vector_to_type_and_coeffs(quad_vector):
 
     return quad_types, Vector(coefficients)
 
+
 class SpunSurface:
     """
     A spun normal surface in an ideal triangulation, as introduced by
@@ -98,7 +100,7 @@ class SpunSurface:
     z -> 0, z' -> 0, and z'' -> 0 respectively, as per Figure 3.1 of
     `[DG] <http://arxiv.org/abs/1102.4588>`_.  The quad types
     are numbered 0, 1, 2; the "None" quad type means a
-    tetrahedron contains no quads at all.  
+    tetrahedron contains no quads at all.
     """
     def __init__(self, manifold, quad_vector=None, quad_types=None, index=None):
         self._manifold = manifold
@@ -136,11 +138,11 @@ class SpunSurface:
         return True
 
     def __radd__(self, other):
-        if other==0:
+        if other == 0:
             return self
 
     def __add__(self, other):
-        if other==0:
+        if other == 0:
             return self
         if not self.is_compatible(other):
             raise ValueError('Normal surfaces are not compatible')
@@ -149,6 +151,7 @@ class SpunSurface:
     def __repr__(self):
         return "<Surface %s: %s %s %s>" % (self._index, self._quad_types,
                                            list(self._coefficients), tuple(self._boundary_slopes))
+
 
 class SpunNormalSurfaceEquations:
     def __init__(self, manifold):
@@ -178,7 +181,10 @@ class SpunNormalSurfaceEquations:
             T = regina.Triangulation3(M._to_string())
             ans = []
             tets = range(M.num_tetrahedra())
-            surfaces = regina.NormalSurfaces.enumerate(T, regina.NS_QUAD)
+            if hasattr(regina.NormalSurfaces, 'enumerate'):
+                surfaces = regina.NormalSurfaces.enumerate(T, regina.NS_QUAD)
+            else:
+                surfaces = regina.NormalSurfaces(T, regina.NS_QUAD)
             for i in range(surfaces.size()):
                 S = surfaces.surface(i)
                 coeff_vector = [int(S.quads(tet, quad).stringValue())
@@ -188,13 +194,11 @@ class SpunNormalSurfaceEquations:
         else:
             raise ValueError("Algorithm should be one of {'FXrays', 'regina'}")
 
-
     def is_solution(self, quad_vector):
         return self.quad_equations * quad_vector == 0
 
     def boundary_slope_of_solution(self, quad_vector):
         return self.slope_matrix*self.shift_matrix*quad_vector
-
 
 
 # The following methods get monkey patched into the manifold
@@ -206,6 +210,7 @@ def _normal_surface_equations(self):
         eqns = SpunNormalSurfaceEquations(self)
         self._cache[name] = SpunNormalSurfaceEquations(self)
     return self._cache[name]
+
 
 def normal_surfaces(self, algorithm='FXrays'):
     """
@@ -223,6 +228,7 @@ def normal_surfaces(self, algorithm='FXrays'):
         self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
                                           for i, qv in enumerate(eqns.vertex_solutions(algorithm))]
     return self._cache['normal_surfaces']
+
 
 def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
     """
@@ -279,11 +285,12 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
         if subset != 'all':
             raise ValueError("Subset must be one of 'all', 'kabaya', or 'brasile'")
 
-    slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
-    slopes.discard( (0, 0) )
+    slopes = {normalize_slope(S.boundary_slopes()) for S in surfaces}
+    slopes.discard((0, 0))
     return sorted(slopes)
+
 
 if __name__ == "__main__":
     import doctest
-    names = {'Manifold':snappy.Manifold}
+    names = {'Manifold': snappy.Manifold}
     doctest.testmod(extraglobs=names)

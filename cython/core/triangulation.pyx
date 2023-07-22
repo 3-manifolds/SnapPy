@@ -121,8 +121,6 @@ cdef class Triangulation():
               'link complement.')
 
     cdef get_triangulation(self, spec, remove_finite_vertices=True):
-        cdef Triangulation T
-
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
             return self._from_pickle(spec, remove_finite_vertices)
@@ -263,7 +261,6 @@ cdef class Triangulation():
             locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
         except KeyError:
             locations = [os.curdir]
-        found = 0
         for location in locations:
             pathname = os.path.join(location, name)
             if os.path.isfile(pathname):
@@ -615,9 +612,9 @@ cdef class Triangulation():
             savefile = asksaveasfile(
                 mode='w', title='Save Triangulation', defaultextension='.tri',
                 filetypes = [
-                ('Triangulation and text files', '*.tri *.txt', 'TEXT'),
-                ('All text files', '', 'TEXT'),
-                ('All files', '')])
+                    ('Triangulation and text files', '*.tri *.txt', 'TEXT'),
+                    ('All text files', '', 'TEXT'),
+                    ('All files', '')])
             if savefile:
                 filename = savefile.name
                 savefile.close()
@@ -818,7 +815,6 @@ cdef class Triangulation():
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
-
     def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To
@@ -859,7 +855,6 @@ cdef class Triangulation():
 
         if decoration:
             decorated_isosig.set_peripheral_from_decoration(self, decoration)
-
 
     def __reduce__(self):
         """
@@ -937,36 +932,28 @@ cdef class Triangulation():
         triangulation_to_data(self.c_triangulation, &data)
 
         result_cusp_indices = []
-        for i from 0 <= i < self.num_tetrahedra():
-          row = []
-          for v from 0 <= v < 4:
-            row.append(
-               data.tetrahedron_data[i].cusp_index[v]
-               )
-          result_cusp_indices.append(row)
+        for i in range(self.num_tetrahedra()):
+            row = [data.tetrahedron_data[i].cusp_index[v]
+                   for v in range(4)]
+            result_cusp_indices.append(row)
 
         result_curves = []
-        for i from 0 <= i < self.num_tetrahedra():
-          for j from 0 <= j < 2:       # meridian, longitude
-            for k from 0 <= k < 2:     # righthanded, lefthanded
-              row = []
-              for v from 0 <= v < 4:
-                for f from 0 <= f < 4:
-                  row.append(
-                     data.tetrahedron_data[i].curve[j][k][v][f]
-                     )
-              result_curves.append(row)
+        for i in range(self.num_tetrahedra()):
+            for j in range(2):         # meridian, longitude
+                for k in range(2):     # righthanded, lefthanded
+                    data_ijk = data.tetrahedron_data[i].curve[j][k]
+                    row = [data_ijk[v][f] for v in range(4) for f in range(4)]
+                    result_curves.append(row)
 
         free_triangulation_data(data)
         return (result_cusp_indices, result_curves)
 
     def _get_tetrahedra_gluing_data(self):
-        cdef int i, j, k, v, f
+        cdef int i, j, k
         cdef TriangulationData* data
         triangulation_to_data(self.c_triangulation, &data)
         result = []
         for i from 0 <= i < data.num_tetrahedra:
-            tet = []
             neighbors = [data.tetrahedron_data[i].neighbor_index[j]
                          for j in range(4)]
             perms = [[data.tetrahedron_data[i].gluing[j][k]
@@ -1032,9 +1019,6 @@ cdef class Triangulation():
         >>> N == M
         ValueError: Can't compare triangulations of manifolds with Dehn fillings.
         """
-        cdef c_Triangulation *c_triangulation1
-        cdef c_Triangulation *c_triangulation2
-        cdef Boolean answer
         if op != 2:
             return NotImplemented
         if type(self) != type(other):
@@ -1043,10 +1027,8 @@ cdef class Triangulation():
                       other.cusp_info('is_complete') ):
             raise ValueError("Can't compare triangulations of manifolds "
                              "with Dehn fillings.")
-        if same_triangulation(self.c_triangulation, other.c_triangulation):
-            return True
-        else:
-            return False
+        return bool(same_triangulation(self.c_triangulation,
+                                       other.c_triangulation))
 
     def __repr__(self):
         if self.c_triangulation is NULL:
@@ -1388,12 +1370,10 @@ cdef class Triangulation():
         else:
             raise ValueError("The method must be 'fold' or 'layered' or 'layered_and_marked'")
 
-        marked = True if mark_solid_tori else False
         c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True
-
 
         close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold, mark_solid_tori)
         number_the_tetrahedra(c_new_tri)
@@ -1518,7 +1498,6 @@ cdef class Triangulation():
           * cusp gluing equations for longitudes: 'longitude'
         """
 
-
         cdef Integer_matrix_with_explanations c_matrix
 
         if N < 2 or N > 15:
@@ -1572,8 +1551,9 @@ cdef class Triangulation():
             for i in range(self.num_cusps()):
                 cusp_info = self.cusp_info(i)
 
-                to_do = [] # keep a todo list where we add (meridian,longitude)
-                           # pairs to process later
+                to_do = []
+                # keep a todo list where we add (meridian, longitude)
+                # pairs to process later
 
                 if cusp_info.is_complete:
 
@@ -1898,8 +1878,6 @@ cdef class Triangulation():
         class and 1 on the fourth face class but zero on every other of the
         four face classes.
         """
-
-
         return (
             ptolemyManifoldMethods.get_generalized_ptolemy_obstruction_classes(
                 self, N))
@@ -2271,9 +2249,8 @@ cdef class Triangulation():
         >>> M.homology()
         Z/5 + Z
         """
-        cdef c_AbelianGroup *H
         cdef RelationMatrix R
-        cdef int m, n
+        cdef int n
 
         if self.c_triangulation is NULL:
             return AbelianGroup()
@@ -2311,7 +2288,7 @@ cdef class Triangulation():
             pass
 
         cdef c_AbelianGroup *H
-        cdef int m, n
+        cdef int n
 
         if self.c_triangulation is NULL:
             return AbelianGroup()
@@ -2452,7 +2429,15 @@ cdef class Triangulation():
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
-        degree = len(permutation_rep[0])
+        degree = len(permutation_rep[0]) if len(permutation_rep) > 0 else 1
+
+        # The next call has the effect of initializing aspects of
+        # self.c_triangulation that are needed to build the cover.  It is *not*
+        # redundant with the preceeding call to self.fundamental_group()
+        # because the resulting FundamentalGroup object calls the kernel
+        # function "fundamental_group" on a copy of self.c_triangulation.
+        free_group_presentation(compute_unsimplified_presentation(self.c_triangulation))
+
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           <int>degree)
@@ -2507,6 +2492,9 @@ cdef class Triangulation():
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method='magma'.
         """
+        if degree < 1:
+            raise ValueError('Cover degree should be at least 1')
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         if cover_type not in ('cyclic', 'all'):
@@ -2530,42 +2518,37 @@ cdef class Triangulation():
         raise ValueError("Supported methods are 'low_index', 'gap', 'magma' "
                          "and 'snappea'")
 
-    def _covers_low_index(self, degree):
+    def _covers_low_index(self, degree, num_threads=0):
         """
         Compute all covers using low_index.
         """
-        if _low_index_version < [1, 2]:
-            return self._covers_low_index_old(degree)
-
         G = self.fundamental_group()
 
-        if G.num_relators() > self.num_cusps():
-            num_long_relators = self.num_cusps()
-            num_short_relators = G.num_relators() - num_long_relators
-            relators = sorted(G.relators(as_int_list=True), key = len)
-            short_relators = relators[:num_short_relators]
-            long_relators = relators[num_short_relators:]
-        else:
-            short_relators = G.relators(as_int_list = True)
-            long_relators = []
+        relators = sorted(G.relators(as_int_list=True), key=len)
 
-        return [self.cover(H)
-                for H in low_index.permutation_reps(
-                        G.num_generators(),
-                        short_relators, long_relators,
-                        degree)
-                if len(H[0]) == degree]
+        short_relators, long_relators = [], relators
+        strategy = ''
 
-    def _covers_low_index_old(self, degree):
-        G = self.fundamental_group()
+        if relators:
+            if len(relators[0]) <= 2*degree:
+                short_relators = [rel for rel in relators if len(rel) <= 2*degree]
+                long_relators = relators[len(short_relators):]
+                strategy = 'spin_short'
+            elif len(relators[0]) <= 3*degree:
+                short_relators = [rel for rel in relators if len(rel) <= 3*degree]
+                long_relators = relators[len(short_relators):]
 
-        if G.num_relators() > self.num_cusps():
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators(),
-                        num_long_relators=self.num_cusps())
-        else:
-            S = low_index.SimsTree(G.num_generators(), degree, G.relators())
-        return [self.cover(H.permutation_rep()) for H in S.list()
-                if H.degree == degree]
+        reps = low_index.permutation_reps(G.num_generators(),
+                                          short_relators,
+                                          long_relators,
+                                          degree,
+                                          strategy=strategy,
+                                          num_threads=num_threads)
+
+        def index(subgroup):
+            return 1 if len(subgroup) == 0 else len(subgroup[0])
+
+        return [self.cover(H) for H in reps if index(H) == degree]
 
     def _covers_gap(self, degree):
         """
@@ -2642,19 +2625,19 @@ cdef class Triangulation():
         of the geometric generators, for use in constructing a covering
         space.
         """
-        cdef c_Triangulation* cover
         cdef c_Triangulation* c_triangulation
-        cdef c_GroupPresentation *c_group_presentation
         cdef RepresentationIntoSn* c_representation
         cdef RepresentationIntoSn* c_repn_in_original_gens = NULL
         cdef int i, j
-        cdef num_generators, num_relators, num_orig_gens, num_cusps
         cdef int** c_original_generators
         cdef int** c_relators
         cdef int** c_meridians
         cdef int** c_longitudes
 
-        degree = len(perm_list[0])
+        if len(perm_list) == 0:  # implies trivial presentation
+            degree = 1
+        else:
+            degree = len(perm_list[0])
 
         # Sanity check
         S = set(range(degree))
@@ -2665,11 +2648,17 @@ cdef class Triangulation():
         # Initialize
         num_cusps = self.num_cusps()
         c_triangulation = self.c_triangulation
-        c_group_presentation = fundamental_group(c_triangulation,
-                                             True, True, True, True)
-        num_generators = fg_get_num_generators(c_group_presentation)
-        num_relators = fg_get_num_relations(c_group_presentation)
-        num_orig_gens = fg_get_num_orig_gens(c_group_presentation)
+        G = self.fundamental_group()
+        num_generators = G.num_generators()
+        if len(perm_list) != num_generators:
+            raise ValueError('Number of permutations is not the same '
+                             'as the number of generators')
+
+        relators = G.relators(as_int_list=True)
+        num_relators = len(relators)
+        orig_gens = G.original_generators(as_int_list=True)
+        num_orig_gens = len(orig_gens)
+        peripheral_curves = G.peripheral_curves(as_int_list=True)
 
         # Allocate a whole bunch of memory, SnapPea and malloc.
         c_representation = initialize_new_representation(
@@ -2681,16 +2670,16 @@ cdef class Triangulation():
                 c_representation.image[i][j] = perm_list[i][j]
         c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*))
         for i from  0 <= i < num_orig_gens:
-            c_original_generators[i] = fg_get_original_generator(
-                c_group_presentation, i)
+            c_original_generators[i] = c_word_from_list(orig_gens[i])
         c_relators = <int**>malloc(num_relators*sizeof(int*))
         for i from  0 <= i < num_relators:
-            c_relators[i] = fg_get_relation(c_group_presentation, i)
+            c_relators[i] = c_word_from_list(relators[i])
         c_meridians = <int**>malloc(num_cusps*sizeof(int*))
         c_longitudes = <int**>malloc(num_cusps*sizeof(int*))
         for i from 0 <= i < num_cusps:
-            c_meridians[i] = fg_get_meridian(c_group_presentation, i)
-            c_longitudes[i] = fg_get_longitude(c_group_presentation, i)
+            meridian, longitude = peripheral_curves[i]
+            c_meridians[i] = c_word_from_list(meridian)
+            c_longitudes[i] = c_word_from_list(longitude)
         # Whew!
 
         failed = False
@@ -2715,15 +2704,15 @@ cdef class Triangulation():
 
         # Now free all that memory
         for i from 0 <= i < num_cusps:
-            fg_free_relation(c_meridians[i])
-            fg_free_relation(c_longitudes[i])
+            free(c_meridians[i])
+            free(c_longitudes[i])
         free(c_meridians)
         free(c_longitudes)
         for i from 0 <= i < num_relators:
-            fg_free_relation(c_relators[i])
+            free(c_relators[i])
         free(c_relators)
         for i from 0 <= i < num_orig_gens:
-            fg_free_relation(c_original_generators[i])
+            free(c_original_generators[i])
         free(c_original_generators)
         free_representation(c_representation, num_generators, num_cusps)
         # Free at last!
@@ -2870,7 +2859,6 @@ cdef class Triangulation():
             if result == func_bad_input:
                 raise ValueError('The peripheral data %s is not acceptable.' %
                                  peripheral_data)
-
 
     def has_finite_vertices(self):
         """

@@ -9,8 +9,7 @@ jobs:
     runs-on: ubuntu-jammy
     strategy:
       matrix:
-        version: [9.3, 9.4, 9.5, 9.6, 9.7, 9.8]
-
+        version: [9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 10.0]
     container:
       image: ghcr.io/sagemath/sage/sage-ubuntu-jammy-standard-with-targets:${{ matrix.version }}
       options: --user root
@@ -42,7 +41,7 @@ jobs:
       - name: Install snappy
         run: |
           cd /__w/SnapPy/SnapPy
-          sage -pip install wheel FXrays
+          sage -pip install wheel FXrays sphinx_rtd_theme
           sage -python setup.py pip_install
 
       - name: Do the tests

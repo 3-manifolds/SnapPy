@@ -2,6 +2,7 @@ from ...snap import t3mlite as t3m
 
 __all__ = ['lifted_ptolemys_from_cross_section']
 
+
 def _ptolemy_coordinate_key(tet_index, edge):
     return 'c_%d%d%d%d_%d' % (
         (edge & 8) >> 3,
@@ -10,8 +11,9 @@ def _ptolemy_coordinate_key(tet_index, edge):
         (edge & 1),
         tet_index)
 
+
 def lifted_ptolemys_from_cross_section(cusp_cross_section,
-                                       lifted_one_cocycle = None):
+                                       lifted_one_cocycle=None):
     """
     Given a cusp cross section, compute lifted Ptolemy coordinates
     (i.e., logarithms of the Ptolemy coordinates) returned as a dictionary
@@ -45,11 +47,11 @@ def lifted_ptolemys_from_cross_section(cusp_cross_section,
         # of a tetrahedron
         for i, (tet, perm) in enumerate(edge.embeddings()):
             # The two vertices of the tetrahedron's edge
-            v0   = perm.image(t3m.V0)
-            v1   = perm.image(t3m.V1)
-            v2   = perm.image(t3m.V2)
+            v0 = perm.image(t3m.V0)
+            v1 = perm.image(t3m.V1)
+            v2 = perm.image(t3m.V2)
             # The edge in the tetrahedron
-            e    = v0 | v1
+            e = v0 | v1
             # Face adjacent to the edge
             face = e | v2
 

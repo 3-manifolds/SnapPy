@@ -1,4 +1,4 @@
-#$$
+# $$
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -8,6 +8,7 @@
 
 from .arrow import Arrow
 from .simplex import PickAnEdge
+
 
 class Face:
     def __init__(self):

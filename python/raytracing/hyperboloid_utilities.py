@@ -1,8 +1,7 @@
 from snappy.SnapPy import matrix, vector
 
 from snappy.hyperboloid import (r13_dot,
-                                unit_time_vector_to_o13_hyperbolic_translation,
-                                unnormalised_plane_eqn_from_r13_points)
+                                unit_time_vector_to_o13_hyperbolic_translation)
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -22,6 +21,7 @@ Encoding:
 - matrices are either SnapPy matrices or SageMath matrices.
 """
 
+
 def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     """
     Takes a 3-vector in the unit tangent space at the origin of the
@@ -32,6 +32,7 @@ def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
 
     return unit_time_vector_to_o13_hyperbolic_translation(
         [ d.cosh()] + [ d.sinh() * x for x in v])
+
 
 def O13_x_rotation(angle):
     """
@@ -44,8 +45,9 @@ def O13_x_rotation(angle):
     return matrix(
         [[ 1, 0, 0, 0],
          [ 0, 1, 0, 0],
-         [ 0, 0,   c,   s],
-         [ 0, 0,  -s,   c]], ring = angle.parent())
+         [ 0, 0, c, s],
+         [ 0, 0, -s, c]], ring=angle.parent())
+
 
 def O13_y_rotation(angle):
     """
@@ -56,9 +58,10 @@ def O13_y_rotation(angle):
     s = angle.sin()
     return matrix(
         [[ 1, 0, 0, 0],
-         [ 0,   c, 0,  -s],
+         [ 0, c, 0, -s],
          [ 0, 0, 1, 0],
-         [ 0,   s, 0,   c]], ring = angle.parent())
+         [ 0, s, 0, c]], ring=angle.parent())
+
 
 def O13_z_rotation(angle):
     """
@@ -69,9 +72,10 @@ def O13_z_rotation(angle):
     s = angle.sin()
     return matrix(
         [[ 1, 0, 0, 0],
-         [ 0,   c,   s, 0],
-         [ 0,  -s,   c, 0],
-         [ 0, 0, 0, 1]], ring = angle.parent())
+         [ 0, c, s, 0],
+         [ 0, -s, c, 0],
+         [ 0, 0, 0, 1]], ring=angle.parent())
+
 
 def complex_and_height_to_R13_time_vector(z, t):
     """
@@ -102,6 +106,7 @@ def complex_and_height_to_R13_time_vector(z, t):
               klein_factor * poincare[1],
               klein_factor * poincare[2] ]))
 
+
 def R13_time_vector_to_upper_halfspace(v):
     """
     Take a unit time-like vector in the 1,3-hyperboloid
@@ -117,11 +122,12 @@ def R13_time_vector_to_upper_halfspace(v):
     a, b, c = [ x * poincare_factor for x in klein ]
 
     denom = (a - 1.0) ** 2 + b ** 2 + c ** 2
-    return  [                         2.0 * b / denom,
-                                      2.0 * c / denom,
-             (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
+    return [                         2.0 * b / denom,
+                                     2.0 * c / denom,
+            (1.0 - a ** 2 - b ** 2 - c ** 2) / denom ]
 
-def R13_normalise(v, sign = 0):
+
+def R13_normalise(v, sign=0):
     dot = r13_dot(v,v)
     if sign == 0:
         d = abs(dot)
@@ -132,13 +138,16 @@ def R13_normalise(v, sign = 0):
 
     return v / denom
 
+
 def _is_row_sane(r):
     for c in r:
         if not (c < 10000.0 and c > -10000.0):
             return False
     return True
 
+
 _signature = [-1, +1, +1, +1]
+
 
 def _orthonormalize_row(row, other_rows, row_sign):
     result = row
@@ -147,21 +156,23 @@ def _orthonormalize_row(row, other_rows, row_sign):
         result = [ c - s * other_c
                    for c, other_c in zip(result, other_row) ]
     try:
-        result = R13_normalise(vector(result), sign = row_sign)
+        result = R13_normalise(vector(result), sign=row_sign)
     except ValueError:
         return None
     if not _is_row_sane(result):
         return None
     return result
 
+
 def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
     r = _orthonormalize_row(row, other_rows, sign)
-    if not r is None:
+    if r is not None:
         return r
     r = _orthonormalize_row(fallback_value, other_rows, sign)
-    if not r is None:
+    if r is not None:
         return r
     return fallback_value
+
 
 def O13_orthonormalize(m):
     try:
@@ -179,23 +190,6 @@ def O13_orthonormalize(m):
         result.append(_orthonormalize_row_sane(row, id_row, result, sign))
     return matrix(result, ring=ring)
 
-def R13_plane_from_R13_light_vectors(pts):
-    return R13_normalise(unnormalised_plane_eqn_from_r13_points(pts))
-
-def make_tet_planes(tet_vert_positions):
-    """
-    Given four light-like vectors, returns the four normals for the
-    for faces of the ideal tetrahedron spanned by the corresponding
-    ideal points in the 1,3-hyperboloid model.
-
-    Outward facing for positively oriented tetrahedra.
-    """
-
-    v0, v1, v2, v3 = tet_vert_positions
-    return [ R13_plane_from_R13_light_vectors([v1, v3, v2]),
-             R13_plane_from_R13_light_vectors([v0, v2, v3]),
-             R13_plane_from_R13_light_vectors([v0, v3, v1]),
-             R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
 def complex_to_pair(z):
     """
@@ -204,8 +198,10 @@ def complex_to_pair(z):
 
     return vector([z.real(), z.imag()])
 
+
 def _dist_from_projection(p, dir):
     return (p/dir).imag() * abs(dir)
+
 
 def height_euclidean_triangle(z0, z1, z2):
     """

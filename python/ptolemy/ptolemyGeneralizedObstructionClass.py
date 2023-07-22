@@ -38,7 +38,7 @@ class PtolemyGeneralizedObstructionClass():
 
     """
 
-    def __init__(self, H2_class, index = None, N = None, manifold = None):
+    def __init__(self, H2_class, index=None, N=None, manifold=None):
 
         self.H2_class = H2_class
         self._index = index
@@ -46,11 +46,11 @@ class PtolemyGeneralizedObstructionClass():
         self._manifold = manifold
 
     def _checkManifoldAndN(self, manifold, N):
-        if not self._manifold is None:
+        if self._manifold is not None:
             assert manifold == self._manifold, (
                 "PtolemyGeneralizedObstructionClass for wrong manifold")
 
-        if not self._N is None:
+        if self._N is not None:
             assert N == self._N, (
                 "PtolemyGeneralizedObstructionClass for wrong N")
 

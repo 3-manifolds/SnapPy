@@ -2,11 +2,12 @@ from . import verifyHyperbolicity
 
 __all__ = ['compute_hyperbolic_shapes']
 
-def compute_hyperbolic_shapes(manifold, verified, bits_prec = None):
+
+def compute_hyperbolic_shapes(manifold, verified, bits_prec=None):
 
     # Get shapes, as intervals if requested
-    shapes = manifold.tetrahedra_shapes('rect', intervals = verified,
-                                        bits_prec = bits_prec)
+    shapes = manifold.tetrahedra_shapes('rect', intervals=verified,
+                                        bits_prec=bits_prec)
 
     # Check it is a valid hyperbolic structure
     if verified:

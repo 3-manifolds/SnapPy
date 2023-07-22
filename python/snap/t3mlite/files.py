@@ -19,6 +19,7 @@ import re
 #      2    5    1   34
 #   3120 0321 0132 0132
 
+
 def read_SnapPea_file(file_name=None, data=None):
     if data is None:
         data = open(file_name).read().decode('ascii')
@@ -28,7 +29,7 @@ def read_SnapPea_file(file_name=None, data=None):
     perm_match = r"\s*([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s*$"
     snappea_re = re.compile(neighbors_match + perm_match, re.MULTILINE)
 
-    fake_tets =[]
+    fake_tets = []
 
     curr_poss = 0
     while 1:
@@ -45,7 +46,7 @@ def read_SnapPea_file(file_name=None, data=None):
             curr_poss = m.end(8)
     return fake_tets
 
-#------------End function SnapPea to Mcomplex--------------------
+# ------------End function SnapPea to Mcomplex--------------------
 
 
 # Exports an Mcomplex in SnapPea 2.0 format.
@@ -126,6 +127,7 @@ conv_back = {V0: "u", V1 : "v", V2 : "w", V3: "x"}
 # starts his indexing of tets at 1 and Jeff starts at 0,
 # we subtract 1.
 
+
 def read_edge(edge):
     m = re.match("([0-9]+)([uvwx])([uvwx])", edge)
     return (int(m.group(1)) - 1, conv[m.group(2)], conv[m.group(3)])
@@ -148,14 +150,15 @@ def read_geo_file(file_name, num_tet=None):
         cycle = re.split(r"\s+", line[ : -1])[1 : ]
         for i in range(len(cycle)):
             t1, v1, v2 = read_edge(cycle[i])
-            t2, w1, w2 = read_edge(cycle[(i+1)%len(cycle)]) #Yes, that's w2, w1
+            t2, w1, w2 = read_edge(cycle[(i+1) % len(cycle)])  # Yes, that's w2, w1
             a = eArrow(tets[t1], v1, v2)
             b = eArrow(tets[t2], w1, w2)
             a.glue(b)
 
     return Mcomplex(tets)
 
-#---------Code to go from Mcomplex to Geo---------------------
+# ---------Code to go from Mcomplex to Geo---------------------
+
 
 def write_geo_file(mcomplex, fileobject):
     out = fileobject.write
@@ -179,6 +182,7 @@ def write_geo_file(mcomplex, fileobject):
         i = i + 1
         out("\n")
 
+
 # writing a file for Matveev's program Spine
 
 def write_spine_file(mcomplex, fileobject):
@@ -194,19 +198,12 @@ def write_spine_file(mcomplex, fileobject):
             back_local_faces.append(comp(A.head()))
             A.next()
 
-
-        signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1)%n]) else -1 for i in range(n)]
-        ans= repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
+        signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1) % n]) else -1 for i in range(n)]
+        ans = repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
         out(ans + "\n")
 
 
-
-
-
-
-
-
-__all__  = ('read_SnapPea_file',
+__all__ = ('read_SnapPea_file',
             'write_SnapPea_file',
             'read_geo_file',
             'write_geo_file',

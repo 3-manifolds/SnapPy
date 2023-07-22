@@ -609,6 +609,7 @@ for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
 
 Number.argument = Number.arg
 
+
 def use_field_conversion(func):
     global number_to_native_number
 
@@ -621,7 +622,7 @@ def use_field_conversion(func):
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
-            However, this behavior can be overriden by
+            However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
             """
@@ -635,13 +636,14 @@ def use_field_conversion(func):
             the corresponding SageMath type (when in SageMath) or just returns
             the SnapPy number itself (when SageMath is not available).
 
-            However, this behavior can be overriden by
+            However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
             """
             return n
     else:
         number_to_native_number = func
+
 
 if _within_sage:
     use_field_conversion('sage')

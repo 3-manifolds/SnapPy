@@ -1,22 +1,20 @@
 from .cusps import CuspPostDrillInfo
-from .tracing import GeodesicPiece
 from .peripheral_curves import install_peripheral_curves
+from .barycentric import transpositions, perm_to_index
 
 from ..snap.t3mlite import Tetrahedron, Perm4, Mcomplex, simplex
 
-from typing import Dict, Tuple, List, Sequence
+from typing import Set, Sequence
 
 def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
     """
     Given tetrahedra produced by traverse_geodesics_to_subdivide,
-    compute the barycentric subdivision and crush all tetrahedra in the
-    barycentric subdivision that are adjacent to an edge that coincides with a
-    GeodesicPiece.
+    compute the barycentric subdivision and crush all subtetrahedra in the
+    barycentric subdivision that have been marked as being adjacent to an edge
+    that coincides with a GeodesicPiece.
 
-    That is, the given tetrahedra are supposed to form a triangulation and
-    have GeodesicPiece's stored in tet.geodesic_pieces such that all endpoints
-    of all pieces are at vertices of the tetrahedron, that is the line
-    segment the GeodesicPiece represents is an edge of the tetrahedron.
+    The function mark_subtetrahedra_about_geodesic_pieces marks the
+    subtetrahedra as described above.
     """
 
     # We call the tetrahedra in the barycentric subdivision subtetrahedra
@@ -37,16 +35,17 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
     # Using the index i that p has in Perm4.S4, we index
     # a subtetrahedron by 24 * tet.Index + i.
 
-    # Compute a bit mask of which subtetrahedra in the barycentric
-    # subdivision will not be crushed.
+    # The subtetrahedra that are supposed to be curshed in the barycentric
+    # are assumed to be marked in tet.marked_subtetrahedra.
     #
-    # Also pick a subtetrahedron for each simple closed curve that we can
-    # use later to compute a new meridian and longitude.
-    mask, peripheral_base_subtet_indices = (
-        _tet_mask_and_peripheral_base_subtet_indices(tetrahedra))
+    # Later, we also pick a subtetrahedron for each simple closed curve to
+    # compute a new meridian and longitude.
 
     # Use bit mask to create the subtetrahedra surviving the crushing.
-    subtetrahedra = [ Tetrahedron() if m else None for m in mask ]
+    subtetrahedra = [
+        Tetrahedron() if marked_subtet == 0 else None
+        for tet in tetrahedra
+        for marked_subtet in tet.marked_subtetrahedra ]
 
     _assign_orientations(subtetrahedra)
 
@@ -63,10 +62,10 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
             # The gluings internal (between subtetrahedra of the
             # same tetrahedron)
             for face in range(3):
-                other_perm = perm * _transpositions[face]
-                j = _perm_to_index(other_perm)
+                other_perm = perm * transpositions[face]
+                j = perm_to_index(other_perm)
                 other_subtet_index = 24 * tet.Index + j
-                if face == 1 and not mask[other_subtet_index]:
+                if face == 1 and tet.marked_subtetrahedra[j] != 0:
                     # We are processing subtetrahedron t and its
                     # neighbor c is adjacent to a GeodesicPiece (=)
                     # and thus it and its neighbor c' get crushed.
@@ -88,7 +87,7 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
                     # 0============1============0
                     #
                     other_perm = perm * Perm4((2,1,0,3))
-                    j = _perm_to_index(other_perm)
+                    j = perm_to_index(other_perm)
                     other_subtet_index = 24 * tet.Index + j
                 # attach is working symmetrically also setting the Neighbors
                 # and Gluings of the other tetrahedron, so only call it once
@@ -103,12 +102,12 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
             face = perm.image(simplex.F3)
             other_tet = tet.Neighbor[face]
             other_perm = tet.Gluing[face] * perm
-            j = _perm_to_index(other_perm)
+            j = perm_to_index(other_perm)
             other_subtet_index = 24 * other_tet.Index + j
             if other_subtet_index > subtet_index:
                 subtet.attach(simplex.F3,
-                               subtetrahedra[other_subtet_index],
-                               (0,1,2,3))
+                              subtetrahedra[other_subtet_index],
+                              (0,1,2,3))
 
             # Only vertex 0 corresponds to an original vertex.
             # The other vertices will actually be finite, i.e., have
@@ -185,11 +184,41 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
 
     _fix_all_peripheral_curves(subtetrahedra)
 
-    # Find peripheral curves for the cusps created by crushing the simple
+    # Find peripheral curves for each cusps created by crushing the simple
     # closed curves.
-    for i in peripheral_base_subtet_indices:
-        install_peripheral_curves(subtetrahedra[i])
-
+    # Record which of these cusps was already processed to only do this once
+    # per cusp.
+    new_cusp_indices : Set[int] = set()    
+    for tet in tetrahedra:
+        for perm, orientation in zip(Perm4.S4(), tet.marked_subtetrahedra):
+            # We found a subtetrahedron adjacent to a geodesic piece.
+            #
+            # Make sure its 0-1 edge is parallel and not anti-parallel to
+            # the geodesic piece. This way the longitude will be parallel to
+            # the geodesic piece.
+            if orientation != +1:
+                continue
+            # Check orientation of subtetrahedron so that the orientation of
+            # the meridian relative to the longitude matches the orientation of the
+            # cusp.
+            if perm.sign() == 1:
+                continue
+            v : int = perm.image(simplex.V0)
+            cusp_index : int = tet.post_drill_infos[v].index
+            if cusp_index is None:
+                raise Exception("Vertex on geodesic has no assigned cusp")
+            if cusp_index in new_cusp_indices:
+                continue
+            # First time we encounter this simple closed curve. Pick a base
+            # tet to install the meridian and longitude.
+            # This base tet better not be one of the subtetrahedra that is
+            # crushed. So pick a neighbor of the subtetrahedron adjacent
+            # to the geodesic piece.
+            other_perm = perm * transpositions[1]
+            subtet_index = 24 * tet.Index + perm_to_index(other_perm)
+            install_peripheral_curves(subtetrahedra[subtet_index])
+            new_cusp_indices.add(cusp_index)
+    
     # To preserve the orientation, make sure that the first subtetrahedron
     # we pass to Mcomplex has the same orientation as the original tetrahedron
     # - since the SnapPea kernel will use the first tetrahedron of an
@@ -199,103 +228,6 @@ def crush_geodesic_pieces(tetrahedra : Sequence[Tetrahedron]) -> Mcomplex:
                       for subtet in subtetrahedra
                       if subtet and subtet.orientation == s ])
 
-_perm_tuple_to_index : Dict[Tuple[int, int, int, int], int] = {
-    perm.tuple() : i for i, perm in enumerate(Perm4.S4()) }
-
-_transpositions : List[Perm4] = [ Perm4((1,0,2,3)),
-                                  Perm4((0,2,1,3)),
-                                  Perm4((0,1,3,2)) ]
-
-def _perm_to_index(perm : Perm4) -> int:
-    return _perm_tuple_to_index[perm.tuple()]
-
-def _find_perm_for_piece(piece : GeodesicPiece):
-    """
-    Given a GeodesicPiece with endpoints being on the vertices
-    of the tetrahedron and spanning an oriented edge of the tetrahedron,
-    find an "edge embedding permutation" (similar to regina's
-    edge embedding) that maps the 0-1 edge to the given edge.
-
-    The subtetrahedron corresponding to this permutation is
-    adjacent to half of this edge.
-    """
-
-    s0 = piece.endpoints[0].subsimplex
-    s1 = piece.endpoints[1].subsimplex
-
-    # Important to consistently always pick a permutation of the
-    # same parity and respect the ordering of the vertices V0 and V1
-    # since this affects which subtetrahedron will be chosen as peripheral
-    # base subtetrahedron - and thus ultimately affects the orientation
-    # of the meridian and longitude computed by install_peripheral_curves.
-    for perm in Perm4.A4():
-        if perm.image(simplex.V0) == s0 and perm.image(simplex.V1) == s1:
-            return perm
-
-def _traverse_edge(tet0 : Tetrahedron, perm0 : Perm4, mask : List[bool]):
-    """
-    Given a subtetrahedron in the barycentric subdivision parametrized
-    by a tetrahedron and permutation, find all subtetrahedra adjacent to the
-    same edge in the original triangulation. Delete them from the bit mask.
-    """
-
-    tet = tet0
-    perm = perm0
-
-    while True:
-        # All subtetrahedra touching the same edge in the current
-        # tetrahedron.
-        for p in [ perm,
-                   perm * _transpositions[0],
-                   perm * _transpositions[2],
-                   perm * _transpositions[0] * _transpositions[2] ]:
-            subtet_index = 24 * tet.Index + _perm_to_index(p)
-            mask[subtet_index] = False
-
-        # Find the next "edge embedding"
-        face = perm.image(simplex.F3)
-        tet, perm = (
-            tet.Neighbor[face],
-            tet.Gluing[face] * perm * Perm4((0,1,3,2)))
-        # Stop if back at the first "edge embedding"
-        if tet is tet0 and perm.tuple() == perm0.tuple():
-            return
-
-def _tet_mask_and_peripheral_base_subtet_indices(tetrahedra):
-    """
-    Given the same input as described in crush_geodesic_data,
-    computes the bit mask of which subtetrahedra will not be
-    crushed. Also return a set of indices, that is the index
-    of one subtetrahedron for each simple closed curve that
-    can be used later to compute a new meridian and longitude.
-    """
-
-    # The bit mask to compute
-    mask = (24 * len(tetrahedra)) * [ True ]
-
-    # Maps index of simple closed curve to index of subtetrahedron
-    index_to_peripheral_base_subtet_index = { }
-
-    # For each GeodesicPiece
-    for tet in tetrahedra:
-        for piece in tet.geodesic_pieces:
-            # Find all subtetrahedra adjacent to it to delete
-            # them from mask
-            perm = _find_perm_for_piece(piece)
-
-            _traverse_edge(tet, perm, mask)
-
-            # And if this is the first time we encounter this
-            # simple closed curve, compute a base tet.
-            if piece.index not in index_to_peripheral_base_subtet_index:
-                # Get the neighboring subtetrahedron that won't be crushed
-                other_perm = perm * _transpositions[1]
-                subtet_index = 24 * tet.Index + _perm_to_index(other_perm)
-                index_to_peripheral_base_subtet_index[piece.index] = subtet_index
-
-    return mask, index_to_peripheral_base_subtet_index.values()
-
-
 def _assign_orientations(subtetrahedra):
     for j in range(len(subtetrahedra) // 24):
         for i, perm in enumerate(Perm4.S4()):
@@ -303,6 +235,7 @@ def _assign_orientations(subtetrahedra):
             subtet = subtetrahedra[subtet_index]
             if subtet:
                 subtet.orientation = perm.sign()
+
 
 def _fix_peripheral_curves(subtet):
     """
@@ -324,6 +257,7 @@ def _fix_peripheral_curves(subtet):
                 tri[face1] = -p
                 neighbor.PeripheralCurves[ml][1-sheet][simplex.V0][face1] = p
         subtet = neighbor
+
 
 def _fix_all_peripheral_curves(subtetrahedra):
     """

@@ -12,9 +12,9 @@ cdef class SymmetryGroup():
     cdef c_SymmetryGroup *c_symmetry_group
     cdef readonly _is_full_group
     cdef readonly _owns_c_symmetry_group
-    
+
     def __cinit__(self, is_full_group, owns_c_symmetry_group):
-        self.c_symmetry_group = NULL 
+        self.c_symmetry_group = NULL
         self._is_full_group = is_full_group
         self._owns_c_symmetry_group = owns_c_symmetry_group
 
@@ -47,18 +47,18 @@ cdef class SymmetryGroup():
         if self.is_abelian():
             theText = repr(self.abelian_description())
         elif self.is_dihedral():
-            theText = 'D%d'%(self.order()//2)
+            theText = 'D%d' % (self.order()//2)
         elif self.is_polyhedral():
             theText = self.polyhedral_description()
         elif self.is_S5():
             theText = 'S5'
         elif self.is_direct_product():
-            theText =     '%s x %s' % self.direct_product_description()
+            theText = '%s x %s' % self.direct_product_description()
         else:
-            theText = 'nonabelian group of order %d'%self.order()
-        
+            theText = 'nonabelian group of order %d' % self.order()
+
         return thePretext + theText
-    
+
     def order(self):
         """
         Return the order of the symmetry group
@@ -68,7 +68,7 @@ cdef class SymmetryGroup():
         4
         """
         return symmetry_group_order(self.c_symmetry_group)
-    
+
     def is_abelian(self):
         """
         Return whether the symmetry group is abelian.
@@ -78,9 +78,8 @@ cdef class SymmetryGroup():
         False
         """
         cdef c_AbelianGroup* abelian_description = NULL
-        ans = B2B(symmetry_group_is_abelian(
-                self.c_symmetry_group, &abelian_description))
-        return ans
+        return B2B(symmetry_group_is_abelian(
+            self.c_symmetry_group, &abelian_description))
 
     def abelian_description(self):
         """
@@ -97,23 +96,22 @@ cdef class SymmetryGroup():
             raise ValueError('The symmetry group is not abelian.')
 
         coeffs = []
-        for n from 0 <= n < A.num_torsion_coefficients:
-                coeffs.append(A.torsion_coefficients[n])
+        for n in range(A.num_torsion_coefficients):
+            coeffs.append(A.torsion_coefficients[n])
 
         # Don't need to free A as it is attached to the symmetry group object
         return AbelianGroup(elementary_divisors=coeffs)
-            
-    
+
     def is_dihedral(self):
         """
         Return whether the symmetry group is dihedral.
-        
+
         >>> S = Manifold('m004').symmetry_group()
         >>> S.is_dihedral()
         True
         """
         return B2B(symmetry_group_is_dihedral(self.c_symmetry_group))
-    
+
     def is_polyhedral(self):
         """
         Returns whether the symmetry group is a (possibly binary)
@@ -121,15 +119,15 @@ cdef class SymmetryGroup():
         """
         return B2B(symmetry_group_is_polyhedral(self.c_symmetry_group,
                                                 NULL, NULL, NULL, NULL))
-    
+
     def polyhedral_description(self):
         """
         If the symmetry group is a (possibly binary)
-        polyhedral group, return a description of it.  
+        polyhedral group, return a description of it.
         """
         cdef Boolean is_binary_group
-        cdef int p,q,r
-        
+        cdef int p, q, r
+
         if not self.is_polyhedral():
             raise ValueError('The symmetry group is not polyhedral.')
 
@@ -147,19 +145,19 @@ cdef class SymmetryGroup():
                      4: 'octahedral group',
                      5: 'icosohedral group'}[r]
 
-        return name 
-    
+        return name
+
     def is_S5(self):
         """
-        Returns whether the group is the symmetric group on five things.  
+        Returns whether the group is the symmetric group on five things.
         """
         return B2B(symmetry_group_is_S5(self.c_symmetry_group))
-    
+
     def is_direct_product(self):
         """
         Return whether the SymmetryGroup is a nontrivial direct
-        product with at least one nonabelian factor.  
-        
+        product with at least one nonabelian factor.
+
         >>> S = Manifold('s960').symmetry_group()
         >>> S.is_direct_product()
         True
@@ -167,7 +165,7 @@ cdef class SymmetryGroup():
         Z/4 x D3
         """
         return B2B(symmetry_group_is_direct_product(self.c_symmetry_group))
-    
+
     def direct_product_description(self):
         """
         If the SymmetryGroup is a nontrivial direct product with at
@@ -186,16 +184,16 @@ cdef class SymmetryGroup():
         cdef c_SymmetryGroup* c_factor_1
         cdef SymmetryGroup factor_0
         cdef SymmetryGroup factor_1
-        
+
         c_factor_0 = get_symmetry_group_factor(self.c_symmetry_group, 0)
         c_factor_1 = get_symmetry_group_factor(self.c_symmetry_group, 1)
-        
+
         factor_0 = SymmetryGroup(True, False)
         factor_1 = SymmetryGroup(True, False)
         factor_0._set_c_symmetry_group(c_factor_0)
         factor_1._set_c_symmetry_group(c_factor_1)
         return (factor_0, factor_1)
-    
+
     def is_amphicheiral(self):
         """
         Return whether the manifold has an orientation reversing symmetry.
@@ -203,9 +201,9 @@ cdef class SymmetryGroup():
         >>> S = Manifold('m004').symmetry_group()
         >>> S.is_amphicheiral()
         True
-        """        
+        """
         return B2B(symmetry_group_is_amphicheiral(self.c_symmetry_group))
-    
+
     def is_invertible_knot(self):
         """
         Return whether a one-cusped has a symmetry that acts on the
@@ -216,7 +214,7 @@ cdef class SymmetryGroup():
         True
         """
         return B2B(symmetry_group_invertible_knot(self.c_symmetry_group))
-        
+
     def commutator_subgroup(self):
         """
         Return the commutator subgroup of the SymmetryGroup
@@ -243,7 +241,7 @@ cdef class SymmetryGroup():
         >>> S.abelianization()
         Z/2 + Z/2
         """
-        
+
         if not self.is_full_group():
             raise ValueError('The full symmetry group is not known.')
 
@@ -263,7 +261,7 @@ cdef class SymmetryGroup():
         >>> S.center()
         Z/2
         """
-        
+
         if not self.is_full_group():
             raise ValueError('The full symmetry group not known.')
 
@@ -286,7 +284,6 @@ cdef class SymmetryGroup():
         >>> S.multiply_elements(2, 3)
         1
         """
-        cdef int prod
         order = self.order()
         for x in [i, j]:
             if not (0 <= x < order):

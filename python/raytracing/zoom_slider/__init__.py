@@ -18,19 +18,19 @@ class Slider(ttk.Scale):
     knob to move to the click point.
     """
     def __init__(self, container, left_end, right_end,
-                 orient = tk.HORIZONTAL):
+                 orient=tk.HORIZONTAL):
         ttk.Scale.__init__(self,
-                           master = container,
-                           from_ = self._slider_left_end,
-                           to = self._slider_right_end,
-                           value = 2.0,
-                           orient = orient,
+                           master=container,
+                           from_=self._slider_left_end,
+                           to=self._slider_right_end,
+                           value=2.0,
+                           orient=orient,
                            takefocus=0)
         self.left_end = left_end
         self.right_end = right_end
         self.orient = orient
         self.callback = None
-        self.configure(command = self._command)
+        self.configure(command=self._command)
         self.bind('<Button-1>', self._handle_mouse)
 
     def set_callback(self, callback):
@@ -41,7 +41,7 @@ class Slider(ttk.Scale):
         slider_length = self._slider_right_end - self._slider_left_end
         v = (value - self.left_end) / length
         slider_value = v * slider_length + self._slider_left_end
-        self.configure(value = slider_value)
+        self.configure(value=slider_value)
 
     def _command(self, slider_value):
         if self.callback:
@@ -72,6 +72,7 @@ class Slider(ttk.Scale):
                 self.callback(length * fraction + self.left_end)
             self.set(slider_length * fraction + self._slider_left_end)
             return 'break'
+
 
 class ZoomSlider(ttk.Frame):
     """
@@ -107,7 +108,7 @@ class ZoomSlider(ttk.Frame):
 
         padding_cheat = -6 if (sys.platform == 'darwin') else 0
 
-        if not label_text is None:
+        if label_text is not None:
             self.title_label = ttk.Label(self, text=label_text, padding=label_pad)
             col_base = 1
             self.columnconfigure(0, weight=0)
@@ -152,11 +153,11 @@ class ZoomSlider(ttk.Frame):
         r_p = frac * r + (1.0 - frac) * l
 
         if value < l_p:
-            self.slider.left_end  = value - (1.0 - frac) * length
+            self.slider.left_end = value - (1.0 - frac) * length
             self.slider.right_end = value + frac * length
 
         if value > r_p:
-            self.slider.left_end  = value - frac * length
+            self.slider.left_end = value - frac * length
             self.slider.right_end = value + (1.0 - frac) * length
 
         self.slider.set_value(value)
@@ -166,22 +167,22 @@ class ZoomSlider(ttk.Frame):
     def _build_icons(self):
         if sys.platform == 'darwin':
             try:
-                self.compress_icon=tk.Image('nsimage', source='NSExitFullScreenTemplate',
+                self.compress_icon = tk.Image('nsimage', source='NSExitFullScreenTemplate',
                                             width=18, height=18)
-                self.expand_icon=tk.Image('nsimage', source='NSEnterFullScreenTemplate',
+                self.expand_icon = tk.Image('nsimage', source='NSEnterFullScreenTemplate',
                                             width=18, height=18)
             except tk.TclError:
-                self.compress_icon=tk.Image('photo', width=18, height=18,
+                self.compress_icon = tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'inward18.png'))
 
-                self.expand_icon=tk.Image('photo', width=18, height=18,
+                self.expand_icon = tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
         else:
             suffix = 'gif' if tk.TkVersion < 8.6 else 'png'
-            self.compress_icon=tk.Image('photo', width=18, height=18,
+            self.compress_icon = tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'inward18.' + suffix))
 
-            self.expand_icon=tk.Image('photo', width=18, height=18,
+            self.expand_icon = tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'outward18.' + suffix))
 
     def _slider_callback(self, value):
@@ -199,11 +200,11 @@ class ZoomSlider(ttk.Frame):
         num_digits = _num_digits(r - l)
 
         format_str1 = '%%.%df' % (num_digits + 1)
-        format_str2 = '%%.%df' %  num_digits
+        format_str2 = '%%.%df' % num_digits
 
-        self.value_label.configure(text = format_str1 % self.current_value)
-        self.min_label.configure(text = format_str2 % l)
-        self.max_label.configure(text = format_str2 % r)
+        self.value_label.configure(text=format_str1 % self.current_value)
+        self.min_label.configure(text=format_str2 % l)
+        self.max_label.configure(text=format_str2 % r)
         if self.on_change:
             self.on_change()
 
@@ -235,7 +236,7 @@ class ZoomSlider(ttk.Frame):
         if r - l < self.min_span:
             return
 
-        self.slider.left_end  = 0.25 * (3.0 * l + r)
+        self.slider.left_end = 0.25 * (3.0 * l + r)
         self.slider.right_end = 0.25 * (3.0 * r + l)
 
         self.set_value(self.current_value)
@@ -248,10 +249,11 @@ class ZoomSlider(ttk.Frame):
         if r - l > self.max_span:
             return
 
-        self.slider.left_end  = 0.5 * (3.0 * l - r)
+        self.slider.left_end = 0.5 * (3.0 * l - r)
         self.slider.right_end = 0.5 * (3.0 * r - l)
         self.slider.set_value(self.current_value)
         self._update_labels()
+
 
 def _num_digits(x):
     r = 1

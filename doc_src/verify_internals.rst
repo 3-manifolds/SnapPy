@@ -55,17 +55,6 @@ more gracefully returning ``False`` or ``None`` in such a case.
 
 ..   autofunction:: snappy.verify.verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets
 
-Cusp cross sections
--------------------
-
-..   autoclass:: snappy.verify.RealCuspCrossSection
-     :members:
-     :inherited-members:
-
-..   autoclass:: snappy.verify.ComplexCuspCrossSection
-     :members:
-     :inherited-members:
-
 Verified canonical cell decompositions
 --------------------------------------
 

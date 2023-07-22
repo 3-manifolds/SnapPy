@@ -7,10 +7,8 @@ import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
 from tkinter.simpledialog import Dialog, SimpleDialog
-from tkinter.messagebox import askyesno
 from plink.ipython_tools import IPythonTkRoot
 from . import filedialog
-from .ppm_to_png import convert_ppm_to_png
 
 if sys.version_info < (3, 7):
     class Spinbox(ttk.Entry):
@@ -47,6 +45,7 @@ class SnapPyStyle:
         self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
+
 class ViewerWindow(Tk_.Toplevel):
     def __init__(self, view_class, *args, **kwargs):
         window_type = kwargs.pop('window_type', 'untyped')
@@ -59,16 +58,16 @@ class ViewerWindow(Tk_.Toplevel):
         self.update_idletasks()
 
     def __repr__(self):
-        return 'New window: %s\n'%self.title()
+        return 'New window: %s\n' % self.title()
 
     def _get_root(self, window_type):
         if Tk_._default_root:
             return Tk_._default_root
-        root = IPythonTkRoot(window_type = window_type)
+        root = IPythonTkRoot(window_type=window_type)
         root.withdraw()
         return root
 
-    def _togl_save_image(self):
+    def save_image(self):
         """
         Helper for the save_image menu command of a ViewerWindow.
         It expects to be passed the view Frame (not the parent Toplevel)
@@ -79,29 +78,18 @@ class ViewerWindow(Tk_.Toplevel):
             parent=self,
             mode='wb',
             title='Save Image As PNG Image File',
-            defaultextension = '.png',
-            filetypes = [
+            defaultextension='.png',
+            filetypes=[
                 ("PNG image files", "*.png *.PNG", ""),
                 ("All files", "")])
-        view.widget.redraw_if_initialized()
         if savefile:
-            _, ppm_file_name = tempfile.mkstemp(suffix='.ppm')
-            PI = Tk_.PhotoImage()
-            view.widget.tk.call(view.widget._w, 'takephoto', PI.name)
-            PI.write(ppm_file_name, format='ppm')
-            with open(ppm_file_name, 'rb') as ppm_file:
-                convert_ppm_to_png(ppm_file, savefile)
-            savefile.close()
-            os.remove(ppm_file_name)
+            view.widget.save_image_window_resolution(savefile)
 
     def close(self, event=None):
         if hasattr(self.view, 'delete_resource'):
             self.view.delete_resource()
         self.view = None
         self.destroy()
-
-    def save_image(self):
-        self._togl_save_image()
 
     def add_help(self):
         pass
@@ -110,7 +98,7 @@ class ViewerWindow(Tk_.Toplevel):
         return {}
 
     def test(self):
-        print('Testing viewer for %s'%self.title())
+        print('Testing viewer for %s' % self.title())
         time.sleep(0.5)
         if hasattr(self.view, 'test'):
             if not self.view.winfo_ismapped():

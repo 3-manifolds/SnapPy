@@ -15,6 +15,7 @@ _inverse_scale_function = [
     lambda scale: math.log(scale),
     None ]
 
+
 class ViewScaleController:
     def __init__(self,
                  uniform_dict,
@@ -29,7 +30,7 @@ class ViewScaleController:
         self.update_function = update_function
 
         self.update()
-        
+
         self.scale.set_callback(self.scale_command)
 
     def scale_command(self, value):
@@ -37,7 +38,7 @@ class ViewScaleController:
         parameter_interval = _parameter_interval[perspective_type]
         if not parameter_interval:
             return
-        
+
         parameter = _linear_remap(
             value,
             (self.scale.left_end, self.scale.right_end),
@@ -54,20 +55,20 @@ class ViewScaleController:
         if perspective_type == 0:
             view_scale = self.uniform_dict['viewScale'][1]
             fov = _inverse_scale_function[perspective_type](view_scale)
-            self.label0.configure(text = 'FOV:')
-            self.label1.configure(text = '%.1f' % fov)
+            self.label0.configure(text='FOV:')
+            self.label1.configure(text='%.1f' % fov)
         elif perspective_type == 1:
             view_scale = self.uniform_dict['viewScale'][1]
-            self.label0.configure(text = 'Euclidean length:')
+            self.label0.configure(text='Euclidean length:')
             if view_scale > 1.0:
-                self.label1.configure(text = '%.1f' % view_scale)
+                self.label1.configure(text='%.1f' % view_scale)
             elif view_scale > 0.1:
-                self.label1.configure(text = '%.2f' % view_scale)
+                self.label1.configure(text='%.2f' % view_scale)
             else:
-                self.label1.configure(text = '%.3f' % view_scale)
+                self.label1.configure(text='%.3f' % view_scale)
         else:
-            self.label0.configure(text = '')
-            self.label1.configure(text = '')
+            self.label0.configure(text='')
+            self.label1.configure(text='')
 
     def update_scale(self):
         perspective_type = self.uniform_dict['perspectiveType'][1]
@@ -89,6 +90,7 @@ class ViewScaleController:
     def update(self):
         self.update_label()
         self.update_scale()
+
 
 def _linear_remap(v, src_interval, dst_interval):
     l0, r0 = src_interval

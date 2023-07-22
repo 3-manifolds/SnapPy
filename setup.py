@@ -46,7 +46,6 @@ try:
 except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
     raise ImportError(old_setuptools_message)
 
-
 import os, platform, shutil, site, subprocess, sys, sysconfig, re
 from os.path import getmtime, exists
 from distutils.ccompiler import get_default_compiler
@@ -55,31 +54,9 @@ from glob import glob
 if sys.platform == 'darwin':
     macOS_compile_args = []
     macOS_link_args = []
-    if sysconfig.get_platform().endswith('universal2'):
-        # If archflags is set, check that caller is not requesting a
-        # universal2 wheel, but otherwise get out of their way.
-        if 'ARCHFLAGS' in os.environ:
-            arches = os.environ['ARCHFLAGS']
-            req_arch_x86 = arches.find('x86_64') > -1
-            req_arch_arm = arches.find('arm') > -1
-            if req_arch_x86 and req_arch_arm:
-                print('Sorry, we do not support building universal2 binaries directly.')
-                sys.exit(1)
-            macos_arch = 'arm64' if req_arch_arm else 'x86_64'
-        else:
-            macos_arch = platform.machine()
-            os.environ['ARCHFLAGS'] = '-arch ' + macos_arch
-
-        if '_PYTHON_HOST_PLATFORM' not in os.environ:
-            python_host_platforms = {'x86_64':'macosx-10.9-x86_64',
-                                     'arm64': 'macosx-11-arm64'}
-            os.environ['_PYTHON_HOST_PLATFORM'] = python_host_platforms[macos_arch]
-
-        macos_targets = {'x86_64':'10.9', 'arm64': '11'}
-        os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_targets[macos_arch]
-
-    else:
-        macos_arch = sysconfig.get_platform().split('-')[-1]
+    macos_arch = sysconfig.get_platform().split('-')[-1]
+    macos_targets = {'x86_64':'10.9', 'arm64': '11', 'universal2': '10.9'}
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_targets[macos_arch]
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
@@ -137,6 +114,7 @@ class SnapPyBuildDocs(Command):
         sphinx_cmd = load_entry_point('sphinx>=1.7', 'console_scripts', 'sphinx-build')
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
+        sys.path.insert(0, build_lib_dir())
         status = sphinx_cmd(sphinx_args)
         if status != 0:
             sys.exit(status)
@@ -221,7 +199,7 @@ class SnapPyRelease(Command):
         if exists('dist'):
             shutil.rmtree('dist')
 
-        pythons = os.environ.get('RELEASE_PYTHONS', sys.executable).split(',')
+        pythons = os.environ.get('RELEASE_PYTHONS', sys.executable)
         for python in pythons:
             check_call([python, 'setup.py', 'bdist_wheel'])
             check_call([python, 'setup.py', 'test'])
@@ -307,7 +285,7 @@ def replace_ext(file, new_ext):
     return root + '.' + new_ext
 
 if have_cython:
-    if [int(x) for x in cython_version.split('.')] < [0, 28]:
+    if [int(x) for x in cython_version.split('.')[:2]] < [0, 28]:
         raise ImportError
 
     if 'clean' not in sys.argv:
@@ -418,6 +396,12 @@ else:
     elif platform.machine() == 'x86_64':
         hp_extra_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
 
+if have_cython:
+    if [int(x) for x in cython_version.split('.')[:2]] < [3, 0]:
+        if sys.platform == 'win32':
+            hp_extra_compile_args.append('/DFORCE_C_LINKAGE')
+        else:
+            hp_extra_compile_args.append('-DFORCE_C_LINKAGE')
 
 # SnapPyHP depends implicitly on the source for the main kernel, so we
 # we delete certain object files to force distutils to rebuild them.
@@ -513,9 +497,9 @@ TwisterCore = Extension(
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
-install_requires = ['plink>=2.4.1', 'spherogram>=2.1', 'FXrays>=1.3',
+install_requires = ['plink>=2.4.2', 'spherogram>=2.2', 'FXrays>=1.3',
                     'pypng', 'decorator', 'snappy_manifolds>=1.1.2',
-                    'low_index>=1.1']
+                    'low_index>=1.2']
 try:
     import sage
 except ImportError:
@@ -571,6 +555,7 @@ setup( name = 'snappy',
                    'snappy/verify/complex_volume',
                    'snappy/verify/upper_halfspace',
                    'snappy/verify/maximal_cusp_area_matrix',
+                   'snappy/tiling',
                    'snappy/drilling',
                    'snappy/exterior_to_link',
                    'snappy/raytracing',
@@ -587,7 +572,10 @@ setup( name = 'snappy',
                        'doc/*.*',
                        'doc/_images/*',
                        'doc/_sources/*',
-                       'doc/_static/*'],
+                       'doc/_static/*',
+                       'doc/_static/js/*',
+                       'doc/_static/css/*',
+                       'doc/_static/css/fonts/*'],
            'snappy/togl': ['*-tk*/Togl2.0/*',
                        '*-tk*/Togl2.1/*',
                        '*-tk*/mactoolbar*/*'],
@@ -617,6 +605,7 @@ setup( name = 'snappy',
                       'snappy/verify/complex_volume':'python/verify/complex_volume',
                       'snappy/verify/upper_halfspace':'python/verify/upper_halfspace',
                       'snappy/verify/maximal_cusp_area_matrix':'python/verify/maximal_cusp_area_matrix',
+                      'snappy/tiling':'python/tiling',
                       'snappy/drilling':'python/drilling',
                       'snappy/exterior_to_link':'python/exterior_to_link',
                       'snappy/raytracing':'python/raytracing',

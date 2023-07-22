@@ -37,11 +37,9 @@ class McomplexWithExpansion(McomplexWithMemory):
                                     two_zero_to_one_tet=False)
         self.moves_added_by_expansion = 0
 
-
     def zero_to_two(self, arrow, gap):
         raise NotImplementedError(
               '0->2 move not yet implemented in terms of 2<->3 moves')
-
 
     def _two_to_zero_base(self, arrow):
         """
@@ -51,7 +49,7 @@ class McomplexWithExpansion(McomplexWithMemory):
         implemented as a compound of four 2<->3 moves.
         """
         assert arrow.axis().valence() == 2
-        assert arrow.equator().valence()==2
+        assert arrow.equator().valence() == 2
         a = arrow.copy()
         a.opposite().next().reverse().opposite()
         if a.Tetrahedron == a.glued().Tetrahedron:
@@ -73,7 +71,6 @@ class McomplexWithExpansion(McomplexWithMemory):
         e = b.opposite().reverse().next().north_tail()
         self.three_to_two(e)
         return True
-
 
     def _figure_1_19_solid_torus_case(self, a):
         """
@@ -138,7 +135,6 @@ class McomplexWithExpansion(McomplexWithMemory):
         assert b_new.axis().valence() == 2
         return a_new, b_new
 
-
     def _figure_1_19_other_case(self, a):
         """
         This is the case of Figure 1.19 in Matveev where the two tets
@@ -202,7 +198,6 @@ class McomplexWithExpansion(McomplexWithMemory):
         b_new = a_new.glued()
         assert a_new.axis() == b_new.axis() and a_new.axis().valence() == 2
         return a_new, b_new
-
 
     def two_to_zero(self, edge_or_arrow, must_succeed=False):
         """

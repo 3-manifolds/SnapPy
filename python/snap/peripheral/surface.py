@@ -34,6 +34,7 @@ def opposite_vertex_from_edge_function( vertices ):
     assert len(vertices) == 2 and len(other) == 1
     return other[0]
 
+
 opposite_vertex_from_edge_dict = {(i,j):opposite_vertex_from_edge_function((i,j))
                                   for i in range(3) for j in range(3) if i != j}
 
@@ -44,12 +45,12 @@ class Edge():
     """
     An oriented edge 0 -> 1.
     """
-    def __init__(self, sides = None, vertices=None):
-        self.sides, self.vertices= sides, vertices
+    def __init__(self, sides=None, vertices=None):
+        self.sides, self.vertices = sides, vertices
         self.index = None
 
     def glued_to(self, side):
-        for sides in ( [S for S in self.sides],  [-S for S in self.sides] ):
+        for sides in ( [S for S in self.sides], [-S for S in self.sides] ):
             if side in sides:
                 sides.remove(side)
                 return sides[0]
@@ -73,6 +74,7 @@ class Edge():
     def reverse(self):
         self.vertices = (self.vertices[1], self.vertices[0])
         self.sides = tuple( [-s for s in self.sides] )
+
 
 class EdgeList():
     """
@@ -98,8 +100,9 @@ class EdgeList():
     def __repr__(self):
         return '[%s, %s, %s]' % (self.data[0], self.data[1], self.data[2])
 
+
 class Vertex():
-    def __init__(self, corners = None):
+    def __init__(self, corners=None):
         self.corners = corners
         self.index = None
         self.incoming, self.outgoing = [], []
@@ -107,11 +110,12 @@ class Vertex():
     def __repr__(self):
         return "<Vertex %s: %s %s : %s>" % (self.index, [e.index for e in self.incoming], [e.index for e in self.outgoing], self.corners)
 
+
 class Side():
     """
     A neighborhood of an oriented edge in a triangle
     """
-    def __init__(self, triangle = None, vertices = None):
+    def __init__(self, triangle=None, vertices=None):
         self.triangle, self.vertices = triangle, vertices
         self.index = None
 
@@ -129,7 +133,7 @@ class Side():
             t, T = self.triangle, other.triangle
             v, w = self.vertices
             V, W = other.vertices
-            return t==T and v==V and w==W
+            return t == T and v == V and w == W
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -144,6 +148,7 @@ class Side():
 
     def opposite_vertex(self):
         return opposite_vertex_from_edge_dict[self.vertices]
+
 
 class Corner():
     """
@@ -172,10 +177,11 @@ class Corner():
 
     def __eq__(self, other):
         if isinstance(other, Corner):
-            return (self.triangle==other.triangle) and (self.vertex==other.vertex)
+            return (self.triangle == other.triangle) and (self.vertex == other.vertex)
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
 
 class Surface():
     """
@@ -200,7 +206,7 @@ class Surface():
             e1 = (b, a)
 
             S0, S1 = Side(T0, e0), Side(T1, e1)
-            E = Edge( sides = (S0,S1) )
+            E = Edge( sides=(S0,S1) )
 
             T0.edges[opposite_vertex_from_edge_dict[e0]] = E
             T1.edges[opposite_vertex_from_edge_dict[e1]] = E
@@ -271,7 +277,7 @@ class Surface():
         for e in self.edges:
             v_init = vertex_to_row[e.vertices[0]]
             v_term = vertex_to_row[e.vertices[1]]
-            D[v_term, e.index]+= 1
+            D[v_term, e.index] += 1
             D[v_init, e.index] += -1
 
         return D
@@ -308,13 +314,12 @@ class Surface():
         return self.B2().transpose()
 
     def euler(self):
-        return  len(self.vertices) - len(self.edges) + len(self.triangles)
+        return len(self.vertices) - len(self.edges) + len(self.triangles)
 
     def homology_test(self):
         B1, B2 = self.B1(), self.B2()
-        assert B1*B2 == 0
-        r1, r2 = B1.rank(), B2.rank()
-        b0 = len(self.vertices) - r1
+        assert B1 * B2 == 0
+        b0 = len(self.vertices) - B1.rank()
         b1 = B1.right_kernel().dimension() - B2.rank()
         b2 = B2.right_kernel().dimension()
         assert b0 - b1 + b2 == self.euler()
@@ -363,6 +368,7 @@ def first_pair_differing_in_first_component(L):
         if a[0] != b[0]:
             return a, b
 
+
 def segments_into_components(L):
     components = []
     while L:
@@ -379,6 +385,7 @@ def segments_into_components(L):
 
     return components
 
+
 def component_to_cycle(surface, component):
     w = len(surface.edges)*[0,]
     for s in component:
@@ -387,7 +394,7 @@ def component_to_cycle(surface, component):
 
 
 class OneCycleSegment:
-    def __init__(self, edge, orientation_agrees, family_index, next = None, previous = None):
+    def __init__(self, edge, orientation_agrees, family_index, next=None, previous=None):
         self.edge, self.orientation_agrees = edge, orientation_agrees
         self.next, self.previous = next, previous
         self.family_index = family_index
@@ -443,6 +450,7 @@ class Cycle:
             return self.__class__(self.surface, [s + o for s, o in zip(self.weights, other.weights)],
                                   check=False)
 
+
 class OneCycle(Cycle):
     def check(self):
         w = vector(self.weights)
@@ -465,7 +473,7 @@ class OneCycle(Cycle):
         support = [i for i, w in enumerate(W) if w != 0]
         segments = {}
         for i in support:
-            E =S.edges[i]
+            E = S.edges[i]
             w = self.weights[i]
             o = 1 if w > 0 else -1
             segments[i] = [OneCycleSegment(E, o, a) for a in range(abs(w))]

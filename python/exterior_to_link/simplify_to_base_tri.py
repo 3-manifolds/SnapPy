@@ -15,6 +15,7 @@ from .mcomplex_with_link import (link_triangulation,
 json_file = os.path.join(os.path.dirname(__file__), 'geodesic_map.json')
 geodesic_map = json.load(open(json_file))
 
+
 def geodesic_moves(mcomplex):
     """
     For a triangulation of S^3 with 5 or fewer tetrahedra, give 2 -> 3
@@ -27,8 +28,8 @@ def geodesic_moves(mcomplex):
     ...          ([4,4,0,4], [(3,1,2,0),(0,1,3,2),(0,2,1,3),(0,1,3,2)]),
     ...          ([2,3,3,3], [(2,3,1,0),(0,1,3,2),(0,1,3,2),(3,1,2,0)])]
     >>> M = McomplexWithMemory(data)
-    >>> transfered = geodesic_moves(M)
-    >>> M.perform_moves(transfered)
+    >>> transferred = geodesic_moves(M)
+    >>> M.perform_moves(transferred)
     >>> M.isosig()
     'cMcabbgdv'
     """
@@ -103,9 +104,10 @@ def good_simplification(manifold, max_tries=5):
         M, moves, unexpanded = tris_with_moves[0]
         T = McomplexWithExpansion(M._triangulation_data())
         T.perform_moves(moves, tet_stop_num=5)
-        final_moves =  geodesic_moves(T)
+        final_moves = geodesic_moves(T)
         T.perform_moves(final_moves)
         return M, T.move_memory, unexpanded
+
 
 if __name__ == '__main__':
     import doctest

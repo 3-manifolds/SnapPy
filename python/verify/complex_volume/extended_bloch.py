@@ -7,6 +7,7 @@ if _within_sage:
 
     import sage.all
 
+
 @sage_method
 def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
     """
@@ -27,6 +28,7 @@ def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
 
     return l[0]
 
+
 @sage_method
 def compute_p_from_w_and_parity(w, parity):
     """
@@ -41,24 +43,25 @@ def compute_p_from_w_and_parity(w, parity):
     real_part = (w.imag().center() / RF(pi) - parity) / 2
     return 2 * Integer(real_part.round()) + parity
 
+
 @sage_method
 def compute_z_p_q_from_flattening_w0_w1(w0, w1):
     """
     Given w0 and w1 such that +- exp(w0) +- exp(-w1) = 1, compute
     a triple [z; p, q] such that
     w0 = log(z) + p * pi * i and w1 = -log(1-z) + q * pi * i.
-    
+
     While z is and the parities of p and q are verified, p and q are
     not verified in the following sense:
     w0 - p * pi * i and w1 + q * pi * i are likely to have imaginary
     part between -pi and pi, but this is not verified.
     """
-
     z, p_parity, q_parity = compute_z_and_parities_from_flattening_w0_w1(w0, w1)
 
     return (z,
             compute_p_from_w_and_parity(w0, p_parity),
             compute_p_from_w_and_parity(w1, q_parity))
+
 
 @sage_method
 def my_dilog(z):
@@ -78,14 +81,15 @@ def my_dilog(z):
 
     return CIF(CBF(z).polylog(2))
 
+
 @sage_method
 def is_imaginary_part_bounded(z, v):
     """
     Check that the imaginary part of z is in (-v, v).
     """
-
     imag = z.imag()
     return -v < imag and imag < v
+
 
 @sage_method
 def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
@@ -94,7 +98,6 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     the complex volume given by R(z;p,q) (equation before Proposition 2.5 in
     Neumann's Extended Bloch group and the Cheeger-Chern-Simons class).
     """
-
     RIF = w0.parent().real_field()
     my_pi = RIF(pi)
 
@@ -103,7 +106,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
     # Note that the values computed for log(z) and log(1-z)
     # are not verified to have the imaginary part between -pi and pi.
-    logZ         =    w0 - my_pi * p * sage.all.I
+    logZ = w0 - my_pi * p * sage.all.I
     logOneMinusZ = - (w1 - my_pi * q * sage.all.I)
 
     # Neumann's formula for the complex volume is
@@ -157,6 +160,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
         return (-term1 + term2) / 2 - my_dilog(1 - z)
 
+
 @sage_method
 def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
     """
@@ -178,6 +182,7 @@ def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
 
     # Compute Neumann's version of Roger's dilogarithm from flattening.
     return compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1)
+
 
 @sage_method
 def compute_complex_volume_from_lifted_ptolemys_no_torsion_adjustment(

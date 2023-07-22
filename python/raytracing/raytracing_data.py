@@ -6,6 +6,7 @@ from .hyperboloid_utilities import *
 
 __all__ = ['RaytracingData']
 
+
 class RaytracingData(McomplexEngine):
     def add_weights(self, weights):
         for tet in self.mcomplex.Tetrahedra:
@@ -78,16 +79,15 @@ class RaytracingData(McomplexEngine):
         d[b'##num_edges##'] = len(self.mcomplex.Edges)
         return d
 
-
     def update_view_state(self, boost_tet_num_and_weight,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0],
+                          m=matrix([[1.0, 0.0, 0.0, 0.0],
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
 
-        boost = matrix(boost, ring = self.RF)
-        m = matrix(m, ring = self.RF)
+        boost = matrix(boost, ring=self.RF)
+        m = matrix(m, ring=self.RF)
 
         boost = O13_orthonormalize(boost * m)
 

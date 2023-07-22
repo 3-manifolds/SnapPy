@@ -4,16 +4,41 @@
 News
 ====
 
-* Version 3.? (? 2022):
+* Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
-  - Drilling any simple geodesic with :meth:`drill_word <snappy.Manifold.drill_word>` and :meth:`drill_words <snappy.Manifold.drill_words>`.
-  - Added `include_words` to :meth:`length_spectrum <snappy.Manifold.length_spectrum>` showing the word corresponding to a geodesic which can be given to :meth:`drill_word <snappy.Manifold.drill_word>`.
-  - Added geodesics to the :meth:`inside_view <snappy.Manifold.inside_view>` (add picture???).
-  - Added `ignore_orientation` flag to :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>`.
+  - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`
+    for going from a link exterior to a link diagram taken from
+    `Dunfield-Obeidin-Rudd <https://arxiv.org/abs/2112.03251>`_.
+
+  - Covers now computed by the stand-alone `low_index
+    <https://pypi.org/project/low-index/>`_ module, which uses
+    multiple processor cores and is typically much faster than the old
+    code.  In some cases, it is dramatically faster than even GAP or
+    Magma.
+
+  - Added geodesics to the :meth:`inside_view
+    <snappy.Manifold.inside_view>`.
+
+  - Added drilling any simple geodesic with :meth:`drill_word
+    <snappy.Manifold.drill_word>` and :meth:`drill_words
+    <snappy.Manifold.drill_words>`, not just those that are
+    :meth:`combinatorially simple <snappy.Manifold.dual_curves>`.
+
+  - Added `ignore_orientation` flag to :meth:`triangulation_isosig
+    <snappy.Triangulation.triangulation_isosig>`.
+
+  - Added `include_words` flag to :meth:`length_spectrum
+    <snappy.Manifold.length_spectrum>` for getting the word
+    corresponding to a geodesic which can be given to
+    :meth:`drill_word <snappy.Manifold.drill_word>`.
+
+  - Support for Python 3.11 and SageMath 10.0.
+
+  - Modernized styling of the documentation.
 
 * Version 3.0.3 (December 2021):
 
-  - Runs natively on Macs with Apple Silicon processors (M1, M1 Pro, M1 Max).
+  - Runs natively on Macs with Apple Silicon processors (M1, M2, and variants).
 
 * Version 3.0.2 (November 2021):
 
@@ -54,7 +79,7 @@ News
 
 * Version 2.8 (June 2020): New features include:
 
-  - Raytraced interior views of a hyperbolic 3-manifold via the 
+  - Raytraced interior views of a hyperbolic 3-manifold via the
     :meth:`inside_view <snappy.Manifold.inside_view>` method, see also
     `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ and
     `demo video <https://youtu.be/CAERhmUCkRs>`_.
@@ -64,13 +89,13 @@ News
     * Complex volume (and thus the Chern-Simons invariant) for both
       cusped and closed manifolds, see
       :meth:`complex_volume <snappy.Manifold.complex_volume>`.
-      
+
     * Disjoint cusp neighborhoods by the method :meth:`cusp_areas
       <snappy.Manifold.cusp_areas>` which uses
       :meth:`cusp_area_matrix <snappy.Manifold.cusp_area_matrix>`.
 
     * Cusp shapes (see :meth:`cusp_info <snappy.Manifold.cusp_info>`).
-      
+
     * Finding all :meth:`short_slopes <snappy.Manifold.short_slopes>`
       in disjoint embedded cusp neighborhoods.
 
@@ -102,7 +127,7 @@ News
   - GUI improvements, especially on macOS. These include improved
     support for dark mode and tabs on macOS Mojave and preliminary
     support for macOS Catalina.
-    
+
 * Version 2.6.1 (August 2018): New features include:
 
   - Support for SageMath 8.3, Python 3.7, and macOS Mojave.
@@ -112,7 +137,7 @@ News
     Contributed by Jean-Philippe Burelle, based on `this paper
     <https://arxiv.org/abs/1703.08241>`_.
 
-  - Many bug fixes. 
+  - Many bug fixes.
 
 * Version 2.6 (Nov 2017): New features include:
 
@@ -129,23 +154,23 @@ News
   - STL export of Dirichlet domains for 3D printing, contributed by
     Jose Sanchez.
 
-  - Support for Python 3, SageMath 7.5, 7.6, and 8.0, and many more 
+  - Support for Python 3, SageMath 7.5, 7.6, and 8.0, and many more
     versions of Python on Windows.
 
   - Much improved infrastructure for testing and distributing SnapPy.
 
 * Version 2.4 (May 2016): New features include:
 
-  - Added `census of Platonic manifolds <platonic_census.html>`_. 
+  - Added `census of Platonic manifolds <platonic_census.html>`_.
 
-  - Rigorous computation of `cusp translations <manifold.html#snappy.Manifold.cusp_translations>`_.  
-  
+  - Rigorous computation of `cusp translations <manifold.html#snappy.Manifold.cusp_translations>`_.
+
   - Added decorations to `triangulation isomorphism signatures
     <manifold.html#snappy.Manifold.triangulation_isosig>`_ for
     encoding peripheral curves.
-    
+
   - Faster verification of non-tetrahedral canonical cell decompositions.
-  
+
   - Improvements to the `link and planar diagram component
     <spherogram.html>`_, mostly contributed by Malik Obeidin, include:
 
@@ -160,9 +185,9 @@ News
     * Conversion to/from `SageMath links and braids
       <spherogram.html#spherogram.Link.sage_link>`_.
 
-    * Many under-the-hood improvements.  
-    
-  - New Windows installer. 
+    * Many under-the-hood improvements.
+
+  - New Windows installer.
 
 * Version 2.3 (March 2015):  New features include:
 
@@ -176,9 +201,9 @@ News
   - New extra features when used inside of Sage:
 
     * HIKMOT-style `rigorous verification of hyperbolic structures
-      <verify.html>`_, 
-      contributed by Matthias Goerner.  
-      
+      <verify.html>`_,
+      contributed by Matthias Goerner.
+
     * Many `basic knot/link invariants
       <spherogram.html#the-link-class>`_, contributed by Robert
       Lipschitz and Jennet Dickinson.
@@ -186,19 +211,19 @@ News
     * Sage-specific functions are now more easily accessible as
       methods of Manifold and better documented.
 
-    * Improved number field recognition, thanks to Matthias.  
-      
+    * Improved number field recognition, thanks to Matthias.
+
   - Better compatibility with OS X Yosemite and Windows 8.1.
 
   - Development changes:
 
-    * Major source code reorganization/cleanup.  
+    * Major source code reorganization/cleanup.
 
     * Source code repository moved to `Bitbucket
       <https://bitbucket.org/t3m>`_.
 
     * Python modules now hosted on `PyPI
-      <https://pypi.python.org/pypi>`_, simplifying `installation <installing.html>`_.  
+      <https://pypi.python.org/pypi>`_, simplifying `installation <installing.html>`_.
 
 * Version 2.2 (June 2014): Includes Ben Burton's `census of
   orientable cusped manifolds with 9 tetrahedra. <http://arxiv.org/abs/1405.2695>`_
@@ -211,24 +236,24 @@ News
 * Version 2.0 (September 2013): Many new features, including:
 
   - A `manifold browser <manifold.html#snappy.Manifold.browse>`_
-    window for easily examining a particular manifold.  
+    window for easily examining a particular manifold.
 
   - Many improvements to the `link editor <plink.html#using-snappy-s-link-editor>`_, including
 
     * A smoothed view mode with image export to EPS/PDF/SVG/TikZ.
 
     * Producing a fully editable link from combinatorial data like a DT
-      code. 
- 
+      code.
+
   - `Splitting manifolds <manifold.html#snappy.Manifold.split>`_ along surfaces of non-negative euler
-    characteristic. 
+    characteristic.
 
   - Generalizing the ptolemy obstruction class to allow computation of
     PGL(3,C)-representations and improving usability of the `ptolemy module
-    <http://www.unhyperbolic.org/ptolemy.html>`_.	     
+    <http://www.unhyperbolic.org/ptolemy.html>`_.
 
   - `CensusKnots <censuses.html#snappy.CensusKnots>`_ now includes
-    knot exteriors with 8 tetrahedra.  
+    knot exteriors with 8 tetrahedra.
 
 * Version 1.8 (May 2013) improves handling of DT codes and adds the
   `HTLinkExteriors <censuses.html#snappy.HTLinkExteriors>`_ census,
@@ -236,13 +261,13 @@ News
 
 * Version 1.7 (November 2012) incorporates the `ptolemy module
   <http://www.unhyperbolic.org/ptolemy.html>`_ for studying
-  representations of 3-manifold groups into pSL(*N*, **C**).  
+  representations of 3-manifold groups into pSL(*N*, **C**).
 
 * Version 1.6 (August 2012) includes a `new way to make links
-  <spherogram.html>`_ and some support for `arbitrary precision calculation <snap.html>`_.  
+  <spherogram.html>`_ and some support for `arbitrary precision calculation <snap.html>`_.
 
 * Version 1.5 (February 2012) includes `much improved manifold
-  censuses <censuses.html>`_.  
+  censuses <censuses.html>`_.
 
 * Version 1.4 (December 2011) uses the current release of IPython, which has been completely rewritten.
 
@@ -255,4 +280,4 @@ News
 
 * Version 1.1 (February 2010).
 
-* Version 1.0 (August 2009) Initial version. 
+* Version 1.0 (August 2009) Initial version.

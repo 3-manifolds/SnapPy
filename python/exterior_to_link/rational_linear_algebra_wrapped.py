@@ -18,6 +18,7 @@ future reference.
 """
 from sage.all import QQ, vector, matrix, VectorSpace
 
+
 class Vector:
     """
     An immutable vector in QQ^n.
@@ -75,20 +76,24 @@ class Vector:
             return Vector(self.vector[index])
         return self.vector[index]
 
+
 class Vector2(Vector):
     def __init__(self, entries):
         assert len(entries) == 2
         Vector.__init__(self, entries)
+
 
 class Vector3(Vector):
     def __init__(self, entries):
         assert len(entries) == 3
         Vector.__init__(self, entries)
 
+
 class Vector4(Vector):
     def __init__(self, entries):
         assert len(entries) == 4
         Vector.__init__(self, entries)
+
 
 class Matrix:
     """
@@ -123,6 +128,7 @@ class Matrix:
 
     def __getitem__(self, index):
         return Vector(self.matrix[index])
+
 
 if __name__ == '__main__':
     import doctest

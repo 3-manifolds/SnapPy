@@ -1,4 +1,5 @@
 from .geodesic_tube_info import GeodesicTubeInfo
+from .pack import pack_tet_data
 from .upper_halfspace_utilities import *
 
 from ..geometric_structure import (add_r13_geometry,
@@ -11,7 +12,6 @@ from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
 class LengthSpectrumError(RuntimeError):
     pass
-
 
 class Geodesics:
     def __init__(self, manifold, words):
@@ -42,11 +42,8 @@ class Geodesics:
         self.num_tetrahedra = manifold.num_tetrahedra()
         self.RF = manifold.tetrahedra_shapes('rect')[0].real().parent()
 
-        self.data_heads = []
-        self.data_tails = []
-        self.data_indices = []
-        self.data_radius_params = []
-        self.data_offsets = (self.num_tetrahedra + 1) * [ 0 ]
+        self._uniform_bindings = {}
+        self._num = 0
 
     def set_enables_and_radii_and_update(self, enables, radii):
 
@@ -73,38 +70,24 @@ class Geodesics:
 
                 radius_param = safe_radius.cosh() ** 2 / 2
 
-                for tet, endpoints in tets_and_endpoints:
+                for tet, (head, tail) in tets_and_endpoints:
                     tets_to_data[tet].append(
-                        (endpoints, i, radius_param))
+                        {'Heads' : ('vec4', head),
+                         'Tails' : ('vec4', tail),
+                         'Index' : ('int', i),
+                         'TubeRadiusParam' : ('float', radius_param)})
 
-        self.data_heads = []
-        self.data_tails = []
-        self.data_indices = []
-        self.data_radius_params = []
-        self.data_offsets = []
-
-        for data in tets_to_data:
-            self.data_offsets.append(len(self.data_heads))
-            for (head, tail), i, radius_param in data:
-                self.data_heads.append(head)
-                self.data_tails.append(tail)
-                self.data_indices.append(i)
-                self.data_radius_params.append(radius_param)
-        self.data_offsets.append(len(self.data_heads))
+        self._uniform_bindings, self._num = pack_tet_data(
+            'geodesics.geodesic', tets_to_data)
 
         return success
 
     def get_uniform_bindings(self):
-        return {
-            'geodesics.geodesicHeads' : ('vec4[]', self.data_heads),
-            'geodesics.geodesicTails' : ('vec4[]', self.data_tails),
-            'geodesics.geodesicIndex' : ('int[]', self.data_indices),
-            'geodesics.geodesicTubeRadiusParam' : ('float[]', self.data_radius_params),
-            'geodesics.geodesicOffsets' : ('int[]', self.data_offsets) }
+        return self._uniform_bindings
 
     def get_compile_time_defs(self):
-        if self.data_heads:
-            num = max(100, len(self.data_heads))
+        if self._num > 0:
+            num = max(100, self._num)
         else:
             num = 0
 

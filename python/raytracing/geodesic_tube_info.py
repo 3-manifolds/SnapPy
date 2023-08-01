@@ -23,7 +23,8 @@ def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
             break
 
         for v in simplex.ZeroSubsimplices:
-            core_curve = tile.tet.core_curves.get(v, None)
+            tet = tile.lifted_tetrahedron.tet
+            core_curve = tet.core_curves.get(v, None)
             if core_curve is None:
                 continue
             dist_to_core_curve = min(
@@ -64,9 +65,10 @@ class GeodesicTubeInfo:
         for tile in self.tiles:
             if tile.lower_bound_distance > radius:
                 break
+            tet = tile.lifted_tetrahedron.tet
             result.append(
-                (tile.tet.Index,
-                 [ tile.tet.to_coordinates_in_symmetric_tet * pt
+                (tet.Index,
+                 [ tet.to_coordinates_in_symmetric_tet * pt
                    for pt in tile.lifted_geometric_object.points] ))
 
         return result, min(tile.lower_bound_distance, radius)
@@ -98,7 +100,7 @@ class GeodesicTubeInfo:
         piece = self._get_pieces_covering_geodesic()[0]
         point = piece.lifted_geometric_object.points[0]
         for other_piece in other._get_pieces_covering_geodesic():
-            if piece.tet == other_piece.tet:
+            if piece.lifted_tetrahedron.tet == other_piece.lifted_tetrahedron.tet:
                 for other_point in other_piece.lifted_geometric_object.points:
                     if _are_parallel_light_vectors(point, other_point, 1e-5):
                         return True
@@ -114,7 +116,7 @@ class GeodesicTubeInfo:
         for i, piece0 in enumerate(pieces):
             for j, piece1 in enumerate(pieces):
                 if i < j:
-                    if piece0.tet == piece1.tet:
+                    if piece0.lifted_tetrahedron.tet == piece1.lifted_tetrahedron.tet:
                         if _are_parallel_light_vectors(
                                 piece0.lifted_geometric_object.points[0],
                                 piece1.lifted_geometric_object.points[0],

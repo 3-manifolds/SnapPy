@@ -63,10 +63,12 @@ class AdditionalHorospheres:
                 if tile.lower_bound_distance > d:
                     break
 
+                tet = tile.lifted_tetrahedron.tet
+                
                 s = (
-                    tile.tet.to_coordinates_in_symmetric_tet * tile.lifted_geometric_object.defining_vec) / scale
+                    tet.to_coordinates_in_symmetric_tet * tile.lifted_geometric_object.defining_vec) / scale
 
-                tets_to_data[tile.tet.Index].append(
+                tets_to_data[tet.Index].append(
                     ( s, cusp_index ))
 
         self.data_vecs = []

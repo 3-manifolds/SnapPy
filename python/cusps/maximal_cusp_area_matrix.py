@@ -54,7 +54,9 @@ def _diagonal_scale(mcomplex, i):
 
         new_lift = tile.lifted_geometric_object.defining_vec
 
-        lifts = tet_to_lifts[tile.tet.Index]
+        tet_index = tile.lifted_tetrahedron.tet.Index
+
+        lifts = tet_to_lifts[tet_index]
         for lift in lifts:
             d = correct_min([d,
                              distance_r13_horoballs(new_lift, lift)])
@@ -82,11 +84,12 @@ def _non_diagonal_scale(mcomplex, i, j):
             return (2 * d).exp()
 
         new_lift = tile.lifted_geometric_object.defining_vec
+        tet_index = tile.lifted_tetrahedron.tet.Index
 
-        for lift in obj_to_tet_to_lifts[1 - tile.obj][tile.tet.Index]:
+        for lift in obj_to_tet_to_lifts[1 - tile.object_index][tet_index]:
             d = correct_min([d,
                              distance_r13_horoballs(new_lift, lift)])
-        obj_to_tet_to_lifts[tile.obj][tile.tet.Index].append(new_lift)
+        obj_to_tet_to_lifts[tile.object_index][tet_index].append(new_lift)
 
 def _to_matrix(m):
     from snappy.SnapPy import matrix
@@ -105,7 +108,7 @@ def _merge_tiles(streams_of_tiles):
             # Relying on -inf + x = -inf
             sum(t.lower_bound_distance for t in tiles),
             tile.lifted_geometric_object,
-            tile.tet,
+            tile.lifted_tetrahedron,
             i)
 
         tiles[i] = next(iters[i])

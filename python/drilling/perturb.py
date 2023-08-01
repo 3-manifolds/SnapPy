@@ -12,7 +12,6 @@ from ..hyperboloid import ( # type: ignore
 from ..hyperboloid.line import R13Line
 from ..hyperboloid.distances import distance_r13_lines
 from ..tiling.triangle import add_triangles_to_tetrahedra
-from ..tiling.tile import Tile
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 from ..matrix import vector # type: ignore
@@ -110,7 +109,8 @@ def compute_lower_bound_injectivity_radius(
             if tile.lower_bound_distance > min_radius:
                 distances.append(tile.lower_bound_distance)
                 break
-            tet_to_lines[tile.tet.Index].append(
+            tet_index = tile.lifted_tetrahedron.tet.Index
+            tet_to_lines[tet_index].append(
                 tile.lifted_geometric_object)
 
     for tet in mcomplex.Tetrahedra:

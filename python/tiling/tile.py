@@ -20,12 +20,12 @@ class Tile:
     def __init__(self,
                  lower_bound_distance,
                  lifted_geometric_object,
-                 tet : Tetrahedron,
-                 obj = None):
+                 lifted_tetrahedron : LiftedTetrahedron,
+                 object_index = None):
         self.lower_bound_distance = lower_bound_distance
         self.lifted_geometric_object = lifted_geometric_object
-        self.tet = tet
-        self.obj = obj
+        self.lifted_tetrahedron = lifted_tetrahedron
+        self.object_index = object_index
 
 def compute_tiles(geometric_object,
                   base_point,
@@ -118,7 +118,7 @@ def compute_tiles(geometric_object,
         # Emit Tile
         yield Tile(pending_lifted_tetrahedron.lower_bound_distance,
                    lifted_geometric_object,
-                   tet)
+                   pending_lifted_tetrahedron.lifted_tetrahedron)
 
         # For all faces ...
         for f, new_tet in tet.Neighbor.items():

@@ -19,7 +19,7 @@ def check_away_from_core_curve_iter(iterator, epsilon, obj_name = None):
     for tile in iterator:
         check_away_from_core_curve(
             tile.lifted_geometric_object,
-            tile.tet,
+            tile.lifted_tetrahedron.tet,
             simplex.T,
             epsilon,
             obj_name)

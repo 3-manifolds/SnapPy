@@ -9,6 +9,7 @@ from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
+import traceback
 
 class LengthSpectrumError(RuntimeError):
     pass
@@ -109,8 +110,8 @@ class Geodesics:
             try:
                 self.add_word(g['word'], is_primitive=True)
             except Exception as e:
-                print(dict(g))
-                print(e)
+                traceback.print_exc()
+                print("Geodesic is ", dict(g))
                 exception = e
 
         if exception:

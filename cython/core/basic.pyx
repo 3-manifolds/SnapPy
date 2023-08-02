@@ -139,7 +139,7 @@ def to_byte_str(s):
 
 
 # Types of covering spaces
-cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
+cover_types = {1: "irregular", 2: "regular", 3: "cyclic"}
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
@@ -179,7 +179,7 @@ cdef public void uFatalError(const_char_ptr function,
     # uFatalError which is usually the root cause of the problem.
     if not PyErr_Occurred():
         raise SnapPeaFatalError('SnapPea crashed in function %s(), '
-                                'defined in %s.c.'%(function, file))
+                                'defined in %s.c.' % (function, file))
 
 # Global variables used for interrupt processing
 cdef public Boolean gLongComputationInProgress
@@ -257,7 +257,7 @@ cdef public int uQuery(const_char_ptr  message,
     #  from the user, but for now it is set up to return the default
     #  response, to facilitate batch computations.
     cdef char *default = <char *> responses[<int> default_response]
-    sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
+    sys.stderr.write('Q: %s\nA:  %s\n' % (<char *> message, default))
     return <int> default_response
 
 

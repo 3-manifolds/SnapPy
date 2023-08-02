@@ -229,7 +229,7 @@ cdef class Triangulation():
         knot = spherogram.DTcodec(DT)
         c_triangulation = get_triangulation_from_PythonKLP(
             knot.KLPProjection(), remove_finite_vertices)
-        name = to_byte_str('%d'%crossings + alternation + '%d'%index)
+        name = to_byte_str('%d' % crossings + alternation + '%d' % index)
         set_triangulation_name(c_triangulation, name)
         self._set_DTcode(knot)
         self.set_c_triangulation(c_triangulation)
@@ -432,9 +432,11 @@ cdef class Triangulation():
         False
         """
         orientability = Orientability[get_orientability(self.c_triangulation)]
-        if orientability == 'orientable': return True
-        elif orientability == 'nonorientable': return False
-        else: return None
+        if orientability == 'orientable':
+            return True
+        if orientability == 'nonorientable':
+            return False
+        return None
 
     def copy(self):
         """
@@ -685,7 +687,7 @@ cdef class Triangulation():
         _to_string.
         """
         cdef c_Triangulation* c_triangulation = NULL
-        if not self.c_triangulation is NULL:
+        if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
         b_string = to_byte_str(string)
         c_triangulation = read_triangulation_from_string(b_string)
@@ -719,7 +721,7 @@ cdef class Triangulation():
             if c_terse.glues_to_old_tet[n]:
                 byte |= 1 << bit
             bit += 1
-            if bit%8 == 0:
+            if bit % 8 == 0:
                 byteseq.append(byte)
                 byte, bit = 0, 0
         if bit:
@@ -745,7 +747,7 @@ cdef class Triangulation():
         True
         """
         cdef c_Triangulation* c_triangulation = NULL
-        if not self.c_triangulation is NULL:
+        if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
@@ -754,7 +756,7 @@ cdef class Triangulation():
         """
         """
         cdef c_Triangulation* c_triangulation = NULL
-        if not self.c_triangulation is NULL:
+        if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = unpickle_triangulation(bytestring)
         self.set_c_triangulation(c_triangulation)
@@ -804,7 +806,7 @@ cdef class Triangulation():
         True
         """
         cdef c_Triangulation* c_triangulation = NULL
-        if not self.c_triangulation is NULL:
+        if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = listlike_to_triangulation(tetrahedra_data,
                                                     num_or_cusps,
@@ -831,7 +833,7 @@ cdef class Triangulation():
         triangulation_isosig.
         """
 
-        if not self.c_triangulation is NULL:
+        if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
 
         match = is_decorated_isosig.match(isosig)
@@ -1051,7 +1053,8 @@ cdef class Triangulation():
         >>> M.name()
         '4_1'
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            return
         return to_str(get_triangulation_name(self.c_triangulation))
 
     def set_name(self, new_name):
@@ -1117,7 +1120,8 @@ cdef class Triangulation():
         >>> M.num_tetrahedra()
         2
         """
-        if self.c_triangulation is NULL: return 0
+        if self.c_triangulation is NULL:
+            return 0
         return get_num_tetrahedra(self.c_triangulation)
 
     def dehn_fill(self, filling_data, which_cusp=None):
@@ -1226,7 +1230,7 @@ cdef class Triangulation():
         if data_spec is None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
-        if type(data_spec) == type(''):
+        if isinstance(data_spec, str):
             return [c[data_spec] for c in self.cusp_info()]
         cusp_index = valid_index(
             data_spec, self.num_cusps(),

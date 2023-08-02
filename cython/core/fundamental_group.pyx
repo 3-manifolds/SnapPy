@@ -121,7 +121,7 @@ cdef class CFundamentalGroup():
         free_group_presentation(self.c_group_presentation)
 
     def __repr__(self):
-        return 'Generators:\n   %s\nRelators:\n   %s'%(
+        return 'Generators:\n   %s\nRelators:\n   %s' % (
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
 

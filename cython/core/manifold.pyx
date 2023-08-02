@@ -200,7 +200,8 @@ cdef class Manifold(Triangulation):
         cdef result
         cdef Triangulation new_tri
 
-        if self.c_triangulation is NULL: return ""
+        if self.c_triangulation is NULL:
+            return ""
 
         copy_triangulation(self.c_triangulation,
                            &c_retriangulated_triangulation)
@@ -649,10 +650,11 @@ cdef class Manifold(Triangulation):
         """
         cdef int acc
         cdef solution_type
-        if self.c_triangulation is NULL: return 0
+        if self.c_triangulation is NULL:
+            return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
-            raise ValueError('Solution type is: %s'%solution_type)
+            raise ValueError('Solution type is: %s' % solution_type)
         IF HIGH_PRECISION is True:
             # must provide a start value to get the correct precision
             result = sum(
@@ -760,7 +762,8 @@ cdef class Manifold(Triangulation):
         cdef Real CS
         cdef int accuracy
 
-        if self.c_triangulation is NULL: return 0
+        if self.c_triangulation is NULL:
+            return 0
         get_CS_value(self.c_triangulation,
                      &is_known,
                      &CS,
@@ -888,7 +891,8 @@ cdef class Manifold(Triangulation):
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
         cdef Boolean is_geometric
 
-        if self.c_triangulation is NULL: return []
+        if self.c_triangulation is NULL:
+            return []
 
         # The SnapPea kernel itself supports non-orientable manifolds,
         # but the extensions in snap and verify don't.
@@ -1173,9 +1177,8 @@ cdef class Manifold(Triangulation):
         if data_spec is None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
-        # Need to check that data_spec has string type or unicode type
-        # for backwards compatibility with python 2.7.
-        if type(data_spec) == type('') or type(data_spec) == type(u''):
+        # Need to check that data_spec has string type
+        if isinstance(data_spec, str):
             return [c[data_spec] for c in self.cusp_info()]
         cusp_index = valid_index(
             data_spec, self.num_cusps(),
@@ -1204,8 +1207,8 @@ cdef class Manifold(Triangulation):
             'shape': self._number_(shape),
             'shape_accuracy': current_shape_accuracy,
             'modulus': self._number_(modulus),
-            'holonomies':(self._number_(meridian), self._number_(longitude)),
-            'holonomy_accuracy':min(meridian_accuracy,longitude_accuracy)
+            'holonomies': (self._number_(meridian), self._number_(longitude)),
+            'holonomy_accuracy': min(meridian_accuracy,longitude_accuracy)
         }
 
         core_geodesic(self.c_triangulation, cusp_index,
@@ -1215,8 +1218,8 @@ cdef class Manifold(Triangulation):
             core_length = Complex2Number(c_core_length)
             core_length.accuracy = accuracy
             info.update({
-                'core_length' : self._number_(core_length),
-                'singularity_index':singularity_index
+                'core_length': self._number_(core_length),
+                'singularity_index': singularity_index
             })
 
         return CuspInfo(**info)
@@ -1498,7 +1501,7 @@ cdef class Manifold(Triangulation):
             max_segments = which_curve.max_segments
             which_curve = which_curve.index
 
-        new_name = to_byte_str(self.name() + '-%d'%which_curve)
+        new_name = to_byte_str(self.name() + '-%d' % which_curve)
         c_new_name = new_name
 
         dual_curves(self.c_triangulation,
@@ -1627,7 +1630,8 @@ cdef class Manifold(Triangulation):
         cdef long int p, q
         cdef c_Triangulation *c_canonized_triangulation
 
-        if self.c_triangulation is NULL: return False
+        if self.c_triangulation is NULL:
+            return False
 
         copy_triangulation(self.c_triangulation, &c_canonized_triangulation)
         proto_canonize(c_canonized_triangulation)
@@ -1666,18 +1670,18 @@ cdef class Manifold(Triangulation):
                                         &perm0, &perm1, &perm2, &perm3)
             ans.append(
                 {'index':i,
-                 'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'neighbors':(neighbor0_idx, neighbor1_idx,
-                              neighbor2_idx, neighbor3_idx),
-                 'gluings': ( tuple([ perm0>>(2 * i) & 3 for i in range(4)]),
-                              tuple([ perm1>>(2 * i) & 3 for i in range(4)]),
-                              tuple([ perm2>>(2 * i) & 3 for i in range(4)]),
-                              tuple([ perm3>>(2 * i) & 3 for i in range(4)])),
-                 'corners': ( self._number_(Complex2Number(c0)),
-                              self._number_(Complex2Number(c1)),
-                              self._number_(Complex2Number(c2)),
-                              self._number_(Complex2Number(c3)) ),
-                 'generator_path':generator_path}
+                 'generators': (face0_gen, face1_gen, face2_gen, face3_gen),
+                 'neighbors': (neighbor0_idx, neighbor1_idx,
+                               neighbor2_idx, neighbor3_idx),
+                 'gluings': (tuple([ perm0>>(2 * i) & 3 for i in range(4)]),
+                             tuple([ perm1>>(2 * i) & 3 for i in range(4)]),
+                             tuple([ perm2>>(2 * i) & 3 for i in range(4)]),
+                             tuple([ perm3>>(2 * i) & 3 for i in range(4)])),
+                 'corners': (self._number_(Complex2Number(c0)),
+                             self._number_(Complex2Number(c1)),
+                             self._number_(Complex2Number(c2)),
+                             self._number_(Complex2Number(c3)) ),
+                 'generator_path': generator_path}
                 )
         return ans
 
@@ -1754,7 +1758,7 @@ cdef class Manifold(Triangulation):
         cdef NormalSurfaceList *surfaces
         cdef c_FuncResult result
         cdef int num_surfaces
-        cdef c_Triangulation  *pieces[2]
+        cdef c_Triangulation *pieces[2]
         cdef Manifold M0, M1
 
         if self.c_triangulation is NULL:
@@ -1771,7 +1775,7 @@ cdef class Manifold(Triangulation):
         if not (0 <= which_surface < num_surfaces):
             raise ValueError('SnapPea only found %d surfaces, but you asked for surface number %s.' % (num_surfaces, which_surface))
 
-        result =  split_along_normal_surface(surfaces, which_surface, pieces)
+        result = split_along_normal_surface(surfaces, which_surface, pieces)
         if result != func_OK:
             raise RuntimeError('SnapPea kernel failed when splitting open along the given surface.')
 

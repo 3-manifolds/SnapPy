@@ -67,7 +67,7 @@ ELIF REAL_TYPE == 'double':
         double default_vertex_epsilon
         double det_error_epsilon
     cdef real_to_string(Real x):
-        return '%.18f'%x
+        return '%.18f' % x
 
 # SnapPea declarations
 
@@ -746,7 +746,7 @@ cdef extern from "addl_code.h":
     extern void free_gluing_equations(int** equations, int num_rows)
     extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
     extern void free_cusp_equation(int* equation)
-    extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)  except *
+    extern c_Triangulation* triangulate_link_complement_from_file(char* file_name, char *path)  except *
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)  except *
     extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes)
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)

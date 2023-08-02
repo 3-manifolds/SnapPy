@@ -67,8 +67,8 @@ cdef class AbelianGroup():
     def __repr__(self):
         if len(self.divisors) == 0:
             return '0'
-        factors = ( ['Z/%d'%n for n in self.divisors if n != 0] +
-                    ['Z' for n in self.divisors if n == 0] )
+        factors = (['Z/%d' % n for n in self.divisors if n] +
+                   ['Z' for n in self.divisors if not n])
         return ' + '.join(factors)
 
     def __len__(self):
@@ -231,7 +231,8 @@ cdef class PresentationMatrix():
         """
         cdef temp, m, i, j, k, l
         while len(self._units) > 0:
-            for i,j in self._units: break
+            for i, j in self._units:
+                break
             col_support = [k for k in self._col_support[j] if k != i] + [i]
             row_entries = [(l, self._entries.get((i,l), 0))
                            for l in self._row_support[i]]

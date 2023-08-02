@@ -14,7 +14,7 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
                          '"% Generators"')
     nums = []
     for line in data[1:]:
-        nums +=  line.split()
+        nums += line.split()
     num_gens = int(nums[0])
     nums.pop(0)
 
@@ -26,7 +26,7 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
             for j in range(4):
                 for k in range(4):
                     num_string = nums.pop(0) # save a reference
-                    generators[i][j][k] =  <Real_struct>Real_from_string(
+                    generators[i][j][k] = <Real_struct>Real_from_string(
                         <char*>num_string)
     elif len(nums) == 8*num_gens:
         temp_gens = <MoebiusTransformation *>malloc(
@@ -171,7 +171,7 @@ cdef class CDirichletDomain():
             free_Dirichlet_domain(self.c_dirichlet_domain)
 
     def __repr__(self):
-        return '%d finite vertices, %d ideal vertices; %d edges; %d faces'%(
+        return '%d finite vertices, %d ideal vertices; %d edges; %d faces' % (
             self.num_finite_vertices(),
             self.num_ideal_vertices(),
             self.num_edges(),
@@ -500,7 +500,7 @@ cdef class CDirichletDomain():
     def view(self):
         if PolyhedronViewer:
             return ViewerWindow(PolyhedronViewer, facedicts=self.face_list(),
-                title='Dirichlet Domain of %s'%self.manifold_name)
+                title='Dirichlet Domain of %s' % self.manifold_name)
         else:
             raise RuntimeError('The PolyhedronViewer class '
                                'was not imported.')
@@ -629,10 +629,10 @@ cdef class CDirichletDomain():
 
     def _to_string(self):
         matrices = self.pairing_matrices()
-        result = '%% Generators\n%s\n'%len(matrices)
+        result = '%% Generators\n%s\n' % len(matrices)
         for matrix in matrices:
             for row in matrix:
-                result += ' %s\n'%' '.join([str(x) for x in row])
+                result += ' %s\n' % ' '.join(str(x) for x in row)
             result += '\n'
         return result
 
@@ -694,7 +694,8 @@ cdef class CDirichletDomain():
         output = stl(self.face_list(), model, cutout, num_subdivisions, shrink_factor, cutoff_radius)
         with open(filename, 'w') as output_file:
             for line in output:
-                if UI_callback is not None: UI_callback()
+                if UI_callback is not None:
+                    UI_callback()
                 output_file.write(line)
 
 

@@ -28,7 +28,10 @@ else:
             return x.sqrt()
         return math.sqrt(x)
 
-
+# Reject computing short slopes if intervals for translations
+# are too wide (error is more than 1%).
+_min_diameter_translations = 0.01
+    
 def short_slopes_from_cusp_shape_and_area(
         cusp_shape, cusp_area, length=6):
     """
@@ -144,12 +147,12 @@ def _verified_short_slopes_from_translations(translations, length=6):
             "Could not verify that longitude meridian translation "
             "has non-trivial imaginary part.")
 
-    if m_tran.diameter() > 0.01:
+    if m_tran.diameter() > _min_diameter_translations:
         raise InsufficientPrecisionError(
             "Meridian translation has insufficient precision to compute "
             "a reasonable set of short slopes.")
 
-    if l_tran.diameter() > 0.01:
+    if l_tran.diameter() > _min_diameter_translations:
         raise InsufficientPrecisionError(
             "Longitude translation has insufficient precision to compute "
             "a reasonable set of short slopes.")

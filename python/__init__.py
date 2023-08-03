@@ -189,6 +189,7 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
+from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
 
 def canonical_retriangulation(
     manifold, verified=False,
@@ -378,6 +379,9 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
     """
 
     if method == 'maximal':
+        return maximal_cusp_area_matrix(
+            manifold, bits_prec=bits_prec, verified=verified)
+    if method == 'maximalLegacy':
         if not verified:
             raise NotImplementedError("Maximal cusp area matrix only "
                                       "available as verified computation. "

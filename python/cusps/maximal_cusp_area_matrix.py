@@ -12,6 +12,24 @@ if _within_sage:
     import sage.all
 
 def maximal_cusp_area_matrix(manifold, bits_prec, verified):
+    """
+    A test case that hits both the tiling case and the early bail case
+    (using v.exp_self_distance_along_edges):
+    
+    >>> from snappy import Manifold
+    >>> M = Manifold("o9_44206")
+    >>> maximal_cusp_area_matrix(M, bits_prec=53, verified=False) # doctest: +NUMERIC9
+    [88.4588035788544 14.3590180492058 11.4136568679715 9.67661682098105]
+    [14.3590180492058 88.4588035788533 9.67661682098102 11.4136568679705]
+    [11.4136568679715 9.67661682098102 88.4588035788541 14.3590180492042]
+    [9.67661682098105 11.4136568679705 14.3590180492042 88.4588035788038]
+    sage: maximal_cusp_area_matrix(M, bits_prec=80, verified=True) # doctest: +NUMERIC6
+    [ 88.458803578854197094? 14.3590180492058335371? 11.4136568679715291317?  9.6766168209810445566?]
+    [14.3590180492058335371?          88.4588035789?      9.676616820981044?          11.4136568680?]
+    [11.4136568679715291317?      9.676616820981044?      88.45880357885420?         14.35901804921?]
+    [ 9.6766168209810445566?          11.4136568680?         14.35901804921?           88.458803578?]
+    """
+
     mcomplex = mcomplex_for_tiling_cusp_neighborhoods(
         manifold, bits_prec=bits_prec, verified=verified)
 

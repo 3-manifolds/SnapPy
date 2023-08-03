@@ -9,6 +9,7 @@ import snappy.ptolemy.test
 import snappy.tiling.floor
 import snappy.tiling.real_hash_dict
 import snappy.tiling.canonical_key_dict
+import snappy.cusps.maximal_cusp_area_matrix
 import snappy.raytracing.cohomology_fractal
 import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
@@ -109,6 +110,7 @@ modules += [snappy.SnapPy,
             snappy.tiling.floor,
             snappy.tiling.real_hash_dict,
             snappy.tiling.canonical_key_dict,
+            snappy.cusps.maximal_cusp_area_matrix,
             snappy.raytracing.cohomology_fractal,
             snappy.raytracing.geodesic_tube_info,
             snappy.raytracing.geodesics,

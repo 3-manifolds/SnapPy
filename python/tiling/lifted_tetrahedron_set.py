@@ -4,6 +4,7 @@ from .canonical_key_dict import CanonicalKeyDict
 
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..hyperboloid import r13_dot, o13_inverse
+from ..exceptions import InsufficientPrecisionError # type: ignore
 
 class ProductSet:
     """

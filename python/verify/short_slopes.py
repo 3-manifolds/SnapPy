@@ -1,4 +1,5 @@
 from ..sage_helper import _within_sage
+from ..exceptions import InsufficientPrecisionError
 
 import math
 
@@ -136,7 +137,22 @@ def _verified_short_slopes_from_translations(translations, length=6):
     m_tran, l_tran = translations
 
     if not m_tran > 0:
-        raise Exception("Expected positive meridian translation")
+        raise Exception("Expected positive meridian translation.")
+
+    if not l_tran.imag() != 0:
+        raise InsufficientPrecisionError(
+            "Could not verify that longitude meridian translation "
+            "has non-trivial imaginary part.")
+
+    if m_tran.diameter() > 0.01:
+        raise InsufficientPrecisionError(
+            "Meridian translation has insufficient precision to compute "
+            "a reasonable set of short slopes.")
+
+    if l_tran.diameter() > 0.01:
+        raise InsufficientPrecisionError(
+            "Longitude translation has insufficient precision to compute "
+            "a reasonable set of short slopes.")
 
     RIF = m_tran.parent()
 

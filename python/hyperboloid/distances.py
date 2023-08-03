@@ -94,7 +94,7 @@ def lower_bound_distance_r13_line_triangle(
     abs0 = abs(a0)
     abs1 = abs(a1)
 
-    pt = line.points[0] * abs1 + line.points[1] * abs0
+    pt = abs1 * line.points[0] + abs0 * line.points[1]
 
     for bounding_plane, edge in zip(triangle.bounding_planes,
                                     triangle.edges):

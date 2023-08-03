@@ -13,7 +13,7 @@ jobs:
         run: |
           sudo apt-get install -y codespell
           sudo apt-get install -y pycodestyle
-	  sudo pip install cython-lint
+          sudo pip install cython-lint
       - name: Run codespell
         shell: bash -l {0}
         run: codespell -L ans,arithmetics,inout,trough,compresser,rime,ba python

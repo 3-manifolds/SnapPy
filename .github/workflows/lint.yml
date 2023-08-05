@@ -13,6 +13,7 @@ jobs:
         run: |
           sudo apt-get install -y codespell
           sudo apt-get install -y pycodestyle
+          sudo pip install cython-lint
       - name: Run codespell
         shell: bash -l {0}
         run: codespell -L ans,arithmetics,inout,trough,compresser,rime,ba python
@@ -22,6 +23,9 @@ jobs:
         run: |
           pycodestyle --select=E111,E21,E221,E222,E225,E227,E228,E241,E251,E262,E265,E271,E272,E30,E401,E701,E702,E703,E704,E711,E713,E714,E721,W2,W3,W6 python/
           pycodestyle --filename=*.pyx --select=W2 cython/
+      - name: Run cython-lint
+        shell: bash -l {0}
+        run: cython-lint --ignore=E501,E741 dev
 
 env:
   MAKEFLAGS: -j2

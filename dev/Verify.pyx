@@ -12,13 +12,13 @@ from sage.matrix.matrix_generic_dense cimport Matrix_generic_dense
 from sage.matrix.matrix_space import MatrixSpace
 
 cdef struct SparseMatrixEntry:
-     int row_number
-     mpfi_t real
-     mpfi_t imag
-    
+    int row_number
+    mpfi_t real
+    mpfi_t imag
+
 cdef struct SparseMatrixColumn:
-     SparseMatrixEntry * entries
-     int number_entries
+    SparseMatrixEntry * entries
+    int number_entries
 
 cdef class ComplexIntervalColumnSparseMatrix():
     cdef int _nrows
@@ -28,7 +28,7 @@ cdef class ComplexIntervalColumnSparseMatrix():
 
     def __cinit__(ComplexIntervalColumnSparseMatrix self,
                   list columns, int num_rows):
-        cdef int i, j, k, l
+        cdef int i, j, k, length
         cdef ComplexIntervalFieldElement z
 
         self._columns = NULL
@@ -52,24 +52,24 @@ cdef class ComplexIntervalColumnSparseMatrix():
 
         for i in range(self._ncols):
             column = columns[i]
-            l = len(column)
-            if l > 0:
+            length = len(column)
+            if length > 0:
                 self._columns[i].entries = <SparseMatrixEntry *> malloc(
-                    l * sizeof(SparseMatrixEntry));
-                self._columns[i].number_entries = l
-                for j in range(l):
+                    length * sizeof(SparseMatrixEntry))
+                self._columns[i].number_entries = length
+                for j in range(length):
                     mpfi_init2(self._columns[i].entries[j].real, self._prec)
                     mpfi_init2(self._columns[i].entries[j].imag, self._prec)
-                    
-                for j in range(l):
+
+                for j in range(length):
                     k, z = column[j]
-                    if not (k >= 0 and k < self._nrows):
+                    if not (0 <= k < self._nrows):
                         raise IndexError(
                             "Invalid row index in column sparse matrix")
                     self._columns[i].entries[j].row_number = k
                     mpfi_set(self._columns[i].entries[j].real, z.__re)
                     mpfi_set(self._columns[i].entries[j].imag, z.__im)
-    
+
     def __rmul__(ComplexIntervalColumnSparseMatrix self,
                  Matrix_complex_double_dense m):
 
@@ -104,7 +104,7 @@ cdef class ComplexIntervalColumnSparseMatrix():
                     mpfi_add(z.__re, z.__re, tmp)
                     mpfi_mul_d(tmp, self._columns[j].entries[k].imag, reim[1])
                     mpfi_sub(z.__re, z.__re, tmp)
-                    
+
                     mpfi_mul_d(tmp, self._columns[j].entries[k].real, reim[1])
                     mpfi_add(z.__im, z.__im, tmp)
                     mpfi_mul_d(tmp, self._columns[j].entries[k].imag, reim[0])

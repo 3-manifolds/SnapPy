@@ -7,6 +7,7 @@ cdef add_GL2R_matrices(GL2RMatrix* A, GL2RMatrix* B, GL2RMatrix* C):
         for j in range(2):
             C.entries[i][j] = A.entries[i][j] + B.entries[i][j]
 
+
 def add_matrices(TwoByTwoMatrix A, TwoByTwoMatrix B):
     cdef TwoByTwoMatrix C
     C = TwoByTwoMatrix()

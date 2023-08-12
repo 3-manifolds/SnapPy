@@ -1,10 +1,11 @@
 # Dirichlet Domains
 
-cdef (WEPolyhedron*, int) get_generators_from_bytes(
-    data_bytes, double vertex_epsilon,
-    displacement, centroid_at_origin,
-    maximize_injectivity_radius,
-    include_words)except*:
+cdef (WEPolyhedron*, int) get_generators_from_bytes(data_bytes,
+                                                    double vertex_epsilon,
+                                                    displacement,
+                                                    centroid_at_origin,
+                                                    maximize_injectivity_radius,
+                                                    include_words) except *:
 
     cdef int num_gens
 
@@ -25,7 +26,7 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
         for i in range(num_gens):
             for j in range(4):
                 for k in range(4):
-                    num_string = nums.pop(0) # save a reference
+                    num_string = nums.pop(0)  # save a reference
                     generators[i][j][k] = <Real_struct>Real_from_string(
                         <char*>num_string)
     elif len(nums) == 8*num_gens:
@@ -36,10 +37,10 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
             temp_gens[i].parity = orientation_preserving
             for j in range(2):
                 for k in range(2):
-                    num_string = nums.pop(0) # save a reference
+                    num_string = nums.pop(0)  # save a reference
                     temp_gens[i].matrix[j][k].real = Real_from_string(
                         <char*>num_string)
-                    num_string = nums.pop(0) # save a reference
+                    num_string = nums.pop(0)  # save a reference
                     temp_gens[i].matrix[j][k].imag = Real_from_string(
                         <char*>num_string)
         Moebius_array_to_O31_array(temp_gens, generators, num_gens)
@@ -63,12 +64,12 @@ cdef (WEPolyhedron*, int) get_generators_from_bytes(
     free(generators)
     return dirichlet_domain, num_gens
 
-cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
-    matrices,
-    double vertex_epsilon,
-    displacement, centroid_at_origin,
-    maximize_injectivity_radius,
-    include_words)except*:
+cdef WEPolyhedron* dirichlet_from_O31_matrix_list(matrices,
+                                                  double vertex_epsilon,
+                                                  displacement,
+                                                  centroid_at_origin,
+                                                  maximize_injectivity_radius,
+                                                  include_words) except *:
 
     cdef WEPolyhedron* c_dirichlet_domain
     cdef O31Matrix* generators
@@ -81,7 +82,7 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
                 generators[i][j][k] = <Real_struct>Object2Real(A[j,k])
     if not O31_determinants_OK(generators, num_gens, det_error_epsilon):
         raise ValueError('The data given do not have the '
-                            'right determinants.')
+                         'right determinants.')
     cdef double c_displacement[3]
     for n from 0 <= n < 3:
         c_displacement[n] = <double>displacement[n]
@@ -105,7 +106,7 @@ cdef class CDirichletDomain():
     def __cinit__(self,
                   Manifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,
-                  displacement=[0.0, 0.0, 0.0],
+                  displacement=None,
                   centroid_at_origin=True,
                   maximize_injectivity_radius=True,
                   include_words = False,
@@ -114,6 +115,8 @@ cdef class CDirichletDomain():
                   O31_generators=None,
                   str manifold_name='unnamed'):
         cdef double c_displacement[3]
+        if displacement is None:
+            displacement = [0.0, 0.0, 0.0]
         self.c_dirichlet_domain = NULL
         if generator_file != '':
             with open(generator_file, mode='rb') as input_file:
@@ -231,10 +234,10 @@ cdef class CDirichletDomain():
         return self._number_(radius)
 
     def length_spectrum_dicts(self, cutoff_length=1.0,
-                        full_rigor=True,
-                        multiplicities=True,
-                        user_radius=0.0,
-                        grouped=True):
+                              full_rigor=True,
+                              multiplicities=True,
+                              user_radius=0.0,
+                              grouped=True):
         """
         Return a list of info objects describing the short
         geodesics up to the specified cutoff length.  The keys are
@@ -280,7 +283,7 @@ cdef class CDirichletDomain():
         for n from 0 <= n < num_lengths:
             length = Complex2Number(geodesics[n].length)
             its_matrix = matrix([[self._number_(Real2Number(<Real>geodesics[n].matrix[i][j]))
-                                      for j in range(4)] for i in range(4)] )
+                                  for j in range(4)] for i in range(4)] )
             d = {
                 "length" : self._number_(length),
                 "parity" : MatrixParity[geodesics[n].parity],
@@ -338,8 +341,8 @@ cdef class CDirichletDomain():
                 {'position': ( self._number_(Real2Number(<Real>vertex.x[1])),
                                self._number_(Real2Number(<Real>vertex.x[2])),
                                self._number_(Real2Number(<Real>vertex.x[3])) ),
-                  'ideal': bool(vertex.ideal),
-                  'vertex_class' : vertex.v_class.index
+                 'ideal': bool(vertex.ideal),
+                 'vertex_class' : vertex.v_class.index
                  })
             vertex = vertex.next
         return vertices
@@ -480,7 +483,7 @@ cdef class CDirichletDomain():
         """
 
         cdef WEEdge *edge = &self.c_dirichlet_domain.edge_list_begin
-        edges = []
+        cdef list edges = []
 
         vertex_to_index = self._vertex_to_index_dict()
 
@@ -488,10 +491,9 @@ cdef class CDirichletDomain():
         while edge != &self.c_dirichlet_domain.edge_list_end:
 
             edges.append(
-                { 'tail_vertex_index' : vertex_to_index[<size_t>(edge.v[0])],
-                  'tip_vertex_index'  : vertex_to_index[<size_t>(edge.v[1])],
-                  'edge_class' : edge.e_class.index
-                })
+                {'tail_vertex_index': vertex_to_index[<size_t>(edge.v[0])],
+                 'tip_vertex_index': vertex_to_index[<size_t>(edge.v[1])],
+                 'edge_class': edge.e_class.index})
 
             edge = edge.next
 
@@ -500,10 +502,9 @@ cdef class CDirichletDomain():
     def view(self):
         if PolyhedronViewer:
             return ViewerWindow(PolyhedronViewer, facedicts=self.face_list(),
-                title='Dirichlet Domain of %s' % self.manifold_name)
-        else:
-            raise RuntimeError('The PolyhedronViewer class '
-                               'was not imported.')
+                                title=f'Dirichlet Domain of {self.manifold_name}')
+        raise RuntimeError('The PolyhedronViewer class '
+                           'was not imported.')
 
     def manifold(self):
         """

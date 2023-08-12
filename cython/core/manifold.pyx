@@ -412,10 +412,10 @@ cdef class Manifold(Triangulation):
         return filled
 
     def fundamental_group(self,
-                   simplify_presentation = True,
-                   fillings_may_affect_generators = True,
-                   minimize_number_of_generators = True,
-                   try_hard_to_shorten_relators = True):
+                          simplify_presentation = True,
+                          fillings_may_affect_generators = True,
+                          minimize_number_of_generators = True,
+                          try_hard_to_shorten_relators = True):
         """
         Return a HolonomyGroup representing the fundamental group of
         the manifold, together with its holonomy representation.  If

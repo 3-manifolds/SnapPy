@@ -125,8 +125,8 @@ cdef class Triangulation():
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
             return self._from_pickle(spec, remove_finite_vertices)
 
-        if (isinstance(spec, basestring) and spec.startswith('% Triangulation') or
-            isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
+        if (isinstance(spec, str) and spec.startswith('% Triangulation') or
+                isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
             return self._from_string(spec, remove_finite_vertices)
 
         # Get fillings, if any
@@ -146,14 +146,16 @@ cdef class Triangulation():
         if self.c_triangulation == NULL:
             for regex in rolfsen_link_regexs:
                 m = regex.match(name)
-                if m:
-                    if int(m.group('components')) > 1:
-                        rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
-                            int(m.group('components')), int(m.group('index')))
-                    else:
-                        rolfsen_name = '%d_%d' % (int(m.group('crossings')),
-                                      int(m.group('index')))
-                    database.LinkExteriors._one_manifold(rolfsen_name, self)
+                if not m:
+                    continue
+                if int(m.group('components')) > 1:
+                    rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
+                                                 int(m.group('components')),
+                                                 int(m.group('index')))
+                else:
+                    rolfsen_name = '%d_%d' % (int(m.group('crossings')),
+                                              int(m.group('index')))
+                database.LinkExteriors._one_manifold(rolfsen_name, self)
 
         # Step 3. Hoste-Thistlethwaite knots
         if self.c_triangulation == NULL:
@@ -562,7 +564,7 @@ cdef class Triangulation():
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        n = valid_index(
+        _ = valid_index(
             tet_num, self.num_tetrahedra(),
             "The specified tetrahedron (%s) does not exist.")
 
@@ -1362,7 +1364,6 @@ cdef class Triangulation():
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
         cdef Boolean fill_by_fold
-        cdef Boolean marked
         if method == 'fold':
             fill_by_fold = True
         elif method == 'layered':
@@ -1508,10 +1509,10 @@ cdef class Triangulation():
             raise ValueError('N has to be 2...15')
 
         if equation_type not in ['all',
-                                     'non_peripheral',
-                                         'edge', 'face', 'internal',
-                                     'peripheral',
-                                         'longitude', 'meridian']:
+                                 'non_peripheral',
+                                 'edge', 'face', 'internal',
+                                 'peripheral',
+                                 'longitude', 'meridian']:
             raise ValueError('Wrong equation_type')
 
         if self.c_triangulation is NULL:
@@ -1591,7 +1592,8 @@ cdef class Triangulation():
                         convert_and_free_integer_matrix(c_matrix))
                     equations += eqns
 
-        if equations == []: # cover cases N = 2, 3 and equation_type = 'internal'
+        if equations == []:
+            # cover cases N = 2, 3 and equation_type = 'internal'
             return None
 
         return NeumannZagierTypeEquations(matrix(equations),
@@ -2228,9 +2230,8 @@ cdef class Triangulation():
                         m = <int>tet.cusp[vertex].m
                         l = <int>tet.cusp[vertex].l
                         relation_matrix[row, column] += (
-                              m*tet.curve[0][orientation][vertex][side]
-                            + l*tet.curve[1][orientation][vertex][side]
-                        )
+                            m * tet.curve[0][orientation][vertex][side]
+                            + l * tet.curve[1][orientation][vertex][side])
             tet = tet.next
 
         return relation_matrix
@@ -2272,9 +2273,8 @@ cdef class Triangulation():
                 free_relations(&R)
         else:
             raise RuntimeError("The SnapPea kernel couldn't compute "
-                             "the homology presentation matrix")
-        result = AbelianGroup(relations)
-        return result
+                               "the homology presentation matrix")
+        return AbelianGroup(relations)
 
     def homology(self):
         """
@@ -2428,8 +2428,8 @@ cdef class Triangulation():
 
             # Not a useful GAP or MAGMA object, so let's try.
             elif all(is_PermutationGroupElement(p) for p in permutation_rep):
-                permutation_rep = [ [x - 1 for x in perm.domain()]
-                                   for perm in permutation_rep ]
+                permutation_rep = [[x - 1 for x in perm.domain()]
+                                   for perm in permutation_rep]
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
@@ -2776,9 +2776,7 @@ cdef class Triangulation():
             meridian, longitude = peripheral_data
             a, b = meridian
             c, d = longitude
-            if a*d - b*c != +1 and (
-                self.is_orientable() or a*d - b*c != -1):
-
+            if a*d - b*c != 1 and (self.is_orientable() or a*d - b*c != -1):
                 if self.is_orientable():
                     raise ValueError('The data provided does not give a '
                                      '(positively oriented) basis.')
@@ -2823,7 +2821,7 @@ cdef class Triangulation():
                                              sizeof(MatrixInt22))
 
             for n in range(self.num_cusps()):
-                for i,j in [(0,0),(0,1),(1,0),(1,1)]:
+                for i, j in [(0, 0), (0, 1), (1, 0), (1, 1)]:
                     matrices[n][i][j] = 1 if i == j else 0
 
             for i, basis in enumerate(peripheral_data):
@@ -2831,9 +2829,7 @@ cdef class Triangulation():
                 meridian, longitude = basis
                 a, b = meridian
                 c, d = longitude
-                if a*d - b*c != +1 and (
-                    self.is_orientable() or a*d - b*c != -1):
-
+                if a*d - b*c != 1 and (self.is_orientable() or a*d - b*c != -1):
                     if self.is_orientable():
                         free(matrices)
                         raise ValueError('The data provided does not give a '

@@ -1,4 +1,4 @@
-name: macOS Older Python Wheels
+name: macOS Wheels
 
 on: [push, pull_request]
 
@@ -13,22 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v3
-        name: Install Python
-        with:
-          python-version: '3.9'
-
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install cibuildwheel
-
       - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v2.15.0
         env:
-          # Skip Python 2.7, 3.5, 3.11, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp27-* cp35-* cp38-* cp39-* cp310-* cp311-* pp*
-          CIBW_ARCHS_MACOS: x86_64
+          CIBW_BUILD: cp36-* cp37-* cp38-* cp39-*
+          CIBW_ARCHS_MACOS: x86_64 universal2
           CIBW_BEFORE_BUILD: >
             pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
@@ -45,5 +34,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: snappy_macos_older_wheels
+          name: snappy_macos_wheels
           path: ./wheelhouse/*.whl

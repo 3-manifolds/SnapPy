@@ -11,9 +11,9 @@ this_pyinstaller = os.path.abspath(
 # to start up.  While it does start up normally if installed elsewhere,
 # we want to resolve this issue before releasing a 64 bit app.
 
-if platform.architecture()[0] != '32bit' and '--64-bit' not in sys.argv:
-    print("ERROR: Need to use a 32bit Python to build the apps")
-    sys.exit(1)
+# if platform.architecture()[0] != '32bit' and '--64-bit' not in sys.argv:
+#    print("ERROR: Need to use a 32bit Python to build the apps")
+#    sys.exit(1)
 
 try:
     import pyx

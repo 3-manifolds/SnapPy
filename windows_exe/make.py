@@ -5,15 +5,11 @@ this_python = sys.executable
 this_pyinstaller = os.path.abspath(
     os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
 
-# We currently build the Windows apps as 32 bit apps only.  The reason for
-# this is a mysterious unresolved issue with the 64 bit app, namely
-# that when installed in C:\Program Files it takes close to one minute
-# to start up.  While it does start up normally if installed elsewhere,
-# we want to resolve this issue before releasing a 64 bit app.
+# The Inno Installer config file (*.iss) assumes a 64 bit binary.
 
-# if platform.architecture()[0] != '32bit' and '--64-bit' not in sys.argv:
-#    print("ERROR: Need to use a 32bit Python to build the apps")
-#    sys.exit(1)
+if platform.architecture()[0] != '64bit' and '--32-bit' not in sys.argv:
+    print("ERROR: Need to use a 64bit Python to build the apps")
+    sys.exit(1)
 
 try:
     import pyx

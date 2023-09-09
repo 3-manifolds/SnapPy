@@ -1,10 +1,6 @@
 import re
 import operator
 from fractions import Fraction
-import sys
-
-long = int
-unicode = str
 
 #######################################################
 # Public Definitions of Monomial and Polynomial class
@@ -21,7 +17,7 @@ class Monomial():
     @classmethod
     def from_variable_name(cls, var):
         """Construct a monomial with a single variable given as a string."""
-        assert isinstance(var, str) or isinstance(var, unicode)
+        assert isinstance(var, str)
         return Monomial(1, ((var, 1),))
 
     # Constructs a constant monomial
@@ -47,7 +43,7 @@ class Monomial():
         else:
             assert isinstance(vars, tuple)
             for var, expo in vars:
-                assert isinstance(var, str) or isinstance(var, unicode)
+                assert isinstance(var, str)
                 assert isinstance(expo, int)
                 assert expo > 0
             self._vars = vars
@@ -124,7 +120,7 @@ class Monomial():
 
         # Compute the variables
         var_dict = _combine_dicts(
-            [dict(self._vars),dict(other._vars)],
+            [dict(self._vars), dict(other._vars)],
             operator.add)
 
         return Monomial(coefficient, var_dict)
@@ -138,9 +134,9 @@ class Monomial():
             return Monomial.constant_monomial(1)
         if other == 1:
             return self
-        if other % 2 == 1:
-            return self * (self ** (other-1))
-        return (self * self) ** (other//2)
+        if other % 2:
+            return self * (self ** (other - 1))
+        return (self * self) ** (other // 2)
 
     def __neg__(self):
         """Negate this monomial."""
@@ -166,7 +162,7 @@ class Monomial():
 
     def split_variable(self, variable):
         """Split the specified variable from the others."""
-        remaining_terms = { }
+        remaining_terms = {}
         exponent = 0
         for var, expo in self._vars:
             if var == variable:
@@ -258,12 +254,12 @@ class Polynomial():
     @classmethod
     def constant_polynomial(cls, constant):
         """Construct a constant polynomial."""
-        return Polynomial( (Monomial.constant_monomial(constant),))
+        return Polynomial((Monomial.constant_monomial(constant),))
 
     @classmethod
     def from_variable_name(cls, var):
         """Construct a polynomial consisting of a single variable."""
-        return Polynomial( (Monomial.from_variable_name(var),))
+        return Polynomial((Monomial.from_variable_name(var),))
 
     # constructor takes a tuple of polynomials which are combined
 
@@ -279,7 +275,7 @@ class Polynomial():
         # and value being the coefficient
 
         list_of_vars_coeff_dicts = [
-            { monomial.get_vars() : monomial.get_coefficient() }
+            {monomial.get_vars(): monomial.get_coefficient()}
             for monomial in monomials]
 
         # combine the dictionaries using sum
@@ -327,9 +323,9 @@ class Polynomial():
             return Polynomial((Monomial.constant_monomial(1),))
         if other == 1:
             return self
-        if other % 2 == 1:
-            return self * (self ** (other-1))
-        return (self * self) ** (other//2)
+        if other % 2:
+            return self * (self ** (other - 1))
+        return (self * self) ** (other // 2)
 
     def __mul__(self, other):
         monomials = []
@@ -352,7 +348,7 @@ class Polynomial():
 
         other = other.convert_coefficients(Fraction)
         other = other * Polynomial.constant_polynomial(
-            Fraction(1,1) / other.leading_coefficient())
+            Fraction(1, 1) / other.leading_coefficient())
 
         variable = other.variables()[0]
         assert ((not other.variables())
@@ -392,8 +388,8 @@ class Polynomial():
         """Convert all coefficients using conversion_function."""
 
         return Polynomial(tuple(
-                [monomial.convert_coefficient(conversion_function)
-                 for monomial in self._monomials]))
+            [monomial.convert_coefficient(conversion_function)
+             for monomial in self._monomials]))
 
     def substitute(self, d):
         """
@@ -417,11 +413,11 @@ class Polynomial():
 
             for var, expo in vars:
                 if var not in d:
-                    new_vars.append((var,expo))
+                    new_vars.append((var, expo))
 
             poly = Polynomial((
-                    Monomial(monomial.get_coefficient(),
-                             tuple(new_vars)),))
+                Monomial(monomial.get_coefficient(),
+                         tuple(new_vars)),))
 
             for var, expo in vars:
                 if var in d:
@@ -430,7 +426,7 @@ class Polynomial():
             return poly
 
         return sum([substitute_monomial(monomial)
-                     for monomial in self._monomials], Polynomial(()))
+                    for monomial in self._monomials], Polynomial(()))
 
     def variables(self):
         """Return a list of all variables in the polynomial."""
@@ -478,11 +474,11 @@ class Polynomial():
         """Assert univariance; return True iff this polynomial is monic."""
         return self.leading_coefficient() == 1
 
-    def get_coefficients(self, conversion_function=lambda x:x):
+    def get_coefficients(self, conversion_function=lambda x: x):
         """Assert univariance; return the coefficients in degree order."""
         assert self.is_univariate()
         degree = self.degree()
-        list_of_coefficients = (degree + 1) * [ conversion_function(0) ]
+        list_of_coefficients = (degree + 1) * [conversion_function(0)]
         for monomial in self._monomials:
             list_of_coefficients[degree - monomial.degree()] = (
                 conversion_function(monomial.get_coefficient()))
@@ -533,7 +529,7 @@ class Polynomial():
 
     def factor_out_variables(self):
 
-        if self._monomials == ():
+        if not self._monomials:
             return self
 
         def intersect(lists):
@@ -543,22 +539,21 @@ class Polynomial():
             return s
 
         non_trivial_variables = intersect(
-            [ monomial.variables() for monomial in self._monomials])
+            [monomial.variables() for monomial in self._monomials])
 
-        lowest_powers = dict([ (var,1000000) for var in non_trivial_variables ])
+        lowest_powers = {var: 1000000 for var in non_trivial_variables}
 
-        def safe_dict(d,var):
+        def safe_dict(d, var):
             if var in d:
                 return d[var]
-            else:
-                return 0
+            return 0
 
         for monomial in self._monomials:
             for var, expo in monomial.get_vars():
-                lowest_powers[var] = min(safe_dict(lowest_powers,var), expo)
+                lowest_powers[var] = min(safe_dict(lowest_powers, var), expo)
 
-        return Polynomial(tuple([ monomial.reduce_exponents(lowest_powers)
-                                  for monomial in self._monomials]))
+        return Polynomial(tuple([monomial.reduce_exponents(lowest_powers)
+                                 for monomial in self._monomials]))
 
 ###############################################################
 # Default functions for parsing and printing the coefficients
@@ -568,7 +563,7 @@ class Polynomial():
 
 
 def parse_int_coefficient(s):
-    coeff, rest = re.match('([0-9]*)(.*)',s).groups()
+    coeff, rest = re.match('([0-9]*)(.*)', s).groups()
     if coeff:
         coeff = int(coeff)
     else:
@@ -577,7 +572,7 @@ def parse_int_coefficient(s):
 
 
 def parse_int_or_fraction(s):
-    m = re.match('([0-9]+/[0-9]+)(.*)',s)
+    m = re.match('([0-9]+/[0-9]+)(.*)', s)
     if m:
         frac, rest = m.groups()
         return Fraction(frac), rest
@@ -623,9 +618,9 @@ def _storage_type_policy(type_a, type_b):
     assert isinstance(type_a, type)
     assert isinstance(type_b, type)
 
-    if type_a in [int, long]:
+    if type_a in [int]:
         return type_b
-    if type_b in [int, long]:
+    if type_b in [int]:
         return type_a
 
     if not type_a == type_b:
@@ -642,9 +637,9 @@ def _operator_type_policy(obj_a, obj_b, op=operator.add):
 
         if type(obj_a) == type(obj_b):
             return op(obj_a, obj_b)
-        if type(obj_a) in [int, long]:
+        if type(obj_a) in [int]:
             return op(type(obj_b)(obj_a), obj_b)
-        if type(obj_b) in [int, long]:
+        if type(obj_b) in [int]:
             return op(type(obj_a)(obj_b), obj_a)
 
         raise Exception
@@ -660,23 +655,21 @@ def _operator_type_policy(obj_a, obj_b, op=operator.add):
 
 
 _operators = {
-    '+' : operator.add,
-    '-' : operator.sub,
-    '*' : operator.mul,
-    '^' : operator.pow
-    }
+    '+': operator.add,
+    '-': operator.sub,
+    '*': operator.mul,
+    '^': operator.pow}
 
 _operator_precedence = {
-    None : 0,
-    '+' : 1,
-    '-' : 1,
-    '*' : 2,
-    '^' : 3
-    }
+    None: 0,
+    '+': 1,
+    '-': 1,
+    '*': 2,
+    '^': 3}
 
 
 def _apply_operator(op, l, r):
-    return _operators[op](l,r)
+    return _operators[op](l, r)
 
 # Helper functions for parsing
 
@@ -690,7 +683,7 @@ def _coefficient_is_non_trivial(c):
 
 
 def _parse_variable(s):
-    r = re.match(r'([_A-Za-z][_A-Za-z0-9]*)(.*)$',s)
+    r = re.match(r'([_A-Za-z][_A-Za-z0-9]*)(.*)$', s)
     if r:
         return r.groups()
     else:
@@ -709,7 +702,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
     # Has there been an operand since the opening parenthesis
     # e.g. parse things like "(+ x)"
-    no_operand_since_opening_parenthesis = [ True ]
+    no_operand_since_opening_parenthesis = [True]
 
     def debug_print(s):
         print("=" * 75)
@@ -730,7 +723,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
 
             # or if the top operator is not preceding
             if (_operator_precedence[top_operator] <
-                _operator_precedence[operator]):
+                    _operator_precedence[operator]):
                 return
 
             top_operator = operator_stack.pop()

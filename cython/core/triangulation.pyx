@@ -354,7 +354,7 @@ cdef class Triangulation():
         if self._PDcode is not None:
             return spherogram.Link(self._PDcode)
         elif self.DT_code() is not None:
-            return spherogram.DTcodec(self.DT_code()).link()
+            return spherogram.DTcodec(*self.DT_code(flips=True)).link()
         else:
             raise ValueError('No associated link known.')
 

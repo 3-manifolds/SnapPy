@@ -19,6 +19,7 @@ OutputDir=.
 OutputBaseFilename=InstallSnapPy-Dbg
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

@@ -44,7 +44,7 @@ except ImportError:
 from .matrix import matrix, vector, SimpleMatrix
 from . import number
 
-## SnapPy components
+# SnapPy components
 import spherogram
 from .manifolds import __path__ as manifold_paths
 from . import database
@@ -322,7 +322,7 @@ def set_rand_seed(seed):
 # Ptolemy utility functions
 # convert and free an identification of variables structure
 cdef convert_and_free_identification_of_variables(
-    Identification_of_variables c_vars):
+        Identification_of_variables c_vars):
     var_list = []
 
     if c_vars.variables:
@@ -337,13 +337,13 @@ cdef convert_and_free_identification_of_variables(
 
 # convert and free an integer matrix from C
 cdef convert_and_free_integer_matrix(
-    Integer_matrix_with_explanations c_matrix):
+        Integer_matrix_with_explanations c_matrix):
     if not c_matrix.entries:
         return []
 
-    python_matrix = [
-        [ c_matrix.entries[i][j] for j in range(c_matrix.num_cols)]
-                                 for i in range(c_matrix.num_rows)]
+    python_matrix = [[c_matrix.entries[i][j]
+                      for j in range(c_matrix.num_cols)]
+                     for i in range(c_matrix.num_rows)]
 
     explain_row = []
 
@@ -452,7 +452,7 @@ cdef Real2gen_direct(Real R):
     divisible by 32.
 
     """
-    IF HIGH_PRECISION: # Real = qd_real
+    IF HIGH_PRECISION:  # Real = qd_real
         cdef double* qd = <double*>&R
         cdef int i
         # The value of a qd_real is the sum of the values of its four doubles.
@@ -476,7 +476,7 @@ ctypedef object (*func_real_to_obj)(Real)
 # Convert Real to gen in an appropriate manner for this environment
 cdef func_real_to_obj Real2gen
 
-if hasattr(pari, '_real_coerced_to_bits_prec'): # Cypari
+if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
     Real2gen = Real2gen_direct
 else:
     Real2gen = Real2gen_string
@@ -557,31 +557,31 @@ cdef double Real2double(Real R):
 
 cdef Complex gen2Complex(g):
     cdef Complex result
-    IF HIGH_PRECISION: # Real = qd_real; 212 bits of precision
+    IF HIGH_PRECISION:  # Real = qd_real; 212 bits of precision
         cdef py_string
         cdef char* c_string
         cdef Real real_part, imag_part
         old_precision = pari.set_real_precision(64)
 
-        py_string = to_byte_str(str(g.real()).replace(' E','E')) # save a reference
+        py_string = to_byte_str(str(g.real()).replace(' E','E'))  # save a reference
         c_string = py_string
         real_part = <Real>c_string
-        py_string = to_byte_str(str(g.imag()).replace(' E','E')) # save a reference
+        py_string = to_byte_str(str(g.imag()).replace(' E','E'))  # save a reference
         c_string = py_string
         imag_part = <Real>c_string
         result.real, result.imag = real_part, imag_part
 
         pari.set_real_precision(old_precision)
-    ELSE: # Real = double
+    ELSE:  # Real = double
         result.real, result.imag = g.real(), g.imag()
     return result
 
-#IF HIGH_PRECISION:
+# IF HIGH_PRECISION:
 cdef Real2Number(Real R):
     return Number(Real2gen(R))
 cdef Complex2Number(Complex C):
     return Number(Complex2gen(C))
-#ELSE:
+# ELSE:
 #    cdef Real2Number(Real R):
 #        return Number(R)
 #    cdef Complex2Number(Complex C):

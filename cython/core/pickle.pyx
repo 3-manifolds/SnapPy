@@ -248,8 +248,8 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     free(cusps)
     return tri
 
-cdef int unpickle_tetrahedron_data(
-    c_TetrahedronData *data, bytes pickle, int start, int flag) except *:
+cdef int unpickle_tetrahedron_data(c_TetrahedronData *data, bytes pickle,
+                                   int start, int flag) except *:
     cdef int i, j, v, f
     cdef int n = start
     cdef unsigned char perm
@@ -324,9 +324,11 @@ cdef c_Triangulation* listlike_to_triangulation(listlike,
     if num_tets == 0:
         raise ValueError('No tetrahedra data provided')
 
-    first = listlike[0]
-    if (len(first) != 2 or len(first[0]) != 4 or
-        not [len(x) for x in first[1]] == [4, 4, 4, 4]):
+    try:
+        first0, first1 = listlike[0]
+    except ValueError:
+        raise ValueError('Tetrahedra data appears invalid')
+    if len(first0) != 4 or [len(x) for x in first1] != [4, 4, 4, 4]:
         raise ValueError('Tetrahedra data appears invalid')
 
     py_name = b'from_data'

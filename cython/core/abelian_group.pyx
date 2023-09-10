@@ -141,7 +141,9 @@ cdef class PresentationMatrix():
     """
     A sparse representation of the presentation matrix of an abelian group.
     """
-    cdef rows, cols, _row_support, _col_support, _entries, _units, dead_columns
+    cdef int rows, cols
+    cdef dict _row_support, _col_support, _entries
+    cdef set _units, dead_columns
 
     def __init__(self, rows, cols):
         self.rows = rows
@@ -229,7 +231,7 @@ cdef class PresentationMatrix():
         Continue until no units remain.  When a generator is removed,
         remember its column index.
         """
-        cdef temp, m, i, j, k, l
+        cdef int temp, m, i, j, k, l
         while len(self._units) > 0:
             for i, j in self._units:
                 break

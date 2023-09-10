@@ -5,8 +5,10 @@ Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
 # Helper functions for manipulating fg. words
 
+
 def inverse_list_word(word):
     return [ -x for x in word[::-1] ]
+
 
 def reduce_list_word(word):
     """
@@ -19,6 +21,7 @@ def reduce_list_word(word):
         else:
             result.append(letter)
     return result
+
 
 cdef c_word_as_int_list(int *word):
     cdef int n = 0
@@ -125,7 +128,6 @@ cdef class CFundamentalGroup():
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
 
-
     def num_generators(self):
         """
         Return the number of generators for the presentation.
@@ -197,7 +199,7 @@ cdef class CFundamentalGroup():
 
         while len(moves) > 0:
             a = moves.pop(0)
-            if a >= len(words): # new generator added
+            if a >= len(words):  # new generator added
                 n = moves.index(a)  # end symbol location
                 # word is the expression of the new generator in terms
                 # of the old ones
@@ -210,9 +212,9 @@ cdef class CFundamentalGroup():
                 if a == b:  # generator removed
                     words[a] = words[-1]
                     words = words[:-1]
-                elif a == -b: # invert generator
+                elif a == -b:  # invert generator
                     words[a] = inverse_list_word(words[a])
-                else: #handle slide
+                else:  # handle slide
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
                         B = inverse_list_word(B)
@@ -473,8 +475,10 @@ class FundamentalGroup(CFundamentalGroup):
         longitude(n)     --> word representing the longitude on cusp #n
     """
 
+
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+
 
 # Holonomy Groups
 cdef class CHolonomyGroup(CFundamentalGroup):
@@ -526,6 +530,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         input word.
         """
         return self._matrices(word)[2]
+
 
 class HolonomyGroup(CHolonomyGroup):
     """
@@ -584,6 +589,7 @@ class HolonomyGroup(CHolonomyGroup):
     @staticmethod
     def _number_(n):
         return number.number_to_native_number(n)
+
 
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)

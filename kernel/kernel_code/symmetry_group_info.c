@@ -934,9 +934,9 @@ static void assign_generators(
         elements_remaining--;
         
         /*
-         *  Use the symmetry group's mulitplication table to deduce the
+         *  Use the symmetry group's multiplication table to deduce the
          *  assignments of words to as many other group elements as possible.
-         *  The symmetry group's mulitplication table composes symmetries
+         *  The symmetry group's multiplication table composes symmetries
          *  right-to-left:  product[i][j] is obtained by doing symmetry j,
          *  followed by symmetry i.
          */

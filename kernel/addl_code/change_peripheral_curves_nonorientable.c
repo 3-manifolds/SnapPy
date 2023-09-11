@@ -144,7 +144,7 @@ FuncResult change_peripheral_curves_nonorientable(
 
             /*
              * Adjust the cusp_shape.
-             * We need to apply complex conjugation because we transfered
+             * We need to apply complex conjugation because we transferred
              * the curves to a different sheet.
              * We need to negate because we flipped the meridian.
              * So, the net effect is to flip the sign of the meridian.

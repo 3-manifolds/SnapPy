@@ -733,8 +733,8 @@ void CLinkProjectionPanorama::MaybeCreateOneCrossing(
 	q2 = e2->forwardVertex ->position;
 
 	//	Recall that the coordinates of the vertices will lie (approximately)
-	//	in the range 0 to 1000.  The following comparisions all involve
-	//	binominal expressions in the original coordinates, so there is no
+	//	in the range 0 to 1000.  The following comparisons all involve
+	//	binomial expressions in the original coordinates, so there is no
 	//	danger of overflowing the 32-bit integer arithmetic.
 
 	if
@@ -781,7 +781,7 @@ void CLinkProjectionPanorama::MaybeCreateOneCrossing(
 	//	fear of overflowing the 32-bit integer arithmetic.
 	theDet = (double) (e1->a * e2->b  -  e1->b * e2->a);
 
-	//	Now we swtich over to floating point arithmetic, to avoid computing
+	//	Now we switch over to floating point arithmetic, to avoid computing
 	//	trinomials which might overflow the 32-bit integer arithmetic.
 	theNewCrossing->position.h =
 		(	((double) e2->b * (double) e1->c)

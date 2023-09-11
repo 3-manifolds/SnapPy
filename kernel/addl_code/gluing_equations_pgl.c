@@ -426,7 +426,7 @@ void get_internal_gluing_equations_pgl(Triangulation *manifold,
    
    Proof:
 
-   FLOW has the properites that it picks the coefficient of A, B, and C
+   FLOW has the properties that it picks the coefficient of A, B, and C
    are minimal, so in particular, you cannot have a cycle such as taking 
    (1,1,1) as coefficients of A, B, and C.
    This means that we can (non-canonically) lift the homological description

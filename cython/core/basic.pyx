@@ -122,10 +122,6 @@ class MsgIO():
 msg_stream = MsgIO()
 
 
-# string testing for Python 3
-basestring = unicode = str
-
-
 def to_str(s):
     return s.decode()
 

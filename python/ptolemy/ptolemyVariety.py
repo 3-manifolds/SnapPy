@@ -495,7 +495,8 @@ class PtolemyVariety():
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
-    def _retrieve_solution_file(self, data_url=None, prefer_rur=False,
+    def _retrieve_solution_file(self,
+                                data_url=None, prefer_rur=False,
                                 verbose=False):
 
         # First try to retrieve solutions from the URL corresponding to
@@ -510,15 +511,45 @@ class PtolemyVariety():
             return _retrieve_url(url)
 
         except PtolemyFileMissingError:
+            pass
 
-            # If that file wasn't there, try to retrieve solutions from URL
-            # corresponding to the non-prefered format
+        # If that file wasn't there, try to retrieve solutions from URL
+        # corresponding to the non-prefered format
 
-            url = self._solution_file_url(data_url=data_url,
-                                          rur=not prefer_rur)
-            if verbose:
-                print("Retrieving solutions instead from %s ...:" % url)
-            return _retrieve_url(url)
+        url = self._solution_file_url(data_url=data_url,
+                                      rur=not prefer_rur)
+        if verbose:
+            print("Retrieving solutions instead from %s ...:" % url)
+
+        return _retrieve_url(url)
+
+    def _check_obstruction_class_for_precomputed_file(
+            self, text):
+
+        # Grab the PY=EVAL=SECTION
+        # Note that this will be evaluated again later.
+        # But it is cheap enough that the double evaluation should not matter.
+        py_eval = processFileBase.get_py_eval(text)
+
+        # Now get the function that takes a dictionary-like object with
+        # the solutions to the variety and expands it to a dictionary
+        # assigning a value to all Ptolemy coordinates and obstruction class
+        # variables.
+        variable_dict_function = py_eval['variable_dict']
+
+        # As noticed by Nathan, the obstruction classes used for producing
+        # the pre-computed solutions do not match the obstruction classes
+        # we compute now.
+        # This is due to pari changing the code for computing the
+        # Smith normal form in version 2.13 (see
+        # http://pari.math.u-bordeaux.fr/archives/pari-announce-20/msg00006.html)
+        #
+        # We thus check here explicitly that the obstruction class still
+        # matches.
+        #
+        processFileBase.check_obstruction_class_for_variable_dict_function(
+            variable_dict_function,
+            self._obstruction_class)
 
     def retrieve_decomposition(self, data_url=None, verbose=True):
 
@@ -545,6 +576,9 @@ class PtolemyVariety():
         text = self._retrieve_solution_file(data_url=data_url,
                                             prefer_rur=prefer_rur,
                                             verbose=verbose)
+
+        self._check_obstruction_class_for_precomputed_file(text)
+
         if verbose:
             print("Parsing...")
 

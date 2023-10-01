@@ -1,6 +1,7 @@
 import re
 
 from . import utilities
+from .ptolemyObstructionClass import PtolemyObstructionClass
 
 """
 Basic functions to read a ptolemy solutions file.
@@ -139,6 +140,47 @@ def get_py_eval(text):
         utilities.join_long_lines(
             find_unique_section(text, "PY=EVAL=SECTION")))
 
+# A dict-like object we can feed into the variable dict
+# function in the pre-computed solution file.
+#
+# It is sufficient to evaluate the obstruction class but
+# returns 1 for all other keys.
+#
+class _DummyDict:
+    def __getitem__(self, key):
+        if key == '1' or key[0] == 'c':
+            return 1
+        raise KeyError(key)
+
+def check_obstruction_class_for_variable_dict_function(
+        variable_dict_function, obstruction_class):
+
+    if not isinstance(obstruction_class, PtolemyObstructionClass):
+        # Note that no obstruction class has always been
+        # corresponding to index 0 ("c0" in file name).
+        # So nothing to check.
+        #
+        # We also don't check for the generalized
+        # obstruction class.
+        #
+        # We should double check that our solutions
+        # for PSL(n,C) with n>2 are still fine...
+        #
+        return
+
+    variable_dict = variable_dict_function(_DummyDict())
+    precomputed_class = [
+        variable_dict[var_name]
+        for var_name in obstruction_class._explain_basis ]
+
+    # Obstruction class contains element in Z/2 as additive group.
+    # We need to convert it to be in multiplicative group {-1, 1}.
+    actual_class = [
+        (-1) ** i for i in obstruction_class._H2_element ]
+
+    if actual_class != precomputed_class:
+        print("Warning: the obstruction class does not match the obstruction class of the pre-computed solution.")
+        print(actual_class, precomputed_class)
 
 def get_manifold_thunk(text):
     """

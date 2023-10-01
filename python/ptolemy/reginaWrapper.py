@@ -146,10 +146,10 @@ class NTriangulationForPtolemy(NTriangulation):
 
         * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert:
           "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
-          (http://arxiv.org/abs/1111.2828)
+          (https://arxiv.org/abs/1111.2828)
         * Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert:
           "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds "
-          (http://arxiv.org/abs/1207.6711)
+          (https://arxiv.org/abs/1207.6711)
 
         The variety can be exported to magma or sage and solved there. The
         solutions can be processed to compute invariants.
@@ -439,7 +439,7 @@ class NTriangulationForPtolemy(NTriangulation):
         # Following Remark 5.7 of
         # Garoufalidis, Goerner, Zickert:
         # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        # http://arxiv.org/abs/1207.6711
+        # https://arxiv.org/abs/1207.6711
         # we discard all even entries and get a permutation called
         # "effective_perm" here.
         effective_perm = []

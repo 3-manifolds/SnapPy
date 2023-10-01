@@ -884,7 +884,7 @@ def _canonical_representative_to_polynomial_substituition(
 
 def _retrieve_url(url):
 
-    overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
+    overview_url = "https://ptolemy.unhyperbolic.org/data/overview.html"
 
     try:
         # Remember SnapPy's SIGALRM handler (defined in app.py)
@@ -913,7 +913,7 @@ def _retrieve_url(url):
     except IOError as e:
         # IOError: this means the file wasn't there or we couldn't connect
         # to the server
-        if url[:5] == 'http:':
+        if url.startswith('http:') or url.startswith('https'):
             # IOError for http means we could not connect to server
             raise RuntimeError(
                 "Problem connecting to server while retrieving %s: "
@@ -934,7 +934,7 @@ def _retrieve_url(url):
     # Read the text
     text = s.read().decode('ascii').replace('\r\n', '\n')
 
-    if url[:5] != 'http:':
+    if not (url.startswith('http:') or url.startswith('https')):
         # If this is a normal file, we are done
         return text
 

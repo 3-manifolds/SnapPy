@@ -21,7 +21,7 @@ def get_ptolemy_obstruction_classes(manifold):
     See Definition 1.7 of
     Garoufalidis, Thurston, Zickert
     The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1111.2828
+    https://arxiv.org/abs/1111.2828
 
     s_f_t takes values +/-1 and is the value of evaluating the cocycle on
     face f of tetrahedron t.
@@ -178,11 +178,11 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
     Generates Ptolemy variety as described in
     (1) Garoufalidis, Thurston, Zickert
     The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1111.2828
+    https://arxiv.org/abs/1111.2828
 
     (2) Garoufalidis, Goerner, Zickert:
     Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1207.6711
+    https://arxiv.org/abs/1207.6711
 
     The variety can be exported to magma or sage and solved there. The
     solutions can be processed to compute invariants. See below.

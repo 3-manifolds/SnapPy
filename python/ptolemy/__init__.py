@@ -14,4 +14,4 @@ _env = _os.environ.get('PTOLEMY_DATA_URL')
 if _env:
     DATA_URL = _env
 else:
-    DATA_URL = "http://ptolemy.unhyperbolic.org/"
+    DATA_URL = "https://ptolemy.unhyperbolic.org/"

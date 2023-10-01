@@ -8,7 +8,7 @@ from . import matrix
 # simplices. See Figure 18 for simplices.
 #    Garoufalidis, Goerner, Zickert:
 #    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-#    http://arxiv.org/abs/1207.6711
+#    https://arxiv.org/abs/1207.6711
 
 # We use SnapPy's _choose_generators_info to construct the same fundamental
 # domain and side pairing that SnapPy uses for the unsimplified fundamental

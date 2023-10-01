@@ -377,7 +377,7 @@ class PtolemyCoordinates(dict):
         Note that this is different from the convention used in
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         Take an exact solution:
 
@@ -563,7 +563,7 @@ class PtolemyCoordinates(dict):
         See Definition 10.1:
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
         """
 
         # Integral points that are indices of Ptolemy coordinates
@@ -586,14 +586,14 @@ class PtolemyCoordinates(dict):
         # See Definition 9.23 of
         # Garoufalidis, Thurston, Zickert
         # The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        # https://arxiv.org/abs/1111.2828
+        # httpss://arxiv.org/abs/1111.2828
         face = next(iter(set(range(4)) - {v0, v1, v2}))
         obstruction = self._get_obstruction_variable(face, tet)
 
         # The epsilon permutation sign from Definition 10.1 of
         # Garoufalidis, Goerner, Zickert:
         # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        # http://arxiv.org/abs/1207.6711
+        # https://arxiv.org/abs/1207.6711
         s = PtolemyCoordinates._three_perm_sign(v0, v1, v2)
 
         # The equation from the same Definition
@@ -610,7 +610,7 @@ class PtolemyCoordinates(dict):
         See Definition 10.2:
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         Note that this definition turned out to have the wrong sign. Multiply
         the result by -1 if v1 < v0 and N is even.
@@ -650,7 +650,7 @@ class PtolemyCoordinates(dict):
         double-truncated simplex) in Figure 18 of
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4. Note that the ratio coordinate
         is different from the definition in the paper (see ratio_coordinate).
@@ -694,7 +694,7 @@ class PtolemyCoordinates(dict):
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.4.
 
@@ -742,7 +742,7 @@ class PtolemyCoordinates(dict):
         See equation 10.4 in
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
         """
 
         # Key for the cache
@@ -983,7 +983,7 @@ class Flattenings(dict):
     For N = 2, the three triples belonging to a simplex form a combinatorial
     flattening (w0, w1, w2) as defined in Definition 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
-    http://arxiv.org/abs/math.GT/0307092
+    https://arxiv.org/abs/math.GT/0307092
 
     For N > 2, the three triples form a generalized combinatorial flattening
     (w0, w1, w2) that gives an element in the generalized Extended Bloch group
@@ -1153,7 +1153,7 @@ class Flattenings(dict):
         in the generalized Extended Bloch group similar to the way the
         triple [z;p,q] is used in Lemma 3.2 in
         Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
-        http://arxiv.org/abs/math.GT/0307092
+        https://arxiv.org/abs/math.GT/0307092
         """
         if not key_z[:2] == 'z_':
             raise Exception("Need to be called with cross ratio variable z_....")
@@ -1294,7 +1294,7 @@ class CrossRatios(dict):
     Note that this is different from the convention used in
     Garoufalidis, Goerner, Zickert:
     Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1207.6711
+    https://arxiv.org/abs/1207.6711
     """
 
     def __init__(self, d, is_numerical=True, manifold_thunk=None):
@@ -1475,7 +1475,7 @@ class CrossRatios(dict):
 
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
         """
 
         postfix = '_%d%d%d%d' % tuple(pt) + '_%d' % tet
@@ -1499,7 +1499,7 @@ class CrossRatios(dict):
         See Definition 10.9:
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
         """
 
         result = 1
@@ -1530,7 +1530,7 @@ class CrossRatios(dict):
         This matrix was labeled alpha^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
 
@@ -1564,7 +1564,7 @@ class CrossRatios(dict):
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
 
@@ -1632,7 +1632,7 @@ class CrossRatios(dict):
         This matrix was labeled gamma^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1207.6711
+        https://arxiv.org/abs/1207.6711
 
         It is computed using equation 10.22.
 
@@ -1769,7 +1769,7 @@ class CrossRatios(dict):
         SL(N,C) / {+1,-1} if N is even and is described in the Introduction of
         Garoufalidis, Thurston, Zickert
         The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1111.2828
+        https://arxiv.org/abs/1111.2828
 
         There is a canonical group homomorphism SL(2,C)->SL(N,C) coming from
         the the natural SL(2,C)-action on the vector space Sym^{N-1}(C^2).
@@ -2261,7 +2261,7 @@ def _X(N, k, v):
     See (10.2) of
     Garoufalidis, Goerner, Zickert:
     Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1207.6711
+    https://arxiv.org/abs/1207.6711
     """
 
     m = [[_kronecker_delta(i,j) for i in range(N)] for j in range(N)]
@@ -2277,7 +2277,7 @@ def _H(N, k, x):
     See (10.1) of
     Garoufalidis, Goerner, Zickert:
     Gluing Equations for PGL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1207.6711
+    https://arxiv.org/abs/1207.6711
     """
 
     def _entry(i, j):

@@ -7,6 +7,22 @@ from .ptolemyObstructionClass import PtolemyObstructionClass
 Basic functions to read a ptolemy solutions file.
 """
 
+class PtolemyPrecomputedObstructionClassMismatchError(Exception):
+    def __init__(self, index, actual_class, precomputed_class):
+
+        msg = (
+            "The obstruction class in the pre-computed file does not match "
+            "the obstruction class of the Ptolemy variety (index %d). "
+            "The underlying reason is that the pari's implementation of the "
+            "Smith normal form has changed affecting the order in which we "
+            "list the cohomology classes or the cocycles we use as "
+            "representatives. A pre-computed file for the new cocycle has "
+            "not yet been computed.") % index
+
+        Exception.__init__(self, msg)
+        self.index = index
+        self.actual_class = actual_class
+        self.precomputed_class = precomputed_class
 
 def find_section(text, name):
     """
@@ -179,8 +195,10 @@ def check_obstruction_class_for_variable_dict_function(
         (-1) ** i for i in obstruction_class._H2_element ]
 
     if actual_class != precomputed_class:
-        print("Warning: the obstruction class does not match the obstruction class of the pre-computed solution.")
-        print(actual_class, precomputed_class)
+        raise PtolemyPrecomputedObstructionClassMismatchError(
+            obstruction_class._index,
+            actual_class,
+            precomputed_class)
 
 def get_manifold_thunk(text):
     """

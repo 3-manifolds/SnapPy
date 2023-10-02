@@ -5,6 +5,7 @@ from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from . import processFileBase, processFileDispatch, processMagmaFile
+from .processFileBase import PtolemyPrecomputedObstructionClassMismatchError
 from . import utilities
 from string import Template
 import signal
@@ -34,6 +35,18 @@ class PtolemyFileMissingError(Exception):
     def __init__(self, message):
         Exception.__init__(self, message)
 
+class PtolemyMissingFileForObstructionClass(Exception):
+    def __init__(self, index):
+
+        msg = (
+            "Pari's implementation of the Smith normal form has changed "
+            "affecting the order in which the cohomology classes are listed "
+            "and the cocycles used to represent them. Unfortunately, the "
+            "pre-computed file uses a cocycle that no longer matches and "
+            "a file matching the new cocycle has not yet been produced. "
+            "Please report the manifold and index (%d)." % index)
+        Exception.__init__(self, msg)
+        self.index = index
 
 class PtolemyVariety():
     """
@@ -471,7 +484,7 @@ class PtolemyVariety():
                          dir,
                          '%02d_tetrahedra' % tets])
 
-    def _solution_file_url(self, data_url=None, rur=False):
+    def _solution_file_url(self, alt=0, ext='magma_out', data_url=None):
 
         if data_url is None:
             from . import DATA_URL as data_url
@@ -486,42 +499,56 @@ class PtolemyVariety():
         if not data_url[-1] == '/':
             data_url = data_url + '/'
 
-        if rur:
-            ext = '.rur'
+        if alt > 0:
+            suffix = '_alt%d' % alt
         else:
-            ext = '.magma_out'
+            suffix = ''
 
-        filename = self.filename_base() + ext
+        filename = self.filename_base() + suffix + "." + ext
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
+    def _retrieve_solution_file_alt(self,
+                                    alt=0,
+                                    data_url=None,
+                                    exts=['magma_out', 'rur'],
+                                    verbose=False):
+        for i, ext in enumerate(exts):
+            url = self._solution_file_url(alt=alt,
+                                          data_url=data_url,
+                                          ext=ext)
+            if verbose:
+                print("Trying to retrieve solutions from %s ..." % url)
+
+            try:
+                return _retrieve_url(url)
+            except PtolemyFileMissingError as e:
+                if i == len(exts) - 1:
+                    raise
+    
     def _retrieve_solution_file(self,
-                                data_url=None, prefer_rur=False,
+                                data_url=None,
+                                exts=['magma_out', 'rur'],
                                 verbose=False):
 
-        # First try to retrieve solutions from the URL corresponding to
-        # the preferred format (i.e., RUR vs magma decomposition)
+        num_alts = 3
+        
+        for alt in range(num_alts):
+            try:
+                text = self._retrieve_solution_file_alt(alt=alt,
+                                                        data_url=data_url,
+                                                        exts=exts,
+                                                        verbose=verbose)
+                self._check_obstruction_class_for_precomputed_file(text)
+                return text
+            except PtolemyPrecomputedObstructionClassMismatchError as e:
+                if alt == num_alts - 1:
+                    raise
 
-        url = self._solution_file_url(data_url=data_url,
-                                      rur=prefer_rur)
-        if verbose:
-            print("Trying to retrieve solutions from %s ..." % url)
-
-        try:
-            return _retrieve_url(url)
-
-        except PtolemyFileMissingError:
-            pass
-
-        # If that file wasn't there, try to retrieve solutions from URL
-        # corresponding to the non-prefered format
-
-        url = self._solution_file_url(data_url=data_url,
-                                      rur=not prefer_rur)
-        if verbose:
-            print("Retrieving solutions instead from %s ...:" % url)
-
-        return _retrieve_url(url)
+            except PtolemyFileMissingError as e:
+                if alt > 0:
+                    raise PtolemyMissingFileForObstructionClass(
+                        self._obstruction_class._index if self._obstruction_class else 0)
 
     def _check_obstruction_class_for_precomputed_file(
             self, text):
@@ -553,11 +580,9 @@ class PtolemyVariety():
 
     def retrieve_decomposition(self, data_url=None, verbose=True):
 
-        url = self._solution_file_url(data_url=data_url, rur=False)
-        if verbose:
-            print("Retrieving decomposition from %s ..." % url)
-
-        text = _retrieve_url(url)
+        text = self._retrieve_solution_file(data_url,
+                                            exts=['magma_out'],
+                                            verbose=verbose)
 
         if verbose:
             print("Parsing...")
@@ -573,11 +598,13 @@ class PtolemyVariety():
                            data_url=None,
                            verbose=True):
 
-        text = self._retrieve_solution_file(data_url=data_url,
-                                            prefer_rur=prefer_rur,
-                                            verbose=verbose)
+        exts = ['magma_out', 'rur']
+        if prefer_rur:
+            exts = exts[::-1]
 
-        self._check_obstruction_class_for_precomputed_file(text)
+        text = self._retrieve_solution_file(data_url=data_url,
+                                            exts=exts,
+                                            verbose=verbose)
 
         if verbose:
             print("Parsing...")

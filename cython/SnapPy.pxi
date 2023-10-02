@@ -705,6 +705,9 @@ cdef extern from "SnapPea.h":
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q) except *
     extern Real volume(c_Triangulation *manifold, int *precision) except *
     extern Boolean mark_fake_cusps(c_Triangulation   *manifold) except *
+
+    extern int** get_symplectic_basis(c_Triangulation *manifold, int *, int *, int) except *
+    extern void free_symplectic_basis(int **, int) except *
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())

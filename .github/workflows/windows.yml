@@ -17,7 +17,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.15.0
         env:
           # Skip Python 3.12, and PyPy
-          CIBW_SKIP: cp312-* pp*
+          CIBW_SKIP: pp*
           CIBW_BEFORE_BUILD: >
             pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&

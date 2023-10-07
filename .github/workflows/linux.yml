@@ -17,7 +17,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.15.0
         env:
           # Skip Python 3.12, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp312-* *-manylinux_i686 *musllinux* pp*
+          CIBW_SKIP: *-manylinux_i686 *musllinux* pp*
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >
             pip install cython FXrays low_index sphinx sphinx_rtd_theme &&

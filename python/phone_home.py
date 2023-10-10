@@ -1,7 +1,8 @@
 import sys
 from threading import Thread
 from .version import version as current
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
+
 import ssl
 from urllib import request
 version_url = 'http://snappy.computop.org/current.txt'

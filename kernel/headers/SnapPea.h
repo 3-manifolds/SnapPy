@@ -497,9 +497,10 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
 #define CONST
 /* #define CONST const */
 
-
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 extern "C" {
+#endif
 #endif
 
 /************************************************************************/
@@ -2731,8 +2732,10 @@ extern Real volume(Triangulation *manifold, int *precision);
 
 #include "end_namespace.h"
 
+#ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 #endif

@@ -104,7 +104,7 @@ class SnapPyBuildDocs(Command):
             return # Are in an sdist and may not have sphinx
         try:
             import sphinx
-        except ImportError
+        except ImportError:
             raise ImportError(no_sphinx_message)
         sphinx_cmd = load_entry_point('sphinx>=1.7', 'console_scripts', 'sphinx-build')
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',

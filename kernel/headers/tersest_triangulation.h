@@ -71,8 +71,8 @@
  *      if (CS_is_present == TRUE)
  *          bytes 10 through 17 hold the CS_value, encoded as follows.
  *          First add a multiple of 1/2, if necessary, so that the CS_value
- *          lies in the range [-1/4, 1/4)  Then mulitply by 2 and add 1/2
- *          so that it lies in the ragne [0, 1).  The CS_value is a
+ *          lies in the range [-1/4, 1/4)  Then multiply by 2 and add 1/2
+ *          so that it lies in the range [0, 1).  The CS_value is a
  *          double which on some machines (e.g. the Mac) has an 8-btye
  *          mantissa.  In binary, this is a number like 0.100101000..., with
  *          64 meaningful binary digits after the decimal point (the "binary

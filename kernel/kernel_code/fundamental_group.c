@@ -196,7 +196,7 @@
  *  Conventions.
  *
  *  (1) The generators of an abstract group presentation are represented
- *      by lowercase letters.  Their inverses are respresented by the
+ *      by lowercase letters.  Their inverses are represented by the
  *      corresponding uppercase letters.  For example, "A" is the inverse
  *      of "a".
  *
@@ -344,7 +344,7 @@ struct GroupPresentation
      *  occasionally the user may want access to the unsimplified
      *  presentation.  For example, you can pass an unsimplified
      *  presentation of a lens space to John Berge's program Heegaard,
-     *  and it will most likley be able to recognize the exact lens space.
+     *  and it will most likely be able to recognize the exact lens space.
      *  Yes, it distinguishes L(5,1) from L(5,2), but only if it
      *  begins with a sufficiently complicated presentation.
      *  Passing it the presentation < a | a^5 = 1 > isn't good enough!

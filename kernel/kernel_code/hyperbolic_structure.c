@@ -73,7 +73,7 @@
  *
  *  [One could of course use real equations for oriented manifolds as
  *  well, but the speed suffers.  The arithmetic involved in the row
- *  operations (mulitplying an entry in one row by a constant and adding
+ *  operations (multiplying an entry in one row by a constant and adding
  *  it to the corresponding entry in another row) is four times faster
  *  for real numbers than for complex numbers, but a 2n x 2m real system
  *  requires eight times as many such steps as does an n x m complex system.

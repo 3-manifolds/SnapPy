@@ -163,7 +163,7 @@ FuncResult compute_cusped_symmetry_group(
 /*
  *  symmetry_list_to_group() converts a SymmetryList to a SymmetryGroup.
  *  The SymmetryGroup subsumes the SymmetryList, and adds additional
- *  information, namely a mulitplication table for the group, the orders
+ *  information, namely a multiplication table for the group, the orders
  *  and inverses of the elements, and whether the group is abelian, cyclic,
  *  dihedral and/or a spherical triangle group.
  *

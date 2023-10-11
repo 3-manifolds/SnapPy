@@ -96,7 +96,7 @@
  * a floating-point number.
  *
  * For the remaining case (1/3 <= |z| <= 3 and Re(z) < 1/2), we use the following
- * identity and then use (3) to compute dilog(1-z) (implemented in dialog_left):
+ * identity and then use (3) to compute dilog(1-z) (implemented in dilog_left):
  *                               2
  *                             pi
  *    dilog(z) + dilog(1-z) = ----- - log(z) * log(1-z)                     (6)

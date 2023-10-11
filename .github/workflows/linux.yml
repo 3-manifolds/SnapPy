@@ -27,7 +27,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse
         env:
           # Skip Python 2.7, 3.5, 3.11, 32 bit Linux, and PyPy
-          CIBW_SKIP: cp27-* cp35-* *-manylinux_i686 *musllinux* pp*
+          CIBW_BUILD: cp312-*
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >
             pip install cython FXrays low_index sphinx sphinx_rtd_theme &&

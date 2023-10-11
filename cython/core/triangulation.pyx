@@ -95,9 +95,8 @@ cdef class Triangulation():
                 spec = getattr(spec, attr)()
                 break
         if spec is not None and spec != 'empty':
-            # basestring was removed from python3 but cython supports it for all pythons
-            if not isinstance(spec, (basestring, bytes)):
-                raise TypeError(triangulation_help%
+            if not isinstance(spec, (str, bytes)):
+                raise TypeError(triangulation_help %
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
             if self.c_triangulation == NULL:

@@ -47,14 +47,14 @@ cdef class AbelianGroup():
             except:
                 raise ValueError('Elementary divisors must be given '
                                  'as a sequence.')
-        int_types = [int, long]
+        int_types = [int]
         if _within_sage:
             int_types += [sage.rings.integer.Integer]
         for c in self.divisors:
             assert type(c) in int_types and c >= 0,\
                    'Elementary divisors must be non-negative integers.\n'
         for i in range(len(elementary_divisors) - 1):
-            n,m = elementary_divisors[i:i+2]
+            n, m = elementary_divisors[i:i+2]
             assert (n == m == 0) or (m % n == 0),\
                    'The elementary divisors must form a divisibility chain\n'
 

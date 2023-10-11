@@ -71,9 +71,8 @@ cdef c_word_as_string(int *word, int num_generators, verbose_form):
 
 
 def word_as_list(word, int num_generators):
-    if not isinstance(word, basestring):
-        raise TypeError('Words must be represented '
-                        'as Python strings.')
+    if not isinstance(word, str):
+        raise TypeError('Words must be represented as Python strings.')
     word_list = []
     if num_generators > 26:
         for prefix, number in re.findall(r'([xX])(\d+)', word):

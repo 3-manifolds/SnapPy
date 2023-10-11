@@ -8,12 +8,6 @@ import snappy
 from plink import LinkManager
 from .twister_core import build_bundle, build_splitting, twister_version
 
-# Python 3 compatibility
-try:
-	basestring
-except NameError:  # Python 3
-	basestring = unicode = str
-
 surface_database_path = os.path.join(os.path.dirname(__file__), 'surfaces')
 surface_database = set(os.listdir(surface_database_path))
 version = twister_version()
@@ -22,7 +16,7 @@ def _get_surface(surface):
 	if isinstance(surface, tuple) and len(surface) == 2 and isinstance(surface[0], int) and isinstance(surface[1], int):
 		return LP_surface(surface[0], surface[1])
 	
-	if isinstance(surface, basestring):
+	if isinstance(surface, str):
 		# If surface is actually the contents of a surface file.
 		if surface.startswith('# A Twister surface file'):
 			return surface

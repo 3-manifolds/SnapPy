@@ -392,6 +392,13 @@ else:
         hp_extra_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
 
 
+if have_cython:
+    if [int(x) for x in cython_version.split('.')[:2]] < [3, 0]:
+        if sys.platform == 'win32':
+            hp_extra_compile_args.append('/DFORCE_C_LINKAGE')
+        else:
+            hp_extra_compile_args.append('-DFORCE_C_LINKAGE')
+
 # SnapPyHP depends implicitly on the source for the main kernel, so we
 # we delete certain object files to force distutils to rebuild them.
 

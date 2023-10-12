@@ -277,13 +277,13 @@ class _IntervalTreeTester(IntervalTree):
 
     def __init__(self):
         self._entries = []
-        super(_IntervalTreeTester, self).__init__()
+        super().__init__()
 
     def insert(self, interval, value):
         # Insert in plain list for reference
         self._entries.append((interval, value))
         # Insert into red black tree
-        super(_IntervalTreeTester, self).insert(interval, value)
+        super().insert(interval, value)
 
     def brute_force_find(self, interval):
         """

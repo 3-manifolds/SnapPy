@@ -5,7 +5,7 @@ from truncatedComplex import *
 class OneVertexTruncatedComplex(TruncatedComplex):
 
     def __init__(self, hyperbolic_structure):
-        super(OneVertexTruncatedComplex, self).__init__(
+        super().__init__(
             hyperbolic_structure.mcomplex)
 
         self.hyperbolic_structure = hyperbolic_structure

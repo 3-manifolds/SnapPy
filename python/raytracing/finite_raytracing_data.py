@@ -60,7 +60,7 @@ class FiniteRaytracingData(RaytracingData):
         return r
 
     def __init__(self, hyperbolic_structure):
-        super(FiniteRaytracingData, self).__init__(
+        super().__init__(
             hyperbolic_structure.mcomplex)
 
     def _compute_matrices(self, hyperbolic_structure):
@@ -136,7 +136,7 @@ class FiniteRaytracingData(RaytracingData):
     def get_uniform_bindings(self):
         # self._check_consistency()
 
-        d = super(FiniteRaytracingData, self).get_uniform_bindings()
+        d = super().get_uniform_bindings()
         d['TetrahedraEdges.R13EdgeEnds'] = (
             'vec4[]',
             [ edge_end
@@ -153,7 +153,7 @@ class FiniteRaytracingData(RaytracingData):
         return d
 
     def get_compile_time_constants(self):
-        d = super(FiniteRaytracingData, self).get_compile_time_constants()
+        d = super().get_compile_time_constants()
         d[b'##finiteTrig##'] = 1
         return d
 

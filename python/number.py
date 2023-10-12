@@ -193,7 +193,7 @@ else:  # We are not in Sage
 
         def __new__(cls, precision=53):
             if precision not in SnapPyNumbers._cache:
-                obj = super(SnapPyNumbers, cls).__new__(cls)
+                obj = super().__new__(cls)
                 obj._precision = precision
                 SnapPyNumbers._cache[precision] = obj
                 return obj

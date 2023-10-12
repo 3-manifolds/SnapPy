@@ -34,8 +34,9 @@ os.environ['CXX'] = 'ccache gcc++'
 def compile_one(command):
     try:
         distutils.spawn.spawn(command)
-    except distutils.errors.DistutilsExecError, msg:
+    except distutils.errors.DistutilsExecError as msg:
         return msg
+
 
 def compile_parallel(self, sources, output_dir=None, macros=None, include_dirs=None,
                      debug=0, extra_preargs=None, extra_postargs=None, depends=None):

@@ -121,7 +121,7 @@ class IdealRaytracingData(RaytracingData):
         return r
 
     def __init__(self, mcomplex, snappy_manifold):
-        super(IdealRaytracingData, self).__init__(mcomplex)
+        super().__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
 
     def _add_O13_matrices_to_faces(self):
@@ -244,7 +244,7 @@ class IdealRaytracingData(RaytracingData):
     def get_uniform_bindings(self):
         # _check_consistency(self.mcomplex)
 
-        d = super(IdealRaytracingData, self).get_uniform_bindings()
+        d = super().get_uniform_bindings()
 
         orientations = [
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
@@ -327,7 +327,7 @@ class IdealRaytracingData(RaytracingData):
         return d
 
     def get_compile_time_constants(self):
-        d = super(IdealRaytracingData, self).get_compile_time_constants()
+        d = super().get_compile_time_constants()
         d[b'##finiteTrig##'] = 0
         return d
 
@@ -357,7 +357,7 @@ class IdealRaytracingData(RaytracingData):
 
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
-        super(NonGeometricRaytracingData, self).__init__(mcomplex)
+        super().__init__(mcomplex)
 
     def get_compile_time_constants(self):
         return {

@@ -36,7 +36,7 @@ class Vertex(tuple):
     """
 
     def __new__(cls, tet, v0, v1, v2):
-        return super(Vertex, cls).__new__(cls, (tet, v0, v1, v2))
+        return super().__new__(cls, (tet, v0, v1, v2))
 
     def edges_starting_at_vertex(self):
         """

@@ -212,7 +212,7 @@ class PtolemyCoordinates(dict):
         self._matrix_cache = []
         self._inverse_matrix_cache = []
 
-        super(PtolemyCoordinates, self).__init__(processed_dict)
+        super().__init__(processed_dict)
 
     def __repr__(self):
         dict_repr = dict.__repr__(self)
@@ -1009,7 +1009,7 @@ class Flattenings(dict):
     """
 
     def __init__(self, d, manifold_thunk=lambda : None, evenN=2):
-        super(Flattenings, self).__init__(d)
+        super().__init__(d)
         self._is_numerical = True
         self._manifold_thunk = manifold_thunk
         self.dimension = 0
@@ -1298,7 +1298,7 @@ class CrossRatios(dict):
     """
 
     def __init__(self, d, is_numerical=True, manifold_thunk=None):
-        super(CrossRatios, self).__init__(d)
+        super().__init__(d)
         self._is_numerical = is_numerical
         self._manifold_thunk = manifold_thunk
 

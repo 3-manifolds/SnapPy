@@ -22,6 +22,4 @@ while True:
     if vol in values:
         continue
     values.add(vol)
-    print vol, "after", c, "iterations"
-    
-
+    print(vol, "after", c, "iterations")

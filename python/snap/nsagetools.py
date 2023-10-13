@@ -338,7 +338,7 @@ def alexander_polynomial(manifold, **kwargs):
     if manifold.homology().order() != 'infinite':
         raise ValueError(
             "Alexander polynomial only defined for manifolds with "
-            "infinite fundamental group")
+            "infinite homology.")
 
     ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
     coeffs = ans.coefficients()

@@ -142,7 +142,7 @@ class CuspTilingEngine(McomplexEngine):
         return CuspTilingEngine(m, original_mcomplex, cusp_areas, translations)
 
     def __init__(self, mcomplex, original_mcomplex, cusp_areas, translations):
-        super(CuspTilingEngine, self).__init__(mcomplex)
+        super().__init__(mcomplex)
 
         self.original_mcomplex = original_mcomplex
         self.cusp_areas = cusp_areas

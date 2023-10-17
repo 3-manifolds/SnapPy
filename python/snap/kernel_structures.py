@@ -17,7 +17,7 @@ def _clean_ideal_vertices(vertices):
 
 class TransferKernelStructuresEngine(McomplexEngine):
     def __init__(self, mcomplex, snappyTriangulation):
-        super(TransferKernelStructuresEngine, self).__init__(mcomplex)
+        super().__init__(mcomplex)
         self.snappyTriangulation = snappyTriangulation
 
     def add_shapes(self, shapes):

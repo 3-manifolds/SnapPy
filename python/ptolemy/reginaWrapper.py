@@ -40,7 +40,7 @@ class NTriangulationForPtolemy(NTriangulation):
         """
         Constructor - takes same arguments as NTriangulation.
         """
-        super(NTriangulationForPtolemy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Make sure we are oriented
         if not self.isOriented():

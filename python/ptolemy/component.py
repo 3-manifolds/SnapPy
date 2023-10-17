@@ -14,7 +14,7 @@ class ZeroDimensionalComponent(Component):
 
     def __init__(self, l, p=None):
         self.dimension = 0
-        super(ZeroDimensionalComponent, self).__init__(l)
+        super().__init__(l)
 
 
 class NonZeroDimensionalComponent(Component):
@@ -36,7 +36,7 @@ class NonZeroDimensionalComponent(Component):
             self.dimension = dimension
             self.free_variables = free_variables
             self.genus = genus
-        super(NonZeroDimensionalComponent, self).__init__(witnesses)
+        super().__init__(witnesses)
 
     def _base_str_(self):
         if self.free_variables is None:

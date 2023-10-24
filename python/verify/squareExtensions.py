@@ -294,7 +294,7 @@ class SqrtLinCombination():
     def __neg__(self):
         # Negate
         return SqrtLinCombination(
-            d=dict( (k, -v) for k, v in self._dict.items() ),
+            d={ k: -v for k, v in self._dict.items() },
             embed_cache=self._embed_cache)
 
     def __sub__(self, other):
@@ -704,8 +704,8 @@ class _FactorizedSqrtLinCombination():
             else:
                 return frozenset([k])
 
-        return _FactorizedSqrtLinCombination(dict(
-            (to_set(k), v) for k, v in l._dict.items()),
+        return _FactorizedSqrtLinCombination({
+            to_set(k): v for k, v in l._dict.items()},
             embed_cache=l._embed_cache)
 
     def __add__(self, other):
@@ -721,7 +721,7 @@ class _FactorizedSqrtLinCombination():
 
     def __neg__(self):
         return _FactorizedSqrtLinCombination(
-            dict((k, -v) for k, v in self._dict.items()),
+            {k: -v for k, v in self._dict.items()},
             embed_cache=self._embed_cache)
 
     def __sub__(self, other):
@@ -770,17 +770,17 @@ class _FactorizedSqrtLinCombination():
             operator.and_, self._dict.keys())
 
         # Factor them out
-        d = dict((k - common_terms, v) for k, v in self._dict.items())
+        d = {k - common_terms: v for k, v in self._dict.items()}
 
         # Pick one r_{i,j}
         term = _firstfirst(d.keys())
 
         # Split the summands into "left" and "right"
         left = _FactorizedSqrtLinCombination(
-            dict( (k, v) for k, v in d.items() if term in k ),
+            { k: v for k, v in d.items() if term in k },
             embed_cache=self._embed_cache)
         right = _FactorizedSqrtLinCombination(
-            dict( (k, v) for k, v in d.items() if term not in k),
+            { k: v for k, v in d.items() if term not in k},
             embed_cache=self._embed_cache)
 
         # Check left^2 - right^2 == 0
@@ -867,7 +867,7 @@ def _filter_zero(d):
     """
     Given a dict, filter out all items where the value is 0.
     """
-    return dict((k, v) for k, v in d.items() if v != 0)
+    return {k: v for k, v in d.items() if v != 0}
 
 
 def _convert_to_allowed_type(number):

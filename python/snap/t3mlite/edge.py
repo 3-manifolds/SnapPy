@@ -16,7 +16,7 @@ import sys
 # other_arrow = arrow.copy().opposite()
 # tail, head = other_arrow.tail(), other_arrow.head()
 
-_edge_add_corner_dict = dict()
+_edge_add_corner_dict = {}
 for edge, face in EdgeFacePairs:
     other_arrow = Arrow(edge, face, None).opposite()
     _edge_add_corner_dict[edge, face] = other_arrow.tail(), other_arrow.head()
@@ -35,7 +35,7 @@ class Edge:
         self.Vertices = []          # pairs: (initial Vertex, terminal Vertex)
         self.LeftBdryArrow = None   # Arrows representing the two boundary faces,
         self.RightBdryArrow = None  # if this is a boundary edge.
-        self._edge_orient_cache = dict()
+        self._edge_orient_cache = {}
 
     def __repr__(self):
         if self.Index > -1:

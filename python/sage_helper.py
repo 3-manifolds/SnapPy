@@ -160,7 +160,7 @@ def print_results(module, results):
                                                results.attempted))
 
 
-def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
+def doctest_modules(modules, verbose=False, print_info=True, extraglobs={}):
     finder = doctest.DocTestFinder(parser=DocTestParser())
     # full_extraglobals = dict(globs.items() + extraglobs.items())
     full_extraglobals = globs.copy()

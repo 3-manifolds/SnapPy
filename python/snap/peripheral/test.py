@@ -19,7 +19,7 @@ def verbose():
 def doctest_globals(module):
     if hasattr(module, 'doctest_globals'):
         return module.doctest_globals()
-    return dict()
+    return {}
 
 
 if __name__ == '__main__':

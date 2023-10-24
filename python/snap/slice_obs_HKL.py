@@ -84,7 +84,7 @@ class MatrixRepresentation():
             assert set(matrices) == set(all_gens)
         else:
             assert len(generators) == len(matrices)
-            images = dict()
+            images = {}
             for g, m in zip(generators, matrices):
                 images[g] = m
                 images[g.swapcase()] = image_ring(m.inverse())
@@ -347,7 +347,7 @@ def induced_rep_from_twisted_cocycle(p, rho, chi, cocycle):
     t = R.gen()
     MatSp = MatrixSpace(R, p)
     gens = rho.generators
-    images = dict()
+    images = {}
     for s, g in enumerate(gens):
         v = vector(cocycle[s*n:(s+1)*n])
         e = rho.epsilon(g)[0]

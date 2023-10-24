@@ -37,7 +37,7 @@ from .perm4 import Perm4, inv
 
 # For speed, we create a lookup table for all possible gluing permutations
 
-_arrow_gluing_dict = dict()
+_arrow_gluing_dict = {}
 for edge0, face0 in EdgeFacePairs:
     for edge1, face1 in EdgeFacePairs:
         perm = Perm4({FaceIndex[face0]:FaceIndex[flip_face[edge1, face1]],
@@ -48,7 +48,7 @@ for edge0, face0 in EdgeFacePairs:
 
 # Another table to speed Arrow.opposite
 
-_arrow_opposite_dict = dict()
+_arrow_opposite_dict = {}
 for edge, face in EdgeFacePairs:
     tail = comp(face)
     head = face & comp(edge)
@@ -59,7 +59,7 @@ for edge, face in EdgeFacePairs:
 
 # Another table to speed Arrow.next
 
-_arrow_next_dict = dict()
+_arrow_next_dict = {}
 for edge, face in EdgeFacePairs:
     for perm in Perm4.S4():
         new_edge = perm.image(edge)

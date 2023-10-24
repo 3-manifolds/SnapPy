@@ -443,7 +443,7 @@ class RUR():
                     return
 
         def term_to_expand_fraction_by(old_terms):
-            result = [ pair for pair in new_denominator_terms ]
+            result = list(new_denominator_terms)
             for p, e in old_terms:
                 if e < 0:
                     subtract_denominator_from_list(p, e, result)

@@ -241,9 +241,9 @@ def _compute_point_to_shortest_path(point_identification_dict, origin,
     # this property. It maps all triples equivalent to pt to path.
 
     def identified_points_to_path(pt, path):
-        return dict(
-            [ (identified_pt, path)
-              for identified_pt in point_identification_dict[pt] ] )
+        return {
+            identified_pt: path
+              for identified_pt in point_identification_dict[pt] }
 
     # Trivial paths for points identified with origin
     previously_added = identified_points_to_path(origin, Path())

@@ -66,7 +66,7 @@ base64_upper = string.ascii_uppercase + '56789-'
 in_one = string.ascii_lowercase[:16] + string.ascii_lowercase[1:16].upper()
 
 int_to_letter = dict(enumerate(base64_letters))
-letter_to_int = dict((a, i) for i, a in enumerate(base64_letters))
+letter_to_int = {a: i for i, a in enumerate(base64_letters)}
 
 
 def encode_nonnegative_int(x):

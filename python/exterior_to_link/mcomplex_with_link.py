@@ -155,7 +155,7 @@ def straighten_arcs(arcs):
     # keep track of where we most recently had success.
     offset = 0
     # We also keep track of arcs obstructing a given triangle
-    obstructions = dict()
+    obstructions = {}
     # Every success reduces the number of arcs by one, so
     # terminates.
     while success:

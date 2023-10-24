@@ -36,7 +36,7 @@ class SimpleVector(number.SupportsMultiplicationByNumber):
         self.data[key] = value
 
     def entries(self):
-        return [ x for x in self.data ]
+        return list(self.data)
 
     def list(self):
         return self.entries()

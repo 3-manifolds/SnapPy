@@ -663,7 +663,7 @@ def testGeometricRep(compute_solutions):
     sol['c_0011_2']
 
     assert any(
-        [ abs(vol - 2.9441064867) < 1e-9 for vol in sol.volume_numerical()])
+        abs(vol - 2.9441064867) < 1e-9 for vol in sol.volume_numerical())
 
 
 def testSageCommandLine():

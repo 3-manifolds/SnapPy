@@ -132,12 +132,10 @@ class IdealRaytracingData(RaytracingData):
 
     def _add_complex_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
-            tet.complex_vertices = {
-                v : vert
-                for v, vert in zip(
+            tet.complex_vertices = dict(zip(
                         t3m.ZeroSubsimplices,
                         symmetric_vertices_for_tetrahedron(
-                            tet.ShapeParameters[t3m.E01])) }
+                            tet.ShapeParameters[t3m.E01])))
 
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:

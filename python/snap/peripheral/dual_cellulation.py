@@ -57,7 +57,7 @@ class DualCellulation():
     """
     def __init__(self, triangulation):
         self.dual_triangulation = triangulation
-        self.from_original = dict()
+        self.from_original = {}
         self.vertices = []
         self.edges = []
         self.faces = []

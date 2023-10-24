@@ -342,7 +342,7 @@ class TetrahedronEmbedding():
 
 class TetrahedronEmbeddingCache():
     def __init__(self):
-        self.cache = dict()
+        self.cache = {}
 
     def __call__(self, arrow, vertex_images, bdry_map=None):
         if bdry_map is None:

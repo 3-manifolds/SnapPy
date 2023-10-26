@@ -101,7 +101,7 @@ And here the same example retrieving solutions from the database::
 Computing the matrices for a different presentation
 ---------------------------------------------------
 
-The ``fundamental_group`` method of a SnapPy triangulation can yield different presentations by supplying  optional arguments such as ``simplify_presentation`` and ``minimize_number_of_generators``. If we have a word in one of these presentations and want to evaluate its image under the representation, we need to supply the presentation as follows::
+The :py:meth:`~snappy.Triangulation.fundamental_group` method of a SnapPy triangulation can yield different presentations by supplying  optional arguments such as ``simplify_presentation`` and ``minimize_number_of_generators``. If we have a word in one of these presentations and want to evaluate its image under the representation, we need to supply the presentation as follows::
 
     >>> M=Manifold("m003")
     >>> sol = M.ptolemy_variety(2).retrieve_solutions()[0]
@@ -129,7 +129,7 @@ Again, we can check that the representation actually assigns the identity to all
 Computing the images of the peripheral curves for a representation
 ------------------------------------------------------------------
 
-The object returned by ``fundamental_group`` also contains words for the peripheral curves of a manifold. We can compute the corresponding matrices::
+The object returned by :py:meth:`~snappy.Triangulation.fundamental_group` also contains words for the peripheral curves of a manifold. We can compute the corresponding matrices::
 
     >>> M = Manifold("m003")
     >>> G = M.fundamental_group()

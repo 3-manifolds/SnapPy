@@ -146,7 +146,7 @@ Compute the matrices for a representation
 
 **Remark:** Requires SnapPy 2.3 or later.
 
-Given a solution as above, we can take a word in the fundamental group and get its image under the representation using ``evaluate_word``. Here, we do it for the two generators::
+Given a solution as above, we can take a word in the fundamental group and get its image under the representation using :py:meth:`~snappy.ptolemy.coordinates.PtolemyCoordinates.evaluate_word`. Here, we do it for the two generators::
 
     >>> M = Manifold("m003")
     >>> sol = M.ptolemy_variety(2).retrieve_solutions()[0]
@@ -156,16 +156,17 @@ Given a solution as above, we can take a word in the fundamental group and get i
     [[Mod(x, x^2 - x - 1), Mod(x, x^2 - x - 1)],
     [Mod(-x, x^2 - x - 1), Mod(-1, x^2 - x - 1)]]
 
-By default, this word is with respect to the presentation of the fundamental group that SnapPy computes when given no further arguments. Thus, we expect the identity matrix when we evaluate a relator (for PSL(*N*, **C**) the diagonal element will be an *N*-th root of unity)::
+By default, this word is with respect to the unsimplified presentation of the fundamental group. Thus, we expect the identity matrix when we evaluate a relator (for PSL(*N*, **C**) the diagonal element will be an *N*-th root of unity)::
 
-    >>> M.fundamental_group()
+    >>> M.fundamental_group(simplify_presentation=False)
     Generators:
-       a,b
+       a,b,c
     Relators:
-       abAAbabbb
-    >>> sol.evaluate_word('abAAbabbb')
+       BCaC
+       AbCbA
+    >>> sol.evaluate_word('BCaC')
     [[Mod(1, x^2 - x - 1), 0], [0, Mod(1, x^2 - x - 1)]]
-    
+
 We revisit computing the matrices :ref:`here <ptolemy-detailed-example-matrices>` to explain how to use a different presentation of the fundamental group.
 
 **Remark:** The matrices are currently returned as a list of list of pari ``POLMOD`` objects. In the future, the ptolemy module should return the matrices as sage matrices over a `sage NumberField <http://doc.sagemath.org/html/en/reference/number_fields/sage/rings/number_field/number_field.html>`_.

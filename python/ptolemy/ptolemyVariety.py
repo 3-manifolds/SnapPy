@@ -525,7 +525,7 @@ class PtolemyVariety():
             except PtolemyFileMissingError as e:
                 if i == len(exts) - 1:
                     raise
-    
+
     def _retrieve_solution_file(self,
                                 data_url=None,
                                 exts=['magma_out', 'rur'],
@@ -544,9 +544,10 @@ class PtolemyVariety():
             except PtolemyPrecomputedObstructionClassMismatchError as e:
                 if alt == num_alts - 1:
                     raise
-
             except PtolemyFileMissingError as e:
-                if alt > 0:
+                if alt == 0:
+                    raise
+                else:
                     raise PtolemyMissingFileForObstructionClass(
                         self._obstruction_class._index if self._obstruction_class else 0)
 

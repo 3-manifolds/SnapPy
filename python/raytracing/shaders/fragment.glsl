@@ -132,7 +132,16 @@ layout (std140) uniform geodesics
     float geodesicTubeRadiusParam[num_geodesic_segments];
     int geodesicOffsets[##num_tets## + 1];
 };
+#endif
 
+#if defined(num_eyeballs) && num_eyeballs > 0
+layout (std140) uniform eyeballs
+{
+    vec4 eyeballPositions[num_eyeballs];
+    mat4 eyeballInvEmbeddings[num_eyeballs];
+    int eyeballOffsets[##num_tets## + 1];
+};
+uniform float eyeballRadiusParam;
 #endif
 
 uniform float horosphereScales[4 * ##num_tets##];
@@ -258,6 +267,7 @@ const int object_type_elevation_enter       = 11;
 const int object_type_elevation_exit        = 12;
 const int object_type_geodesic_tube         = 13;
 const int object_type_additional_horosphere = 14;
+const int object_type_eyeball               = 15;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -310,7 +320,8 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_elevation_enter ||
         ray_hit.object_type == object_type_elevation_exit ||
         ray_hit.object_type == object_type_geodesic_tube ||
-        ray_hit.object_type == object_type_additional_horosphere;
+        ray_hit.object_type == object_type_additional_horosphere ||
+        ray_hit.object_type == object_type_eyeball;
 }
 
 // Advances ray by distance atanh(p).
@@ -380,7 +391,7 @@ distParamForPlaneIntersection(Ray ray,
 // The last parameter is the cosh(radius)^2.
 vec2
 distParamsForSphereIntersection(Ray ray,
-                               vec4 center, float sphereRadiusParam)
+                                vec4 center, float sphereRadiusParam)
 {
     float startDot = R13Dot(center, ray.point);
     float dirDot   = R13Dot(center, ray.dir);
@@ -587,6 +598,13 @@ normalForRayHit(RayHit ray_hit)
 #if defined(num_additional_horospheres) && num_additional_horospheres > 0
     if (ray_hit.object_type == object_type_additional_horosphere) {
         return horosphereVec[ray_hit.object_index] - ray_hit.ray.point;
+    }
+#endif
+
+#if defined(num_eyeballs) && num_eyeballs > 0
+    if (ray_hit.object_type == object_type_eyeball) {
+        return normalForSphere(
+            ray_hit.ray.point, eyeballPositions[ray_hit.object_index]);
     }
 #endif
 
@@ -836,7 +854,25 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 #endif
-  
+
+#if defined(num_eyeballs) && num_eyeballs > 0
+    for (int index = eyeballOffsets[ray_hit.tet_num];
+         index < eyeballOffsets[ray_hit.tet_num + 1];
+         index++) {
+
+        vec2 params = distParamsForSphereIntersection(
+            ray_hit.ray,
+            eyeballPositions[index],
+            eyeballRadiusParam);
+
+        if (params.x < smallest_p) {
+            smallest_p = params.x;
+            ray_hit.object_type = object_type_eyeball;
+            ray_hit.object_index = index;
+        }
+    }
+#endif
+
 #endif
 
     if (edgeTubeRadiusParam > 0.500001) {
@@ -1123,6 +1159,16 @@ material_params(RayHit ray_hit)
         result.diffuse = hsv2rgb(vec3(float(index) * goldenAngleBy2Pi + 0.3, 1.0, 1.0));
 
         result.ambient = 0.5 * result.diffuse;
+    }
+#endif
+
+#if defined(num_eyeballs) && num_eyeballs > 0
+    if (ray_hit.object_type == object_type_eyeball) {
+
+        vec4 pt = ray_hit.ray.point * eyeballInvEmbeddings[ray_hit.object_index];
+        result.ambient = normalize(pt.yzw);
+        
+        result.diffuse = vec3(0.0);
     }
 #endif
 

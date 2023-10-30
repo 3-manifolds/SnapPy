@@ -3,6 +3,7 @@ from .ideal_raytracing_data import *
 from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
 from .geodesics import Geodesics
+from .eyeball import Eyeball
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
@@ -120,7 +121,9 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                                 (0.025 if trig_type == 'finite' else 0.04)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'geodesicTubeRadii' : ['float[]', []],
-            'geodesicTubeEnables' : ['bool[]', []]
+            'geodesicTubeEnables' : ['bool[]', []],
+            'eyeballRadius' : ['float', 0.0],
+            'freezeEyeball' : ['bool', False]
             }
 
         if cohomology_class:
@@ -142,13 +145,15 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self._unguarded_initialize_raytracing_data()
 
         self.additional_structures = {}
-        
+
         if self.trig_type == 'ideal':
             self.additional_structures['geodesics'] = (
                 Geodesics(manifold, geodesics))
+            self.additional_structures['eyeball'] = (
+                Eyeball(self))
             self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
-            
+
         self.geodesics_disabled_edges = False
         if geodesics:
             self.disable_edges_for_geodesics()
@@ -231,6 +236,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
+    def update_shader_and_redraw(self):
+        self._update_shader()
+        self.redraw_if_initialized()
+        
     def recompute_raytracing_data_and_redraw(self):
         self._initialize_raytracing_data()
         self.fix_view_state()

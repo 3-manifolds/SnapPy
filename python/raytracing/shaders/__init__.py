@@ -42,7 +42,7 @@ def get_triangulation_shader_source_and_ubo_descriptors(
 
     num_geodesic_segments = defs_dict.get('num_geodesic_segments', 0)
     num_additional_horospheres = defs_dict.get('num_additional_horospheres', 0)
-
+    num_eyeballs = defs_dict.get('num_eyeballs', 0)
     num_tets = constants_dict[b'##num_tets##']
 
     uniform_block_names_sizes_and_offsets = [
@@ -78,6 +78,11 @@ def get_triangulation_shader_source_and_ubo_descriptors(
            'geodesicIndex': (16 + 16) * num_geodesic_segments,
            'geodesicTubeRadiusParam': (16 + 16 + 16) * num_geodesic_segments,
            'geodesicOffsets': (16 + 16 + 16 + 16) * num_geodesic_segments }),
+        ('eyeballs',
+         (16 + 64) * num_eyeballs + 16 * (num_tets + 1),
+         { 'eyeballPositions' : 0,
+           'eyeballInvEmbeddings' : 16 * num_eyeballs,
+           'eyeballOffsets' : (16 + 64) * num_eyeballs }),
         ('additionalHorospheres',
          (16 + 16) * num_additional_horospheres + 16 * (num_tets + 1),
          { 'horosphereVec': 0,

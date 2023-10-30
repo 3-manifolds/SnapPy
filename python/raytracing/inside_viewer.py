@@ -57,6 +57,9 @@ class InsideViewer(ttk.Frame):
         self.notebook.add(self.create_fillings_frame(self),
                           text='Fillings')
 
+        self.notebook.add(self.create_eyeball_frame(self),
+                          text='Eyeball')
+        
         self.notebook.add(self.create_skeleton_frame(self),
                           text='Skeleton')
 
@@ -334,6 +337,38 @@ class InsideViewer(ttk.Frame):
             subframe, text="Make manifold", takefocus=0,
             command=self.make_manifold)
         mfd_button.grid(row=0, column=3)
+
+        return frame
+
+    def create_eyeball_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
+
+        row = 0
+
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.widget.ui_parameter_dict,
+            key='eyeballRadius',
+            title='Radius',
+            row=row,
+            left_end=0.0,
+            right_end=0.75,
+            update_function=self.widget.update_shader_and_redraw,
+            format_string='%.3f')
+        row += 1
+
+        UniformDictController.create_checkbox(
+            frame,
+            self.widget.ui_parameter_dict,
+            key='freezeEyeball',
+            text='Freeze',
+            row=row,
+            column=1,
+            update_function=self.widget.redraw_if_initialized)
+        row += 1
 
         return frame
 

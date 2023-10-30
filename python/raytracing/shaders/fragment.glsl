@@ -126,10 +126,10 @@ uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 #if defined(num_geodesic_segments) && num_geodesic_segments > 0
 layout (std140) uniform geodesics
 {
-    vec4 geodesicTails[##num_geodesic_segments##];
-    vec4 geodesicHeads[##num_geodesic_segments##];
-    int geodesicIndex[##num_geodesic_segments##];
-    float geodesicTubeRadiusParam[##num_geodesic_segments##];
+    vec4 geodesicTails[num_geodesic_segments];
+    vec4 geodesicHeads[num_geodesic_segments];
+    int geodesicIndex[num_geodesic_segments];
+    float geodesicTubeRadiusParam[num_geodesic_segments];
     int geodesicOffsets[##num_tets## + 1];
 };
 

@@ -6,8 +6,8 @@ import snappy.snap.t3mlite.spun as spun
 
 def hash_t3m_surface(surface):
     ans = [surface.EulerCharacteristic]
-    ans += sorted(list(surface.EdgeWeights))
-    ans += sorted(list(surface.Quadvector))
+    ans += sorted(surface.EdgeWeights)
+    ans += sorted(surface.Quadvector)
     return ans
 
 
@@ -66,8 +66,8 @@ def compare_cusped(snappy_manifold):
     t = R.getNumberOfTetrahedra()
     regina_surfaces = list(vertex_surfaces(R))
     r_hashes = sorted(
-        sorted(sorted(int(S.getQuadCoord(i, j).stringValue())
-                      for i in range(t) for j in range(3)))
+        sorted(int(S.getQuadCoord(i, j).stringValue())
+                      for i in range(t) for j in range(3))
         for S in regina_surfaces)
     r_slopes = sorted(map(regina_boundary_slope, regina_surfaces))
 

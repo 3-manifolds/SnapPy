@@ -138,7 +138,7 @@ class PtolemyVariety():
                 N, manifold.num_tetrahedra(),
                 isinstance(obstruction_class, PtolemyObstructionClass)))
 
-        self.equations = [eqn for eqn in self._ptolemy_relations]
+        self.equations = list(self._ptolemy_relations)
 
         order_of_u = 1
 

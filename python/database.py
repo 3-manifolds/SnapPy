@@ -110,7 +110,7 @@ class ManifoldTable():
     def _set_schema(self):
         cursor, table = self._cursor, self._table
         rows = cursor.execute("pragma table_info('%s')" % table).fetchall()
-        self.schema = dict([(row[1], row[2].lower()) for row in rows])
+        self.schema = {row[1]: row[2].lower() for row in rows}
 
     def _check_schema(self):
         assert (self.schema['name'] == 'text' and
@@ -431,7 +431,7 @@ def add_tables_from_package(package_name, must_succeed=True):
         package = importlib.import_module(package_name)
     except ImportError:
         if not must_succeed:
-            return dict()
+            return {}
         else:
             raise ImportError('ManifoldTable package %s not found'
                               % package_name)
@@ -446,7 +446,7 @@ def add_tables_from_package(package_name, must_succeed=True):
     # We also store the tables here so that their doctests can be
     # checked.
     if not hasattr(this_module, '__test__'):
-        this_module.__test__ = dict()
+        this_module.__test__ = {}
     for name, table in new_tables.items():
         this_module.__test__[name] = table.__class__
 

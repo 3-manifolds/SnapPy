@@ -50,7 +50,7 @@ class Edge():
         self.index = None
 
     def glued_to(self, side):
-        for sides in ( [S for S in self.sides], [-S for S in self.sides] ):
+        for sides in ( list(self.sides), [-S for S in self.sides] ):
             if side in sides:
                 sides.remove(side)
                 return sides[0]
@@ -83,7 +83,7 @@ class EdgeList():
     vertex.
     """
     def __init__(self, items):
-        self.data = dict()
+        self.data = {}
         for i, x in enumerate(items):
             self[i] = x
 
@@ -237,7 +237,7 @@ class Surface():
             vertices.append(V)
 
         self.vertices = vertices
-        self._vertex_containing_corner = dict([( (C.triangle, C.vertex), V) for V in vertices for C in V.corners])
+        self._vertex_containing_corner = {(C.triangle, C.vertex): V for V in vertices for C in V.corners}
 
     def build(self):
         """

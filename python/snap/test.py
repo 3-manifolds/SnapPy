@@ -30,7 +30,7 @@ def test_polished(dec_prec=200):
         return snap.shapes.gluing_equation_error(eqns, shapes)
 
     def test_census(name, census):
-        manifolds = [M for M in census]
+        manifolds = list(census)
         print('Checking gluing equations for %d %s manifolds' % (len(manifolds), name))
         max_error = pari(0)
         for i, M in enumerate(manifolds):

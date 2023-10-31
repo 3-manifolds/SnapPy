@@ -521,7 +521,7 @@ def main():
     terminal = SnapPyTerm()
     sys.stdout = terminal
     set_icon(terminal.window)
-    SnapPy_ns = dict([(x, getattr(snappy, x)) for x in snappy.__all__])
+    SnapPy_ns = {x: getattr(snappy, x) for x in snappy.__all__}
     # SnapPy_ns['kernel_server'] = kernel_server
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None

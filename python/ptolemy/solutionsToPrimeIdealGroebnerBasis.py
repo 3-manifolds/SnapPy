@@ -180,8 +180,8 @@ def update_assignments_and_merge(assignments, d):
             [eval_monomial(m) for m in poly.get_monomials()],
             pari(0))
 
-    new_assignments = dict([(key, substitute(poly))
-                            for key, poly in assignments.items()])
+    new_assignments = {key: substitute(poly)
+                            for key, poly in assignments.items()}
 
     # Merge all the assignments of variables
     new_assignments.update(d)
@@ -227,9 +227,9 @@ def _process_extensions(extensions):
         # The new number field is again in x but the assignments
         # are assigning polynomials in the old x.
         # Need to update.
-        ext_assignments = dict(
-            [(key, poly.substitute({'x' : old_x_in_new_x}))
-             for key, poly in ext_assignments.items()])
+        ext_assignments = {
+            key: poly.substitute({'x' : old_x_in_new_x})
+             for key, poly in ext_assignments.items()}
 
         # And compute what the root of the last polynomial was
         # to assign it.

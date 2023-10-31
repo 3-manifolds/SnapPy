@@ -524,7 +524,7 @@ class TkTerm:
             return wordlist[0]
         result = ''
         for n in range(1,100):
-            heads = set(w[:n] for w in wordlist)
+            heads = {w[:n] for w in wordlist}
             if len(heads) > 1:
                 return result
             elif len(heads) == 1:
@@ -733,7 +733,7 @@ class TkTerm:
         """
         if not code.strip():
             return '\n'
-        lines = [line for line in code.split('\n')]
+        lines = list(code.split('\n'))
         clean_lines = [lines[0].lstrip()]
         for line in lines[1:]:
             try:

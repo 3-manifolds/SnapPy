@@ -69,10 +69,8 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     new_tets : dict[int, Tetrahedron] = {
         f : Tetrahedron() for f in simplex.TwoSubsimplices }
 
-    neighbors : dict[int, Tetrahedron] = {
-        f: t for f, t in tet.Neighbor.items() }
-    gluings : dict[int, Perm4] = {
-        f: p for f, p in tet.Gluing.items() }
+    neighbors : dict[int, Tetrahedron] = dict(tet.Neighbor.items())
+    gluings : dict[int, Perm4] = dict(tet.Gluing.items())
 
     id_matrix = matrix.identity(ring=RF, n=4)
 

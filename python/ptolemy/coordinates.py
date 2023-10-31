@@ -1133,9 +1133,9 @@ class Flattenings(dict):
         Mcopy = M.copy()
 
         return Flattenings(
-            dict([ (k, (log + PiI * p, z, p))
+            {k: (log + PiI * p, z, p)
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
-                                           all_cross_ratios, flattenings)]),
+                                           all_cross_ratios, flattenings)},
             manifold_thunk=lambda : Mcopy)
 
     def get_order(self):

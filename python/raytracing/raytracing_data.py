@@ -8,6 +8,9 @@ __all__ = ['RaytracingData']
 
 
 class RaytracingData(McomplexEngine):
+    def is_valid(self):
+        return True
+
     def add_weights(self, weights):
         for tet in self.mcomplex.Tetrahedra:
             tet.Weights = {

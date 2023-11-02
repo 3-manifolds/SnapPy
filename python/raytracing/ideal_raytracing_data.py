@@ -365,6 +365,9 @@ class NonGeometricRaytracingData(McomplexEngine):
         super().__init__(mcomplex)
         self.manifold = manifold
 
+    def is_valid(self):
+        return False
+
     def get_compile_time_constants(self):
         return {
             b'##num_tets##' : len(self.mcomplex.Tetrahedra),

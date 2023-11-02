@@ -142,15 +142,13 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.manifold = manifold
 
-        self._unguarded_initialize_raytracing_data()
-
         self.additional_structures = {}
+
+        self._unguarded_initialize_raytracing_data()
 
         if self.trig_type == 'ideal':
             self.additional_structures['geodesics'] = (
                 Geodesics(manifold, geodesics))
-            self.additional_structures['eyeball'] = (
-                Eyeball(self))
             self.resize_geodesic_params(enable=True)
             self._update_geodesic_data()
 
@@ -202,15 +200,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         return result
 
     def _initialize_raytracing_data(self):
-        if self.manifold.solution_type() in [
-            'all tetrahedra positively oriented',
-            'contains negatively oriented tetrahedra' ]:
-            self._unguarded_initialize_raytracing_data()
-        else:
-            try:
-                self._unguarded_initialize_raytracing_data()
-            except Exception:
-                pass
+        self._unguarded_initialize_raytracing_data()
 
     def _unguarded_initialize_raytracing_data(self):
         weights = self.weights
@@ -232,6 +222,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 areas=self.ui_parameter_dict['cuspAreas'][1],
                 insphere_scale=self.ui_parameter_dict['insphere_scale'][1],
                 weights=weights)
+            if self.raytracing_data.is_valid():
+                self.additional_structures['eyeball'] = (
+                    Eyeball(self))
+            else:
+                if 'eyeball' in self.additional_structures:
+                    del self.additional_structures['eyeball']
 
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())

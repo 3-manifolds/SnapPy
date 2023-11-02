@@ -243,19 +243,21 @@ triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 
 // Kind of object a ray hit.
 
-const int object_type_nothing               = 0;
-const int object_type_face                  = 1;
-const int object_type_edge_cylinder_enter   = 2;
-const int object_type_edge_cylinder_exit    = 3;
-const int object_type_horosphere            = 4;
-const int object_type_edge_fan              = 5;
-const int object_type_insphere              = 6;
-const int object_type_vertex_sphere         = 7;
-const int object_type_margulis_tube         = 8;
-const int object_type_elevation_enter       = 9;
-const int object_type_elevation_exit        = 10;
-const int object_type_geodesic_tube         = 11;
-const int object_type_additional_horosphere = 12;
+const int object_type_nothing               =  0;
+const int object_type_face                  =  1;
+const int object_type_edge_cylinder_enter   =  2;
+const int object_type_edge_cylinder_exit    =  3;
+const int object_type_horosphere_enter      =  4;
+const int object_type_horosphere_exit       =  5;
+const int object_type_edge_fan              =  6;
+const int object_type_insphere              =  7;
+const int object_type_vertex_sphere         =  8;
+const int object_type_margulis_tube_enter   =  9;
+const int object_type_margulis_tube_exit    = 10;
+const int object_type_elevation_enter       = 11;
+const int object_type_elevation_exit        = 12;
+const int object_type_geodesic_tube         = 13;
+const int object_type_additional_horosphere = 14;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -298,10 +300,12 @@ bool isColored(RayHit ray_hit)
     return
         ray_hit.object_type == object_type_vertex_sphere ||
         ray_hit.object_type == object_type_insphere ||
-        ray_hit.object_type == object_type_horosphere ||
+        ray_hit.object_type == object_type_horosphere_enter ||
+        ray_hit.object_type == object_type_horosphere_exit ||
         ray_hit.object_type == object_type_edge_cylinder_enter ||
         ray_hit.object_type == object_type_edge_cylinder_exit ||
-        ray_hit.object_type == object_type_margulis_tube ||
+        ray_hit.object_type == object_type_margulis_tube_enter ||
+        ray_hit.object_type == object_type_margulis_tube_exit ||
         ray_hit.object_type == object_type_edge_fan ||
         ray_hit.object_type == object_type_elevation_enter ||
         ray_hit.object_type == object_type_elevation_exit ||
@@ -548,14 +552,26 @@ normalForRayHit(RayHit ray_hit)
         return normalForSphere(ray_hit.ray.point, vec4(1,0,0,0));
     }
 
-    if(ray_hit.object_type == object_type_horosphere) {
+    if(ray_hit.object_type == object_type_horosphere_enter) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return horosphereEqn(index) - ray_hit.ray.point;
     }
 
-    if(ray_hit.object_type == object_type_margulis_tube) {
+    if(ray_hit.object_type == object_type_horosphere_exit) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        return ray_hit.ray.point - horosphereEqn(index);
+    }
+
+    if(ray_hit.object_type == object_type_margulis_tube_enter) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return normalForTube(
+            ray_hit.ray.point,
+            endpointsForMargulisTube(index));
+    }
+
+    if(ray_hit.object_type == object_type_margulis_tube_exit) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        return - normalForTube(
             ray_hit.ray.point,
             endpointsForMargulisTube(index));
     }
@@ -639,7 +655,8 @@ MLCoordinatesForRayHit(RayHit rayHit)
     vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
     vec2 z = pointUpperHalfspace.xy;
 
-    if (rayHit.object_type == object_type_margulis_tube) {
+    if (rayHit.object_type == object_type_margulis_tube_enter ||
+        rayHit.object_type == object_type_margulis_tube_exit) {
         z = complexLog(z) + logAdjustments[index];
     }
 
@@ -745,7 +762,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                                                               horosphereEqn(index));
             if (params.x < smallest_p) {
                 smallest_p = params.x;
-                ray_hit.object_type = object_type_horosphere;
+                ray_hit.object_type = object_type_horosphere_enter;
                 ray_hit.object_index = vertex;
             }
         }
@@ -759,7 +776,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
             if (params.x < smallest_p) {
                 smallest_p = params.x;
-                ray_hit.object_type = object_type_margulis_tube;
+                ray_hit.object_type = object_type_margulis_tube_enter;
                 ray_hit.object_index = vertex;
             }
         }
@@ -965,8 +982,10 @@ material_params(RayHit ray_hit)
         result.ambient = 0.5 * result.diffuse;
     }        
 #else
-    if (ray_hit.object_type == object_type_horosphere ||
-        ray_hit.object_type == object_type_margulis_tube) {
+    if (ray_hit.object_type == object_type_horosphere_enter ||
+        ray_hit.object_type == object_type_horosphere_exit ||
+        ray_hit.object_type == object_type_margulis_tube_enter ||
+        ray_hit.object_type == object_type_margulis_tube_exit) {
         
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = vertex_color_indices[index];
@@ -1268,7 +1287,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
                 if (params.y < smallest_p) {
                     // Remember this
                     smallest_p = params.y;
-                    rayHit.object_type = object_type_horosphere;
+                    rayHit.object_type = object_type_horosphere_exit;
                     rayHit.object_index = vertex;
                 }
             }
@@ -1281,7 +1300,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
             if (params.x == unreachableDistParam) {
                 if (params.y < smallest_p) {
                     smallest_p = params.y;
-                    rayHit.object_type = object_type_margulis_tube;
+                    rayHit.object_type = object_type_margulis_tube_exit;
                     rayHit.object_index = vertex;
                 }
             }
@@ -1323,10 +1342,10 @@ leaveVertexNeighborhood(inout RayHit rayHit)
         vec2 c = -round(ml) * inverse(matLogs[index]);
 
         mat4 tsfmCuspSpace =
-            (rayHit.object_type == object_type_horosphere)
+            (rayHit.object_type == object_type_horosphere_exit)
             ? parabolicSO13(c)
             : loxodromicSO13(c);
-        
+
         // Convert O13 matrix from space where cusp was at infinity
         // to space of tetrahedron
         mat4 tsfm =

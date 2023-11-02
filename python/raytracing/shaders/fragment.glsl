@@ -662,6 +662,25 @@ MLCoordinatesForRayHit(RayHit rayHit)
 
     return z * matLogs[index];
 }
+
+int
+peripheralCurveForMLCoordinates(vec2 ml_coordinates)
+{
+    // Map R^2->torus
+    vec2 f = fract(ml_coordinates);
+
+    if ( f.y <       peripheralCurveThickness ||
+         f.y > 1.0 - peripheralCurveThickness) {
+        return 2;
+    }
+
+    if ( f.x <       peripheralCurveThickness ||
+         f.x > 1.0 - peripheralCurveThickness) {
+        return 1;
+    }
+
+    return 0;
+}
 #endif
 
 // Compute the SO13 transform corresponding to the PSL(2,C)-matrix
@@ -1000,15 +1019,15 @@ material_params(RayHit ray_hit)
 #endif
         result.ambient = 0.5 * result.diffuse;
 
-        vec2 coords = fract(MLCoordinatesForRayHit(ray_hit));
+        int peripheralCurve =
+            peripheralCurveForMLCoordinates(
+                MLCoordinatesForRayHit(ray_hit));
         
-        if (coords.x <       peripheralCurveThickness ||
-            coords.x > 1.0 - peripheralCurveThickness) {
+        if (peripheralCurve == 1) {
             result.diffuse = longitudeColor;
             result.ambient = result.diffuse;
         }
-        if (coords.y <       peripheralCurveThickness ||
-            coords.y > 1.0 - peripheralCurveThickness) {
+        if (peripheralCurve == 2) {
             result.diffuse = meridianColor;
             result.ambient = result.diffuse;
         }
@@ -1324,14 +1343,8 @@ leaveVertexNeighborhood(inout RayHit rayHit)
         // such that the cusp is at infinity
         // Use complex part ignoring height in upper halfspace
 
-        // Map R^2->torus
-        vec2 coords = fract(ml);
-
         // Check whether we hit peripheral curve
-        if (coords.x <       peripheralCurveThickness ||
-            coords.x > 1.0 - peripheralCurveThickness ||
-            coords.y <       peripheralCurveThickness ||
-            coords.y > 1.0 - peripheralCurveThickness) {
+        if (peripheralCurveForMLCoordinates(ml) > 0) {
             // Hit peripheral curve
             return true;
         }

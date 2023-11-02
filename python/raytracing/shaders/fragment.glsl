@@ -625,8 +625,8 @@ hyperboloidToUpperHalfspace(vec4 h)
     vec3 poincare = klein / (1.0 + sqrt(1.0 - dot(klein, klein)));
     vec3 denom_helper = vec3(poincare.x - 1.0, poincare.yz);
     float denom = dot(denom_helper, denom_helper);
-    
-    return vec3(2.0 * poincare.yz, 1.0 - dot(poincare, poincare)) / denom;   
+
+    return vec3(2.0 * poincare.yz, 1.0 - dot(poincare, poincare)) / denom;
 }
 
 #if !##finiteTrig##
@@ -651,7 +651,7 @@ vec2
 MLCoordinatesForRayHit(RayHit rayHit)
 {
     int index = 4 * rayHit.tet_num + rayHit.object_index;
-    
+
     vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
     vec2 z = pointUpperHalfspace.xy;
 
@@ -691,7 +691,7 @@ mat4
 parabolicSO13(vec2 z)
 {
     float t = dot(z, z) / 2.0;
-    
+
     return mat4( 1.0 + t,     - t,     z.x,     z.y,
                        t, 1.0 - t,     z.x,     z.y,
                      z.x,    -z.x,     1.0,     0.0,
@@ -715,7 +715,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 {
     int entry_object_type = ray_hit.object_type;
     int entry_object_index = ray_hit.object_index;
- 
+
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
 
@@ -723,10 +723,10 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         if (entry_object_type != object_type_face || entry_object_index != face) {
             // find p when we hit that face
             int index = 4 * ray_hit.tet_num + face;
-            if(R13Dot(ray_hit.ray.dir, planes[index]) > 0.0){ 
+            if(R13Dot(ray_hit.ray.dir, planes[index]) > 0.0){
                 float p = distParamForPlaneIntersection(ray_hit.ray, planes[index]);
                 // if ((-10000.0 <= p) && (p < smallest_p)) {
-                if (p < smallest_p) {  
+                if (p < smallest_p) {
                     /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
                     /// Although this can apparently get caught in infinite loops in an edge
 
@@ -845,7 +845,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         float backDistParam = 0.0;
 #else
         float backDistParam = tanh(ray_hit.distWhenLeavingCusp-ray_hit.dist);
-#endif    
+#endif
 
         for (int edge = 0; edge < 6; edge++) {
 
@@ -915,7 +915,7 @@ ray_trace(inout RayHit ray_hit) {
         // positive values so we get correct behaviour by comparing without the sinh^2. 
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
 
-        float new_weight = ray_hit.weight + weights[ index ];        
+        float new_weight = ray_hit.weight + weights[ index ];
 
         if (showElevation) {
             int elevation_object_type =
@@ -934,7 +934,7 @@ ray_trace(inout RayHit ray_hit) {
 
         ray_hit.light_source = ray_hit.light_source * tsfm;
         ray_hit.ray.point = ray_hit.ray.point * tsfm;
-        ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm ); 
+        ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm );
         ray_hit.tet_num = otherTetNums[ index ];
     }
 }
@@ -999,13 +999,13 @@ material_params(RayHit ray_hit)
 
         result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
         result.ambient = 0.5 * result.diffuse;
-    }        
+    }
 #else
     if (ray_hit.object_type == object_type_horosphere_enter ||
         ray_hit.object_type == object_type_horosphere_exit ||
         ray_hit.object_type == object_type_margulis_tube_enter ||
         ray_hit.object_type == object_type_margulis_tube_exit) {
-        
+
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = vertex_color_indices[index];
 
@@ -1022,7 +1022,7 @@ material_params(RayHit ray_hit)
         int peripheralCurve =
             peripheralCurveForMLCoordinates(
                 MLCoordinatesForRayHit(ray_hit));
-        
+
         if (peripheralCurve == 1) {
             result.diffuse = longitudeColor;
             result.ambient = result.diffuse;
@@ -1053,7 +1053,7 @@ material_params(RayHit ray_hit)
     if (ray_hit.object_type == object_type_edge_cylinder_enter) {
         int index = 6 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = edge_color_indices[index];
-        
+
         //using num_tets = num_edges
 
 #if COLOR_SCHEME == 1
@@ -1074,7 +1074,7 @@ material_params(RayHit ray_hit)
     if (ray_hit.object_type == object_type_edge_cylinder_exit) {
         int index = 6 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = edge_color_indices[index];
-        
+
         //using num_tets = num_edges
         result.diffuse = 0.3 * hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
         result.ambient = 0.5 * result.diffuse;
@@ -1164,7 +1164,7 @@ vec3 colorForRayHit(RayHit ray_hit)
 
     vec4 light_dir_at_hit = makeUnitTangentVector(
         - light_position, ray_hit.ray.point);
-    
+
     float normal_light = clamp(R13Dot(normal, light_dir_at_hit), 0, 1);
 
     vec4 half_angle = R13Normalise(light_dir_at_hit + ray_hit.ray.dir);
@@ -1236,7 +1236,7 @@ Ray get_ray_eye_space(vec2 xy)
         result.point = R13Normalise(vec4(1.0, 2.0 * xy, 0.0));
         result.dir = vec4(0.0, 0.0, 0.0, -1.0);
     }
-    
+
     return result;
 }
 
@@ -1285,7 +1285,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
 //
 // The result is true if we are inside a horosphere AND
 // the ray is hitting a peripheral curve on the horosphere.
-// 
+//
 // For optimization, leaveVertexNeighborhood will also apply a
 // parabolic transformation to the ray trying to bring the
 // where we exit the horosphere closer to the entry point.
@@ -1325,7 +1325,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
             }
         }
     }
-    
+
     // We are in a horosphere.
     if (smallest_p < unreachableDistParam) {
 
@@ -1365,11 +1365,11 @@ leaveVertexNeighborhood(inout RayHit rayHit)
             tetToCuspMatrices[index] *
             tsfmCuspSpace *
             cuspToTetMatrices[index];
-        
+
         // And apply transformation to ray.
         rayHit.light_source = rayHit.light_source * tsfm;
         rayHit.ray.point = rayHit.ray.point * tsfm;
-        rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
+        rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm );
 
         // If we are inside a horosphere, leaveVertexNeighborhood has computed
         // the point where we leave the horosphere. But that point
@@ -1414,7 +1414,7 @@ RayHit computeRayHit(vec2 xy){
         // In all other cases, we need to raytrace before we shade.
         ray_trace(ray_tet_space);
     }
-    
+
     return ray_tet_space;
 }
 
@@ -1434,7 +1434,7 @@ vec3 sampleNonGeometricTexture(vec2 fragCoord)
 
 
 void main(){
-     
+
     // Show text "Non-geoemtric"
     if (isNonGeometric) {
         out_FragColor = vec4(sampleNonGeometricTexture(gl_FragCoord.xy), 1.0);
@@ -1463,14 +1463,14 @@ void main(){
             if (perspectiveType != perspectiveTypeHyperideal) {
                 scaled_xy *= viewScale;
             }
-            
+
             bool outsideView =
                 perspectiveType == perspectiveTypeHyperideal &&
                 length(scaled_xy) >= 0.5;
 
             if (outsideView) {
                 total_color += vec3(1.0, 1.0, 1.0);
-            } else {            
+            } else {
                 RayHit ray_hit = computeRayHit(scaled_xy);
                 if (ray_hit.object_type != object_type_nothing) {
                     min_depth = min(min_depth, tanh(ray_hit.dist));

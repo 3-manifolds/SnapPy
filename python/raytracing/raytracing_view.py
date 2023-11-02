@@ -80,6 +80,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self, container,
             *args, **kwargs)
 
+        self.set_textures(shaders.get_texture_paths())
+
         self.trig_type = trig_type
 
         # The view can be driven in two modes:

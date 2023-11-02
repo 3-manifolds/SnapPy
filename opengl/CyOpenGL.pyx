@@ -1600,58 +1600,51 @@ IF False and UNAME_SYSNAME == "Windows":
     # We will worry about Windows another day.
     pass
 ELSE:
-    cdef class TextureTextNonGeometric:
-        """
-        Create an OpenGL texture showing the text "Non-Geometric"
-        """
-
+    cdef class DataBasedTexture:
         cdef GLuint _textureName
 
         def __cinit__(self):
-            cdef unsigned int img_size
-            cdef unsigned char * pixel_data
+            self._textureName = 0
 
-            img_size = (SnapPy_nonGeometricTextImage.width *
-                        SnapPy_nonGeometricTextImage.height)
+        def __init__(self,
+                     unsigned int width,
+                     unsigned int height,
+                     unsigned char[:] rgba_data):
 
-            pixel_data = <unsigned char*>malloc(
-                img_size *
-                SnapPy_nonGeometricTextImage.bytes_per_pixel)
-
-            GIMP_IMAGE_RUN_LENGTH_DECODE(
-                pixel_data,
-                SnapPy_nonGeometricTextImage.rle_pixel_data,
-                img_size,
-                SnapPy_nonGeometricTextImage.bytes_per_pixel)
+            if rgba_data.size != 4 * width * height:
+                raise RuntimeError("Length of rgba_data not matching")
 
             glGenTextures(1, &self._textureName)
             glBindTexture(GL_TEXTURE_2D, self._textureName)
+
             glTexImage2D(GL_TEXTURE_2D, 0,
-                         GL_RGB,
-                         SnapPy_nonGeometricTextImage.width,
-                         SnapPy_nonGeometricTextImage.height,
+                         GL_RGBA,
+                         width,
+                         height,
                          0,
-                         GL_RGB,
+                         GL_RGBA,
                          GL_UNSIGNED_BYTE,
-                         pixel_data)
+                         &rgba_data[0])
+
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MIN_FILTER,
                             GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MAG_FILTER,
                             GL_LINEAR)
-            glBindTexture(GL_TEXTURE_2D, 0)
-            print_gl_errors("Creating texture")
 
-            free(pixel_data)
+        def delete_resource(self):
+            glDeleteTextures(1, &self._textureName)
+            self._textureName = 0
 
-        def bind(self):
-            glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, self._textureName)
+    class ImageBasedTexture(DataBasedTexture):
+        def __init__(self, texture_file):
+            w, h, rows, info = png.Reader(texture_file).asRGBA8()
+            data = bytearray(4 * w * h)
+            for i, row in enumerate(rows):
+                data[i * 4 * w : (i + 1) * 4 * w] = row
 
-        def unbind(self):
-            glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, 0)
+            super().__init__(w, h, data)
 
     cdef GLfloat* _convert_matrices_to_floats(
                         matrices, num_matrices, num_rows, num_columns):
@@ -2278,8 +2271,25 @@ ELSE:
                 self.vertex_shader_source,
                 self.fragment_shader_source,
                 name = "fallback image shader")
-            self.textureTextNonGeometric = TextureTextNonGeometric()
+            self.textures = []
             self.report_time_callback = None
+
+        def set_textures(self, texture_files):
+            self.make_current()
+
+            for texture in self.textures:
+                texture.delete_resource()
+
+            textures = []
+            for texture_file in texture_files:
+                texture = None
+                try:
+                    texture = ImageBasedTexture(texture_file)
+                except Exception as e:
+                    print("Warning could not read texture %s" % texture_file)
+                    print(e)
+
+                textures.append(texture)
 
         def set_fragment_shader_source(self,
                                        source,
@@ -2447,7 +2457,11 @@ ELSE:
             glDisable(GL_CULL_FACE)
 
             if self.image_shader.is_valid():
-                self.textureTextNonGeometric.bind()
+                for i, texture in enumerate(self.textures):
+                    glActiveTexture(GL_TEXTURE0 + i)
+                    if texture:
+                        glBindTexture(GL_TEXTURE_2D, texture._textureName)
+         
                 self.image_shader.use_program()
                 self.image_shader.bind_uniforms(
                     self.get_uniform_bindings(width, height))
@@ -2455,7 +2469,10 @@ ELSE:
                 
                 glDrawArrays(GL_TRIANGLES, 0, 3)
 
-                self.textureTextNonGeometric.unbind()
+                for i, texture in enumerate(self.textures):
+                    glActiveTexture(GL_TEXTURE0 + i)
+                    glBindTexture(GL_TEXTURE_2D, 0)
+                glActiveTexture(GL_TEXTURE0)
 
             if self.report_time_callback:
                 glFinish()

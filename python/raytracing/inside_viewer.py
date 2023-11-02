@@ -662,7 +662,7 @@ class InsideViewer(ttk.Frame):
         self.widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 
-        self.widget.recompute_raytracing_data_and_redraw()
+        self.widget.recompute_raytracing_data_update_shader_and_redraw()
         self.update_volume_label()
         self.reset_geodesics()
 
@@ -672,7 +672,7 @@ class InsideViewer(ttk.Frame):
     def recompute_hyperbolic_structure(self):
         self.widget.manifold.init_hyperbolic_structure(
             force_recompute=True)
-        self.widget.recompute_raytracing_data_and_redraw()
+        self.widget.recompute_raytracing_data_update_shader_and_redraw()
 
         # Should we reset the view state since it might
         # be corrupted?

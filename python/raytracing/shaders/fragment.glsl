@@ -1435,7 +1435,7 @@ vec3 sampleNonGeometricTexture(vec2 fragCoord)
 
 void main(){
 
-    // Show text "Non-geoemtric"
+    // Show text "Non-geometric"
     if (isNonGeometric) {
         out_FragColor = vec4(sampleNonGeometricTexture(gl_FragCoord.xy), 1.0);
         return;

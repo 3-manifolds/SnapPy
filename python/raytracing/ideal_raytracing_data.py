@@ -68,8 +68,7 @@ class IdealRaytracingData(RaytracingData):
                       areas=None, insphere_scale=0.05, weights=None):
 
         if manifold.solution_type() != 'all tetrahedra positively oriented':
-            return NonGeometricRaytracingData(
-                t3m.Mcomplex(manifold))
+            return NonGeometricRaytracingData.from_manifold(manifold)
 
         num_cusps = manifold.num_cusps()
 
@@ -354,13 +353,24 @@ class IdealRaytracingData(RaytracingData):
 
 
 class NonGeometricRaytracingData(McomplexEngine):
-    def __init__(self, mcomplex):
+    @staticmethod
+    def from_manifold(manifold):
+        mcomplex = t3m.Mcomplex(manifold)
+        r = NonGeometricRaytracingData(mcomplex, manifold)
+        z = manifold.tetrahedra_shapes('rect')[0]
+        r.RF = z.real().parent()
+        return r
+
+    def __init__(self, mcomplex, manifold):
         super().__init__(mcomplex)
+        self.manifold = manifold
 
     def get_compile_time_constants(self):
         return {
             b'##num_tets##' : len(self.mcomplex.Tetrahedra),
-            b'##num_cusps##' : len(self.mcomplex.Vertices)
+            b'##num_cusps##' : len(self.mcomplex.Vertices),
+            b'##num_edges##' : len(self.mcomplex.Edges),
+            b'##finiteTrig##' : 0,
             }
 
     def get_uniform_bindings(self):
@@ -381,9 +391,9 @@ class NonGeometricRaytracingData(McomplexEngine):
 
     def update_view_state(self, boost_tet_num_and_weight,
                           m=matrix([[1.0, 0.0, 0.0, 0.0],
-                                      [0.0, 1.0, 0.0, 0.0],
-                                      [0.0, 0.0, 1.0, 0.0],
-                                      [0.0, 0.0, 0.0, 1.0]])):
+                                    [0.0, 1.0, 0.0, 0.0],
+                                    [0.0, 0.0, 1.0, 0.0],
+                                    [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
         boost = boost * m
         return boost, tet_num, weight

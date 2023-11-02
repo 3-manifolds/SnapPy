@@ -1891,6 +1891,10 @@ ELSE:
                 print("   OpenGL:  3.2             %s" % get_gl_string('GL_VERSION'))
                 print("     GLSL:  1.50            %s" % get_gl_string('GL_SHADING_LANGUAGE_VERSION'))
 
+                if False:
+                   if fragment_shader_source:
+                       open('/tmp/fragment.glsl', 'wb').write(fragment_shader_source)
+
         def _compile_and_link(self, name):
             if not _compile_shader(self._vertex_shader, name, 'vertex'):
                 return False

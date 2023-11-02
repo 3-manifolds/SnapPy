@@ -55,7 +55,7 @@ uniform bool showElevation = false;
 
 layout (std140) uniform TetrahedraCombinatorics
 {
-    int otherTetNums[4 * ##num_tets##]; 
+    int otherTetNums[4 * ##num_tets##];
     int otherFaceNums[4 * ##num_tets##];
 };
 
@@ -233,7 +233,7 @@ triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
           float new_p = geodesicParameterPlanes(samplePoint, exit_dual_point, planes[index]);
           if(new_p < smallest_p){
             smallest_p = new_p;
-          }   
+          }
       }
   }
   return smallest_p;
@@ -360,7 +360,7 @@ realRootsOfQuadratic(float a, float b, float c,
 
 // Intersection with plane.
 // The plane is given by all points such that the inner product
-// of the point and the planeEqn is zero. 
+// of the point and the planeEqn is zero.
 float
 distParamForPlaneIntersection(Ray ray,
                               vec4 planeEqn)
@@ -384,7 +384,7 @@ distParamsForSphereIntersection(Ray ray,
 {
     float startDot = R13Dot(center, ray.point);
     float dirDot   = R13Dot(center, ray.dir);
-    
+
     return realRootsOfQuadratic(
         dirDot * dirDot + sphereRadiusParam,
         2.0 * dirDot * startDot,
@@ -591,7 +591,7 @@ normalForRayHit(RayHit ray_hit)
 #endif
 
 #endif
-    
+
     if(ray_hit.object_type == object_type_edge_fan ||
        ray_hit.object_type == object_type_elevation_enter ||
        ray_hit.object_type == object_type_elevation_exit) {

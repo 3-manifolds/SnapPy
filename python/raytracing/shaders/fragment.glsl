@@ -134,7 +134,11 @@ layout (std140) uniform geodesics
 };
 #endif
 
-#if defined(num_eyeballs) && num_eyeballs > 0
+#if !defined(num_eyeballs)
+#define num_eyeballs 0
+#endif
+
+#if num_eyeballs > 0
 layout (std140) uniform eyeballs
 {
     vec4 eyeballPositions[num_eyeballs];
@@ -295,6 +299,15 @@ struct RayHit
     // 0-3 for horospheres, 0-5 for edges.
     int object_index;
 };
+
+bool traceInsideVertexNeighborhood()
+{
+#if num_eyeballs > 0
+    return eyeballOffsets[##num_tets##] > 0;
+#else
+    return false;
+#endif
+}
 
 // We distinguish between:
 // - colored ray hits: the geometry is lit, e.g., the cylinder
@@ -601,7 +614,7 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif
 
-#if defined(num_eyeballs) && num_eyeballs > 0
+#if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
         return normalForSphere(
             ray_hit.ray.point, eyeballPositions[ray_hit.object_index]);
@@ -737,6 +750,59 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
 
+    float horosphere_exit_param = -unreachableDistParam;
+
+#if !##finiteTrig##
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+        if ( horosphereScales[index] != 0.0 ||
+             margulisTubeRadiusParams[index] > 0.50001) {
+
+            vec2 params;
+            if (horosphereScales[index] != 0.0) {
+                params = distParamsForHorosphereIntersection(
+                    ray_hit.ray,
+                    horosphereEqn(index));
+            } else {
+                params = distParamsForTubeIntersection(
+                    ray_hit.ray,
+                    endpointsForMargulisTube(index),
+                    margulisTubeRadiusParams[index],
+                    0.0);
+            }
+
+            if (params.x < smallest_p) {
+                smallest_p = params.x;
+                if (horosphereScales[index] != 0.0) {
+                    ray_hit.object_type = object_type_horosphere_enter;
+                } else {
+                    ray_hit.object_type = object_type_margulis_tube_enter;
+                }
+                ray_hit.object_index = vertex;
+            }
+
+            if (traceInsideVertexNeighborhood()) {
+                if (params.y < smallest_p) {
+                    horosphere_exit_param = params.y;
+                    ray_hit.distWhenLeavingCusp = ray_hit.dist + atanh(params.y);
+
+                    RayHit new_hit = ray_hit;
+                    new_hit.object_index = vertex;
+                    advanceRayByDistParam(new_hit.ray, params.y);
+
+                    if (peripheralCurveForMLCoordinates(
+                            MLCoordinatesForRayHit(new_hit)) > 0) {
+                        smallest_p = params.y;
+
+                        ray_hit.object_type = object_type_horosphere_exit;
+                        ray_hit.object_index = vertex;
+                    }
+                }
+            }
+        }
+    }
+#endif
+
     for(int face = 0; face < 4; face++) {
         if (entry_object_type != object_type_face || entry_object_index != face) {
             // find p when we hit that face
@@ -784,37 +850,11 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 ray_hit.ray,
                 vec4(1,0,0,0),
                 r).x;
-            if (p < smallest_p) {
+            if (p < smallest_p && (!traceInsideVertexNeighborhood() ||
+                                   p > horosphere_exit_param)) {
                 smallest_p = p;
                 ray_hit.object_type = object_type_insphere;
                 ray_hit.object_index = 0;
-            }
-        }
-    }
-
-    for (int vertex = 0; vertex < 4; vertex++) {
-        int index = 4 * ray_hit.tet_num + vertex;
-        if (horosphereScales[index] != 0.0) {
-            vec2 params = distParamsForHorosphereIntersection(ray_hit.ray,
-                                                              horosphereEqn(index));
-            if (params.x < smallest_p) {
-                smallest_p = params.x;
-                ray_hit.object_type = object_type_horosphere_enter;
-                ray_hit.object_index = vertex;
-            }
-        }
-
-        if (margulisTubeRadiusParams[index] > 0.50001) {
-            vec2 params = distParamsForTubeIntersection(
-                ray_hit.ray,
-                endpointsForMargulisTube(index),
-                margulisTubeRadiusParams[index],
-                0.0);
-
-            if (params.x < smallest_p) {
-                smallest_p = params.x;
-                ray_hit.object_type = object_type_margulis_tube_enter;
-                ray_hit.object_index = vertex;
             }
         }
     }
@@ -830,7 +870,8 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
             geodesicTubeRadiusParam[index],
             0.0);
 
-        if (params.x < smallest_p) {
+        if (params.x < smallest_p && (!traceInsideVertexNeighborhood() ||
+                                      params.x > horosphere_exit_param)) {
             smallest_p = params.x;
             ray_hit.object_type = object_type_geodesic_tube;
             ray_hit.object_index = index;
@@ -855,7 +896,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 #endif
 
-#if defined(num_eyeballs) && num_eyeballs > 0
+#if num_eyeballs > 0
     for (int index = eyeballOffsets[ray_hit.tet_num];
          index < eyeballOffsets[ray_hit.tet_num + 1];
          index++) {
@@ -891,11 +932,14 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 edgeTubeRadiusParam,
                 backDistParam);
 
-            if (params.x < smallest_p) {
+            if (params.x < smallest_p && (!traceInsideVertexNeighborhood() ||
+                                          params.x > horosphere_exit_param)) {
                 smallest_p = params.x;
                 ray_hit.object_type = object_type_edge_cylinder_enter;
                 ray_hit.object_index = edge;
-            } else if (params.y < smallest_p) {
+            }
+            if (params.y < smallest_p && (!traceInsideVertexNeighborhood() ||
+                                          params.y > horosphere_exit_param)) {
                 smallest_p = params.y;
                 ray_hit.object_type = object_type_edge_cylinder_exit;
                 ray_hit.object_index = edge;
@@ -908,8 +952,11 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
     if(edgeThickness > 0.00001) {
         if (ray_hit.object_type == object_type_face) {
-            if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
-                ray_hit.object_type = object_type_edge_fan;
+            if (!traceInsideVertexNeighborhood() ||
+                smallest_p > horosphere_exit_param) {
+                if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
+                    ray_hit.object_type = object_type_edge_fan;
+                }
             }
         }
     }
@@ -1162,7 +1209,7 @@ material_params(RayHit ray_hit)
     }
 #endif
 
-#if defined(num_eyeballs) && num_eyeballs > 0
+#if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
 
         vec4 pt = ray_hit.ray.point * eyeballInvEmbeddings[ray_hit.object_index];
@@ -1449,17 +1496,18 @@ RayHit computeRayHit(vec2 xy){
         graph_trace(ray_tet_space);
     }
 
-    // Check whether we are in a horosphere and if yes,
-    // whether the ray hit a peripheral curve.
-    bool hitPeripheral = leaveVertexNeighborhood(ray_tet_space);
-
-    if (hitPeripheral) {
-        // If we hit a peripheral curve, leaveVertexNeighborhood has given us
-        // the intersection point and we can immediately shade.
-    } else {
-        // In all other cases, we need to raytrace before we shade.
-        ray_trace(ray_tet_space);
+    if (!traceInsideVertexNeighborhood()) {
+        // Check whether we are in a horosphere or Margulis tube and if yes,
+        // whether the ray hit a peripheral curve.
+        if (leaveVertexNeighborhood(ray_tet_space)) {
+            // If we hit a peripheral curve, leaveVertexNeighborhood has
+            // given us the intersection point and we can immediately shade.
+            return ray_tet_space;
+        }
     }
+
+    // In all other cases, we need to raytrace before we shade.
+    ray_trace(ray_tet_space);
 
     return ray_tet_space;
 }

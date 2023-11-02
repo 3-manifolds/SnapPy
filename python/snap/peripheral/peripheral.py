@@ -105,7 +105,7 @@ class PeripheralOneCocycle():
         tet = self.mcomplex.Tetrahedra[tet_num]
         triangle = tet.CuspCorners[V]
         for side in triangle.oriented_sides():
-            E0, E1 = [link.TruncatedSimplexCorners[V][v] for v in side.vertices]
+            E0, E1 = (link.TruncatedSimplexCorners[V][v] for v in side.vertices)
             if E0 | E1 == F:
                 break
         assert E0 | E1 == F

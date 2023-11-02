@@ -786,7 +786,7 @@ def _maximal_cusp_area(mfd):
 
 def _mouse_gestures_text():
     if sys.platform == 'darwin':
-        return u"Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
+        return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
     else:
         return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: Alt-Click & Drag"
 
@@ -798,9 +798,9 @@ _translate_key_labels = {
 }
 
 _rotate_key_labels = {
-    'QWERTY': u"Keys: \u2190\u2191\u2192\u2193xz",
-    'AZERTY': u"Keys: \u2190\u2191\u2192\u2193xw",
-    'QWERTZ': u"Keys: \u2190\u2191\u2192\u2193xy"
+    'QWERTY': "Keys: \u2190\u2191\u2192\u2193xz",
+    'AZERTY': "Keys: \u2190\u2191\u2192\u2193xw",
+    'QWERTZ': "Keys: \u2190\u2191\u2192\u2193xy"
 }
 
 ###############################################################################

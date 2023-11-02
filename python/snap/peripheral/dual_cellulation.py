@@ -179,7 +179,7 @@ class OneCycle():
         G = Graph(multiedges=True)
         for edge in D.edges:
             if self.weights[edge.index] != 0:
-                i, j = [v.index for v in edge.vertices]
+                i, j = (v.index for v in edge.vertices)
                 G.add_edge(i, j, edge.index)
 
         assert G.num_verts() == G.num_edges()

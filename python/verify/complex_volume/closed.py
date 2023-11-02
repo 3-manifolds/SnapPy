@@ -52,7 +52,7 @@ def zero_lifted_holonomy(manifold, m, l, f):
     multiple_of_pi = RIF(f*pi)
 
     # (m_fill, l_fill) Dehn-filling
-    m_fill, l_fill = [int(x) for x in manifold.cusp_info()[0]['filling']]
+    m_fill, l_fill = (int(x) for x in manifold.cusp_info()[0]['filling'])
 
     # Compute what the peripheral curves goes to right now
     p_interval = (m_fill * m + l_fill * l).imag() / multiple_of_pi

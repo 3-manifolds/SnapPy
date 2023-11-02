@@ -37,22 +37,26 @@ def compute_tiles(geometric_object,
                   ) -> Sequence[Tile]:
 
     """
-    Finds the pending piece "closest" to the lifted closed geodesic,
-    adds it to the result and marks the neighboring lifted tetrahedra
-    to the pending queue.
+    Returns a stream of tiles where each tile is a tetrahedron lifted
+    to H^3 or a quotient of H^3.
 
-    Here, "closest" is not quite precise because we pick the piece
-    with the lowest lower bound for the distance. Also recall that the
-    distance of a pending piece is the distance between the lifted
-    geodesic L and the entry cell of the lifted tetrahedron, not between
-    L and the lifted tetrahedron itself.
+    That is, imagine a growing neighborhood about the given
+    geometric_object (such as an R13Point, R13Line or R13Horoball) in
+    H^3 or a quotient of H^3. The stream returns the tiles in the order
+    as they are intersected by the growing neighborhood.
 
-    So the right picture to have in mind is: imagine the 2-skeleton
-    of the triangulation in the quotient space intersecting the boundary
-    of a geodesic tube. As the geodesic tube grows, the intersection
-    sweeps through the 2-skeleton. The pending pieces will be processed in
-    the order the faces of the 2-skeleton are encountered during the
-    sweep.
+    Note that this is not precisely true since we only compute a lower
+    bound for the distance of the geometric object to the tetrahedra.
+
+    What is true is that tile.lower_bound_distance is (not strictly)
+    increasing in the stream and that if we look at all tiles up to
+    a certain point, then those tiles cover the neighborhood of radius
+    tile.lower_bound_distance about the geometric_object.
+
+    base_point is used to determine whether two lifted tetrahedra
+    are the same in H^3 or a quotient space of H^3.
+
+    Missing documentation: other parameters.
     """
 
     RF = base_point[0].parent()

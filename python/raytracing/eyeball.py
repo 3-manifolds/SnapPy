@@ -20,6 +20,8 @@ class Eyeball:
 
         self._added_triangles = False
 
+        self.view_state = None
+
     def _enabled(self):
         return self.raytracing_view.ui_parameter_dict['eyeballRadius'][1] > 0
         
@@ -37,7 +39,8 @@ class Eyeball:
             add_triangles_to_tetrahedra(self.mcomplex)
             self._added_triangles = True
 
-        if not self.raytracing_view.ui_parameter_dict['freezeEyeball'][1]:
+        if self.view_state is None or (
+                not self.raytracing_view.ui_parameter_dict['freezeEyeball'][1]):
             self.view_state = self.raytracing_view.view_state
 
         boost, tet_num, current_weight = self.view_state

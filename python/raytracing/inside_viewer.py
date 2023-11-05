@@ -360,6 +360,24 @@ class InsideViewer(ttk.Frame):
             format_string='%.3f')
         row += 1
 
+        self_type_frame = ttk.Frame(frame)
+        self_type_frame.grid(row=row, column=1)
+        row += 1
+
+        radio_buttons = []
+        for i, text in enumerate(["Eye Ball", "Space ship"]):
+            button = ttk.Radiobutton(self_type_frame,
+                                     value=i,
+                                     text=text,
+                                     takefocus=0)
+            button.grid(row=0, column=i)
+            radio_buttons.append(button)
+        self.self_type_controller = UniformDictController(
+            self.widget.ui_parameter_dict,
+            key='eyeballType',
+            radio_buttons=radio_buttons,
+            update_function=self.widget.update_shader_and_redraw)
+
         UniformDictController.create_checkbox(
             frame,
             self.widget.ui_parameter_dict,

@@ -125,7 +125,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'geodesicTubeRadii' : ['float[]', []],
             'geodesicTubeEnables' : ['bool[]', []],
             'eyeballRadius' : ['float', 0.0],
-            'freezeEyeball' : ['bool', False]
+            'freezeEyeball' : ['bool', False],
+            'eyeballType' : ['int', 1]
             }
 
         if cohomology_class:

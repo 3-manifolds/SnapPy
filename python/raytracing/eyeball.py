@@ -28,8 +28,11 @@ class Eyeball:
     def get_compile_time_defs(self):
         if not self._enabled():
             return {}
-        
-        return { 'num_eyeballs' : _max_num_eyeballs }
+
+        d = { 'num_eyeballs' : _max_num_eyeballs,
+              'eyeball_type' : self.raytracing_view.ui_parameter_dict['eyeballType'][1]}
+
+        return d
 
     def get_uniform_bindings(self):
         if not self._enabled():
@@ -72,25 +75,29 @@ class Eyeball:
             if tile.lower_bound_distance > eyeballRadius:
                 break
 
+            m = o13_inverse(boost) * tile.lifted_tetrahedron.o13_matrix
+
             tets_to_data[tile.lifted_tetrahedron.tet.Index].append((
                 tile.lifted_geometric_object.point,
-                o13_inverse(boost) * tile.lifted_tetrahedron.o13_matrix))
+                m,
+                o13_inverse(m)))
         
         eyeballPositions = []
         eyeballInvEmbeddings = []
+        eyeballEmbeddings = []
         eyeballOffsets = []
 
         for data in tets_to_data:
             eyeballOffsets.append(len(eyeballPositions))
-            for eyeballPosition, eyeballInvEmbedding in data:
+            for eyeballPosition, eyeballInvEmbedding, eyeballEmbedding in data:
                 eyeballPositions.append(eyeballPosition)
                 eyeballInvEmbeddings.append(eyeballInvEmbedding)
+                eyeballEmbeddings.append(eyeballEmbedding)
         eyeballOffsets.append(len(eyeballPositions))
 
-        eyeballRadiusParam = math.cosh(eyeballRadius) ** 2
-
         return {
-            'eyeballRadiusParam' : ('float', eyeballRadiusParam),
+            'eyeballRadius' : ('float', eyeballRadius),
             'eyeballs.eyeballPositions' : ('vec4[]', eyeballPositions),
             'eyeballs.eyeballInvEmbeddings' : ('mat4[]', eyeballInvEmbeddings),
+            'eyeballs.eyeballEmbeddings' : ('mat4[]', eyeballEmbeddings),
             'eyeballs.eyeballOffsets' : ('int[]', eyeballOffsets) }

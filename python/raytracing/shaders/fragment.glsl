@@ -143,9 +143,29 @@ layout (std140) uniform eyeballs
 {
     vec4 eyeballPositions[num_eyeballs];
     mat4 eyeballInvEmbeddings[num_eyeballs];
+    mat4 eyeballEmbeddings[num_eyeballs];
     int eyeballOffsets[##num_tets## + 1];
 };
-uniform float eyeballRadiusParam;
+uniform float eyeballRadius;
+
+#if eyeball_type == 0
+float eyeballRadiusParam = cosh(eyeballRadius) * cosh(eyeballRadius);
+#else
+float space_ship_width = 0.4;
+float space_ship_fold_width = 0.13;
+float space_ship_fold_height = 0.3;
+
+vec4 space_ship_top_plane = vec4(0.0, 0.0, -1.0, 0.0);
+vec4 space_ship_edges[2] = vec4[2](
+    vec4(0.0,  1.0 / space_ship_width, 0.0, 1.0),
+    vec4(0.0, -1.0 / space_ship_width, 0.0, 1.0));
+vec4 space_ship_folds[2] = vec4[2](
+    vec4(0.0,  1.0 / space_ship_fold_width, 1.0 / space_ship_fold_height, 1.0),
+    vec4(0.0, -1.0 / space_ship_fold_width, 1.0 / space_ship_fold_height, 1.0));
+float b = length(vec2(space_ship_fold_height, 1.0));
+vec4 space_ship_back_plane = vec4(sinh(eyeballRadius), 0.0, 0.0, -b * cosh(eyeballRadius));
+#endif
+
 #endif
 
 uniform float horosphereScales[4 * ##num_tets##];
@@ -298,6 +318,8 @@ struct RayHit
     // Index of object (within the tetrahedron), e.g.,
     // 0-3 for horospheres, 0-5 for edges.
     int object_index;
+
+    int object_subindex;
 };
 
 bool traceInsideVertexNeighborhood()
@@ -337,6 +359,12 @@ bool isColored(RayHit ray_hit)
         ray_hit.object_type == object_type_eyeball;
 }
 
+vec4
+pointAdvancedByParam(Ray ray, float p)
+{
+    return R13Normalise(ray.point + p * ray.dir );
+}
+
 // Advances ray by distance atanh(p).
 //
 // It is often more convenient to work with tanh(distance) rather than
@@ -344,7 +372,7 @@ bool isColored(RayHit ray_hit)
 void
 advanceRayByDistParam(inout Ray ray, float p)
 {
-    ray.point = R13Normalise(ray.point + p * ray.dir );
+    ray.point = pointAdvancedByParam(ray, p);
     ray.dir = makeUnitTangentVector(ray.dir, ray.point);
 }
 
@@ -616,8 +644,24 @@ normalForRayHit(RayHit ray_hit)
 
 #if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
+#if eyeball_type == 0
         return normalForSphere(
             ray_hit.ray.point, eyeballPositions[ray_hit.object_index]);
+#else       
+        vec4 local_normal;
+        if (ray_hit.object_subindex == 0) {
+            local_normal = space_ship_top_plane;
+        } else {
+            local_normal = R13Normalise(space_ship_folds[ray_hit.object_subindex - 1]);
+        }
+        vec4 normal = local_normal * eyeballEmbeddings[ray_hit.object_index];
+
+        if (R13Dot(ray_hit.ray.dir, normal) > 0) {
+            return normal;
+        } else {
+            return -normal;
+        }
+#endif
     }
 #endif
 
@@ -901,6 +945,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
          index < eyeballOffsets[ray_hit.tet_num + 1];
          index++) {
 
+#if eyeball_type == 0
         vec2 params = distParamsForSphereIntersection(
             ray_hit.ray,
             eyeballPositions[index],
@@ -911,6 +956,51 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
             ray_hit.object_type = object_type_eyeball;
             ray_hit.object_index = index;
         }
+#else
+        Ray local_ray;
+        local_ray.point = ray_hit.ray.point * eyeballInvEmbeddings[index];
+        local_ray.dir = ray_hit.ray.dir * eyeballInvEmbeddings[index];
+
+        {
+            float param = distParamForPlaneIntersection(local_ray, vec4(0.0, 0.0, 1.0, 0.0));
+
+            if (param > 0 && param < smallest_p) {
+                if (ray_hit.dist + atanh(param) > 0.001) {
+                    vec4 hit_point = pointAdvancedByParam(local_ray, param);
+                    if ((dot(hit_point, space_ship_folds[0]) < 0.0 ||
+                         dot(hit_point, space_ship_folds[1]) < 0.0) &&
+                        dot(hit_point, space_ship_back_plane) > 0.0 &&
+                        dot(hit_point, space_ship_edges[0]) > 0.0 &&
+                        dot(hit_point, space_ship_edges[1]) > 0.0) {
+                        smallest_p = param;
+                        ray_hit.object_type = object_type_eyeball;
+                        ray_hit.object_index = index;
+                        ray_hit.object_subindex = 0;
+                    }
+                }
+            }
+        }
+        
+        for (int s = 0; s < 2; s++) {
+            float param = distParamForPlaneIntersection(local_ray, space_ship_folds[s]);
+            
+            if (param > 0 && param < smallest_p) {
+                if (ray_hit.dist + atanh(param) > 0.001) {
+                    vec4 hit_point = pointAdvancedByParam(local_ray, param);
+                    
+                    if (dot(hit_point, space_ship_back_plane) > 0.0 &&
+                        dot(hit_point, space_ship_top_plane) > 0.0 &&
+                        dot(hit_point, space_ship_folds[1-s]) > 0.0) {
+                        
+                        smallest_p = param;
+                        ray_hit.object_type = object_type_eyeball;
+                        ray_hit.object_index = index;
+                        ray_hit.object_subindex = 1 + s;
+                    }
+                }
+            }
+        }
+#endif
     }
 #endif
 
@@ -1212,10 +1302,22 @@ material_params(RayHit ray_hit)
 #if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
 
+#if eyeball_type == 0
         vec4 pt = ray_hit.ray.point * eyeballInvEmbeddings[ray_hit.object_index];
         result.ambient = normalize(pt.yzw);
         
         result.diffuse = vec3(0.0);
+#else       
+        if (ray_hit.object_subindex == 0) {
+            result.diffuse = vec3(1.0, 1.0, 0.0);
+        } else if (ray_hit.object_subindex == 1) {
+            result.diffuse = vec3(1.0, 0.0, 0.0);
+        } else {
+            result.diffuse = vec3(0.0, 1.0, 0.0);
+        }
+        result.diffuse = vec3(0.7, 0.7, 0.7);
+        result.ambient = 0.8 * result.diffuse;
+#endif
     }
 #endif
 

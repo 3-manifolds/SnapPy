@@ -26,6 +26,7 @@ out vec4 out_FragColor;
 
 uniform vec2 screenResolution;
 uniform float viewScale;
+uniform bool crosshairs;
 
 uniform int currentTetIndex;
 uniform mat4 currentBoost;
@@ -1698,6 +1699,13 @@ void main(){
 
     // Divide by total number of subsamples.
     out_FragColor = vec4(total_color / float(subpixelCount * subpixelCount), 1);
+
+    if (crosshairs) {
+        vec2 coord = gl_FragCoord.xy - round(0.5 * screenResolution.xy);
+        if (abs(coord.x) < 1.5 || abs(coord.y) < 1.5) {
+            out_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+    }
 
     gl_FragDepth = min_depth;
 }

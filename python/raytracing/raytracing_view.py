@@ -113,7 +113,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'showElevation' : ['bool', False],
             'desaturate_edges' : ['bool', False],
             'viewScale' : ['float', 1.0],
-            'perspectiveType' : ['int', 0]
+            'perspectiveType' : ['int', 0],
+            'crosshairs' : ['bool', False]
             }
 
         self.ui_parameter_dict = {

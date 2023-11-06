@@ -388,6 +388,16 @@ class InsideViewer(ttk.Frame):
             update_function=self.widget.redraw_if_initialized)
         row += 1
 
+        UniformDictController.create_checkbox(
+            frame,
+            self.widget.ui_uniform_dict,
+            key='crosshairs',
+            text='Crosshairs',
+            row=row,
+            column=1,
+            update_function=self.widget.redraw_if_initialized)
+        row += 1
+
         return frame
 
     def create_skeleton_frame(self, parent):

@@ -1701,9 +1701,12 @@ void main(){
     out_FragColor = vec4(total_color / float(subpixelCount * subpixelCount), 1);
 
     if (crosshairs) {
-        vec2 coord = gl_FragCoord.xy - round(0.5 * screenResolution.xy);
-        if (abs(coord.x) < 1.5 || abs(coord.y) < 1.5) {
-            out_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        vec2 coord = gl_FragCoord.xy - floor(0.5 * screenResolution.xy) + vec2(0.5, 0.5);
+        if (abs(coord.x) < 0.1 && abs(coord.y) < 0.1 * screenResolution.x) {
+            out_FragColor.rgb = vec3(1.0) - out_FragColor.rgb;
+        }
+        if (abs(coord.y) < 0.1 && abs(coord.x) < 0.1 * screenResolution.x) {
+            out_FragColor.rgb = vec3(1.0) - out_FragColor.rgb;
         }
     }
 

@@ -351,8 +351,8 @@ class InsideViewer(ttk.Frame):
         UniformDictController.create_horizontal_scale(
             frame,
             self.widget.ui_parameter_dict,
-            key='eyeballRadius',
-            title='Radius',
+            key='eyeballSize',
+            title='Size',
             row=row,
             left_end=0.0,
             right_end=0.75,

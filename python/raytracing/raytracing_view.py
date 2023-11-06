@@ -124,7 +124,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'geodesicTubeRadii' : ['float[]', []],
             'geodesicTubeEnables' : ['bool[]', []],
-            'eyeballRadius' : ['float', 0.0],
+            'eyeballSize' : ['float', 0.0],
             'freezeEyeball' : ['bool', False],
             'eyeballType' : ['int', 1]
             }

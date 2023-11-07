@@ -1615,6 +1615,7 @@ ELSE:
                 raise RuntimeError("Length of rgba_data not matching")
 
             glGenTextures(1, &self._textureName)
+            glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, self._textureName)
 
             glTexImage2D(GL_TEXTURE_2D, 0,
@@ -1632,6 +1633,14 @@ ELSE:
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MAG_FILTER,
                             GL_LINEAR)
+
+            glBindTexture(GL_TEXTURE_2D, 0)
+
+        def bind(self):
+            glBindTexture(GL_TEXTURE_2D, self._textureName)
+
+        def unbind(self):
+            glBindTexture(GL_TEXTURE_2D, 0)
 
         def delete_resource(self):
             glDeleteTextures(1, &self._textureName)
@@ -2280,7 +2289,7 @@ ELSE:
             for texture in self.textures:
                 texture.delete_resource()
 
-            textures = []
+            self.textures = []
             for texture_file in texture_files:
                 texture = None
                 try:
@@ -2289,7 +2298,7 @@ ELSE:
                     print("Warning could not read texture %s" % texture_file)
                     print(e)
 
-                textures.append(texture)
+                self.textures.append(texture)
 
         def set_fragment_shader_source(self,
                                        source,
@@ -2458,10 +2467,10 @@ ELSE:
 
             if self.image_shader.is_valid():
                 for i, texture in enumerate(self.textures):
-                    glActiveTexture(GL_TEXTURE0 + i)
                     if texture:
-                        glBindTexture(GL_TEXTURE_2D, texture._textureName)
-         
+                        glActiveTexture(GL_TEXTURE0 + i)
+                        texture.bind()
+
                 self.image_shader.use_program()
                 self.image_shader.bind_uniforms(
                     self.get_uniform_bindings(width, height))
@@ -2470,8 +2479,9 @@ ELSE:
                 glDrawArrays(GL_TRIANGLES, 0, 3)
 
                 for i, texture in enumerate(self.textures):
-                    glActiveTexture(GL_TEXTURE0 + i)
-                    glBindTexture(GL_TEXTURE_2D, 0)
+                    if texture:
+                        glActiveTexture(GL_TEXTURE0 + i)
+                        texture.unbind()
                 glActiveTexture(GL_TEXTURE0)
 
             if self.report_time_callback:

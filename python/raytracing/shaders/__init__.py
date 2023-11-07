@@ -4,7 +4,8 @@ from . import __path__ as _base_path
 
 def get_texture_paths():
     return [ os.path.join(_base_path[0], name)
-             for name in ['NonGeometric.png'] ]
+             for name in ['NonGeometric.png',
+                          'Eye.png'] ]
 
 def _replace_compile_time_constants(shader_source, constants_dict):
     for name, value in constants_dict.items():

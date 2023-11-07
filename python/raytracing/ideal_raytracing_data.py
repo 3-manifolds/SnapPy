@@ -320,6 +320,7 @@ class IdealRaytracingData(RaytracingData):
         d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
         d['isNonGeometric'] = ('bool', isNonGeometric)
         d['nonGeometricTexture'] = ('int', 0)
+        d['eyeTexture'] = ('int', 1)
 
         return d
 

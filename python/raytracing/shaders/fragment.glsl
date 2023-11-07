@@ -90,6 +90,7 @@ const vec4 lightSourcePosition = vec4(1.0, 0.0, 0.7, 0.0);
 
 uniform bool isNonGeometric;
 uniform sampler2D nonGeometricTexture;
+uniform sampler2D eyeTexture;
 
 const int num_tets = ##num_tets##;
 const int num_edges = ##num_edges##;
@@ -1305,17 +1306,13 @@ material_params(RayHit ray_hit)
 
 #if eyeball_type == 0
         vec4 pt = ray_hit.ray.point * eyeballInvEmbeddings[ray_hit.object_index];
-        result.ambient = normalize(pt.yzw);
-        
-        result.diffuse = vec3(0.0);
+        vec3 d = normalize(pt.yzw);
+
+        vec2 tex_coords = vec2(0.5) + vec2(atan(d.x, -d.z) / 2, asin(d.y)) / radians(180);
+
+        result.diffuse = texture(eyeTexture, tex_coords).xyz;
+        result.ambient = 0.5 * result.diffuse;
 #else       
-        if (ray_hit.object_subindex == 0) {
-            result.diffuse = vec3(1.0, 1.0, 0.0);
-        } else if (ray_hit.object_subindex == 1) {
-            result.diffuse = vec3(1.0, 0.0, 0.0);
-        } else {
-            result.diffuse = vec3(0.0, 1.0, 0.0);
-        }
         result.diffuse = vec3(0.7, 0.7, 0.7);
         result.ambient = 0.8 * result.diffuse;
 #endif

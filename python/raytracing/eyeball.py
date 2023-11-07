@@ -48,7 +48,9 @@ class Eyeball:
 
         boost, tet_num, current_weight = self.view_state
 
-        RF = boost[0][0].parent()
+        RF = self.raytracing_view.raytracing_data.RF
+        
+        boost = matrix(boost, ring=RF)
 
         base_point = vector([b[0] for b in boost])
 

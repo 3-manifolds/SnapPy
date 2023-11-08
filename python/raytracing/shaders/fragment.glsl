@@ -829,9 +829,9 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                         smallest_p = params.y;
 
                         if (horosphereScales[index] != 0.0) {
-                            ray_hit.object_type = object_type_horosphere_enter;
+                            ray_hit.object_type = object_type_horosphere_exit;
                         } else {
-                            ray_hit.object_type = object_type_margulis_tube_enter;
+                            ray_hit.object_type = object_type_margulis_tube_exit;
                         }
                         ray_hit.object_index = vertex;
                     }

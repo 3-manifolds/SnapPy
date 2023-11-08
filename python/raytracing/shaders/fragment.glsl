@@ -344,21 +344,9 @@ bool traceInsideVertexNeighborhood()
 //
 bool isColored(RayHit ray_hit)
 {
-    return
-        ray_hit.object_type == object_type_vertex_sphere ||
-        ray_hit.object_type == object_type_insphere ||
-        ray_hit.object_type == object_type_horosphere_enter ||
-        ray_hit.object_type == object_type_horosphere_exit ||
-        ray_hit.object_type == object_type_edge_cylinder_enter ||
-        ray_hit.object_type == object_type_edge_cylinder_exit ||
-        ray_hit.object_type == object_type_margulis_tube_enter ||
-        ray_hit.object_type == object_type_margulis_tube_exit ||
-        ray_hit.object_type == object_type_edge_fan ||
-        ray_hit.object_type == object_type_elevation_enter ||
-        ray_hit.object_type == object_type_elevation_exit ||
-        ray_hit.object_type == object_type_geodesic_tube ||
-        ray_hit.object_type == object_type_additional_horosphere ||
-        ray_hit.object_type == object_type_eyeball;
+    return !(
+        ray_hit.object_type == object_type_nothing ||
+        ray_hit.object_type == object_type_face);
 }
 
 vec4
@@ -840,7 +828,11 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                             MLCoordinatesForRayHit(new_hit)) > 0) {
                         smallest_p = params.y;
 
-                        ray_hit.object_type = object_type_horosphere_exit;
+                        if (horosphereScales[index] != 0.0) {
+                            ray_hit.object_type = object_type_horosphere_enter;
+                        } else {
+                            ray_hit.object_type = object_type_margulis_tube_enter;
+                        }
                         ray_hit.object_index = vertex;
                     }
                 }

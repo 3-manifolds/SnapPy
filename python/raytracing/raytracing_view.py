@@ -98,7 +98,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         has_weights = bool(weights or cohomology_class)
 
         self.ui_uniform_dict = {
-            'maxSteps' : ['int', 99 if has_weights else 20],
+            'maxSteps' : ['int', 99 if has_weights else 40],
             'maxDist' : ['float', 6.5 if has_weights else 17.0],
             'subpixelCount': ['int', 1],
             'edgeThickness' : ['float', 0.0000001],

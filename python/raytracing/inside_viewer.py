@@ -475,7 +475,7 @@ class InsideViewer(ttk.Frame):
             title='Max Steps',
             row=row,
             left_end=1,
-            right_end=100,
+            right_end=150,
             update_function=self.widget.redraw_if_initialized)
 
         row += 1

@@ -23,8 +23,10 @@ class Eyeball:
         self.view_state = None
 
     def _enabled(self):
-        return self.raytracing_view.ui_parameter_dict['eyeballSize'][1] > 0
-        
+        return (
+            self.raytracing_view.ui_parameter_dict['eyeballSize'][1] > 0 and
+            self.raytracing_view.ui_parameter_dict['eyeballType'][1] > 0)
+
     def get_compile_time_defs(self):
         if not self._enabled():
             return {}
@@ -60,7 +62,7 @@ class Eyeball:
         min_inner_product = -RF(1.0 + 1e-7)
 
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
-        if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == 0:
+        if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == 2:
             eyeballRadius = eyeballRadius / 2.0
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 

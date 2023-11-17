@@ -355,7 +355,7 @@ class InsideViewer(ttk.Frame):
             title='Size',
             row=row,
             left_end=0.0,
-            right_end=0.75,
+            right_end=1.5,
             update_function=self.widget.update_shader_and_redraw,
             format_string='%.3f')
         row += 1
@@ -365,7 +365,7 @@ class InsideViewer(ttk.Frame):
         row += 1
 
         radio_buttons = []
-        for i, text in enumerate(["Eye Ball", "Space ship"]):
+        for i, text in enumerate(["None", "Paper plane", "Eyeball"]):
             button = ttk.Radiobutton(self_type_frame,
                                      value=i,
                                      text=text,

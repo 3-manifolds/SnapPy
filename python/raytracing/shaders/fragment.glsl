@@ -150,7 +150,7 @@ layout (std140) uniform eyeballs
 };
 uniform float eyeballRadius;
 
-#if eyeball_type == 0
+#if eyeball_type == 2
 float eyeballRadiusParam = cosh(eyeballRadius) * cosh(eyeballRadius);
 #else
 float space_ship_width = 0.4;
@@ -634,7 +634,7 @@ normalForRayHit(RayHit ray_hit)
 
 #if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
-#if eyeball_type == 0
+#if eyeball_type == 2
         return normalForSphere(
             ray_hit.ray.point, eyeballPositions[ray_hit.object_index]);
 #else       
@@ -939,7 +939,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
          index < eyeballOffsets[ray_hit.tet_num + 1];
          index++) {
 
-#if eyeball_type == 0
+#if eyeball_type == 2
         vec2 params = distParamsForSphereIntersection(
             ray_hit.ray,
             eyeballPositions[index],
@@ -1296,7 +1296,7 @@ material_params(RayHit ray_hit)
 #if num_eyeballs > 0
     if (ray_hit.object_type == object_type_eyeball) {
 
-#if eyeball_type == 0
+#if eyeball_type == 2
         vec4 pt = ray_hit.ray.point * eyeballInvEmbeddings[ray_hit.object_index];
         vec3 d = normalize(pt.yzw);
 

@@ -51,15 +51,15 @@ class InsideViewer(ttk.Frame):
             self.notebook.add(self.create_cohomology_class_frame(self),
                               text='Cohomology class')
 
+        self.notebook.add(self.create_eyeball_frame(self),
+                          text='Camera')
+
         self.notebook.add(self.create_cusps_frame(self),
                           text='Cusps/Geodesics')
 
         self.notebook.add(self.create_fillings_frame(self),
                           text='Fillings')
 
-        self.notebook.add(self.create_eyeball_frame(self),
-                          text='Eyeball')
-        
         self.notebook.add(self.create_skeleton_frame(self),
                           text='Skeleton')
 
@@ -211,34 +211,12 @@ class InsideViewer(ttk.Frame):
 
         frame.rowconfigure(row, weight=1)
 
-        view_frame = ttk.Frame(frame)
-        view_frame.grid(row=row, column=1)
-
-        view_label = ttk.Label(view_frame, text="View:")
-        view_label.grid(row=0, column=0)
-
-        radio_buttons = []
-        for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
-            button = ttk.Radiobutton(view_frame,
-                                     value=i,
-                                     text=text,
-                                     takefocus=0)
-            button.grid(row=0, column=i + 1)
-            radio_buttons.append(button)
-
-        self.perspective_type_controller = UniformDictController(
-            self.widget.ui_uniform_dict,
-            key='perspectiveType',
-            radio_buttons=radio_buttons,
-            update_function=self.perspective_type_changed)
-
         self.geodesics_button = ttk.Button(
             frame,
             text="Geodesics ...",
             takefocus=0,
             command=self.show_geodesics_window)
         self.geodesics_button.grid(row=row, column=3)
-
         row += 1
 
         self.geodesics_status_label = ttk.Label(frame, text="")
@@ -343,26 +321,39 @@ class InsideViewer(ttk.Frame):
     def create_eyeball_frame(self, parent):
         frame = ttk.Frame(parent)
 
-        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(0, weight=0)
         frame.columnconfigure(1, weight=1)
 
         row = 0
+        
+        view_label = ttk.Label(frame, text="View")
+        view_label.grid(row=row, column=0)
 
-        UniformDictController.create_horizontal_scale(
-            frame,
-            self.widget.ui_parameter_dict,
-            key='eyeballSize',
-            title='Size',
-            row=row,
-            left_end=0.0,
-            right_end=1.5,
-            update_function=self.widget.update_shader_and_redraw,
-            format_string='%.3f')
+        view_frame = ttk.Frame(frame)
+        view_frame.grid(row=row, column=1)
+
+        radio_buttons = []
+        for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
+            button = ttk.Radiobutton(view_frame,
+                                     value=i,
+                                     text=text,
+                                     takefocus=0)
+            button.grid(row=0, column=i + 1)
+            radio_buttons.append(button)
+
+        self.perspective_type_controller = UniformDictController(
+            self.widget.ui_uniform_dict,
+            key='perspectiveType',
+            radio_buttons=radio_buttons,
+            update_function=self.perspective_type_changed)
+
         row += 1
 
+        self_type_label = ttk.Label(frame, text="Camera body")
+        self_type_label.grid(row=row, column=0)
+        
         self_type_frame = ttk.Frame(frame)
         self_type_frame.grid(row=row, column=1)
-        row += 1
 
         radio_buttons = []
         for i, text in enumerate(["None", "Paper plane", "Eyeball"]):
@@ -378,24 +369,41 @@ class InsideViewer(ttk.Frame):
             radio_buttons=radio_buttons,
             update_function=self.widget.update_shader_and_redraw)
 
-        UniformDictController.create_checkbox(
-            frame,
-            self.widget.ui_parameter_dict,
-            key='freezeEyeball',
-            text='Freeze',
-            row=row,
-            column=1,
-            update_function=self.widget.redraw_if_initialized)
         row += 1
 
-        UniformDictController.create_checkbox(
+        UniformDictController.create_horizontal_scale(
             frame,
+            self.widget.ui_parameter_dict,
+            key='eyeballSize',
+            title='Camera body size',
+            row=row,
+            left_end=0.0,
+            right_end=1.5,
+            update_function=self.widget.update_shader_and_redraw,
+            format_string='%.3f')
+        row += 1
+
+        misc_frame = ttk.Frame(frame)
+        misc_frame.grid(row=row, column=1)
+        
+        UniformDictController.create_checkbox(
+            misc_frame,
+            self.widget.ui_parameter_dict,
+            key='freezeEyeball',
+            text='Freeze camera body',
+            row=row,
+            column=0,
+            update_function=self.widget.redraw_if_initialized)
+
+        UniformDictController.create_checkbox(
+            misc_frame,
             self.widget.ui_uniform_dict,
             key='crosshairs',
             text='Crosshairs',
             row=row,
             column=1,
             update_function=self.widget.redraw_if_initialized)
+
         row += 1
 
         return frame

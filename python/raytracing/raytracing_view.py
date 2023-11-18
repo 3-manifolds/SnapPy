@@ -118,16 +118,16 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             }
 
         self.ui_parameter_dict = {
-            'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
+            'insphere_scale' : ['float', 0.0 ],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
-                                (0.025 if trig_type == 'finite' else 0.04)],
+                                (0.025 if trig_type == 'finite' else 0.0)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'geodesicTubeRadii' : ['float[]', []],
             'geodesicTubeEnables' : ['bool[]', []],
             'eyeballSize' : ['float', 0.5],
             'freezeEyeball' : ['bool', False],
-            'eyeballType' : ['int', 1]
+            'eyeballType' : ['int', 0 if has_weights else 1]
             }
 
         if cohomology_class:

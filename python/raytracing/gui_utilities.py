@@ -15,6 +15,7 @@ class UniformDictController:
     def create_horizontal_scale(container, uniform_dict, key,
                                 row, left_end, right_end, update_function=None,
                                 column=0,
+                                columnspan=1,
                                 title=None,
                                 format_string=None,
                                 index=None, component_index=None):
@@ -26,8 +27,9 @@ class UniformDictController:
         scale = Slider(container=container,
                        left_end=left_end,
                        right_end=right_end)
-        scale.grid(row=row, column=column, sticky=slider_stick, padx=10)
-        column += 1
+        scale.grid(row=row, column=column, columnspan=columnspan,
+                   sticky=slider_stick, padx=10)
+        column += columnspan
         value_label = ttk.Label(container, padding=label_pad)
         value_label.grid(row=row, column=column, sticky=tkinter.NW, padx=20)
 

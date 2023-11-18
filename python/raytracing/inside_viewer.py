@@ -322,23 +322,20 @@ class InsideViewer(ttk.Frame):
         frame = ttk.Frame(parent)
 
         frame.columnconfigure(0, weight=0)
-        frame.columnconfigure(1, weight=1)
+        frame.columnconfigure(4, weight=1)
 
         row = 0
-        
+
         view_label = ttk.Label(frame, text="View")
         view_label.grid(row=row, column=0)
 
-        view_frame = ttk.Frame(frame)
-        view_frame.grid(row=row, column=1)
-
         radio_buttons = []
         for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
-            button = ttk.Radiobutton(view_frame,
+            button = ttk.Radiobutton(frame,
                                      value=i,
                                      text=text,
                                      takefocus=0)
-            button.grid(row=0, column=i + 1, padx=8)
+            button.grid(row=row, column=i + 1, padx=8, sticky=tkinter.NW)
             radio_buttons.append(button)
 
         self.perspective_type_controller = UniformDictController(
@@ -352,16 +349,13 @@ class InsideViewer(ttk.Frame):
         self_type_label = ttk.Label(frame, text="Camera body")
         self_type_label.grid(row=row, column=0)
         
-        self_type_frame = ttk.Frame(frame)
-        self_type_frame.grid(row=row, column=1)
-
         radio_buttons = []
         for i, text in enumerate(["None", "Paper plane", "Eyeball"]):
-            button = ttk.Radiobutton(self_type_frame,
+            button = ttk.Radiobutton(frame,
                                      value=i,
                                      text=text,
                                      takefocus=0)
-            button.grid(row=0, column=i, padx=8)
+            button.grid(row=row, column=1 + i, padx=8, sticky=tkinter.NW)
             radio_buttons.append(button)
         self.self_type_controller = UniformDictController(
             self.widget.ui_parameter_dict,
@@ -377,6 +371,7 @@ class InsideViewer(ttk.Frame):
             key='eyeballSize',
             title='Camera body size',
             row=row,
+            columnspan=4,
             left_end=0.0,
             right_end=1.5,
             update_function=self.widget.update_shader_and_redraw,
@@ -384,7 +379,7 @@ class InsideViewer(ttk.Frame):
         row += 1
 
         misc_frame = ttk.Frame(frame)
-        misc_frame.grid(row=row, column=1)
+        misc_frame.grid(row=row, column=1, columnspan=3)
 
         UniformDictController.create_checkbox(
             misc_frame,

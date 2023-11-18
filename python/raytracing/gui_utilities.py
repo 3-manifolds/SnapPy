@@ -46,9 +46,10 @@ class UniformDictController:
                         column=0,
                         text='',
                         index=None,
-                        component_index=None):
+                        component_index=None,
+                        gridargs = {}):
         checkbox = ttk.Checkbutton(container, takefocus=0)
-        checkbox.grid(row=row, column=column)
+        checkbox.grid(row=row, column=column, **gridargs)
         checkbox.configure(text=text)
 
         return UniformDictController(

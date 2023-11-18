@@ -338,7 +338,7 @@ class InsideViewer(ttk.Frame):
                                      value=i,
                                      text=text,
                                      takefocus=0)
-            button.grid(row=0, column=i + 1)
+            button.grid(row=0, column=i + 1, padx=8)
             radio_buttons.append(button)
 
         self.perspective_type_controller = UniformDictController(
@@ -361,7 +361,7 @@ class InsideViewer(ttk.Frame):
                                      value=i,
                                      text=text,
                                      takefocus=0)
-            button.grid(row=0, column=i)
+            button.grid(row=0, column=i, padx=8)
             radio_buttons.append(button)
         self.self_type_controller = UniformDictController(
             self.widget.ui_parameter_dict,
@@ -385,7 +385,7 @@ class InsideViewer(ttk.Frame):
 
         misc_frame = ttk.Frame(frame)
         misc_frame.grid(row=row, column=1)
-        
+
         UniformDictController.create_checkbox(
             misc_frame,
             self.widget.ui_parameter_dict,
@@ -393,7 +393,8 @@ class InsideViewer(ttk.Frame):
             text='Freeze camera body',
             row=row,
             column=0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.redraw_if_initialized,
+            gridargs = {'padx' : 8})
 
         UniformDictController.create_checkbox(
             misc_frame,
@@ -402,7 +403,8 @@ class InsideViewer(ttk.Frame):
             text='Crosshairs',
             row=row,
             column=1,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.redraw_if_initialized,
+            gridargs = {'padx' : 8})
 
         row += 1
 

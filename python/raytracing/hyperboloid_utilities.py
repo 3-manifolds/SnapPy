@@ -140,14 +140,9 @@ def R13_normalise(v, sign=0):
 
 
 def _is_row_sane(r):
-    for c in r:
-        if not (c < 10000.0 and c > -10000.0):
-            return False
-    return True
-
+    return all(-10000.0 < c and c < 10000.0 for c in r)
 
 _signature = [-1, +1, +1, +1]
-
 
 def _orthonormalize_row(row, other_rows, row_sign):
     result = row

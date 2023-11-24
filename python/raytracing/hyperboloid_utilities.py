@@ -170,8 +170,9 @@ def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
 
 
 def O13_orthonormalize(m):
+    e = m[0][0]
     try:
-        ring = m[0][0].parent()
+        ring = e.parent()
     except AttributeError:
         ring = None
     id_matrix = matrix([[1.0, 0.0, 0.0, 0.0],

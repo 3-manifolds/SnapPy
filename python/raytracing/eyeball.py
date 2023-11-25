@@ -9,7 +9,7 @@ from ..matrix import matrix, vector
 
 import math
 
-_max_num_eyeballs = 25
+_max_num_eyeballs = 40
 
 class Eyeball:
     def __init__(self, raytracing_view):

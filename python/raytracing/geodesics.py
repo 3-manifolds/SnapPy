@@ -1,6 +1,7 @@
 from .geodesic_tube_info import GeodesicTubeInfo
 from .pack import pack_tet_data
 from .upper_halfspace_utilities import *
+from .hyperboloid_utilities import O13_orthonormalise
 
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
@@ -162,6 +163,46 @@ class Geodesics:
 
         return self.mcomplex
 
+    def view_state_for_geodesic(self, index):
+        geodesic_info = self.geodesic_tube_infos[index].geodesic_info
+        p0, p1 = geodesic_info.line.r13_line.points
+
+        ring = p0[0].parent()
+
+        # Rotate the camera so that it is looking down the x-Axis
+        r = matrix([[1, 0, 0, 0],
+                    [0, 0, 0, 1],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0]],
+                   ring=ring)
+
+        # Create a transform that takes the origin to a point on the
+        # geodesic and takes the tangent vector at the origin parallel
+        # to the x-Axis to a vector tangent to the geodesic.
+        #
+        # Note that the orthonormalisation processes the columns from left
+        # to right. This is exactly what we want.
+        #
+        g = O13_orthonormalise(
+            matrix(
+                [ p0 + p1,        # (Projective) point on the geodesic.
+                                  # Orthonormalisation just normalizes it
+                                  # so that it is on the hyperboloid.
+                  p0 - p1,        # Direction of geodesic.
+                                  # Orthonormalisation just projects it into
+                                  # the tangent space of the hyperboloid
+                                  # at the above point and normalizes it.
+                  [ 0, 1, 0, 0],  # Some other vectors so that
+                  [ 0, 0, 1, 0]], # orthonormalisation produces a camera frame.
+                ring=ring).transpose())
+
+        # Change coordinate system used for computation of geodesics
+        # to the one used by the raytracing code.
+        tet_index = 0
+        tet = self.get_mcomplex().Tetrahedra[tet_index]
+        c = tet.to_coordinates_in_symmetric_tet
+
+        return c * g * r, tet_index, 0.0
 
 def compute_geodesic_tube_info_key(geodesic_tube_info):
     l = geodesic_tube_info.complex_length

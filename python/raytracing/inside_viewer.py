@@ -228,6 +228,12 @@ class InsideViewer(ttk.Frame):
         self.view_scale_controller.update()
         self.widget.redraw_if_initialized()
 
+    def set_perspective_type_and_view_scale(self, perspective_type, view_scale):
+        self.widget.ui_uniform_dict['perspectiveType'][1] = perspective_type
+        self.widget.ui_uniform_dict['viewScale'][1] = float(view_scale)
+        self.perspective_type_controller.update()
+        self.perspective_type_changed()
+
     def set_camera_cusp_view(self, which_cusp):
         if self.widget.ui_parameter_dict['cuspAreas'][1][which_cusp] < 0.05:
             self.widget.ui_parameter_dict['cuspAreas'][1][which_cusp] = 0.05
@@ -239,13 +245,7 @@ class InsideViewer(ttk.Frame):
                 which_cusp))
 
         extra_scale = 1.1
-
-        self.widget.ui_uniform_dict['perspectiveType'][1] = 1
-        self.widget.ui_uniform_dict['viewScale'][1] = float(
-            extra_scale * view_scale)
-
-        self.perspective_type_controller.update()
-        self.perspective_type_changed()
+        self.set_perspective_type_and_view_scale(1, extra_scale * view_scale)
 
     def checkbox_update(self):
         self.widget.redraw_if_initialized()

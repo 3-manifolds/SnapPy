@@ -352,7 +352,6 @@ class IdealRaytracingData(RaytracingData):
                  0.0)),
             _cusp_view_scale(tet, subsimplex, area))
 
-
 class NonGeometricRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold):
@@ -393,14 +392,14 @@ class NonGeometricRaytracingData(McomplexEngine):
         weight = 0.0
         return (boost, tet_num, weight)
 
-    def update_view_state(self, boost_tet_num_and_weight,
-                          m=matrix([[1.0, 0.0, 0.0, 0.0],
-                                    [0.0, 1.0, 0.0, 0.0],
-                                    [0.0, 0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 0.0, 1.0]])):
-        boost, tet_num, weight = boost_tet_num_and_weight
-        boost = boost * m
-        return boost, tet_num, weight
+#    def update_view_state(self, boost_tet_num_and_weight,
+#                          m=matrix([[1.0, 0.0, 0.0, 0.0],
+#                                    [0.0, 1.0, 0.0, 0.0],
+#                                    [0.0, 0.0, 1.0, 0.0],
+#                                    [0.0, 0.0, 0.0, 1.0]])):
+#        boost, tet_num, weight = boost_tet_num_and_weight
+#        boost = boost * m
+#        return boost, tet_num, weight
 
 
 def _pgl2_matrix_for_face(tet, F):

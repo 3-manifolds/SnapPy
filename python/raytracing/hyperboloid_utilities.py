@@ -188,7 +188,25 @@ def _orthonormalise_row_sane(row, previous_rows):
     return _unit_four_vector(len(previous_rows), ring)
 
 def O13_orthonormalise(m):
-    t = m.transpose()
+    """
+    The goal of the implementation here is to stably produce a sane
+    result (without large entries) so that no matter how badly the
+    camera view matrix gets beaten up, we will recover.
+
+    Also note that we operate on columns so that the position (image of
+    (1,0,0,0)) of the camera (unless it is way off and we fall back to
+    the origin for the position) is preserved (that is, just normalized).
+
+    We also preserve the x-axis (image of (0,1,0,0)) of the camera
+    frame as best as possible (project it into the tangent space of
+    the hyperboloid at the camera position). Note that the view
+    direction of the camera is the z-axis (image of (0,0,0,1).
+    So if the view direction of the camera needs to be preserved, you might
+    need to apply a matrix shuffling the x-, y-, and z-axis of the
+    camera before and after orthonormalisation.
+    """
+    
+    t = m.transpose() # Transpose to operate on columns
 
     result = [ _time_r13_normalise_sane(vector(t[0])) ]
     for row in t[1:]:

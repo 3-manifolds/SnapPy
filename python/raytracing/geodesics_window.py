@@ -9,6 +9,23 @@ from ..SnapPy import word_as_list # type: ignore
 
 
 class GeodesicsWindow(tkinter.Toplevel):
+    checkbox_column = 0
+    color_column = 1
+    words_column = 2
+    length_column = 3
+    radius_column = 5
+    view_column = 7
+
+    headings = (
+        # (text, column, weight, span)
+        ('Show', checkbox_column, 0, 1),
+        ('Color', color_column, 0, 1),
+        ('Word(s)', words_column, 0, 1),
+        ('Complex length', length_column, 0, 2),
+        ('Radius', radius_column, 0, 1),
+        ('    ', 6, 0, 1),
+        ('View', view_column, 0, 1))
+
     def __init__(self, inside_viewer, *args, **kwards):
         # Disable the minimize button when we get to use Tk 8.7
         tkinter.Toplevel.__init__(self, class_='snappy')
@@ -18,14 +35,6 @@ class GeodesicsWindow(tkinter.Toplevel):
 
         self.inside_viewer = inside_viewer
         self.raytracing_view = inside_viewer.widget
-        self.headings = (
-            # (text, column, weight, span)
-            ('Show', 0, 0, 1),
-            ('Color', 1, 0, 1),
-            ('Word(s)', 2, 0, 1),
-            ('Complex length', 3, 0, 2),
-            ('Radius', 5, 0, 1),
-            ('    ', 6, 0, 1))
 
         self.frame = ttk.Frame(self)
         self.frame.pack(expand=True, fill=tkinter.BOTH)
@@ -75,19 +84,16 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.populate_geodesics_frame()
         self.scrollable_frame.headings(self.headings)
 
+    def _geodesics(self):
+        return self.raytracing_view.additional_structures['geodesics']
+
     def populate_geodesics_frame(self):
         for widget in self.geodesics_frame.grid_slaves():
             widget.destroy()
 
         row = 0
 
-        checkbox_column = 0
-        color_column = 1
-        words_column = 2
-        length_column = 3
-        radius_column = 5
-
-        for geodesic in self.raytracing_view.additional_structures['geodesics'].geodesics_sorted_by_length():
+        for geodesic in self._geodesics().geodesics_sorted_by_length():
             if not geodesic.geodesic_info.core_curve_cusp:
                 UniformDictController.create_checkbox(
                     self.geodesics_frame,
@@ -95,7 +101,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                     key='geodesicTubeEnables',
                     index=geodesic.index,
                     row=row,
-                    column=checkbox_column,
+                    column=self.checkbox_column,
                     update_function=self.geodesic_checkbox_clicked)
 
             text = ', '.join(geodesic.words)
@@ -103,11 +109,11 @@ class GeodesicsWindow(tkinter.Toplevel):
                 text += ' (not primitive)'
 
             l = ttk.Label(self.geodesics_frame, text=text)
-            l.grid(row=row, column=words_column)
+            l.grid(row=row, column=self.words_column)
 
             l = ttk.Label(self.geodesics_frame,
                           text='%.8f' % geodesic.complex_length.real())
-            l.grid(row=row, column=length_column)
+            l.grid(row=row, column=self.length_column)
 
             im_length = geodesic.complex_length.imag()
             abs_im_length = im_length.abs()
@@ -117,7 +123,7 @@ class GeodesicsWindow(tkinter.Toplevel):
 
                 l = ttk.Label(self.geodesics_frame,
                               text=s + ' %.8f * I' % abs_im_length)
-                l.grid(row=row, column=length_column + 1)
+                l.grid(row=row, column=self.length_column + 1)
 
             color = geodesic_index_to_color(geodesic.index)
 
@@ -130,12 +136,12 @@ class GeodesicsWindow(tkinter.Toplevel):
                                   text="Color",
                                   fg=color_to_tkinter(color),
                                   bg=color_to_tkinter(color))
-            l.grid(row=row, column=color_column, padx=5)
+            l.grid(row=row, column=self.color_column, padx=5)
 
             if geodesic.geodesic_info.core_curve_cusp:
                 l = tkinter.Label(self.geodesics_frame,
                                   text="Use Cusp areas tab")
-                l.grid(row=row, column=radius_column, padx=5)
+                l.grid(row=row, column=self.radius_column, padx=5)
             else:
                 scale = UniformDictController.create_horizontal_scale(
                     self.geodesics_frame,
@@ -143,7 +149,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                     key='geodesicTubeRadii',
                     index=geodesic.index,
                     row=row,
-                    column=radius_column,
+                    column=self.radius_column,
                     left_end=0.0,
                     right_end=1.0,
                     update_function=self.update_geodesic_data,
@@ -151,6 +157,14 @@ class GeodesicsWindow(tkinter.Toplevel):
 
                 # Need to color Scale - but the following code fails.
                 # scale.configure(background = color_to_tkinter(color))
+
+            if not geodesic.geodesic_info.core_curve_cusp:
+                btn = ttk.Button(
+                    self.geodesics_frame,
+                    text='View',
+                    takefocus=0,
+                    command=lambda i=geodesic.index: self.view_geodesic(i))
+                btn.grid(row=row, column=self.view_column)
 
             row += 1
         self.scrollable_frame.set_widths()
@@ -170,7 +184,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         self.status_label.configure(text=_default_status_msg, foreground='')
 
         try:
-            if not self.raytracing_view.additional_structures['geodesics'].add_length_spectrum(
+            if not self._geodesics().add_length_spectrum(
                     float(self.length_box.get())):
                 self.status_label.configure(text='No new geodesics found.',
                                             foreground='')
@@ -196,7 +210,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             return
 
         try:
-            n = self.raytracing_view.additional_structures['geodesics'].get_mcomplex().num_generators
+            n = self._geodesics().get_mcomplex().num_generators
             word_as_list(word, n)
         except ValueError:
             self.status_label.configure(text=word + " contains non-generators",
@@ -204,7 +218,7 @@ class GeodesicsWindow(tkinter.Toplevel):
             return
 
         try:
-            index = self.raytracing_view.additional_structures['geodesics'].add_word(word)
+            index = self._geodesics().add_word(word)
         except WordAppearsToBeParabolic:
             self.status_label.configure(text=word + " is parabolic",
                                         foreground='red')
@@ -227,6 +241,11 @@ class GeodesicsWindow(tkinter.Toplevel):
             self.inside_viewer.update_edge_and_insphere_controllers()
         self.raytracing_view.update_geodesic_data_and_redraw()
 
+    def view_geodesic(self, i):
+        self.raytracing_view.view_state = (
+            self.raytracing_view.raytracing_data.update_view_state(
+                self._geodesics().view_state_for_geodesic(i)))
+        self.inside_viewer.set_perspective_type_and_view_scale(1, 1.0)
 
 def color_to_tkinter(color):
     return "#%.3x%.3x%.3x" % tuple([min(max(int(x * 4095), 0), 4095)

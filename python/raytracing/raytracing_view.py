@@ -4,6 +4,7 @@ from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
 from .geodesics import Geodesics
 from .eyeball import Eyeball
+from .eyeball import eyeball_type_none, eyeball_type_paper_plane
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
@@ -127,7 +128,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'geodesicTubeEnables' : ['bool[]', []],
             'eyeballSize' : ['float', 0.5],
             'freezeEyeball' : ['bool', False],
-            'eyeballType' : ['int', 0 if has_weights else 1]
+            'eyeballType' : ['int', eyeball_type_none if has_weights else eyeball_type_paper_plane]
             }
 
         if cohomology_class:

@@ -10,6 +10,7 @@ from .raytracing_view import *
 from .geodesics_window import GeodesicsWindow
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
+from .eyeball import eyeball_type_none, eyeball_type_paper_plane, eyeball_type_eyeball
 
 try:
     from math import gcd as _gcd
@@ -350,9 +351,12 @@ class InsideViewer(ttk.Frame):
         self_type_label.grid(row=row, column=0)
         
         radio_buttons = []
-        for i, text in enumerate(["None", "Paper plane", "Eyeball"]):
+        for i, (eyeball_type, text) in enumerate([
+                (eyeball_type_none, "None"),
+                (eyeball_type_paper_plane, "Paper plane"),
+                (eyeball_type_eyeball, "Eyeball")]):
             button = ttk.Radiobutton(frame,
-                                     value=i,
+                                     value=eyeball_type,
                                      text=text,
                                      takefocus=0)
             button.grid(row=row, column=1 + i, padx=8, sticky=tkinter.NW)

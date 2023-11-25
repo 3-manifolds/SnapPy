@@ -9,6 +9,10 @@ from ..matrix import matrix, vector
 
 import math
 
+eyeball_type_none = 0
+eyeball_type_paper_plane = 1
+eyeball_type_eyeball = 2
+
 _max_num_eyeballs = 40
 
 class Eyeball:
@@ -25,7 +29,7 @@ class Eyeball:
     def _enabled(self):
         return (
             self.raytracing_view.ui_parameter_dict['eyeballSize'][1] > 0 and
-            self.raytracing_view.ui_parameter_dict['eyeballType'][1] > 0)
+            self.raytracing_view.ui_parameter_dict['eyeballType'][1] > eyeball_type_none)
 
     def get_compile_time_defs(self):
         if not self._enabled():
@@ -62,7 +66,7 @@ class Eyeball:
         min_inner_product = -RF(1.0 + 1e-7)
 
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
-        if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == 2:
+        if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == eyeball_type_eyeball:
             eyeballRadius = eyeballRadius / 2.0
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 

@@ -102,7 +102,6 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'maxSteps' : ['int', 99 if has_weights else 40],
             'maxDist' : ['float', 6.5 if has_weights else 17.0],
             'subpixelCount': ['int', 1],
-            'edgeThickness' : ['float', 0.0000001],
 
             'contrast' : ['float', 0.1 if has_weights else 0.5],
             'noGradient' : ['bool', False],
@@ -121,6 +120,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.ui_parameter_dict = {
             'insphere_scale' : ['float', 0.0 ],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
+            'edgeThickness' : ['float', 0.0],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
                                 (0.025 if trig_type == 'finite' else 0.0)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
@@ -194,6 +194,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 'viewMode' : ('int', self.view),
                 'edgeTubeRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1]) ** 2 / 2.0),
+                'edgeThicknessParam' :
+                    ('float', math.sinh(self.ui_parameter_dict['edgeThickness'][1]) ** 2),
                 'vertexSphereRadiusParam' :
                     ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1]) ** 2)
             },

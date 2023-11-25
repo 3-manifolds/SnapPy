@@ -420,7 +420,7 @@ class InsideViewer(ttk.Frame):
 
         UniformDictController.create_horizontal_scale(
             frame,
-            self.widget.ui_uniform_dict,
+            self.widget.ui_parameter_dict,
             key='edgeThickness',
             title='Face boundary thickness',
             row=row,
@@ -440,7 +440,7 @@ class InsideViewer(ttk.Frame):
                 left_end=0.0,
                 right_end=1.25,
                 update_function=self.widget.recompute_raytracing_data_and_redraw,
-                format_string='%.2f'))
+                format_string='%.3f'))
         row += 1
 
         self.edgeTubeRadiusController = (
@@ -452,7 +452,8 @@ class InsideViewer(ttk.Frame):
                 row=row,
                 left_end=0.0,
                 right_end=0.2,
-                update_function=self.widget.redraw_if_initialized))
+                update_function=self.widget.redraw_if_initialized,
+                format_string='%.3f'))
         row += 1
 
         label = ttk.Label(frame, text="Edge colors", padding=gui_utilities.label_pad)

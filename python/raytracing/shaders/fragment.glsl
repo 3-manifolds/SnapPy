@@ -35,7 +35,7 @@ uniform float currentWeight;
 uniform int maxSteps;
 uniform float maxDist;
 uniform int subpixelCount;
-uniform float edgeThickness;
+uniform float edgeThicknessParam;
 uniform float contrast;
 
 const int perspectiveTypeMaterial   = 0;
@@ -1034,11 +1034,11 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     ray_hit.dist += atanh(smallest_p);
     advanceRayByDistParam(ray_hit.ray, smallest_p);
 
-    if(edgeThickness > 0.00001) {
+    if(edgeThicknessParam > 0.00001) {
         if (ray_hit.object_type == object_type_face) {
             if (!traceInsideVertexNeighborhood() ||
                 smallest_p > horosphere_exit_param) {
-                if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
+                if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThicknessParam) {
                     ray_hit.object_type = object_type_edge_fan;
                 }
             }

@@ -92,7 +92,7 @@ class RaytracingData(McomplexEngine):
         boost = matrix(boost, ring=self.RF)
         m = matrix(m, ring=self.RF)
 
-        boost = O13_orthonormalize(boost * m)
+        boost = O13_orthonormalise(boost * m)
 
         entry_F = -1
 
@@ -109,7 +109,7 @@ class RaytracingData(McomplexEngine):
             if amount < 0.0000001:
                 break
 
-            boost = O13_orthonormalize(tet.O13_matrices[F] * boost)
+            boost = O13_orthonormalise(tet.O13_matrices[F] * boost)
             tet_num = tet.Neighbor[F].Index
             entry_F = tet.Gluing[F].image(F)
             weight += tet.Weights[F]

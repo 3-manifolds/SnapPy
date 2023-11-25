@@ -1,7 +1,9 @@
 from snappy.SnapPy import matrix, vector
 
 from snappy.hyperboloid import (r13_dot,
-                                unit_time_vector_to_o13_hyperbolic_translation)
+                                unit_time_vector_to_o13_hyperbolic_translation,
+                                time_r13_normalise,
+                                space_r13_normalise)
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -138,54 +140,60 @@ def R13_normalise(v, sign=0):
 
     return v / denom
 
+def _is_vector_sane(v):
+    return all(-10000.0 < c and c < 10000.0 for c in v)
 
-def _is_row_sane(r):
-    return all(-10000.0 < c and c < 10000.0 for c in r)
+def _check_vector_sane(v):
+    if _is_vector_sane(v):
+        return v
+    raise ValueError()
 
 _signature = [-1, +1, +1, +1]
 
-def _orthonormalize_row(row, other_rows, row_sign):
-    result = row
-    for sign, other_row in zip(_signature, other_rows):
-        s = sign * r13_dot(row, other_row)
-        result = [ c - s * other_c
-                   for c, other_c in zip(result, other_row) ]
+def _unit_four_vector(i, ring):
+    return vector([ring(1.0 if i == j else 0.0)
+                   for j in range(4)])
+
+def _time_r13_normalise_sane(v):
     try:
-        result = R13_normalise(vector(result), sign=row_sign)
+        return _check_vector_sane(
+            time_r13_normalise(v))
     except ValueError:
-        return None
-    if not _is_row_sane(result):
-        return None
-    return result
+        pass
+    return _unit_four_vector(0, ring=v[0].parent())
 
+def _orthonormalise_row(row, previous_rows):
+    result = row
+    for j, previous_row in enumerate(previous_rows):
+        s = _signature[j] * r13_dot(row, previous_row)
+        result = result - s * previous_row
+    return space_r13_normalise(result)
 
-def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
-    r = _orthonormalize_row(row, other_rows, sign)
-    if r is not None:
-        return r
-    r = _orthonormalize_row(fallback_value, other_rows, sign)
-    if r is not None:
-        return r
-    return fallback_value
-
-
-def O13_orthonormalize(m):
-    e = m[0][0]
+def _orthonormalise_row_sane(row, previous_rows):
     try:
-        ring = e.parent()
-    except AttributeError:
-        ring = None
-    id_matrix = matrix([[1.0, 0.0, 0.0, 0.0],
-                        [0.0, 1.0, 0.0, 0.0],
-                        [0.0, 0.0, 1.0, 0.0],
-                        [0.0, 0.0, 0.0, 1.0]],
-                       ring=ring)
+        return _check_vector_sane(
+            _orthonormalise_row(row, previous_rows))
+    except ValueError:
+        pass
+    ring = row[0].parent()
+    for i in range(3):
+        try:
+            v = _unit_four_vector(
+                (i + len(previous_rows) - 1) % 3 + 1,
+                ring)
+            return _check_vector_sane(
+                _orthonormalise_row(v, previous_rows))
+        except ValueError:
+            pass
+    return _unit_four_vector(len(previous_rows), ring)
 
-    result = [ ]
-    for row, id_row, sign in zip(m, id_matrix, _signature):
-        result.append(_orthonormalize_row_sane(row, id_row, result, sign))
-    return matrix(result, ring=ring)
+def O13_orthonormalise(m):
+    t = m.transpose()
 
+    result = [ _time_r13_normalise_sane(vector(t[0])) ]
+    for row in t[1:]:
+        result.append(_orthonormalise_row_sane(vector(row), result))
+    return matrix(result).transpose()
 
 def complex_to_pair(z):
     """

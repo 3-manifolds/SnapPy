@@ -3,6 +3,7 @@ import tkinter
 from tkinter import ttk
 
 from .gui_utilities import UniformDictController, ScrollableFrame
+from .tooltip import ToolTip
 from .geodesics import geodesic_index_to_color, LengthSpectrumError
 from ..geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
 from ..SnapPy import word_as_list # type: ignore
@@ -164,6 +165,8 @@ class GeodesicsWindow(tkinter.Toplevel):
                     text='View',
                     takefocus=0,
                     command=lambda i=geodesic.index: self.view_geodesic(i))
+                ToolTip(btn,
+                        msg="Move camera onto geodesic looking down the geodesic")
                 btn.grid(row=row, column=self.view_column)
 
             row += 1

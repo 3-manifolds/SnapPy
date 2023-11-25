@@ -9,6 +9,7 @@ from .view_scale_controller import ViewScaleController
 from .raytracing_view import *
 from .geodesics_window import GeodesicsWindow
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
+from .tooltip import ToolTip
 from .zoom_slider import Slider, ZoomSlider
 from .eyeball import eyeball_type_none, eyeball_type_paper_plane, eyeball_type_eyeball
 
@@ -207,6 +208,8 @@ class InsideViewer(ttk.Frame):
                 command=(
                     lambda which_cusp=i:
                         self.set_camera_cusp_view(which_cusp)))
+            ToolTip(cusp_button,
+                    msg="Move camera into cusp neighborhood and look out")
             cusp_button.grid(row=row, column=3)
             row += 1
 
@@ -310,11 +313,15 @@ class InsideViewer(ttk.Frame):
         orb_button = ttk.Button(
             subframe, text="Make orbifold", takefocus=0,
             command=self.make_orbifold)
+        ToolTip(orb_button,
+                msg="Make filling coefficients integers")
         orb_button.grid(row=0, column=2)
 
         mfd_button = ttk.Button(
             subframe, text="Make manifold", takefocus=0,
             command=self.make_manifold)
+        ToolTip(mfd_button,
+                msg="Make filling coefficients co-prime integers")
         mfd_button.grid(row=0, column=3)
 
         return frame
@@ -331,12 +338,22 @@ class InsideViewer(ttk.Frame):
         view_label.grid(row=row, column=0)
 
         radio_buttons = []
-        for i, text in enumerate(["Material", "Ideal", "Hyperideal"]):
+        for i, text, tooltip in [
+                (0,
+                 "Material",
+                 "Camera rays leave from the same point"),
+                (1,
+                 "Ideal",
+                 "Camera rays leave orthogonally from a horosphere"),
+                (2,
+                 "Hyperideal",
+                 "Camera rays leave orthogonally from a (hyperbolic) plane")]:
             button = ttk.Radiobutton(frame,
                                      value=i,
                                      text=text,
                                      takefocus=0)
             button.grid(row=row, column=i + 1, padx=8, sticky=tkinter.NW)
+            ToolTip(button, msg=tooltip)
             radio_buttons.append(button)
 
         self.perspective_type_controller = UniformDictController(
@@ -349,17 +366,28 @@ class InsideViewer(ttk.Frame):
 
         self_type_label = ttk.Label(frame, text="Camera body")
         self_type_label.grid(row=row, column=0)
+
+        ToolTip(self_type_label,
+                msg="What shows your position and orientation in the manifold")
         
         radio_buttons = []
-        for i, (eyeball_type, text) in enumerate([
-                (eyeball_type_none, "None"),
-                (eyeball_type_paper_plane, "Paper plane"),
-                (eyeball_type_eyeball, "Eyeball")]):
+        for i, (eyeball_type, text, tooltip) in enumerate([
+                (eyeball_type_none,
+                 "None",
+                 ""),
+                (eyeball_type_paper_plane,
+                 "Paper plane",
+                 "Paper plane shows your position and orientation in the manifold"),
+                (eyeball_type_eyeball,
+                 "Eyeball",
+                 "Eyeball shows your position and orientation in the manifold")]):
             button = ttk.Radiobutton(frame,
                                      value=eyeball_type,
                                      text=text,
                                      takefocus=0)
             button.grid(row=row, column=1 + i, padx=8, sticky=tkinter.NW)
+            if tooltip:
+                ToolTip(button, msg=tooltip)
             radio_buttons.append(button)
         self.self_type_controller = UniformDictController(
             self.widget.ui_parameter_dict,
@@ -385,7 +413,7 @@ class InsideViewer(ttk.Frame):
         misc_frame = ttk.Frame(frame)
         misc_frame.grid(row=row, column=1, columnspan=3)
 
-        UniformDictController.create_checkbox(
+        freeze_checkbox = UniformDictController.create_checkbox(
             misc_frame,
             self.widget.ui_parameter_dict,
             key='freezeEyeball',
@@ -393,7 +421,11 @@ class InsideViewer(ttk.Frame):
             row=row,
             column=0,
             update_function=self.widget.redraw_if_initialized,
-            gridargs = {'padx' : 8})
+            gridargs = {'padx' : 8}).checkbox
+        ToolTip(freeze_checkbox,
+                msg=("Keep paper plane/eyeball at the same position "
+                     "and attitude even when you are moving through the "
+                     "manifold"))
 
         UniformDictController.create_checkbox(
             misc_frame,
@@ -418,7 +450,7 @@ class InsideViewer(ttk.Frame):
 
         row = 0
 
-        UniformDictController.create_horizontal_scale(
+        scale = UniformDictController.create_horizontal_scale(
             frame,
             self.widget.ui_parameter_dict,
             key='edgeThickness',
@@ -427,7 +459,9 @@ class InsideViewer(ttk.Frame):
             left_end=0.0,
             right_end=0.35,
             update_function=self.widget.redraw_if_initialized,
-            format_string='%.3f')
+            format_string='%.3f').scale
+        ToolTip(scale,
+                msg=("Partially show faces of the tetrahedra."))
         row += 1
 
         self.insphereScaleController = (

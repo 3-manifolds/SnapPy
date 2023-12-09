@@ -437,6 +437,11 @@ Complex complex_volume_dilog(Complex z)
 Complex complex_volume_log(Complex z)
 {
     Complex result;
+    if (z.real == 0.0 && z.imag == 0.0) {
+        result.real = -INFINITY;
+        result.imag = NAN;
+        return result;
+    }
     result.real = 0.5 * log(z.real * z.real + z.imag * z.imag);
     // We explicitly make a special case for the negative real axis!
     // This is because in the implementation of double, zero is signed,

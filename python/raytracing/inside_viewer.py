@@ -368,7 +368,7 @@ class InsideViewer(ttk.Frame):
         self_type_label.grid(row=row, column=0)
 
         ToolTip(self_type_label,
-                msg="What shows your position and orientation in the manifold")
+                msg="Shows your position and orientation in the manifold")
         
         radio_buttons = []
         for i, (eyeball_type, text, tooltip) in enumerate([

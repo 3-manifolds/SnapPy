@@ -20,7 +20,7 @@ class ToolTip(tk.Toplevel):
     def __init__(
         self,
         widget: tk.Widget,
-        msg: str | Callable = None,
+        msg = None, # : str | Callable
         delay: float = 1.0,
         follow: bool = True,
         refresh: float = 1.0,

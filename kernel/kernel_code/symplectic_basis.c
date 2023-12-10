@@ -278,9 +278,11 @@ void                    free_cusp_structure(CuspStructure **, int, int);
 void                    init_cusp_triangulation(Triangulation *, CuspStructure *);
 void                    init_cusp_region(CuspStructure *);
 int                     init_intersect_cusp_region(CuspStructure *, CuspTriangle *, int);
-int                     init_intersect_vertex_two_zero_flows(CuspStructure *, CuspTriangle *, int);
+int                     init_intersect_vertex_two_zero_flows(CuspStructure *,
+			    CuspTriangle *, int);
 int                     init_normal_cusp_region(CuspStructure *, CuspTriangle *, int);
-void                    set_cusp_region_data(CuspStructure *, CuspTriangle *, const int [4], const Boolean [4], int);
+void                    set_cusp_region_data(CuspStructure *, CuspTriangle *,
+			    const int [4], const Boolean [4], int);
 void                    init_train_line(CuspStructure *);
 CurveComponent          *init_curve_component(int, int, int);
 OscillatingCurves       *init_oscillating_curves(Triangulation *, const Boolean *);
@@ -295,12 +297,14 @@ int                     net_flow_around_vertex(CuspTriangle *, int);
 void                    label_triangulation_edges(Triangulation *);
 void                    label_cusp_vertex_indices(CuspTriangle *, CuspTriangle *, int);
 void                    walk_around_cusp_vertex(CuspTriangle *, int, int);
-CuspTriangle            *find_cusp_triangle(CuspTriangle *, CuspTriangle *, CuspTriangle *, int);
+CuspTriangle            *find_cusp_triangle(CuspTriangle *, CuspTriangle *,
+					    CuspTriangle *, int);
 void                    update_adj_region_data(CuspStructure *);
 CuspRegion              *find_adj_region(CuspRegion *, CuspRegion *, CuspRegion *, int);
 void                    copy_region(CuspRegion *, CuspRegion *);
 void                    construct_cusp_region_dual_graph(CuspStructure *);
-void                    log_structs(Triangulation *, CuspStructure **, OscillatingCurves *, char *);
+void                    log_structs(Triangulation *, CuspStructure **,
+				    OscillatingCurves *, const char *);
 
 /**
  * Construct Oscillating Curves and calculate holonomy
@@ -1643,7 +1647,8 @@ void construct_cusp_region_dual_graph(CuspStructure *cusp) {
  * dual_curves, inside_edge, graph, endpoints
  */
 
-void log_structs(Triangulation *manifold, CuspStructure **cusps, OscillatingCurves *curves, char *type) {
+void log_structs(Triangulation *manifold, CuspStructure **cusps,
+		 OscillatingCurves *curves, const char *type) {
     int i, j, k, x_vertex1, x_vertex2, y_vertex1, y_vertex2, v1, v2, v3;
 
     CuspTriangle *tri;

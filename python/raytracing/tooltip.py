@@ -97,7 +97,7 @@ class ToolTip(tk.Toplevel):
             self.status = "inside"
 
         # If the follow flag is not set, motion within the widget will
-        # make the ToolTip dissapear
+        # make the ToolTip disappear
         if not self.follow:
             self.status = "inside"
             self.withdraw()

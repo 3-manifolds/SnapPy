@@ -438,8 +438,14 @@ Complex complex_volume_log(Complex z)
 {
     Complex result;
     if (z.real == 0.0 && z.imag == 0.0) {
-        result.real = -INFINITY;
-        result.imag = NAN;
+        /*
+         * We return the value returned by complex_log when passed 0 + 0i.
+         * When complex_volume_log is used to find the volume of a degenerate
+         * orthoscheme the return value will be multiplied by 0.  So any
+         * legitimate real values can be used, but they cannot be NAN.
+         */
+        result.real = -REAL_MAX;
+        result.imag = PI;
         return result;
     }
     result.real = 0.5 * log(z.real * z.real + z.imag * z.imag);

@@ -116,15 +116,15 @@ cdef class Manifold(Triangulation):
         EXAMPLE::
 
             sage: M = Manifold('m004')
-            sage: parent(M.volume())
+            sage: M.volume().parent()
             Real Field with 64 bits of precision
             sage: Manifold.use_field_conversion('snappy')
             sage: M = Manifold('m004')
-            sage: parent(M.volume())
+            sage: M.volume().parent()
             SnapPy Numbers with 64 bits precision
             sage: Manifold.use_field_conversion('sage')
             sage: M = Manifold('m004')
-            sage: parent(M.volume())
+            sage: M.volume().parent()
             Real Field with 64 bits of precision
         """
         number.use_field_conversion(func)

@@ -1,6 +1,7 @@
 # cython: language_level=3str
 
-DEF REAL_TYPE = 'double'
+ctypedef double Real
+
 include "SnapPy.pxi"
 include "numbers/double.pyx"
 include "core/basic.pyx"

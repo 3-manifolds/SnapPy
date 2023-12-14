@@ -3,6 +3,40 @@ from .number import Number as RawNumber
 class Number(RawNumber):
     _default_precision=212
 
+from libcpp cimport bool as cpp_bool
+cdef extern from "qd_real_SnapPy.h":
+    qd_real PI_SQUARED_BY_2
+    double default_vertex_epsilon
+    qd_real det_error_epsilon
+    cdef cppclass qd_real:
+        double x[4]
+        qd_real() except +
+        qd_real(double) except +
+        qd_real(char *) except +
+        qd_real(qd_real) except +
+        qd_real operator+(qd_real)
+        qd_real operator-(qd_real)
+        qd_real operator*(qd_real)
+        qd_real operator/(qd_real)
+        cpp_bool operator<(qd_real)
+        cpp_bool operator<(double)
+        cpp_bool operator>(qd_real)
+        cpp_bool operator>(double)
+        cpp_bool operator<=(qd_real)
+        cpp_bool operator<=(double)
+        cpp_bool operator>=(qd_real)
+        cpp_bool operator>=(double)
+        cpp_bool operator==(qd_real)
+        cpp_bool operator==(double)
+        cpp_bool operator!=(qd_real)
+        cpp_bool operator!=(double)
+        void write(char *s, int len, int precision)
+
+cdef real_to_string(Real x):
+    cdef char buffer[128]
+    x.write(buffer, 128, 64)
+    return buffer  # this should return a python string
+
 cdef Real2gen_direct(Real R):
     """
     Convert a Real to a pari gen of type t_REAL.  This constructs the gen

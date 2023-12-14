@@ -1,7 +1,9 @@
 # distutils: language = c++
 # distutils: sources = SnapPyHP.cpp
 # cython: language_level=3str
-DEF REAL_TYPE = "qd_real"
+
+ctypedef qd_real Real
+
 include "SnapPy.pxi"
 include "numbers/qd.pyx"
 include "core/basic.pyx"

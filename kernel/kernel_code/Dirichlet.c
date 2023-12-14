@@ -580,8 +580,8 @@ static void simplify_generators(
                 *bB,
                 *best_aA = NULL,
                 *best_bB = NULL;
-    int         best_i,
-                best_j;
+    int         best_i = 0,
+                best_j = 0;
     Real        max_improvement,
                 improvement;
     int         i,

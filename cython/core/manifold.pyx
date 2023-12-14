@@ -655,13 +655,13 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s' % solution_type)
-        IF HIGH_PRECISION is True:
+        if Number._default_precision > 64:
             # must provide a start value to get the correct precision
             result = sum(
                 [z.volume() for z in self._get_tetrahedra_shapes('filled')],
                 Number(0))
-        ELSE:
-            result = Number(volume(self.c_triangulation, &acc))
+        else:
+            result = Number(<double>volume(self.c_triangulation, &acc))
             result.accuracy = acc
         return result
 

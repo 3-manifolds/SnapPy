@@ -2,8 +2,8 @@
 # distutils: sources = SnapPyHP.cpp
 # cython: language_level=3str
 DEF REAL_TYPE = "qd_real"
-DEF HIGH_PRECISION = True
 include "SnapPy.pxi"
+include "numbers/qd.pyx"
 include "core/basic.pyx"
 include "core/triangulation.pyx"
 include "core/manifold.pyx"

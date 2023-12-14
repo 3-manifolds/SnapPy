@@ -1,8 +1,8 @@
 # cython: language_level=3str
 
 DEF REAL_TYPE = 'double'
-DEF HIGH_PRECISION = False
 include "SnapPy.pxi"
+include "numbers/double.pyx"
 include "core/basic.pyx"
 include "core/triangulation.pyx"
 include "core/manifold.pyx"

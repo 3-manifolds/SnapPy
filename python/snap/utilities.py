@@ -67,7 +67,7 @@ class Vector2(MatrixBase):
         if len(args) == 1:
             args = args[0]
         if len(args) == 2:
-            self.x, self.y = [number(t) for t in args]
+            self.x, self.y = (number(t) for t in args)
         else:
             raise ValueError('Invalid initialization for a Vector2.')
 
@@ -141,7 +141,7 @@ class Matrix2x2(MatrixBase):
         if len(args) == 1:
             args = tuple(chain(*args[0]))
         if len(args) == 4:
-            self.a, self.b, self.c, self.d = [number(x) for x in args]
+            self.a, self.b, self.c, self.d = (number(x) for x in args)
         else:
             raise ValueError('Invalid initialization for a Matrix2x2.')
 

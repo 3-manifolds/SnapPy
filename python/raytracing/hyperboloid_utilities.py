@@ -121,7 +121,7 @@ def R13_time_vector_to_upper_halfspace(v):
     klein = [ v[1] / v[0], v[2] / v[0], v[3] / v[0] ]
     klein_sqr = sum([x**2 for x in klein])
     poincare_factor = 1.0 / (1.0 + (1.0 - klein_sqr).sqrt())
-    a, b, c = [ x * poincare_factor for x in klein ]
+    a, b, c = ( x * poincare_factor for x in klein )
 
     denom = (a - 1.0) ** 2 + b ** 2 + c ** 2
     return [                         2.0 * b / denom,

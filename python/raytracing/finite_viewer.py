@@ -364,7 +364,7 @@ class FiniteViewer(ttk.Frame):
             left_end=0.1,
             right_end=1.0)
 
-        label = ttk.Label(frame, text=u"Keys: \u2190\u2191\u2192\u2193xz")
+        label = ttk.Label(frame, text="Keys: \u2190\u2191\u2192\u2193xz")
         label.grid(row=row, column=3, sticky=tkinter.NSEW)
 
         row += 1
@@ -540,7 +540,7 @@ def _maximal_cusp_area(mfd):
 
 def _mouse_gestures_text():
     if sys.platform == 'darwin':
-        return u"Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
+        return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
     else:
         return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: Alt-Click & Drag"
 

@@ -206,11 +206,11 @@ class IdealRaytracingData(RaytracingData):
         if cusp.is_complete:
             m_param, l_param = cusp.Translations
         else:
-            m_param, l_param = [
+            m_param, l_param = (
                 sum(shape * expo
                     for shape, expo
                     in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
-                for j in range(2) ]
+                for j in range(2) )
 
         a, c = m_param.real(), m_param.imag()
         b, d = l_param.real(), l_param.imag()

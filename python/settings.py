@@ -77,7 +77,7 @@ class Settings:
                     self.setting_dict.update(plistlib.readPlist(self.setting_file))
                 # plistlib screws up tuples
                 self.setting_dict['font'] = tuple(self.setting_dict['font'])
-            except IOError:
+            except OSError:
                 pass
 
     def write_settings(self):

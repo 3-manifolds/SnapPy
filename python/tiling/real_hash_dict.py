@@ -158,8 +158,7 @@ class _Dict:
 
     def find(self, key):
         for computed_key in self._computed_keys(key):
-            for v in self._dict.get(computed_key, []):
-                yield v
+            yield from self._dict.get(computed_key, [])
 
     def _computed_keys(self, key):
         return floor_as_integers(key * self._epsilon_inverse)

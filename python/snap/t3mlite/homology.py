@@ -6,7 +6,7 @@ def boundary_three(manifold):
     F, T = len(manifold.Faces), len(manifold.Tetrahedra)
     ans = Matrix(F, T)
     for F in manifold.Faces:
-        t0, t1 = [C.Tetrahedron.Index for C in F.Corners]
+        t0, t1 = (C.Tetrahedron.Index for C in F.Corners)
         ans[F.Index, t0] += 1
         ans[F.Index, t1] += -1
     return ans
@@ -33,7 +33,7 @@ def boundary_one(manifold):
     V, E = len(manifold.Vertices), len(manifold.Edges)
     ans = Matrix(V, E)
     for e in manifold.Edges:
-        v_init, v_term = [v.Index for v in e.Vertices]
+        v_init, v_term = (v.Index for v in e.Vertices)
         ans[v_term, e.Index] += 1
         ans[v_init, e.Index] += -1
     return ans

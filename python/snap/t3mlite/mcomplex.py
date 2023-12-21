@@ -263,7 +263,7 @@ class Mcomplex:
             out.write("\nEdges:\n")
             for edge in self.Edges:
                 edge.info(out)
-        except IOError:
+        except OSError:
             pass
 
     def build_edge_classes(self):
@@ -483,7 +483,7 @@ class Mcomplex:
                 out.write("-------------------------------------\n\n")
                 surface.info(self, out)
                 out.write('\n')
-        except IOError:
+        except OSError:
             pass
 
     def almost_normal_surface_info(self, out=sys.stdout):
@@ -492,7 +492,7 @@ class Mcomplex:
                 out.write("-------------------------------------\n\n")
                 surface.info(self, out)
                 out.write('\n')
-        except IOError:
+        except OSError:
             pass
 
     # Simplification Moves

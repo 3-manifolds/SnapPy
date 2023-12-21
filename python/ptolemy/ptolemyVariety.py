@@ -972,7 +972,7 @@ def _retrieve_url(url):
                 "is not configured correctly: %s. Also see %s" % (
                     e, overview_url))
 
-    except IOError as e:
+    except OSError as e:
         # IOError: this means the file wasn't there or we couldn't connect
         # to the server
         if url.startswith('http:') or url.startswith('https'):

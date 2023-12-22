@@ -1,5 +1,5 @@
 
-class McomplexEngine():
+class McomplexEngine:
     """
     A base for classes that modify or add extra structure to a t3mlite.Mcomplex.
     """

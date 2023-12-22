@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # PLink documentation build configuration file, created by
 # sphinx-quickstart on Wed Apr 29 21:34:28 2009.
@@ -79,8 +78,8 @@ autosectionlabel_prefix_document = True
 # General information about the project.
 
 
-project = u'SnapPy'
-copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Matthias Goerner, Jeffrey Weeks and others' % datetime.datetime.now().year
+project = 'SnapPy'
+copyright = '2009-%d, by Marc Culler, Nathan Dunfield, Matthias Goerner, Jeffrey Weeks and others' % datetime.datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -252,8 +251,8 @@ htmlhelp_basename = 'SnapPydoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'SnapPy.tex', u'SnapPy Documentation',
-   u'Marc Culler (culler@math.uic.edu) and Nathan Dunfield (nmd@illinois.edu)',
+  ('index', 'SnapPy.tex', 'SnapPy Documentation',
+   'Marc Culler (culler@math.uic.edu) and Nathan Dunfield (nmd@illinois.edu)',
    'manual'),
 ]
 

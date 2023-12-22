@@ -13,7 +13,7 @@ import os
 __all__ = ['compute_approx_hyperbolic_structure_orb']
 
 
-class TmpDir():
+class TmpDir:
     """
     To be used in a with statement, creating a temporary
     directory deleted at the end of the with statement.

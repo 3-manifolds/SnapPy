@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SnapPy's subclass of the IPython InteractiveShellEmbed
 from IPython.core.displayhook import DisplayHook
 try:

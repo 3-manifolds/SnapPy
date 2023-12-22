@@ -4,7 +4,7 @@ from .component import *
 from .coordinates import PtolemyCoordinates
 
 
-class PtolemyVarietyPrimeIdealGroebnerBasis():
+class PtolemyVarietyPrimeIdealGroebnerBasis:
 
     """
     A Groebner basis of a Ptolemy variety.

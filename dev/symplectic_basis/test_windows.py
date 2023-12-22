@@ -75,7 +75,7 @@ if __name__ == "__main__":
     with open(file_name, "r") as file:
         lst = file.readlines()
 
-    manifolds = list(set([int(x[:-1]) for x in lst]))
+    manifolds = list({int(x[:-1]) for x in lst})
     test_link_complements_pool(manifolds)
     # test_link_complements()
     # generate_tests()

@@ -31,7 +31,7 @@ import sys
 #-----------------------------------------
 
 def unique(L):
-    return sorted(list(set(L)))
+    return sorted(set(L))
 
 def repetition_count(L):
     return [(x, L.count(x)) for x in unique(L)]
@@ -72,7 +72,7 @@ def cover_hash_fns(degrees):
 def link_hash(manifold):
     return basic_hash(manifold) + " " + cover_hash(manifold, 2)
 
-class HashFunctions():
+class HashFunctions:
     """
     A list of at least one hash function. The first function is the "primary"
     one and is what's evaluated when the HashFunctions is called.
@@ -199,7 +199,7 @@ class ObjectsByHashes:
     def __getitem__(self, h):
         if h in self.hashes:
             return self.hashes[h]
-        return tuple()
+        return ()
         
     def add(self, o, h):
         self.hashes[h] = self[h] + (o,)
@@ -221,7 +221,7 @@ class ObjectsByHashes:
         return "<ObjHashes %d hashes %d items>" % (self.num_hashes(), self.num_objects())
 
 
-class ManifoldRecognizer():
+class ManifoldRecognizer:
     """
     Class for finding manifolds in census or other
     collection of manifolds.
@@ -332,7 +332,7 @@ add_recognizer_to_census(OrientableCuspedCensusRecognizer, snappy.OrientableCusp
 
 def test_census_recognizer(census):
     import random
-    mflds = [M for M in census()]
+    mflds = list(census())
     random.shuffle(mflds)
     CR = census._regonizer
     for M in mflds:

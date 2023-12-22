@@ -44,7 +44,7 @@ class CuspTilingEngine(McomplexEngine):
         [7.0000000000?, 28.00000000?, 7.0000000000?]
     """
 
-    class Tile():
+    class Tile:
         def __init__(self, matrix, center):
             self.matrix = matrix
             self.center = center
@@ -104,7 +104,7 @@ class CuspTilingEngine(McomplexEngine):
                 base_length = abs(invDiff(pts[2], pts[0]) - invDiff(pts[1], pts[0]))
                 return cusp_length / base_length
 
-    class UngluedGenerator():
+    class UngluedGenerator:
         def __init__(self, tile, g, height_upper_bound):
             self.tile = tile
             self.g = g

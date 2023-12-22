@@ -9,7 +9,7 @@ from .rational_linear_algebra import Matrix, Vector3, Vector4
 from . import pl_utils
 
 
-class Point():
+class Point:
     """
     A point in R^3.  The optional ``boundary`` parameter is for
     recording the label of the face of a convex polytope containing
@@ -47,7 +47,7 @@ class Point():
         return BarycentricPoint(*w)
 
 
-class Arc():
+class Arc:
     """
     A line segment between two Points, often part of a linked list of
     Arcs forming a PL path or loop.
@@ -303,7 +303,7 @@ N = Vector3([ 0, 0, 0])
 S = Vector3([ 2, 2, 2])
 
 
-class TetrahedronEmbedding():
+class TetrahedronEmbedding:
     """
     A map from a tetrahedron with PL arcs in barycentric coordinates
     into R^3. The map is described by choosing where the vertices of
@@ -340,7 +340,7 @@ class TetrahedronEmbedding():
         print(self.matrix)
 
 
-class TetrahedronEmbeddingCache():
+class TetrahedronEmbeddingCache:
     def __init__(self):
         self.cache = {}
 

@@ -48,7 +48,7 @@ class PtolemyMissingFileForObstructionClass(Exception):
         Exception.__init__(self, msg)
         self.index = index
 
-class PtolemyVariety():
+class PtolemyVariety:
     """
     Holds a reduced Ptolemy variety.
 

@@ -384,7 +384,7 @@ def _diff_1_if_inf(a, b):
 # TESTING
 
 
-class _IdealPointTester():
+class _IdealPointTester:
 
     """
     A test rig for idealPoint

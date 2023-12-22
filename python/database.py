@@ -73,7 +73,7 @@ def mfld_hash(manifold):
     return manifold._cache['db_hash']
 
 
-class ManifoldTable():
+class ManifoldTable:
     """
     Iterator for cusped manifolds in an sqlite3 table of manifolds.
 

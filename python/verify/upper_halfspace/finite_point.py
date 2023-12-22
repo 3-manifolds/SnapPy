@@ -10,7 +10,7 @@ from .extended_matrix import ExtendedMatrix
 __all__ = ['FinitePoint']
 
 
-class FinitePoint():
+class FinitePoint:
     """
     A point in the upper half space model represented by the quaternion
     z + t * j with t > 0. For example, the point (1 + 2 * i) + 3 * j is::
@@ -204,7 +204,7 @@ def _abs_sqr(z):
 # TESTING
 
 
-class _FinitePointTester():
+class _FinitePointTester:
     """
     A test rig for FinitePoint.
 

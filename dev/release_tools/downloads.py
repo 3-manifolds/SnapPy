@@ -6,7 +6,7 @@ import json
 import requests
 
 
-class GithubREST():
+class GithubREST:
     """
     Interacts with Github via their REST API.
     """
@@ -26,7 +26,7 @@ class GithubREST():
 
 def main():
     if (len(sys.argv) == 1 or
-        set(['help', '-help', '--help', '-h']).intersection(sys.argv)):
+        {'help', '-help', '--help', '-h'}.intersection(sys.argv)):
         print('usage: python downloads.py project')
         sys.exit()
 

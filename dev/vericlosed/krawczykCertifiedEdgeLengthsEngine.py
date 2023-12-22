@@ -73,7 +73,7 @@ class KrawczykCertifiedEdgeLengthsEngine:
             self.first_term
             + (self.identity - self.approx_inverse * jacobian) * diffs)
         
-        result = [ edge_length for edge_length in edge_lengths ]
+        result = list(edge_lengths)
         for var_edge, edge_length in zip(self.var_edges, var_edge_lengths):
             result[var_edge] = edge_length
 
@@ -114,7 +114,7 @@ class KrawczykCertifiedEdgeLengthsEngine:
             sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(c, b)
             False
         """
-        return all([(a in b) for a, b in zip(vecA, vecB)])
+        return all((a in b) for a, b in zip(vecA, vecB))
 
     def expand_until_certified(self, verbose = False):
         try:

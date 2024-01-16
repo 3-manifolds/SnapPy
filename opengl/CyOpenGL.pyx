@@ -106,10 +106,10 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
         curr_platform = sys.platform
         cpu_width = platform.architecture()[0]
-        if curr_platform[:5] == 'linux2':
+        if curr_platform.startswith('linux2'):
             curr_platform = 'linux'
-        if curr_platform == 'win32':
-            current_platform = 'windows'
+        elif curr_platform == 'win32':
+            curr_platform = 'windows'
         Togl_path = os.path.join(Togl_dir, curr_platform)
         if not os.path.exists(Togl_path):
             raise RuntimeError('Togl directory "%s" missing.' % Togl_path)

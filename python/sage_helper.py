@@ -11,7 +11,7 @@ than the usual ">>>".
 try:
     import sage.all
     _within_sage = True
-except ImportError:
+except ModuleNotFoundError :
     _within_sage = False
     import decorator
 

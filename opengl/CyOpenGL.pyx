@@ -10,7 +10,7 @@ include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
 
 from .infowindow import InfoWindow
-from . import togl
+from . import togl3
 
 from cpython cimport array
 
@@ -22,7 +22,7 @@ from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 import time
 
-Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
+Togl_dir = os.path.abspath(os.path.dirname(togl3.__file__))
 
 import tkinter as Tk_
 
@@ -106,18 +106,11 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
         curr_platform = sys.platform
         cpu_width = platform.architecture()[0]
-        if curr_platform[:5] == 'linux':
-            curr_platform = 'linux2'
-        if curr_platform[:5] == "linux" and cpu_width == '64bit':
-            curr_platform += "-x86_64"
+        if curr_platform[:5] == 'linux2':
+            curr_platform = 'linux'
         if curr_platform == 'win32':
-            windows_version = sys.getwindowsversion()
-            if (windows_version.major, windows_version.minor) > (6,0):
-                curr_platform += 'VC'
-            if cpu_width == '64bit':
-                curr_platform += '-x86_64'
-        suffix = curr_platform + "-tk" + master.getvar("tk_version")
-        Togl_path = os.path.join(Togl_dir, suffix)
+            current_platform = 'windows'
+        Togl_path = os.path.join(Togl_dir, curr_platform)
         if not os.path.exists(Togl_path):
             raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
 

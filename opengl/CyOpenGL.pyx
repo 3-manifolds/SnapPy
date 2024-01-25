@@ -6,7 +6,7 @@
 # configurations with certain cython versions.
 
 include "opengl.pxi"
-include "CyOpenGL.pxi"
+include "initGlew.pxi"
 include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
 

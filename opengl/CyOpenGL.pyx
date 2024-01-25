@@ -5,6 +5,7 @@
 # "... has no attribute '__reduce_cython__'" on certain
 # configurations with certain cython versions.
 
+include "opengl.pxi"
 include "CyOpenGL.pxi"
 include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
@@ -13,6 +14,7 @@ from .infowindow import InfoWindow
 from . import togl
 
 from cpython cimport array
+from libc.stdlib cimport malloc, free
 
 import os
 import sys

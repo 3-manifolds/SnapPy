@@ -8,7 +8,6 @@
 include "opengl.pxi"
 include "initGlew.pxi"
 include "CySnapPyfont.pxi"
-include "CySnapPyimages.pxi"
 
 from .infowindow import InfoWindow
 from . import togl

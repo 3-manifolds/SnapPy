@@ -2718,3 +2718,4 @@ class GLSLPerspectiveWidget(RawOpenGLWidget, GLSLPerspectiveView):
         if not skip_swap_buffers:
             self.swap_buffers()
 
+include "modern/triangle.pyx"

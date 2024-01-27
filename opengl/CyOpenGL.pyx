@@ -10,7 +10,7 @@ include "CySnapPyfont.pxi"
 include "CySnapPyimages.pxi"
 
 from .infowindow import InfoWindow
-from . import togl3
+from . import tkgl
 
 from cpython cimport array
 
@@ -22,7 +22,7 @@ from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 import time
 
-Togl_dir = os.path.abspath(os.path.dirname(togl3.__file__))
+TkGL_dir = os.path.abspath(os.path.dirname(tkgl.__file__))
 
 import tkinter as Tk_
 
@@ -110,20 +110,21 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             curr_platform = 'linux'
         elif curr_platform == 'win32':
             curr_platform = 'windows'
-        Togl_path = os.path.join(Togl_dir, curr_platform)
-        if not os.path.exists(Togl_path):
-            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
+        TkGL_path = os.path.join(TkGL_dir, curr_platform)
+        if not os.path.exists(TkGL_path):
+            raise RuntimeError('TkGL directory "%s" missing.' % TkGL_path)
 
-        master.tk.call('lappend', 'auto_path', Togl_path)
+        master.tk.call('lappend', 'auto_path', TkGL_path)
         try:
-            master.tk.call('package', 'require', 'Togl')
+            master.tk.call('package', 'require', 'Tkgl')
         except Tk_.TclError:
-            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
+            raise RuntimeError(
+                'Tcl can not find TkGL even though directory %s exists' % TkGL_path)
 
         if self.profile:
             kw['profile'] = self.profile
 
-        Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
+        Tk_.Widget.__init__(self, master, 'tkgl', cnf, kw)
         self.root = master
         self.bind('<Map>', self.tkMap_expose_or_configure)
         self.bind('<Expose>', self.tkMap_expose_or_configure)

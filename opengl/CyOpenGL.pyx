@@ -88,9 +88,17 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
         Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
         self.root = master
-        self.bind('<Map>', self.tkMap_expose_or_configure)
+
+        # We do not have a valid framebuffer yet.
+        #self.bind('<Map>', self.tkMap_expose_or_configure)
+        #self.bind('<Configure>', self.tkMap_expose_or_configure)
+
+        # We have a valid framebuffer by the time we get the first
+        # <Expose> event.
+        # Binding <Expose> to draw will redraw every time the window
+        # becomes visible. In particular, it will cause the first draw.
+
         self.bind('<Expose>', self.tkMap_expose_or_configure)
-        self.bind('<Configure>', self.tkMap_expose_or_configure)
 
         self.initialized = False
 

@@ -72,7 +72,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         cyglSetStandardLighting()
         self.polyhedron = HyperbolicPolyhedron(facedicts, self.model_var,
             self.sphere_var, togl_widget=self.widget)
-        widget.redraw_impl = self.polyhedron.draw
+        widget.draw_projection_impl = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
@@ -150,21 +150,21 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         pass
 
     def redraw(self):
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def reset(self):
         self.widget.autospin = 0
         self.widget.set_eyepoint(5.0)
         self.zoom.set(50)
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def set_zoom(self, x):
         t = (100.0-float(x))/100.0
         self.widget.distance = t*1.0 + (1-t)*8.0
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def new_model(self):
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def new_polyhedron(self, new_facedicts):
         self.empty = (len(new_facedicts) == 0)
@@ -175,8 +175,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             pass
         self.polyhedron = HyperbolicPolyhedron(new_facedicts, self.model_var,
             self.sphere_var, togl_widget=self.widget)
-        self.widget.redraw_impl = self.polyhedron.draw
-        self.widget.redraw_if_initialized()
+        self.widget.draw_projection_impl = self.polyhedron.draw
+        self.widget.redraw()
 
     def delete_resource(self):
         try:

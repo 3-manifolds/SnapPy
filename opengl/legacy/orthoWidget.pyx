@@ -24,5 +24,5 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         """
         Perform translation of scene.
         """
-        self.redraw_if_initialized()
+        self.redraw()
         self.tkRecordMouse(event)

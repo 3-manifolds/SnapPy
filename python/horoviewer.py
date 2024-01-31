@@ -146,7 +146,7 @@ Use the View Options to select which components of the scene are drawn.
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
             horo_var, label_var, flipped=self.flip_var.get(), cutoff=self.cutoff,
             which_cusp=self.which_cusp,togl_widget=self.widget)
-        self.widget.redraw_impl = self.scene.draw
+        self.widget.draw_projection_impl = self.scene.draw
         if isinstance(parent, Tk_.Toplevel):
             parent.config(menu=self.menubar)
             # hacks needed on Sierra
@@ -174,7 +174,7 @@ Use the View Options to select which components of the scene are drawn.
             self.widget.set_background(0.3, 0.3, 0.4)
         else:
             self.widget.set_background(1.0, 1.0, 1.0)
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def build_sliders(self):
         nbhd = self.nbhd
@@ -264,7 +264,7 @@ Use the View Options to select which components of the scene are drawn.
             flipped=self.flip_var.get(), cutoff=self.cutoff,
             which_cusp=self.which_cusp, togl_widget=self.widget)
         assert(self.scene is not None)
-        self.widget.redraw_impl = self.scene.draw
+        self.widget.draw_projection_impl = self.scene.draw
         self.configure_sliders()
         self.rebuild()
 
@@ -278,7 +278,7 @@ Use the View Options to select which components of the scene are drawn.
         flipped = self.flip_var.get()
         self.scene.flip(flipped)
         self.widget.flipped = flipped
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def configure_sliders(self):
         nbhd = self.nbhd
@@ -331,7 +331,7 @@ Use the View Options to select which components of the scene are drawn.
         self.destroy()
 
     def redraw(self):
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def set_zoom(self, x):
         fovy = 1.0 + (100.0-float(x))/15.0
@@ -342,14 +342,14 @@ Use the View Options to select which components of the scene are drawn.
         else:
             self.update_idletasks()
             self.after(50, self.set_zoom, x)
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def rebuild(self, full_list=True):
         self.set_ties()
         self.configure_sliders()
         self.widget.make_current()
         self.scene.build_scene(which_cusp=self.which_cusp, full_list=full_list)
-        self.widget.redraw_if_initialized()
+        self.widget.redraw()
 
     def start_radius(self, event):
         self.cusp_moving = True

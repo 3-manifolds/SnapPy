@@ -502,7 +502,7 @@ ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 install_requires = ['plink>=2.4.2', 'spherogram>=2.2', 'FXrays>=1.3',
                     'snappy_manifolds>=1.2', 'low_index>=1.2',
-                    'pypng', 'decorator', 'packaging', 'tkinter_gl']
+                    'pypng', 'decorator', 'packaging', 'tkinter-gl']
 try:
     import sage
 except ImportError:

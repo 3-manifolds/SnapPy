@@ -23,6 +23,8 @@ from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 import time
 
+from tkinter_gl import GLCanvas
+
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
 import tkinter as Tk_

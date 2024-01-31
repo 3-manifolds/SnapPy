@@ -90,7 +90,7 @@ class InsideViewer(ttk.Frame):
             self.view_scale_slider,
             self.view_scale_label,
             self.view_scale_value_label,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         self.widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
@@ -230,7 +230,7 @@ class InsideViewer(ttk.Frame):
 
     def perspective_type_changed(self):
         self.view_scale_controller.update()
-        self.widget.redraw_if_initialized()
+        self.widget.draw()
 
     def set_perspective_type_and_view_scale(self, perspective_type, view_scale):
         self.widget.ui_uniform_dict['perspectiveType'][1] = perspective_type
@@ -252,7 +252,7 @@ class InsideViewer(ttk.Frame):
         self.set_perspective_type_and_view_scale(1, extra_scale * view_scale)
 
     def checkbox_update(self):
-        self.widget.redraw_if_initialized()
+        self.widget.draw()
         self.focus_viewer()
 
     def create_fillings_frame(self, parent):
@@ -420,7 +420,7 @@ class InsideViewer(ttk.Frame):
             text='Freeze camera body',
             row=row,
             column=0,
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             gridargs = {'padx' : 8}).checkbox
         ToolTip(freeze_checkbox,
                 msg=("Keep paper plane/eyeball at the same position "
@@ -434,7 +434,7 @@ class InsideViewer(ttk.Frame):
             text='Crosshairs',
             row=row,
             column=1,
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             gridargs = {'padx' : 8})
 
         row += 1
@@ -458,7 +458,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=0.0,
             right_end=0.35,
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             format_string='%.3f').scale
         ToolTip(scale,
                 msg=("Partially show faces of the tetrahedra."))
@@ -486,7 +486,7 @@ class InsideViewer(ttk.Frame):
                 row=row,
                 left_end=0.0,
                 right_end=0.2,
-                update_function=self.widget.redraw_if_initialized,
+                update_function=self.widget.draw,
                 format_string='%.3f'))
         row += 1
 
@@ -499,7 +499,7 @@ class InsideViewer(ttk.Frame):
             text='desaturate',
             row=row,
             column=1,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
         row += 1
 
         return frame
@@ -520,7 +520,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=1,
             right_end=150,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -531,7 +531,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=1.0,
             right_end=28.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -542,7 +542,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=1.0,
             right_end=4.25,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         return frame
 
@@ -564,7 +564,7 @@ class InsideViewer(ttk.Frame):
                 row=row,
                 left_end=0.0,
                 right_end=0.25,
-                update_function=self.widget.redraw_if_initialized,
+                update_function=self.widget.draw,
                 format_string='%.3f')
             row += 1
 
@@ -576,7 +576,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=0.3,
             right_end=4.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -587,7 +587,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=0.1,
             right_end=2.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -598,7 +598,7 @@ class InsideViewer(ttk.Frame):
             row=row,
             left_end=0.3,
             right_end=3.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         return frame
 
@@ -944,7 +944,7 @@ class PerfTest:
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
             self.widget.view_state, self.m)
 
-        self.widget.redraw_if_initialized()
+        self.widget.draw()
         self.widget.after(250, self.redraw)
 
 

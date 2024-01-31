@@ -149,7 +149,7 @@ class HyperboloidNavigation:
       IdealRaytracingData. This is needed to update data
       such as the view matrix
       using self.raytracing_data.update_view_state(...).
-    - self.redraw_if_initialized() to redraw.
+    - self.draw() to redraw.
     - self.read_depth_value(x, y) to return the depth value at a pixel.
       It is used for orbiting about that point.
     - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
@@ -317,7 +317,7 @@ class HyperboloidNavigation:
             self.view_state, m)
 
         # Redraw
-        self.redraw_if_initialized()
+        self.draw()
 
         # And schedule another call of this function.
         # If we don't leave Tk a couple of milliseconds in between,
@@ -383,7 +383,7 @@ class HyperboloidNavigation:
             self.view = (self.view + 1) % 3
             print("Color for rays that have not hit geometry:",
                   _viewModes[self.view])
-            self.redraw_if_initialized()
+            self.draw()
 
         if event.keysym == 'p':
             from snappy.CyOpenGL import get_gl_string
@@ -507,7 +507,7 @@ class HyperboloidNavigation:
         else:
             return
 
-        self.redraw_if_initialized()
+        self.draw()
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None

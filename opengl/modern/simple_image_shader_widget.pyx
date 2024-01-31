@@ -1,4 +1,4 @@
-class SimpleImageShaderWidget(RawOpenGLWidget):
+class SimpleImageShaderWidget(GLCanvas):
     """
     An image shader is a GLSL program that does all of its computation in
     the fragment shader.
@@ -41,9 +41,10 @@ class SimpleImageShaderWidget(RawOpenGLWidget):
     }
     """
 
-    def __init__(self, master,
-                 **kw):
-        RawOpenGLWidget.__init__(self, master, **kw)
+    report_gl_errors = False
+
+    def __init__(self, parent, **kw):
+        super().__init__(parent, **kw)
 
         self._vertex_buffer = VertexBuffer()
         self._vertex_buffer.load(((3,-1), (-1,3), (-1,-1)))
@@ -153,8 +154,7 @@ class SimpleImageShaderWidget(RawOpenGLWidget):
             raise Exception("Incomplete framebuffer")
 
         # Render into the framebuffer
-        self.redraw(width, height,
-                    skip_swap_buffers = True)
+        self.draw_impl(width, height)
         glFinish()
 
         # Allocate memory and read framebuffer into it
@@ -208,9 +208,8 @@ class SimpleImageShaderWidget(RawOpenGLWidget):
 
         self.make_current()
 
-        self.redraw(width, height,
-                    skip_swap_buffers = True,
-                    include_depth_value = True)
+        self.draw_impl(width, height,
+                       include_depth_value = True)
         glFinish()            
 
         glReadPixels(x, height - y, 1, 1,
@@ -219,10 +218,9 @@ class SimpleImageShaderWidget(RawOpenGLWidget):
 
         return (depth, width, height)
 
-    def redraw(self, width, height,
-               skip_swap_buffers = False,
-               include_depth_value = False):
-    
+    def draw_impl(self, width, height,
+                  include_depth_value = False):
+
         if self.report_time_callback:
             start_time = time.time()
 
@@ -260,8 +258,16 @@ class SimpleImageShaderWidget(RawOpenGLWidget):
             glFinish()
             self.report_time_callback(time.time() - start_time)
 
-        if not skip_swap_buffers:
-            self.swap_buffers()
+    def draw(self):
+        width = self.winfo_width()
+        height = self.winfo_height()
+
+        self.make_current()
+        self.draw_impl(width, height)
+        self.swap_buffers()
+
+        if self.report_gl_errors:
+            print_gl_errors("draw")
 
     def get_uniform_bindings(self, view_width, view_height):
         return {

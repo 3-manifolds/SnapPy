@@ -10,7 +10,6 @@ include "initGlew.pxi"
 include "CySnapPyfont.pxi"
 
 from .infowindow import InfoWindow
-from . import togl
 
 from cpython cimport array
 from libc.stdlib cimport malloc, free
@@ -24,10 +23,6 @@ from random import random
 import time
 
 from tkinter_gl import GLCanvas
-
-Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
-
-import tkinter as Tk_
 
 ##############################################################################
 # Utilties that work with any OpenGL

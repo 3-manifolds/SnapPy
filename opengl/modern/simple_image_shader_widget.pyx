@@ -56,6 +56,17 @@ class SimpleImageShaderWidget(GLCanvas):
         self.textures = []
         self.report_time_callback = None
 
+        self.make_current()
+
+        cdef char * missing_gl_function
+        missing_gl_function = checkGlewForModernOpenGL()
+        if missing_gl_function:
+            raise Exception(
+                ("Missing gl function: %s. Your graphics card probably does "
+                 "not support the required OpenGL version (3.2 or later). Your "
+                 "OpenGL version is %s.") % (missing_gl_function,
+                                             get_gl_string('GL_VERSION')))
+
     def set_textures(self, texture_files):
         self.make_current()
 

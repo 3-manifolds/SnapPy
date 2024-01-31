@@ -125,7 +125,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.r_back = r
         self.g_back = g
         self.b_back = b
-        self.redraw_if_initialized()
+        self.redraw()
 
     def set_centerpoint(self, x, y, z):
         """
@@ -135,14 +135,14 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.xcenter = x
         self.ycenter = y
         self.zcenter = z
-        self.redraw_if_initialized()
+        self.redraw()
 
     def set_eyepoint(self, distance):
         """
         Set how far the eye is from the position we are looking.
         """
         self.distance = distance
-        self.redraw_if_initialized()
+        self.redraw()
 
     def reset(self, redraw=True):
         """
@@ -153,7 +153,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if redraw:
-            self.redraw_if_initialized()
+            self.redraw()
 
     def tkHandlePick(self, event):
         """
@@ -185,7 +185,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
 
             # if self.pick(self, p1, p2):
             #     # If the pick method returns true we redraw the scene.
-            #     self.redraw_if_initialized()
+            #     self.redraw()
 
     def tkRecordMouse(self, event):
         """
@@ -206,19 +206,19 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         scale = 1 - 0.01 * (event.y - self.ymouse)
         self.distance = self.distance * scale
-        self.redraw_if_initialized()
+        self.redraw()
         self.tkRecordMouse(event)
 
     def zoom(self, x):
         t = float(x)/100.0
         self.distance = t*2.0 + (1-t)*10.0
-        self.redraw_if_initialized()
+        self.redraw()
 
     def do_AutoSpin(self):
         self.make_current()
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
                         self.Xangle, self.Yangle)
-        self.redraw_if_initialized()
+        self.redraw()
 
         if self.autospin:
             self.after(10, self.do_AutoSpin)
@@ -242,7 +242,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.Yangle = 0.5 * (event.y - self.ymouse)
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
                         self.Xangle, self.Yangle)
-        self.redraw_if_initialized()
+        self.redraw()
         self.tkRecordMouse(event)
 
     def tkTranslate(self, event):
@@ -251,24 +251,23 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         self.make_current()
         cyglTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
-        self.redraw_if_initialized()
+        self.redraw()
         self.tkRecordMouse(event)
 
     def mouse_update(self, event):
         """
         Redraw the scene and save the mouse coordinates.
         """
-        self.redraw_if_initialized()
+        self.redraw()
         self.tkRecordMouse(event)
 
-    def redraw(self, width, height, skip_swap_buffers = False):
+    def draw_impl(self, width, height):
         """
         Implements redrawing by calling redraw_impl to draw the scene
         after setting up the viewport, the projection and view matrix
         and clearing the framebuffer and before swapping the buffers.
         """
 
-        self.make_current()
         glViewport(0, 0, width, height)
 
         # Clear the background and depth buffer.
@@ -281,17 +280,13 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         # Call objects redraw method.
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()             # Protect our matrix
-        self.redraw_impl()
+        self.draw_projection_impl()
         glPopMatrix()              # Restore the matrix
 
-        if not skip_swap_buffers:
-            self.swap_buffers()
-
-    def redraw_impl(self):
+    def draw_projection_impl(self):
         """
         To be implemented by subclass.
         """
-        pass
 
     def build_projection(self, width, height):
         self.make_current()
@@ -314,7 +309,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         except KeyError:
             pass
         if not self.autospin:
-            self.redraw_if_initialized()
+            self.redraw()
 
     def tkPrint(self, file):
         """

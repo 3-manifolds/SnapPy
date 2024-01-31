@@ -35,7 +35,7 @@ import tkinter as Tk_
 include "common/string.pyx"
 include "common/error.pyx"
 
-class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
+class RawOpenGLWidget(GLCanvas):
     """
     Widget with an OpenGL context and some Tkinter bindings
     to redraw when the widget is exposed or resized.
@@ -53,56 +53,16 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     # Which of these widgets has the current openGL context.
     current_widget = None
 
-    # Set to "legacy" (default, for OpenGL 2.1), "3_2", or "4_1"
-    profile = ''
-
-    def __init__(self, master, cnf={}, **kw):
+    def __init__(self, parent, cnf={}, **kw):
         """
         Create an OpenGL widget, arguments are passed down to
         the togl Tk widget constructor.
         """
 
-        curr_platform = sys.platform
-        cpu_width = platform.architecture()[0]
-        if curr_platform[:5] == 'linux':
-            curr_platform = 'linux2'
-        if curr_platform[:5] == "linux" and cpu_width == '64bit':
-            curr_platform += "-x86_64"
-        if curr_platform == 'win32':
-            windows_version = sys.getwindowsversion()
-            if (windows_version.major, windows_version.minor) > (6,0):
-                curr_platform += 'VC'
-            if cpu_width == '64bit':
-                curr_platform += '-x86_64'
-        suffix = curr_platform + "-tk" + master.getvar("tk_version")
-        Togl_path = os.path.join(Togl_dir, suffix)
-        if not os.path.exists(Togl_path):
-            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
+        super().__init__(parent, cnf, **kw)
+        self.root = parent
 
-        master.tk.call('lappend', 'auto_path', Togl_path)
-        try:
-            master.tk.call('package', 'require', 'Togl')
-        except Tk_.TclError:
-            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
-
-        if self.profile:
-            kw['profile'] = self.profile
-
-        Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
-        self.root = master
-
-        # We do not have a valid framebuffer yet.
-        #self.bind('<Map>', self.tkMap_expose_or_configure)
-        #self.bind('<Configure>', self.tkMap_expose_or_configure)
-
-        # We have a valid framebuffer by the time we get the first
-        # <Expose> event.
-        # Binding <Expose> to draw will redraw every time the window
-        # becomes visible. In particular, it will cause the first draw.
-
-        self.bind('<Expose>', self.tkMap_expose_or_configure)
-
-        self.initialized = False
+        self._initialized = False
 
         # Switch to the GL context so that that we can call GLEW
         # initialize
@@ -111,11 +71,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         # Check that GLEW set all function pointers that we are calling
         # below.
         cdef char * missing_gl_function
-        if self.profile == 'legacy' or not self.profile:
-            missing_gl_function = checkGlewForLegacyOpenGL()
-        else:
-            missing_gl_function = checkGlewForModernOpenGL()
-
+        missing_gl_function = checkGlewForLegacyOpenGL()
         if missing_gl_function:
             raise Exception(
                 ("Missing gl function: %s. Your graphics card probably does "
@@ -128,51 +84,26 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         Makes this RawOpenGLWidget's GL context the current context
         so that all gl calls are destined for this widget.
         """
-        self.tk.call(self._w, 'makecurrent')
+        super().make_current()
         RawOpenGLWidget.current_widget =  self
 
-    def swap_buffers(self):
+    def redraw(self):
         """
-        Swap buffers.
-        """
-        self.tk.call(self._w, 'swapbuffers')
+        Some clients want to update state and do a redraw but the
+        GLCanvas is not in a state yet where we have a valid framebuffer.
 
-    def redraw(self, width, height,
-               skip_swap_buffers = False):
+        These clients can call redraw that bails early if there is no
+        valid framebuffer yet.
         """
-        Redrawing to be implemented by subclass.
+        if self._initialized:
+            self.draw()
 
-        The function will be called with the width and height of the widget
-        and it can be assumed that the current GL context is this
-        widget's context when this function is entered.
-        """
-
-        # In the original implementation, this had
-        # self.update_idletasks()
-        pass
-
-    def tkMap_expose_or_configure(self, *dummy):
-        """
-        Redraw.
-        """
-
-        # The window has been shown, so the GL framebuffer
-        # exists, thus mark as initialized.
-        self.initialized = True
+    def draw(self):
+        self._initialized = True
         self.make_current()
-        self.redraw(width = self.winfo_width(),
-                    height = self.winfo_height())
-
-    def redraw_if_initialized(self):
-        """
-        Redraw if it is safe to do (GL framebuffer is initialized).
-        """
-
-        if not self.initialized:
-            return
-        self.make_current()
-        self.redraw(width = self.winfo_width(),
-                    height = self.winfo_height())
+        self.draw_impl(width = self.winfo_width(),
+                       height = self.winfo_height())
+        self.swap_buffers()
 
     def save_image_window_resolution(self, outfile):
         cdef array.array c_array
@@ -181,9 +112,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         height = self.winfo_height()
 
         self.make_current()
-        self.redraw(width = width,
-                    height = height,
-                    skip_swap_buffers = True)
+        self.draw_impl(width = width,
+                       height = height)
         glFinish()
 
         c_array = array.array('B')

@@ -108,13 +108,6 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         # initialize
         self.make_current()
 
-        # If we are using GLEW, call glewInit.
-        # This will set all gl function pointers.
-        cdef GLenum err
-        err = callGlewInitIfNecessary()
-        if err != 0:
-            raise Exception("Failed to initialize GLEW: %d" % err)
-
         # Check that GLEW set all function pointers that we are calling
         # below.
         cdef char * missing_gl_function

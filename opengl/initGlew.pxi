@@ -5,23 +5,17 @@
 
 cdef extern from *:
     """
-    int callGlewInitIfNecessary()
-    {
-
-    #ifdef USE_GLEW
-        return glewInit();
-    #else
-        return 0;
-    #endif
-
-    }
-
     #define CHECK_GLEW_FOR_FUNCTION(name) if (!name) { return #name; }
 
     /* Check that GLEW set the gl function pointers */
     char * checkGlewForLegacyOpenGL()
     {
     #ifdef USE_GLEW
+        GLenum err = glewInit();
+        if (err != 0) {
+            return "glewInit failed";
+        }
+
         CHECK_GLEW_FOR_FUNCTION(glMatrixMode);
         CHECK_GLEW_FOR_FUNCTION(glLoadIdentity);
         CHECK_GLEW_FOR_FUNCTION(glOrtho);
@@ -82,6 +76,11 @@ cdef extern from *:
     char * checkGlewForModernOpenGL()
     {
     #ifdef USE_GLEW
+        GLenum err = glewInit();
+        if (err != 0) {
+            return "glewInit failed";
+        }
+
         CHECK_GLEW_FOR_FUNCTION(glCreateShader);
         CHECK_GLEW_FOR_FUNCTION(glAttachShader);
         CHECK_GLEW_FOR_FUNCTION(glShaderSource);

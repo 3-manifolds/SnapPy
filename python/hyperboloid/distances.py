@@ -192,7 +192,7 @@ def _safe_log_non_neg(p):
 def _safe_arccosh(p):
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = pintersection(RIF(1, sage.all.Infinity))
+        p = p.intersection(RIF(1, sage.all.Infinity))
     else:
         if p < 0:
             RF = p.parent()

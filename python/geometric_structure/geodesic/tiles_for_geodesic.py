@@ -20,7 +20,7 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     geometric structure and a suitable GeodesicInfo object.
 
     To add the necessary geometric structure to a triangulation, call
-    add_r13_geometry and .
+    add_r13_geometry and add_r13_planes_to_tetrahedra.
 
     The GeodesicInfo object needs to be constructed with a line and
     GeodesicInfo.find_tet_or_core_curve be called on it.

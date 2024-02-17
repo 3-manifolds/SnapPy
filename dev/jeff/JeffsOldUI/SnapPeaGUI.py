@@ -1298,7 +1298,7 @@ class SnapPeaGUITriangulation(Pmw.MegaToplevel):
             
             if (
 #                    self.coef[i][0].get() == '' or self.coef[i][1].get() == '' or
-                    (self.coef[i][0].get() == 0.0 and self.coef[i][1].get() == 0.0)):
+                    self.coef[i][0].get() == 0.0 and self.coef[i][1].get() == 0.0):
                 self.triangulation.dehn_fill( (0,0), i)
                 self.coef[i][0].set('')
                 self.coef[i][1].set('')

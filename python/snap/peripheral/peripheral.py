@@ -86,7 +86,7 @@ def peripheral_curve_package(snappy_manifold):
     return N, C, D, (mstar, lstar)
 
 
-class PeripheralOneCocycle():
+class PeripheralOneCocycle:
     """
     Let M be an ideal triangulation with one cusp, and consider the
     induced triangulation T of the cusp torus.  This object is a

@@ -144,7 +144,7 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
              for exact_complex_shape in exact_complex_shapes ]
 
 
-class SqrtLinCombination():
+class SqrtLinCombination:
     """
     A class representing a linear combination
 
@@ -505,7 +505,7 @@ class SqrtLinCombination():
         return self.sign_with_interval()[0]
 
 
-class ComplexSqrtLinCombination():
+class ComplexSqrtLinCombination:
     """
     A pair (real, imag) of SqrtLinCombinations representing the complex number
     real + imag * I. Supports ``real()``, ``imag()``, ``+``, ``-``, ``*``, ``/``,
@@ -637,7 +637,7 @@ class _SqrtException(Exception):
     pass
 
 
-class _FactorizedSqrtLinCombination():
+class _FactorizedSqrtLinCombination:
     def __init__(self, d={}, embed_cache=None):
         #       c_1 * sqrt(r_{1,1}) * sqrt(r_{1,2}) * ... * sqrt(r_{1,k_1})
         #     + c_2 * sqrt(r_{2,1}) * sqrt(r_{2,2}) * ... * sqrt(r_{2,k_2})

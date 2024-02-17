@@ -315,7 +315,7 @@ def modtime(file):
         return 0.0
 
 
-class SourceAndObjectFiles():
+class SourceAndObjectFiles:
     def __init__(self):
         self.sources_to_build, self.up_to_date_objects = [], []
         self.temp_dir = distutils_dir_name('temp')

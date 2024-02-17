@@ -12,7 +12,7 @@ from fractions import Fraction
 # Definition of Monomial Class
 
 
-class Monomial():
+class Monomial:
 
     @classmethod
     def from_variable_name(cls, var):
@@ -183,7 +183,7 @@ class Monomial():
 
 # Definition of Polynomial class
 
-class Polynomial():
+class Polynomial:
 
     """
     >>> m1 = Monomial(1, (('t', 1), ('x', 1), ('y', 1)))

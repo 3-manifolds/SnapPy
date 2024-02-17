@@ -60,7 +60,7 @@ if _within_sage:
 from .. import SnapPy
 
 
-class MatrixRepresentation():
+class MatrixRepresentation:
     """
     A representation from a finitely-presented group to GL(n, R),
     where R is a ring::

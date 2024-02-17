@@ -41,8 +41,8 @@ class HyperbolicStructure:
             self._angle_sum(edge) for edge in mcomplex.Edges ]
 
     def _angle_at_corner(self, corner):
-        i, j = [ k for k, z in enumerate(t3m.ZeroSubsimplices)
-                 if not z & corner.Subsimplex ]
+        i, j = ( k for k, z in enumerate(t3m.ZeroSubsimplices)
+                 if not z & corner.Subsimplex )
         return self.dihedral_angles[corner.Tetrahedron.Index][i][j]
     
     def _angle_sum(self, edge):

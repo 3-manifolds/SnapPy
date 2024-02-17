@@ -1,4 +1,4 @@
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.cusp_cross_section import RealCuspCrossSection
 from ..math_basics import correct_min
 from ..verify.shapes import compute_hyperbolic_shapes
 
@@ -34,7 +34,7 @@ def triangulation_dependent_cusp_area_matrix(
     # and we need to scale them down (since during construction the
     # cross-section of each cusp will have one edge of length 1, the
     # corresponding tetrahedron does not intersect in "standard" form.)
-    c = ComplexCuspCrossSection.fromManifoldAndShapes(snappy_manifold, shapes)
+    c = RealCuspCrossSection.fromManifoldAndShapes(snappy_manifold, shapes)
 
     # If no areas are given, scale (up or down) all the cusps so that
     # they are in standard form.
@@ -49,7 +49,7 @@ def triangulation_dependent_cusp_area_matrix(
         result = areas[i] * areas[j]
         if (i, j) in c._edge_dict:
             result *= correct_min(
-                [ RIF(1), ComplexCuspCrossSection._exp_distance_of_edges(
+                [ RIF(1), RealCuspCrossSection._exp_distance_of_edges(
                         c._edge_dict[(i,j)])]) ** 2
         return result
 

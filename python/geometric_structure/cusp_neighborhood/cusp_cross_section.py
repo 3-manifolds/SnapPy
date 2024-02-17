@@ -505,7 +505,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         tet = corner.Tetrahedron
         z = tet.ShapeParameters[simplex.E01]
-        max_area = ComplexCuspCrossSection._lower_bound_max_area_triangle_for_std_form(z)
+        max_area = CuspCrossSectionBase._lower_bound_max_area_triangle_for_std_form(z)
         area = tet.horotriangles[corner.Subsimplex].area
         return max_area / area
 
@@ -517,7 +517,7 @@ class CuspCrossSectionBase(McomplexEngine):
         """
 
         area_scales = [
-            ComplexCuspCrossSection._compute_area_scale_for_std_form(corner)
+            CuspCrossSectionBase._compute_area_scale_for_std_form(corner)
             for corner in v.Corners ]
 
         return correct_min(area_scales).sqrt()
@@ -536,7 +536,7 @@ class CuspCrossSectionBase(McomplexEngine):
             scale = self.compute_scale_for_std_form(v)
             if not allow_scaling_up:
                 scale = correct_min([one, scale])
-            ComplexCuspCrossSection._scale_cusp(v, scale)
+            CuspCrossSectionBase._scale_cusp(v, scale)
 
     @staticmethod
     def _exp_distance_edge(edge):
@@ -571,7 +571,7 @@ class CuspCrossSectionBase(McomplexEngine):
         two cusp neighborhoods measured along all the given edges.
         """
         return correct_min(
-            [ ComplexCuspCrossSection._exp_distance_edge(edge)
+            [ CuspCrossSectionBase._exp_distance_edge(edge)
               for edge in edges])
 
     def exp_distance_neighborhoods_measured_along_edges(self, i, j):
@@ -585,7 +585,7 @@ class CuspCrossSectionBase(McomplexEngine):
             i, j = j, i
         if not (i, j) in self._edge_dict:
             return None
-        return ComplexCuspCrossSection._exp_distance_of_edges(
+        return CuspCrossSectionBase._exp_distance_of_edges(
             self._edge_dict[(i,j)])
 
     def ensure_disjoint_on_edges(self):
@@ -637,7 +637,7 @@ class CuspCrossSectionBase(McomplexEngine):
         for i in range(num_cusps):
             # Get all edges
             if (i,i) in self._edge_dict:
-                dist = ComplexCuspCrossSection._exp_distance_of_edges(
+                dist = CuspCrossSectionBase._exp_distance_of_edges(
                     self._edge_dict[(i,i)])
                 # For verified computations, do not use the seemingly
                 # equivalent dist <= 1. We want to scale down every time
@@ -645,8 +645,8 @@ class CuspCrossSectionBase(McomplexEngine):
                 if not (dist > 1):
                     scale = dist.sqrt()
                     # Scale the one cusp
-                    ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
-                                                        scale)
+                    CuspCrossSectionBase._scale_cusp(self.mcomplex.Vertices[i],
+                                                     scale)
 
         # Now check for the pairs of two distinct cusps that the corresponding
         # neighborhoods do not bump into each other - at least when measured
@@ -661,10 +661,10 @@ class CuspCrossSectionBase(McomplexEngine):
                         # We have choices here, for example, we could only
                         # scale one cusp by dist.
                         scale = dist.sqrt()
-                        ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
-                                                            scale)
-                        ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[j],
-                                                            scale)
+                        CuspCrossSectionBase._scale_cusp(self.mcomplex.Vertices[i],
+                                                         scale)
+                        CuspCrossSectionBase._scale_cusp(self.mcomplex.Vertices[j],
+                                                         scale)
 
 
 class RealCuspCrossSection(CuspCrossSectionBase):

@@ -1,6 +1,5 @@
 from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import (
-    mcomplex_for_tiling_cusp_neighborhoods,
-    compute_tiles_for_cusp_neighborhood)
+    mcomplex_for_tiling_cusp_neighborhoods)
 from ..tiling.tile import Tile
 
 from ..sage_helper import _within_sage

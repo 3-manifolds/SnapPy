@@ -190,6 +190,7 @@ Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
 from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
+from .cusps.cusp_area_matrix import triangulation_dependent_cusp_area_matrix
 
 def canonical_retriangulation(
     manifold, verified=False,
@@ -386,15 +387,15 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
             raise NotImplementedError("Maximal cusp area matrix only "
                                       "available as verified computation. "
                                       "Pass verified = True.")
-        return verify.verified_maximal_cusp_area_matrix(
+        return verify.legacy_verified_maximal_cusp_area_matrix(
             manifold, bits_prec=bits_prec)
     if method in ['trigDependent', 'trigDependentTryCanonize']:
         if method == 'trigDependentTryCanonize':
             manifold = manifold.copy()
             manifold.canonize()
 
-        return verify.triangulation_dependent_cusp_area_matrix(
-            manifold, verified=verified, bits_prec=bits_prec)
+        return triangulation_dependent_cusp_area_matrix(
+            manifold, bits_prec=bits_prec, verified=verified)
 
     raise ValueError("method passed to cusp_area_matrix must be "
                        "'trigDependent', 'trigDependentTryCanonize', "

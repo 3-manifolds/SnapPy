@@ -2,8 +2,10 @@ from . import verifyHyperbolicity
 
 __all__ = ['compute_hyperbolic_shapes']
 
+from typing import Optional
 
-def compute_hyperbolic_shapes(manifold, verified, bits_prec=None):
+def compute_hyperbolic_shapes(manifold,
+                              verified : bool, bits_prec : Optional[int] = None):
 
     # Get shapes, as intervals if requested
     shapes = manifold.tetrahedra_shapes('rect', intervals=verified,

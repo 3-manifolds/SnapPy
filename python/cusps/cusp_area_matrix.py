@@ -1,6 +1,7 @@
 from ..geometric_structure.cusp_neighborhood.cusp_cross_section import RealCuspCrossSection
 from ..math_basics import correct_min
 from ..verify.shapes import compute_hyperbolic_shapes
+from ..matrix import matrix
 
 __all__ = ['triangulation_dependent_cusp_area_matrix']
 
@@ -53,11 +54,7 @@ def triangulation_dependent_cusp_area_matrix(
                         c._edge_dict[(i,j)])]) ** 2
         return result
 
-    return _to_matrix([[entry(i, j) for i in range(len(areas))]
-                       for j in range(len(areas))])
+    n = len(areas)
 
-def _to_matrix(m):
-    # delayed import to avoid cycles
-    from snappy.SnapPy import matrix
-
-    return matrix(m)
+    return matrix([[entry(i, j) for i in range(n)]
+                   for j in range(n)])

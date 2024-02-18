@@ -2,6 +2,7 @@ from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import 
     mcomplex_for_tiling_cusp_neighborhoods)
 from ..tiling.tile import Tile
 
+from ..matrix import matrix
 from ..sage_helper import _within_sage
 from ..math_basics import correct_min, is_RealIntervalFieldElement, lower
 
@@ -41,7 +42,7 @@ def maximal_cusp_area_matrix(manifold, bits_prec, verified):
         [ _entry(mcomplex, i, j) for j in range(i + 1) ]
         for i in range(n) ]
 
-    return _to_matrix(
+    return matrix(
         [[ lower_entries[i][j] if j < i else lower_entries[j][i]
            for j in range(n) ]
          for i in range(n) ])
@@ -110,11 +111,6 @@ def _non_diagonal_scale(mcomplex, i, j):
             d = correct_min([d,
                              distance_r13_horoballs(new_lift, lift)])
         obj_to_tet_to_lifts[tile.object_index][tet_index].append(new_lift)
-
-def _to_matrix(m):
-    from snappy.SnapPy import matrix
-
-    return matrix(m)
 
 def _merge_tiles(streams_of_tiles):
 

@@ -1,4 +1,5 @@
-from ...sage_helper import _within_sage, sage_method
+from ...sage_helper import sage_method
+from ...matrix import matrix
 
 from .cusp_tiling_engine import *
 
@@ -34,13 +35,7 @@ def legacy_verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec=None):
             rows[i][j] = v
             rows[j][i] = v
 
-    return _to_matrix(rows)
-
-def _to_matrix(m):
-    # delayed import to avoid cycles
-    from snappy.SnapPy import matrix
-
-    return matrix(m)
+    return matrix(rows)
 
 def _doctest():
     import doctest

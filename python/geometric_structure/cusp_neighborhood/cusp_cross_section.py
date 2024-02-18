@@ -1201,21 +1201,19 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         """
 
         # For each cusp
-        for cusp, cusp_info in zip(self.mcomplex.Vertices,
-                                   self.manifold.cusp_info()):
-
-            cusp.is_complete = cusp_info['complete?']
-            if not cusp.is_complete:
-                # For an incomplete cusp, compute fixed point
-                fixed_pt = self._compute_cusp_fixed_point(cusp)
-                for corner in cusp.Corners:
-                    tet, vert = corner.Tetrahedron, corner.Subsimplex
-                    trig = tet.horotriangles[vert]
-                    # Move all vertex positions so that fixed point
-                    # is at origin
-                    trig.vertex_positions = {
-                        edge : position - fixed_pt
-                        for edge, position in trig.vertex_positions.items() }
+        for cusp in self.mcomplex.Vertices:
+            if cusp.is_complete:
+                continue
+            # For an incomplete cusp, compute fixed point
+            fixed_pt = self._compute_cusp_fixed_point(cusp)
+            for corner in cusp.Corners:
+                tet, vert = corner.Tetrahedron, corner.Subsimplex
+                trig = tet.horotriangles[vert]
+                # Move all vertex positions so that fixed point
+                # is at origin
+                trig.vertex_positions = {
+                    edge : position - fixed_pt
+                    for edge, position in trig.vertex_positions.items() }
 
     def _compute_cusp_fixed_point(self, cusp):
         """

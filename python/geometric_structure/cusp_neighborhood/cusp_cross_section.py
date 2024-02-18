@@ -549,7 +549,7 @@ class CuspCrossSectionBase(McomplexEngine):
         # Get one embedding of the edge, tet is adjacent to that edge
         tet, perm = next(edge.embeddings())
         # Get a face of the tetrahedron adjacent to that edge
-        face = 15 - (1 << perm[3])
+        face = simplex.TwoSubsimplices[perm[3]]
         # At each end of the edge, this tetrahedron gives us one
         # triangle of a cusp cross-section and the intersection of the
         # face with the cusp cross-section gives us one edge of the
@@ -558,8 +558,10 @@ class CuspCrossSectionBase(McomplexEngine):
         # lengths, the result is actually the square of a Ptolemy
         # coordinate (see C. Zickert, The volume and Chern-Simons
         # invariant of a representation).
-        ptolemy_sqr = (tet.horotriangles[1 << perm[0]].lengths[face] *
-                       tet.horotriangles[1 << perm[1]].lengths[face])
+        v0 = simplex.ZeroSubsimplices[perm[0]]
+        v1 = simplex.ZeroSubsimplices[perm[1]]
+        ptolemy_sqr = (tet.horotriangles[v0].lengths[face] *
+                       tet.horotriangles[v1].lengths[face])
         # Take abs value in case we have complex edge lengths.
         return abs(1 / ptolemy_sqr)
 

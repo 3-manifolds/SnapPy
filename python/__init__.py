@@ -189,6 +189,10 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
+from . import len_spec
+Manifold.length_spectrum_iter = len_spec.length_spectrum
+ManifoldHP.length_spectrum_iter = len_spec.length_spectrum
+
 from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
 from .cusps.cusp_area_matrix import triangulation_dependent_cusp_area_matrix
 

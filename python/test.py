@@ -16,6 +16,10 @@ import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
+import snappy.len_spec
+import snappy.len_spec.word
+import snappy.len_spec.length_spectrum_geodesic_info
+import snappy.len_spec.test_cases
 import snappy.drilling
 import snappy.exterior_to_link.test
 import snappy.pari
@@ -118,6 +122,10 @@ modules += [snappy.SnapPy,
             snappy.raytracing.geodesics,
             snappy.raytracing.ideal_raytracing_data,
             snappy.raytracing.upper_halfspace_utilities,
+            snappy.len_spec,
+            snappy.len_spec.word,
+            snappy.len_spec.length_spectrum_geodesic_info,
+            snappy.len_spec.test_cases,
             snappy.drilling,
             ptolemy_doctester,
             spherogram_doctester]

@@ -1,4 +1,4 @@
-from . import verifyHyperbolicity
+from . import hyperbolicity
 
 __all__ = ['compute_hyperbolic_shapes']
 
@@ -13,7 +13,7 @@ def compute_hyperbolic_shapes(manifold,
 
     # Check it is a valid hyperbolic structure
     if verified:
-        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
             manifold, shapes)
     else:
         # If not verified, just ask SnapPea kernel for solution type

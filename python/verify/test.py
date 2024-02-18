@@ -54,10 +54,10 @@ def run_doctests(verbose=False, print_info=True):
                 verify.IntervalNewtonShapesEngine),
             cusp_neighborhood.cusp_cross_section,
             generate_test_with_shapes_engine(
-                verify.verifyHyperbolicity,
+                verify.hyperbolicity,
                 verify.KrawczykShapesEngine),
             generate_test_with_shapes_engine(
-                verify.verifyHyperbolicity,
+                verify.hyperbolicity,
                 verify.IntervalNewtonShapesEngine),
             verify.canonical,
             verify.interval_tree,

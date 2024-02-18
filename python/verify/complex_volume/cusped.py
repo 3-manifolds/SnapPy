@@ -3,7 +3,7 @@ from ...sage_helper import _within_sage, sage_method
 if _within_sage:
     import sage.all
 
-from .. import verifyHyperbolicity
+from .. import hyperbolicity
 from ...geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
 
 from .adjust_torsion import *
@@ -32,7 +32,7 @@ def verified_complex_volume_cusped_torsion(manifold, bits_prec=None):
         'rect', bits_prec=bits_prec, intervals=True)
 
     # Check it is a valid hyperbolic structure
-    verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+    hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shapes)
 
     # Compute cusp cross section. For computation of complex volume,

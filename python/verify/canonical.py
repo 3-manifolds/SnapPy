@@ -5,7 +5,7 @@ from ..snap.t3mlite import simplex
 
 from .square_extensions import find_shapes_as_complex_sqrt_lin_combinations
 from . import edge_equations
-from . import verifyHyperbolicity
+from . import hyperbolicity
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
 
@@ -90,7 +90,7 @@ def interval_checked_canonical_triangulation(M, bits_prec=None):
     c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
 
     # Use interval arithmetics to verify hyperbolicity
-    verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+    hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         M, shapes)
 
     # Normalize cusp area. This is not needed when only 1 cusp

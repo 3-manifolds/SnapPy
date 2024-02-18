@@ -15,7 +15,7 @@ if _within_sage:
 
 __all__ = ['compute_volume']
 
-from . import verifyHyperbolicity
+from . import hyperbolicity
 
 # Sage's handling of pari has a bug when it comes to precision and the dilog.
 # It computes the dilogarithm only to low precision even though higher precision
@@ -117,7 +117,7 @@ def compute_volume(manifold, verified, bits_prec=None):
 
     if verified:
         # If requested, check it is a valid hyperbolic structure
-        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
             manifold, shape_intervals)
 
     # Sum up the volumes of all the tetrahedra

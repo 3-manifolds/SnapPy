@@ -53,7 +53,7 @@ Methods containing ``check`` will raise an exception if the desired property
 cannot be certified. Methods containing ``verify`` or ``verified`` will fail
 more gracefully returning ``False`` or ``None`` in such a case.
 
-..   autofunction:: snappy.verify.verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets
+..   autofunction:: snappy.verify.hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets
 
 Verified canonical cell decompositions
 --------------------------------------

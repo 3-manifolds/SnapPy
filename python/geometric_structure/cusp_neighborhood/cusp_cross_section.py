@@ -21,7 +21,7 @@
 #
 # 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
-from ...math_basics import correct_min, lower
+from ...math_basics import correct_min, correct_max, lower
 
 from ...snap import t3mlite as t3m
 from ...snap.t3mlite import simplex
@@ -544,17 +544,9 @@ class CuspCrossSectionBase(McomplexEngine):
             CuspCrossSectionBase._scale_cusp(v, scale)
 
     @staticmethod
-    def _exp_distance_edge(edge : t3m.Edge):
-        """
-        Given an edge, returns the exp of the (hyperbolic) distance of the
-        two cusp neighborhoods at the ends of the edge measured along that
-        edge.
-        """
-
-        # Get one embedding of the edge, tet is adjacent to that edge
-        tet, perm = next(edge.embeddings())
+    def _exp_distance_edge_embedding(tet, perm):
         # Get a face of the tetrahedron adjacent to that edge
-        face = simplex.TwoSubsimplices[perm[3]]
+        face3 = simplex.TwoSubsimplices[perm[3]]
         # At each end of the edge, this tetrahedron gives us one
         # triangle of a cusp cross-section and the intersection of the
         # face with the cusp cross-section gives us one edge of the
@@ -564,18 +556,46 @@ class CuspCrossSectionBase(McomplexEngine):
         # coordinate (see C. Zickert, The volume and Chern-Simons
         # invariant of a representation).
         v0 = simplex.ZeroSubsimplices[perm[0]]
-        v1 = simplex.ZeroSubsimplices[perm[1]]
-        ptolemy_sqr = (tet.horotriangles[v0].get_real_lengths()[face] *
-                       tet.horotriangles[v1].get_real_lengths()[face])
+        length0 = tet.horotriangles[v0].get_real_lengths()[face3]
 
-        return 1 / ptolemy_sqr
+        v1 = simplex.ZeroSubsimplices[perm[1]]
+        length1 = tet.horotriangles[v1].get_real_lengths()[face3]
+
+        return 1 / (length0 * length1)
+
+    @staticmethod
+    def _exp_distance_edge(edge : t3m.Edge):
+        """
+        Given an edge, returns the maximal scaling factor of the two cusp
+        neighborhoods at the end of the edges so that the neighborhoods do
+        not intersect in the given edge.
+        """
+
+        distances = []
+        # Walk around the edge.
+        for i, (tet, perm) in enumerate(edge.embeddings()):
+            d = CuspCrossSectionBase._exp_distance_edge_embedding(tet, perm)
+
+            if i == 0:
+                v0 = simplex.ZeroSubsimplices[perm[0]]
+                v1 = simplex.ZeroSubsimplices[perm[1]]
+                if tet.Class[v0].is_complete and tet.Class[v1].is_complete:
+                    # If both cusps are complete, then the horotriangles
+                    # of one of the cusp neighborhoods all intersect the edge
+                    # in the manifold in the same point. Thus, the distance
+                    # we compute is the same, no matter from what tetrahedron
+                    # we measure it.
+                    return d
+
+            distances.append(d)
+
+        return correct_min(distances)
 
     @staticmethod
     def _exp_distance_of_edges(edges: List[t3m.Edge]):
         """
-        Given edges between two (not necessarily distinct) cusps,
-        compute the exp of the smallest (hyperbolic) distance of the
-        two cusp neighborhoods measured along all the given edges.
+        Implements exp_distance_neighborhoods_measured_along_edges given
+        all edges connecting two cusps in question.
         """
         return correct_min(
             [ CuspCrossSectionBase._exp_distance_edge(edge)
@@ -584,10 +604,30 @@ class CuspCrossSectionBase(McomplexEngine):
     def exp_distance_neighborhoods_measured_along_edges(
             self, i : int, j : int) -> Optional[Any]:
         """
-        Computes the exp of the smallest (hyperbolic) distance
-        between two cusp neighborhoods about cusp i and j measured
-        along the edges of the triangulation. Returns None if no
-        edge between these two cusps exists.
+        Computes the maximal scaling factor of the cusp neighborhoods
+        about cusp i and j such that the two neighborhoods stay disjoint
+        along the edges.
+
+        That is if we scale both cusp i and j, then they are disjoint along
+        edges if the product of the scale factor is less than the maximal
+        scaling factor.
+
+        Note that if i and j are the same, becaues the scaling factor applies
+        to the same cusp twice, we only can scale the one cusp by a factor
+        sqrt(maximal scaling factor) to stay disjoint along edges.
+
+        This function can return None if no edge between the two given
+        cusps exists.
+
+        Assume two cusp neighborhoods are disjoing along edges. They could
+        still intersect if they are not in standard form.
+
+        Note that this method also works for filled cusps. In this case,
+        the neighborhood is about a core curve in the manifold and consists
+        of the intersections with a tetrahedra by horoballs about its vertices.
+o
+        When using filled cusps, it is advisable to call
+        scale_triangles_to_avoid_standard_tube first.
         """
         if i > j:
             i, j = j, i
@@ -1381,3 +1421,99 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 edge: position - log0
                 for edge, position in trig.lifted_vertex_positions.items()
             }
+
+    def scale_triangles_to_avoid_standard_tubes(self):
+        """
+        Scales each horo triangle so that it is guaranteed to be outside of
+        a standard tube about the incompleteness locus from the outside (up
+        to rounding errors, it will touch the tube from the outside). Note
+        that the scale factor is not uniform across the triangles belonging
+        to the same (incomplete) cusp.
+
+        Thus, if we truncated each tetrahedron along the triangle, the
+        tetrahedra would not intersect the standard tube.
+
+
+                   \              /
+                    \         ---- triangle after calling this method and
+                     \          /  applying inverse_scale_to_be_inside_tube
+                      \        /
+                       \      ---- triangle after calling this method
+                        \    /
+                         \  /
+                45degrees \/
+          ----------------------------------
+
+        The resulting neighborhood about the core curve in the filled manifold
+        looks like a triangular version of the Giant's Causeway in Northern
+        Ireland.
+
+        Also stores the inverse of the Euclidean length scale factor
+        in inverse_scale_to_be_inside_tube to make the horo triangle be inside
+        the standard tube (up to rounding error, touch the standard tube from
+        the inside).
+
+        Here, a standard tube is given by a Euclidean cone from zero to
+        infinity in the upper halfspace model with cone angle pi/4.
+        Its hyperbolic radius is given by
+        arcinh(1) = log(1 + sqrt(2)) = 0.881373... .
+        """
+
+        for cusp in self.mcomplex.Vertices:
+            self._scale_triangles_to_avoid_standard_tube(cusp)
+
+    def _scale_triangles_to_avoid_standard_tube(self, cusp : t3m.Vertex):
+        for corner in cusp.Corners:
+            tet, vert = corner.Tetrahedron, corner.Subsimplex
+            trig = tet.horotriangles[vert]
+
+            if cusp.is_complete:
+                z = tet.ShapeParameters[simplex.E01]
+                RF = z.real().parent()
+                trig.inverse_scale_to_be_inside_tube = RF(1)
+                continue
+
+            vertex_positions = [
+                trig.vertex_positions[edge]
+                for face0, edge, face1
+                in _face_edge_face_triples_for_vertex_link[vert] ]
+
+            min_height = correct_min(
+                [ _lower_bound_distance_origin_line_segment(
+                    vertex_positions[0], vertex_positions[1]),
+                  _lower_bound_distance_origin_line_segment(
+                      vertex_positions[1], vertex_positions[2]),
+                  _lower_bound_distance_origin_line_segment(
+                      vertex_positions[2], vertex_positions[0]) ])
+            max_height = correct_max( [ abs(p) for p in vertex_positions ] )
+
+            trig.rescale(1 / min_height)
+
+            trig.inverse_scale_to_be_inside_tube = max_height / min_height
+
+def _lower_bound_distance_origin_line_segment(a, b):
+    """
+    Given two complex numbers a and b, compute a lower bound for
+    the (Euclidean) distance of the line segment from a to b to 0.
+    """
+
+    # The similarity
+    # f : z |-> (a - z) / (a - b)
+    # takes a to 0 and b to 1.
+
+    d = a - b
+
+    # The image of f(0).
+    z0 = a / d
+
+    if z0.real() > 1:
+        return abs(b)
+
+    if z0.real() < 0:
+        return abs(a)
+
+    # This is only the distance if we can show that z0.real() >= 0
+    # and z0.real() <= 1.
+    #
+    # But it is still a lower bound for the distance.
+    return abs(z0.imag()) * abs(d)

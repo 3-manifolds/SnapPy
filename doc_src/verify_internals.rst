@@ -64,9 +64,9 @@ Verified canonical cell decompositions
 Exact computations for cusp cross sections
 ------------------------------------------
 
-..   automodule:: snappy.verify.squareExtensions
+..   automodule:: snappy.verify.square_extensions
 
-..   autofunction:: snappy.verify.squareExtensions.find_shapes_as_complex_sqrt_lin_combinations
+..   autofunction:: snappy.verify.square_extensions.find_shapes_as_complex_sqrt_lin_combinations
 ..   autoclass:: SqrtLinCombination
      :members:
 ..   autoclass:: ComplexSqrtLinCombination

@@ -70,8 +70,8 @@ def run_doctests(verbose=False, print_info=True):
             verify.maximal_cusp_area_matrix,
             verify.maximal_cusp_area_matrix.cusp_tiling_engine,
             verify.maximal_cusp_area_matrix.cusp_translate_engine,
-            verify.squareExtensions,
-            verify.realAlgebra ],
+            verify.square_extensions,
+            verify.real_algebra ],
         extraglobs=globs,
         verbose=verbose, print_info=print_info)
 

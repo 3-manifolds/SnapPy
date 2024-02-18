@@ -1,5 +1,5 @@
 """
-The squareExtensions module provides
+The square_extensions module provides
 two special classes to give exact representations of the values
 involved when computing a cusp cross section.
 
@@ -39,7 +39,7 @@ if _within_sage:
 
     from ..snap import find_field
 
-from .realAlgebra import field_containing_real_and_imaginary_part_of_number_field
+from .real_algebra import field_containing_real_and_imaginary_part_of_number_field
 
 
 def eval_number_field_elt(elt, root):
@@ -75,7 +75,7 @@ def eval_number_field_elt(elt, root):
 #    _field_containing_real_and_imaginary_part_of_algebraic_number_LLL.
 # This was still very slow and failed on t11669 and 9 manifolds with 9 tetrahedra.
 #
-# The fastest implementation so far is in realAlgebra. The implementation there
+# The fastest implementation so far is in real_algebra. The implementation there
 # turns the one complex equation p(z) = 0 defining the number field into two
 # real equations for the real and imaginary part of the complex equation and
 # then uses the resultant to find exact solutions.

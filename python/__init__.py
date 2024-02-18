@@ -774,7 +774,7 @@ def all_translations(self, verified=False, bits_prec=None):
     """
 
     if verified or bits_prec:
-        # Use the implementation in verify.cuspTranslations that uses
+        # Use the implementation in verify.cusp_translations that uses
         # tetrahedra_shapes and ComplexCuspNeighborhood
         return verify.cusp_translations_for_neighborhood(
             self, verified=verified, bits_prec=bits_prec)

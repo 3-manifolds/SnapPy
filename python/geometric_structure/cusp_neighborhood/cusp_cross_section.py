@@ -129,6 +129,9 @@ class RealHoroTriangle:
         self.circumradius *= t
         self.area *= t * t
 
+    def get_real_lengths(self):
+        return self.lengths
+
     @staticmethod
     def direction_sign():
         return +1
@@ -560,10 +563,10 @@ class CuspCrossSectionBase(McomplexEngine):
         # invariant of a representation).
         v0 = simplex.ZeroSubsimplices[perm[0]]
         v1 = simplex.ZeroSubsimplices[perm[1]]
-        ptolemy_sqr = (tet.horotriangles[v0].lengths[face] *
-                       tet.horotriangles[v1].lengths[face])
-        # Take abs value in case we have complex edge lengths.
-        return abs(1 / ptolemy_sqr)
+        ptolemy_sqr = (tet.horotriangles[v0].get_real_lengths()[face] *
+                       tet.horotriangles[v1].get_real_lengths()[face])
+
+        return 1 / ptolemy_sqr
 
     @staticmethod
     def _exp_distance_of_edges(edges):

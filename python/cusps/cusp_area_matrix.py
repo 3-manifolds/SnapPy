@@ -3,7 +3,8 @@ from ..math_basics import correct_min
 from ..verify.shapes import compute_hyperbolic_shapes
 from ..matrix import matrix
 
-__all__ = ['triangulation_dependent_cusp_area_matrix']
+__all__ = ['triangulation_dependent_cusp_area_matrix',
+           'triangulation_dependent_cusp_area_matrix_from_cusp_cross_section']
 
 def triangulation_dependent_cusp_area_matrix(
                             snappy_manifold, bits_prec, verified):
@@ -31,27 +32,29 @@ def triangulation_dependent_cusp_area_matrix(
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.
+    #
     # Note that the constructed cusp cross section will always be too "large"
     # and we need to scale them down (since during construction the
     # cross-section of each cusp will have one edge of length 1, the
     # corresponding tetrahedron does not intersect in "standard" form.)
-    c = RealCuspCrossSection.fromManifoldAndShapes(snappy_manifold, shapes)
 
-    # If no areas are given, scale (up or down) all the cusps so that
-    # they are in standard form.
+    return triangulation_dependent_cusp_area_matrix_from_cusp_cross_section(
+        RealCuspCrossSection.fromManifoldAndShapes(snappy_manifold, shapes))
+
+def triangulation_dependent_cusp_area_matrix_from_cusp_cross_section(c):
+
+    # Scale (up or down) all the cusps so that they are in standard form.
     c.ensure_std_form(allow_scaling_up=True)
 
     areas = c.cusp_areas()
     RIF = areas[0].parent()
 
     def entry(i, j):
-        if i > j:
-            i, j = j, i
         result = areas[i] * areas[j]
-        if (i, j) in c._edge_dict:
-            result *= correct_min(
-                [ RIF(1), RealCuspCrossSection._exp_distance_of_edges(
-                        c._edge_dict[(i,j)])]) ** 2
+
+        d = c.exp_distance_neighborhoods_measured_along_edges(i, j)
+        if d is not None:
+            result *= correct_min([ RIF(1), d ]) ** 2
         return result
 
     n = len(areas)

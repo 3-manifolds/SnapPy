@@ -58,8 +58,8 @@ more gracefully returning ``False`` or ``None`` in such a case.
 Verified canonical cell decompositions
 --------------------------------------
 
-..   autofunction:: snappy.verify.verify_canonical.interval_checked_canonical_triangulation
-..   autofunction:: snappy.verify.verify_canonical.exactly_checked_canonical_retriangulation
+..   autofunction:: snappy.verify.canonical.interval_checked_canonical_triangulation
+..   autofunction:: snappy.verify.canonical.exactly_checked_canonical_retriangulation
 
 Exact computations for cusp cross sections
 ------------------------------------------

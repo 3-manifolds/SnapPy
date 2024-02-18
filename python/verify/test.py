@@ -59,7 +59,7 @@ def run_doctests(verbose=False, print_info=True):
             generate_test_with_shapes_engine(
                 verify.verifyHyperbolicity,
                 verify.IntervalNewtonShapesEngine),
-            verify.verify_canonical,
+            verify.canonical,
             verify.interval_tree,
             volume,
             cusp_areas,

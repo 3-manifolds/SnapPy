@@ -26,6 +26,14 @@ documentation for snappy module, e.g.
 
 """
 
+no_sphinx_theme_message = """
+You need to have Spinx's rtd theme installed to rebuild the
+documentation for snappy module, e.g.
+
+  sudo python -m pip install sphinx_rtd_theme
+
+"""
+
 no_wheel_message = """
 You need to have wheel installed to pip_install snappy, e.g.,
 
@@ -111,6 +119,10 @@ class SnapPyBuildDocs(Command):
             import sphinx
         except ImportError:
             raise ImportError(no_sphinx_message)
+        try:
+            import sphinx_rtd_theme
+        except ImportError:
+            raise ImportError(no_sphinx_theme_message)
         sphinx_cmd = load_entry_point('sphinx>=1.7', 'console_scripts', 'sphinx-build')
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']

@@ -25,6 +25,7 @@ class Tile:
         self.lower_bound_distance = lower_bound_distance
         self.lifted_geometric_object = lifted_geometric_object
         self.lifted_tetrahedron = lifted_tetrahedron
+        # Used in maximal_cusp_area_matrix
         self.object_index = object_index
 
 def compute_tiles(geometric_object,
@@ -60,7 +61,7 @@ def compute_tiles(geometric_object,
     """
 
     RF = base_point[0].parent()
-    
+
     if verified:
         minus_infinity = RF(-sage.all.Infinity)
     else:

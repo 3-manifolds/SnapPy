@@ -144,7 +144,7 @@ def _scale_vertices(mcomplex):
         for v0 in simplex.ZeroSubsimplices:
             v1, v2, _ = simplex.VerticesOfFaceCounterclockwise[simplex.comp(v0)]
 
-            length_on_cusp = tet.horotriangles[v0].lengths[v0 | v1 | v2]
+            length_on_cusp = tet.horotriangles[v0].get_real_lengths()[v0 | v1 | v2]
             length_on_horosphere = (
                 -2 * R13_vertex_products[v1 | v2] / (
                      R13_vertex_products[v0 | v1] *

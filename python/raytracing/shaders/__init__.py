@@ -92,7 +92,10 @@ def get_triangulation_shader_source_and_ubo_descriptors(
          (16 + 16) * num_additional_horospheres + 16 * (num_tets + 1),
          { 'horosphereVec': 0,
            'horosphereCuspIndex': 16 * num_additional_horospheres,
-           'horosphereOffsets' : (16 + 16) * num_additional_horospheres})
+           'horosphereOffsets' : (16 + 16) * num_additional_horospheres}),
+        ('edgeMidpoints',
+         16 * 6 * num_tets,
+         { 'edgeMidpointVec': 0 })
          ]
 
     return src, uniform_block_names_sizes_and_offsets

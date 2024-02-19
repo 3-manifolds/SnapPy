@@ -1,6 +1,6 @@
 from .geodesic_tube_info import GeodesicTubeInfo
 from .pack import pack_tet_data
-from .upper_halfspace_utilities import *
+from .upper_halfspace_utilities import add_coordinate_transform_to_mcomplex
 from .hyperboloid_utilities import O13_orthonormalise
 
 from ..geometric_structure import (add_r13_geometry,
@@ -8,7 +8,6 @@ from ..geometric_structure import (add_r13_geometry,
 from ..geometric_structure.geodesic.core_curves import add_r13_core_curves
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
-from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
 import traceback
 
@@ -151,15 +150,7 @@ class Geodesics:
             add_r13_core_curves(
                 self.mcomplex, self.manifold)
             add_triangles_to_tetrahedra(self.mcomplex)
-
-            for tet in self.mcomplex.Tetrahedra:
-                z = tet.ShapeParameters[simplex.E01]
-                vert0 = [ tet.ideal_vertices[v]
-                          for v in simplex.ZeroSubsimplices[:3]]
-                vert1 = symmetric_vertices_for_tetrahedron(z)[:3]
-                tet.to_coordinates_in_symmetric_tet = (
-                    o13_matrix_taking_ideal_vertices_to_ideal_vertices(
-                        vert0, vert1))
+            add_coordinate_transform_to_mcomplex(self.mcomplex)
 
         return self.mcomplex
 
@@ -239,8 +230,3 @@ def geodesic_index_to_color(i):
     return hsv2rgb(golden_angle_by_2_pi * i + 0.1, 1.0, 1.0)
 
 
-def o13_matrix_taking_ideal_vertices_to_ideal_vertices(verts0, verts1):
-    m1 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts0)
-    m2 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts1)
-
-    return pgl2c_to_o13(m2 * sl2c_inverse(m1))

@@ -9,28 +9,16 @@ v.view.widget.additional_structures['horospheres'] = a; v.view.widget._update_sh
 
 """
 
-from .upper_halfspace_utilities import *
-
 from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import mcomplex_for_tiling_cusp_neighborhoods
 
-from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
-
-from ..snap.t3mlite import simplex
+from .upper_halfspace_utilities import add_coordinate_transform_to_mcomplex
 
 class AdditionalHorospheres:
     def __init__(self, manifold):
 
         self.mcomplex = mcomplex_for_tiling_cusp_neighborhoods(
             manifold, bits_prec = 53, verified = False)
-
-        for tet in self.mcomplex.Tetrahedra:
-            z = tet.ShapeParameters[simplex.E01]
-            vert0 = [ tet.ideal_vertices[v]
-                      for v in simplex.ZeroSubsimplices[:3]]
-            vert1 = symmetric_vertices_for_tetrahedron(z)[:3]
-            tet.to_coordinates_in_symmetric_tet = (
-                o13_matrix_taking_ideal_vertices_to_ideal_vertices(
-                    vert0, vert1))
+        add_coordinate_transform_to_mcomplex(self.mcomplex)
 
         self.num_tetrahedra = manifold.num_tetrahedra()
         self.RF = manifold.tetrahedra_shapes('rect')[0].real().parent()

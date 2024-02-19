@@ -1,6 +1,7 @@
 """
 from snappy import *; from snappy.raytracing.additional_horospheres import *
 
+M=Manifold("t10879")
 M=CubicalOrientableCuspedCensus[0]
 v = M.inside_view()
 a=AdditionalHorospheres(M)
@@ -33,7 +34,7 @@ class AdditionalHorospheres:
 
         self.num_tetrahedra = manifold.num_tetrahedra()
         self.RF = manifold.tetrahedra_shapes('rect')[0].real().parent()
-        self.cusp_scales = [ 1.0 for v in self.mcomplex.Vertices ]
+        self.cusp_areas = [ 1.0 for v in self.mcomplex.Vertices ]
 
         self.data_vecs = []
         
@@ -54,8 +55,7 @@ class AdditionalHorospheres:
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
         for cusp_index, v in enumerate(self.mcomplex.Vertices):
-
-            scale = self.RF(self.cusp_scales[cusp_index])
+            scale = (self.RF(self.cusp_areas[cusp_index]) / v.cusp_area).sqrt()
 
             d = scale.log()
 

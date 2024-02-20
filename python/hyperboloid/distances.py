@@ -47,21 +47,26 @@ def distance_r13_horoball_line(horoball_defining_vec, # Light-like
     return _safe_log(s)/2
 
 def distance_r13_horoball_plane(horoball_defining_vec, # Light-like
-                                plane_defining_vec): # Space-like
+                                plane_defining_vec): # Unit space-like
     p = r13_dot(horoball_defining_vec, plane_defining_vec)
     return _safe_log_non_neg(p.abs())
 
-def distance_r13_point_line(pt, # Time-like
+def distance_r13_point_line(pt, # Unit time-like
                             line : R13Line):
     p = (r13_dot(line.points[0], pt) *
          r13_dot(line.points[1], pt))
     s = -2 * p / line.inner_product
     return _safe_arccosh(_safe_sqrt(s))
 
-def distance_r13_point_plane(pt, # Time-like
-                             plane_defining_vec): # Space-like
+def distance_r13_point_plane(pt, # Unit time-like
+                             plane_defining_vec): # Unit space-like
     p = r13_dot(pt, plane_defining_vec)
     return p.arcsinh().abs()
+
+def distance_r13_points(pt0, # Unit time-like
+                        pt1): # Unit time-like
+    p = r13_dot(pt0, pt1)
+    return _safe_arccosh(-p)
 
 def lower_bound_distance_to_r13_triangle(
         geometric_object, triangle : R13IdealTriangle, verified : bool):

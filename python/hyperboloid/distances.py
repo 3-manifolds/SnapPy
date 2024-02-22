@@ -49,13 +49,17 @@ def distance_r13_horoball_line(horoball_defining_vec, # Light-like
 def distance_r13_horoball_plane(horoball_defining_vec, # Light-like
                                 plane_defining_vec): # Unit space-like
     p = r13_dot(horoball_defining_vec, plane_defining_vec)
-    return _safe_log_non_neg(p.abs())
+    return _safe_log_of_abs(p)
 
 def distance_r13_point_line(pt, # Unit time-like
                             line : R13Line):
+    """
+    This also works if line is degenerate and starts and ends at some point.
+    """
+
     p = (r13_dot(line.points[0], pt) *
          r13_dot(line.points[1], pt))
-    s = -2 * p / line.inner_product
+    s = _safe_div(2 * p, -line.inner_product)
     return _safe_arccosh(_safe_sqrt(s))
 
 def distance_r13_point_plane(pt, # Unit time-like
@@ -183,6 +187,9 @@ def _safe_log(p):
             return RF(-1e20)
     return p.log()
 
+def _safe_log_of_abs(p):
+    return _safe_log_non_neg(p.abs())
+
 def _safe_log_non_neg(p):
     if p == 0:
         if is_RealIntervalFieldElement(p):
@@ -203,3 +210,23 @@ def _safe_arccosh(p):
             RF = p.parent()
             return RF(0)
     return p.arccosh()
+
+def _safe_div(a, b):
+    """
+    Compute a / b where be is known to be non-negative and we should
+    return infinity if b is zero.
+    """
+    
+    if is_RealIntervalFieldElement(b):
+        RIF = b.parent()
+        if b == 0:
+            return RIF(sage.all.Infinity)
+        else:
+            return a / b.intersection(RIF(0, sage.all.Infinity))
+    else:
+        if b <= 0:
+            RIF = b.parent()
+            return RIF(1e20)
+        else:
+            return a / b
+

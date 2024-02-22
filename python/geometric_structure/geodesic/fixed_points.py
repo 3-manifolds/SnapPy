@@ -3,7 +3,8 @@ from ...hyperboloid.line import R13Line
 from ...upper_halfspace import psl2c_to_o13 # type: ignore
 from ...upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
 from ...matrix import matrix # type: ignore
-from ...math_basics import is_RealIntervalFieldElement # type: ignore
+from ...math_basics import (is_RealIntervalFieldElement,
+                            is_ComplexIntervalFieldElement) # type: ignore
 
 __all__ = ['r13_fixed_points_of_psl2c_matrix',
            'r13_fixed_line_of_psl2c_matrix']
@@ -78,5 +79,14 @@ def _complex_fixed_points_of_psl2c_matrix(m):
     c = -m[0, 1]
 
     # Use usual formula z = (-b +/- sqrt(b^2 - 4 * a * c)) / (2 * a)
-    d = (b * b - 4 * a * c).sqrt()
+    d = _safe_complex_sqrt(b * b - 4 * a * c)
     return [ (-b + s * d) / (2 * a) for s in [+1, -1] ]
+
+def _safe_complex_sqrt(z):
+    if is_ComplexIntervalFieldElement(z):
+        if z.contains_zero():
+            CIF = z.parent()
+            m = z.abs().sqrt().upper()
+            return CIF((-m, m), (-m, m))
+
+    return z.sqrt()

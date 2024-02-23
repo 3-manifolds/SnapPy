@@ -206,7 +206,7 @@ def _safe_arccosh(p):
         RIF = p.parent()
         p = p.intersection(RIF(1, sage.all.Infinity))
     else:
-        if p < 0:
+        if p < 1:
             RF = p.parent()
             return RF(0)
     return p.arccosh()

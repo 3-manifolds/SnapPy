@@ -7,7 +7,8 @@ from .fixed_points import r13_fixed_line_of_psl2c_matrix
 from .. import word_to_psl2c_matrix
 
 from ...tiling.lifted_tetrahedron import LiftedTetrahedron
-from ...hyperboloid import r13_dot, o13_inverse, distance_unit_time_r13_points # type: ignore
+from ...hyperboloid import r13_dot, o13_inverse # type: ignore
+from ...hyperboloid.distances import distance_r13_points
 from ...hyperboloid.line import R13Line
 from ...snap.t3mlite import simplex # type: ignore
 from ...snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
@@ -451,13 +452,13 @@ class GeodesicInfo:
         # Decktransformation corresponding to core curve acting on basepoint
         m = tet.core_curves[vertex].o13_matrix
         b0 = m * self.mcomplex.R13_baseTetInCenter
-        if distance_unit_time_r13_points(a, b0) < self.mcomplex.baseTetInRadius:
+        if distance_r13_points(a, b0) < self.mcomplex.baseTetInRadius:
             return +1
 
         # Decktransformation corresponding to core curve with opposite
         # orientation acting on basepoint.
         b1 = o13_inverse(m) * self.mcomplex.R13_baseTetInCenter
-        if distance_unit_time_r13_points(a, b1) < self.mcomplex.baseTetInRadius:
+        if distance_r13_points(a, b1) < self.mcomplex.baseTetInRadius:
             return -1
 
         raise InsufficientPrecisionError(

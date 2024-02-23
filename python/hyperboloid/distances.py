@@ -69,7 +69,15 @@ def distance_r13_point_plane(pt, # Unit time-like
 
 def distance_r13_points(pt0, # Unit time-like
                         pt1): # Unit time-like
+    """
+    Computes the hyperbolic distance between two points (represented
+    by unit time vectors) in the hyperboloid model.
+    """
     p = r13_dot(pt0, pt1)
+
+    # Due to rounding errors, the resulting number or interval can be
+    # slightly less than 1 or contain numbers slightly less than 1,
+    # respectively - resulting in NaN's. Avoid this here.
     return _safe_arccosh(-p)
 
 def lower_bound_distance_to_r13_triangle(

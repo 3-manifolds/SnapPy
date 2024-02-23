@@ -40,27 +40,6 @@ def r13_dot(u, v):
     return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
 
 
-def distance_unit_time_r13_points(u, v):
-    """
-    Computes the hyperbolic distance between two points (represented
-    by unit time vectors) in the hyperboloid model.
-    """
-
-    d = -r13_dot(u, v)
-
-    # Due to rounding errors, the resulting number or interval can be
-    # slightly less than 1 or contain numbers slightly less than 1,
-    # respectively - resulting in NaN's. Avoid this here.
-    if is_RealIntervalFieldElement(d):
-        RIF = d.parent()
-        d = d.intersection(RIF(1, sage.all.Infinity))
-    else:
-        if d < 1:
-            RF = d.parent()
-            d = RF(1)
-    return d.arccosh()
-
-
 def time_r13_normalise(u):
     """
     Given a time-like vector in Minkowski space, returns the normalised

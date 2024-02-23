@@ -7,10 +7,9 @@ from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,
-    time_r13_normalise,
-    distance_unit_time_r13_points)
+    time_r13_normalise)
 from ..hyperboloid.line import R13Line
-from ..hyperboloid.distances import distance_r13_lines
+from ..hyperboloid.distances import distance_r13_lines, distance_r13_points
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
@@ -164,7 +163,7 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
     time_coord = sum((x**2 for x in space_coords), RF(1)).sqrt()
     perturbed_point = vector([time_coord] + space_coords)
 
-    d = distance_unit_time_r13_points(point, perturbed_point)
+    d = distance_r13_points(point, perturbed_point)
     if not d < RF(0.75) * max_amt:
         raise InsufficientPrecisionError(
             "Could not verify perturbed point is close enough to original "

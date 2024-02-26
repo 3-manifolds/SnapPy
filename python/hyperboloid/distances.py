@@ -51,6 +51,11 @@ def distance_r13_horoball_plane(horoball_defining_vec, # Light-like
     p = r13_dot(horoball_defining_vec, plane_defining_vec)
     return _safe_log_of_abs(p)
 
+def distance_r13_horoball_point(horoball_defining_vec, # Light-like
+                                pt): # Unit-time-like
+    p = r13_dot(horoball_defining_vec, pt)
+    return (-p).log()
+
 def distance_r13_point_line(pt, # Unit time-like
                             line : R13Line):
     """

@@ -46,8 +46,10 @@ def psl2c_to_o13(A):
     Python implementation of Moebius_to_O31 in matrix_conversion.c.
     """
 
+    Aadj = _adjoint(A)
+
     return matrix(
-        [ _o13_matrix_column(A, m)
+        [ _o13_matrix_column(A, m, Aadj)
           for m in _basis_vectors_sl2c(A.base_ring()) ]).transpose()
 
 
@@ -76,8 +78,8 @@ def _adjoint(m):
                    [ m[0][1].conjugate(), m[1][1].conjugate()]])
 
 
-def _o13_matrix_column(A, m):
-    fAmj = A * m * _adjoint(A)
+def _o13_matrix_column(A, m, Aadj):
+    fAmj = A * m * Aadj
 
     return [ (fAmj[0][0].real() + fAmj[1][1].real()) / 2,
              (fAmj[0][0].real() - fAmj[1][1].real()) / 2,

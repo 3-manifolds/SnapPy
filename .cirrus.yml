@@ -18,12 +18,10 @@ cirrus_wheels_macos_arm64_task:
       pip install git+https://github.com/3-manifolds/snappy_manifolds &&
       pip install git+https://github.com/3-manifolds/Spherogram
     CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
-  install_pre_requirements_script:
-    - brew install python3
+  install_pipx:
+    - brew install python3 pipx
     - python3 --version
-  install_cibuildwheel_script:
-    - python3 -m pip install cibuildwheel==2.15.0
   run_cibuildwheel_script:
-    - python3 -m cibuildwheel --output-dir wheelhouse
+    - pipx run cibuildwheel --output-dir wheelhouse
   wheels_artifacts:
     path: "wheelhouse/*"

@@ -559,7 +559,7 @@ long_description = long_description.split('Downloads')[0]
 setup( name = 'snappy',
        version = version,
        zip_safe = False,
-       python_requires = '>=3',
+       python_requires = '>=3.8',
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/snap/peripheral',

@@ -16,7 +16,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.5
         env:
-          # Skip Python 3.12, and PyPy
+          # Skip PyPy
           CIBW_SKIP: pp*
           CIBW_BEFORE_BUILD: >
             pip install cython FXrays low_index sphinx sphinx_rtd_theme &&

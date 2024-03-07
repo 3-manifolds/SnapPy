@@ -1,5 +1,5 @@
 cirrus_wheels_macos_arm64_task:
-  name: Build macOS arm64 wheels.
+  name: Build wheels on macOS arm64.
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
   env:

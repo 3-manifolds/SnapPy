@@ -352,6 +352,8 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # We use the geometric mean of the Euclidean heights of the lowest and
     # highest point of the inscribed sphere
     # sqrt( (h + r) * (h - r))
+    #
+    # height is also equal to  (2 * length_product / length_total).sqrt()
     height = ( eHeightSqr - inRadiusSqr ).sqrt()
 
     # Taking the logarithm of the ratio of these two highest gives the

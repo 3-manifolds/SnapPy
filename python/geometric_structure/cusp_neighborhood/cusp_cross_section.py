@@ -501,18 +501,30 @@ class CuspCrossSectionBase(McomplexEngine):
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
     @staticmethod
-    def _compute_area_scale_for_std_form(corner : t3m.Corner):
+    def _max_area_triangle_to_avoid_incenter(z):
+        abs_z = abs(z)
+        abs_z_minus_one = abs(z - 1)
+        return z.imag() * (1 + abs_z + abs_z_minus_one) / (4 * abs_z * abs_z_minus_one)
+
+    @staticmethod
+    def _compute_area_scale(corner : t3m.Corner, area_function):
         """
         For a tetrahedron and vertex of the tetrahedron, compute how much
-        the cusp neighborhood about the vertex can be scaled for the the
-        tetrahedron to intersect the neighborhood in standard form.
+        the cusp neighborhood about the vertex can be scaled so that the cusp
+        triangle is given the by area_function.
         """
 
         tet = corner.Tetrahedron
         z = tet.ShapeParameters[simplex.E01]
-        max_area = CuspCrossSectionBase._lower_bound_max_area_triangle_for_std_form(z)
-        area = tet.horotriangles[corner.Subsimplex].area
-        return max_area / area
+        return area_function(z) / tet.horotriangles[corner.Subsimplex].area
+
+    @staticmethod
+    def _compute_max_scale(v : t3m.Vertex, max_area_function):
+        area_scales = [
+            CuspCrossSectionBase._compute_area_scale(corner, max_area_function)
+            for corner in v.Corners ]
+
+        return correct_min(area_scales).sqrt()
 
     def compute_scale_for_std_form(self, v : t3m.Vertex):
         """
@@ -520,12 +532,16 @@ class CuspCrossSectionBase(McomplexEngine):
         that each tetrahedron adjacent to the vertex intersects the the
         cusp neighborhood in standard form.
         """
+        return CuspCrossSectionBase._compute_max_scale(
+            v, CuspCrossSectionBase._lower_bound_max_area_triangle_for_std_form)
 
-        area_scales = [
-            CuspCrossSectionBase._compute_area_scale_for_std_form(corner)
-            for corner in v.Corners ]
-
-        return correct_min(area_scales).sqrt()
+    def compute_scale_to_avoid_incenter(self, v : t3m.Vertex):
+        """
+        Computes scale for cusp neighborhood about given vertex to ensure
+        that the cusp neighborhood avoid the incenter of each tetrahedron.
+        """
+        return CuspCrossSectionBase._compute_max_scale(
+            v, CuspCrossSectionBase._max_area_triangle_to_avoid_incenter)
 
     def ensure_std_form(self, allow_scaling_up=False):
         """

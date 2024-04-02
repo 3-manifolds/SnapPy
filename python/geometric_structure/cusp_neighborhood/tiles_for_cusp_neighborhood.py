@@ -70,11 +70,17 @@ def compute_tiles_for_cusp_neighborhood(
     RF = horoball_defining_vec[0].parent()
 
     # Lowest non-zero value expected is
-    # -2 * (v.lower_bound_embedding_scale ** 2)
+    # 2 * (v.lower_bound_embedding_scale ** 2)
     #
     # Divide by half so that we have some margin.
-    min_inner_product = - (v.lower_bound_embedding_scale ** 2)
 
+    min_neg_prod_distinct = (v.lower_bound_embedding_scale ** 2)
+
+    if verified:
+        max_neg_prod_equal = min_neg_prod_distinct
+    else:
+        max_neg_prod_equal = _compute_prod_epsilon(RF)
+        
     initial_lifted_tetrahedron = LiftedTetrahedron(
         corner.Tetrahedron, matrix.identity(RF, 4))
 
@@ -83,7 +89,8 @@ def compute_tiles_for_cusp_neighborhood(
         base_point=horoball_defining_vec,
         canonical_keys_function=None,
         act_on_base_point_by_inverse=True,
-        min_inner_product=min_inner_product,
+        max_neg_prod_equal=max_neg_prod_equal,
+        min_neg_prod_distinct=min_neg_prod_distinct,
         initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
         verified=verified)
 
@@ -124,3 +131,22 @@ def add_cusp_cross_section(mcomplex : Mcomplex):
             v.lower_bound_embedding_scale = correct_min(
                 [ v.scale_for_std_form,
                   v.exp_self_distance_along_edges.sqrt() ])
+
+def _compute_prod_epsilon(RF):
+    p = RF.precision()
+
+    # We try to be a factor of at least several magnitudes smaller than
+    # 1/_compute_epsilon_inverse(RF) in hyperboloid_dict.py.
+    #
+    # This factor will even grow larger as the precision increases.
+    #
+    # That way, we will hopefully fail in _equality_predicate
+    # in hyperboloid_dict rather than failing by not hashing together
+    # lifted tetrahedra that should be the same but are not recognised
+    # as such because of numerical error.
+
+    result = RF(1e-8)
+    if p > 53:
+        result *= RF(0.5) ** ((p - 53) / 2)
+
+    return result

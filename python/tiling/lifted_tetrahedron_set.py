@@ -62,7 +62,7 @@ class LiftedTetrahedronSet:
 def get_lifted_tetrahedron_set(base_point,
                                canonical_keys_function,
                                act_on_base_point_by_inverse,
-                               min_inner_product,
+                               max_neg_prod_equal, min_neg_prod_distinct,
                                verified
                                ) -> LiftedTetrahedronSet:
     """
@@ -73,7 +73,8 @@ def get_lifted_tetrahedron_set(base_point,
 
     """
 
-    d = get_hyperboloid_dict(min_inner_product, verified)
+    d = get_hyperboloid_dict(max_neg_prod_equal, min_neg_prod_distinct,
+                             verified)
 
     if canonical_keys_function:
         d = CanonicalKeyDict(d, canonical_keys_function)

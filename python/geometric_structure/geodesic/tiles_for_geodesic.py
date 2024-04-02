@@ -40,11 +40,15 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             "GeodesicTube expected GeodesicInfo with lifted_tetrahedra "
             "set to start developing a tube about the geodesic.")
 
+    min_neg_prod_distinct = (mcomplex.baseTetInRadius/2).cosh()
+
     if mcomplex.verified:
         core_curve_epsilon = 0
+        max_neg_prod_equal = min_neg_prod_distinct
     else:
-        core_curve_epsilon = _compute_epsilon(mcomplex.RF)
-        
+        core_curve_epsilon = _compute_core_curve_epsilon(mcomplex.RF)
+        max_neg_prod_equal = 1 + _compute_prod_epsilon(mcomplex.RF)
+
     return check_away_from_core_curve_iter(
         compute_tiles(
             geometric_object=geodesic.line.r13_line,
@@ -52,11 +56,32 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             canonical_keys_function=(
                 canonical_keys_function_for_line(geodesic.line)),
             act_on_base_point_by_inverse=False,
-            min_inner_product=-(mcomplex.baseTetInRadius/2).cosh(),
+            max_neg_prod_equal=max_neg_prod_equal,
+            min_neg_prod_distinct=min_neg_prod_distinct,
             initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
             verified=mcomplex.verified),
         epsilon = core_curve_epsilon,
         obj_name = 'Geodesic %s' % geodesic.word)
 
-def _compute_epsilon(RF):
+def _compute_core_curve_epsilon(RF):
     return RF(0.5) ** (RF.prec() // 2 - 8)
+
+def _compute_prod_epsilon(RF):
+    p = RF.precision()
+
+    # We try to be a factor of at least several magnitudes smaller than
+    # 1/_compute_epsilon_inverse(RF) in hyperboloid_dict.py.
+    #
+    # This factor will even grow larger as the precision increases.
+    #
+    # That way, we will hopefully fail in _equality_predicate
+    # in hyperboloid_dict rather than failing by not hashing together
+    # lifted tetrahedra that should be the same but are not recognised
+    # as such because of numerical error.
+
+    result = RF(1e-7)
+    if p > 53:
+        result *= RF(0.5) ** ((p - 53) / 2)
+
+    return result
+    

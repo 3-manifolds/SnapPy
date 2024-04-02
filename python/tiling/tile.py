@@ -32,7 +32,7 @@ def compute_tiles(geometric_object,
                   base_point,
                   canonical_keys_function,
                   act_on_base_point_by_inverse,
-                  min_inner_product,
+                  max_neg_prod_equal, min_neg_prod_distinct,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
                   verified
                   ) -> Sequence[Tile]:
@@ -96,7 +96,7 @@ def compute_tiles(geometric_object,
             base_point,
             canonical_keys_function,
             act_on_base_point_by_inverse,
-            min_inner_product,
+            max_neg_prod_equal, min_neg_prod_distinct,
             verified))
 
     while True:

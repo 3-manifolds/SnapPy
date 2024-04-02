@@ -63,8 +63,6 @@ class Eyeball:
         initial_lifted_tetrahedron = LiftedTetrahedron(
             self.mcomplex.Tetrahedra[tet_num], matrix.identity(RF, 4))
 
-        min_inner_product = -RF(1.0 + 1e-7)
-
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
         if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == eyeball_type_eyeball:
             eyeballRadius = eyeballRadius / 2.0
@@ -76,7 +74,8 @@ class Eyeball:
                     base_point=base_point,
                     canonical_keys_function=None,
                     act_on_base_point_by_inverse=True,
-                    min_inner_product=min_inner_product,
+                    max_neg_prod_equal=RF(1.0 + 1e-7),
+                    min_neg_prod_distinct=RF(1.0 + 1e-5),
                     initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
                     verified=False)):
 

@@ -132,6 +132,7 @@ def add_r13_geometry(
         tet.O13_matrices = {
             F : psl2c_to_o13(mcomplex.GeneratorMatrices.get(-g))
             for F, g in developed_tet.GeneratorsInfo.items() }
+        tet.GeneratorsInfo = developed_tet.GeneratorsInfo
 
     # Set base tetrahedron and compute its in-radius and center.
     mcomplex.baseTet = mcomplex.Tetrahedra[

@@ -73,6 +73,48 @@ def o13_inverse(m):
 
     return result
 
+def so13_to_pgl2c(B):
+    """
+    Given an SO13 matrix, returns correspoinding complex 2x2-matrix.
+    The determinant of the result is not 1 in general.
+
+    Python implementation of O31_to_Moebius (without normalization).
+    """
+
+    RF = B[0,0].parent()
+    if _within_sage:
+        I = sage.all.I
+    else:
+        I = RF('I')
+
+    AM0A_00 = B[0,0] + B[1,0]
+    AM1A_00 = B[0,1] + B[1,1]
+    aa = AM0A_00 + AM1A_00
+    bb = AM0A_00 - AM1A_00
+
+    if (aa > bb):
+        return matrix(
+            [ [ aa,
+                (B[0,2] + B[1,2]) + (B[0,3] + B[1,3]) * I ],
+              [ (B[2,0] + B[2,1]) - (B[3,0] + B[3,1]) * I,
+                (B[2,2] + B[3,3]) + (B[2,3] - B[3,2]) * I ] ])
+    else:
+        return matrix(
+            [ [ (B[0,2] + B[1,2]) - (B[0,3] + B[1,3]) * I,
+                bb ],
+              [ (B[2,2] - B[3,3]) - (B[2,3] + B[3,2]) * I,
+                (B[2,0] - B[2,1]) + (B[3,1] - B[3,0]) * I ] ])
+
+def so13_to_psl2c(m):
+    """
+    Given an SO13 matrix, returns correspoinding complex 2x2-matrix
+    with determinant 1.
+
+    Python implementation of O31_to_Moebius (with normalization).
+    """
+
+    A = so13_to_pgl2c(m)
+    return A / A.det().sqrt()
 
 def unit_time_vector_to_o13_hyperbolic_translation(v):
     """

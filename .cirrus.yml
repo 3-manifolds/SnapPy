@@ -25,3 +25,4 @@ cirrus_wheels_macos_arm64_task:
     - pipx run cibuildwheel --output-dir wheelhouse
   wheels_artifacts:
     path: "wheelhouse/*"
+  timeout_in: 90m

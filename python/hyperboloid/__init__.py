@@ -75,7 +75,7 @@ def o13_inverse(m):
 
 def so13_to_pgl2c(B):
     """
-    Given an SO13 matrix, returns correspoinding complex 2x2-matrix.
+    Given an SO13 matrix, returns corresponding complex 2x2-matrix.
     The determinant of the result is not 1 in general.
 
     Python implementation of O31_to_Moebius (without normalization).
@@ -107,7 +107,7 @@ def so13_to_pgl2c(B):
 
 def so13_to_psl2c(m):
     """
-    Given an SO13 matrix, returns correspoinding complex 2x2-matrix
+    Given an SO13 matrix, returns corresponding complex 2x2-matrix
     with determinant 1.
 
     Python implementation of O31_to_Moebius (with normalization).

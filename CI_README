@@ -1,0 +1,3 @@
+The locations of the files controlling continuous integration are:
+.cirrus.yml : for Mac OS ARM only.
+.github/workflows : for everything else.

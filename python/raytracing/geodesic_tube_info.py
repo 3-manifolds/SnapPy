@@ -1,4 +1,4 @@
-from ..tiling.iterable_cache import IterableCache
+from ..tiling.iter_utils import IteratorCache
 from ..tiling.tile import Tile
 
 from ..hyperboloid.distances import distance_r13_lines
@@ -41,7 +41,7 @@ class GeodesicTubeInfo:
         self.geodesic_info = compute_geodesic_info(mcomplex, word)
 
         if not self.geodesic_info.core_curve_cusp:
-            self.tiles = IterableCache(
+            self.tiles = IteratorCache(
                 tiles_up_to_core_curve(
                     compute_tiles_for_geodesic(
                         mcomplex, self.geodesic_info)))

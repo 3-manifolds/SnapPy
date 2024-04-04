@@ -11,7 +11,7 @@ from ...math_basics import correct_min
 
 from ...tiling.tile import Tile, compute_tiles
 from ...tiling.lifted_tetrahedron import LiftedTetrahedron
-from ...tiling.iterable_cache import IterableCache
+from ...tiling.iter_utils import IteratorCache
 
 from typing import Sequence
 
@@ -46,7 +46,7 @@ def mcomplex_for_tiling_cusp_neighborhoods(
         v._tiles = None
         def tiles(v=v, verified=verified):
             if v._tiles is None:
-                v._tiles = IterableCache(
+                v._tiles = IteratorCache(
                     compute_tiles_for_cusp_neighborhood(
                         v, verified))
             return v._tiles

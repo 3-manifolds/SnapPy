@@ -47,13 +47,14 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         
     return check_away_from_core_curve_iter(
         compute_tiles(
-            geodesic.line.r13_line,
-            mcomplex.R13_baseTetInCenter,
-            canonical_keys_function_for_line(geodesic.line),
-            False,
-            -(mcomplex.baseTetInRadius/2).cosh(),
-            geodesic.lifted_tetrahedra,
-            mcomplex.verified),
+            geometric_object=geodesic.line.r13_line,
+            base_point=mcomplex.R13_baseTetInCenter,
+            canonical_keys_function=(
+                canonical_keys_function_for_line(geodesic.line)),
+            act_on_base_point_by_inverse=False,
+            min_inner_product=-(mcomplex.baseTetInRadius/2).cosh(),
+            initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
+            verified=mcomplex.verified),
         epsilon = core_curve_epsilon,
         obj_name = 'Geodesic %s' % geodesic.word)
 

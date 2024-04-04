@@ -13,8 +13,8 @@ from ..snap.kernel_structures import TransferKernelStructuresEngine # type: igno
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron # type: ignore
 
 from ..hyperboloid import (space_r13_normalise,
-                           r13_dot,
-                           unnormalised_plane_eqn_from_r13_points)
+                           unnormalised_plane_eqn_from_r13_points,
+                           compute_inradius_and_incenter_from_planes)
 from ..upper_halfspace import psl2c_to_o13 # type: ignore
 from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
 from ..matrix import vector, matrix, mat_solve # type: ignore
@@ -137,7 +137,7 @@ def add_r13_geometry(
     mcomplex.baseTet = mcomplex.Tetrahedra[
         poly.mcomplex.ChooseGenInitialTet.Index]
     mcomplex.baseTetInRadius, mcomplex.R13_baseTetInCenter = (
-        _compute_inradius_and_incenter_from_planes(
+        compute_inradius_and_incenter_from_planes(
             [ mcomplex.baseTet.R13_planes[f]
               for f in simplex.TwoSubsimplices]))
 
@@ -173,39 +173,6 @@ def _to_matrix(m):
     """
     return matrix([[m[0,0],m[0,1]],
                    [m[1,0],m[1,1]]])
-
-# Depending on whether we are using SnapPy inside SageMath or not, we
-# use different python classes to represent numbers, vectors and matrices.
-# Thus, using Any as type annotation for now :(
-
-
-def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
-    """
-    Given outside-facing normals for the four faces of a
-    tetrahedron, compute the hyperbolic inradius and the
-    incenter (as unit time vector) of the tetrahedron (in the
-    hyperboloid model).
-    """
-
-    # We need to c and r such that
-    #  * r13_dot(c, c) = -1 and
-    #  * r13_dot(plane, c) = -sinh(r) for every plane
-    #
-    # We instead solve for the following system of linear equations:
-    #  * r13_dot(plane, pt) = -1 for every plane
-
-    RF = planes[0][0].parent()
-    m = matrix([[-plane[0], plane[1], plane[2], plane[3]]
-                for plane in planes])
-    v = vector([RF(-1), RF(-1), RF(-1), RF(-1)])
-
-    pt = mat_solve(m, v)
-
-    # And then use the inverse length of pt to scale pt to be
-    # a unit time vector and to compute the r.
-    scale = 1 / (-r13_dot(pt, pt)).sqrt()
-
-    return scale.arcsinh(), scale * pt
 
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """

@@ -1,4 +1,4 @@
-from ..matrix import vector, matrix
+from ..matrix import vector, matrix, mat_solve
 from ..math_basics import is_RealIntervalFieldElement
 from ..sage_helper import _within_sage
 
@@ -166,3 +166,31 @@ def _det_shifted_matrix3(m, i):
             - m[0][i2] * m[1][i1] * m[2][i0]
             - m[0][i0] * m[1][i2] * m[2][i1]
             - m[0][i1] * m[1][i0] * m[2][i2])
+
+def compute_inradius_and_incenter_from_planes(planes):
+    """
+    Given outside-facing normals for the four faces of a
+    tetrahedron, compute the hyperbolic inradius and the
+    incenter (as unit time vector) of the tetrahedron (in the
+    hyperboloid model).
+    """
+
+    # We need to c and r such that
+    #  * r13_dot(c, c) = -1 and
+    #  * r13_dot(plane, c) = -sinh(r) for every plane
+    #
+    # We instead solve for the following system of linear equations:
+    #  * r13_dot(plane, pt) = -1 for every plane
+
+    RF = planes[0][0].parent()
+    m = matrix([[-plane[0], plane[1], plane[2], plane[3]]
+                for plane in planes])
+    v = vector([RF(-1), RF(-1), RF(-1), RF(-1)])
+
+    pt = mat_solve(m, v)
+
+    # And then use the inverse length of pt to scale pt to be
+    # a unit time vector and to compute the r.
+    scale = 1 / (-r13_dot(pt, pt)).sqrt()
+
+    return scale.arcsinh(), scale * pt

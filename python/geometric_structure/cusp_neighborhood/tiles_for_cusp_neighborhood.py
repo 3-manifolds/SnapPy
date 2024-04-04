@@ -1,12 +1,11 @@
 from .cusp_cross_section import RealCuspCrossSection, IncompleteCuspError
+from .vertices import scale_vertices_from_horotriangles
 from .. import add_r13_geometry
 
-from ...hyperboloid import r13_dot
 from ...hyperboloid.horoball import R13Horoball
 from ...tiling.tile import compute_tiles
 from ...tiling.triangle import add_triangles_to_tetrahedra
 from ...snap.t3mlite import Mcomplex, Vertex, Corner
-from ...snap.t3mlite import simplex
 from ...matrix import matrix
 from ...math_basics import correct_min
 
@@ -40,7 +39,8 @@ def mcomplex_for_tiling_cusp_neighborhoods(
 
     add_triangles_to_tetrahedra(mcomplex)
 
-    add_cusp_cross_section_and_scale_vertices(mcomplex)
+    add_cusp_cross_section(mcomplex)
+    scale_vertices_from_horotriangles(mcomplex)
 
     for v in mcomplex.Vertices:
         v._tiles = None
@@ -87,23 +87,15 @@ def compute_tiles_for_cusp_neighborhood(
         initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
         verified=verified)
 
-def add_cusp_cross_section_and_scale_vertices(mcomplex : Mcomplex):
+def add_cusp_cross_section(mcomplex : Mcomplex):
     """
     Adds cross section to all cusps. Recall that a cusp cross
     section corresponds to a choice of horoballs about the vertices
     corresponding to the cusp. Scales the defining light-like vectors
     of the vertices of the tetrahedra such that they correspond to
     these horoballs.
-
-    Also computes for each vertex of the mcomplex the cusp area for
-    the chosen cusp cross section and other data, see
-    _add_cusp_cross_section.
     """
 
-    _add_cusp_cross_section(mcomplex)
-    _scale_vertices(mcomplex)
-
-def _add_cusp_cross_section(mcomplex : Mcomplex):
     c = RealCuspCrossSection(mcomplex)
     c.add_structures(None)
 
@@ -132,23 +124,3 @@ def _add_cusp_cross_section(mcomplex : Mcomplex):
             v.lower_bound_embedding_scale = correct_min(
                 [ v.scale_for_std_form,
                   v.exp_self_distance_along_edges.sqrt() ])
-
-def _scale_vertices(mcomplex):
-    for tet in mcomplex.Tetrahedra:
-        R13_vertex_products = {
-            v0 | v1 : r13_dot(pt0, pt1)
-            for v0, pt0 in tet.R13_vertices.items()
-            for v1, pt1 in tet.R13_vertices.items()
-            if v0 > v1 }
-
-        for v0 in simplex.ZeroSubsimplices:
-            v1, v2, _ = simplex.VerticesOfFaceCounterclockwise[simplex.comp(v0)]
-
-            length_on_cusp = tet.horotriangles[v0].get_real_lengths()[v0 | v1 | v2]
-            length_on_horosphere = (
-                -2 * R13_vertex_products[v1 | v2] / (
-                     R13_vertex_products[v0 | v1] *
-                     R13_vertex_products[v0 | v2])).sqrt()
-            s = length_on_horosphere / length_on_cusp
-
-            tet.R13_vertices[v0] = s * tet.R13_vertices[v0]

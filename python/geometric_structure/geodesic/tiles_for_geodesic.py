@@ -47,7 +47,8 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         max_neg_prod_equal = min_neg_prod_distinct
     else:
         core_curve_epsilon = _compute_core_curve_epsilon(mcomplex.RF)
-        max_neg_prod_equal = 1 + _compute_prod_epsilon(mcomplex.RF)
+        max_neg_prod_equal = min(
+            min_neg_prod_distinct, 1 + _compute_prod_epsilon(mcomplex.RF))
 
     return check_away_from_core_curve_iter(
         compute_tiles(
@@ -79,7 +80,7 @@ def _compute_prod_epsilon(RF):
     # lifted tetrahedra that should be the same but are not recognised
     # as such because of numerical error.
 
-    result = RF(1e-7)
+    result = RF(1e-6)
     if p > 53:
         result *= RF(0.5) ** ((p - 53) / 2)
 

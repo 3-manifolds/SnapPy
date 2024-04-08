@@ -81,29 +81,24 @@ def so13_to_pgl2c(B):
     Python implementation of O31_to_Moebius (without normalization).
     """
 
-    RF = B[0,0].parent()
-    if _within_sage:
-        I = sage.all.I
-    else:
-        I = RF('I')
-
     AM0A_00 = B[0,0] + B[1,0]
     AM1A_00 = B[0,1] + B[1,1]
     aa = AM0A_00 + AM1A_00
     bb = AM0A_00 - AM1A_00
 
-    if (aa > bb):
-        return matrix(
-            [ [ aa,
-                (B[0,2] + B[1,2]) + (B[0,3] + B[1,3]) * I ],
-              [ (B[2,0] + B[2,1]) - (B[3,0] + B[3,1]) * I,
-                (B[2,2] + B[3,3]) + (B[2,3] - B[3,2]) * I ] ])
+    if aa > bb:
+        return _to_complex_matrix(
+            aa,                0               ,
+            B[0,2] + B[1,2],   B[0,3] + B[1,3] ,
+
+            B[2,0] + B[2,1], -(B[3,0] + B[3,1]),
+            B[2,2] + B[3,3],   B[2,3] - B[3,2]   )
     else:
-        return matrix(
-            [ [ (B[0,2] + B[1,2]) - (B[0,3] + B[1,3]) * I,
-                bb ],
-              [ (B[2,2] - B[3,3]) - (B[2,3] + B[3,2]) * I,
-                (B[2,0] - B[2,1]) + (B[3,1] - B[3,0]) * I ] ])
+        return _to_complex_matrix(
+            B[0,2] + B[1,2], -(B[0,3] + B[1,3]),
+            bb             ,   0               ,
+            B[2,2] - B[3,3], -(B[2,3] + B[3,2]),
+            B[2,0] - B[2,1],   B[3,1] - B[3,0]   )
 
 def so13_to_psl2c(m):
     """
@@ -194,3 +189,19 @@ def compute_inradius_and_incenter_from_planes(planes):
     scale = 1 / (-r13_dot(pt, pt)).sqrt()
 
     return scale.arcsinh(), scale * pt
+
+def _to_complex_matrix(
+        a, b,    c, d,
+        e, f,    g, h):
+    RF = a.parent()
+    if _within_sage:
+        CF = RF.complex_field()
+        return matrix(
+            [ [ CF(a,b), CF(c, d) ],
+              [ CF(e,f), CF(g, h) ] ],
+            ring=CF)
+    else:
+        I = RF('I')
+        return matrix(
+            [ [ a + b * I, c + d * I ],
+              [ e + f * I, g + h * I ] ])

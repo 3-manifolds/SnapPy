@@ -1,3 +1,9 @@
 The locations of the files controlling continuous integration are:
-.cirrus.yml : for Mac OS ARM only.
-.github/workflows : for everything else.
+
+.cirrus.yml
+
+For Mac OS ARM only. Machine seems to be headless - so skipping GUI tests.
+
+.github/workflows
+
+For everything else.

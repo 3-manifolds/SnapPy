@@ -1,4 +1,6 @@
 """
+CI test.
+
 Installation script for the snappy module.
 
 Depends heavily on setuptools.

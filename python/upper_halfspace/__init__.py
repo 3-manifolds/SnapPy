@@ -1,4 +1,7 @@
 from ..matrix import matrix
+from ..sage_helper import _within_sage
+from ..exceptions import InsufficientPrecisionError
+from ..math_basics import is_ComplexIntervalFieldElement
 
 """
 
@@ -61,6 +64,57 @@ def pgl2c_to_o13(m):
     """
     return psl2c_to_o13(m / m.det().sqrt())
 
+def complex_length_of_psl2c_matrix(m):
+    """
+    Complex length of translation corresponding to given PSL(2,C)
+    matrix.
+
+    Note that there is a branch cut here and we need to pick between
+    +/- 2 * arccosh(trace / 2).
+
+    We pick the cut with non-negative real part.
+
+    For non-verified computations, the real part will be non-negative.
+
+    For verified computations, the real part of the interval will contain
+    the non-negative real length. If the real length is very close to zero,
+    the real part of the interval might contain negative numbers as well.
+    """
+
+    tr = m.trace()
+    if not tr.real() >= 0:
+        # SageMath's arccosh has a branch cut on (-inf, -1].
+        #
+        # Ideally, the complex interval version would make a choice when
+        # we cross the branch cut (like it does for log).
+        #
+        # However, it returns (-pi, pi) as imaginary part when we cross
+        # branch cut.
+        #
+        # So flip trace to avoid the branch cut.
+
+        tr = -tr
+
+    l = 2 * _arccosh(tr / 2)
+
+    # The result it +/-l. But which one is it?
+
+    if l.real() >= 0:
+        # It is unambiguous.
+        return  l
+    if l.real() <= 0:
+        # It is unambiguous.
+        return -l
+
+    if is_ComplexIntervalFieldElement(l):
+        # It is ambiguous. Be conversative and take both.
+        return l.union(-l)
+
+    raise InsufficientPrecisionError(
+        "Encountered NaN when computing complex length of "
+        "matrix.\n"
+        "Trace: %r\n"
+        "Try increasing precision" % tr)
 
 def _basis_vectors_sl2c(CF):
     return [ matrix([[ 1 , 0 ],
@@ -85,3 +139,9 @@ def _o13_matrix_column(A, m, Aadj):
              (fAmj[0][0].real() - fAmj[1][1].real()) / 2,
               fAmj[0][1].real(),
               fAmj[0][1].imag() ]
+
+if _within_sage:
+    from sage.all import arccosh as _arccosh
+else:
+    def _arccosh(z):
+        return z.arccosh()

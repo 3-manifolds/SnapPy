@@ -3,6 +3,7 @@ from . import exceptions
 
 from .line import R13LineWithMatrix
 from .fixed_points import r13_fixed_line_of_psl2c_matrix
+from .multiplicity import compute_and_verify_multiplicity
 
 from .. import word_to_psl2c_matrix
 
@@ -68,7 +69,7 @@ class GeodesicInfo:
     will either:
 
     1. Detect that the closed geodesic is actually a core curve of a
-       filled cusp and set core_curve_cusp and core_curve_direction
+       filled cusp and set core_curve_cusp and core_curve_multiplicity
        accordingly. This means that instead tracing the geodesic
        through the triangulation, the client has to unfill the
        corresponding cusp instead.
@@ -140,7 +141,7 @@ class GeodesicInfo:
                  # Output of find_tet_or_core_corve: sign (+1/-1) indicating whether
                  # the given geodesic and the core curve run parallel or
                  # anti-parallel.
-                 core_curve_direction : int = 0,
+                 core_curve_multiplicity : Optional[int] = None,
 
                  # Field filled by client to indicate which index the cusp resulting
                  # from drilling this geodesic is supposed to have.
@@ -155,7 +156,7 @@ class GeodesicInfo:
         self.tet = tet
         self.lifted_tetrahedra = lifted_tetrahedra
         self.core_curve_cusp = core_curve_cusp
-        self.core_curve_direction = core_curve_direction
+        self.core_curve_multiplicity = core_curve_multiplicity
         self.index = index
 
     def find_tet_or_core_curve(self) -> None:
@@ -173,7 +174,7 @@ class GeodesicInfo:
         self.tet = None
         self.lifted_tetrahedra = ()
         self.core_curve_cusp = None
-        self.core_curve_direction = 0
+        self.core_curve_multiplicity = None
 
         # Walks from tetrahedron to tetrahedron (transforming the start point
         # and other data) trying to get the start_point closer and closer to
@@ -197,7 +198,7 @@ class GeodesicInfo:
             # Verify that the the geodesic is really the core curve and
             # determine whether the geodesic and core curve or parallel
             # or anti-parallel.
-            self.core_curve_direction = self._verify_direction_of_core_curve(
+            self.core_curve_multiplicity = self._multiplicity_of_core_curve(
                 tet, cusp_curve_vertex)
             self.core_curve_cusp = tet.Class[cusp_curve_vertex]
             return
@@ -420,12 +421,12 @@ class GeodesicInfo:
 
         return None
 
-    def _verify_direction_of_core_curve(self,
-                                        tet : Tetrahedron,
-                                        vertex : int) -> int:
+    def _multiplicity_of_core_curve(self,
+                                    tet : Tetrahedron,
+                                    vertex : int) -> int:
         """
-        Verify that geodesic and core curve are indeed the same and
-        return sign indicating whether they are parallel or anti-parallel.
+        Verify that geodesic is indeed a multiple of the core curve (including
+        sign).
         """
 
         if self.line is None:
@@ -433,37 +434,16 @@ class GeodesicInfo:
                 "There is a bug in the code: it is trying to verify that "
                 "geodesic is a core curve without being given a line.")
 
-        # We do this by checking whether the corresponding
-        # Decktransformations corresponding to each are the same.
-
-        # To check whether two Decktransformations are the same, we let each
-        # act on the basepoint (which is the incenter of the base tetrahedron)
-        # and compute the distance between the two images.
-        # We know that the ball about the basepoint with radius the inradius
-        # of the base tetrahedron injects into the manifold. Thus,
-        # the distance between the two images is either 0 or larger than
-        # two times the inradius.
-        # Hence, if we can prove the distance to be less than the inradius,
-        # we know that the two Decktransformations are the same.
-
-        # Decktransformation corresponding geodesic acting on basepoint
-        a = self.line.o13_matrix * self.mcomplex.R13_baseTetInCenter
-
-        # Decktransformation corresponding to core curve acting on basepoint
-        m = tet.core_curves[vertex].o13_matrix
-        b0 = m * self.mcomplex.R13_baseTetInCenter
-        if distance_r13_points(a, b0) < self.mcomplex.baseTetInRadius:
-            return +1
-
-        # Decktransformation corresponding to core curve with opposite
-        # orientation acting on basepoint.
-        b1 = o13_inverse(m) * self.mcomplex.R13_baseTetInCenter
-        if distance_r13_points(a, b1) < self.mcomplex.baseTetInRadius:
-            return -1
-
-        raise InsufficientPrecisionError(
-            "Geodesic is very close to a core curve but could not verify it is "
-            "the core curve. Increasing the precision will probably fix this.")
+        try:
+            return compute_and_verify_multiplicity(
+                tet.core_curves[vertex],
+                self.line,
+                self.mcomplex)
+        except InsufficientPrecisionError:
+            raise InsufficientPrecisionError(
+                "Geodesic is very close to a core curve but could not verify "
+                "it is the core curve. Increasing the precision will probably "
+                "fix this.")
 
 def compute_geodesic_info(mcomplex : Mcomplex,
                           word) -> GeodesicInfo:

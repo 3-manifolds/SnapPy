@@ -10,6 +10,13 @@ class GeodesicSystemNotSimpleError(DrillGeodesicError):
             "The maximal tube radius about the given system of geodesics "
             "was estimated to be: %r." % maximal_tube_radius)
 
+class GeodesicMultipleOfCoreCurve(DrillGeodesicError):
+    def __init__(self, word, multiplicity):
+        self.word = word
+        self.multiplicity = multiplicity
+        super().__init__(
+            "The geodesic %s is a %d-fold multiple of a core curve." % (
+                word, multiplicity))
 
 class UnfinishedTraceGeodesicError(DrillGeodesicError):
     def __init__(self, steps):

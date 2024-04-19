@@ -183,110 +183,35 @@ class GeodesicInfo:
         # face of a tetrahedron or when (the lift of) the geodesic was really
         # close to (a lift of) a core curve.
 
-        # tet is the tetrahedron where the algorithm stopped.
-        # faces is the subset of simplex.TwoSubsimplices: a face is in the subset
-        # if it could not be verified that the start point is to the inside
-        # of the plane supporting that face.
-        # cusp_curve_vertex is None or an element of simplex.ZeroSubsimplices
-        # if we are close to the core curve at that vertex.
-        tet, faces, cusp_curve_vertex = self._graph_trace(self.mcomplex.baseTet)
-
-        # Do some verification work for the above information to fill
-        # self.tet, self.lifted_tetrahedra and self.core_curve_cusp.
-
-        if cusp_curve_vertex is not None:
-            # Verify that the the geodesic is really the core curve and
-            # determine whether the geodesic and core curve or parallel
-            # or anti-parallel.
-            self.core_curve_multiplicity = self._multiplicity_of_core_curve(
-                tet, cusp_curve_vertex)
-            self.core_curve_cusp = tet.Class[cusp_curve_vertex]
-            return
-
-        id_matrix = matrix.identity(ring=self.mcomplex.RF, n=4)
-
-        if len(faces) == 0:
-            # The start point is really inside the given tetrahedron.
-
-            # Signal to the client that we can start tracing the geodesic
-            # throguh the triangulation from this tetrahedron:
-            self.tet = tet
-
-            # Signal to the client that we can start with this tetrahedron
-            # when developing a tube about the geodesic.
-            self.lifted_tetrahedra = [ LiftedTetrahedron(tet, id_matrix) ]
-            return
-
-        if len(faces) == 1:
-            # The start point is probably on the face of the tetrahedron,
-            # that is, we could verify it lies to the right side of the
-            # supporting planes for three faces but not one:
-            face, = faces
-
-            # Even though we cannot verify that the start point lies
-            # exactly on the face, we can verify that the start point
-            # lies in the interior of the union of two neighboring
-            # tetrahedra. That is, the union is a hexahedron and
-            # it suffices to check that the start point lies to the
-            # inside of the six faces of the tetrahedron.
-            #
-            # _graph_trace already checked the three faces of the given
-            # tetrahedron. But it is left to check this for the neighboring
-            # tetrahedron.
-
-            # Find the other tetrahedron of the neighboring tetrahedra.
-            other_tet = tet.Neighbor[face]
-            other_unnormalised_start_point = (
-                tet.O13_matrices[face] * self.unnormalised_start_point)
-            other_face = tet.Gluing[face].image(face)
-
-            for f in simplex.TwoSubsimplices:
-                if f != other_face:
-                    if not r13_dot(other_unnormalised_start_point,
-                                   other_tet.R13_planes[f]) < 0:
-                        raise InsufficientPrecisionError(
-                            "Failed to find lift of geodesic and prove that "
-                            "it intersects tetrahedra of the fundamental domain. "
-                            "Increasing the precision will probably fix this "
-                            "problem.")
-
-            # Returns the two (lifted) tetrahedra.
-            self.lifted_tetrahedra = [
-                LiftedTetrahedron(tet, id_matrix),
-                LiftedTetrahedron(other_tet,
-                                  other_tet.O13_matrices[other_face]) ]
-            return
-
-        raise InsufficientPrecisionError(
-            "Start point chosen on geodesic too close to 1-skeleton of "
-            "triangulation to verify it is not on the 1-skeleton. "
-            "Increasing the precision will probably fix this problem.")
-
-    def _graph_trace(
-            self,
-            tet : Tetrahedron) -> Tuple[Tetrahedron,
-                                        Sequence[int],
-                                        Optional[int]]:
-        """
-        Walk from tetrahedron to tetrahedron (transforming start point and
-        the other data) to capture the start point in a tetrahedron.
-        """
-
         if self.mcomplex.verified:
             epsilon = 0
-            key = _graph_trace_key_verified
+            def key(face_and_signed_distance):
+                return face_and_signed_distance[1].center()
         else:
             epsilon = _compute_epsilon(self.mcomplex.RF)
-            key = _graph_trace_key
+            def key(face_and_signed_distance):
+                return face_and_signed_distance[1]
 
         # Face through which tetrahedron was entered - to avoid we are
         # going back through the face we just came from. Initialized to
         # simplex.T for the first iteration.
+        tet = self.mcomplex.baseTet
         entry_cell = simplex.T
 
         for i in range(constants.graph_trace_max_steps):
             # See whether the geodesic is close to a core curve.
+            # v is the vertex of the simplex for that core curve.
+            # Or None
             v = self._find_cusp_if_core_curve(tet, entry_cell, epsilon)
+
+            if v is not None:
+                # Verify that the the geodesic is really the core curve and
+                # determine whether the geodesic and core curve or parallel
+                # or anti-parallel.
+                self.core_curve_multiplicity = self._multiplicity_of_core_curve(
+                    tet, v)
+                self.core_curve_cusp = tet.Class[v]
+                return
 
             # Compute the signed distance of the start point to the
             # planes supporting a face for each face of the tetrahedron.
@@ -311,18 +236,27 @@ class GeodesicInfo:
             # signed_distance < -epsilon to determine whether the start point
             # is inside.
             #
-            if v or not any( signed_distance > epsilon
-                             for face, signed_distance
-                             in faces_and_signed_distances ):
+            if not any( signed_distance > epsilon
+                        for face, signed_distance
+                        in faces_and_signed_distances ):
 
                 # Report faces for which we cannot confirm that the start point
                 # is to the inside of the plane supporting that face.
-                return (tet,
-                        [ face
+                faces = [ face
                           for face, signed_distance
                           in faces_and_signed_distances
-                          if not signed_distance < -epsilon ],
-                        v)
+                          if not signed_distance < -epsilon ]
+                
+                self.lifted_tetrahedra = _find_lifted_tetrahedra_containing_point(
+                    tet, self.unnormalised_start_point, faces, self.mcomplex.RF)
+                if len(self.lifted_tetrahedra) == 1:
+                    # We verified that there is a unique tetrahedron containing
+                    # the start point.
+                    # Signal to the client that we can start tracing the geodesic
+                    # throguh the triangulation from this tetrahedron:
+                    self.tet = self.lifted_tetrahedra[0].tet
+
+                return
 
             # Find face for which the signed distance is largest.
             #
@@ -480,13 +414,6 @@ def compute_geodesic_info(mcomplex : Mcomplex,
 
     return g
 
-def _graph_trace_key(face_and_signed_distance):
-    return face_and_signed_distance[1]
-
-
-def _graph_trace_key_verified(face_and_signed_distance):
-    return face_and_signed_distance[1].center()
-
 def _verify_not_parabolic(m, mcomplex, word):
     """
     Raise exception when user gives a word corresponding to a parabolic
@@ -504,3 +431,55 @@ def _verify_not_parabolic(m, mcomplex, word):
 
 def _compute_epsilon(RF):
     return RF(0.5) ** (RF.prec() // 2)
+
+def _find_lifted_tetrahedra_containing_point(tet, pt, faces, RF):
+
+    id_matrix = matrix.identity(RF, n=4)
+
+    lifted_tetrahedron0 = LiftedTetrahedron(tet, id_matrix)
+
+    if len(faces) == 0:
+        # Signal to the client that we can start with this tetrahedron
+        # when developing a tube about the geodesic.
+        return [ lifted_tetrahedron0 ]
+
+    if len(faces) == 1:
+        # The start point is probably on the face of the tetrahedron,
+        # that is, we could verify it lies to the right side of the
+        # supporting planes for three faces but not one:
+        face, = faces
+
+        # Even though we cannot verify that the start point lies
+        # exactly on the face, we can verify that the start point
+        # lies in the interior of the union of two neighboring
+        # tetrahedra. That is, the union is a hexahedron and
+        # it suffices to check that the start point lies to the
+        # inside of the six faces of the tetrahedron.
+        #
+        # _graph_trace already checked the three faces of the given
+        # tetrahedron. But it is left to check this for the neighboring
+        # tetrahedron.
+
+        # Find the other tetrahedron of the neighboring tetrahedra.
+        other_tet = tet.Neighbor[face]
+        other_pt = tet.O13_matrices[face] * pt
+        other_face = tet.Gluing[face].image(face)
+
+        for f in simplex.TwoSubsimplices:
+            if f == other_face:
+                continue
+            if not r13_dot(other_pt, other_tet.R13_planes[f]) < 0:
+                raise InsufficientPrecisionError(
+                    "Failed to find lift of geodesic and prove that "
+                    "it intersects tetrahedra of the fundamental domain. "
+                    "Increasing the precision will probably fix this "
+                    "problem.")
+
+        return [ lifted_tetrahedron0,
+                 LiftedTetrahedron(other_tet,
+                                   other_tet.O13_matrices[other_face]) ]
+
+    raise InsufficientPrecisionError(
+        "Start point chosen on geodesic too close to 1-skeleton of "
+        "triangulation to verify it is not on the 1-skeleton. "
+        "Increasing the precision will probably fix this problem.")

@@ -3,6 +3,8 @@ from .canonical_keys import canonical_keys_function_for_line
 from .geodesic_info import GeodesicInfo
 
 from ...tiling.tile import Tile, compute_tiles
+from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                              get_lifted_tetrahedron_set)
 
 from ...snap.t3mlite import Mcomplex # type: ignore
 
@@ -50,15 +52,20 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         max_neg_prod_equal = min(
             min_neg_prod_distinct, 1 + _compute_prod_epsilon(mcomplex.RF))
 
-    return check_away_from_core_curve_iter(
-        compute_tiles(
-            geometric_object=geodesic.line.r13_line,
+    lifted_tetrahedron_set : LiftedTetrahedronSet = (
+        get_lifted_tetrahedron_set(
             base_point=mcomplex.R13_baseTetInCenter,
             canonical_keys_function=(
                 canonical_keys_function_for_line(geodesic.line)),
             act_on_base_point_by_inverse=False,
             max_neg_prod_equal=max_neg_prod_equal,
             min_neg_prod_distinct=min_neg_prod_distinct,
+            verified=mcomplex.verified))
+
+    return check_away_from_core_curve_iter(
+        compute_tiles(
+            geometric_object=geodesic.line.r13_line,
+            visited_lifted_tetrahedra=lifted_tetrahedron_set,
             initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
             verified=mcomplex.verified),
         epsilon = core_curve_epsilon,

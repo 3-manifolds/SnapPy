@@ -3,15 +3,16 @@ from .vertices import scale_vertices_from_horotriangles
 from .. import add_r13_geometry
 
 from ...hyperboloid.horoball import R13Horoball
-from ...tiling.tile import compute_tiles
+from ...tiling.tile import Tile, compute_tiles
 from ...tiling.triangle import add_triangles_to_tetrahedra
+from ...tiling.lifted_tetrahedron import LiftedTetrahedron
+from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                              get_lifted_tetrahedron_set)
+from ...tiling.iter_utils import IteratorCache
 from ...snap.t3mlite import Mcomplex, Vertex, Corner
 from ...matrix import matrix
 from ...math_basics import correct_min
 
-from ...tiling.tile import Tile, compute_tiles
-from ...tiling.lifted_tetrahedron import LiftedTetrahedron
-from ...tiling.iter_utils import IteratorCache
 
 from typing import Sequence
 
@@ -84,13 +85,18 @@ def compute_tiles_for_cusp_neighborhood(
     initial_lifted_tetrahedron = LiftedTetrahedron(
         corner.Tetrahedron, matrix.identity(RF, 4))
 
+    lifted_tetrahedron_set : LiftedTetrahedronSet = (
+        get_lifted_tetrahedron_set(
+            base_point=horoball_defining_vec,
+            act_on_base_point_by_inverse=True,
+            max_neg_prod_equal=max_neg_prod_equal,
+            min_neg_prod_distinct=min_neg_prod_distinct,
+            canonical_keys_function=None,
+            verified=verified))
+
     return compute_tiles(
         geometric_object=R13Horoball(horoball_defining_vec),
-        base_point=horoball_defining_vec,
-        canonical_keys_function=None,
-        act_on_base_point_by_inverse=True,
-        max_neg_prod_equal=max_neg_prod_equal,
-        min_neg_prod_distinct=min_neg_prod_distinct,
+        visited_lifted_tetrahedra=lifted_tetrahedron_set,
         initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
         verified=verified)
 

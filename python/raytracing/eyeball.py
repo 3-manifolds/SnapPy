@@ -3,6 +3,8 @@ from ..hyperboloid.point import R13Point
 
 from ..tiling.tile import compute_tiles
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
+from ..tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                             get_lifted_tetrahedron_set)
 from ..tiling.triangle import add_triangles_to_tetrahedra
 
 from ..matrix import matrix, vector
@@ -70,14 +72,19 @@ class Eyeball:
 
         cut_off = RF(1.0 + 1e-5)
 
+        lifted_tetrahedron_set : LiftedTetrahedronSet = (
+            get_lifted_tetrahedron_set(
+                base_point=base_point,
+                act_on_base_point_by_inverse=True,
+                max_neg_prod_equal=cut_off,
+                min_neg_prod_distinct=cut_off,
+                canonical_keys_function=None,
+                verified=False))
+
         for i, tile in enumerate(
                 compute_tiles(
                     geometric_object=R13Point(base_point),
-                    base_point=base_point,
-                    canonical_keys_function=None,
-                    act_on_base_point_by_inverse=True,
-                    max_neg_prod_equal=cut_off,
-                    min_neg_prod_distinct=cut_off,
+                    visited_lifted_tetrahedra=lifted_tetrahedron_set,
                     initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
                     verified=False)):
 

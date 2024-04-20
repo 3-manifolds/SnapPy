@@ -29,12 +29,9 @@ class Tile:
         self.object_index = object_index
 
 def compute_tiles(geometric_object,
-                  base_point,
-                  canonical_keys_function,
-                  act_on_base_point_by_inverse,
-                  max_neg_prod_equal, min_neg_prod_distinct,
+                  visited_lifted_tetrahedra : LiftedTetrahedronSet,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
-                  verified
+                  verified : bool
                   ) -> Sequence[Tile]:
 
     """
@@ -57,10 +54,14 @@ def compute_tiles(geometric_object,
     base_point is used to determine whether two lifted tetrahedra
     are the same in H^3 or a quotient space of H^3.
 
+    visited_lifted_tetrahedra: data structure (passed in as empty) which
+    will be used here to record which lifted tetrahedra have already been
+    visited and been added to the result while tiling the quotient space.
+
     Missing documentation: other parameters.
     """
 
-    RF = base_point[0].parent()
+    RF = visited_lifted_tetrahedra._base_point[0].parent()
 
     if verified:
         minus_infinity = RF(-sage.all.Infinity)
@@ -87,17 +88,6 @@ def compute_tiles(geometric_object,
             pending_lifted_tetrahedra,
             _PendingLiftedTetrahedron(
                 lifted_tetrahedron, minus_infinity))
-
-    # Initialize data structure recording which lifted tetrahedra have
-    # already been visited and been added to the result while tiling
-    # the quotient space.
-    visited_lifted_tetrahedra : LiftedTetrahedronSet = (
-        get_lifted_tetrahedron_set(
-            base_point,
-            canonical_keys_function,
-            act_on_base_point_by_inverse,
-            max_neg_prod_equal, min_neg_prod_distinct,
-            verified))
 
     while True:
         pending_lifted_tetrahedron : _PendingLiftedTetrahedron = (

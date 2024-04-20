@@ -60,13 +60,15 @@ class Eyeball:
 
         base_point = vector([b[0] for b in boost])
 
-        initial_lifted_tetrahedron = LiftedTetrahedron(
-            self.mcomplex.Tetrahedra[tet_num], matrix.identity(RF, 4))
-
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
         if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == eyeball_type_eyeball:
             eyeballRadius = eyeballRadius / 2.0
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
+
+        initial_lifted_tetrahedron = LiftedTetrahedron(
+            self.mcomplex.Tetrahedra[tet_num], matrix.identity(RF, 4))
+
+        cut_off = RF(1.0 + 1e-5)
 
         for i, tile in enumerate(
                 compute_tiles(
@@ -74,8 +76,8 @@ class Eyeball:
                     base_point=base_point,
                     canonical_keys_function=None,
                     act_on_base_point_by_inverse=True,
-                    max_neg_prod_equal=RF(1.0 + 1e-7),
-                    min_neg_prod_distinct=RF(1.0 + 1e-5),
+                    max_neg_prod_equal=cut_off,
+                    min_neg_prod_distinct=cut_off,
                     initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
                     verified=False)):
 

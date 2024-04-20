@@ -1,4 +1,3 @@
-from .check_core_curve import check_away_from_core_curve_iter
 from .canonical_keys import canonical_keys_function_for_line
 from .geodesic_info import GeodesicInfo
 
@@ -45,10 +44,8 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     min_neg_prod_distinct = (mcomplex.baseTetInRadius/2).cosh()
 
     if mcomplex.verified:
-        core_curve_epsilon = 0
         max_neg_prod_equal = min_neg_prod_distinct
     else:
-        core_curve_epsilon = _compute_core_curve_epsilon(mcomplex.RF)
         max_neg_prod_equal = min(
             min_neg_prod_distinct, 1 + _compute_prod_epsilon(mcomplex.RF))
 
@@ -62,17 +59,11 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             min_neg_prod_distinct=min_neg_prod_distinct,
             verified=mcomplex.verified))
 
-    return check_away_from_core_curve_iter(
-        compute_tiles(
-            geometric_object=geodesic.line.r13_line,
-            visited_lifted_tetrahedra=lifted_tetrahedron_set,
-            initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
-            verified=mcomplex.verified),
-        epsilon = core_curve_epsilon,
-        obj_name = 'Geodesic %s' % geodesic.word)
-
-def _compute_core_curve_epsilon(RF):
-    return RF(0.5) ** (RF.prec() // 2 - 8)
+    return compute_tiles(
+        geometric_object=geodesic.line.r13_line,
+        visited_lifted_tetrahedra=lifted_tetrahedron_set,
+        initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
+        verified=mcomplex.verified)
 
 def _compute_prod_epsilon(RF):
     p = RF.precision()

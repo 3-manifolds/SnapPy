@@ -4,6 +4,7 @@ from . import exceptions
 
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
 from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve_iter
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,
@@ -103,8 +104,14 @@ def compute_lower_bound_injectivity_radius(
 
     tet_to_lines : List[List[R13Line]] = [[] for tet in mcomplex.Tetrahedra ]
 
+    core_curve_epsilon = _compute_core_curve_epsilon(mcomplex)
+
     for geodesic in geodesics:
-        for tile in compute_tiles_for_geodesic(mcomplex, geodesic):
+        for tile in (
+                check_away_from_core_curve_iter(
+                    compute_tiles_for_geodesic(mcomplex, geodesic),
+                    epsilon=core_curve_epsilon,
+                    obj_name='Geodesic %s' % geodesic.word)):
             if tile.lower_bound_distance > min_radius:
                 distances.append(tile.lower_bound_distance)
                 break
@@ -171,3 +178,10 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
             "Increasing the precision will probably fix this.")
 
     return perturbed_point
+
+def _compute_core_curve_epsilon(mcomplex):
+    if mcomplex.verified:
+        return 0
+    else:
+        RF = mcomplex.RF
+        return RF(0.5) ** (RF.prec() // 2 - 8)

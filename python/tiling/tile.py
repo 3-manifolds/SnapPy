@@ -28,9 +28,11 @@ class Tile:
         # Used in maximal_cusp_area_matrix
         self.object_index = object_index
 
-def compute_tiles(geometric_object,
+def compute_tiles(*, # Everything is a keyword argument
+                  geometric_object,
                   visited_lifted_tetrahedra : LiftedTetrahedronSet,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
+                  replace_lifted_tetrahedron_function = None,
                   verified : bool
                   ) -> Sequence[Tile]:
 
@@ -109,6 +111,20 @@ def compute_tiles(geometric_object,
         # to record in GeodesicTubePiece.
         #
         inverse_lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
+
+        if replace_lifted_tetrahedron_function:
+            new_lifted_tetrahedra = replace_lifted_tetrahedron_function(
+                pending_lifted_tetrahedron.lifted_tetrahedron,
+                geometric_object,
+                inverse_lifted_geometric_object,
+                verified)
+            if new_lifted_tetrahedra is not None:
+                for lifted_tetrahedron in new_lifted_tetrahedra:
+                    heapq.heappush(
+                        pending_lifted_tetrahedra,
+                        _PendingLiftedTetrahedron(
+                            lifted_tetrahedron, minus_infinity))
+                continue
 
         # Emit Tile
         yield Tile(pending_lifted_tetrahedron.lower_bound_distance,

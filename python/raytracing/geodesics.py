@@ -1,4 +1,6 @@
-from .geodesic_tube_info import GeodesicTubeInfo
+from .geodesic_tube_info import (GeodesicTubeInfo,
+                                 GeodesicLinePieces,
+                                 avoid_core_curve_tube_radius)
 from .pack import pack_tet_data
 from .upper_halfspace_utilities import add_coordinate_transform_to_mcomplex
 from .hyperboloid_utilities import O13_orthonormalise
@@ -59,20 +61,32 @@ class Geodesics:
 
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
+        a_radius = self.RF(avoid_core_curve_tube_radius)
+
         for i, (enable, radius, geodesic_tube) in enumerate(
                 zip(enables, radii, self.geodesic_tube_infos)):
             if enable:
                 radius = self.RF(radius)
 
-                tets_and_endpoints, safe_radius = (
-                    geodesic_tube.compute_tets_and_R13_endpoints_and_radius_for_tube(radius))
+                line_pieces : GeodesicLinePieces = (
+                    geodesic_tube.compute_line_pieces(radius))
 
-                if safe_radius < radius:
+                if (line_pieces.covered_radius < radius or
+                    line_pieces.dist_to_core_curve < radius or
+                    line_pieces.dist_to_core_curve < a_radius):
                     success = False
 
-                radius_param = safe_radius.cosh() ** 2 / 2
+                # A user can always force the tube to have this radius.
+                # Even though it might be incomplete at that point.
+                min_user_radius = 0.1
 
-                for tet, (head, tail) in tets_and_endpoints:
+                effective_radius = min(
+                    radius,
+                    max(line_pieces.covered_radius, self.RF(min_user_radius)))
+
+                radius_param = effective_radius.cosh() ** 2 / 2
+
+                for tet, (head, tail) in line_pieces.tets_and_end_points:
                     tets_to_data[tet].append(
                         {'Heads' : ('vec4', head),
                          'Tails' : ('vec4', tail),

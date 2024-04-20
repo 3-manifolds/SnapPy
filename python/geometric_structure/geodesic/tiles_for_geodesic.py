@@ -1,5 +1,6 @@
 from .canonical_keys import canonical_keys_function_for_line
 from .geodesic_info import GeodesicInfo
+from .avoid_core_curves import replace_piece_in_core_curve_tube
 
 from ...tiling.tile import Tile, compute_tiles
 from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
@@ -10,7 +11,9 @@ from ...snap.t3mlite import Mcomplex # type: ignore
 from typing import Sequence
 
 def compute_tiles_for_geodesic(mcomplex : Mcomplex,
-                               geodesic : GeodesicInfo
+                               geodesic : GeodesicInfo,
+                               avoid_core_curves : bool = False,
+                               for_raytracing : bool = False
                                ) -> Sequence[Tile]:
     """
     Computes all GeodesicPiece's needed to cover a tube about the
@@ -48,6 +51,8 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     else:
         max_neg_prod_equal = min(
             min_neg_prod_distinct, 1 + _compute_prod_epsilon(mcomplex.RF))
+        if for_raytracing:
+            min_neg_prod_distinct = max_neg_prod_equal
 
     lifted_tetrahedron_set : LiftedTetrahedronSet = (
         get_lifted_tetrahedron_set(
@@ -59,10 +64,16 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             min_neg_prod_distinct=min_neg_prod_distinct,
             verified=mcomplex.verified))
 
+    if avoid_core_curves:
+        replace_lifted_tetrahedron_function = replace_piece_in_core_curve_tube
+    else:
+        replace_lifted_tetrahedron_function = None
+
     return compute_tiles(
         geometric_object=geodesic.line.r13_line,
         visited_lifted_tetrahedra=lifted_tetrahedron_set,
         initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
+        replace_lifted_tetrahedron_function=replace_lifted_tetrahedron_function,
         verified=mcomplex.verified)
 
 def _compute_prod_epsilon(RF):

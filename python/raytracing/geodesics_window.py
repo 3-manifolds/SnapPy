@@ -179,8 +179,8 @@ class GeodesicsWindow(tkinter.Toplevel):
                                         foreground='')
         else:
             self.status_label.configure(
-                text=('Limiting size of geodesic tube to prevent intersection '
-                      'with core curve.'),
+                text=('Geodesic tube intersects core curve. Dropping '
+                      'pieces/limiting size.'),
                 foreground='red')
 
     def add_length_spectrum(self, *args, **kwargs):
@@ -235,14 +235,14 @@ class GeodesicsWindow(tkinter.Toplevel):
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
 
-        self.raytracing_view.update_geodesic_data_and_redraw()
+        self.update_geodesic_data()
 
         self.populate_geodesics_frame()
 
     def geodesic_checkbox_clicked(self):
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
-        self.raytracing_view.update_geodesic_data_and_redraw()
+        self.update_geodesic_data()
 
     def view_geodesic(self, i):
         self.raytracing_view.view_state = (

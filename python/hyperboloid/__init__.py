@@ -1,9 +1,6 @@
 from ..matrix import vector, matrix, mat_solve
-from ..math_basics import is_RealIntervalFieldElement
-from ..sage_helper import _within_sage
 
-if _within_sage:
-    import sage.all
+from ..sage_helper import _within_sage
 
 """
 hyperboloid contains methods relating to the hyperboloid model

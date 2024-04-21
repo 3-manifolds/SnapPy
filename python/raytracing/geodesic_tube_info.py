@@ -16,10 +16,10 @@ def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
     a core curve
     """
 
-    dist_to_core_curve = 1e50
+    min_dist_to_core_curve = 1e50
 
     for tile in tiles:
-        if not tile.lower_bound_distance < dist_to_core_curve * 0.98:
+        if not tile.lower_bound_distance < min_dist_to_core_curve * 0.98:
             break
 
         for v in simplex.ZeroSubsimplices:
@@ -27,11 +27,12 @@ def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
             core_curve = tet.core_curves.get(v, None)
             if core_curve is None:
                 continue
-            dist_to_core_curve = min(
-                dist_to_core_curve,
-                distance_r13_lines(
-                    core_curve.r13_line,
-                    tile.lifted_geometric_object))
+
+            dist_to_core_curve = distance_r13_lines(
+                core_curve.r13_line, tile.lifted_geometric_object)
+
+            min_dist_to_core_curve = min(
+                min_dist_to_core_curve, dist_to_core_curve)
         
         yield tile
 

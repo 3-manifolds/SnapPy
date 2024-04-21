@@ -4,7 +4,7 @@ from . import exceptions
 
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
 from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
-from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve_iter
+from ..geometric_structure.geodesic.check_away_from_core_curve import check_away_from_core_curve_iter
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,

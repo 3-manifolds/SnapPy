@@ -5,7 +5,7 @@ from .hyperboloid_utilities import O13_orthonormalise
 
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
-from ..geometric_structure.geodesic.core_curves import add_r13_core_curves
+from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
 from ..matrix import matrix # type: ignore

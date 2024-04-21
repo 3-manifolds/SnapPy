@@ -7,7 +7,7 @@ from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 from ..hyperboloid import r13_dot # type: ignore
 from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
-from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve
+from ..geometric_structure.geodesic.check_away_from_core_curve import check_away_from_core_curve
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List

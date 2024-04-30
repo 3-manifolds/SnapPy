@@ -76,7 +76,7 @@ def replace_piece_in_core_curve_tube(
        We do not need all the intersections of the geodesic with the tetrahedra
        in the fundamental domain. In particular, we can drop all the pieces of
        geodesic completely contained in a tube about a core curve. Provided that
-       the sytem of tubes we pick is embedded. This is because a geodesic
+       the system of tubes we pick is embedded. This is because a geodesic
        entirely contained in an embedded tube would be homotopic to the core
        curve. And we enumerate core curves during the length spectrum
        computation separately already.

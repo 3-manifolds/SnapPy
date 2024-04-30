@@ -117,7 +117,7 @@ def compute_lower_bound_injectivity_radius(
                 break
             tet_index = tile.lifted_tetrahedron.tet.Index
             tet_to_lines[tet_index].append(
-                tile.lifted_geometric_object)
+                tile.inverse_lifted_geometric_object)
 
     for tet in mcomplex.Tetrahedra:
         for curve in tet.core_curves.values():

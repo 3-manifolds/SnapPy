@@ -19,11 +19,11 @@ from typing import Sequence, Union
 class Tile:
     def __init__(self,
                  lower_bound_distance,
-                 lifted_geometric_object,
+                 inverse_lifted_geometric_object,
                  lifted_tetrahedron : LiftedTetrahedron,
                  object_index = None):
         self.lower_bound_distance = lower_bound_distance
-        self.lifted_geometric_object = lifted_geometric_object
+        self.inverse_lifted_geometric_object = inverse_lifted_geometric_object
         self.lifted_tetrahedron = lifted_tetrahedron
         # Used in maximal_cusp_area_matrix
         self.object_index = object_index
@@ -108,11 +108,11 @@ def compute_tiles(geometric_object,
         # the fundamental domain and thus we obtain the line we want
         # to record in GeodesicTubePiece.
         #
-        lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
+        inverse_lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
 
         # Emit Tile
         yield Tile(pending_lifted_tetrahedron.lower_bound_distance,
-                   lifted_geometric_object,
+                   inverse_lifted_geometric_object,
                    pending_lifted_tetrahedron.lifted_tetrahedron)
 
         # For all faces ...
@@ -133,7 +133,7 @@ def compute_tiles(geometric_object,
                     # (equal to distance of face entry_face of
                     # new_tet)
                     lower_bound_distance_to_r13_triangle(
-                        lifted_geometric_object,
+                        inverse_lifted_geometric_object,
                         tet.R13_triangles[f],
                         verified),
                     entry_cell=entry_face))

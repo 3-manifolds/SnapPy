@@ -29,7 +29,7 @@ def tiles_up_to_core_curve(tiles : Sequence[Tile]) -> Sequence[Tile]:
                 continue
 
             dist_to_core_curve = distance_r13_lines(
-                core_curve.r13_line, tile.lifted_geometric_object)
+                core_curve.r13_line, tile.inverse_lifted_geometric_object)
 
             min_dist_to_core_curve = min(
                 min_dist_to_core_curve, dist_to_core_curve)
@@ -70,7 +70,7 @@ class GeodesicTubeInfo:
             result.append(
                 (tet.Index,
                  [ tet.to_coordinates_in_symmetric_tet * pt
-                   for pt in tile.lifted_geometric_object.points] ))
+                   for pt in tile.inverse_lifted_geometric_object.points] ))
 
         return result, min(tile.lower_bound_distance, radius)
 
@@ -99,10 +99,10 @@ class GeodesicTubeInfo:
         # We should ask snappy.drilling for the two tetrahedra adjacent to
         # a face.
         piece = self._get_pieces_covering_geodesic()[0]
-        point = piece.lifted_geometric_object.points[0]
+        point = piece.inverse_lifted_geometric_object.points[0]
         for other_piece in other._get_pieces_covering_geodesic():
             if piece.lifted_tetrahedron.tet == other_piece.lifted_tetrahedron.tet:
-                for other_point in other_piece.lifted_geometric_object.points:
+                for other_point in other_piece.inverse_lifted_geometric_object.points:
                     if _are_parallel_light_vectors(point, other_point, 1e-5):
                         return True
         return False
@@ -119,8 +119,8 @@ class GeodesicTubeInfo:
                 if i < j:
                     if piece0.lifted_tetrahedron.tet == piece1.lifted_tetrahedron.tet:
                         if _are_parallel_light_vectors(
-                                piece0.lifted_geometric_object.points[0],
-                                piece1.lifted_geometric_object.points[0],
+                                piece0.inverse_lifted_geometric_object.points[0],
+                                piece1.inverse_lifted_geometric_object.points[0],
                                 1e-5):
                             return False
         return True

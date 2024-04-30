@@ -96,7 +96,7 @@ class Eyeball:
             m = o13_inverse(boost) * tile.lifted_tetrahedron.o13_matrix
 
             tets_to_data[tile.lifted_tetrahedron.tet.Index].append((
-                tile.lifted_geometric_object.point,
+                tile.inverse_lifted_geometric_object.point,
                 m,
                 o13_inverse(m)))
         

@@ -55,7 +55,7 @@ class AdditionalHorospheres:
                 tet = tile.lifted_tetrahedron.tet
                 
                 s = (
-                    tet.to_coordinates_in_symmetric_tet * tile.lifted_geometric_object.defining_vec) / scale
+                    tet.to_coordinates_in_symmetric_tet * tile.inverse_lifted_geometric_object.defining_vec) / scale
 
                 tets_to_data[tet.Index].append(
                     { 'Vec' : ('vec4', s),

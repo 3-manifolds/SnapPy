@@ -73,7 +73,7 @@ def _diagonal_scale(mcomplex, i):
         if tile.lower_bound_distance > d / 2:
             return (2 * d).exp() # Area, so need square
 
-        new_lift = tile.lifted_geometric_object.defining_vec
+        new_lift = tile.inverse_lifted_geometric_object.defining_vec
 
         tet_index = tile.lifted_tetrahedron.tet.Index
 
@@ -104,7 +104,7 @@ def _non_diagonal_scale(mcomplex, i, j):
         if tile.lower_bound_distance > d:
             return (2 * d).exp()
 
-        new_lift = tile.lifted_geometric_object.defining_vec
+        new_lift = tile.inverse_lifted_geometric_object.defining_vec
         tet_index = tile.lifted_tetrahedron.tet.Index
 
         for lift in obj_to_tet_to_lifts[1 - tile.object_index][tet_index]:
@@ -123,7 +123,7 @@ def _merge_tiles(streams_of_tiles):
         yield Tile(
             # Relying on -inf + x = -inf
             sum(t.lower_bound_distance for t in tiles),
-            tile.lifted_geometric_object,
+            tile.inverse_lifted_geometric_object,
             tile.lifted_tetrahedron,
             i)
 

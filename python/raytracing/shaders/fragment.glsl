@@ -195,7 +195,7 @@ layout (std140) uniform TetCuspMatrices
 };
 
 uniform vec2 logAdjustments[4 * ##num_tets##];
-uniform mat2 matLogs[4 * ##num_tets##];
+uniform mat2 toStandardTorusMatrices[4 * ##num_tets##];
 
 const float peripheralCurveThickness = 0.015;
 
@@ -725,7 +725,7 @@ MLCoordinatesForRayHit(RayHit rayHit)
         z = complexLog(z) + logAdjustments[index];
     }
 
-    return z * matLogs[index];
+    return z * toStandardTorusMatrices[index];
 }
 
 int
@@ -1537,7 +1537,7 @@ leaveVertexNeighborhood(inout RayHit rayHit)
         // Compute suitable multiple of merdian and longitude translation
         // bringing the exit point into the fundamental parallelogram
         // near zero.
-        vec2 c = -round(ml) * inverse(matLogs[index]);
+        vec2 c = -round(ml) * inverse(toStandardTorusMatrices[index]);
 
         mat4 tsfmCuspSpace =
             (rayHit.object_type == object_type_horosphere_exit)

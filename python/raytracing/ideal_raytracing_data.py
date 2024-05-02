@@ -104,6 +104,11 @@ class IdealRaytracingData(RaytracingData):
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
+        r.log_shapes = [
+            tet.ShapeParameters[e].log()
+            for tet in c.mcomplex.Tetrahedra
+            for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
+
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
@@ -112,7 +117,7 @@ class IdealRaytracingData(RaytracingData):
         r._add_cusp_to_tet_matrices()
         r._add_margulis_tube_ends()
         r._add_inspheres()
-        r._add_log_holonomies()
+        r._add_to_standard_torus_matrices()
 
         r._add_cusp_triangle_vertex_positions()
 
@@ -200,23 +205,23 @@ class IdealRaytracingData(RaytracingData):
 
             tet.cosh_sqr_inradius = tmp.cosh() ** 2
 
-    def _add_log_holonomies_to_cusp(self, cusp, shapes):
+    def _add_to_standard_torus_matrix(self, cusp):
         i = cusp.Index
 
         if cusp.is_complete:
             m_param, l_param = cusp.Translations
         else:
             m_param, l_param = (
-                sum(shape * expo
-                    for shape, expo
-                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+                sum(log_shape * expo
+                    for log_shape, expo
+                    in zip(self.log_shapes, self.peripheral_gluing_equations[2 * i + j]))
                 for j in range(2) )
 
         a, c = m_param.real(), m_param.imag()
         b, d = l_param.real(), l_param.imag()
 
         det = a*d - b * c
-        cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
+        cusp.to_standard_torus_matrix = matrix([[d,-b], [-c, a]]) / det
 
         if cusp.is_complete:
             cusp.margulisTubeRadiusParam = 0.0
@@ -228,15 +233,9 @@ class IdealRaytracingData(RaytracingData):
             rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
             cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
 
-    def _add_log_holonomies(self):
-        shapes = [
-            tet.ShapeParameters[e].log()
-            for tet in self.mcomplex.Tetrahedra
-            for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
-
-        for cusp, cusp_info in zip(self.mcomplex.Vertices,
-                                   self.snappy_manifold.cusp_info()):
-            self._add_log_holonomies_to_cusp(cusp, shapes)
+    def _add_to_standard_torus_matrices(self):
+        for cusp in self.mcomplex.Vertices:
+            self._add_to_standard_torus_matrix(cusp)
 
     def get_uniform_bindings(self):
         # _check_consistency(self.mcomplex)
@@ -294,8 +293,8 @@ class IdealRaytracingData(RaytracingData):
             for V in t3m.ZeroSubsimplices
             ]
 
-        mat_logs = [
-            tet.Class[V].mat_log
+        toStandardTorusMatrices = [
+            tet.Class[V].to_standard_torus_matrix
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
@@ -316,7 +315,7 @@ class IdealRaytracingData(RaytracingData):
         d['cuspTranslations'] = ('mat2[]', cusp_translations)
         d['logAdjustments'] = ('vec2[]', logAdjustments)
         d['cuspTriangleVertexPositions'] = ('mat3x2[]', cuspTriangleVertexPositions)
-        d['matLogs'] = ('mat2[]', mat_logs)
+        d['toStandardTorusMatrices'] = ('mat2[]', toStandardTorusMatrices)
         d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
         d['isNonGeometric'] = ('bool', isNonGeometric)
         d['nonGeometricTexture'] = ('int', 0)

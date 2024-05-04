@@ -117,7 +117,7 @@ uniform float vertexSphereRadiusParam;
 // For an incomplete cusp, the Margulis tube is a cylinder about
 // the geodesic the triangulation spins about. In other words,
 // it is the cylinder fixed by the peripheral group of that cusp.
-// We encode it by its two end points and cosh(radius/2)^2/2.
+// We encode it by its two end points and cosh(radius)^2/2.
 layout (std140) uniform MargulisTubes
 {
     vec4 margulisTubeTails[4 * ##num_tets##];

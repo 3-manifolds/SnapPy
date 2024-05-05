@@ -90,8 +90,8 @@ class RaytracingData(McomplexEngine):
                                     [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
 
-        boost = matrix(boost, ring=self.RF)
-        m     = matrix(m,     ring=self.RF)
+        boost = matrix(boost, base_ring=self.RF)
+        m     = matrix(m,     base_ring=self.RF)
 
         boost, tet, weight = _graph_trace(
             boost * m, self.mcomplex.Tetrahedra[tet_num], weight)

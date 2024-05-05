@@ -59,8 +59,7 @@ if sys.platform == 'darwin':
     # Since we cannot do anything about them, the warnings are just noise.
     # The kernel code does not generate any of them.
     macOS_quiet_cython = [
-        '-Wno-unreachable-code',
-        '-Wno-unreachable-code-fallthrough']
+        '-Wno-unreachable-code']
     macOS_link_args = []
     macos_arch = sysconfig.get_platform().split('-')[-1]
     macos_targets = {'x86_64':'10.9', 'arm64': '11', 'universal2': '10.9'}
@@ -580,7 +579,7 @@ setup( name = 'snappy',
                    'snappy/raytracing',
                    'snappy/raytracing/shaders',
                    'snappy/raytracing/zoom_slider',                   
-                   'snappy/togl',
+                   #'snappy/togl',
                    'snappy/dev',
                    'snappy/dev/extended_ptolemy',
                    'snappy/dev/vericlosed',
@@ -595,9 +594,9 @@ setup( name = 'snappy',
                        'doc/_static/js/*',
                        'doc/_static/css/*',
                        'doc/_static/css/fonts/*'],
-           'snappy/togl': ['*-tk*/Togl2.0/*',
-                       '*-tk*/Togl2.1/*',
-                       '*-tk*/mactoolbar*/*'],
+           #'snappy/togl': ['*-tk*/Togl2.0/*',
+           #            '*-tk*/Togl2.1/*',
+           #            '*-tk*/mactoolbar*/*'],
            'snappy/manifolds' : ['HTWKnots/*.gz'],
            'snappy/twister' : ['surfaces/*'],
            'snappy/ptolemy':['magma/*.magma_template',

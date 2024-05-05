@@ -237,8 +237,10 @@ class SnapPyBrowser(Browser, ListedWindow):
         self.dirichlet_viewer.help_button.configure(command=self.dirichlet_help)
 
     def close(self, event=None):
+        terminal.window.focus_force()
         self.unregister_window(self)
-        self.destroy()
+        self.withdraw()
+        self.after(100, self.destroy)
 
     def apply_settings(self):
         if self.inside_view:

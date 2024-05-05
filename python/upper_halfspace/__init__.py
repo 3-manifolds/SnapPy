@@ -118,13 +118,13 @@ def complex_length_of_psl2c_matrix(m):
 
 def _basis_vectors_sl2c(CF):
     return [ matrix([[ 1 , 0 ],
-                     [ 0, 1 ]], ring=CF),
+                     [ 0, 1 ]], base_ring=CF),
              matrix([[ 1 , 0 ],
-                     [ 0 ,-1 ]], ring=CF),
+                     [ 0 ,-1 ]], base_ring=CF),
              matrix([[ 0 , 1 ],
-                     [ 1 , 0 ]], ring=CF),
+                     [ 1 , 0 ]], base_ring=CF),
              matrix([[ 0 , 1j],
-                     [-1j, 0 ]], ring=CF) ]
+                     [-1j, 0 ]], base_ring=CF) ]
 
 
 def _adjoint(m):

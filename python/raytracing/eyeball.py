@@ -58,7 +58,7 @@ class Eyeball:
 
         RF = self.raytracing_view.raytracing_data.RF
         
-        boost = matrix(boost, ring=RF)
+        boost = matrix(boost, base_ring=RF)
 
         base_point = vector([b[0] for b in boost])
 

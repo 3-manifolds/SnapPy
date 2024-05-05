@@ -43,7 +43,7 @@ class SnapPyStyle:
             self.groupBG = self.subgroupBG = self.windowBG
         self.font = ttk_style.lookup('TLabel', 'font')
         self.font_info = fi = Font(font=self.font).actual()
-        fi['size'] = abs(fi['size']) # Why would the size be negative???
+        fi['size'] = int(str(fi['size']))
 
 
 class ViewerWindow(Tk_.Toplevel):

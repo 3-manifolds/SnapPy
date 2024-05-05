@@ -1,4 +1,4 @@
-from ..matrix import matrix
+from ..matrix import make_matrix
 from ..sage_helper import _within_sage
 from ..exceptions import InsufficientPrecisionError
 from ..math_basics import is_ComplexIntervalFieldElement
@@ -39,7 +39,7 @@ complex 2x2-matrix and uses the isomorphism PGL(2,C)=PSL(2,C).
 
 
 def sl2c_inverse(A):
-    return matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
+    return make_matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
 
 
 def psl2c_to_o13(A):
@@ -51,7 +51,7 @@ def psl2c_to_o13(A):
 
     Aadj = _adjoint(A)
 
-    return matrix(
+    return make_matrix(
         [ _o13_matrix_column(A, m, Aadj)
           for m in _basis_vectors_sl2c(A.base_ring()) ]).transpose()
 
@@ -117,19 +117,18 @@ def complex_length_of_psl2c_matrix(m):
         "Try increasing precision" % tr)
 
 def _basis_vectors_sl2c(CF):
-    return [ matrix([[ 1 , 0 ],
-                     [ 0, 1 ]], base_ring=CF),
-             matrix([[ 1 , 0 ],
-                     [ 0 ,-1 ]], base_ring=CF),
-             matrix([[ 0 , 1 ],
-                     [ 1 , 0 ]], base_ring=CF),
-             matrix([[ 0 , 1j],
-                     [-1j, 0 ]], base_ring=CF) ]
-
+    return [ make_matrix([[ 1 , 0 ],
+                          [ 0, 1 ]], ring=CF),
+             make_matrix([[ 1 , 0 ],
+                          [ 0 ,-1 ]], ring=CF),
+             make_matrix([[ 0 , 1 ],
+                          [ 1 , 0 ]], ring=CF),
+             make_matrix([[ 0 , 1j],
+                          [-1j, 0 ]], ring=CF) ]
 
 def _adjoint(m):
-    return matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
-                   [ m[0][1].conjugate(), m[1][1].conjugate()]])
+    return make_matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
+                        [ m[0][1].conjugate(), m[1][1].conjugate()]])
 
 
 def _o13_matrix_column(A, m, Aadj):

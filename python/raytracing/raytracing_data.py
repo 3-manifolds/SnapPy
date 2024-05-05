@@ -1,8 +1,9 @@
 from snappy.snap import t3mlite as t3m
 from snappy.snap.mcomplex_base import *
-from snappy.SnapPy import matrix
 
 from .hyperboloid_utilities import *
+
+from ..matrix import make_matrix
 
 __all__ = ['RaytracingData']
 
@@ -84,14 +85,14 @@ class RaytracingData(McomplexEngine):
 
     def update_view_state(self,
                           boost_tet_num_and_weight,
-                          m=matrix([[1.0, 0.0, 0.0, 0.0],
-                                    [0.0, 1.0, 0.0, 0.0],
-                                    [0.0, 0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 0.0, 1.0]])):
+                          m=make_matrix([[1.0, 0.0, 0.0, 0.0],
+                                         [0.0, 1.0, 0.0, 0.0],
+                                         [0.0, 0.0, 1.0, 0.0],
+                                         [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
 
-        boost = matrix(boost, base_ring=self.RF)
-        m     = matrix(m,     base_ring=self.RF)
+        boost = make_matrix(boost, ring=self.RF)
+        m     = make_matrix(m,     ring=self.RF)
 
         boost, tet, weight = _graph_trace(
             boost * m, self.mcomplex.Tetrahedra[tet_num], weight)

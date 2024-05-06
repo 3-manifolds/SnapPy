@@ -7,7 +7,9 @@ from ..tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                              get_lifted_tetrahedron_set)
 from ..tiling.triangle import add_triangles_to_tetrahedra
 
-from ..matrix import matrix, vector
+from ..matrix import make_matrix, make_vector
+
+from ..matrix import matrix
 
 import math
 
@@ -58,9 +60,9 @@ class Eyeball:
 
         RF = self.raytracing_view.raytracing_data.RF
         
-        boost = matrix(boost, base_ring=RF)
+        boost = make_matrix(boost, ring=RF)
 
-        base_point = vector([b[0] for b in boost])
+        base_point = make_vector([b[0] for b in boost])
 
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
         if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == eyeball_type_eyeball:

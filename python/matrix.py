@@ -9,7 +9,7 @@ def snappy_make_vector(entries, *, ring=None):
 def snappy_make_matrix(entries, *, ring=None):
     return SimpleMatrix(entries, ring)
 
-def snappy_make_identity(*, n, ring):
+def snappy_make_identity_matrix(*, n, ring):
     return SimpleMatrix.identity(ring, n)
 
 if _within_sage:

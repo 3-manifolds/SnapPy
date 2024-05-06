@@ -1,9 +1,8 @@
-from snappy.SnapPy import matrix, vector
-
-from snappy.hyperboloid import (r13_dot,
-                                unit_time_vector_to_o13_hyperbolic_translation,
-                                time_r13_normalise,
-                                space_r13_normalise)
+from ..hyperboloid import (r13_dot,
+                           unit_time_vector_to_o13_hyperbolic_translation,
+                           time_r13_normalise,
+                           space_r13_normalise)
+from ..matrix import make_vector, make_matrix
 
 """
 Helpers for the 1,3-hyperboloid model and conversion to upper half
@@ -44,11 +43,11 @@ def O13_x_rotation(angle):
 
     c = angle.cos()
     s = angle.sin()
-    return matrix(
+    return make_matrix(
         [[ 1, 0, 0, 0],
          [ 0, 1, 0, 0],
          [ 0, 0, c, s],
-         [ 0, 0, -s, c]], base_ring=angle.parent())
+         [ 0, 0, -s, c]], ring=angle.parent())
 
 
 def O13_y_rotation(angle):
@@ -58,11 +57,11 @@ def O13_y_rotation(angle):
     """
     c = angle.cos()
     s = angle.sin()
-    return matrix(
+    return make_matrix(
         [[ 1, 0, 0, 0],
          [ 0, c, 0, -s],
          [ 0, 0, 1, 0],
-         [ 0, s, 0, c]], base_ring=angle.parent())
+         [ 0, s, 0, c]], ring=angle.parent())
 
 
 def O13_z_rotation(angle):
@@ -72,11 +71,11 @@ def O13_z_rotation(angle):
     """
     c = angle.cos()
     s = angle.sin()
-    return matrix(
+    return make_matrix(
         [[ 1, 0, 0, 0],
          [ 0, c, s, 0],
          [ 0, -s, c, 0],
-         [ 0, 0, 0, 1]], base_ring=angle.parent())
+         [ 0, 0, 0, 1]], ring=angle.parent())
 
 
 def complex_and_height_to_R13_time_vector(z, t):
@@ -102,7 +101,7 @@ def complex_and_height_to_R13_time_vector(z, t):
     RF = z_re.parent()
 
     return R13_normalise(
-        vector(
+        make_vector(
             [ RF(1),
               klein_factor * poincare[0],
               klein_factor * poincare[1],
@@ -151,8 +150,8 @@ def _check_vector_sane(v):
 _signature = [-1, +1, +1, +1]
 
 def _unit_four_vector(i, ring):
-    return vector([ring(1.0 if i == j else 0.0)
-                   for j in range(4)])
+    return make_vector([ring(1.0 if i == j else 0.0)
+                        for j in range(4)])
 
 def _time_r13_normalise_sane(v):
     try:
@@ -208,17 +207,17 @@ def O13_orthonormalise(m):
     
     t = m.transpose() # Transpose to operate on columns
 
-    result = [ _time_r13_normalise_sane(vector(t[0])) ]
+    result = [ _time_r13_normalise_sane(make_vector(t[0])) ]
     for row in t[1:]:
-        result.append(_orthonormalise_row_sane(vector(row), result))
-    return matrix(result).transpose()
+        result.append(_orthonormalise_row_sane(make_vector(row), result))
+    return make_matrix(result).transpose()
 
 def complex_to_pair(z):
     """
     Returns a vector (x,y) given z = x + y * i.
     """
 
-    return vector([z.real(), z.imag()])
+    return make_vector([z.real(), z.imag()])
 
 
 def _dist_from_projection(p, dir):

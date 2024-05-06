@@ -1,4 +1,5 @@
 from .hyperboloid_utilities import *
+from ..matrix import matrix
 import time
 import sys
 import tempfile

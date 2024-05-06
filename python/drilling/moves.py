@@ -6,7 +6,7 @@ from . import exceptions
 
 from ..geometric_structure import add_r13_planes_to_tetrahedron
 from ..snap.t3mlite import simplex, Perm4, Tetrahedron, Corner # type: ignore
-from ..matrix import matrix # type: ignore
+from ..matrix import make_identity_matrix # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List
@@ -72,7 +72,7 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     neighbors : dict[int, Tetrahedron] = dict(tet.Neighbor.items())
     gluings : dict[int, Perm4] = dict(tet.Gluing.items())
 
-    id_matrix = matrix.identity(ring=RF, n=4)
+    id_matrix = make_identity_matrix(ring=RF, n=4)
 
     for f0, new_tet0 in new_tets.items():
         new_tet0.geodesic_pieces = []
@@ -209,7 +209,7 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                          for old_tip in old_tips ]
 
     RF = old_tets[0].O13_matrices[simplex.F0].base_ring()
-    id_matrix = matrix.identity(ring=RF, n=4)
+    id_matrix = make_identity_matrix(ring=RF, n=4)
 
     # Embeddings to map both tetrahedra into the same coordinate
     # system

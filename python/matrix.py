@@ -9,6 +9,9 @@ def snappy_make_vector(entries, *, ring=None):
 def snappy_make_matrix(entries, *, ring=None):
     return SimpleMatrix(entries, ring)
 
+def snappy_make_identity(*, n, ring):
+    return SimpleMatrix.identity(ring, n)
+
 if _within_sage:
     from sage.modules.free_module_element import vector as _sage_vector
     from sage.matrix.constructor import matrix as _sage_matrix
@@ -25,11 +28,16 @@ if _within_sage:
         else:
             return _sage_matrix(ring, entries)
 
+    def sage_make_identity_matrix(*, n, ring):
+        return _sage_matrix.identity(ring, n)
+
     make_vector = sage_make_vector
     make_matrix = sage_make_matrix
+    make_identity_matrix = sage_make_identity_matrix
 else:
     make_vector = snappy_make_vector
     make_matrix = snappy_make_matrix
+    make_identity_matrix = snappy_make_identity_matrix
 
 class SimpleVector(number.SupportsMultiplicationByNumber):
     def __init__(self, entries, ring=None):

@@ -5,7 +5,7 @@ from ...hyperboloid import r13_dot, time_r13_normalise, space_r13_normalise
 from ...snap.t3mlite import Tetrahedron, simplex
 from ...math_basics import correct_min, correct_max
 from ...exceptions import InsufficientPrecisionError
-from ...matrix import matrix
+from ...matrix import make_identity_matrix
 
 from .graph_trace_helper import find_lifted_tetrahedra_containing_point
 from . import constants
@@ -330,7 +330,7 @@ def _graph_trace(tet : Tetrahedron,
         def key(face_and_signed_distance):
             return face_and_signed_distance[1]
 
-    m = matrix.identity(RF, n=4)
+    m = make_identity_matrix(ring=RF, n=4)
 
     entry_cell = simplex.T
     for i in range(constants.graph_trace_max_steps):

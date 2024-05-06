@@ -15,7 +15,7 @@ from ...hyperboloid.line import R13Line
 from ...snap.t3mlite import simplex # type: ignore
 from ...snap.t3mlite import Tetrahedron, Vertex, Mcomplex # type: ignore
 from ...exceptions import InsufficientPrecisionError # type: ignore
-from ...matrix import matrix # type: ignore
+from ...matrix import make_identity_matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
@@ -245,7 +245,8 @@ class GeodesicInfo:
                         in faces_and_signed_distances ):
 
                 self.lifted_tetrahedra = find_lifted_tetrahedra_containing_point(
-                    LiftedTetrahedron(tet, matrix.identity(self.mcomplex.RF, n=4)),
+                    LiftedTetrahedron(
+                        tet, make_identity_matrix(ring=self.mcomplex.RF, n=4)),
                     faces_and_signed_distances,
                     self.unnormalised_start_point,
                     epsilon)

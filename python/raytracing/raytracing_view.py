@@ -9,7 +9,7 @@ from . import shaders
 
 from ..CyOpenGL import SimpleImageShaderWidget
 
-from ..matrix import vector, matrix
+from ..matrix import make_vector, make_matrix
 
 import math
 __all__ = ['RaytracingView', 'NonorientableUnsupportedError']
@@ -283,7 +283,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             # Camera is assumed to be at origin.
             dist = RF(depth).arctanh()
             # Reimplemented from get_ray_eye_space
-            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1)])
+            dir = make_vector([RF(scaled_x), RF(scaled_y), RF(-1)])
 
         else:
             if perspective_type == 1:
@@ -294,22 +294,22 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 # to determine the start point and direction of ray.
                 # Then compute end point using depth value.
                 r2 = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
-                ray_end = vector(
+                ray_end = make_vector(
                     [RF((r2 + 1.0) + depth * r2),
                      RF( scaled_x + depth * scaled_x),
                      RF( scaled_y + depth * scaled_y),
                      RF( r2 + depth * (r2 - 1.0))])
             else:
                 pt = R13_normalise(
-                    vector([RF(1.0), RF(2.0 * x), RF(2.0 * y), RF(0.0)]))
-                ray_end = vector([pt[0],pt[1],pt[2],RF(-depth)])
+                    make_vector([RF(1.0), RF(2.0 * x), RF(2.0 * y), RF(0.0)]))
+                ray_end = make_vector([pt[0],pt[1],pt[2],RF(-depth)])
 
             ray_end = R13_normalise(ray_end)
 
             # Distance of ray_end from origin
             dist = ray_end[0].arccosh()
             # Direction from origin to ray_end
-            dir = vector([ray_end[1], ray_end[2], ray_end[3]])
+            dir = make_vector([ray_end[1], ray_end[2], ray_end[3]])
 
         # Normalize direction
         dir = dir.normalized()
@@ -412,10 +412,10 @@ def _check_matrices_equal(m1, m2):
 
 
 def _check_matrix_o13(m):
-    s = matrix([[-1, 0,0,0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
+    s = make_matrix([[-1, 0,0,0],
+                     [0, 1, 0, 0],
+                     [0, 0, 1, 0],
+                     [0, 0, 0, 1]])
 
     _check_matrices_equal(s, m * s * m.transpose())
 

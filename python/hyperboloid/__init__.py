@@ -1,4 +1,4 @@
-from ..matrix import vector, matrix, mat_solve
+from ..matrix import make_vector, make_matrix, mat_solve
 
 from ..sage_helper import _within_sage
 
@@ -125,7 +125,7 @@ def unit_time_vector_to_o13_hyperbolic_translation(v):
     m[2][2] += 1
     m[3][3] += 1
 
-    return matrix(m)
+    return make_matrix(m)
 
 
 def unnormalised_plane_eqn_from_r13_points(pts):
@@ -136,10 +136,10 @@ def unnormalised_plane_eqn_from_r13_points(pts):
     three given points.
     """
 
-    return vector([  _det_shifted_matrix3(pts, 0),
-                     _det_shifted_matrix3(pts, 1),
-                   - _det_shifted_matrix3(pts, 2),
-                     _det_shifted_matrix3(pts, 3)])
+    return make_vector([  _det_shifted_matrix3(pts, 0),
+                          _det_shifted_matrix3(pts, 1),
+                        - _det_shifted_matrix3(pts, 2),
+                          _det_shifted_matrix3(pts, 3)])
 
 
 def _det_shifted_matrix3(m, i):
@@ -175,9 +175,9 @@ def compute_inradius_and_incenter_from_planes(planes):
     #  * r13_dot(plane, pt) = -1 for every plane
 
     RF = planes[0][0].parent()
-    m = matrix([[-plane[0], plane[1], plane[2], plane[3]]
-                for plane in planes])
-    v = vector([RF(-1), RF(-1), RF(-1), RF(-1)])
+    m = make_matrix([[-plane[0], plane[1], plane[2], plane[3]]
+                     for plane in planes])
+    v = make_vector([RF(-1), RF(-1), RF(-1), RF(-1)])
 
     pt = mat_solve(m, v)
 
@@ -193,12 +193,12 @@ def _to_complex_matrix(
     RF = a.parent()
     if _within_sage:
         CF = RF.complex_field()
-        return matrix(
+        return make_matrix(
             [ [ CF(a,b), CF(c, d) ],
               [ CF(e,f), CF(g, h) ] ],
             ring=CF)
     else:
         I = RF('I')
-        return matrix(
+        return make_matrix(
             [ [ a + b * I, c + d * I ],
               [ e + f * I, g + h * I ] ])

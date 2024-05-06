@@ -10,7 +10,7 @@ from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                               get_lifted_tetrahedron_set)
 from ...tiling.iter_utils import IteratorCache
 from ...snap.t3mlite import Mcomplex, Vertex, Corner
-from ...matrix import matrix
+from ...matrix import make_identity_matrix
 from ...math_basics import correct_min
 
 
@@ -81,9 +81,9 @@ def compute_tiles_for_cusp_neighborhood(
         max_neg_prod_equal = min_neg_prod_distinct
     else:
         max_neg_prod_equal = _compute_prod_epsilon(RF)
-        
+
     initial_lifted_tetrahedron = LiftedTetrahedron(
-        corner.Tetrahedron, matrix.identity(RF, 4))
+        corner.Tetrahedron, make_identity_matrix(ring=RF, n=4))
 
     lifted_tetrahedron_set : LiftedTetrahedronSet = (
         get_lifted_tetrahedron_set(

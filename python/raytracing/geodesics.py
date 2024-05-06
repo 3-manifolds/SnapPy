@@ -10,7 +10,7 @@ from ..geometric_structure import (add_r13_geometry,
 from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
-from ..matrix import matrix # type: ignore
+from ..matrix import make_matrix # type: ignore
 
 import traceback
 
@@ -176,11 +176,11 @@ class Geodesics:
         ring = p0[0].parent()
 
         # Rotate the camera so that it is looking down the x-Axis
-        r = matrix([[1, 0, 0, 0],
-                    [0, 0, 0, 1],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0]],
-                   ring=ring)
+        r = make_matrix([[1, 0, 0, 0],
+                         [0, 0, 0, 1],
+                         [0, 1, 0, 0],
+                         [0, 0, 1, 0]],
+                        ring=ring)
 
         # Create a transform that takes the origin to a point on the
         # geodesic and takes the tangent vector at the origin parallel
@@ -190,7 +190,7 @@ class Geodesics:
         # to right. This is exactly what we want.
         #
         g = O13_orthonormalise(
-            matrix(
+            make_matrix(
                 [ p0 + p1,        # (Projective) point on the geodesic.
                                   # Orthonormalisation just normalizes it
                                   # so that it is on the hyperboloid.

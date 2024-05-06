@@ -1,7 +1,7 @@
 from snappy.snap import t3mlite as t3m
 from snappy import Triangulation
 
-from ..matrix import matrix, vector
+from ..matrix import make_matrix, make_vector
 
 from ..upper_halfspace import pgl2c_to_o13
 
@@ -69,7 +69,7 @@ class FiniteRaytracingData(RaytracingData):
                 hyperbolic_structure, tet.Index)
 
     def _compute_tet_vertices(self):
-        c = vector(self.RF, [1, 0, 0, 0])
+        c = make_vector([1, 0, 0, 0], ring=self.RF)
 
         def _compute_vertex(tet, perm):
             m = tet.permutahedron_matrices[perm]
@@ -83,8 +83,8 @@ class FiniteRaytracingData(RaytracingData):
                 t3m.V3 : _compute_vertex(tet, (3,0,1,2)) }
 
     def _compute_edge_ends(self):
-        cs = [ vector(self.RF,[1, 1, 0, 0]),
-               vector(self.RF,[1, -1, 0, 0]) ]
+        cs = [ make_vector([1,  1, 0, 0], ring=self.RF),
+               make_vector([1, -1, 0, 0], ring=self.RF) ]
 
         def _compute_edge_ends(tet, perm):
             m = tet.permutahedron_matrices[perm]
@@ -100,12 +100,12 @@ class FiniteRaytracingData(RaytracingData):
                 t3m.E23 : _compute_edge_ends(tet, (2,3,0,1)) }
 
     def _compute_planes(self):
-        c = vector(self.RF, [0.0, 0.0, 0.0, -1.0])
+        c = make_vector([0.0, 0.0, 0.0, -1.0], ring=self.RF)
 
         def _compute_plane(tet, perm):
             m = tet.permutahedron_matrices[perm]
             v = c * pgl2c_to_o13(m)
-            return vector([-v[0], v[1], v[2], v[3]])
+            return make_vector([-v[0], v[1], v[2], v[3]])
 
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_planes = {
@@ -125,7 +125,7 @@ class FiniteRaytracingData(RaytracingData):
             for F in t3m.TwoSubsimplices:
                 for V in t3m.ZeroSubsimplices:
                     if V & F:
-                        v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
+                        v0 = tet.O13_matrices[F] * make_vector(tet.R13_vertices[V])
                         v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
 
                         if abs(r13_dot(v0, v1) - (-1.0)) > 1e-6:
@@ -158,10 +158,10 @@ class FiniteRaytracingData(RaytracingData):
         return d
 
     def initial_view_state(self):
-        boost = matrix([[1.0,0.0,0.0,0.0],
-                        [0.0,1.0,0.0,0.0],
-                        [0.0,0.0,1.0,0.0],
-                        [0.0,0.0,0.0,1.0]])
+        boost = make_matrix([[1.0,0.0,0.0,0.0],
+                             [0.0,1.0,0.0,0.0],
+                             [0.0,0.0,1.0,0.0],
+                             [0.0,0.0,0.0,1.0]])
         tet_num = 0
         weight = 0.0
         return (boost, tet_num, weight)
@@ -191,8 +191,8 @@ def _compute_face_pairing(tet, F):
 
 
 def _adjoint(m):
-    return matrix([[ m[1,1],-m[0,1]],
-                   [-m[1,0], m[0,0]]])
+    return make_matrix([[ m[1,1],-m[0,1]],
+                        [-m[1,0], m[0,0]]])
 
 
 _new_perm_edge_type_old_perm = [

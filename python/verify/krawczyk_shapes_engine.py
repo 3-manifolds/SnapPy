@@ -1,12 +1,12 @@
-from snappy import snap
-from snappy.sage_helper import _within_sage, sage_method
+from .. import snap
+from ..matrix import make_identity_matrix, make_matrix, make_vector
+
+from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
     from sage.all import ComplexDoubleField
-    from sage.all import matrix
-    from sage.modules.free_module_element import vector
     from snappy.pari import prec_dec_to_bits
 
 __all__ = ['KrawczykShapesEngine']
@@ -151,7 +151,7 @@ class KrawczykShapesEngine:
             # Take log of the entire product
             gluing_LHSs.append(prod.log())
 
-        return vector(BaseField, gluing_LHSs)
+        return make_vector(gluing_LHSs, ring=BaseField)
 
     def log_gluing_LHS_derivatives(self, shapes):
         """
@@ -202,7 +202,7 @@ class KrawczykShapesEngine:
 
             gluing_LHS_derivatives.append(row)
 
-        return matrix(BaseField, gluing_LHS_derivatives)
+        return make_matrix(gluing_LHS_derivatives, ring=BaseField)
 
     def log_gluing_LHS_derivatives_sparse(self, shapes):
         """
@@ -254,7 +254,7 @@ class KrawczykShapesEngine:
                     v += d * row[r]
                 result_row.append(v)
             rows.append(result_row)
-        return matrix(CIF, rows)
+        return make_matrix(rows, ring=CIF)
 
     @staticmethod
     def interval_vector_mid_points(vec):
@@ -290,6 +290,7 @@ class KrawczykShapesEngine:
 
         Do several Krawczyk operations to get a better solution::
 
+            sage: from sage.all import vector
             sage: M = Manifold("m019")
             sage: shapes = vector(ComplexIntervalField(53), [ 0.5+0.8j, 0.5+0.8j, 0.5+0.8j])
             sage: for i in range(15):
@@ -352,7 +353,7 @@ class KrawczykShapesEngine:
         i.e., the smallest interval containing both intervals.
         """
 
-        return vector([a.union(b) for a, b in zip(vecA, vecB)])
+        return make_vector([a.union(b) for a, b in zip(vecA, vecB)])
 
     @sage_method
     def __init__(self, M, initial_shapes, bits_prec=None, dec_prec=None):
@@ -415,14 +416,14 @@ class KrawczykShapesEngine:
             raise Exception("Manifold needs to be orientable")
 
         # Initialize the shape intervals, they have zero length
-        self.initial_shapes = vector(
+        self.initial_shapes = make_vector(
             [self.CIF(shape) for shape in initial_shapes])
 
         # Get an independent set of gluing equations from snap
         self.equations = snap.shapes.enough_gluing_equations(M)
         self._make_sparse_equations()
 
-        self.identity = matrix.identity(self.CIF, len(self.initial_shapes))
+        self.identity = make_identity_matrix(ring=self.CIF, n=len(self.initial_shapes))
 
         CDF = ComplexDoubleField()
 

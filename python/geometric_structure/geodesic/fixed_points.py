@@ -2,7 +2,7 @@ from .line import R13LineWithMatrix
 from ...hyperboloid.line import R13Line
 from ...upper_halfspace import psl2c_to_o13, complex_length_of_psl2c_matrix # type: ignore
 from ...upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
-from ...matrix import matrix # type: ignore
+from ...matrix import make_matrix # type: ignore
 from ...math_basics import (is_RealIntervalFieldElement,
                             is_ComplexIntervalFieldElement) # type: ignore
 
@@ -34,8 +34,8 @@ def r13_fixed_points_of_psl2c_matrix(m):
         if e0 > e1:
             return _r13_fixed_points_of_psl2c_matrix(m)
 
-    t = matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
-    tinv = matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
+    t = make_matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
+    tinv = make_matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
 
     pts = _r13_fixed_points_of_psl2c_matrix(tinv * m * t)
     o13_t = psl2c_to_o13(t)

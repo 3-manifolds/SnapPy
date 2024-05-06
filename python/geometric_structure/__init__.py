@@ -17,7 +17,7 @@ from ..hyperboloid import (space_r13_normalise,
                            compute_inradius_and_incenter_from_planes)
 from ..upper_halfspace import psl2c_to_o13 # type: ignore
 from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
-from ..matrix import vector, matrix, mat_solve # type: ignore
+from ..matrix import make_matrix # type: ignore
 from ..math_basics import xgcd, prod # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
@@ -171,8 +171,8 @@ def _to_matrix(m):
     This is needed because we have two matrix types outside of Sage:
     SimpleMatrix and Matrix2x2. Convert to the former.
     """
-    return matrix([[m[0,0],m[0,1]],
-                   [m[1,0],m[1,1]]])
+    return make_matrix([[m[0,0],m[0,1]],
+                        [m[1,0],m[1,1]]])
 
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """

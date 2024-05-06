@@ -1,4 +1,4 @@
-from ..matrix import matrix
+from ..matrix import make_matrix
 from ..upper_halfspace.ideal_point import Infinity
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 
@@ -25,25 +25,25 @@ def pgl2_matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
     if z0 == Infinity:
         CF = z1.parent()
         m = zinf - z1
-        return matrix([[ -zinf, m ],
-                       [ -1, 0 ]], ring=CF)
+        return make_matrix([[ -zinf, m ],
+                            [ -1, 0 ]], ring=CF)
 
     if z1 == Infinity:
         CF = zinf.parent()
-        return matrix([[ -zinf, z0 ],
-                       [ -1, 1  ]], ring=CF)
+        return make_matrix([[ -zinf, z0 ],
+                            [ -1, 1  ]], ring=CF)
 
     if zinf == Infinity:
         CF = z0.parent()
         l = z0 - z1
-        return matrix([[ -l, z0 ],
-                       [  0, 1  ]], ring=CF)
+        return make_matrix([[ -l, z0 ],
+                            [  0, 1  ]], ring=CF)
 
     l = z0 - z1
     m = zinf - z1
 
-    return matrix([[ -l * zinf, m * z0 ],
-                   [ -l, m      ]])
+    return make_matrix([[ -l * zinf, m * z0 ],
+                        [ -l, m      ]])
 
 
 def are_sl_matrices_close(m1, m2, epsilon=1e-5):

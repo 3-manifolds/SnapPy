@@ -1,8 +1,8 @@
-from snappy.snap import t3mlite as t3m
-from snappy.snap.t3mlite import simplex
-from snappy import Triangulation
+from ..snap import t3mlite as t3m
+from ..snap.t3mlite import simplex
+from .. import Triangulation
 
-from snappy.SnapPy import matrix, vector
+from ..matrix import matrix, vector
 
 from ..snap.mcomplex_base import *
 from ..geometric_structure.cusp_neighborhood.cusp_cross_section import *

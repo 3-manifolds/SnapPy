@@ -7,9 +7,9 @@ from .eyeball import Eyeball
 from .eyeball import eyeball_type_none, eyeball_type_paper_plane
 from . import shaders
 
-from snappy.CyOpenGL import SimpleImageShaderWidget
+from ..CyOpenGL import SimpleImageShaderWidget
 
-from snappy.SnapPy import vector, matrix
+from ..matrix import vector, matrix
 
 import math
 __all__ = ['RaytracingView', 'NonorientableUnsupportedError']

@@ -1,9 +1,9 @@
 from snappy.snap import t3mlite as t3m
 from snappy import Triangulation
 
-from snappy.SnapPy import matrix, vector
+from ..matrix import matrix, vector
 
-from snappy.upper_halfspace import pgl2c_to_o13
+from ..upper_halfspace import pgl2c_to_o13
 
 # We could use
 #

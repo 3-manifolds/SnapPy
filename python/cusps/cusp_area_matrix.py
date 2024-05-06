@@ -1,7 +1,7 @@
 from ..geometric_structure.cusp_neighborhood.cusp_cross_section import RealCuspCrossSection
 from ..math_basics import correct_min
 from ..verify.shapes import compute_hyperbolic_shapes
-from ..matrix import matrix
+from ..matrix import make_matrix
 
 __all__ = ['triangulation_dependent_cusp_area_matrix',
            'triangulation_dependent_cusp_area_matrix_from_cusp_cross_section']
@@ -59,5 +59,5 @@ def triangulation_dependent_cusp_area_matrix_from_cusp_cross_section(c):
 
     n = len(areas)
 
-    return matrix([[entry(i, j) for i in range(n)]
-                   for j in range(n)])
+    return make_matrix([[entry(i, j) for i in range(n)]
+                        for j in range(n)])

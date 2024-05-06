@@ -14,7 +14,7 @@ from ..hyperboloid.distances import distance_r13_lines, distance_r13_points
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
-from ..matrix import vector # type: ignore
+from ..matrix import make_vector # type: ignore
 from ..math_basics import correct_min # type: ignore
 
 from typing import Sequence, Tuple, List, Any
@@ -156,8 +156,9 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
     RF = point.base_ring()
 
     amt = RF(0.5) * max_amt
-    direction = vector([RF(x) for x in constants.point_perturbation_direction])
-    perturbed_origin = vector(
+    direction = make_vector(
+        [RF(x) for x in constants.point_perturbation_direction])
+    perturbed_origin = make_vector(
         [ amt.cosh() ] + list(amt.sinh() * direction.normalized()))
 
     m = unit_time_vector_to_o13_hyperbolic_translation(point)
@@ -168,7 +169,7 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
 
     space_coords = [ RF(x.center()) for x in perturbed_point[1:4] ]
     time_coord = sum((x**2 for x in space_coords), RF(1)).sqrt()
-    perturbed_point = vector([time_coord] + space_coords)
+    perturbed_point = make_vector([time_coord] + space_coords)
 
     d = distance_r13_points(point, perturbed_point)
     if not d < RF(0.75) * max_amt:

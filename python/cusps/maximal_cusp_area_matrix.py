@@ -2,7 +2,7 @@ from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import 
     mcomplex_for_tiling_cusp_neighborhoods)
 from ..tiling.tile import Tile
 
-from ..matrix import matrix
+from ..matrix import make_matrix
 from ..sage_helper import _within_sage
 from ..math_basics import correct_min, is_RealIntervalFieldElement, lower
 
@@ -42,7 +42,7 @@ def maximal_cusp_area_matrix(manifold, bits_prec, verified):
         [ _entry(mcomplex, i, j) for j in range(i + 1) ]
         for i in range(n) ]
 
-    return matrix(
+    return make_matrix(
         [[ lower_entries[i][j] if j < i else lower_entries[j][i]
            for j in range(n) ]
          for i in range(n) ])

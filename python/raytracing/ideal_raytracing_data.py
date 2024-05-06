@@ -226,12 +226,45 @@ class IdealRaytracingData(RaytracingData):
         if cusp.is_complete:
             cusp.margulisTubeRadiusParam = 0.0
         else:
-            slope = 2 * self.areas[i] / abs(det)
+            area_ratio = self.areas[i] / abs(det)
 
-            x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
-            y = (1 / (slope ** 2 + 1)).sqrt()
-            rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
-            cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
+            # Imagine a cone above 0 in the upper half space model with slope s
+            # that is, it intersects the plane at Euclidean height 1 in a circle
+            # of Euclidean radius s.
+            #
+            # Let C be the boundary of the upper half space without infinity.
+            # Consider a small rectangle with lengths dtheta and dr in C using
+            # polar coordinates.
+            # The intersection of extrusion of this rectangle with the
+            # boundary of the cone is spanned by two tangent vectors with
+            # Euclidean lengths
+            #
+            # r * dtheta and sqrt(1 + 1/s^2) * dr.
+            #
+            # The corresponding hyperbolic lengths are
+            #
+            # r / (r/s) * dtheta and sqrt(1 + 1/s^2) / (r/s) * dr
+            #
+            # Thus, the area of the intersection is
+            #
+            # dA = s * sqrt(1 + s^2) * dtheta * dr/r
+            #
+            # If m and l are the log lifts of the the holonomies of the
+            # meridian and longitudes in C^*, then we get for the area
+            #
+            # A = s * sqrt(1 + s^2) * (m wedge l)
+            #
+            # Recall that s = sinh R where R is the hyperbolic radius of the
+            # tube. The tube parameter we need to compute the intersection with
+            # a geodesic (in the shader) is given by T = cosh(R)^2/2.
+            #
+            # Letting A_0 = A / (m wedge l), we have
+            # A_0 = sinh R * cosh R = 1/2 sinh(2 * R)
+            # R = 1/2 arcsinh(A_0)
+            # T = 1/4 (1 + sqrt(1 + 4 * A_0^2))
+
+            a = 1 + 4 * area_ratio ** 2
+            cusp.margulisTubeRadiusParam = (1 + a.sqrt()) / 4
 
     def _add_to_standard_torus_matrices(self):
         for cusp in self.mcomplex.Vertices:

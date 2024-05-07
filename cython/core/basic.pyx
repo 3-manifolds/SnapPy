@@ -577,7 +577,7 @@ class LengthSpectrumInfo(Info):
                 lenStr += " + "
             else:
                 lenStr += " - "
-            lenStr += "%17.14f*I" % absImag
+            lenStr += "%16.14f*I" % absImag
 
         if 'word' in self:
             return LengthSpectrumFormatStringWithWord % (

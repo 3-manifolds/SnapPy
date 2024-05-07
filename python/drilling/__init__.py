@@ -39,8 +39,8 @@ def drill_word(manifold,
         >>> M = Manifold("m004")
         >>> M.length_spectrum(1.2, include_words = True, grouped = False)
         mult  length                                  topology     parity word
-        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
-        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
+        1     1.08707014499574 - 1.72276844987009*I   circle       +      a
+        1     1.08707014499574 + 1.72276844987009*I   circle       +      bC
         >>> N = M.drill_word('a')
         >>> N.identify()
         [m129(0,0)(0,0), 5^2_1(0,0)(0,0), L5a1(0,0)(0,0), ooct01_00001(0,0)(0,0)]

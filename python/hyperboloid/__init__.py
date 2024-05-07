@@ -108,6 +108,14 @@ def so13_to_psl2c(m):
     A = so13_to_pgl2c(m)
     return A / A.det().sqrt()
 
+def r13_to_klein(v):
+    """
+    Given a time-like or light-like vector, gives the respective point
+    in the Klein model or its boundary, respectively.
+    """
+
+    return make_vector([v[1] / v[0], v[2] / v[0], v[3] / v[0]])
+
 def unit_time_vector_to_o13_hyperbolic_translation(v):
     """
     Takes a point (time-like unit vector) in the hyperboloid model and

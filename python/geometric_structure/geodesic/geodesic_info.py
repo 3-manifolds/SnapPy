@@ -19,9 +19,9 @@ from ...matrix import make_identity_matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
-__all__ = ['compute_geodsic_info', 'GeodesicInfo']
+__all__ = ['compute_geodsic_info', 'GeodesicInfo', 'sample_line']
 
-def _sample_line(line : R13Line):
+def sample_line(line : R13Line):
     """
     Pick a point on a line in the hyperboloid model.
     Returns an unnormalised time-like vector computed
@@ -395,7 +395,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     line : R13LineWithMatrix = r13_fixed_line_of_psl2c_matrix(m)
 
     # Pick a point on the line
-    start_point = _sample_line(line.r13_line)
+    start_point = sample_line(line.r13_line)
 
     g = GeodesicInfo(
         mcomplex=mcomplex,

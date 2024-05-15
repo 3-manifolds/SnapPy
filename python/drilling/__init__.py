@@ -252,6 +252,11 @@ def drill_words_implementation(
     geodesics_to_drill = [ g for g in geodesics
                            if not g.core_curve_cusp ]
 
+    if verbose:
+        for g in geodesics:
+            if g.core_curve_cusp:
+                print("%s is core curve" % g.word)
+
     if perturb:
         # Move the sample point for each geodesic a bit and use it
         # as start point. Much of perturb_geodesics is about computing

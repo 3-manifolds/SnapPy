@@ -27,7 +27,8 @@ def replace_piece_in_core_curve_tube(
         inverse_lifted_geodesic : R13Line,
         verified : bool) -> Optional[Sequence[LiftedTetrahedron]]:
     """
-    Intersects the given geodesic with the lifted_tetrahedron.
+    Computes the intersection of the given geodesic with the lifted_tetrahedron.
+
     If the intersection can be verified to lie entirely in an embedded tube
     about a (lifted) core curve, then it computes the intersection points of
     the geodesic with the boundary of the tube and returns lifted tetrahedra

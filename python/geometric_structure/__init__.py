@@ -106,7 +106,7 @@ def add_r13_geometry(
     mcomplex.verified = verified
     mcomplex.RF = RF
     # PSL(2,C)-matrices corresponding to generators of fundamental group.
-    # Positive integers map to the generators, negative integrs to their
+    # Positive integers map to the generators, negative integers to their
     # inverses and 0 to the identity.
     mcomplex.GeneratorMatrices = {
         g : _to_matrix(m)

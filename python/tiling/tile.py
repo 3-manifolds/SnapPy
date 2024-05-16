@@ -60,7 +60,12 @@ def compute_tiles(*, # Everything is a keyword argument
     will be used here to record which lifted tetrahedra have already been
     visited and been added to the result while tiling the quotient space.
 
-    Missing documentation: other parameters.
+    An optional replace_lifted_tetrahedron_function callback can be
+    specified. This callback is invoked on any new lifted tetrahedron
+    and can return None or a list of lifted tetrahedra to replace the given
+    lifted tetrahedra. This is used when developing a geodesic (tube) to
+    skip over the pieces of a geodesic completely contained in a tube
+    about a core curve.
     """
 
     RF = visited_lifted_tetrahedra._base_point[0].parent()
@@ -74,14 +79,15 @@ def compute_tiles(*, # Everything is a keyword argument
     # but we use heapq to access it.
     pending_lifted_tetrahedra : Sequence[_PendingLiftedTetrahedron] = []
 
-    # Start tiling the tube about the geodesic with the lifted
-    # tetrahedra computed with GeodesicInfo.find_tet_or_core_curve.
+    # Start tiling the neighborhood about the geometric object using
+    # the given lifted tetrahedra.
     #
-    # Note that that method guarantees that at least one of the
-    # lifted tetrahedra it intersects the above line. Thus, the tiling
-    # is seeded correctly. That is, we cannot fail in the following way:
+    # It is assumed that at least one of the given lifted tetraheedra
+    # intersects the given geometric object for the tiling to be correct.
+    #
+    # If this assumption is false, we could fail in the following way:
     # assume that the given lifted tetrahedra are far away from the given
-    # line. Then the algorithm below thinks we are done, before we
+    # object. Then the algorithm below thinks we are done, before we
     # even started properly tiling - and we obviously get an incomplete
     # result.
     #
@@ -102,15 +108,16 @@ def compute_tiles(*, # Everything is a keyword argument
         tet = pending_lifted_tetrahedron.lifted_tetrahedron.tet
         m = pending_lifted_tetrahedron.lifted_tetrahedron.o13_matrix
 
-        # Imagine the fixed lift of the given geodesic and how it
+        # Imagine the fixed lift of the given geometric object and how it
         # relates to the lifted tetrahedron which is the image of
         # the tetrahedron in the fundamental domain under the matrix.
         #
         # Applying the inverse matrix moves the tetrahedron back into
-        # the fundamental domain and thus we obtain the line we want
-        # to record in GeodesicTubePiece.
+        # the fundamental domain and thus we obtain the (inverse) lift of
+        # the geometric object intresecting the fundamental domain.
         #
-        inverse_lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
+        inverse_lifted_geometric_object = (
+            geometric_object.transformed(o13_inverse(m)))
 
         if replace_lifted_tetrahedron_function:
             new_lifted_tetrahedra = replace_lifted_tetrahedron_function(
@@ -145,7 +152,8 @@ def compute_tiles(*, # Everything is a keyword argument
                         new_tet,
                         # Inverse of tet.O13_matrices[f]
                         m * new_tet.O13_matrices[entry_face]),
-                    # Distance of this face to lifted geodesic
+                    # Distance of this face to inverse lifted
+                    # geometric object
                     # (equal to distance of face entry_face of
                     # new_tet)
                     lower_bound_distance_to_r13_triangle(
@@ -156,21 +164,20 @@ def compute_tiles(*, # Everything is a keyword argument
 
 class _PendingLiftedTetrahedron:
     """
-    A lifted tetrahedron that still needs to be processed by GeodesicTube
+    A lifted tetrahedron that still needs to be processed by by compute_tiles
     together with the face through which this lifted tetrahedron was
     reached.
 
-    The lifted tetrahedron lives in the quotient space of the hyperboloid
-    model by (powers of) the matrix corresponding to the closed geodesic,
-    see ZQuotientLiftedTetrahedronSet.
+    The lifted tetrahedron lives in a (potentially trivial) quotient space of
+    the hyperboloid model.
 
-    The algorithm in GeodesicTube might add the same lifted tetrahedron
+    The algorithm in compute_tile might add the same lifted tetrahedron
     multiple times to the queue of pending pieces as there are four
     neighboring lifted tetrahedra from which this lifted tetrahedron can
     be reached.
 
-    Let L be the line (in the quotient space) about which we develop the
-    geodesic tube. lower_bound is a lower bound on the distance between
+    Let L be the geometric object (in the quotient space) about which we
+    develop a neighborhood. lower_bound is a lower bound on the distance between
     L and the face through which this lifted tetrahedron was reached.
     Note that lower_bound might be larger than the distance between L and
     this lifted tetrahedron (which is the minimum of all distances between

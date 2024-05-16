@@ -308,7 +308,8 @@ if have_cython:
             'Required version: %s. Installed version: %s.' % (
                 required_cython_version, cython_version))
 
-    if 'clean' not in sys.argv:
+    # This "if" is quite a hack - to get it build on cirrus.
+    if 'clean' not in sys.argv and 'egg_info' not in sys.argv:
         cython_sources = [file for file in cython_sources if exists(file)]
         cythonize(cython_sources,
                   compiler_directives={'embedsignature': True})

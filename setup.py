@@ -182,7 +182,7 @@ try:
         def run(self):
             python = sys.executable
             check_call([python, 'setup.py', 'build'])
-            check_call([python, 'setup.py', 'build_docs'])
+#            check_call([python, 'setup.py', 'build_docs'])
             bdist_wheel.run(self)
         @staticmethod
         def check_command_available():

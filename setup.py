@@ -301,31 +301,31 @@ def replace_ext(file, new_ext):
 def split_version(s : str):
     return [int(x) for x in s.split('.')]
 
-if have_cython:
-    if split_version(cython_version) < split_version(required_cython_version):
-        raise ImportError(
-            'Wrong cython version installed. '
-            'Required version: %s. Installed version: %s.' % (
-                required_cython_version, cython_version))
+if not any(  (non_build in sys.argv)
+             for non_build in [ 'clean', 'egg_info' ]):
+    if have_cython:
+        if split_version(cython_version) < split_version(required_cython_version):
+            raise ImportError(
+                'Wrong cython version installed. '
+                'Required version: %s. Installed version: %s.' % (
+                    required_cython_version, cython_version))
 
-    # This "if" is quite a hack - to get it build on cirrus.
-    if 'clean' not in sys.argv and 'egg_info' not in sys.argv:
         cython_sources = [file for file in cython_sources if exists(file)]
         cythonize(cython_sources,
                   compiler_directives={'embedsignature': True})
         cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
         cythonize(cython_cpp_sources,
                   compiler_directives={'embedsignature': True})
-else:  # No Cython, likely building an sdist
-    targets = [replace_ext(file, 'c') for file in cython_sources]
-    targets += [replace_ext(file, 'cpp') for file in cython_cpp_sources]
-    for file in targets:
-        if not exists(file):
-            raise ImportError(
-                no_cython_message +
-                'Missing Cythoned file: ' + file +
-                '\n[Cython import error: %r]' % cython_import_error +
-                '\n[setup.py arguments: %r]' % sys.argv)
+    else:  # No Cython, likely building an sdist
+        targets = [replace_ext(file, 'c') for file in cython_sources]
+        targets += [replace_ext(file, 'cpp') for file in cython_cpp_sources]
+        for file in targets:
+            if not exists(file):
+                raise ImportError(
+                    no_cython_message +
+                    'Missing Cythoned file: ' + file +
+                    '\n[Cython import error: %r]' % cython_import_error +
+                    '\n[setup.py arguments: %r]' % sys.argv)
 
 # We check manually which object files need to be rebuilt; distutils
 # is overly cautious and always rebuilds everything, which makes

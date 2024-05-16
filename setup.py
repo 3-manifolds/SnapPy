@@ -524,6 +524,7 @@ TwisterCore = Extension(
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
+build_requires = ['cython']
 install_requires = ['plink>=2.4.2', 'spherogram>=2.2', 'FXrays>=1.3',
                     'snappy_manifolds>=1.2', 'low_index>=1.2',
                     'pypng', 'decorator', 'packaging', 'tkinter-gl>=1.0a3']
@@ -572,6 +573,7 @@ setup( name = 'snappy',
        version = version,
        zip_safe = False,
        python_requires = '>=3.8',
+       build_requires = build_requires,
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/snap/peripheral',

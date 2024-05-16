@@ -323,7 +323,8 @@ else:  # No Cython, likely building an sdist
             raise ImportError(
                 no_cython_message +
                 'Missing Cythoned file: ' + file +
-                '\n[Cython import error: %r]' % cython_import_error)
+                '\n[Cython import error: %r]' % cython_import_error +
+                '\n[setup.py arguments: %r]' % sys.argv)
 
 # We check manually which object files need to be rebuilt; distutils
 # is overly cautious and always rebuilds everything, which makes

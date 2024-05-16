@@ -302,7 +302,7 @@ def split_version(s : str):
     return [int(x) for x in s.split('.')]
 
 if not any(  (non_build in sys.argv)
-             for non_build in [ 'clean', 'egg_info' ]):
+             for non_build in [ 'clean', 'egg_info', 'dist_info' ]):
     if have_cython:
         if split_version(cython_version) < split_version(required_cython_version):
             raise ImportError(
@@ -325,7 +325,7 @@ if not any(  (non_build in sys.argv)
                     no_cython_message +
                     'Missing Cythoned file: ' + file +
                     '\n[Cython import error: %r]' % cython_import_error +
-                    '\n[setup.py arguments: %r]' % sys.argv)
+                    '\n[Command line arguments: %r]' % sys.argv)
 
 # We check manually which object files need to be rebuilt; distutils
 # is overly cautious and always rebuilds everything, which makes

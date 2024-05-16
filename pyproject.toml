@@ -1,0 +1,22 @@
+[build-system]
+requires = [
+
+    # True build dependenciees
+    "setuptools>=42",
+    "wheel",
+    "cython>=0.28",
+
+    # Install dependencies needed to build documentation
+    "decorator",
+    "FXrays",
+    "low_index",
+    "cypari", # Missing "--pre --extra-index-url https://test.pypi.org/simple" arguments from pip install
+    "PLink @ git+https://github.com/3-manifolds/PLink",
+    "snappy_manifolds @ git+https://github.com/3-manifolds/snappy_manifolds",
+    "Spherogram @ git+https://github.com/3-manifolds/Spherogram",
+
+    # Build dependencies to build documentation
+    "sphinx",
+    "sphinx_rtd_theme",
+]
+

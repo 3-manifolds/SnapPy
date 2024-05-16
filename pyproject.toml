@@ -2,6 +2,8 @@
 requires = [
     "setuptools>=42",
     "wheel",
-    "cython>=0.28"
+    "cython>=0.28",
+    "sphinx",
+    "sphinx_rtd_theme"
 ]
 

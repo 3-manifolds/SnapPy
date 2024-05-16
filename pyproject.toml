@@ -4,6 +4,7 @@ requires = [
     "wheel",
     "cython>=0.28",
     "sphinx",
-    "sphinx_rtd_theme"
+    "sphinx_rtd_theme",
+    "decorator"
 ]
 

@@ -28,6 +28,8 @@ from ...snap.t3mlite import simplex
 from ...snap.mcomplex_base import *
 from ...snap.kernel_structures import *
 
+from typing import Any, List, Optional
+
 __all__ = [
     'IncompleteCuspError',
     'CuspDevelopmentExactVerifyError',
@@ -542,7 +544,7 @@ class CuspCrossSectionBase(McomplexEngine):
             CuspCrossSectionBase._scale_cusp(v, scale)
 
     @staticmethod
-    def _exp_distance_edge(edge):
+    def _exp_distance_edge(edge : t3m.Edge):
         """
         Given an edge, returns the exp of the (hyperbolic) distance of the
         two cusp neighborhoods at the ends of the edge measured along that
@@ -569,7 +571,7 @@ class CuspCrossSectionBase(McomplexEngine):
         return 1 / ptolemy_sqr
 
     @staticmethod
-    def _exp_distance_of_edges(edges):
+    def _exp_distance_of_edges(edges: List[t3m.Edge]):
         """
         Given edges between two (not necessarily distinct) cusps,
         compute the exp of the smallest (hyperbolic) distance of the
@@ -579,7 +581,8 @@ class CuspCrossSectionBase(McomplexEngine):
             [ CuspCrossSectionBase._exp_distance_edge(edge)
               for edge in edges])
 
-    def exp_distance_neighborhoods_measured_along_edges(self, i, j):
+    def exp_distance_neighborhoods_measured_along_edges(
+            self, i : int, j : int) -> Optional[Any]:
         """
         Computes the exp of the smallest (hyperbolic) distance
         between two cusp neighborhoods about cusp i and j measured
@@ -824,7 +827,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         return c
 
     @staticmethod
-    def _tet_tilt(tet, face):
+    def _tet_tilt(tet : t3m.Tetrahedron, face : int):
         "The tilt of the face of the tetrahedron."
 
         v = simplex.comp(face)
@@ -841,7 +844,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         return ans
 
     @staticmethod
-    def _face_tilt(face):
+    def _face_tilt(face : t3m.Face):
         """
         Tilt of a face in the trinagulation: this is the sum of
         the two tilts of the two faces of the two tetrahedra that are
@@ -1094,7 +1097,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                  for vertex in self.mcomplex.Vertices ]
 
     @staticmethod
-    def _compute_cusp_shape(vertex):
+    def _compute_cusp_shape(vertex : t3m.Vertex):
         m, l = vertex.Translations
         return (l / m).conjugate()
 
@@ -1129,7 +1132,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         for cusp in self.mcomplex.Vertices:
             self._add_one_cusp_vertex_positions(cusp)
 
-    def _add_one_cusp_vertex_positions(self, cusp):
+    def _add_one_cusp_vertex_positions(self, cusp : t3m.Vertex):
         """
         Procedure is similar to _add_one_cusp_cross_section
         """
@@ -1163,7 +1166,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     active.append( (tet1, vert1) )
                     visited.add((tet1.Index, vert1))
 
-    def _debug_show_horotriangles(self, cusp=0):
+    def _debug_show_horotriangles(self, cusp : int =0):
         from sage.all import line, real, imag
 
         self.add_vertex_positions_to_horotriangles()
@@ -1177,7 +1180,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
               for z1 in h.vertex_positions.values()
               if tet.Class[V].Index == cusp ])
 
-    def _debug_show_lifted_horotriangles(self, cusp=0):
+    def _debug_show_lifted_horotriangles(self, cusp : int =0):
         from sage.all import line, real, imag
 
         self.add_vertex_positions_to_horotriangles()
@@ -1218,7 +1221,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     edge : position - fixed_pt
                     for edge, position in trig.vertex_positions.items() }
 
-    def _compute_cusp_fixed_point(self, cusp):
+    def _compute_cusp_fixed_point(self, cusp : t3m.Vertex):
         """
         Compute fixed point for an incomplete cusp.
         """
@@ -1246,7 +1249,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         # Compute fixed point
         return (p1 - z * p0) / (1 - z)
 
-    def _compute_cusp_fixed_point_data(self, cusp):
+    def _compute_cusp_fixed_point_data(self, cusp : t3m.Vertex):
         """
         Compute abs(z-1), z, p0, p1 for each horotriangle, vertex and edge
         as described in _compute_cusp_fixed_point.
@@ -1303,7 +1306,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         for cusp in self.mcomplex.Vertices:
             self._lift_one_cusp_vertex_positions(cusp)
 
-    def _lift_one_cusp_vertex_positions(self, cusp):
+    def _lift_one_cusp_vertex_positions(self, cusp : t3m.Vertex):
         # Pick first triangle to develop
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
@@ -1361,7 +1364,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 ComplexCuspCrossSection._move_lifted_vertex_positions_cusp(cusp)
 
     @staticmethod
-    def _move_lifted_vertex_positions_cusp(cusp):
+    def _move_lifted_vertex_positions_cusp(cusp : t3m.Vertex):
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
         trig0 = tet0.horotriangles[vert0]

@@ -319,7 +319,7 @@ def _graph_trace(tet : Tetrahedron,
     containing the given lifted_pt.
     """
 
-    # Similar to GeodesicInfo._graph_trace
+    # Similar to GeodesicStartPointInfo._graph_trace
 
     RF = lifted_pt[0].parent()
     if verified:

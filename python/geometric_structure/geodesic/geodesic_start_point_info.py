@@ -19,7 +19,7 @@ from ...matrix import make_identity_matrix # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
 
-__all__ = ['compute_geodsic_info', 'GeodesicInfo', 'sample_line']
+__all__ = ['compute_geodsic_info', 'GeodesicStartPointInfo', 'sample_line']
 
 def sample_line(line : R13Line):
     """
@@ -53,7 +53,7 @@ def sample_line(line : R13Line):
 # @dataclass
 
 
-class GeodesicInfo:
+class GeodesicStartPointInfo:
     """
     Information needed to trace a closed geodesic through a triangulation
     given as snappy.snap.t3mlite.Mcomplex with geometric structure added
@@ -381,8 +381,8 @@ class GeodesicInfo:
                 "it is the core curve. Increasing the precision will probably "
                 "fix this.")
 
-def compute_geodesic_info(mcomplex : Mcomplex,
-                          word) -> GeodesicInfo:
+def compute_geodesic_start_point_info(mcomplex : Mcomplex,
+                          word) -> GeodesicStartPointInfo:
     """
     Compute basic information about a geodesic given a word.
 
@@ -397,7 +397,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     # Pick a point on the line
     start_point = sample_line(line.r13_line)
 
-    g = GeodesicInfo(
+    g = GeodesicStartPointInfo(
         mcomplex=mcomplex,
         word=word,
         trace=m.trace(),
@@ -411,7 +411,7 @@ def compute_geodesic_info(mcomplex : Mcomplex,
     # within the union of two tetrahedra neighboring in the hyperboloid
     # model.
     #
-    # See GeodesicInfo for details.
+    # See GeodesicStartPointInfo for details.
     g.find_tet_or_core_curve()
 
     return g

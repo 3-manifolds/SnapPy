@@ -1,5 +1,5 @@
 from .canonical_keys import canonical_keys_function_for_line
-from .geodesic_info import GeodesicInfo
+from .geodesic_start_point_info import GeodesicStartPointInfo
 from .avoid_core_curves import replace_piece_in_core_curve_tube
 
 from ...tiling.tile import Tile, compute_tiles
@@ -11,7 +11,7 @@ from ...snap.t3mlite import Mcomplex # type: ignore
 from typing import Sequence
 
 def compute_tiles_for_geodesic(mcomplex : Mcomplex,
-                               geodesic : GeodesicInfo,
+                               geodesic : GeodesicStartPointInfo,
                                avoid_core_curves : bool = False,
                                for_raytracing : bool = False
                                ) -> Sequence[Tile]:
@@ -21,16 +21,16 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     a core curve of a filled cusp.
 
     A GeodesicTube is constructed from a triangulation with a suitable
-    geometric structure and a suitable GeodesicInfo object.
+    geometric structure and a suitable GeodesicStartPointInfo object.
 
     To add the necessary geometric structure to a triangulation, call
     add_r13_geometry and add_r13_planes_to_tetrahedra.
 
-    The GeodesicInfo object needs to be constructed with a line and
-    GeodesicInfo.find_tet_or_core_curve be called on it.
+    The GeodesicStartPointInfo object needs to be constructed with a line and
+    GeodesicStartPointInfo.find_tet_or_core_curve be called on it.
 
-    Calling GeodesicInfo.add_pieces_for_radius will then add the
-    necessary pieces to GeodesicInfo.pieces to cover the tube of the
+    Calling GeodesicStartPointInfo.add_pieces_for_radius will then add the
+    necessary pieces to GeodesicStartPointInfo.pieces to cover the tube of the
     given radius.
     """
 
@@ -40,12 +40,12 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
 
     if geodesic.line is None:
         raise ValueError(
-            "Tiling a tube about a geodesic expected GeodesicInfo with valid "
+            "Tiling a tube about a geodesic expected GeodesicStartPointInfo with valid "
             "line.")
 
     if not geodesic.lifted_tetrahedra:
         raise ValueError(
-            "Tiling a tube about a geodesic expected GeodesicInfo with valid "
+            "Tiling a tube about a geodesic expected GeodesicStartPointInfo with valid "
             "lifted_tetrahedra.")
 
     min_neg_prod_distinct = (mcomplex.baseTetInRadius/2).cosh()

@@ -13,7 +13,7 @@ from .cusps import (
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo, compute_geodesic_info
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo, compute_geodesic_start_point_info
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
 from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
@@ -238,8 +238,8 @@ def drill_words_implementation(
     # matrix and the end points and a sample point on the fixed line.
     # Try to conjugate/translate matrix and end points such that the
     # line intersects the fundamental domain.
-    geodesics : Sequence[GeodesicInfo] = [
-        compute_geodesic_info(mcomplex, word)
+    geodesics : Sequence[GeodesicStartPointInfo] = [
+        compute_geodesic_start_point_info(mcomplex, word)
         for word in words ]
 
     # Record information in the geodesics and triangulation needed
@@ -312,7 +312,7 @@ def drill_words_implementation(
     return drilled_manifold
 
 def drill_geodesics(mcomplex : Mcomplex,
-                    geodesics : Sequence[GeodesicInfo],
+                    geodesics : Sequence[GeodesicStartPointInfo],
                     verbose : bool = False) -> Mcomplex:
     """
     Given a triangulation with geometric structure attached with
@@ -320,7 +320,7 @@ def drill_geodesics(mcomplex : Mcomplex,
     the triangulation (with finite vertices) obtained by drilling
     the geodesics.
 
-    Each provided GeodesicInfo is supposed to have a start point and
+    Each provided GeodesicStartPointInfo is supposed to have a start point and
     a tetrahedron in the fundamental domain that contains the start point
     in its interior and an end point such that the line segment from the
     start to the endpoint forms a closed curve in the manifold.

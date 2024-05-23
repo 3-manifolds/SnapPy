@@ -95,7 +95,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         row = 0
 
         for geodesic in self._geodesics().geodesics_sorted_by_length():
-            if not geodesic.geodesic_info.core_curve_cusp:
+            if not geodesic.geodesic_start_point_info.core_curve_cusp:
                 UniformDictController.create_checkbox(
                     self.geodesics_frame,
                     self.raytracing_view.ui_parameter_dict,
@@ -128,8 +128,8 @@ class GeodesicsWindow(tkinter.Toplevel):
 
             color = geodesic_index_to_color(geodesic.index)
 
-            if geodesic.geodesic_info.core_curve_cusp:
-                cusp_index = geodesic.geodesic_info.core_curve_cusp.Index
+            if geodesic.geodesic_start_point_info.core_curve_cusp:
+                cusp_index = geodesic.geodesic_start_point_info.core_curve_cusp.Index
                 l = tkinter.Label(self.geodesics_frame,
                                   text="Cusp %d" % cusp_index)
             else:
@@ -139,7 +139,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                                   bg=color_to_tkinter(color))
             l.grid(row=row, column=self.color_column, padx=5)
 
-            if geodesic.geodesic_info.core_curve_cusp:
+            if geodesic.geodesic_start_point_info.core_curve_cusp:
                 l = tkinter.Label(self.geodesics_frame,
                                   text="Use Cusp areas tab")
                 l.grid(row=row, column=self.radius_column, padx=5)
@@ -159,7 +159,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                 # Need to color Scale - but the following code fails.
                 # scale.configure(background = color_to_tkinter(color))
 
-            if not geodesic.geodesic_info.core_curve_cusp:
+            if not geodesic.geodesic_start_point_info.core_curve_cusp:
                 btn = ttk.Button(
                     self.geodesics_frame,
                     text='View',

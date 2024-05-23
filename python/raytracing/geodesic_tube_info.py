@@ -3,7 +3,7 @@ from ..tiling.tile import Tile
 
 from ..hyperboloid.distances import distance_r13_lines
 
-from ..geometric_structure.geodesic.geodesic_info import compute_geodesic_info
+from ..geometric_structure.geodesic.geodesic_start_point_info import compute_geodesic_start_point_info
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
 
 from ..snap.t3mlite import simplex # type: ignore
@@ -56,24 +56,24 @@ class GeodesicLinePieces:
 class GeodesicTubeInfo:
     def __init__(self, mcomplex, word, index, is_primitive=None):
         # Compute GeodesicTube
-        self.geodesic_info = compute_geodesic_info(mcomplex, word)
+        self.geodesic_start_point_info = compute_geodesic_start_point_info(mcomplex, word)
 
         for tet in mcomplex.Tetrahedra:
             for v, core_curve in tet.core_curves.items():
                 tet.Class[v].core_curve_tube_radius = mcomplex.RF(avoid_core_curve_tube_radius)
 
-        if not self.geodesic_info.core_curve_cusp:
+        if not self.geodesic_start_point_info.core_curve_cusp:
             self.tiles = IteratorCache(
                 tiles_up_to_core_curve(
                     compute_tiles_for_geodesic(
                         mcomplex,
-                        self.geodesic_info,
+                        self.geodesic_start_point_info,
                         avoid_core_curves=True,
                         for_raytracing=True)))
             self._tiles_to_cover = []
 
         # Compute complex length from trace
-        t = self.geodesic_info.trace
+        t = self.geodesic_start_point_info.trace
         self.complex_length = _normalize_complex_length(2 * (t / 2).arccosh())
 
         self.words = [ word ]
@@ -114,8 +114,8 @@ class GeodesicTubeInfo:
         if not abs(diff) < 1e-3:
             return False
 
-        self_cusp = self.geodesic_info.core_curve_cusp
-        other_cusp = other.geodesic_info.core_curve_cusp
+        self_cusp = self.geodesic_start_point_info.core_curve_cusp
+        other_cusp = other.geodesic_start_point_info.core_curve_cusp
 
         if self_cusp or other_cusp:
             if self_cusp and other_cusp:

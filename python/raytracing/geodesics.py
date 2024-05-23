@@ -170,8 +170,8 @@ class Geodesics:
         return self.mcomplex
 
     def view_state_for_geodesic(self, index):
-        geodesic_info = self.geodesic_tube_infos[index].geodesic_info
-        p0, p1 = geodesic_info.line.r13_line.points
+        geodesic_start_point_info = self.geodesic_tube_infos[index].geodesic_start_point_info
+        p0, p1 = geodesic_start_point_info.line.r13_line.points
 
         ring = p0[0].parent()
 

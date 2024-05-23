@@ -3,7 +3,7 @@ from . import epsilons
 from . import exceptions
 
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
 from ..geometric_structure.geodesic.check_away_from_core_curve import check_away_from_core_curve_iter
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
@@ -37,11 +37,11 @@ _tube_developing_radius = 0
 
 def perturb_geodesics(
         mcomplex : Mcomplex,
-        geodesics : Sequence[GeodesicInfo],
+        geodesics : Sequence[GeodesicStartPointInfo],
         verbose=False):
     """
     Given a triangulation with structures added by add_r13_geometry
-    and GeodesicInfo's with start points on the line that is a lift
+    and GeodesicStartPointInfo's with start points on the line that is a lift
     of the closed geodesic, perturbs the start point away from the line
     and computes a new end point (as image of the new start point under
     the matrix associated to the geodesic line). The line segment
@@ -49,7 +49,7 @@ def perturb_geodesics(
     curve in the manifold which is guaranteed to be isotopic to the
     closed geodesic.
 
-    If several GeodesicInfo's are given and/or there are filled
+    If several GeodesicStartPointInfo's are given and/or there are filled
     cusps with core curves, the system of simple closed curves
     resulting from the perturbation together with the core curves
     is guaranteed to be isotopic to the original system of closed
@@ -91,7 +91,7 @@ def perturb_geodesics(
 
 def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
-        geodesics : Sequence[GeodesicInfo]):
+        geodesics : Sequence[GeodesicStartPointInfo]):
 
     if len(geodesics) == 0:
         raise Exception("No geodesic tubes given")
@@ -131,11 +131,11 @@ def compute_lower_bound_injectivity_radius(
     return correct_min(distances) / 2
 
 
-def perturb_geodesic(geodesic : GeodesicInfo,
+def perturb_geodesic(geodesic : GeodesicStartPointInfo,
                      injectivity_radius,
                      verified : bool):
     if geodesic.line is None:
-        raise ValueError("GeodesicInfo needs line to be perturbed.")
+        raise ValueError("GeodesicStartPointInfo needs line to be perturbed.")
 
     perturbed_point = perturb_unit_time_point(
         time_r13_normalise(geodesic.unnormalised_start_point),

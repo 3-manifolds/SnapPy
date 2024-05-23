@@ -1,4 +1,4 @@
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
 from ..geometric_structure import Filling, FillingMatrix
 
 from ..snap.t3mlite import Mcomplex, simplex
@@ -51,7 +51,7 @@ class CuspPostDrillInfo:
 
 
 def index_geodesics_and_add_post_drill_infos(
-        geodesics : Sequence[GeodesicInfo],
+        geodesics : Sequence[GeodesicStartPointInfo],
         mcomplex : Mcomplex) -> None:
 
     all_reindexed_verts = {

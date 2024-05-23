@@ -36,7 +36,7 @@ class GeodesicHittingOneSkeletonError(DrillGeodesicError):
 
 class GeodesicStartPointOnTwoSkeletonError(GeodesicHittingOneSkeletonError):
     """
-    Raised when the start point given to GeodesicInfo appears not to be in the
+    Raised when the start point given to GeodesicStartPointInfo appears not to be in the
     interior of a tetrahedron.
     """
 

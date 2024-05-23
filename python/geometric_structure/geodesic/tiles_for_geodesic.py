@@ -34,15 +34,19 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     given radius.
     """
 
+    if geodesic.core_curve_cusp is not None:
+        raise ValueError(
+            "Cannot tile a tube about a geodesic that is a core curve.")
+
     if geodesic.line is None:
         raise ValueError(
-            "GeodesicTube expected GeodesicInfo with line set to start "
-            "developing a tube about the geodesic.")
+            "Tiling a tube about a geodesic expected GeodesicInfo with valid "
+            "line.")
 
     if not geodesic.lifted_tetrahedra:
         raise ValueError(
-            "GeodesicTube expected GeodesicInfo with lifted_tetrahedra "
-            "set to start developing a tube about the geodesic.")
+            "Tiling a tube about a geodesic expected GeodesicInfo with valid "
+            "lifted_tetrahedra.")
 
     min_neg_prod_distinct = (mcomplex.baseTetInRadius/2).cosh()
 

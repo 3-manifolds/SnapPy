@@ -21,7 +21,7 @@
 #
 # 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
-from ...math_basics import correct_min
+from ...math_basics import correct_min, lower
 
 from ...snap import t3mlite as t3m
 from ...snap.t3mlite import simplex
@@ -1244,8 +1244,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         # Compute z, p0, p1 for each horotriangle, vertex and edge and pick
         # the one where z is furthest away from one.
-        dummy, z, p0, p1 = max(self._compute_cusp_fixed_point_data(cusp),
-                               key=lambda d: d[0])
+        z, p0, p1 = max(self._compute_cusp_fixed_point_data(cusp),
+                        key=lambda d: lower(abs(1 - d[0])))
 
         # Compute fixed point
         return (p1 - z * p0) / (1 - z)
@@ -1282,7 +1282,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
                 # Parameter for similarity
                 z = - l1 / l0
-                yield (abs(z - 1), z, p0, p1)
+                yield (z, p0, p1)
 
     def lift_vertex_positions_of_horotriangles(self):
         """

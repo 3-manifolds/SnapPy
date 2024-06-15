@@ -35,8 +35,9 @@ jobs:
             pip install git+https://github.com/3-manifolds/Spherogram
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: >
-            python -m snappy.test --skip-modern-opengl &&
-            cd {project}/doc_src && make html
+            cd {project}/doc_src && make html &&
+            python -m snappy.test --skip-modern-opengl
+
 
       - uses: actions/upload-artifact@v3
         with:

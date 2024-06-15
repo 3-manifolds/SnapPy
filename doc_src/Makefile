@@ -17,7 +17,6 @@ clean:
 #   -d keeps the intermediate doctree files out the html directory.
 html:
 	$(SPHINXBUILD) -b html -E -d _build/doctrees . _build/doc
-	cd _build && zip -r snappy_doc.zip doc
+	cd _build && zip -rq snappy_doc.zip doc
 	@echo
-	@echo "Build finished. The HTML pages are in _build/doc and"
-	@echo "zipfile is _build/snappy_doc.zip."
+	@echo "HTML build done. Result was _build/doc and _build/snappy_doc.zip."

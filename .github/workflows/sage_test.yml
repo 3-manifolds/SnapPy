@@ -52,3 +52,8 @@ jobs:
         run: |
           cd /__w/SnapPy/SnapPy/doc_src
           sage -python -m sphinx -b html -E -d _build/doctrees . _build/doc
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: snappy_doc
+          path: /__w/SnapPy/SnapPy/doc_src/_build/snapp_doc.zip

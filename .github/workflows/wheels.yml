@@ -9,33 +9,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2019]
+        os: [macos-latest]
+        # os: [ubuntu-22.04, macos-13, macos-latest, windows-2019]
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.17
+        uses: pypa/cibuildwheel@v2.19
         env:
           # Skip Python 32 bit Linux, and PyPy
+          CIBW_BUILD: "cp312-*"
           CIBW_SKIP: "*-manylinux_i686 *musllinux* pp*"
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
           CIBW_BEFORE_BUILD: >
-            pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
+            pip install cython FXrays low_index &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram
           CIBW_BEFORE_TEST: >
-            pip install cython low_index &&
+            pip install cython low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: python -m snappy.test --skip-modern-opengl
+          CIBW_TEST_COMMAND: >
+            cd doc_src && make html
+            python -m snappy.test --skip-modern-opengl
 
       - uses: actions/upload-artifact@v3
         with:
           name: snappy_all_wheels
-          path: ./wheelhouse/*.whl
+          path: ./wheelhouse/*.whl ./doc_src/_build/snappy_doc.zip

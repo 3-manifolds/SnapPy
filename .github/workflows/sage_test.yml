@@ -47,3 +47,8 @@ jobs:
 
       - name: Do the tests
         run: sage -python -m snappy.test
+
+      - name: Build docs
+        run: |
+          cd doc_src
+          make html

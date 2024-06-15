@@ -50,5 +50,5 @@ jobs:
 
       - name: Build docs
         run: |
-          cd doc_src
-          make html
+          cd /__w/SnapPy/SnapPy/doc_src
+          sage -python -m sphinx -b html -E -d _build/doctrees . _build/doc

@@ -172,8 +172,8 @@ def graphics_failures(verbose, windows, use_modernopengl):
 def runtests(verbose=False,
              quick=False,
              windows=False,
-             use_modernopengl=False,
-             graphics=False):
+             use_modernopengl=True,
+             graphics=True):
 
     # The default PARI stacksize can (slightly) overflow, causing
     # doctests to fail.

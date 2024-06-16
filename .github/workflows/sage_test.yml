@@ -57,5 +57,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: snappy_doc
+          name: doc
           path: /__w/SnapPy/SnapPy/doc_src/_build/doc/*

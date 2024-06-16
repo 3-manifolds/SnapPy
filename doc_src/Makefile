@@ -15,8 +15,6 @@ clean:
 # sphinx options:
 #   -E forces it to rebuild the docs from scratch every time.
 #   -d keeps the intermediate doctree files out the html directory.
-#
-# This logic is duplicatd in .github/workflows/sage_test.yml
 html:
 	$(SPHINXBUILD) -b html -E -d _build/doctrees . _build/doc
 	cd _build && zip -rq snappy_doc.zip doc

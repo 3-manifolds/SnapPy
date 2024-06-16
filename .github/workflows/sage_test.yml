@@ -49,13 +49,13 @@ jobs:
         run: sage -python -m snappy.test
 
       - name: Build docs
+        # Doesn't just do "make html" as neither "make" nor "zip" is
+        # installed in this image.
         run: |
-          apt-get update
-          apt-get install -y make zip
           cd /__w/SnapPy/SnapPy/doc_src
-          make SPHINXBUILD="sage -python -m sphinx" html
+          sage -python -m sphinx -b html -E -d _build/doctrees . _build/doc
 
       - uses: actions/upload-artifact@v3
         with:
           name: snappy_doc
-          path: /__w/SnapPy/SnapPy/doc_src/_build/snappy_doc.zip
+          path: /__w/SnapPy/SnapPy/doc_src/_build/doc/*

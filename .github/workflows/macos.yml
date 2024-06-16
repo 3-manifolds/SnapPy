@@ -30,13 +30,13 @@ jobs:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_MACOS: x86_64
           CIBW_BEFORE_BUILD: >
-            pip install cython FXrays low_index sphinx sphinx_rtd_theme &&
+            pip install "cython<3.0" FXrays low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram
           CIBW_BEFORE_TEST: >
-            pip install cython low_index &&
+            pip install "cython<3.0" low_index &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&

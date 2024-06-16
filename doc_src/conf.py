@@ -11,44 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, datetime, sysconfig, platform
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-
-def build_lib_dir():
-    if sys.platform == 'darwin':
-        target = sysconfig.get_platform().split('-')[-1]
-        machine = platform.machine()
-        # Check if we're cross-compiling.  If so, module must already
-        # have been built for the host architecture.
-        if target == 'universal2':
-            python_platform = 'macosx-10.9-universal2'
-        elif target != machine:
-            python_platform = {'x86_64':'macosx-10.9-x86_64',
-                               'arm64': 'macosx-11-arm64'}[machine]
-        else:
-            python_platform = sysconfig.get_platform()
-
-    else:
-        python_platform = sysconfig.get_platform()
-
-    v0, v1 = sys.version_info[:2]
-    old_path = os.path.join(
-        '..',
-        'build',
-        f'lib.{python_platform}-{v0}.{v1}')
-    new_path = os.path.join(
-        '..',
-        'build',
-         f'lib.{python_platform}-cpython-{v0}{v1}')
-    return os.path.abspath(old_path), os.path.abspath(new_path)
-
-for path in build_lib_dir():
-    print('sys.path addition:', path)
-    sys.path.insert(0, path)
-
+import os
+import datetime
 import snappy
 print('Using: ' + snappy.__file__)
 
@@ -79,7 +43,6 @@ master_doc = 'index'
 autosectionlabel_prefix_document = True
 
 # General information about the project.
-
 
 project = u'SnapPy'
 copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Matthias Goerner, Jeffrey Weeks and others' % datetime.datetime.now().year
@@ -177,9 +140,9 @@ html_show_sourcelink = False
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
+
 html_theme_options = {
     'collapse_navigation': True,
-
     'navigation_depth': 5,
 }
 
@@ -247,37 +210,3 @@ if os.path.exists('_static/' + snappy_custom_css_file):
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'SnapPydoc'
-
-
-# -- Options for LaTeX output --------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
-
-# The font size ('10pt', '11pt' or '12pt').
-#latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-  ('index', 'SnapPy.tex', u'SnapPy Documentation',
-   u'Marc Culler (culler@math.uic.edu) and Nathan Dunfield (nmd@illinois.edu)',
-   'manual'),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-#latex_logo = None
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-#latex_use_parts = False
-
-# Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
-
-# Documents to append as an appendix to all manuals.
-#latex_appendices = []
-
-# If false, no module index is generated.
-#latex_use_modindex = True

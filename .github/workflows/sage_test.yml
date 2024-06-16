@@ -53,6 +53,7 @@ jobs:
           apt-get update
           apt-get install -y make zip
           cd /__w/SnapPy/SnapPy/doc_src
+          export SPHINXBUILD="sage -python -m sphinx"
           make html
 
       - uses: actions/upload-artifact@v3

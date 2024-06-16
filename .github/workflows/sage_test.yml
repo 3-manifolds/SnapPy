@@ -50,8 +50,8 @@ jobs:
 
       - name: Build docs
         run: |
-          apt update
-          apt install make zip
+          apt-get update
+          apt-get install -y make zip
           cd /__w/SnapPy/SnapPy/doc_src
           make html
 

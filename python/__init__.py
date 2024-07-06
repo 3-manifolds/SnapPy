@@ -541,22 +541,35 @@ ManifoldHP.cusp_translations = cusp_translations
 def complex_volume(manifold, verified_modulo_2_torsion=False,
                    bits_prec=None):
     """
-    Returns the complex volume, i.e.
-    volume + i 2 pi^2 (chern simons)
+    Returns the complex volume.
 
-    >>> M = Manifold('5_2')
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.82812209 - 3.02412838*I
-    >>> c = M.chern_simons()
-    >>> M.dehn_fill((1,2))
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.22671790 + 1.52619361*I
-    >>> M = Manifold("3_1")
-    >>> cvol = M.complex_volume()
-    >>> cvol.real() # doctest: +NUMERIC6
-    0
-    >>> cvol.imag() # doctest: +NUMERIC6
-    -1.64493407
+    The complex volume is
+
+        volume + i Chern-Simons
+
+    and defined modulo i pi^2.
+
+        >>> M = Manifold('5_2')
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.82812209 - 3.02412838*I
+
+    Note that M.chern_simons() normalizes the Chern-Simons
+    invariant by dividing it by 2 pi^2 = 19.7392... ::
+
+        >>> M.chern_simons() # doctest: +NUMERIC6
+        -0.153204133297152
+
+    More examples::
+
+        >>> M.dehn_fill((1,2))
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.22671790 + 1.52619361*I
+        >>> M = Manifold("3_1")
+        >>> cvol = M.complex_volume()
+        >>> cvol.real() # doctest: +NUMERIC6
+        0
+        >>> cvol.imag() # doctest: +NUMERIC6
+        -1.64493407
 
     If no cusp is filled or there is only one cusped (filled or
     unfilled), the complex volume can be verified up to multiples

@@ -806,7 +806,8 @@ cdef class Manifold(Triangulation):
 
     def chern_simons(self, accuracy = False):
         """
-        Returns the Chern-Simons invariant of the manifold, if it is known.
+        Returns the Chern-Simons invariant of the manifold (normalized by
+        dividing it by 2 pi^2), if it is known.
 
         >>> M = Manifold('m015')
         >>> M.chern_simons() # doctest: +NUMERIC6

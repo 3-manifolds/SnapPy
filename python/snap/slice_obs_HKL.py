@@ -653,8 +653,8 @@ def slice_obstruction_HKL(self, primes_spec,
                 if d % q == 0:
                     if verbose:
                         print('   Looking at', (p, q), '...')
-                        if slicing_is_obstructed(M, p, q):
-                            return (p, q)
+                    if slicing_is_obstructed(M, p, q):
+                        return (p, q)
 
 
 if __name__ == '__main__':

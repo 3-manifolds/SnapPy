@@ -1148,6 +1148,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         # Pairs (tet index, vertex) indicating what has already been
         # visited
         visited = set()
+        visited.add((tet0.Index, vert0))
 
         while active:
             tet0, vert0 = active.pop()

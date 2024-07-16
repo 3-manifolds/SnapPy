@@ -145,7 +145,9 @@ cdef class Manifold(Triangulation):
     def canonize(self):
         """
         Change the triangulation to an arbitrary retriangulation of
-        the canonical cell decomposition.
+        the canonical cell decomposition. See
+        :py:meth:`Manifold.canonical_retriangulation` to get the actual
+        canonical cell decomposition.
 
         >>> M = Manifold('m007')
         >>> M.num_tetrahedra()
@@ -154,8 +156,8 @@ cdef class Manifold(Triangulation):
         >>> M.num_tetrahedra()
         4
 
-        Note: due to rounding error, it is possible that this is not
-        actually the canonical triangulation.
+        Note: Due to rounding error, it is possible that this is actually
+        not a retriangulation of the canonical cell decomposition.
         """
         cdef c_FuncResult result
         result = proto_canonize(self.c_triangulation)
@@ -606,8 +608,6 @@ cdef class Manifold(Triangulation):
 
     def covers(self, degree, method=None, cover_type='all'):
         """
-        M.covers(degree, method=None, cover_type='all')
-
         Returns a list of Manifolds corresponding to all of the
         finite covers of the given degree.  The default method is
         'low_index' for general covers and 'snappea' for cyclic
@@ -848,7 +848,7 @@ cdef class Manifold(Triangulation):
 
     def without_hyperbolic_structure(self):
         """
-        Returns self as a Triangulation, forgetting the hyperbolic
+        Returns self as a :class:`Triangulation`, forgetting the hyperbolic
         structure in the process.
 
         >>> M = Manifold('9_42')
@@ -1614,7 +1614,7 @@ cdef class Manifold(Triangulation):
 
         return ans
 
-    def is_two_bridge(self):
+    def is_two_bridge(self) -> bool:
         """
         If the manifold is the complement of a two-bridge knot or link
         in S^3, then this method returns (p,q) where p/q is the

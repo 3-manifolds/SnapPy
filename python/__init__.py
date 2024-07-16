@@ -200,7 +200,7 @@ def canonical_retriangulation(
     manifold, verified=False,
     interval_bits_precs=verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
-    verbose=False):
+    verbose=False) -> Triangulation:
     """
     The canonical retriangulation which is closely related to the canonical
     cell decomposition and described in more detail `here
@@ -291,7 +291,8 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
         [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
         [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
 
-    For expert users:
+    For expert users
+    ----------------
 
     Besides the two values above, ``method`` can be ``trigDependent``:
     this result is also fast to compute by making the assumption that

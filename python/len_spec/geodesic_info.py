@@ -87,7 +87,7 @@ class GeodesicKeyInfo(GeodesicInfoBase):
 
     def r13_line(self) -> R13Line:
         """
-        The actualy line in H^3 corresponding to the geodesic.
+        The actually line in H^3 corresponding to the geodesic.
         """
         return self.r13_line_with_matrix().r13_line
 

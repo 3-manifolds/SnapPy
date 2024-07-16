@@ -628,7 +628,7 @@ class CuspCrossSectionBase(McomplexEngine):
         edges if the product of the scale factor is less than the maximal
         scaling factor.
 
-        Note that if i and j are the same, becaues the scaling factor applies
+        Note that if i and j are the same, because the scaling factor applies
         to the same cusp twice, we only can scale the one cusp by a factor
         sqrt(maximal scaling factor) to stay disjoint along edges.
 

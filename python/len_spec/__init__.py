@@ -245,7 +245,7 @@ def _length_spectrum_from_mcomplex(
     # up to a certain length.
     #
     # We will add geodesics to the priority queue as we tile.
-    # And we pick off a geodesic g from the top of the prority queue
+    # And we pick off a geodesic g from the top of the priority queue
     # when we know that we have tiled far enough to see all geodesics that
     # could be shorter than g.
     pending_geodesics : Sequence[GeodesicInfoBase] = []

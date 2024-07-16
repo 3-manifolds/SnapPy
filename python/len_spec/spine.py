@@ -164,7 +164,7 @@ def _add_spine_points(mcomplex : Mcomplex):
                     # update the scaling factor.
                     #
                     # We use the ratio of the following edge lengths:
-                    # - the edge of the currrent triangle. It is the edge that
+                    # - the edge of the current triangle. It is the edge that
                     #   we need to cross to get to the previous embedding.
                     # - the edge of the previous triangle. It is the edge that
                     #   we needed to cross to get to this embedding.

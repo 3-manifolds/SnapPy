@@ -72,7 +72,7 @@ cdef class Manifold(Triangulation):
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
       See :py:meth:`Manifold.save` for details.
 
-   - A string containing the contents of a SnapPea triangulation or link
+    - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
 

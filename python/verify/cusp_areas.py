@@ -1,25 +1,7 @@
-from ..sage_helper import _within_sage
 from ..math_basics import correct_min, is_RealIntervalFieldElement
 
 __all__ = ['unbiased_cusp_areas_from_cusp_area_matrix',
            'greedy_cusp_areas_from_cusp_area_matrix']
-
-if _within_sage:
-    # python's sqrt only work for floats
-    # They would fail or convert to float losing precision
-    from sage.all import sqrt
-else:
-    import math
-
-    # Otherwise, define our own sqrt which checks whether
-    # the given type defines a sqrt method and fallsback
-    # to python's log and sqrt which has the above drawback of
-    # potentially losing precision.
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
-
 
 def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     """
@@ -74,7 +56,7 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
     for i in range(num_cusps):
         stoppers = [ cusp_area_matrix[sigma[i], sigma[j]] / result[sigma[j]]
                      for j in range(i) ]
-        self_stopper = sqrt(cusp_area_matrix[sigma[i], sigma[i]])
+        self_stopper = cusp_area_matrix[sigma[i], sigma[i]].sqrt()
 
         result[sigma[i]] = correct_min(stoppers + [ self_stopper ])
 
@@ -99,7 +81,7 @@ def _find_potential_stoppers(cusp_area_matrix, assigned_areas):
             return cusp_area_matrix[i, j] / assigned_areas[i]
         if not assigned_areas[j] is None:
             return cusp_area_matrix[i, j] / assigned_areas[j]
-        return sqrt(cusp_area_matrix[i, j])
+        return cusp_area_matrix[i, j].sqrt()
 
     num_cusps = cusp_area_matrix.dimensions()[0]
 

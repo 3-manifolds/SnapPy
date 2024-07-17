@@ -174,9 +174,10 @@ def graphics_failures(verbose, windows, use_modernopengl):
     else:
         try:
             import snappy.CyOpenGL
-            print("***Warning***: Could not run Tk, so CyOpenGL not test")
-        except ImportError:
-            print("***Warning***: CyOpenGL not installed, so not tested")
+            print("***Warning***: Could not run Tk, so CyOpenGL is not tested.")
+        except ImportError as e:
+            print("***Warning***: CyOpenGL not tested since it could not be imported.")
+            print("Error was: %r", e)
         result = 0
     return result
 

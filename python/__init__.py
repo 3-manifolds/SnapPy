@@ -194,7 +194,7 @@ Manifold.length_spectrum_iter = len_spec.length_spectrum
 ManifoldHP.length_spectrum_iter = len_spec.length_spectrum
 
 from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
-from .cusps.cusp_area_matrix import triangulation_dependent_cusp_area_matrix
+from .cusps.trig_cusp_area_matrix import triangulation_dependent_cusp_area_matrix
 
 def canonical_retriangulation(
     manifold, verified=False,

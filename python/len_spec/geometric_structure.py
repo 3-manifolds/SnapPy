@@ -2,7 +2,7 @@ from .spine import add_spine
 
 from ..geometric_structure import add_r13_geometry, add_filling_information
 from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
 from ..geometric_structure.cusp_neighborhood.vertices import scale_vertices_from_horotriangles
 
 from ..cusps.cusp_area_matrix import triangulation_dependent_cusp_area_matrix_from_cusp_cross_section

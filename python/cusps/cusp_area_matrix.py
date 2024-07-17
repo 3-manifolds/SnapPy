@@ -1,4 +1,4 @@
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import RealCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.real_cusp_cross_section import RealCuspCrossSection
 from ..math_basics import correct_min
 from ..verify.shapes import compute_hyperbolic_shapes
 from ..matrix import make_matrix

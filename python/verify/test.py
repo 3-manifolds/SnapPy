@@ -52,7 +52,9 @@ def run_doctests(verbose=False, print_info=True):
             generate_test_with_shapes_engine(
                 verify.interval_newton_shapes_engine,
                 verify.IntervalNewtonShapesEngine),
-            cusp_neighborhood.cusp_cross_section,
+            cusp_neighborhood.cusp_cross_section_base,
+            cusp_neighborhood.real_cusp_cross_section,
+            cusp_neighborhood.complex_cusp_cross_section,
             generate_test_with_shapes_engine(
                 verify.hyperbolicity,
                 verify.KrawczykShapesEngine),

@@ -246,7 +246,7 @@ from .cusps.cusp_area_matrix import cusp_area_matrix
 Manifold.cusp_area_matrix = cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix
 
-from .verify import cusp_areas as verify_cusp_areas
+from .cusps import cusp_areas_from_matrix
 
 
 def cusp_areas(manifold, policy='unbiased',
@@ -321,10 +321,9 @@ def cusp_areas(manifold, policy='unbiased',
         method=method, verified=verified, bits_prec=bits_prec)
 
     if policy == 'unbiased':
-        return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
+        return cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix(m)
     else:
-        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
-
+        return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas

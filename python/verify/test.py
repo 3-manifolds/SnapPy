@@ -1,6 +1,6 @@
 from snappy import verify, Manifold
 from snappy.geometric_structure import cusp_neighborhood
-from snappy.verify import upper_halfspace, cusp_shapes, cusp_areas, volume
+from snappy.verify import upper_halfspace, volume
 from snappy.sage_helper import _within_sage, doctest_modules
 import sys
 import getopt
@@ -64,8 +64,6 @@ def run_doctests(verbose=False, print_info=True):
             verify.canonical,
             verify.interval_tree,
             volume,
-            cusp_areas,
-            cusp_shapes,
             upper_halfspace.ideal_point,
             upper_halfspace.finite_point,
             upper_halfspace.extended_matrix,

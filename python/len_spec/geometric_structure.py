@@ -6,7 +6,7 @@ from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import C
 from ..geometric_structure.cusp_neighborhood.vertices import scale_vertices_from_horotriangles
 
 from ..cusps.trig_cusp_area_matrix import triangulation_dependent_cusp_area_matrix_from_cusp_cross_section
-from ..verify.cusp_areas import unbiased_cusp_areas_from_cusp_area_matrix
+from ..cusps.cusp_areas_from_matrix import unbiased_cusp_areas_from_cusp_area_matrix
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..math_basics import correct_min
 from ..matrix import make_matrix

@@ -39,10 +39,12 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
         ...                     [RIF(6.0,6.001 ),RIF(10.0, 10.001)]]))
         [3.0001?, 2.000?]
 
-        >>> from snappy.SnapPy import matrix
+        >>> from snappy.number import Number, number_to_native_number
+        >>> def N(x): return number_to_native_number(Number(x))
+        >>> from snappy.matrix import make_matrix
         >>> greedy_cusp_areas_from_cusp_area_matrix(
-        ...             matrix([[10.0, 40.0],
-        ...                     [40.0, 20.0]]))
+        ...             make_matrix([[N(10.0), N(40.0)],
+        ...                          [N(40.0), N(20.0)]])) # doctest: +NUMERIC9
         [3.1622776601683795, 4.47213595499958]
 
     """

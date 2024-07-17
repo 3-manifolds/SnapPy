@@ -18,8 +18,8 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
         >>> def N(x): return number_to_native_number(Number(x))
         >>> from snappy.matrix import make_matrix
         >>> unbiased_cusp_areas_from_cusp_area_matrix(
-        ...             matrix([[N(10.0), N(40.0)],
-        ...                     [N(40.0), N(20.0)]])) # doctest: +NUMERIC9
+        ...             make_matrix([[N(10.0), N(40.0)],
+        ...                          [N(40.0), N(20.0)]])) # doctest: +NUMERIC9
         [3.1622776601683795, 4.47213595499958]
 
     """

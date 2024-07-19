@@ -178,13 +178,10 @@ def graphics_failures(verbose, windows, use_modernopengl):
         try:
             import snappy.CyOpenGL
             print("Reason: Unsuitable Tk configuration for CyOpenGL")
-        except ModuleNotFoundError as e:
-            print("Reason: CyOpenGL not installed, %r" % e)
         except ImportError as e:
             print("Reason: CyOpenGL could not be imported, %r" % e)
         result = 0
     return result
-
 
 def runtests(verbose=False,
              quick=False,

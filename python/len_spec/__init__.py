@@ -66,7 +66,7 @@ def length_spectrum(manifold,
     And verified computation::
 
         sage: M = Manifold("m019")
-        sage: spec = M.length_spectrum_iter(verified=True)
+        sage: spec = M.length_spectrum_iter(verified=True, bits_prec=100)
         sage: next(spec) # doctest: +NUMERIC9
         Length                                       Word          Core curve
         0.4315344129472?    + 2.351059081479?    *I  a             -

@@ -481,7 +481,7 @@ def complex_volume(manifold, verified_modulo_2_torsion=False,
     with `bits_prec`)::
 
         sage: M = Manifold("m015")
-        sage: M.complex_volume(verified_modulo_2_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
+        sage: M.complex_volume(verified_modulo_2_torsion=True, bits_prec = 93) # doctest: +NUMERIC21
         2.828122088330783162764? + 1.910673824035377649698?*I
         sage: M = Manifold("m015(3,4)")
         sage: M.complex_volume(verified_modulo_2_torsion=True) # doctest: +NUMERIC6

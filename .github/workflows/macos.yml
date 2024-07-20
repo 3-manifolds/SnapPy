@@ -32,7 +32,9 @@ jobs:
         env:
           # Skip Python 2.7, 3.5, 3.11, 32 bit Linux, and PyPy
           CIBW_BUILD: "cp311-*"
-          CIBW_ENVIRONMENT: SNAPPY_ALWAYS_BUILD_CYOPENGL=1
+          CIBW_ENVIRONMENT: >
+            SNAPPY_ALWAYS_BUILD_CYOPENGL=1
+            MACOSX_DEPLOYMENT_TARGET=10.12
           CIBW_ARCHS_MACOS: x86_64
           CIBW_BEFORE_BUILD: >
             pip install "cython<3.0" FXrays low_index sphinx sphinx_rtd_theme &&

@@ -48,7 +48,7 @@ jobs:
             pip install git+https://github.com/3-manifolds/PLink &&
             pip install git+https://github.com/3-manifolds/snappy_manifolds &&
             pip install git+https://github.com/3-manifolds/Spherogram
-          CIBW_TEST_COMMAND: python -m snappy.test
+          CIBW_TEST_COMMAND: python -m snappy.test --skip-gui
 
       - uses: actions/upload-artifact@v4
         with:

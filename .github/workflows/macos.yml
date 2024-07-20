@@ -35,7 +35,7 @@ jobs:
           CIBW_ENVIRONMENT: >
             SNAPPY_ALWAYS_BUILD_CYOPENGL=1
             MACOSX_DEPLOYMENT_TARGET=10.12
-          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_MACOS: native
           CIBW_BEFORE_BUILD: >
             pip install "cython<3.0" FXrays low_index sphinx sphinx_rtd_theme &&
             pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&

@@ -64,7 +64,7 @@ if sys.platform == 'darwin':
         '-Wno-unreachable-code']
     macOS_link_args = []
     macos_arch = sysconfig.get_platform().split('-')[-1]
-    macos_targets = {'x86_64':'10.12', 'arm64': '11', 'universal2': '10.12'}
+    macos_targets = {'x86_64':'10.9', 'arm64': '11', 'universal2': '10.12'}
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_targets[macos_arch]
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly

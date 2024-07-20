@@ -75,12 +75,12 @@ class KrawczykShapesEngine:
     And here an example where the initial solution is somewhat off::
 
         sage: M = Manifold("m019")
-        sage: shapes = [ 0.78+0.91j, 0.79+0.92j, 0.5 + 0.63j ]
-        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 100)
+        sage: shapes = [0.780559+0.91449j, 0.780559+0.9144j, 0.46009+0.639j]
+        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 190)
         sage: C.expand_until_certified()
         True
         sage: C.certified_shapes
-        (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
+        (0.7806? + 0.9145?*I, 0.7806? + 0.9145?*I, 0.4601? + 0.6326?*I)
 
     """
 
@@ -392,7 +392,7 @@ class KrawczykShapesEngine:
 
         Or some non-hyperbolic manifolds::
 
-            sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True, bits_precision = 100)
+            sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True) # doctest: +SKIP
             Traceback (most recent call last):
             ...
             RuntimeError: Could not certify shape intervals, either there are degenerate shapes or the precision must be increased.

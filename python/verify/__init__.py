@@ -4,7 +4,6 @@ from .krawczyk_shapes_engine import *
 from .hyperbolicity import *
 from .canonical import *
 from .cusp_translations import *
-from .cusp_shapes import *
 from .volume import *
 from .complex_volume import *
 from .interval_tree import *

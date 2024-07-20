@@ -52,6 +52,7 @@ from . import twister
 from . import snap
 from . import verify
 from .verify import complex_volume as verify_complex_volume
+from .cusps import compute_cusp_shapes as cusps_compute_cusp_shapes
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 from .export_stl import stl

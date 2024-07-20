@@ -501,6 +501,22 @@ CyOpenGL = Extension(
     language='c++'
 )
 
+CyOpenGL_has_headers = False
+if sys.platform == 'win32':
+    # We use glew, so we do not need GL headers from somewhere
+    # else
+    CyOpenGL_has_headers = True
+else:
+    header = 'gl.h'
+    CyOpenGL_has_headers = any(
+        exists(os.path.join(path, header))
+        for path in CyOpenGL_includes)
+    if not CyOpenGL_has_headers:
+        print("***WARNING***: Not building CyOpenGL so many graphics "
+              "features will not be available.")
+        print("This is because the OpenGL header %s was not found." % header)
+        print("The following directories were searched: %s." % (
+            ', '.join(CyOpenGL_includes)))
 
 # Twister
 
@@ -536,29 +552,12 @@ except ImportError:
     else:
         install_requires.append('ipython>=1.0')
         
-# Determine whether we will be able to activate the GUI code
-
-try:
-    import tkinter as Tk
-except ImportError:
-    Tk = None
-
-if sys.platform == 'win32':
+if CyOpenGL_has_headers:
     ext_modules.append(CyOpenGL)
-elif Tk is not None:
-    missing = {}
-    for header in ['gl.h']:
-        results = [exists(os.path.join(path, header))
-                   for path in CyOpenGL_includes]
-        missing[header] = (True in results)
-    if False in missing.values():
-        print("***WARNING***: OpenGL headers not found, "
-              "not building CyOpenGL, "
-              "will disable some graphics features.")
-    else:
-        ext_modules.append(CyOpenGL)
-else:
-    print("***WARNING**: Tkinter not installed, GUI won't work")
+elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
+      not in ['0', 'false', 'False']):
+    raise RuntimeError('Could not find CyOpenGL requirements but '
+                       'SNAPPY_ALWAYS_BUILD_CYOPENGL is set.')
 
 # Get version number:
 exec(open('python/version.py').read())

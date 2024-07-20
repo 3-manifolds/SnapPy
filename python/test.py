@@ -11,11 +11,16 @@ import snappy.tiling.real_hash_dict
 import snappy.tiling.canonical_key_dict
 import snappy.tiling.dict_based_set
 import snappy.cusps.maximal_cusp_area_matrix
+import snappy.cusps.cusp_areas_from_matrix
 import snappy.raytracing.cohomology_fractal
 import snappy.raytracing.geodesic_tube_info
 import snappy.raytracing.geodesics
 import snappy.raytracing.ideal_raytracing_data
 import snappy.raytracing.upper_halfspace_utilities
+import snappy.len_spec
+import snappy.len_spec.word
+import snappy.len_spec.length_spectrum_geodesic_info
+import snappy.len_spec.test_cases
 import snappy.drilling
 import snappy.exterior_to_link.test
 import snappy.pari
@@ -113,11 +118,16 @@ modules += [snappy.SnapPy,
             snappy.tiling.canonical_key_dict,
             snappy.tiling.dict_based_set,
             snappy.cusps.maximal_cusp_area_matrix,
+            snappy.cusps.cusp_areas_from_matrix,
             snappy.raytracing.cohomology_fractal,
             snappy.raytracing.geodesic_tube_info,
             snappy.raytracing.geodesics,
             snappy.raytracing.ideal_raytracing_data,
             snappy.raytracing.upper_halfspace_utilities,
+            snappy.len_spec,
+            snappy.len_spec.word,
+            snappy.len_spec.length_spectrum_geodesic_info,
+            snappy.len_spec.test_cases,
             snappy.drilling,
             ptolemy_doctester,
             spherogram_doctester]
@@ -164,10 +174,14 @@ def graphics_failures(verbose, windows, use_modernopengl):
                     root.after(7000, root.destroy)
                 root.mainloop()
     else:
-        print("***Warning***: CyOpenGL not installed, so not tested")
+        print("***Warning***: Could not test CyOpenGL.")
+        try:
+            import snappy.CyOpenGL
+            print("Reason: Unsuitable Tk configuration for CyOpenGL")
+        except ImportError as e:
+            print("Reason: CyOpenGL could not be imported, %r" % e)
         result = 0
     return result
-
 
 def runtests(verbose=False,
              quick=False,

@@ -189,14 +189,15 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
-from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
-from .cusps.cusp_area_matrix import triangulation_dependent_cusp_area_matrix
+from . import len_spec
+Manifold.length_spectrum_iter = len_spec.length_spectrum
+ManifoldHP.length_spectrum_iter = len_spec.length_spectrum
 
 def canonical_retriangulation(
     manifold, verified=False,
     interval_bits_precs=verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
-    verbose=False):
+    verbose=False) -> Triangulation:
     """
     The canonical retriangulation which is closely related to the canonical
     cell decomposition and described in more detail `here
@@ -240,109 +241,12 @@ from .isometry_signature import isometry_signature
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
 
-
-def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
-                     verified=False, bits_prec=None):
-    r"""
-    This function returns a matrix that can be used to check whether
-    cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
-    disjoint: the cusp neighborhoods about cusp i and j are
-    disjoint (respectively, the cusp neighborhood embeds if i and j
-    are equal) if a\ :sub:`i` * a\ :sub:`j` is less than or equal to
-    the entry (i,j) of the cusp area matrix. Note that the "if"
-    becomes "if and only if" if we pick the "maximal cusp area
-    matrix".
-
-    This function can operate in different ways (determined by
-    ``method``). By default (``method='trigDependentTryCanonize'``),
-    it returns a result which can be suboptimal and non-deterministic
-    but is quicker to compute and sufficies for many applications::
-
-        >>> M = Manifold("s776")
-        >>> M.cusp_area_matrix() # doctest: +NUMERIC12
-        [28.0000000000000 7.00000000000000 6.99999999999999]
-        [7.00000000000000 21.4375000000000 7.00000000000000]
-        [6.99999999999999 7.00000000000000 21.4375000000000]
-
-    If ``method='maximal'`` is specified, the result is the "maximal
-    cusp area matrix", thus it is optimal and an invariant of the
-    manifold with labeled cusps. Note that the "maximal cusp area
-    matrix" is only available as verified computation and thus
-    requires passing ``verified = True``::
-
-        sage: M.cusp_area_matrix(method = 'maximal', verified=True) # doctest: +NUMERIC6
-        [28.0000000000?  7.0000000000?  7.0000000000?]
-        [ 7.0000000000?  28.000000000? 7.00000000000?]
-        [ 7.0000000000? 7.00000000000?   28.00000000?]
-
-    If ``verified = True`` is specified and ``method`` is not
-    ``maximal``, the entries are all guaranteed to be less than the
-    corresponding ones in the maximal cusp area matrix (more
-    precisely, the lower end point of the interval is guaranteed to be
-    less than the true value of the corresponding maximal cusp area
-    matrix entry)::
-
-        sage: M.cusp_area_matrix(verified=True, bits_prec=70) # doctest: +NUMERIC15
-        [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
-
-    For expert users:
-
-    Besides the two values above, ``method`` can be ``trigDependent``:
-    this result is also fast to compute by making the assumption that
-    cusp neighborhoods are not only disjoint but also in "standard
-    form" with respect to the triangulation (i.e., when lifting of a
-    cusp neighborhood to a horoball in the universal cover, it
-    intersects a geodesic tetrahedron in three but not four
-    faces). ``trigDependentTryCanonize`` is similar to
-    ``trigDependent`` but tries to "proto-canonize" (a copy of) the
-    triangulation first since this often produces a matrix that is
-    closer to the maximal cusp area matrix, for example::
-
-        >>> M = Manifold("o9_35953")
-        >>> M.cusp_area_matrix(method = 'trigDependent') # doctest: +NUMERIC9
-        [72.9848715318467 12.7560424258060]
-        [12.7560424258060 6.65567118002656]
-        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize') # doctest: +NUMERIC9
-        [72.9848715318466 12.7560424258060]
-        [12.7560424258060 62.1043047674605]
-
-    Compare to maximal area matrix::
-
-        sage: M.cusp_area_matrix(method = 'maximal', verified = True, bits_prec = 100) # doctest: +NUMERIC15
-        [       72.984871531846664? 12.7560424258059765562778?]
-        [12.7560424258059765562778?     62.104304767460978078?]
-
-    """
-
-    if method == 'maximal':
-        return maximal_cusp_area_matrix(
-            manifold, bits_prec=bits_prec, verified=verified)
-    if method == 'maximalLegacy':
-        if not verified:
-            raise NotImplementedError("Maximal cusp area matrix only "
-                                      "available as verified computation. "
-                                      "Pass verified = True.")
-        return verify.legacy_verified_maximal_cusp_area_matrix(
-            manifold, bits_prec=bits_prec)
-    if method in ['trigDependent', 'trigDependentTryCanonize']:
-        if method == 'trigDependentTryCanonize':
-            manifold = manifold.copy()
-            manifold.canonize()
-
-        return triangulation_dependent_cusp_area_matrix(
-            manifold, bits_prec=bits_prec, verified=verified)
-
-    raise ValueError("method passed to cusp_area_matrix must be "
-                       "'trigDependent', 'trigDependentTryCanonize', "
-                       "or 'maximal'.")
-
+from .cusps.cusp_area_matrix import cusp_area_matrix
 
 Manifold.cusp_area_matrix = cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix
 
-from .verify import cusp_areas as verify_cusp_areas
+from .cusps import cusp_areas_from_matrix
 
 
 def cusp_areas(manifold, policy='unbiased',
@@ -417,10 +321,9 @@ def cusp_areas(manifold, policy='unbiased',
         method=method, verified=verified, bits_prec=bits_prec)
 
     if policy == 'unbiased':
-        return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
+        return cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix(m)
     else:
-        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
-
+        return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
@@ -541,22 +444,35 @@ ManifoldHP.cusp_translations = cusp_translations
 def complex_volume(manifold, verified_modulo_2_torsion=False,
                    bits_prec=None):
     """
-    Returns the complex volume, i.e.
-    volume + i 2 pi^2 (chern simons)
+    Returns the complex volume.
 
-    >>> M = Manifold('5_2')
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.82812209 - 3.02412838*I
-    >>> c = M.chern_simons()
-    >>> M.dehn_fill((1,2))
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.22671790 + 1.52619361*I
-    >>> M = Manifold("3_1")
-    >>> cvol = M.complex_volume()
-    >>> cvol.real() # doctest: +NUMERIC6
-    0
-    >>> cvol.imag() # doctest: +NUMERIC6
-    -1.64493407
+    The complex volume is
+
+        volume + i Chern-Simons
+
+    and defined modulo i pi^2.
+
+        >>> M = Manifold('5_2')
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.82812209 - 3.02412838*I
+
+    Note that M.chern_simons() normalizes the Chern-Simons
+    invariant by dividing it by 2 pi^2 = 19.7392... ::
+
+        >>> M.chern_simons() # doctest: +NUMERIC6
+        -0.153204133297152
+
+    More examples::
+
+        >>> M.dehn_fill((1,2))
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.22671790 + 1.52619361*I
+        >>> M = Manifold("3_1")
+        >>> cvol = M.complex_volume()
+        >>> cvol.real() # doctest: +NUMERIC6
+        0
+        >>> cvol.imag() # doctest: +NUMERIC6
+        -1.64493407
 
     If no cusp is filled or there is only one cusped (filled or
     unfilled), the complex volume can be verified up to multiples

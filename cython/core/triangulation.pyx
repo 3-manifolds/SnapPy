@@ -424,7 +424,7 @@ cdef class Triangulation():
                                'degree' : 2}
         return new_tri
 
-    def is_orientable(self):
+    def is_orientable(self) -> bool:
         """
         Return whether the underlying 3-manifold is orientable.
 
@@ -590,7 +590,7 @@ cdef class Triangulation():
     def with_hyperbolic_structure(self):
         """
         Add a (possibly degenerate) hyperbolic structure, turning the
-        Triangulation into a Manifold.
+        :class:`Triangulation` into a :class:`Manifold`.
 
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
@@ -2275,9 +2275,9 @@ cdef class Triangulation():
                                "the homology presentation matrix")
         return AbelianGroup(relations)
 
-    def homology(self):
+    def homology(self) -> AbelianGroup:
         """
-        Returns an AbelianGroup representing the first integral
+        Returns an :class:`AbelianGroup` representing the first integral
         homology group of the underlying (Dehn filled) manifold.
 
         >>> M = Triangulation('m003')

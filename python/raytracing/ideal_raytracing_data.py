@@ -5,7 +5,7 @@ from .. import Triangulation
 from ..matrix import make_matrix, make_vector
 
 from ..snap.mcomplex_base import *
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import *
+from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
 from ..geometric_structure import add_r13_planes_to_tetrahedra
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13

@@ -27,6 +27,23 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.2 (??? 2024):
+
+  - A method :meth:`length_spectrum_iter <snappy.Manifold.length_spectrum_iter>`
+    which uses an alternative algorithm, supports verified computations and
+    is significantly faster in some cases.
+
+  - :meth:`isometry_signature <snappy.Manifold.isometry_signature>` now also
+    works for closed manifolds.
+
+  - :meth:`inside_view <snappy.Manifold.inside_view>` shows the user as a paper
+    plane or eye ball. Also adding button to geodesics window to put camera
+    onto a geodesic.
+
+  - New algorithm to maximal cusp area matrix which is faster and more robust
+    (Example:
+    :meth:`Manifold("otet10_00027").cusp_area_matrix(method='maximal') <snappy.Manifold.cusp_area_matrix>`).
+
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`

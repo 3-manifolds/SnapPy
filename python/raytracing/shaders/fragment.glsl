@@ -182,6 +182,15 @@ layout (std140) uniform additionalHorospheres
 
 #endif
 
+#if defined(has_edge_midpoints)
+layout (std140) uniform edgeMidpoints
+{
+    vec4 edgeMidpointVec[6 * ##num_tets##];
+};
+
+uniform float edgeMidpointRadiusParam;
+#endif
+
 // cosh(r)^2 where r is the radius of the sphere
 // about the center of the tetrahedron.
 uniform float insphereRadiusParams[##num_tets##];
@@ -294,6 +303,7 @@ const int object_type_elevation_exit        = 12;
 const int object_type_geodesic_tube         = 13;
 const int object_type_additional_horosphere = 14;
 const int object_type_eyeball               = 15;
+const int object_type_edge_midpoint         = 16;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -655,6 +665,13 @@ normalForRayHit(RayHit ray_hit)
     }
 #endif
 
+#if defined(has_edge_midpoints)
+    if (ray_hit.object_type == object_type_edge_midpoint) {
+	int index = 6 * ray_hit.tet_num + ray_hit.object_index;
+	return normalForSphere(ray_hit.ray.point, edgeMidpointVec[index]);
+    }
+#endif
+
 #endif
 
     if(ray_hit.object_type == object_type_edge_fan ||
@@ -896,6 +913,23 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
             }
         }
     }
+
+#if defined(has_edge_midpoints)
+    {
+	for (int edge = 0; edge < 6; edge++) {
+	    int index = 6 * ray_hit.tet_num + edge;
+	    float p = distParamsForSphereIntersection(
+		ray_hit.ray,
+		edgeMidpointVec[index],
+		edgeMidpointRadiusParam).x;
+	    if (p < smallest_p) {
+		smallest_p = p;
+		ray_hit.object_type = object_type_edge_midpoint;
+		ray_hit.object_index = edge;
+	    }
+	}
+    }
+#endif
 
 #if defined(num_geodesic_segments) && num_geodesic_segments > 0
     for (int index = geodesicOffsets[ray_hit.tet_num];
@@ -1308,6 +1342,13 @@ material_params(RayHit ray_hit)
         result.diffuse = vec3(0.7, 0.7, 0.7);
         result.ambient = 0.8 * result.diffuse;
 #endif
+    }
+#endif
+
+#if defined(has_edge_midpoints)
+    if (ray_hit.object_type == object_type_edge_midpoint) {
+        result.diffuse = vec3(0.8,0.8,0.3);
+        result.ambient = 0.5 * result.diffuse;
     }
 #endif
 

@@ -1,4 +1,5 @@
-from .cusp_cross_section import RealCuspCrossSection, IncompleteCuspError
+from .exceptions import IncompleteCuspError
+from .real_cusp_cross_section import RealCuspCrossSection
 from .vertices import scale_vertices_from_horotriangles
 from .. import add_r13_geometry
 

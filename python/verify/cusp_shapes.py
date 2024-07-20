@@ -1,4 +1,4 @@
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
 from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['NonorientableManifoldError', 'compute_cusp_shapes']

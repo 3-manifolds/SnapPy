@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 10.1, 10.2, latest]
+        version: [9.3, 9.4, 9.5, 9.6, 9.7, 9.8, 10.1, 10.2, 10.3, latest]
 
     container:
       image: sagemath/sagemath:${{ matrix.version }}
@@ -20,7 +20,7 @@ jobs:
         run: sage --version
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install PLink
         run:
@@ -55,7 +55,7 @@ jobs:
           cd /__w/SnapPy/SnapPy/doc_src
           sage -python -m sphinx -b html -E -d _build/doctrees . _build/doc
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: doc
           path: /__w/SnapPy/SnapPy/doc_src/_build/doc/*

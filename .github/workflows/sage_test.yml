@@ -57,5 +57,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: doc
+          name: doc-${{ matrix.version }}
           path: /__w/SnapPy/SnapPy/doc_src/_build/doc/*

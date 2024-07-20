@@ -19,6 +19,9 @@ jobs:
         env:
           # Skip Python 32 bit Linux, and PyPy
           CIBW_ENVIRONMENT: SNAPPY_ALWAYS_BUILD_CYOPENGL=True
+          CIBW_ENVIRONMENT_MACOS: >
+            SNAPPY_ALWAYS_BUILD_CYOPENGL=True
+            MACOSX_DEPLOYMENT_TARGET=10.12
           CIBW_BUILD: "cp312-*"
           CIBW_SKIP: "*-manylinux_i686 *musllinux* pp*"
           CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel

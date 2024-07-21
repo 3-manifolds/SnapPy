@@ -1,32 +1,14 @@
 from ..sage_helper import _within_sage
 from ..exceptions import InsufficientPrecisionError
+from ..math_basics import is_RealIntervalFieldElement, is_ComplexIntervalFieldElement
 
 import math
 
 if _within_sage:
     from sage.all import gcd
-
-    from sage.rings.real_mpfi import is_RealIntervalFieldElement
-    from sage.rings.complex_interval import is_ComplexIntervalFieldElement
-
-    # python's sqrt only work for floats
-    # They would fail or convert to float losing precision
-    from sage.all import sqrt
 else:
-    try:
-        # Python 3 has gcd in math
-        from math import gcd
-    except ImportError:
-        from fractions import gcd
-
-    # Otherwise, define our own sqrt which checks whether
-    # the given type defines a sqrt method and fallsback
-    # to python's log and sqrt which has the above drawback of
-    # potentially losing precision.
-    def sqrt(x):
-        if hasattr(x, 'sqrt'):
-            return x.sqrt()
-        return math.sqrt(x)
+    # Python 3 has gcd in math
+    from math import gcd
 
 # Reject computing short slopes if intervals for translations
 # are too wide (error is more than 1%).
@@ -66,34 +48,31 @@ def translations_from_cusp_shape_and_area(
 
     if kernel_convention:
         inv_cusp_shape = 1 / cusp_shape.conjugate()
-        scale = sqrt(cusp_area / _imag(inv_cusp_shape))
+        scale = (cusp_area / _imag(inv_cusp_shape)).sqrt()
         return (scale * inv_cusp_shape, scale)
     else:
-        scale = sqrt(cusp_area / _imag(cusp_shape))
+        scale = (cusp_area / _imag(cusp_shape)).sqrt()
         return (scale, cusp_shape * scale)
-
 
 def short_slopes_from_translations(translations, length=6):
 
     m_tran, l_tran = translations
 
-    if _within_sage:
-        if is_ComplexIntervalFieldElement(m_tran):
-            raise Exception("Meridian translation expected to be real")
-        if is_RealIntervalFieldElement(l_tran):
-            raise Exception("Longitude translation expected to be complex")
+    if is_ComplexIntervalFieldElement(m_tran):
+        raise Exception("Meridian translation expected to be real")
+    if is_RealIntervalFieldElement(l_tran):
+        raise Exception("Longitude translation expected to be complex")
 
-        is_interval_1 = is_RealIntervalFieldElement(m_tran)
-        is_interval_2 = is_ComplexIntervalFieldElement(l_tran)
+    is_interval_1 = is_RealIntervalFieldElement(m_tran)
+    is_interval_2 = is_ComplexIntervalFieldElement(l_tran)
 
-        if is_interval_1 != is_interval_2:
-            raise Exception("Mismatch of non-intervals and intervals.")
+    if is_interval_1 != is_interval_2:
+        raise Exception("Mismatch of non-intervals and intervals.")
 
-        if is_interval_1:
-            return _verified_short_slopes_from_translations(translations, length)
+    if is_interval_1:
+        return _verified_short_slopes_from_translations(translations, length)
 
     return _unverified_short_slopes_from_translations(translations, length)
-
 
 def _unverified_short_slopes_from_translations(translations, length=6):
     m_tran, l_tran = translations
@@ -118,7 +97,7 @@ def _unverified_short_slopes_from_translations(translations, length=6):
         max_real_range_sqr = length ** 2 - _imag(total_l_tran) ** 2
 
         if max_real_range_sqr >= 0:
-            max_real_range = sqrt(max_real_range_sqr)
+            max_real_range = max_real_range_sqr.sqrt()
 
             if l == 0:
                 min_m = 1
@@ -183,7 +162,7 @@ def _verified_short_slopes_from_translations(translations, length=6):
                 (- total_l_tran.real() + max_real_range) / m_tran)
 
             for m in range(min_m, max_m + 1):
-                if gcd(m, l) == 1:
+                if gcd(m, l) in [+1, -1]:
                     result.append((m, l))
 
     return result

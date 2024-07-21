@@ -9,7 +9,7 @@ from ..exceptions import NonorientableManifoldError
 
 def compute_cusp_shapes(manifold, verified, bits_prec=None):
     """
-    Compute verified cusp shapes (following the SnapPea kernel convention,
+    Compute cusp shapes. Following the SnapPea kernel convention,
     it returns the conjugate of the quotient of the translations
     corresponding to the longitude and meridian for each cusp.
 

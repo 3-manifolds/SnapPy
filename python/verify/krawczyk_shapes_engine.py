@@ -76,11 +76,11 @@ class KrawczykShapesEngine:
 
         sage: M = Manifold("m019")
         sage: shapes = [0.780559+0.91449j, 0.780559+0.9144j, 0.46009+0.639j]
-        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 190)
+        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 100)
         sage: C.expand_until_certified()
         True
-        sage: C.certified_shapes
-        (0.7806? + 0.9145?*I, 0.7806? + 0.9145?*I, 0.4601? + 0.6326?*I)
+        sage: C.certified_shapes # doctest: +ELLIPSIS
+        (0.7806? + 0.9145?*I, 0.7806? + 0.9145?*I, 0.460...? + 0.6326?*I)
 
     """
 

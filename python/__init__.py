@@ -7,7 +7,9 @@ from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,
                      AlternatingKnotExteriors, NonalternatingKnotExteriors,
                      pari)
-from .exceptions import SnapPeaFatalError, InsufficientPrecisionError
+from .exceptions import (SnapPeaFatalError,
+                         InsufficientPrecisionError,
+                         NonorientableManifoldError)
 from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
@@ -499,7 +501,6 @@ def complex_volume(manifold, verified_modulo_2_torsion=False,
 
     return manifold._complex_volume()
 
-
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
@@ -510,7 +511,6 @@ drilling._add_methods(ManifoldHP, high_precision=True)
 try:
     from .gui import ViewerWindow
     from .raytracing.inside_viewer import InsideViewer
-    from .raytracing.inside_viewer import NonorientableUnsupportedError
     from .raytracing import cohomology_fractal
 except ImportError as e:
     InsideViewer = None
@@ -550,7 +550,7 @@ def manifold_inside_view(self, cohomology_class=None, geodesics=[]):
         "(original error : %s)" % _importErrorRaytracing)
 
     if not self.is_orientable():
-        raise NonorientableUnsupportedError(self)
+        raise NonorientableManifoldError("Manifold.inside_view", self)
 
     weights, cohomology_basis, cohomology_class = (
         cohomology_fractal.compute_weights_basis_class(

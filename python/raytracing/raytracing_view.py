@@ -12,16 +12,7 @@ from ..CyOpenGL import SimpleImageShaderWidget
 from ..matrix import make_vector, make_matrix
 
 import math
-__all__ = ['RaytracingView', 'NonorientableUnsupportedError']
-
-
-class NonorientableUnsupportedError(RuntimeError):
-    def __init__(self, mfd):
-        RuntimeError.__init__(
-            self,
-            ("Inside view for non-orientable manifolds such as %s is not "
-             "supported yet.") % mfd.name())
-
+__all__ = ['RaytracingView']
 
 _constant_uniform_bindings = {
     'multiScreenShot' : ('int', 0),

@@ -12,7 +12,7 @@ from ..hyperboloid.distances import distance_r13_point_line
 from ..hyperboloid.line import R13Line
 from ..SnapPy import list_as_word, inverse_list_word
 from ..math_basics import lower # type: ignore
-from ..exceptions import InsufficientPrecisionError
+from ..exceptions import InsufficientPrecisionError, NonorientableManifoldError
 
 import heapq
 
@@ -26,7 +26,8 @@ def length_spectrum(manifold,
                     ) -> Sequence[LengthSpectrumGeodesicInfo]:
     """
     Returns an iterator for the closed geodesics sorted by real length (sorted
-    by lower bound of real length when ``verified = True``)::
+    by lower bound of real length when ``verified = True``) for an orientable
+    manifold::
 
         >>> from snappy import Manifold
         >>> M = Manifold("m202(3,4)(0,0)")
@@ -173,6 +174,10 @@ def length_spectrum(manifold,
 
 
     """
+
+    if not manifold.is_orientable():
+        raise NonorientableManifoldError(
+            "Manifold.length_spectrum_iter", manifold)
 
     # Triangulation with necessary geometric structures
     mcomplex : Mcomplex = mcomplex_for_len_spec(

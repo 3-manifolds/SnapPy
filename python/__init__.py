@@ -508,66 +508,10 @@ from . import drilling
 drilling._add_methods(Manifold)
 drilling._add_methods(ManifoldHP, high_precision=True)
 
-try:
-    from .gui import ViewerWindow
-    from .raytracing.inside_viewer import InsideViewer
-    from .raytracing import cohomology_fractal
-except ImportError as e:
-    InsideViewer = None
-    _importErrorRaytracing = str(e)
+from . import raytracing
 
-
-def manifold_inside_view(self, cohomology_class=None, geodesics=[]):
-    """
-    Show raytraced inside view of hyperbolic manifold. See
-    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_
-    and `demo video <https://youtu.be/CAERhmUCkRs>`_.
-
-        >>> M = Manifold("m004")
-        >>> M.inside_view() #doctest: +CYMODERNOPENGL
-
-    Or show the cohomology fractal:
-
-        >>> M = Manifold("m004")
-        >>> M.inside_view(cohomology_class = 0) #doctest: +CYMODERNOPENGL
-
-    The cohomology class in H^2(M, bd M; R) producing the cohomology
-    fractal can be specified as a cocycle or using an automatically computed
-    basis (of, say, length ``n``). Thus, ``cohomology_class`` can be one of
-    the following.
-
-    - An integer ``i`` between 0 and ``n`` - 1 to pick the ``i``-th basis
-      vector.
-    - An array of length ``n`` specifying the cohomology class as linear
-      combination of basis vectors.
-    - A weight for each face of each tetrahedron.
-
-    """
-
-    if InsideViewer is None:
-        raise RuntimeError("Raytraced inside view not imported; "
-        "Tk or CyOpenGL is probably missing "
-        "(original error : %s)" % _importErrorRaytracing)
-
-    if not self.is_orientable():
-        raise NonorientableManifoldError("Manifold.inside_view", self)
-
-    weights, cohomology_basis, cohomology_class = (
-        cohomology_fractal.compute_weights_basis_class(
-            self, cohomology_class))
-
-    return ViewerWindow(
-        InsideViewer,
-        self,
-        title="Inside view of %s" % self.name(),
-        weights=weights,
-        cohomology_basis=cohomology_basis,
-        cohomology_class=cohomology_class,
-        geodesics=geodesics)
-
-
-Manifold.inside_view = manifold_inside_view
-ManifoldHP.inside_view = manifold_inside_view
+Manifold.inside_view = raytracing.inside_view
+ManifoldHP.inside_view = raytracing.inside_view
 
 
 def all_translations(self, verified=False, bits_prec=None):

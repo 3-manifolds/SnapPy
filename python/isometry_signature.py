@@ -2,7 +2,7 @@ from . import Triangulation
 from . import verify
 from .sage_helper import _within_sage
 from .math_basics import is_RealIntervalFieldElement
-from .exceptions import InsufficientPrecisionError
+from .exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from .geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
 
 def isometry_signature(
@@ -98,6 +98,10 @@ def isometry_signature_closed(
         interval_bits_precs,
         exact_bits_prec_and_degrees,
         verbose):
+
+    if not manifold.is_orientable():
+        raise NonorientableManifoldError(
+            "Manifold.isometry_signature (closed case)", manifold)
 
     if verbose:
         print("Step 1: Finding shortest geodesics")

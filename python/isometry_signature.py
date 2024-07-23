@@ -9,7 +9,7 @@ def isometry_signature(
     manifold, of_link=False, verified=False,
     interval_bits_precs=verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
-    verbose=False):
+    verbose=False) -> str:
     """
     The isomorphism signature of the canonical retriangulation. This is a
     complete invariant of the isometry type of a hyperbolic 3-manifold and
@@ -69,8 +69,6 @@ def isometry_signature(
             exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
             verbose=verbose)
 
-        raise ValueError('isometry_signature needs all cusps to be complete')
-
 def isometry_signature_cusped(
         manifold, *,
         of_link,
@@ -88,7 +86,7 @@ def isometry_signature_cusped(
         verbose=verbose)
 
     if not retrig:
-        return None
+        raise RuntimeError("Could not compute canonical retriangulation.")
 
     return retrig.triangulation_isosig(decorated=of_link,
                                        ignore_cusp_ordering=True,
@@ -109,8 +107,6 @@ def isometry_signature_closed(
         bits_precs=interval_bits_precs,
         verified=verified,
         verbose=verbose)
-    if shortest_geodesics is None:
-        return None
 
     if verbose:
         print("Step 2: Drill each geodesic for potential isometry signatures")
@@ -127,9 +123,6 @@ def isometry_signature_closed(
             verified=verified,
             verbose=verbose)
 
-        if drilled_manifold is None:
-            return None
-
         if not all(drilled_manifold.cusp_info('complete?')):
             drilled_manifold = drilled_manifold.filled_triangulation()
 
@@ -143,7 +136,9 @@ def isometry_signature_closed(
             verbose=verbose)
 
         if retrig is None:
-            return None
+            raise RuntimeError(
+                "Could not compute canonical retriangulation of "
+                "drilled manifold. Geodesic was: %s." % shortest_geodesic)
 
         isosig = retrig.triangulation_isosig(decorated=False)
 
@@ -159,6 +154,9 @@ def isometry_signature_closed(
 
 def find_shortest_geodesics_precisions(
         manifold, *, bits_precs, verified, verbose):
+
+    err = ValueError("bits_precs was empty.")
+    
     for bits_prec in bits_precs:
         if verbose:
             print("Using precision %d to find shortest geodesics" % bits_prec)
@@ -168,9 +166,13 @@ def find_shortest_geodesics_precisions(
                 bits_prec=bits_prec,
                 verified=verified,
                 verbose=verbose)
-        except (InsufficientPrecisionError, ValueError):
-            pass
-    return None
+        except (InsufficientPrecisionError,
+                ValueError,
+                RuntimeError # from Manifold.tetrahedra_shapes
+                ) as e:
+            err = e
+
+    raise err
 
 def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
     length_spectrum = manifold.length_spectrum_iter(
@@ -227,7 +229,7 @@ def compute_cutoff(systole):
     if is_RealIntervalFieldElement(l):
         is_int, f_int = f.is_int()
         if not is_int:
-            raise Exception("Not an integer")
+            raise Exception("Not an integer.")
     else:
         f_int = f
 
@@ -236,17 +238,26 @@ def compute_cutoff(systole):
 def drill_manifold_precisions(
         manifold, word, *,
         bits_precs, verified, verbose):
+
+    err = ValueError("bits_precs was empty.")
+
     for bits_prec in bits_precs:
         try:
+            if verbose:
+                print("Drilling with precision %d" % bits_prec)
+
             return manifold.drill_word(
                 word,
                 bits_prec=bits_prec,
                 verified=verified,
                 verbose=verbose)
-        except (InsufficientPrecisionError, ValueError, WordAppearsToBeParabolic):
-            pass
+        except (InsufficientPrecisionError,
+                ValueError,
+                RuntimeError, # from Manifold.tetrahedra_shapes
+                WordAppearsToBeParabolic) as e:
+            err = e
 
-    return None
+    raise err
 
 def compute_meridian_slopes(isosig, tri):
     isosig_tri = Triangulation(isosig, remove_finite_vertices=False)

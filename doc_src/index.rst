@@ -36,6 +36,16 @@ News
   - :meth:`isometry_signature <snappy.Manifold.isometry_signature>` now also
     works for closed manifolds.
 
+  - It is now safe to call::
+
+        >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
+
+    to determine whether M and N are isometric hyperbolic manifolds since
+    :meth:`isometry_signature <snappy.Manifold.isometry_signature>` no longer
+    fails silently returning ``None`` but raises an exception if the signature
+    could not be computed.
+    
+
   - :meth:`inside_view <snappy.Manifold.inside_view>` shows the user as a paper
     plane or eye ball. Also adding button to geodesics window to put camera
     onto a geodesic.

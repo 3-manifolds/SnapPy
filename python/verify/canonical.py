@@ -489,7 +489,10 @@ def _verified_canonical_retriangulation(
             try:
                 return interval_checked_canonical_triangulation(
                     Mcopy, interval_bits_prec)
-            except (RuntimeError, exceptions.NumericalVerifyError) as e:
+            except (RuntimeError,
+                    ValueError, # Manifold.tetrahedra_shapes,
+                                # KrawczykShapesEngine.log_gluing_LHSs
+                    exceptions.NumericalVerifyError) as e:
                 if verbose:
                     _print_exception(e)
                     if isinstance(e, exceptions.NumericalVerifyError):

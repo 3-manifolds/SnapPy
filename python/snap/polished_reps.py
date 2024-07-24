@@ -303,8 +303,8 @@ def polished_holonomy(manifold,
                       dec_prec=None,
                       match_kernel=True):
     """
-    Return the fundamental group of M equipt with a high-precision version of the
-    holonomy representation::
+    Return the fundamental group of M equipped with a high-precision version of
+    the holonomy representation::
 
         sage: M = Manifold('m004')
         sage: G = M.polished_holonomy()

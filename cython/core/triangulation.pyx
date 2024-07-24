@@ -2899,120 +2899,213 @@ cdef class Triangulation():
                              ignore_filling_orientations : bool = False,
                              ignore_orientation : bool = True) -> str:
         """
-        Returns a compact text representation of the triangulation, called a
-        "decorated isomorphism signature"
+        Returns the "(decorated) isomorphism signature", a compact text
+        representation of the triangulation::
 
-        >>> T = Triangulation('m004')
-        >>> T.triangulation_isosig()
-        'cPcbbbiht_BaCB'
+          >>> T = Triangulation('m004')
+          >>> T.triangulation_isosig()
+          'cPcbbbiht_BaCB'
 
-        You can use this string to recreate an isomorphic triangulation later
+        This string can be used later to recreate an isomorphic triangulation::
 
-        >>> A = Triangulation('y233')
-        >>> A.triangulation_isosig()
-        'hLMzMkbcdefggghhhqxqhx_BaaB'
-        >>> B = Triangulation('hLMzMkbcdefggghhhqxqhx_BaaB')
-        >>> A == B
-        True
-
-        By default, the returned string encodes the peripheral curves (and
-        slopes of Dehn-fillings if any are present), but you can request
-        only the "isomorphism signature" which can be given to
-        `Regina <https://regina-normal.github.io/>`_.
-
-          >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
-          >>> isosig = E.triangulation_isosig(decorated = False); isosig
-          'dLQacccjsnk'
-          >>> F = Triangulation(isosig)
-          >>> E.isomorphisms_to(F)[1]
-          0 -> 0
-          [1 18]
-          [0  1]
-          Extends to link
-          >>> E.triangulation_isosig()
-          'dLQacccjsnk_BaRsB'
-          >>> F.triangulation_isosig()
-          'dLQacccjsnk_BaaB'
-          >>> G = Triangulation('dLQacccjsnk_BaRsB')
-          >>> E.isomorphisms_to(G)[0]
-          0 -> 0
-          [1 0]
-          [0 1]
-          Extends to link
-
-        If you do not care about the indexing of the cusps when using a
-        decorated signature, use ``ignore_cusp_ordering``
-
-          >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
-          >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
-          >>> isosig
-          'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
-          >>> N = Manifold(isosig).filled_triangulation()
-          >>> N.is_isometric_to(M.filled_triangulation())
+          >>> U = Triangulation('cPcbbbiht_BaCB')
+          >>> T == U
           True
 
-        If you do not care about the orientations of the peripheral curves,
-        use ``ignore_curve_orientations``
+        The isomorphism signature comes in two flavors controlled by the
+        ``decorated`` flag.
 
-          >>> M = Manifold("L6a1")
+        **Undecorated isomorphism signature**
+
+        The undecorated isomorphism signature is a complete invariant of the
+        (oriented) triangulation up to combinatorial isomorphism::
+
+            >>> T = Triangulation('m015')
+            >>> T.triangulation_isosig(decorated=False)
+            'dLQbcccdero'
+
+        The isomorphism signature was introduced in
+        `Burton '11 <http://arxiv.org/abs/1110.6080>`_ and canonizes and
+        generalizes the ealier dehydration string by
+        `Callahan, Hildebrand and Weeks '99
+        <https://doi.org/10.1090/S0025-5718-99-01036-4>`_.
+        The resulting string can also be given to
+        `Regina <https://regina-normal.github.io/>`_'s
+        ``Triangulation3.fromIsoSig``.
+
+        By default, the orientation (if orientable) is ignored. More
+        precisely, it computes the string for both orientations if orientable
+        and uses the lexicographically smaller string::
+
+            >>> T = Triangulation('m015')
+            >>> T.triangulation_isosig(decorated=False)
+            'dLQbcccdero'
+            >>> T.reverse_orientation()
+            >>> T.triangulation_isosig(decorated=False)
+            'dLQbcccdero'
+
+        By specifying ``ignore_orientation = False``, the result
+        encodes the orientation (if orientable) so the result is different
+        if the triangulation is chiral::
+
+            >>> T = Triangulation('m015')
+            >>> T.triangulation_isosig(decorated=False, ignore_orientation=False)
+            'dLQbcccdero'
+            >>> T.reverse_orientation()
+            >>> T.triangulation_isosig(decorated=False, ignore_orientation=False)
+            'dLQbccceekg'
+
+        **Decorated isomorphism signature (default)**
+
+        SnapPy can decorate the isomorphism signature to include the following
+        peripheral information in a canonical way (that is invariant under
+        the action by combinatorial isomorphisms of the triangulation):
+
+        #. Indexing of the cusps (that is, ideal vertices).
+
+           * Included by default.
+             Can be suppressed with ``ignore_cusp_ordering = True``.
+
+        #. Peripheral curves (aka meridian and longitude, up to homotopy).
+
+           * Included by default.
+             Can be suppressed with ``ignore_curves = True``.
+           * By default, the decoration encodes the oriented peripheral curves.
+             By specifying ``ignore_curve_orientations = True``, it encodes
+             the unoriented peripheral curves instead.
+
+        #. Dehn-fillings (if present).
+
+           * We say that the Dehn-filling coefficients :math:`(m,l)` and
+             :math:`(-m, -l)` correspond to two different oriented
+             Dehn-fillings but the same unoriented Dehn-filling.
+           * By default, the decoration encodes the oriented Dehn-fillings.
+             By specifying ``ignore_filling_orientations = True``, the
+             decoration encodes the unoriented Dehn-fillings.
+             That is, it normalizes the coefficients by picking a canonical
+             pair among :math:`(m,l)` and :math:`(-m,-l)`.
+
+        Details of the encoding are explained in the
+        `SnapPy source code <https://github.com/3-manifolds/SnapPy/blob/master/python/decorated_isosig.py>`_.
+
+        **Example**
+
+        Let us consider the links ``9^2_34`` and ``L9a21``. Note that we use
+        :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+        to make the following examples say something intrinsic about the
+        hyperbolic manifold::
+
+          >>> from snappy import Manifold
+          >>> M = Manifold('9^2_34').canonical_retriangulation()
+          >>> N = Manifold('L9a21').canonical_retriangulation()
+
+        The decorated isosig recovers the entire peripheral information faithfully
+        (including orientation, see below)::
+
           >>> M.triangulation_isosig()
-          'gLLAQcdeefffdopuado_BabbBaab'
-          >>> isosig = M.triangulation_isosig(decorated = True, ignore_curve_orientations = True)
-          >>> isosig
-          'gLLAQcdeefffdopuado_babbbaab'
-          >>> N = Manifold(isosig)
-          >>> M.isomorphisms_to(N)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_baBabbbBbC'
+          >>> K = Triangulation('oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_baBabbbBbC')
+          >>> M.isomorphisms_to(K)
           [0 -> 0  1 -> 1
-          [-1 0]  [-1 0]
-          [ 0 1]  [ 0 1]
-          Extends to link, 0 -> 0  1 -> 1
-          [1  0]  [1  0]
-          [0 -1]  [0 -1]
+          [1 0]   [1 0]
+          [0 1]   [0 1]
           Extends to link]
 
-        By default, the isomorphism signature does not capture the orientation
-        of an orientable triangulation. If you specify
-        ``ignore_orientation = False``, the isomorphism signature for an oriented
-        triangulation and its mirror image will be different if the
-        triangulation is cheiral.
+        The two links have isometric complements::
 
-          >>> M = Manifold("m006")
-          >>> M.triangulation_isosig(decorated = False, ignore_orientation = False)
-          'dLQacccjnjs'
-          >>> M.reverse_orientation()
-          >>> M.triangulation_isosig(decorated = False, ignore_orientation = False)
-          'dLQacccnsnk'
+          >>> M.triangulation_isosig(decorated=False)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo'
+          >>> N.triangulation_isosig(decorated=False)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo'
 
-        Note: the decorated triangulation isosig captures the orientation if
-        either ``ignore_orientation = False`` or if both ``ignore_curves = False``
-        and ``ignore_curve_orientations = False``.
+        However, the complements have different handedness::
 
-        Note that a decorated triangulation isosig with the default values
-        ``ignore_orientation = True`` but ``ignore_curve_orientations = False``
-        still captures the orientations of the triangulation through the
-        peripheral curves.
+          >>> M.triangulation_isosig(decorated=False,ignore_orientation=False)
+          'oLLzLPwzQQccdeghjiiklmnmnnuvuvvavovvffffo'
+          >>> N.triangulation_isosig(decorated=False,ignore_orientation=False)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo'
 
-          >>> M = Manifold("m006")
-          >>> M.triangulation_isosig()
-          'dLQacccjnjs_aBbB'
-          >>> M.reverse_orientation()
-          >>> M.triangulation_isosig()
-          'dLQacccjnjs_aBBb'
+        Also, the cusps/components of the link are indexed differently::
 
-        The code has been copied from `Regina <https://regina-normal.github.io/>`_ where
-        the corresponding method is called ``isoSig``.
+          >>> M.triangulation_isosig(ignore_curves=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_ba'
+          >>> N.triangulation_isosig(ignore_curves=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_ab'
 
-        Unlike dehydrations for 3-manifold triangulations, an
-        isomorphism signature uniquely determines a triangulation up
-        to combinatorial isomorphism.  That is, two triangulations of
-        3-dimensional manifolds are combinatorially isomorphic if and
-        only if their isomorphism signatures are the same string.  For
-        full details, see `Simplification paths in the Pachner graphs
-        of closed orientable 3-manifold triangulations, Burton, 2011
-        <http://arxiv.org/abs/1110.6080>`_.
+        Ignoring the indexing, we also see that the oriented merdians and
+        longitudes do not match::
 
-        For details about how the peripheral decorations work, see
-        the SnapPy source code.
+          >>> M.triangulation_isosig(ignore_cusp_ordering=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_bBbCBabb'
+          >>> N.triangulation_isosig(ignore_cusp_ordering=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_BbbCbabb'
+
+        However, they are the same links (ignoring indexing and orientation)::
+
+          >>> M.triangulation_isosig(ignore_cusp_ordering=True, ignore_curve_orientations=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_bBBcbabb'
+          >>> N.triangulation_isosig(ignore_cusp_ordering=True, ignore_curve_orientations=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo_bBBcbabb'
+
+        Let us create two surgery presentations from the links (note that we
+        fill after
+        :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+        since it rejects Dehn-fillings)::
+
+          >>> M.dehn_fill((4, 5),0)
+          >>> N.dehn_fill((4,-5),1)
+
+        They are equivalent surgery presentations (of the same manifold)::
+
+          >>> M.triangulation_isosig(
+          ...         ignore_cusp_ordering=True,
+          ...         ignore_curves=True,
+          ...         ignore_filling_orientations=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo(0,0)(1,5)'
+          >>> N.triangulation_isosig(
+          ...         ignore_cusp_ordering=True,
+          ...         ignore_curves=True,
+          ...         ignore_filling_orientations=True)
+          'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo(0,0)(1,5)'
+
+        **Orientation**
+
+        Note that ``ignore_orientation=True`` only applies to the undecorated
+        part of the isomorphism signature. The decoration can still capture the
+        the orientation.
+        More, precisely, the result of :meth:`.triangulation_isosig` depends on
+        the orientation (if the triangulation is orientable and chiral) if one
+        of the following is true:
+
+        #. ``ignore_orientation = False``.
+
+        #. ``decorated = True`` and
+           ``ignore_curves = False`` and
+           ``ignore_filling_orientations = False``.
+
+        In these cases, re-constructing a triangulation from the isomorphism
+        signature yields a triangulation with the same handedness.
+
+        :param decorated: Include peripheral information such as indexing
+                of the cusps, (oriented or unoriented) peripheral curves and
+                (oriented or unoriented) Dehn-fillings.
+        :param ignore_cusp_ordering: Do not encode the indexing of the cusps.
+                Only relevant if ``decorated = True``.
+        :param ignore_curves: Do not encode the peripheral curves.
+                Only relevant if ``decorated = True``.
+                This is new in SnapPy version 3.2.
+                If ``ignore_curves = True``, the result of this method cannot
+                be given to prior versions.
+        :param ignore_curve_orientations: Do not encode the orientations of
+                the peripheral curves.
+                Only relevant if ``decorated = True`` and
+                ``ignore_curves = False``.
+        :param ignore_filling_orientations: Do not encode the orientations
+                of the Dehn-fillings.
+                Only relevant if ``decorated = True``.
+        :param ignore_orientation: Do not encode the orientation of the
+                triangulation in the undecorated part of the triangulation
+                isosig. See above section about orientation.
         """
 
         if self.c_triangulation is NULL:
@@ -3077,22 +3170,22 @@ cdef class Triangulation():
 
         return True
 
-    def symplectic_basis(self, verify=False):
+    def symplectic_basis(self, verify : bool = False):
         """
-        Extend the Neumann-Zagier Matrix to one which is symplectic
+        Extend the Neumann-Zagier matrix to one which is symplectic
+        (up to factors of 2) using oscillating curves, see
+        `Mathews and Purcell '22 <https://arxiv.org/abs/2208.06969>`_.
+        Only accepts triangulations with 1 cusp.
 
-        (up to factors of 2) using oscillating curves. Verify parameter
-        explicitly tests if the resulting matrix is symplectic.  Only
-        accepts triangulations with 1 cusp.
+          >>> M = Manifold("4_1")
+          >>> M.symplectic_basis()
+          [-1  0 -1 -1]
+          [ 2  0 -2  0]
+          [-2 -1 -2 -1]
+          [ 0 -1 -2 -1]
 
-        >>> M = Manifold("4_1")
-        >>> M.symplectic_basis()
-        [-1  0 -1 -1]
-        [ 2  0 -2  0]
-        [-2 -1 -2 -1]
-        [ 0 -1 -2 -1]
 
-        <https://arxiv.org/abs/2208.06969>
+        :param verify: Explicitly test if the resulting matrix is symplectic.
         """
 
         cdef int **c_eqns;

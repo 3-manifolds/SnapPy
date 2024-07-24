@@ -84,8 +84,8 @@ def _canonical_retriangulation(
 
     **Verified computations**
 
-    Note that while the result of this method is combinatorial, the
-    intermediate computation is numerical and can suffer from numerical issues.
+    Note that while the result of this method is combinatorial, some
+    intermediate computations are numerical and can suffer from numerical issues.
     Indeed, this arguably caused the duplicate ``x101`` and ``x103`` pair in the
     census found by `Burton '14 <http://arxiv.org/abs/1311.7615>`_.
 

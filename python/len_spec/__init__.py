@@ -150,12 +150,14 @@ def length_spectrum_alt_gen(manifold,
     the precision will necessarily mean that the order in which the geodesics
     are emitted changes.
 
-    A (constructed) example: let g0, g1 and g2 be geodesics with real lengths
-    1.1, 1.2 and 1.3, respectively. This method could, in theory, list them in
-    the following order and with the following real lengths for the intervals:
-    g2 [1.05, 1.4], g0 [1.09, 1.11], g1 [1.19, 1.21]. Note that the intervals
-    prove that the second emitted geodesic is shorter than the third, but we
-    cannot conclude that the first emitted geodesic is indeed the shortest.
+    A (constructed) example: let :math:`g_0`, :math:`g_1` and :math:`g_2` be
+    geodesics with real lengths 1.1, 1.2 and 1.3, respectively. This method
+    could, in theory, list them in the following order and with the following
+    real lengths for the intervals:
+    :math:`g_2` [1.05, 1.4], :math:`g_0` [1.09, 1.11], :math:`g_1` [1.19, 1.21].
+    Note that the intervals prove that the second emitted geodesic is shorter
+    than the third, but we cannot conclude that the first emitted geodesic is
+    indeed the shortest.
 
     **Verified systole**
 

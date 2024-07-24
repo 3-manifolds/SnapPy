@@ -1625,8 +1625,9 @@ cdef class Manifold(Triangulation):
     def is_two_bridge(self) -> bool:
         """
         If the manifold is the complement of a two-bridge knot or link
-        in S^3, then this method returns (p,q) where p/q is the
-        fraction describing the link.  Otherwise, returns False.
+        in :math:`S^3`, then this method returns :math:`(p,q)` where
+        :math:`p/q` is the fraction describing the link.
+        Otherwise, returns ``False``.
 
         >>> M = Manifold('m004')
         >>> M.is_two_bridge()
@@ -1635,8 +1636,8 @@ cdef class Manifold(Triangulation):
         >>> M.is_two_bridge()
         False
 
-        Note: An answer of 'True' is rigorous, but not the answer
-        'False', as there could be numerical errors resulting in
+        Note: An answer of ``True`` is rigorous, but not the answer
+        ``False``, as there could be numerical errors resulting in
         finding an incorrect canonical triangulation.
         """
         cdef Boolean is_two_bridge

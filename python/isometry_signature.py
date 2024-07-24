@@ -13,49 +13,123 @@ def isometry_signature(
     exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
     verbose=False) -> str:
     """
-    The isomorphism signature of the canonical retriangulation. This is a
-    complete invariant of the isometry type of a hyperbolic 3-manifold and
-    described in more detail `here
-    <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
+    Returns the "isometry signature", a complete invariant of the hyperbolic
+    3-manifold obtained by applying the Dehn-fillings.
+    The isometry signature is always a (decorated) isomorphism signature, see
+    :meth:`.triangulation_isosig`, and was introduced in
+    `Goerner '16 <http://arxiv.org/abs/1502.00383>`_.
 
-        >>> M = Manifold("m125")
-        >>> M.isometry_signature() # Unverified isometry signature
-        'gLLPQccdefffqffqqof'
+    Depending on ``ignore_orientation``, it is a complete invariant of either
+    the oriented (if orientable) or unoriented hyperbolic 3-manifold.
+    If ``of_link = True`` is specified, the signature is decorated by the
+    unoriented peripheral curves (aka meridian and longitude, up to homotopy).
+    If the 3-manifold arises as a link complement, the decorated isometry
+    signature obtained with ``of_link = True`` is a complete invariant of
+    the link.
 
-    When used inside `Sage <http://sagemath.org/>`_ and ``verified = True`` is
-    passed as argument, the verify module will certify the result to be
-    correct::
+    The isometry signature is computed differently based on whether there
+    is at least one unfilled cusp.
+    
+    **Cusped manifolds**
 
-        sage: M = Manifold("m125")
-        sage: M.isometry_signature(verified = True) # Verified isometry signature
-        'gLLPQccdefffqffqqof'
+    If there is at least one unfilled cusped, we are in the cusped case.
 
-    When ``of_link = True`` is specified, the peripheral curves are included in
-    such a way that the result is a complete invariant of a link. In particular,
-    ``isometry_signature(of_link=True)`` is invariant under changing the
-    ordering or orientations of the components or flipping all crossings of a
-    link simultaneously (it passes ``ignore_cusp_order = True,
-    ignore_curve_orientations = True`` to
-    :py:meth:`Manifold.triangulation_isosig`)::
+    Here is an example of two links having isometric (hyperbolic) complements:
 
-        >>> Manifold("5^2_1").isometry_signature(of_link = True)
-        'eLPkbdcddhgggb_baCbbaCb'
-        >>> Manifold("7^2_8").isometry_signature(of_link = True)
-        'eLPkbdcddhgggb_bBcBbaCb'
+      >>> M = Manifold("L5a1")
+      >>> N = Manifold("L7n2")
+      >>> M.isometry_signature()
+      'eLPkbdcddhgggb'
+      >>> N.isometry_signature()
+      'eLPkbdcddhgggb'
 
-    See :py:meth:`verify.verified_canonical_retriangulation` for the
-    additional options.
+    The complements do have opposite handedness though::
+    
+      >>> M.isometry_signature(ignore_orientation=False)
+      'eLPkbdcddxvvcv'
+      >>> N.isometry_signature(ignore_orientation=False)
+      'eLPkbdcddhgggb'
 
-    Note that interval methods cannot verify a canonical retriangulation
-    with non-tetrahedral cells such as in the case of ``m412``, so the following
-    call returns ``None``::
+    We can show that the two links are distinct::
 
-        sage: M = Manifold("m412")
-        sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = []) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
-        Traceback (most recent call last):
-        ...
-        snappy.verify.exceptions.TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: ... < 0
+       >>> M.isometry_signature(of_link = True)
+       'eLPkbdcddhgggb_baCbbaCb'
+       >>> N.isometry_signature(of_link = True)
+       'eLPkbdcddhgggb_bBcBbaCb'
 
+    If we Dehn-fill some cusps, the method uses the filled triangulation.
+    Here, we Dehn-fill the Whitehead link to get the figure-eight knot::
+
+       >>> M.dehn_fill((1,1), 0)
+       >>> M.isometry_signature(of_link = True)
+       'cPcbbbiht_bacb'
+       >>> Manifold("4_1").isometry_signature(of_link = True)
+       'cPcbbbiht_bacb'
+
+    In general, the isometry signature is the isomorphism signature (see
+    :meth:`.triangulation_isosig`) of the canonical
+    retriangulation (see :meth:`.canonical_retriangulation`) of the
+    filled triangulation (see :meth:`.filled_triangulation`)::
+
+       >>> T = M.filled_triangulation().canonical_retriangulation()
+       >>> T.triangulation_isosig(ignore_cusp_ordering = True,
+       ...                        ignore_curve_orientations = True)
+       'cPcbbbiht_bacb'
+
+    **Closed manifolds**
+
+    If all cusps are filled, we are in the closed case. In this case, the
+    isometry signature gives the resulting closed hyperbolic 3-manifold as
+    canonical surgery on a hyperbolic 1-cusped manifold (encoded by its
+    isometry signature). Only orientable manifolds are supported in the closed
+    case.
+
+       >>> M = Manifold("v2000(1,3)")
+       >>> M.isometry_signature()
+       'fLLQcacdedenbxxrr(-7,12)'
+
+    In detail, the isometry signature is computed by first determining the
+    shortest geodesics (more precisely, the geodesics just barely longer
+    than the shortest geodesics). For each such geodesic, consider the
+    1-cusped manifold obtained by drilling the geodesic. Take
+    the isometry signature of that 1-cusped hyperbolic manifold and any
+    surgery coefficients corresponding to the meridian along the drilled
+    geodesic (because of symmetries of the 1-cusped hyperbolic there might
+    several equivalent Dehn-fillings). Pick a canonical isometry signature
+    from these candidates. Further details can be found in an upcoming paper.
+
+    **Verified computations**
+
+    Even though the result is purely combinatorial, some intermediate
+    computations are numerical and can suffer from numerical issues.
+
+    The method can be made verified by passing ``verified = True``::
+
+       sage: M=Manifold("m007(4,1)")
+       sage: M.isometry_signature(verified=True)
+       'eLPkbcdddhggsj(3,1)'
+
+    This method always needs to compute at least one canonical retriangulation.
+    It can take the same arguments as :meth:`.canonical_retriangulation` and
+    passes them to :meth:`.canonical_retriangulation` when computing the
+    verified canonical retriangulation. If the manifold is closed, interval
+    arithmetic is used when finding and drilling the short geodesics.
+
+    :param of_link: Also encode the unoriented peripheral curves.
+            Note that it is not necessary for the manifold to be a link
+            complement to invoke this flag.
+            Only relevant in the cusped case.
+    :param ignore_orientation: Do not encode the orientation of the
+            3-manifold.
+    :param verified: Use verified computation.
+    :param interval_bits_precs: Passed to :meth:`.canonical_retriangulation`
+            and (in the closed case) also used when calling
+            :meth:`.length_spectrum_alt_gen` and :meth:`.drill_word` to
+            find and drill the short geodesics.
+    :param exact_bits_prec_and_degrees: Passed to
+            :meth:`.canonical_retriangulation`.
+    :param verbose: Print information about finding and drilling the short
+            geodesics. Also passed to :meth:`.canonical_retriangulation`.
     """
 
     if any(manifold.cusp_info('complete?')):
@@ -91,7 +165,7 @@ def isometry_signature_cusped(
             raise ValueError(
                 'Could not compute filled triangulation. '
                 'Are the filling coefficients co-prime integers?')
-        
+
     retrig = manifold.canonical_retriangulation(
         verified=verified,
         interval_bits_precs=interval_bits_precs,

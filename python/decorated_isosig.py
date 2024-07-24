@@ -34,15 +34,55 @@ isosig, decorator = di.split('_')
 
 Note: An isosig is an invariant of a triangulation of an *unoriented*
 manifold.  For an amphicheiral manifold M, it can happen that
-Manifold(M.triangulation_isosig()) has the opposite orientation from M
-itself.  The decoration implicitly embeds the preferred orientation of
+Manifold(M.triangulation_isosig(decorated=False)) has the opposite
+orientation from M itself.
+The decoration implicitly embeds the preferred orientation of
 M in the sign of the determinant of the change-of-basis matrices.
 
 Note: If the triangulation has combinatorial symmetries, there can be
 multiple change-of-basis matrices that yield combinatorially
 isomorphic pairs (triangulation, peripheral curves).  In such cases,
 the decoration is the lexicographically first one.
+
+Caveat: We pick the decoration with the lexicographically smallest
+encoding with the following consequence: If we have more 26 cusps, the
+lexicographically smallest permutation might not have the smallest encoding
+and thus might not be the one picked.
+
+Caveat: We drop the trivial permutation from the encoding. Pairs (a,b) of string
+come with the lexicographic ordering. We also obtain a (partial) ordering by
+ordering by a + b. These two orderings are not the same.
+In particular, there is a combinatorial isomorphism from
+Triangulation('L6n1') to
+Triangulation(Triangulation('L6n1').triangulation_isosig(decorated = False))
+that acts on the cusp by the identity perm and, thus, we would expect it to
+be preferred. However,
+Triangulation("L6n1(0,0)(0,0)(0,0)").triangulation_isosig() results in
+'gLMzQbcdefffaelaaai_acbBaabCbbabbBC' which does not use the identity perm.
+
+Caveat: There are de-facto two canonical choices of peripheral curves.
+When calling
+>>> T = Triangulation('ovLMvvPQQQccddlmnijklmnmnlgvfamtvfblhaumx'),
+the SnapPea kernel picks peripheral curves and then orients the manifold
+(see data_to_triangulation in kernel_code/kernel/triangulation.c)
+>>> T.set_peripheral_curves('combinatorial')
+is now calling the same SnapPea kernel code to pick peripheral curve but
+on the oriented manifold. This can result in different peripheral curves.
+
+Note that the encoding and decoding needs to use the same of the two
+canonical choices of peripheral curves.
+
+For the decoding, there is a difference based on whether the isosig is
+decorated because set_peripheral_from_decoration calls
+manifold.set_peripheral_curves('combinatorial').
+
+We need to account for that in the encoding: we need to use
+set_peripheral_curves('combinatorial') on the "target" triangulation if
+we anticipate a decoration. And if we called
+set_peripheral_curves('combinatorial'), we need to make sure we have a
+decoration (see force_decoration).
 """
+
 import re
 import string
 
@@ -330,7 +370,7 @@ def candidate_decoration_info(
         # We need to make sure not to have an empty "encoded" in this case.
         force_decoration = ignore_curves
         
-        if (not is_trivial_perm(perm)) or force_decoration:
+        if force_decoration or not is_trivial_perm(perm):
             # Encode permutation
             encoded += encode_integer_list(perm)
 

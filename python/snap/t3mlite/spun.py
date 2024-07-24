@@ -55,7 +55,8 @@ def normalize_slope(slope):
 def shift_matrix(n):
     """
     The edge shifts corresponding to each of three quad types, see Figure
-    2.1 and 2.2 of `[DG] <http://arxiv.org/abs/1102.4588>`_
+    2.1 and 2.2 of
+    `Dunfield and Garoufalidis '12 <http://arxiv.org/abs/1102.4588>`_.
     """
     shifts = Matrix(3*n, 3*n)
     for i in range(0, 3*n, 3):
@@ -93,14 +94,14 @@ class SpunSurface:
     A spun normal surface in an ideal triangulation, as introduced by
     Thurston.
 
-    For an quick sketch of this theory see `[DG]
+    For an quick sketch of this theory see `Dunfield and Garoufalidis '12
     <http://arxiv.org/abs/1102.4588>`_ and for more details see
-    `[Tillmann] <http://arxiv.org/abs/math/0406271>`_.
+    `Tillmann '08 <http://arxiv.org/abs/math/0406271>`_.
 
     The quad conventions are (Q02, Q03, Q01) corresponding to
     z -> 0, z' -> 0, and z'' -> 0 respectively, as per Figure 3.1 of
-    `[DG] <http://arxiv.org/abs/1102.4588>`_.  The quad types
-    are numbered 0, 1, 2; the "None" quad type means a
+    `Dunfield and Garoufalidis '12 <http://arxiv.org/abs/1102.4588>`_.
+    The quad types are numbered 0, 1, 2; the "None" quad type means a
     tetrahedron contains no quads at all.
     """
     def __init__(self, manifold, quad_vector=None, quad_types=None, index=None):
@@ -246,9 +247,9 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
 
     If the ``subset`` flag is set to ``'kabaya'``, then it only
     returns boundary slopes associated to vertex surfaces with a quad
-    in every tetrahedron; by Theorem 1.1. of `[DG]
-    <http://arxiv.org/abs/1102.4588>`_ these are all strict boundary
-    slopes.
+    in every tetrahedron; by Theorem 1.1. of
+    `Dunfield and Garoufalidis '12 <http://arxiv.org/abs/1102.4588>`_
+    these are all strict boundary slopes.
 
     >>> N = Manifold('m113')
     >>> N.normal_boundary_slopes()

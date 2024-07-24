@@ -2890,7 +2890,7 @@ cdef class Triangulation():
                              decorated=True,
                              ignore_cusp_ordering = False,
                              ignore_curve_orientations = False,
-                             ignore_orientation = True):
+                             ignore_orientation = True) -> str:
         """
         Returns a compact text representation of the triangulation, called a
         "decorated isomorphism signature"
@@ -2934,7 +2934,7 @@ cdef class Triangulation():
           Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use ignore_cusp_ordering
+        decorated signature, use ``ignore_cusp_ordering``
 
           >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
           >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
@@ -2945,7 +2945,7 @@ cdef class Triangulation():
           True
 
         If you do not care about the orientations of the peripheral curves,
-        use ignore_curve_orientations
+        use ``ignore_curve_orientations``
 
           >>> M = Manifold("L6a1")
           >>> M.triangulation_isosig()
@@ -2965,7 +2965,7 @@ cdef class Triangulation():
 
         By default, the isomorphism signature does not capture the orientation
         of an orientable triangulation. If you specify
-        `ignore_orientation = False`, the isomorphism signature for an oriented
+        ``ignore_orientation = False``, the isomorphism signature for an oriented
         triangulation and its mirror image will be different if the
         triangulation is cheiral.
 
@@ -2977,7 +2977,7 @@ cdef class Triangulation():
           'dLQacccnsnk'
 
         Note that a decorated triangulation isosig with the default values
-        `ignore_orientation = True` but `ignore_curve_orientations = False`
+        ``ignore_orientation = True`` but ``ignore_curve_orientations = False``
         still captures the orientations of the triangulation through the
         peripheral curves.
 
@@ -2989,7 +2989,7 @@ cdef class Triangulation():
           'dLQacccjnjs_aBBb'
 
         The code has been copied from `Regina <https://regina-normal.github.io/>`_ where
-        the corresponding method is called "isoSig".
+        the corresponding method is called ``isoSig``.
 
         Unlike dehydrations for 3-manifold triangulations, an
         isomorphism signature uniquely determines a triangulation up

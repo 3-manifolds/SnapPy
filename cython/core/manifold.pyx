@@ -807,7 +807,7 @@ cdef class Manifold(Triangulation):
     def chern_simons(self, accuracy = False):
         """
         Returns the Chern-Simons invariant of the manifold (normalized by
-        dividing it by 2 pi^2), if it is known.
+        dividing it by :math:`2 \\pi^2`), if it is known.
 
         >>> M = Manifold('m015')
         >>> M.chern_simons() # doctest: +NUMERIC6
@@ -835,9 +835,9 @@ cdef class Manifold(Triangulation):
         >>> M.chern_simons() # doctest: +NUMERIC6
         0.07731787
 
-        works, but will fail with 'Chern-Simons invariant not
-        currently known' if the first call to chern_simons is not
-        made.
+        works, but will fail with
+        ``ValueError: The Chern-Simons invariant isn't currently known.``
+        if the first call to chern_simons is not made.
         """
 
         cs = self._chern_simons()

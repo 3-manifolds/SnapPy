@@ -210,3 +210,6 @@ if os.path.exists('_static/' + snappy_custom_css_file):
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'SnapPydoc'
+
+# This adds the type annotations to the params section instead of the signature.
+# autodoc_typehints = "description"

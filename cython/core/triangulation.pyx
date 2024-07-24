@@ -2886,10 +2886,10 @@ cdef class Triangulation():
         return get_num_fake_cusps(self.c_triangulation) > 0
 
     def triangulation_isosig(self,
-                             decorated=True,
-                             ignore_cusp_ordering = False,
-                             ignore_curve_orientations = False,
-                             ignore_orientation = True) -> str:
+                             decorated : bool = True,
+                             ignore_cusp_ordering : bool = False,
+                             ignore_curve_orientations : bool = False,
+                             ignore_orientation : bool = True) -> str:
         """
         Returns a compact text representation of the triangulation, called a
         "decorated isomorphism signature"

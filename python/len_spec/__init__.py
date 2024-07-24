@@ -74,16 +74,15 @@ def length_spectrum(manifold,
         sage: next(spec)
         0.88944299721255... - 2.94185904702273...*I  bD            -
 
-    Performance
-    -----------
+    **Performance**
 
     A note about performance: this method uses a different algorithm than
-    :py:meth:`Manifold.length_spectrum`. In particular, it does not need to
-    compute the Dirichlet domain first. It allows for verified computations
-    and is also implemented in python and thus typically slower than
-    :py:meth:`Manifold.length_spectrum`. But there are also some cases where
-    it is significantly faster. This applies, in particular, to spun
-    triangulations such as ``m004(21,10)``.
+    :meth:`length_spectrum <Manifold.length_spectrum>`. In particular,
+    it does not need to compute the Dirichlet domain first. It allows for
+    verified computations and is also implemented in python and thus
+    typically slower than :meth:`length_spectrum <Manifold.length_spectrum>`.
+    But there are also some cases where it is significantly faster. This
+    applies, in particular, to spun triangulations such as ``m004(21,10)``.
 
     Here is example where we can help the algorithm by guessing and drilling
     and filling a short geodesic::
@@ -114,8 +113,7 @@ def length_spectrum(manifold,
         >>> next(spec).length.real() # doctest: +NUMERIC9
         0.96218768626877
 
-    Verified computations
-    ---------------------
+    **Verified computations**
 
     If ``verified = True`` is passed, the algorithm guarantees that the lower
     bound of the real length is (non-strictly) increasing. This means that the
@@ -156,8 +154,7 @@ def length_spectrum(manifold,
     prove that the second emitted geodesic is shorter than the third, but we
     cannot conclude that the first emitted geodesic is indeed the shortest.
 
-    Verified systole
-    ----------------
+    **Verified systole**
 
     Even though we do not know whether the first enumerated geodesic really
     is the shortest geodesic (and thus cannot trust that the first enumerated

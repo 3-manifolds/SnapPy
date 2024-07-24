@@ -146,8 +146,8 @@ cdef class Manifold(Triangulation):
         """
         Change the triangulation to an arbitrary retriangulation of
         the canonical cell decomposition. See
-        :py:meth:`Manifold.canonical_retriangulation` to get the actual
-        canonical cell decomposition.
+        :py:meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+        to get the actual canonical cell decomposition.
 
         >>> M = Manifold('m007')
         >>> M.num_tetrahedra()

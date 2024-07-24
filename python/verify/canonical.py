@@ -317,9 +317,6 @@ def verified_canonical_retriangulation(
     The exact arithmetics can take a long time. To circumvent it, use
     ``exact_bits_prec_and_degrees = None``.
 
-    More information on the canonical retriangulation can be found in the
-    SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of
-    `Fominykh, Garoufalidis, Goerner, Tarkaev, Vesnin <http://arxiv.org/abs/1502.00383>`_.
 
     Canonical cell decomposition of ``m004`` has 2 tetrahedral cells::
 

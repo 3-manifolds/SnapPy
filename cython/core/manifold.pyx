@@ -536,15 +536,12 @@ cdef class Manifold(Triangulation):
 
     def cover(self, permutation_rep):
         """
-        M.cover(permutation_rep)
-
-        Returns a Manifold representing the finite cover
-        specified by a transitive permutation representation.  The
-        representation is specified by a list of permutations, one for
-        each generator of the simplified presentation of the
-        fundamental group.  Each permutation is specified as a list P
-        such that set(P) == set(range(d)) where d is the degree of the
-        cover.
+        Returns a Manifold representing the finite cover specified by a
+        transitive permutation representation.  The representation is
+        specified by a list of permutations, one for each generator of the
+        simplified presentation of the fundamental group.  Each permutation is
+        specified as a list ``P`` such such that ``set(P) == set(range(d))``
+        where ``d`` is the degree of the cover.
 
         >>> M = Manifold('m004')
         >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
@@ -552,9 +549,9 @@ cdef class Manifold(Triangulation):
         True
 
 
-        If within Sage, the permutations can also be of type
-        PermutationGroupElement, in which case they act on the set
-        range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
+        If within SageMath, the permutations can also be of type
+        ``PermutationGroupElement``, in which case they act on the set
+        ``range(1, d + 1)``.  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.     Some examples::
 
           sage: M = Manifold('m004')

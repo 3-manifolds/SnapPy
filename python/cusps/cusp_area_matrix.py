@@ -48,8 +48,7 @@ def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
         [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
         [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
 
-    For expert users
-    ----------------
+    **For expert users**
 
     Besides the two values above, ``method`` can be ``trigDependent``:
     this result is also fast to compute by making the assumption that

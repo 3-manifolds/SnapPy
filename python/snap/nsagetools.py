@@ -332,7 +332,8 @@ def alexander_polynomial(manifold, **kwargs):
         sage: N.alexander_polynomial()
         a^2*b + a*b^2 + a*b + a + b
 
-    Any provided keyword arguments are passed to fundamental_group and
+    Any provided keyword arguments are passed to
+    :meth:`fundamental_group <snappy.Triangulation.fundamental_group>` and
     so affect the group presentation used in the computation.
     """
     if manifold.homology().order() != 'infinite':

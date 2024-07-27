@@ -47,24 +47,6 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
-def snappy_database_doctester(verbose=False, print_info=False):
-    # snappy_manifolds's tests is still relying on
-    # SnapPy Number's _accuracy_for_testing.
-    #
-    # Switch to snappy conversion until snappy_manifolds is
-    # is updated.
-    snappy.number.use_field_conversion('snappy')
-    snappy.number.Number._accuracy_for_testing = 8
-    ans = doctest_modules([snappy.database], verbose=verbose)
-    snappy.number.Number._accuracy_for_testing = None
-    if _within_sage:
-        snappy.number.use_field_conversion('sage')
-
-    return ans
-
-
-snappy_database_doctester.__name__ = snappy.database.__name__
-
 # Spherogram Commit 7b6307ea02e536 on 2024-07-26 (after tag 2.2_as_released)
 # sets run_doctests' name.
 spherogram.test.run_doctests.__name__ = spherogram.__name__
@@ -75,7 +57,7 @@ modules.append(snappy.number)
 
 modules += [snappy.SnapPy,
             snappy.SnapPyHP,
-            snappy_database_doctester,
+            snappy.database,
             snappy,
             snappy.snap.test.run_doctests,
             snappy.matrix,

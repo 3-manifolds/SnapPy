@@ -63,23 +63,11 @@ def snappy_database_doctester(verbose=False, print_info=False):
     return ans
 
 
-snappy_database_doctester.__name__ = 'snappy.database'
+snappy_database_doctester.__name__ = snappy.database.__name__
 
-
-def spherogram_doctester(verbose=False,print_info=False):
-    ans = spherogram.test.run_doctests(verbose, print_info=print_info)
-
-    # Spherogram's testing is switching to SnapPy numbers and
-    # setting their accuracy.
-    # Switch back to Sage types until Spherogram has been updated.
-    snappy.number.Number._accuracy_for_testing = None
-    if _within_sage:
-        snappy.number.use_field_conversion('sage')
-
-    return ans
-
-
-spherogram_doctester.__name__ = 'spherogram'
+# Spherogram Commit 7b6307ea02e536 on 2024-07-26 (after tag 2.2_as_released)
+# sets run_doctests' name.
+spherogram.test.run_doctests.__name__ = spherogram.__name__
 
 modules += [numeric_output_checker.run_doctests]
 
@@ -102,7 +90,7 @@ modules += [snappy.SnapPy,
             snappy.len_spec.test.run_doctests,
             snappy.drilling.test.run_doctests,
             snappy.ptolemy.test.run_doctests,
-            spherogram_doctester,
+            spherogram.test.run_doctests,
             snappy.verify.test.run_doctests]
 
 slow_modules = [ snappy.ptolemy.test.run_ptolemy_tests ]

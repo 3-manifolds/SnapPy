@@ -47,8 +47,7 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
-
-def snappy_database_doctester(verbose):
+def snappy_database_doctester(verbose=False, print_info=False):
     # snappy_manifolds's tests is still relying on
     # SnapPy Number's _accuracy_for_testing.
     #
@@ -67,8 +66,8 @@ def snappy_database_doctester(verbose):
 snappy_database_doctester.__name__ = 'snappy.database'
 
 
-def spherogram_doctester(verbose):
-    ans = spherogram.test.run_doctests(verbose, print_info=False)
+def spherogram_doctester(verbose=False,print_info=False):
+    ans = spherogram.test.run_doctests(verbose, print_info=print_info)
 
     # Spherogram's testing is switching to SnapPy numbers and
     # setting their accuracy.

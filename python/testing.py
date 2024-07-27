@@ -121,6 +121,6 @@ def doctest_modules(modules, verbose=False, print_info=False, extraglobs={}):
 def run_doctests_as_main(run_doctests):
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
-    results = run_doctests(verbose, print_info=True)
+    results = run_doctests(verbose=verbose, print_info=True)
     sys.exit(results.failed)
 

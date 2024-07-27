@@ -2,6 +2,7 @@ from snappy import testing
 import snappy
 
 from snappy import raytracing
+import snappy.raytracing.geodesic_tube_info
 
 modules = [
     raytracing.cohomology_fractal,

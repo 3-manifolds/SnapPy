@@ -22,7 +22,6 @@ from snappy.sage_helper import _within_sage
 from snappy.testing import (doctest_modules, cyopengl_works,
                             tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
-modules = [snappy.exterior_to_link.test.run_doctests]
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
@@ -51,11 +50,10 @@ for key in identify_tests + triangulation_tests + browser_tests:
 # sets run_doctests' name.
 spherogram.test.run_doctests.__name__ = spherogram.__name__
 
-modules += [numeric_output_checker.run_doctests]
-
-modules.append(snappy.number)
-
-modules += [snappy.SnapPy,
+modules = [ snappy.exterior_to_link.test.run_doctests,
+            numeric_output_checker.run_doctests,
+            snappy.number,
+            snappy.SnapPy,
             snappy.SnapPyHP,
             snappy.database,
             snappy,

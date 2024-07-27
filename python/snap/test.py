@@ -23,7 +23,7 @@ modules = [
     snap.peripheral.peripheral
 ]
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':snappy.Manifold,
              'ManifoldHP':snappy.ManifoldHP,
              'Triangulation':snappy.Triangulation,

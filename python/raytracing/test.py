@@ -15,7 +15,7 @@ modules = [
     raytracing.upper_halfspace_utilities
 ]
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold'  : snappy.Manifold,
              'ManifoldHP': snappy.ManifoldHP}
     return testing.doctest_modules(modules,

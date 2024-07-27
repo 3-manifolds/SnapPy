@@ -17,7 +17,7 @@ modules = [
     exterior_to_link.main
 ]
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold': snappy.Manifold,
              'Triangulation': snappy.Triangulation}
     return testing.doctest_modules(modules,

@@ -5,7 +5,7 @@ from snappy import verify
 from snappy import geometric_structure
 
 def generate_test_with_shapes_engine(module, engine):
-    def result(verbose, print_info=False):
+    def result(verbose, print_info=True):
         globs = {'Manifold' : snappy.Manifold}
 
         original = verify.CertifiedShapesEngine
@@ -53,7 +53,7 @@ modules = [
     verify.real_algebra
 ]
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold' : snappy.Manifold}
     return testing.doctest_modules(modules,
                                    verbose=verbose,

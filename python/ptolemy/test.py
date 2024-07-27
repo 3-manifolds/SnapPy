@@ -823,7 +823,7 @@ def test_num_obstruction_class_match():
         for i in range(2,6):
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
 
-def run_ptolemy_tests_raising_exceptions(print_info=False):
+def run_ptolemy_tests_raising_exceptions(print_info=True):
     if print_info:
         print("Testing in sage:", _within_sage)
 
@@ -1079,7 +1079,7 @@ def run_ptolemy_tests_raising_exceptions(print_info=False):
             expect_non_zero_dimensional=expect_non_zero_dim,
             print_info=print_info)
 
-def run_ptolemy_tests(verbose=False, print_info=False):
+def run_ptolemy_tests(verbose=False, print_info=True):
     try:
         run_ptolemy_tests_raising_exceptions(
             print_info=print_info)
@@ -1108,7 +1108,7 @@ modules = [ptolemy.component,
 if test_regina:
     modules.append(ptolemy.reginaWrapper)
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     return doctest_modules(
         modules,
         verbose=verbose, print_info=print_info)

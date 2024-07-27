@@ -11,7 +11,7 @@ modules = [
     len_spec.test_cases
 ]
 
-def run_doctests(verbose=False, print_info=False):
+def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold': snappy.Manifold}
     return testing.doctest_modules(modules,
                                    verbose=verbose,

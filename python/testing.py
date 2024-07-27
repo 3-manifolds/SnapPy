@@ -108,7 +108,7 @@ def doctest_modules(modules, verbose=False, print_info=False, extraglobs={}):
                 runner.run(test)
             result = runner.summarize()
         else:
-            result = module(verbose=verbose)
+            result = module(verbose=verbose, print_info=False)
         failed += result.failed
         attempted += result.attempted
         if print_info:

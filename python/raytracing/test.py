@@ -3,6 +3,9 @@ import snappy
 
 from snappy import raytracing
 import snappy.raytracing.geodesic_tube_info
+import snappy.raytracing.geodesics
+import snappy.raytracing.ideal_raytracing_data
+import snappy.raytracing.upper_halfspace_utilities
 
 modules = [
     raytracing.cohomology_fractal,

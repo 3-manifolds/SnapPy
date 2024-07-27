@@ -21,7 +21,6 @@ class Geodesics:
     def __init__(self, manifold, words):
         """
 
-        >>> from snappy import Manifold
         >>> M = Manifold("o9_00000")
         >>> g = Geodesics(M, ["b", "c"])
         >>> g.set_enables_and_radii_and_update([True, True], [0.3, 0.4])

@@ -29,7 +29,6 @@ def length_spectrum(manifold,
     by lower bound of real length when ``verified = True``) for an orientable
     manifold::
 
-        >>> from snappy import Manifold
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> spec = M.length_spectrum_iter()
         >>> next(spec) # doctest: +NUMERIC9

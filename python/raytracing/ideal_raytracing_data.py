@@ -23,7 +23,6 @@ class IdealRaytracingData(RaytracingData):
     Given a SnapPy manifold, computes data for the shader fragment.glsl
     to raytrace the inside view::
 
-        >>> from snappy import *
         >>> data = IdealRaytracingData.from_manifold(Manifold("m004"))
         >>> data = IdealRaytracingData.from_manifold(ManifoldHP("m004"))
 

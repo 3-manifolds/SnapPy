@@ -55,7 +55,6 @@ def check_weights_valid(trig, weights):
     Given a SnapPy triangulation and weights per face per tetrahedron,
     check they are consistent across glued faces and form a 2-cocycle.
 
-        >>> from snappy import Manifold
         >>> check_weights_valid(Manifold("m015"), [1, 0, 0, 0, -1, 0, 0, 1, -1, 0, 0, 0])
         >>> check_weights_valid(Manifold("m004"), [0, 1, 0, 1, 0, 0, -1, -2])
         Traceback (most recent call last):
@@ -111,7 +110,6 @@ def rational_cohomology_basis(trig):
     per face per tetrahedron that generate the second rational cohomology
     group.
 
-        >>> from snappy import Manifold
         >>> rational_cohomology_basis(Manifold("m125"))
         [[-1, -4, -2, 0, 1, 0, 0, 0, 0, 4, 1, 2, -1, 0, 0, 0], [0, 5, 2, 0, 0, 0, 0, 1, 0, -5, 0, -2, 0, 0, 0, -1]]
 
@@ -147,7 +145,6 @@ def compute_weights_basis_class(trig, cohomology_class):
     Convenience method to quickly access cohomology classes for
     M.inside_view().
 
-        >>> from snappy import Manifold
         >>> compute_weights_basis_class(Manifold("m004"), None)
         (None, None, None)
         >>> compute_weights_basis_class(Manifold("m003"), [1, 0, 0, 1, -1, 0, 0, -1])

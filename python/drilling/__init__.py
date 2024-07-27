@@ -35,7 +35,6 @@ def drill_word(manifold,
     Drills the geodesic corresponding to the given word in the unsimplified
     fundamental group.
 
-        >>> from snappy import Manifold
         >>> M = Manifold("m004")
         >>> M.length_spectrum(1.2, include_words = True, grouped = False)
         mult  length                                  topology     parity word
@@ -97,7 +96,6 @@ def drill_word(manifold,
 
     An example where we drill the core geodesic::
 
-        >>> from snappy import Manifold
         >>> M = Manifold("v2986(3,4)")
         >>> N = M.drill_word('EdFgabcGEdFgaDcc')
         >>> N.is_isometric_to(Manifold("v2986"), return_isometries = True) # doctest: +NORMALIZE_WHITESPACE
@@ -127,7 +125,6 @@ def drill_words(manifold,
     and a geodesic that is not a core curve:
 
 
-        >>> from snappy import Manifold
         >>> M=Manifold("t12047(0,0)(1,3)(1,4)(1,5)")
         >>> [ info.get('core_length') for info in M.cusp_info() ] # doctest: +NUMERIC9
         [None,

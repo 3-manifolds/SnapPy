@@ -7,7 +7,6 @@ deterministic but the SnapPea kernel code to remove the finite vertices
 and simplify is not. Thus, we need canonical_retriangulation() to get
 a consistent result:
 
-    >>> from snappy import Manifold, ManifoldHP
     >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
     >>> M = Manifold("v2986")
     >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
@@ -48,7 +47,6 @@ Same test as verified computation::
 
 Test error when drilling something close to core curve::
 
-    >>> from snappy import Manifold
     >>> M = Manifold("m125")
     >>> MM = M.drill_word('d')
     >>> MM.dehn_fill((1,0),2)
@@ -103,7 +101,6 @@ case where two geodesic pieces are adjacent to the same triangle and we
 need to shorten before crushing. We do white-box testing (verbose = True)
 to make sure we really hit the shortening case.
 
-    >>> from snappy import Manifold
     >>> from snappy.drilling import perturb
     >>> original_radius = perturb._tube_developing_radius
     >>> perturb._tube_developing_radius = 1

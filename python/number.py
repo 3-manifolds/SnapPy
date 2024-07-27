@@ -575,7 +575,7 @@ class Number(Number_baseclass):
     def sqrtn(self, n):
         """
         >>> r = Number(2.0, precision=100)
-        >>> r.sqrtn(10)
+        >>> r.sqrtn(10) # doctest: +NUMERIC27
         (1.071773462536293164213006325023, 0.809016994374947424102293417183 + 0.587785252292473129168705954639*I)
         """
         a, b = self.gen.sqrtn(n, precision=self._precision)

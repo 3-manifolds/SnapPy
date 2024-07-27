@@ -71,8 +71,7 @@ spherogram.test.run_doctests.__name__ = spherogram.__name__
 
 modules += [numeric_output_checker.run_doctests]
 
-if not _within_sage:
-    modules.append(snappy.number)
+modules.append(snappy.number)
 
 modules += [snappy.SnapPy,
             snappy.SnapPyHP,

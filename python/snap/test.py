@@ -1,4 +1,5 @@
-from ..sage_helper import _within_sage, doctest_modules
+from ..sage_helper import _within_sage
+from ..testing import doctest_modules
 from ..pari import pari
 import snappy
 import snappy.snap as snap

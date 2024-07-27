@@ -1,7 +1,7 @@
 from snappy import verify, Manifold
 from snappy.geometric_structure import cusp_neighborhood
 from snappy.verify import upper_halfspace, volume
-from snappy.sage_helper import _within_sage, doctest_modules
+from snappy.testing import doctest_modules
 import sys
 import getopt
 

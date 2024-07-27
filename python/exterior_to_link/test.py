@@ -29,10 +29,10 @@ modules = [rational_linear_algebra,
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold': snappy.Manifold,
              'Triangulation': snappy.Triangulation}
-    results = snappy.sage_helper.doctest_modules(modules,
-                                                 verbose=verbose,
-                                                 extraglobs=globs,
-                                                 print_info=print_info)
+    results = snappy.testing.doctest_modules(modules,
+                                             verbose=verbose,
+                                             extraglobs=globs,
+                                             print_info=print_info)
     return results
 
 

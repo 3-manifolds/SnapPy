@@ -26,8 +26,9 @@ import snappy.drilling.test_cases
 import snappy.exterior_to_link.test
 import snappy.pari
 
-from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
-                                tk_root, root_is_fake, DocTestParser)
+from snappy.sage_helper import _within_sage
+from snappy.testing import (doctest_modules, cyopengl_works,
+                            tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
 modules = []
 
@@ -195,7 +196,7 @@ def runtests(verbose=False,
     # doctests to fail.
     snappy.pari.allocatemem(2**24, 2**25, silent=True)
 
-    DocTestParser.use_modernopengl = use_modernopengl
+    DocTestParser.use_cymodernopengl = use_modernopengl
 
     result = doctest_modules(modules, verbose=verbose)
     if not quick:

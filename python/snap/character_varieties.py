@@ -369,7 +369,7 @@ def total_answer_length(I):
 
 
 if __name__ == "__main__":
-    from snappy.sage_helper import _within_sage, doctest_modules
+    from snappy.testing import doctest_modules
     import sys
     current_module = sys.modules[__name__]
     doctest_modules([current_module])

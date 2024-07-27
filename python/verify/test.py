@@ -2,7 +2,6 @@ from snappy import testing
 import snappy
 
 from snappy import verify
-from snappy import geometric_structure
 
 def generate_test_with_shapes_engine(module, engine):
     def result(verbose, print_info=True):
@@ -31,9 +30,6 @@ modules = [
     generate_test_with_shapes_engine(
         verify.interval_newton_shapes_engine,
         verify.IntervalNewtonShapesEngine),
-    geometric_structure.cusp_neighborhood.cusp_cross_section_base,
-    geometric_structure.cusp_neighborhood.real_cusp_cross_section,
-    geometric_structure.cusp_neighborhood.complex_cusp_cross_section,
     generate_test_with_shapes_engine(
         verify.hyperbolicity,
         verify.KrawczykShapesEngine),

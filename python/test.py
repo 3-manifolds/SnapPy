@@ -5,13 +5,10 @@ import snappy.snap.test
 import spherogram.test
 import snappy.matrix
 import snappy.verify.test
+import snappy.geometric_structure.test
 import snappy.ptolemy.test
-import snappy.tiling.floor
-import snappy.tiling.real_hash_dict
-import snappy.tiling.canonical_key_dict
-import snappy.tiling.dict_based_set
-import snappy.cusps.maximal_cusp_area_matrix
-import snappy.cusps.cusp_areas_from_matrix
+import snappy.tiling.test
+import snappy.cusps.test
 import snappy.raytracing.test
 import snappy.len_spec.test
 import snappy.drilling.test
@@ -59,12 +56,9 @@ modules = [ snappy.exterior_to_link.test.run_doctests,
             snappy,
             snappy.snap.test.run_doctests,
             snappy.matrix,
-            snappy.tiling.floor,
-            snappy.tiling.real_hash_dict,
-            snappy.tiling.canonical_key_dict,
-            snappy.tiling.dict_based_set,
-            snappy.cusps.maximal_cusp_area_matrix,
-            snappy.cusps.cusp_areas_from_matrix,
+            snappy.geometric_structure.test.run_doctests,
+            snappy.tiling.test.run_doctests,
+            snappy.cusps.test.run_doctests,
             snappy.raytracing.test.run_doctests,
             snappy.len_spec.test.run_doctests,
             snappy.drilling.test.run_doctests,

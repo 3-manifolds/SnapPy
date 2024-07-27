@@ -313,7 +313,7 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
                        list(OrientableCuspedCensus()[10000:10010])):
 
         # The manifold returned by OrientableCuspedCensus is
-        # a SnapPy.Manifold, not a snappy.Manifold (as is overriden
+        # a SnapPy.Manifold, not a snappy.Manifold (as is overridden
         # in python/test.py).
         M = Manifold(M_database)
         

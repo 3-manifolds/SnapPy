@@ -22,6 +22,7 @@ import snappy.len_spec.word
 import snappy.len_spec.length_spectrum_geodesic_info
 import snappy.len_spec.test_cases
 import snappy.drilling
+import snappy.drilling.test_cases
 import snappy.exterior_to_link.test
 import snappy.pari
 
@@ -129,6 +130,7 @@ modules += [snappy.SnapPy,
             snappy.len_spec.length_spectrum_geodesic_info,
             snappy.len_spec.test_cases,
             snappy.drilling,
+            snappy.drilling.test_cases,
             ptolemy_doctester,
             spherogram_doctester]
 

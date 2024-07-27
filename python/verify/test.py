@@ -23,14 +23,15 @@ def check_certified_intervals():
                 raise Exception
 
 
-def generate_test_with_shapes_engine(module, engine):
-    def result(verbose):
+def generate_test_with_shapes_engine(module, engine, print_info=False):
+    def result(verbose, print_info=print_info):
         globs = {'Manifold':Manifold}
 
         original = verify.CertifiedShapesEngine
         verify.CertifiedShapesEngine = engine
 
-        r = doctest_modules([module], extraglobs=globs, verbose=verbose)
+        r = doctest_modules(
+            [module], extraglobs=globs, verbose=verbose, print_info=print_info)
 
         verify.CertifiedShapesEngine = original
 
@@ -41,7 +42,7 @@ def generate_test_with_shapes_engine(module, engine):
     return result
 
 
-def run_doctests(verbose=False, print_info=True):
+def run_doctests(verbose=False, print_info=False):
     globs = {'Manifold':Manifold}
 
     return doctest_modules(
@@ -73,10 +74,12 @@ def run_doctests(verbose=False, print_info=True):
             verify.square_extensions,
             verify.real_algebra ],
         extraglobs=globs,
-        verbose=verbose, print_info=print_info)
+        verbose=verbose,
+        print_info=print_info)
 
+run_doctests.__name__ = verify.__name__
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
-    run_doctests(verbose)
+    run_doctests(verbose, print_info=True)

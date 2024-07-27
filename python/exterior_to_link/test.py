@@ -12,6 +12,7 @@ from . import (rational_linear_algebra,
                simplify_to_base_tri,
                put_in_S3,
                main)
+from . import __name__ as module_name
 
 modules = [rational_linear_algebra,
            pl_utils,
@@ -26,7 +27,7 @@ modules = [rational_linear_algebra,
            main]
 
 
-def run_doctests(verbose=False, print_info=True):
+def run_doctests(verbose=False, print_info=False):
     globs = {'Manifold': snappy.Manifold,
              'Triangulation': snappy.Triangulation}
     results = snappy.testing.doctest_modules(modules,
@@ -35,9 +36,10 @@ def run_doctests(verbose=False, print_info=True):
                                              print_info=print_info)
     return results
 
+run_doctests.__name__ = module_name
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
-    results = run_doctests(verbose)
+    results = run_doctests(verbose, print_info=True)
     sys.exit(results.failed)

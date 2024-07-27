@@ -342,5 +342,4 @@ def run_doctests(verbose=False):
 
     return doctest.TestResults(failed, attempted)
 
-
-run_doctests.__name__ = 'NumericOutputChecker'
+run_doctests.__name__ = __name__

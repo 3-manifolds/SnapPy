@@ -30,7 +30,7 @@ from snappy.sage_helper import _within_sage
 from snappy.testing import (doctest_modules, cyopengl_works,
                             tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
-modules = []
+modules = [snappy.exterior_to_link.test.run_doctests]
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
@@ -54,13 +54,6 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
                  if x.startswith('Manifold.browse')]
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
-
-
-def snap_doctester(verbose):
-    return snappy.snap.test.run_doctests(verbose, print_info=False)
-
-
-snap_doctester.__name__ = 'snappy.snap'
 
 
 def snappy_database_doctester(verbose):
@@ -106,7 +99,7 @@ modules += [snappy.SnapPy,
             snappy.SnapPyHP,
             snappy_database_doctester,
             snappy,
-            snap_doctester,
+            snappy.snap.test.run_doctests,
             snappy.matrix,
             snappy.tiling.floor,
             snappy.tiling.real_hash_dict,
@@ -126,23 +119,10 @@ modules += [snappy.SnapPy,
             snappy.drilling,
             snappy.drilling.test_cases,
             snappy.ptolemy.test.run_doctests,
-            spherogram_doctester]
+            spherogram_doctester,
+            snappy.verify.test.run_doctests]
 
 slow_modules = [ snappy.ptolemy.test.run_ptolemy_tests ]
-
-def snappy_verify_doctester(verbose):
-    return snappy.verify.test.run_doctests(verbose, print_info=False)
-
-snappy_verify_doctester.__name__ = 'snappy.verify'
-modules.append(snappy_verify_doctester)
-
-def snappy_exterior_to_link_doctester(verbose):
-    return snappy.exterior_to_link.test.run_doctests(verbose, print_info=False)
-
-
-snappy_exterior_to_link_doctester.__name__ = 'snappy.exterior_to_link'
-modules.insert(0, snappy_exterior_to_link_doctester)
-
 
 def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():

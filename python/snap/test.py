@@ -2,7 +2,7 @@ from ..sage_helper import _within_sage
 from ..testing import doctest_modules
 from ..pari import pari
 import snappy
-import snappy.snap as snap
+from snappy import snap
 import getopt
 import sys
 
@@ -102,7 +102,7 @@ def big_test():
         test_fields()
 
 
-def run_doctests(verbose=False, print_info=True):
+def run_doctests(verbose=False, print_info=False):
     from snappy.snap.t3mlite import perm4
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
@@ -144,8 +144,9 @@ def run_doctests(verbose=False, print_info=True):
     return doctest_modules(modules, extraglobs=globs,
                            verbose=verbose, print_info=print_info)
 
+run_doctests.__name__ = snap.__name__
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
-    run_doctests(verbose)
+    run_doctests(verbose, print_info=True)

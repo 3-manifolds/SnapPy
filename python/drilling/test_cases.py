@@ -124,3 +124,6 @@ to make sure we really hit the shortening case.
 """
 
 from . import drill_words_implementation
+
+if not __doc__:
+    raise Exception("doc string with tests was not recognized.")

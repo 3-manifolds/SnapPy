@@ -12,17 +12,9 @@ import snappy.tiling.canonical_key_dict
 import snappy.tiling.dict_based_set
 import snappy.cusps.maximal_cusp_area_matrix
 import snappy.cusps.cusp_areas_from_matrix
-import snappy.raytracing.cohomology_fractal
-import snappy.raytracing.geodesic_tube_info
-import snappy.raytracing.geodesics
-import snappy.raytracing.ideal_raytracing_data
-import snappy.raytracing.upper_halfspace_utilities
-import snappy.len_spec
-import snappy.len_spec.word
-import snappy.len_spec.length_spectrum_geodesic_info
-import snappy.len_spec.test_cases
-import snappy.drilling
-import snappy.drilling.test_cases
+import snappy.raytracing.test
+import snappy.len_spec.test
+import snappy.drilling.test
 import snappy.exterior_to_link.test
 import snappy.pari
 
@@ -64,7 +56,7 @@ def snappy_database_doctester(verbose):
     # is updated.
     snappy.number.use_field_conversion('snappy')
     snappy.number.Number._accuracy_for_testing = 8
-    ans = doctest_modules([snappy.database], verbose)
+    ans = doctest_modules([snappy.database], verbose=verbose)
     snappy.number.Number._accuracy_for_testing = None
     if _within_sage:
         snappy.number.use_field_conversion('sage')
@@ -107,17 +99,9 @@ modules += [snappy.SnapPy,
             snappy.tiling.dict_based_set,
             snappy.cusps.maximal_cusp_area_matrix,
             snappy.cusps.cusp_areas_from_matrix,
-            snappy.raytracing.cohomology_fractal,
-            snappy.raytracing.geodesic_tube_info,
-            snappy.raytracing.geodesics,
-            snappy.raytracing.ideal_raytracing_data,
-            snappy.raytracing.upper_halfspace_utilities,
-            snappy.len_spec,
-            snappy.len_spec.word,
-            snappy.len_spec.length_spectrum_geodesic_info,
-            snappy.len_spec.test_cases,
-            snappy.drilling,
-            snappy.drilling.test_cases,
+            snappy.raytracing.test.run_doctests,
+            snappy.len_spec.test.run_doctests,
+            snappy.drilling.test.run_doctests,
             snappy.ptolemy.test.run_doctests,
             spherogram_doctester,
             snappy.verify.test.run_doctests]
@@ -174,7 +158,8 @@ def runtests(verbose=False,
     if not quick:
         all_modules += slow_modules
 
-    result = doctest_modules(all_modules, verbose=verbose)
+    result = doctest_modules(
+        all_modules, verbose=verbose, print_info=True)
 
     if not quick:
         print()

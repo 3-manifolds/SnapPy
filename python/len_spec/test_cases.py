@@ -1,4 +1,6 @@
 """
+IMPORTANT: Python only recognises this as a doc string if there is
+nothing before it. In particular, add any includes after the doc string.
 
 >>> from snappy import Manifold
 >>> M = Manifold("m125(3,4)(0,0)")
@@ -18,3 +20,6 @@ Length                                       Word          Core curve
 1.63203771292969 + 2.30009520293758*I
 
 """
+
+if not __doc__:
+    raise Exception("doc string with tests was not recognized.")

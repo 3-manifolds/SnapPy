@@ -1,11 +1,11 @@
 from .numeric_output_checker import NumericOutputChecker
 from .sage_helper import _within_sage
 
+import doctest
+import getopt
 import re
 import sys
-import doctest
 import types
-
 
 # Used for doctesting
 _gui_status = {}
@@ -48,7 +48,6 @@ def tk_root():
         return Tk_._default_root
     else:
         return None
-
 
 def root_is_fake():
     return _gui_status['fake_root']
@@ -97,7 +96,7 @@ def print_results(module, results):
     print('   %s failures out of %s tests.' % (results.failed,
                                                results.attempted))
 
-def doctest_modules(modules, verbose=False, print_info=True, extraglobs={}):
+def doctest_modules(modules, verbose=False, print_info=False, extraglobs={}):
     finder = doctest.DocTestFinder(parser=DocTestParser())
     full_extraglobals = globs.copy()
     full_extraglobals.update(extraglobs)
@@ -118,3 +117,10 @@ def doctest_modules(modules, verbose=False, print_info=True, extraglobs={}):
     if print_info:
         print('\nAll doctests:\n   %s failures out of %s tests.' % (failed, attempted))
     return doctest.TestResults(failed, attempted)
+
+def run_doctests_as_main(run_doctests):
+    optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+    verbose = len(optlist) > 0
+    results = run_doctests(verbose, print_info=True)
+    sys.exit(results.failed)
+

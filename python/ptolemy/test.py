@@ -13,6 +13,7 @@
 # python test.py --compute
 
 from snappy import Manifold, pari, ptolemy
+from snappy import ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
 from snappy.ptolemy.processFileBase import get_manifold
 from snappy.ptolemy import __path__ as ptolemy_paths
@@ -23,11 +24,14 @@ from snappy.pari import pari
 import bz2
 import os
 import sys
+import doctest
+import traceback
 
 if _within_sage:
     from sage.misc.sage_eval import sage_eval
 
 test_regina = '--regina' in sys.argv
+compute_solutions = '--compute' in sys.argv
 
 base_path = ptolemy_paths[0]
 if test_regina:
@@ -209,7 +213,8 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes=None,
 def testComputeSolutionsForManifold(manifold, N,
                                     compute_solutions=False,
                                     baseline_cvolumes=None,
-                                    expect_non_zero_dimensional=None):
+                                    expect_non_zero_dimensional=None,
+                                    print_info=True):
 
     varieties = manifold.ptolemy_variety(N, obstruction_class="all_original")
 
@@ -227,10 +232,10 @@ def testComputeSolutionsForManifold(manifold, N,
                              baseline_cvolumes, expect_non_zero_dimensional)
 
     if manifold.name() == 't00000':
-        testMatrixMethods(manifold, solutions)
+        testMatrixMethods(manifold, solutions, print_info=print_info)
 
 
-def testMatrixMethods(manifold, solutions):
+def testMatrixMethods(manifold, solutions, print_info=True):
 
     def matrix_is_diagonal(m):
         return (
@@ -242,7 +247,8 @@ def testMatrixMethods(manifold, solutions):
         return matrix_is_diagonal(m) and (
             m[0][0] + 1 == 0 or m[0][0] - 1 == 0)
 
-    print("Testing matrix methods...")
+    if print_info:
+        print("Testing matrix methods...")
 
     G = manifold.fundamental_group(simplify_presentation=True)
     Graw = manifold.fundamental_group(simplify_presentation=False)
@@ -303,9 +309,14 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
     from snappy import OrientableCuspedCensus
 
-    for M in (list(OrientableCuspedCensus()[0:10]) +
-              list(OrientableCuspedCensus()[10000:10010])):
+    for M_database in (list(OrientableCuspedCensus()[0:10]) +
+                       list(OrientableCuspedCensus()[10000:10010])):
 
+        # The manifold returned by OrientableCuspedCensus is
+        # a SnapPy.Manifold, not a snappy.Manifold (as is overriden
+        # in python/test.py).
+        M = Manifold(M_database)
+        
         flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
         flattening.check_against_manifold(M, epsilon=1e-80)
 
@@ -448,7 +459,7 @@ def testComputeSolutionsForManifoldGeneralizedObstructionClass(
         manifold, N, baseline_volumes, baseline_dimensions)
 
 
-def testGeneralizedObstructionClass(compute_solutions):
+def testGeneralizedObstructionClass(compute_solutions, print_info = True):
 
     vols = [
         pari('0'),
@@ -485,7 +496,8 @@ def testGeneralizedObstructionClass(compute_solutions):
 
     for manifold, N, vols, dims in test_cases:
 
-        print("Checking for", manifold.name(), "N = %d" % N)
+        if print_info:
+            print("Checking for", manifold.name(), "N = %d" % N)
 
         testComputeSolutionsForManifoldGeneralizedObstructionClass(
             manifold, N, compute_solutions, vols, dims)
@@ -648,7 +660,7 @@ def testNumericalSolutions():
     check_volumes(allCVolumes, expected_cvolumes)
 
 
-def testGeometricRep(compute_solutions):
+def testGeometricRep(compute_solutions, print_info=False):
 
     from snappy.ptolemy import geometricRep
 
@@ -658,7 +670,8 @@ def testGeometricRep(compute_solutions):
     else:
         from urllib.request import pathname2url
         url = pathname2url(os.path.abspath(testing_files_directory))
-        sol = geometricRep.retrieve_geometric_solution(M, data_url=url)
+        sol = geometricRep.retrieve_geometric_solution(
+            M, data_url=url, verbose = print_info)
 
     # Make sure this is of type Ptolemy
     sol['c_0011_2']
@@ -810,43 +823,22 @@ def test_num_obstruction_class_match():
         for i in range(2,6):
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
 
+def run_ptolemy_tests_raising_exceptions(print_info=False):
+    if print_info:
+        print("Testing in sage:", _within_sage)
 
-modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
-           ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
-           ptolemy.ptolemyObstructionClass, ptolemy.ptolemyVariety,
-           ptolemy.ptolemyVariety, ptolemy.processFileBase, ptolemy.processRurFile,
-           ptolemy.rur, ptolemy.utilities]
-if test_regina:
-    modules.append(ptolemy.reginaWrapper)
-
-
-def run_doctests(verbose=False, print_info=True):
-    return doctest_modules(modules, verbose, print_info)
-
-
-def main(verbose=False, doctest=True):
-    print("Testing in sage:", _within_sage)
-
-    print("Testing in regina:", test_regina)
-
-    if doctest:
-        print("Running doctests...")
-        run_doctests(verbose)
-        print()
+        print("Testing in regina:", test_regina)
 
     if test_regina:
-        print("Testing that regina agrees with snappy obstruction classes")
+        if print_info:
+            print("Testing that regina agrees with snappy obstruction classes")
         test_num_obstruction_class_match()
 
     if not test_regina:
-        print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
+        if print_info:
+            print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 
         test_flattenings_from_tetrahedra_shapes_of_manifold()
-
-    compute_solutions = False
-
-    if '--compute' in sys.argv:
-        compute_solutions = True
 
     if test_regina and not compute_solutions:
         print("regina testing requires --compute")
@@ -854,35 +846,43 @@ def main(verbose=False, doctest=True):
 
     old_precision = pari.set_real_precision(100)
 
-    print("Testing induced representation...")
+    if print_info:
+        print("Testing induced representation...")
 
     test_induced_representation()
 
-    print("Testing induced SL(4,C) representation...")
+    if print_info:
+        print("Testing induced SL(4,C) representation...")
 
     test_induced_sl4_representation()
 
-    print("Running manifold tests for generalized obstruction class...")
+    if print_info:
+        print("Running manifold tests for generalized obstruction class...")
 
-    testGeneralizedObstructionClass(compute_solutions)
+    testGeneralizedObstructionClass(compute_solutions, print_info=print_info)
 
     if not test_regina:
-        print("Testing RUR for m052__sl3_c0.rur")
+        if print_info:
+            print("Testing RUR for m052__sl3_c0.rur")
 
         testMapleLikeRur()
 
-    print("Testing numerical solution retrieval method...")
+    if print_info:
+        print("Testing numerical solution retrieval method...")
 
     testNumericalSolutions()
 
-    print("Testing geometricRep...")
-    testGeometricRep(compute_solutions)
+    if print_info:
+        print("Testing geometricRep...")
+    testGeometricRep(compute_solutions, print_info=print_info)
 
     if _within_sage:
-        print("Testing in sage command line...")
+        if print_info:
+            print("Testing in sage command line...")
         testSageCommandLine()
 
-    print("Running manifold tests...")
+    if print_info:
+        print("Running manifold tests...")
 
     # Test for a non-hyperbolic manifold
 
@@ -1069,14 +1069,58 @@ def main(verbose=False, doctest=True):
 
     for manifold, N, cvols, expect_non_zero_dim in test_cases:
 
-        print("Checking for", manifold.name(), "N = %d" % N)
+        if print_info:
+            print("Checking for", manifold.name(), "N = %d" % N)
 
         testComputeSolutionsForManifold(
             manifold, N,
             compute_solutions=compute_solutions,
             baseline_cvolumes=cvols,
-            expect_non_zero_dimensional=expect_non_zero_dim)
+            expect_non_zero_dimensional=expect_non_zero_dim,
+            print_info=print_info)
 
+def run_ptolemy_tests(verbose=False, print_info=False):
+    try:
+        run_ptolemy_tests_raising_exceptions(
+            print_info=print_info)
+        return doctest.TestResults(failed=0, attempted=1)
+    except Exception as e:
+        print()
+        print("FAILED TEST in Ptolemy. Exception is:")
+        traceback.print_exc()
+        print()
+        return doctest.TestResults(failed=1, attempted=1)
+
+run_ptolemy_tests.__name__ = ptolemy.__name__ + ' (non-doc tests)'
+
+modules = [ptolemy.component,
+           ptolemy.coordinates,
+           ptolemy.manifoldMethods,
+           ptolemy.matrix,
+           ptolemy.polynomial,
+           ptolemy.processFileBase,
+           ptolemy.processMagmaFile,
+           ptolemy.processRurFile,
+           ptolemy.ptolemyObstructionClass,
+           ptolemy.ptolemyVariety,
+           ptolemy.rur,
+           ptolemy.utilities]
+if test_regina:
+    modules.append(ptolemy.reginaWrapper)
+
+def run_doctests(verbose=False, print_info=False):
+    return doctest_modules(
+        modules,
+        verbose=verbose, print_info=print_info)
+
+run_doctests.__name__ = ptolemy.__name__
 
 if __name__ == '__main__':
-    main()
+    verbose = '-v' in sys.argv[1:] or '--verbose' in sys.argv[1:]
+
+    result = run_doctests(verbose=verbose, print_info=True)
+    if result.failed:
+        sys.exit(result.failed)
+
+    result = run_ptolemy_tests(verbose=verbose, print_info=True)
+    sys.exit(result.failed)

@@ -97,13 +97,6 @@ def spherogram_doctester(verbose):
 
 spherogram_doctester.__name__ = 'spherogram'
 
-
-def ptolemy_doctester(verbose):
-    return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
-
-
-ptolemy_doctester.__name__ = 'snappy.ptolemy'
-
 modules += [numeric_output_checker.run_doctests]
 
 if not _within_sage:
@@ -132,17 +125,16 @@ modules += [snappy.SnapPy,
             snappy.len_spec.test_cases,
             snappy.drilling,
             snappy.drilling.test_cases,
-            ptolemy_doctester,
+            snappy.ptolemy.test.run_doctests,
             spherogram_doctester]
 
+slow_modules = [ snappy.ptolemy.test.run_ptolemy_tests ]
 
 def snappy_verify_doctester(verbose):
     return snappy.verify.test.run_doctests(verbose, print_info=False)
 
-
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
-
 
 def snappy_exterior_to_link_doctester(verbose):
     return snappy.exterior_to_link.test.run_doctests(verbose, print_info=False)
@@ -198,16 +190,13 @@ def runtests(verbose=False,
 
     DocTestParser.use_cymodernopengl = use_modernopengl
 
-    result = doctest_modules(modules, verbose=verbose)
+    all_modules = modules
     if not quick:
-        print()
-        # No idea why we mess and set snappy.database.Manifold
-        # to SnapPy.Manifold above... But to make ptolemy work,
-        # temporarily setting it to what it should be.
-        original_db_manifold = snappy.database.Manifold
-        snappy.database.Manifold = snappy.Manifold
-        snappy.ptolemy.test.main(verbose=verbose, doctest=False)
-        snappy.database.Manifold = original_db_manifold
+        all_modules += slow_modules
+
+    result = doctest_modules(all_modules, verbose=verbose)
+
+    if not quick:
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)

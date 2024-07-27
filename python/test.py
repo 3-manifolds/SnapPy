@@ -20,6 +20,8 @@ from snappy.testing import (doctest_modules, cyopengl_works,
                             tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
 
+# The following line doesn't seem to be needed. Can we just remove it?
+# MG 2024-07-26
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 # Augment tests for SnapPy with those that Cython missed
@@ -47,26 +49,30 @@ for key in identify_tests + triangulation_tests + browser_tests:
 # sets run_doctests' name.
 spherogram.test.run_doctests.__name__ = spherogram.__name__
 
-modules = [ snappy.exterior_to_link.test.run_doctests,
-            numeric_output_checker.run_doctests,
-            snappy.number,
-            snappy.SnapPy,
-            snappy.SnapPyHP,
-            snappy.database,
-            snappy,
-            snappy.snap.test.run_doctests,
-            snappy.matrix,
-            snappy.geometric_structure.test.run_doctests,
-            snappy.tiling.test.run_doctests,
-            snappy.cusps.test.run_doctests,
-            snappy.raytracing.test.run_doctests,
-            snappy.len_spec.test.run_doctests,
-            snappy.drilling.test.run_doctests,
-            snappy.ptolemy.test.run_doctests,
-            spherogram.test.run_doctests,
-            snappy.verify.test.run_doctests]
+modules = [
+    snappy.exterior_to_link.test.run_doctests,
+    numeric_output_checker.run_doctests,
+    snappy.number,
+    snappy.SnapPy,
+    snappy.SnapPyHP,
+    snappy.database,
+    snappy,
+    snappy.snap.test.run_doctests,
+    snappy.matrix,
+    snappy.geometric_structure.test.run_doctests,
+    snappy.tiling.test.run_doctests,
+    snappy.cusps.test.run_doctests,
+    snappy.raytracing.test.run_doctests,
+    snappy.len_spec.test.run_doctests,
+    snappy.drilling.test.run_doctests,
+    snappy.ptolemy.test.run_doctests,
+    spherogram.test.run_doctests,
+    snappy.verify.test.run_doctests
+]
 
-slow_modules = [ snappy.ptolemy.test.run_ptolemy_tests ]
+slow_modules = [
+    snappy.ptolemy.test.run_ptolemy_tests
+]
 
 def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():

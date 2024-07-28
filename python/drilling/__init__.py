@@ -23,13 +23,13 @@ from ..exceptions import InsufficientPrecisionError
 
 
 import functools
-from typing import Sequence
+from typing import Optional, Sequence
 
 
 def drill_word(manifold,
                word : str,
                verified : bool = False,
-               bits_prec=None,
+               bits_prec : Optional[int] = None,
                verbose : bool = False):
     """
     Drills the geodesic corresponding to the given word in the unsimplified
@@ -82,12 +82,12 @@ def drill_word(manifold,
     triangulation and thus combinatorial in nature, the intermediate
     computations to compute the intersections of the geodesic with the
     faces of the tetrahedra is numerical. Sometimes it is necessary to increase
-    the precision with `bits_prec` to make this computation accurate or succeed.
-    If `verified = True` is specified, intervals are used for all computations
+    the precision with ``bits_prec`` to make this computation accurate or succeed.
+    If ``verified = True`` is specified, intervals are used for all computations
     and the result is provably correct (only supported when used inside
     SageMath).
     That is, the algorithm will fail with an exception (most likely
-    InsufficientPrecisionError) if insufficient precision is used. Example of
+    ``InsufficientPrecisionError``) if insufficient precision is used. Example of
     verified computation::
 
         sage: M = Manifold("m004(2,3)")

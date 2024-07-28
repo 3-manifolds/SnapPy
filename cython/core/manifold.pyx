@@ -142,7 +142,7 @@ cdef class Manifold(Triangulation):
         do_Dehn_filling(self.c_triangulation)
         self.hyperbolic_structure_initialized = True
 
-    def canonize(self):
+    def canonize(self) -> None:
         """
         Change the triangulation to an arbitrary retriangulation of
         the canonical cell decomposition. See
@@ -327,11 +327,11 @@ cdef class Manifold(Triangulation):
     def dirichlet_domain(self,
                          vertex_epsilon=default_vertex_epsilon,
                          displacement = (0.0, 0.0, 0.0),
-                         centroid_at_origin=True,
-                         maximize_injectivity_radius=True,
-                         include_words=False):
+                         centroid_at_origin : bool = True,
+                         maximize_injectivity_radius : bool = True,
+                         include_words : bool = False):
         """
-        Returns a DirichletDomain object representing a Dirichlet
+        Returns a :class:`DirichletDomain` object representing a Dirichlet
         domain of the hyperbolic manifold, typically centered at a
         point which is a local maximum of injectivity radius.  It will
         have ideal vertices if the manifold is not closed.
@@ -344,7 +344,7 @@ cdef class Manifold(Triangulation):
 
         The group elements for the face-pairings of the Dirichlet domain
         can be given as words in the original generators of the
-        (unsimplified) fundamental group by setting include_words = True:
+        (unsimplified) fundamental group by setting ``include_words = True``:
 
         >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
         ['A', ...]
@@ -536,7 +536,7 @@ cdef class Manifold(Triangulation):
 
     def cover(self, permutation_rep):
         """
-        Returns a Manifold representing the finite cover specified by a
+        Returns a :class:`Manifold` representing the finite cover specified by a
         transitive permutation representation.  The representation is
         specified by a list of permutations, one for each generator of the
         simplified presentation of the fundamental group.  Each permutation is
@@ -605,7 +605,7 @@ cdef class Manifold(Triangulation):
 
     def covers(self, degree, method=None, cover_type='all'):
         """
-        Returns a list of Manifolds corresponding to all of the
+        Returns a list of :class:`Manifold`\ s corresponding to all of the
         finite covers of the given degree.  The default method is
         'low_index' for general covers and 'snappea' for cyclic
         covers.  The former uses Sim's algorithm while the latter
@@ -1226,7 +1226,7 @@ cdef class Manifold(Triangulation):
 
         return CuspInfo(**info)
 
-    def dehn_fill(self, filling_data, which_cusp=None):
+    def dehn_fill(self, filling_data, which_cusp=None) -> None:
         """
         Set the Dehn filling coefficients of the cusps.  This can be
         specified in the following ways, where the cusps are numbered

@@ -390,7 +390,7 @@ class ManifoldTable():
                 except RuntimeError:
                     pass
 
-        mfld = mflds[0]
+        mfld = Triangulation(mflds[0]) # Drop the hyperbolic structure
         # Check for identical triangulations.
         if (False not in mfld.cusp_info('is_complete')) and not extends_to_link:
             for n in range(100):

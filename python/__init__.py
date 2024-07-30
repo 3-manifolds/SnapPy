@@ -700,6 +700,7 @@ from . import twister
 
 from . import database
 database.Manifold = Manifold
+database.Triangulation = Triangulation
 snappy_module = sys.modules[__name__]
 database_objects = []
 known_manifold_packages = [('snappy_manifolds', True),

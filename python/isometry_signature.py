@@ -179,7 +179,7 @@ def find_shortest_geodesics_precisions(
     raise err
 
 def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
-    length_spectrum = manifold.length_spectrum_iter(
+    length_spectrum = manifold.length_spectrum_alt_gen(
         bits_prec=bits_prec, verified=verified)
 
     is_first = True

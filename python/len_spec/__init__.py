@@ -20,17 +20,17 @@ from typing import Any, Optional, Sequence
 
 _optimization : bool = False
 
-def length_spectrum(manifold,
-                    bits_prec : Optional[int] = None,
-                    verified : bool = False
-                    ) -> Sequence[LengthSpectrumGeodesicInfo]:
+def length_spectrum_alt_gen(manifold,
+                            bits_prec : Optional[int] = None,
+                            verified : bool = False
+                             ) -> Sequence[LengthSpectrumGeodesicInfo]:
     """
-    Returns an iterator for the closed geodesics sorted by real length (sorted
+    Returns a generator for the closed geodesics sorted by real length (sorted
     by lower bound of real length when ``verified = True``) for an orientable
     manifold::
 
         >>> M = Manifold("m202(3,4)(0,0)")
-        >>> spec = M.length_spectrum_iter()
+        >>> spec = M.length_spectrum_alt_gen()
         >>> next(spec) # doctest: +NUMERIC9
         Length                                       Word          Core curve
         0.14742465268510 - 1.78287093565206*I        aabcDabcB     Cusp 0
@@ -59,14 +59,14 @@ def length_spectrum(manifold,
     Also supports higher precision::
 
         >>> M = Manifold("m003(-3,1)")
-        >>> spec = M.length_spectrum_iter(bits_prec=100)
+        >>> spec = M.length_spectrum_alt_gen(bits_prec=100)
         >>> next(spec).length # doctest: +NUMERIC24
         0.58460368501798696932015666264 + 2.4953704555604684110903962008*I
 
     And verified computation::
 
         sage: M = Manifold("m019")
-        sage: spec = M.length_spectrum_iter(verified=True, bits_prec=100)
+        sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
         sage: next(spec)
         Length                                       Word          Core curve
         0.43153441294719... + 2.35105908147863...*I  a             -
@@ -96,7 +96,7 @@ def length_spectrum(manifold,
 
     A couple of seconds to compute::
 
-        >>> spec = M.length_spectrum_iter(bits_prec = 150)
+        >>> spec = M.length_spectrum_alt_gen(bits_prec = 150)
         >>> next(spec)  # doctest: +SKIP
         Length                                       Word          Core curve
         0.00150226276052 - 2.39996262244127*I        a             -
@@ -105,7 +105,7 @@ def length_spectrum(manifold,
 
         >>> N = M.drill_word('a')
         >>> N.dehn_fill((1,0),-1) # This is isometric to m125(0,0)(34,55)
-        >>> spec = N.length_spectrum_iter()
+        >>> spec = N.length_spectrum_alt_gen()
         >>> next(spec) # doctest: +NUMERIC9
         Length                                       Word          Core curve
         0.00150226276052 - 2.39996262244127*I        cDcDDcDcDD... Cusp 1
@@ -124,7 +124,7 @@ def length_spectrum(manifold,
         sage: from sage.all import RIF
         sage: L = RIF(1)
         sage: M = Manifold("m003")
-        sage: spec = M.length_spectrum_iter(verified=True)
+        sage: spec = M.length_spectrum_alt_gen(verified=True)
         sage: n = 0
         sage: for g in spec:
         ...       if g.length.real() > L:
@@ -162,7 +162,7 @@ def length_spectrum(manifold,
     of the first enumerated geodesic does contain the systole of the manifold::
 
         sage: M = Manifold("m004")
-        sage: spec = M.length_spectrum_iter(verified=True, bits_prec=100)
+        sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
         sage: g = next(spec) # g might or might not be shortest geodesic
         sage: systole = g.length.real() # But interval is large enough to contain systole
         sage: systole # doctest: +NUMERIC21
@@ -173,7 +173,7 @@ def length_spectrum(manifold,
 
     if not manifold.is_orientable():
         raise NonorientableManifoldError(
-            "Manifold.length_spectrum_iter", manifold)
+            "Manifold.length_spectrum_alt_gen", manifold)
 
     # Triangulation with necessary geometric structures
     mcomplex : Mcomplex = mcomplex_for_len_spec(

@@ -6,7 +6,7 @@ from typing import Tuple, Optional
 class LengthSpectrumGeodesicInfo(Info):
     """
     Information about a geodesic in the length spectrum as returned by
-    Manifold.length_spectrum_iter.
+    Manifold.length_spectrum_alt_gen.
     """
 
     def _body(self) -> str:

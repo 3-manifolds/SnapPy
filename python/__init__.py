@@ -193,8 +193,8 @@ Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
 from . import len_spec
-Manifold.length_spectrum_iter = len_spec.length_spectrum
-ManifoldHP.length_spectrum_iter = len_spec.length_spectrum
+Manifold.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
+ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
 
 def canonical_retriangulation(
     manifold,

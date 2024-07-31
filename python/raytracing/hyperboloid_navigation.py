@@ -530,3 +530,27 @@ class HyperboloidNavigation:
 
     def apply_settings(self, settings):
         self.setup_keymapping(settings.get('keyboard', 'QWERTY'))
+
+    def _start_flight_for_debugging_hitch(self):
+        """
+        On Mac OS, there is a hitch when flying. It is subtle, but when
+        keeping, say the w key pressed, every second or so there a brief
+        moment where we are not moving.
+
+        I couldn't figure out whether this is due to how we are processing
+        the key events or already a problem with calling self.after from
+        within the redraw code.
+
+        This function initiates a flight to isolate the problem to the
+        latter.
+
+        To use it, do:
+            >>> M = Manifold("m004") # doctest: +SKIP
+            >>> v = M.inside_view()
+            >>> v.view.widget._start_flight_for_debugging_hitch()
+
+        """
+
+        self.key_to_last_accounted_and_release_time['w'][0] = time.time()
+        self.schedule_process_key_events_and_redraw(1)
+

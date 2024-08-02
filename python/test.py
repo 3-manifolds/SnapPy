@@ -14,11 +14,12 @@ import snappy.len_spec.test
 import snappy.drilling.test
 import snappy.exterior_to_link.test
 import snappy.pari
+import snappy.test_cases
+import snappy.numeric_output_checker
 
 from snappy.sage_helper import _within_sage
 from snappy.testing import (doctest_modules, cyopengl_works,
                             tk_root, root_is_fake, DocTestParser)
-from snappy import numeric_output_checker
 
 # The following line doesn't seem to be needed. Can we just remove it?
 # MG 2024-07-26
@@ -51,7 +52,7 @@ spherogram.test.run_doctests.__name__ = spherogram.__name__
 
 modules = [
     snappy.exterior_to_link.test.run_doctests,
-    numeric_output_checker.run_doctests,
+    snappy.numeric_output_checker.run_doctests,
     snappy.number,
     snappy.SnapPy,
     snappy.SnapPyHP,
@@ -67,7 +68,8 @@ modules = [
     snappy.drilling.test.run_doctests,
     snappy.ptolemy.test.run_doctests,
     spherogram.test.run_doctests,
-    snappy.verify.test.run_doctests
+    snappy.verify.test.run_doctests,
+    snappy.test_cases
 ]
 
 slow_modules = [

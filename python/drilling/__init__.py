@@ -13,6 +13,8 @@ from .cusps import (
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
+from .. import Manifold, ManifoldHP
+
 from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo, compute_geodesic_start_point_info
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
@@ -21,16 +23,13 @@ from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
-
-import functools
 from typing import Optional, Sequence
-
 
 def drill_word(manifold,
                word : str,
                verified : bool = False,
                bits_prec : Optional[int] = None,
-               verbose : bool = False):
+               verbose : bool = False) -> Manifold:
     """
     Drills the geodesic corresponding to the given word in the unsimplified
     fundamental group.
@@ -115,11 +114,11 @@ def drill_word(manifold,
 def drill_words(manifold,
                 words : Sequence[str],
                 verified : bool = False,
-                bits_prec=None,
-                verbose : bool = False):
+                bits_prec : Optional[int] = None,
+                verbose : bool = False) -> Manifold:
     """
-    A generalization of M.drill_word taking a list of words to
-    drill several geodesics simultaneously.
+    A generalization of :meth:`drill_word <Manifold.drill_word>` taking a list
+    of words to drill several geodesics simultaneously.
 
     Here is an example where we drill the core curve corresponding to the third cusp
     and a geodesic that is not a core curve:
@@ -378,21 +377,31 @@ def drill_geodesics(mcomplex : Mcomplex,
 
     return result
 
-# Create a version of drill_word and drill_words suitable
-# for ManifoldHP.
-# Use @functools.wraps to carry forward the argument names
-# and default values and the doc string.
+def drill_word_hp(manifold,
+                  word : str,
+                  verified : bool = False,
+                  bits_prec : Optional[int] = None,
+                  verbose : bool = False) -> ManifoldHP:
+    return drill_word(
+        manifold,
+        word = word,
+        verified = verified,
+        bits_prec = bits_prec,
+        verbose = verbose).high_precision()
+drill_word_hp.__doc__ = drill_word.__doc__
 
-
-@functools.wraps(drill_word)
-def drill_word_hp(*args, **kwargs):
-    return drill_word(*args, **kwargs).high_precision()
-
-
-@functools.wraps(drill_words)
-def drill_words_hp(*args, **kwargs):
-    return drill_words(*args, **kwargs).high_precision()
-
+def drill_words_hp(manifold,
+                   words : Sequence[str],
+                   verified : bool = False,
+                   bits_prec : Optional[int] = None,
+                   verbose : bool = False) -> ManifoldHP:
+    return drill_words(
+        manifold,
+        words = words,
+        verified = verified,
+        bits_prec = bits_prec,
+        verbose = verbose).high_precision()
+drill_words_hp.__doc__ = drill_words.__doc__
 
 def _add_methods(mfld_class, high_precision=False):
     if high_precision:

@@ -10,12 +10,14 @@ isometry_signature
 >>> M = Manifold('m004(1,2)')
 >>> M.isometry_signature()
 'cPcbbbiht(3,2)'
+
 sage: M.isometry_signature(verified=True)
 'cPcbbbiht(3,2)'
 
 >>> M = ManifoldHP('m004(1,2)')
 >>> M.isometry_signature()
 'cPcbbbiht(3,2)'
+
 sage: M.isometry_signature(verified=True) # Test bug reported by Nathan
 'cPcbbbiht(3,2)'
 
@@ -25,12 +27,14 @@ sage: M.isometry_signature(verified=True) # Test bug reported by Nathan
 >>> M = Manifold('m137(3,2)')
 >>> M.isometry_signature()
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
+
 sage: M.isometry_signature(verified=True)
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
 
 >>> M = ManifoldHP('m137(3,2)')
 >>> M.isometry_signature()
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
+
 sage: M.isometry_signature(verified=True)
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
 

@@ -6,9 +6,10 @@ of it (though depending very much on snappy), except for borrowing
 some linear algebra code.
 """
 
-import snappy
 import FXrays
-if snappy._within_sage:
+
+from ...sage_helper import _within_sage
+if _within_sage:
     from sage.all import gcd
     from sage.all import vector as Vector
     from sage.all import matrix as Matrix
@@ -292,5 +293,6 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
 
 if __name__ == "__main__":
     import doctest
+    import snappy
     names = {'Manifold': snappy.Manifold}
     doctest.testmod(extraglobs=names)

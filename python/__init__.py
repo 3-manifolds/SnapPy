@@ -3,16 +3,17 @@
 # logging.basicConfig(filename='example.log',level=logging.DEBUG)
 # logging.debug('This message should go to the log file')
 import sys
-from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
-                     DirichletDomain, CuspNeighborhood, SymmetryGroup,
-                     AlternatingKnotExteriors, NonalternatingKnotExteriors,
+from .SnapPy import (AbelianGroup,
+                     FundamentalGroup,
+                     SymmetryGroup,
+                     AlternatingKnotExteriors,
+                     NonalternatingKnotExteriors,
                      pari)
-from .exceptions import (SnapPeaFatalError,
-                         InsufficientPrecisionError,
-                         NonorientableManifoldError)
 from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
+from .SnapPy import CuspNeighborhood
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
+from .SnapPy import HolonomyGroup
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
 from .SnapPy import Triangulation as _TriangulationLP
@@ -24,6 +25,10 @@ from .SnapPyHP import Manifold as _ManifoldHP
 import time
 from .SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
+
+from .exceptions import (SnapPeaFatalError,
+                         InsufficientPrecisionError,
+                         NonorientableManifoldError)
 
 # Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
@@ -178,8 +183,6 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
            'InsufficientPrecisionError',
            'pari', 'twister', ]
-
-from .sage_helper import _within_sage
 
 from . import snap
 snap.add_methods(Manifold)

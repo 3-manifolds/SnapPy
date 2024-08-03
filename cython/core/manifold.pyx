@@ -958,7 +958,7 @@ cdef class Manifold(Triangulation):
             else:
                 engine = verify.CertifiedShapesEngine(
                     self, [a['rect'] for a in result],
-                    bits_prec = Number._default_precision)
+                    bits_prec = self._precision())
             if not engine.expand_until_certified():
                 raise RuntimeError('Could not certify shape intervals, either '
                                    'there are degenerate shapes or the '
@@ -1829,3 +1829,6 @@ cdef class Manifold(Triangulation):
 
         free_cross_sections(self.c_triangulation)
         return tilts, side_lengths
+
+    def _precision(self):
+        return Number._default_precision

@@ -966,7 +966,7 @@ cdef class Triangulation():
         free_triangulation_data(data)
         return result
 
-    def isomorphisms_to(self, Triangulation other not None):
+    def _isomorphisms_to(self, Triangulation other not None):
         """
         Returns a complete list of combinatorial isomorphisms between
         the two triangulations:
@@ -1003,6 +1003,12 @@ cdef class Triangulation():
             result = IsometryListToIsometries(isometries)
         free_isometry_list(isometries)
         return result
+
+    def isomorphisms_to(self, Triangulation other not None):
+        """
+        This is only here to make the tests that use SnapPy.Triangulation work."
+        """
+        return self._isomorphisms_to(other)
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:

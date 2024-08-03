@@ -30,6 +30,8 @@ from .exceptions import (SnapPeaFatalError,
                          InsufficientPrecisionError,
                          NonorientableManifoldError)
 
+from typing import Union, Tuple
+
 # Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
@@ -98,13 +100,6 @@ class Manifold(_ManifoldLP, Triangulation):
     def low_precision(self):
         return self.copy()
 
-    def is_isometric_to(self, other, return_isometries=False):
-        __doc__ = _ManifoldLP.is_isometric_to.__doc__
-        if other.__class__ is ManifoldHP:
-            return _ManifoldHP.is_isometric_to(self.high_precision(), other,
-                                                  return_isometries)
-        return _ManifoldLP.is_isometric_to(self, other, return_isometries)
-
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
 class ManifoldHP(_ManifoldHP, TriangulationHP):
@@ -134,13 +129,6 @@ class ManifoldHP(_ManifoldHP, TriangulationHP):
 
     def high_precision(self):
         return self.copy()
-
-    def is_isometric_to(self, other, return_isometries=False):
-        __doc__ = _ManifoldHP.is_isometric_to.__doc__
-        if other.__class__ is Manifold:
-            return _ManifoldHP.is_isometric_to(self, other.high_precision(),
-                                                   return_isometries)
-        return _ManifoldHP.is_isometric_to(self, other, return_isometries)
 
     def identify(self, extends_to_link=False):
         """
@@ -183,6 +171,73 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
            'InsufficientPrecisionError',
            'pari', 'twister', ]
+
+def _symmetrize_high_precision_manifold(
+        mfd1 : Union[Manifold, ManifoldHP],
+        mfd2 : Union[Manifold, ManifoldHP]
+              ) -> Union[Tuple[Manifold,   Manifold],
+                         Tuple[ManifoldHP, ManifoldHP]]:
+    """
+    Given a (potential) mix of two Manifold and ManifoldHP,
+    promote one to high precision if necessary and return
+    the result as pair.
+    """
+    resolved_mfd1 = mfd1
+    resolved_mfd2 = mfd2
+    high1 = isinstance(mfd1, ManifoldHP)
+    high2 = isinstance(mfd2, ManifoldHP)
+    if high1 and not high2:
+        resolved_mfd2 = ManifoldHP(mfd2)
+    if high2 and not high1:
+        resolved_mfd1 = ManifoldHP(mfd1)
+    return (resolved_mfd1, resolved_mfd2)
+
+def _symmetrize_low_precision_triangulation(
+        tri1 : Union[Triangulation, TriangulationHP],
+        tri2 : Union[Triangulation, TriangulationHP]
+              ) -> Union[Tuple[Triangulation,   Triangulation],
+                         Tuple[TriangulationHP, TriangulationHP]]:
+    """
+    Given a (potential) mix of two Triangulation and TriangulationHP,
+    demote one to low precision if necessary and return
+    the result as pair.
+    """
+    resolved_tri1 = tri1
+    resolved_tri2 = tri2
+    low1 = isinstance(tri1, Triangulation)
+    low2 = isinstance(tri2, Triangulation)
+    if low1 and not low2:
+        resolved_tri2 = Triangulation(tri2, remove_finite_vertices=False)
+    if low2 and not low1:
+        resolved_tri1 = Triangulation(tri1, remove_finite_vertices=False)
+    return (resolved_tri1, resolved_tri2)
+
+def is_isometric_to(self,
+                    other : Union[Manifold, ManifoldHP],
+                    return_isometries : bool = False):
+    resolved_self, resolved_other = (
+        _symmetrize_high_precision_manifold(
+            self, other))
+
+    return resolved_self._is_isometric_to(
+        resolved_other,
+        return_isometries=return_isometries)
+
+is_isometric_to.__doc__ = _ManifoldLP._is_isometric_to.__doc__
+Manifold.is_isometric_to = is_isometric_to
+ManifoldHP.is_isometric_to = is_isometric_to
+
+def isomorphisms_to(self, other):
+    resolved_self, resolved_other = (
+        _symmetrize_low_precision_triangulation(
+            self, other))
+
+    return resolved_self._isomorphisms_to(
+        resolved_other)
+
+isomorphisms_to.__doc__ = _TriangulationLP._isomorphisms_to.__doc__
+Triangulation.isomorphisms_to = isomorphisms_to
+TriangulationHP.isomorphisms_to = isomorphisms_to
 
 from . import snap
 snap.add_methods(Manifold)

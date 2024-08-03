@@ -264,12 +264,7 @@ def drill_manifold_precisions(
     raise err
 
 def compute_meridian_slopes(isosig, tri):
-    if isinstance(tri, TriangulationHP) or isinstance(tri, ManifoldHP):
-        isosig_tri = TriangulationHP(
-            isosig, remove_finite_vertices=False)
-    else:
-        isosig_tri = Triangulation(
-            isosig, remove_finite_vertices=False)
+    isosig_tri = Triangulation(isosig, remove_finite_vertices=False)
     for iso in tri.isomorphisms_to(isosig_tri):
         cusp_map, = iso.cusp_maps()
         m = cusp_map[0,0]

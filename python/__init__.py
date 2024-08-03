@@ -262,6 +262,8 @@ ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 from . import len_spec
 Manifold.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
 ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
+Manifold.length_spectrum_alt = len_spec.length_spectrum_alt
+ManifoldHP.length_spectrum_alt = len_spec.length_spectrum_alt
 
 from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation

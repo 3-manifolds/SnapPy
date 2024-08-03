@@ -13,10 +13,14 @@ from ..hyperboloid.line import R13Line
 from ..SnapPy import list_as_word, inverse_list_word
 from ..math_basics import lower # type: ignore
 from ..exceptions import InsufficientPrecisionError, NonorientableManifoldError
+from ..sage_helper import _within_sage, SageNotAvailable
+
+if _within_sage:
+    from sage.rings.real_mpfi import RealIntervalField
 
 import heapq
 
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, List, Sequence
 
 _optimization : bool = False
 
@@ -207,6 +211,93 @@ def length_spectrum_alt_gen(manifold,
             multiplicity = 1)
         is_first = False
 
+def length_spectrum_alt(manifold,
+                        count : Optional[int] = None,
+                        max_len : Optional[Any] = None,
+                        bits_prec : Optional[int] = None,
+                        verified : bool = False
+                        ) -> List[LengthSpectrumGeodesicInfo]:
+    """
+    Convenience method for
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+    TODO: Write more documentation.
+
+    Specify number of geodesics::
+
+        >>> M = Manifold("m202(3,4)(0,0)")
+        >>> M.length_spectrum_alt(count = 3) # doctest +NUMERIC9
+        [Length                                       Word          Core curve
+        0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -]
+
+    Specify cut-off::
+    
+        >>> M.length_spectrum_alt(max_len = 1.1) # doctest +NUMERIC9
+        [Length                                       Word          Core curve
+        0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -, 0.93461379591349 + 2.70060614107722*I        a             -]
+
+    Also supports verified computations::
+    
+        sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest +NUMERIC9
+        [Length                                       Word          Core curve
+        0.147424652685154?  - 1.782870935652013? *I  aabcDabcB     Cusp 0, 0.81161414965958... + 2.72911699294425...*I  b             -, 0.84163270359334... + 2.61245944742151...*I  aB            -]
+
+    Cut-off will be cast to interval::
+
+        sage: M.length_spectrum_alt(max_len = 1.1, verified = True, bits_prec = 110)
+        [Length                                       Word          Core curve
+        0.14742465268515... - 1.78287093565201...*I  aabcDabcB     Cusp 0, 0.81161414965958... + 2.72911699294425...*I  b             -, 0.84163270359334... + 2.61245944742151...*I  aB            -, 0.93461379591349... + 2.70060614107721...*I  a             -]
+
+    """
+    
+    return list(
+        _length_spectrum_alt_impl(
+            manifold,
+            count = count,
+            max_len = max_len,
+            bits_prec = bits_prec,
+            verified = verified))
+
+def _length_spectrum_alt_impl(
+        manifold,
+        count : Optional[int],
+        max_len : Optional[Any],
+        bits_prec : Optional[int],
+        verified : bool):
+
+    has_count = count is not None
+    has_max_len = max_len is not None
+
+    if not (has_count ^ has_max_len):
+        raise ValueError(
+            "Must specify exactly one of count or max_len.")
+
+    if has_max_len:
+        if verified:
+            if _within_sage:
+                if bits_prec is None:
+                    resolved_bits_prec = manifold._precision()
+                else:
+                    resolved_bits_prec = bits_prec
+                RIF = RealIntervalField(resolved_bits_prec)
+                resolved_max_len = RIF(max_len)
+            else:
+                raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
+        else:
+            resolved_max_len = max_len
+
+    for i, info in enumerate(
+            length_spectrum_alt_gen(manifold = manifold,
+                                    bits_prec = bits_prec,
+                                    verified = verified)):
+        if has_max_len:
+            if info.length.real() > resolved_max_len:
+                break
+        else:
+            if i == count:
+                break
+
+        yield info
+        
 def _length_spectrum_from_mcomplex(
         mcomplex : Mcomplex, manifold) -> Sequence[GeodesicInfoBase]:
     """

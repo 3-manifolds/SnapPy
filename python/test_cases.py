@@ -38,9 +38,17 @@ sage: M.isometry_signature(verified=True)
 sage: M.isometry_signature(verified=True)
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
 
+Class hierarchy
+---------------
+
+>>> isinstance(Manifold("m004"), Triangulation)
+True
+
+>>> isinstance(ManifoldHP("m004"), TriangulationHP)
+True
 """
 
 if not __doc__:
     raise Exception("doc string with tests was not recognized.")
 
-from . import Manifold, ManifoldHP
+from . import Manifold, ManifoldHP, Triangulation, TriangulationHP

@@ -25,15 +25,21 @@ import time
 from .SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
 
+# Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
 
-
+# Subclass to be able to monkey-patch
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
-
-class Manifold(_ManifoldLP):
+# We want Manifold to be a subclass of Triangulation.
+# Unfortunately, that introduces a diamond pattern here.
+# Luckily, the python resolves methods and bases classes
+# in the presence of a diamond pattern seem to work just
+# fine. In particular, we do not double allocate the underlying
+# C structures.
+class Manifold(_ManifoldLP, Triangulation):
     __doc__ = _ManifoldLP.__doc__
 
     def identify(self, extends_to_link=False):
@@ -94,8 +100,9 @@ class Manifold(_ManifoldLP):
                                                   return_isometries)
         return _ManifoldLP.is_isometric_to(self, other, return_isometries)
 
-
-class ManifoldHP(_ManifoldHP):
+# We want ManifoldHP to be a subclass of TriangulationHP.
+# See comment about Manifold and the diamond pattern.
+class ManifoldHP(_ManifoldHP, TriangulationHP):
     __doc__ = _ManifoldHP.__doc__
 
     def low_precision(self):

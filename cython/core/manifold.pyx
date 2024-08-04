@@ -1621,7 +1621,7 @@ cdef class Manifold(Triangulation):
         """
         return self._is_isometric_to(
             other, return_isometries = return_isometries)
-        
+
     def is_two_bridge(self) -> bool:
         """
         If the manifold is the complement of a two-bridge knot or link

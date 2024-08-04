@@ -175,7 +175,7 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
 def _symmetrize_high_precision_manifold(
         mfd1 : Union[Manifold, ManifoldHP],
         mfd2 : Union[Manifold, ManifoldHP]
-              ) -> Union[Tuple[Manifold,   Manifold],
+              ) -> Union[Tuple[Manifold, Manifold],
                          Tuple[ManifoldHP, ManifoldHP]]:
     """
     Given a (potential) mix of two Manifold and ManifoldHP,
@@ -195,7 +195,7 @@ def _symmetrize_high_precision_manifold(
 def _symmetrize_low_precision_triangulation(
         tri1 : Union[Triangulation, TriangulationHP],
         tri2 : Union[Triangulation, TriangulationHP]
-              ) -> Union[Tuple[Triangulation,   Triangulation],
+              ) -> Union[Tuple[Triangulation, Triangulation],
                          Tuple[TriangulationHP, TriangulationHP]]:
     """
     Given a (potential) mix of two Triangulation and TriangulationHP,

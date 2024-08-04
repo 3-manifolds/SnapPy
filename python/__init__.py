@@ -267,18 +267,17 @@ from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical.canonical_retriangulation
 
-from .isometry_signature import isometry_signature
+from . import isometry_signature
 
-Manifold.isometry_signature = isometry_signature
-ManifoldHP.isometry_signature = isometry_signature
+Manifold.isometry_signature = isometry_signature.isometry_signature
+ManifoldHP.isometry_signature = isometry_signature.isometry_signature
 
-from .cusps.cusp_area_matrix import cusp_area_matrix
+from .cusps import cusp_area_matrix
 
-Manifold.cusp_area_matrix = cusp_area_matrix
-ManifoldHP.cusp_area_matrix = cusp_area_matrix
+Manifold.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
+ManifoldHP.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
 
 from .cusps import cusp_areas_from_matrix
-
 
 def cusp_areas(manifold, policy='unbiased',
                method='trigDependentTryCanonize',

@@ -50,7 +50,10 @@ def isometry_signature(
     call returns ``None``::
 
         sage: M = Manifold("m412")
-        sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = None)
+        sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = []) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        RuntimeError: Could not compute canonical retriangulation.
 
     """
 

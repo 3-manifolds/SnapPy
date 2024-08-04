@@ -12,6 +12,10 @@ import snappy.cusps.test
 import snappy.raytracing.test
 import snappy.len_spec.test
 import snappy.drilling.test
+import snappy.canonical
+import snappy.cusps.cusp_area_matrix
+import snappy.cusps.cusp_areas_from_matrix
+import snappy.isometry_signature
 import snappy.exterior_to_link.test
 import snappy.pari
 import snappy.test_cases
@@ -50,6 +54,29 @@ for key in identify_tests + triangulation_tests + browser_tests:
 # sets run_doctests' name.
 spherogram.test.run_doctests.__name__ = spherogram.__name__
 
+def additional_doctests(verbose=False, print_info=True):
+    """
+    I noticed that some of my changes to move code from here into
+    its own files caused some loss of test coverage.
+
+    In a panic, adding them explicitly here.
+
+    There ought to be a better way to do this...
+    """
+    
+    globs = {'Manifold' : snappy.Manifold,
+             'ManifoldHP' : snappy.ManifoldHP}
+    return doctest_modules(
+        [ snappy.isometry_signature,
+          snappy.canonical,
+          snappy.cusps.cusp_area_matrix,
+          snappy.cusps.cusp_areas_from_matrix
+         ],
+        verbose=verbose,
+        print_info=print_info,
+        extraglobs = globs)
+additional_doctests.__name__ = 'snappy.<HARD TO REACH>'
+
 modules = [
     snappy.exterior_to_link.test.run_doctests,
     snappy.numeric_output_checker.run_doctests,
@@ -57,6 +84,7 @@ modules = [
     snappy.SnapPy,
     snappy.SnapPyHP,
     snappy.database,
+    additional_doctests,
     snappy,
     snappy.snap.test.run_doctests,
     snappy.matrix,

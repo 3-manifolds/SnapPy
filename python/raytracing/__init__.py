@@ -8,7 +8,9 @@ except ImportError as e:
     InsideViewer = None
     _importErrorRaytracing = str(e)
 
-def inside_view(self, cohomology_class=None, geodesics=[]):
+from typing import Sequence
+
+def inside_view(self, cohomology_class=None, geodesics : Sequence[str]=[]):
     """
     Show raytraced inside view of hyperbolic manifold. See
     `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_
@@ -22,16 +24,21 @@ def inside_view(self, cohomology_class=None, geodesics=[]):
         >>> M = Manifold("m004")
         >>> M.inside_view(cohomology_class = 0) #doctest: +CYMODERNOPENGL
 
-    The cohomology class in H^2(M, bd M; R) producing the cohomology
-    fractal can be specified as a cocycle or using an automatically computed
-    basis (of, say, length ``n``). Thus, ``cohomology_class`` can be one of
-    the following.
+    The cohomology class in :math:`H^2(M, \partial M; \mathbb{R})` producing the
+    cohomology fractal can be specified as a cocycle or using an automatically
+    computed basis (of, say, length ``n``). Thus, ``cohomology_class`` can be
+    one of the following.
 
     - An integer ``i`` between 0 and ``n`` - 1 to pick the ``i``-th basis
       vector.
     - An array of length ``n`` specifying the cohomology class as linear
       combination of basis vectors.
     - A weight for each face of each tetrahedron.
+
+    Geodesics can be specified as words in the unsimplified fundamental group:
+
+        >>> M = Manifold("m004")
+        >>> M.inside_view(geodesics=['a', 'bC']) #doctest: +CYMODERNOPENGL
 
     """
 

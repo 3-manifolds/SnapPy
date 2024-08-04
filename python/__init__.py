@@ -6,6 +6,7 @@ import sys
 from .SnapPy import (AbelianGroup,
                      FundamentalGroup,
                      SymmetryGroup,
+                     Isometry,
                      AlternatingKnotExteriors,
                      NonalternatingKnotExteriors,
                      pari)
@@ -30,7 +31,7 @@ from .exceptions import (SnapPeaFatalError,
                          InsufficientPrecisionError,
                          NonorientableManifoldError)
 
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 
 # Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
@@ -214,7 +215,8 @@ def _symmetrize_low_precision_triangulation(
 
 def is_isometric_to(self,
                     other : Union[Manifold, ManifoldHP],
-                    return_isometries : bool = False):
+                    return_isometries : bool = False
+                    ) -> Union[bool, List[Isometry]]:
     resolved_self, resolved_other = (
         _symmetrize_high_precision_manifold(
             self, other))
@@ -227,7 +229,9 @@ is_isometric_to.__doc__ = _ManifoldLP._is_isometric_to.__doc__
 Manifold.is_isometric_to = is_isometric_to
 ManifoldHP.is_isometric_to = is_isometric_to
 
-def isomorphisms_to(self, other):
+def isomorphisms_to(self,
+                    other : Union[Triangulation, TriangulationHP]
+                    ) -> List[Isometry]:
     resolved_self, resolved_other = (
         _symmetrize_low_precision_triangulation(
             self, other))

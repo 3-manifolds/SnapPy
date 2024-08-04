@@ -26,7 +26,7 @@ default_exact_bits_prec_and_degrees = [( 212, 10),
                                        (1000, 20),
                                        (2000, 20)]
 
-_num_tries_canonize = 3
+_num_tries_kernel_canonize = 3
 _max_tries_verify_penalty = 9
 
 
@@ -221,31 +221,34 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     if None in opacities:
         raise Exception("Mismatch with opacities")
 
-    # If there are transparent faces, this triangulation is just the
+    # If there are transparent faces, the given triangulation is just the
     # proto-canonical triangulation. We need to call into the SnapPea
     # kernel to retriangulate (introduces finite vertices)
-    if False in opacities:
+    if not all(opacities):
         return M._canonical_retriangulation(opacities)
 
-    # No transparent faces, this triangulation is the canonical triangulation.
+    # No transparent faces, this triangulation itself is the canonical cell
+    # decomposition.
     # Return it without introducing finite vertices.
     return M
 
 
-def _retrying_canonize(M):
+def _retrying_canonize(M) -> None:
     """
     Wrapper for SnapPea kernel's function to compute the proto-canonical
     triangulation in place. It will retry the kernel function if it fails.
-    Returns True if and only if the kernel function was successful eventually.
+    Raises an exception if it did not succeed eventually.
     """
-    for i in range(_num_tries_canonize):
+    err = ValueError('_num_tries_canonize is not positive.')
+
+    for i in range(_num_tries_kernel_canonize):
         try:
             M.canonize()
-            return True
-        except (RuntimeError, SnapPeaFatalError):
+            return
+        except (RuntimeError, SnapPeaFatalError) as e:
+            err = e
             M.randomize()
-    return False
-
+    raise err
 
 def _retrying_high_precision_canonize(M):
     """
@@ -259,17 +262,14 @@ def _retrying_high_precision_canonize(M):
     Mcopy = M.copy()
 
     # Try with the given precision first
-    if _retrying_canonize(Mcopy):
+    try:
+        _retrying_canonize(Mcopy)
         return Mcopy
-
-    # Then try with high precision.
-    Mhp = M.high_precision()
-    if _retrying_canonize(Mhp):
+    except (RuntimeError, SnapPeaFatalError):
+        # Then try with high precision.
+        Mhp = M.high_precision()
+        _retrying_canonize(Mhp)
         return Mhp
-
-    # Fail
-    return None
-
 
 def _print_exception(e):
     print('%s: %s' % (type(e).__name__, e))
@@ -362,7 +362,11 @@ def verified_canonical_retriangulation(
     non-tetrahedral cells so interval arithmetics can't certify it)::
 
        sage: M = Manifold("m412")
-       sage: verified_canonical_retriangulation(M, exact_bits_prec_and_degrees = None)
+       sage: verified_canonical_retriangulation(M, exact_bits_prec_and_degrees = None) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+       Traceback (most recent call last):
+       ...
+       snappy.verify.exceptions.TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: ... < 0
+
     """
 
     # This is the "outer" retry loop: it catches those verification
@@ -370,6 +374,8 @@ def verified_canonical_retriangulation(
     # triangulation
 
     tries_penalty_left = _max_tries_verify_penalty
+
+    err = ValueError("_max_tries_verify_penalty is not positive.")
 
     while tries_penalty_left > 0:
         try:
@@ -387,6 +393,8 @@ def verified_canonical_retriangulation(
         except (ZeroDivisionError,
                 exceptions.TiltProvenPositiveNumericalVerifyError,
                 exceptions.EdgeEquationExactVerifyError) as e:
+
+            err = e
 
             # These three exceptions are probably raised due to the
             # SnapPea kernel failures:
@@ -433,50 +441,41 @@ def verified_canonical_retriangulation(
                       "proto_canonize.")
                 print("Next step: Give up.")
 
-            return None
+            raise e
 
-    return None
-
+    raise err
 
 def _verified_canonical_retriangulation(
         M, interval_bits_precs, exact_bits_prec_and_degrees,
         verbose):
+    """
+    Implements the "inner" retry loop of verified_canonical_retriangulation
 
-    # Implements the "inner" retry loop of verified_canonical_retriangulation
+    Retrun retriangulation or raises exception.
 
-    # If this returns None, it means that we have given up
-    # If it leaves Exceptions uncaught, the "outer" loop will randomize
-    # the triangulation.
+    Some exceptions are caught by the "outer" loop to retry, using that
+    the SnapPea kernel uses a randomized algorithm to fill incomplete cusps
+    (if applicable) and perform the flips to find the proto-canonical
+    triangulation.
+    """
 
-    num_complete_cusps = 0
-    num_incomplete_cusps = 0
-    for cusp_info in M.cusp_info():
-        if cusp_info['complete?']:
-            num_complete_cusps += 1
-        else:
-            num_incomplete_cusps += 1
-
-    if not num_complete_cusps:
-        if verbose:
-            print("Failure: Due to no unfilled cusp.")
-            print("Next step: Give up.")
-        return None
-
-    # Dehn-fill manifold first
-    if num_incomplete_cusps:
-        Mfilled = M.filled_triangulation()
-    else:
+    if all(M.cusp_info('complete?')):
         Mfilled = M
+    else:
+        # Dehn-fill manifold first
+        Mfilled = M.filled_triangulation()
+        if not all(Mfilled.cusp_info('complete?')):
+            raise ValueError(
+                'Could not compute filled triangulation. '
+                'Are the filling coefficients co-prime integers?')
 
     # Try to compute proto-canonical triangulation
     Mcopy = _retrying_high_precision_canonize(Mfilled)
 
-    if not Mcopy:
-        if verbose:
-            print("Failure: In SnapPea kernel's proto_canonize()")
-            print("Next step: Give up.")
-        return None
-
+    err = ValueError(
+        'Neither interval_bits_precs nor exact_bits_prec_and_degrees was '
+        'non-empty.')
+    
     # First try interval arithmetics to verify
     if interval_bits_precs:
         for interval_bits_prec in interval_bits_precs:
@@ -490,6 +489,7 @@ def _verified_canonical_retriangulation(
                     ValueError, # Manifold.tetrahedra_shapes,
                                 # KrawczykShapesEngine.log_gluing_LHSs
                     exceptions.NumericalVerifyError) as e:
+                err = e
                 if verbose:
                     _print_exception(e)
                     if isinstance(e, exceptions.NumericalVerifyError):
@@ -509,13 +509,13 @@ def _verified_canonical_retriangulation(
                 return exactly_checked_canonical_retriangulation(
                     Mcopy, bits_prec, degree)
             except FindExactShapesError as e:
+                err = e
                 if verbose:
                     _print_exception(e)
                     print("Failure: Could not find exact shapes.")
                     print("Next step: trying different method/precision")
 
-    return None
-
+    raise err
 
 _known_canonical_retriangulations = [
     ('m004', '\x02\x0e\x01\x01\x01-\x1b\x87'),

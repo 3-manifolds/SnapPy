@@ -45,6 +45,8 @@ News
     fails silently returning ``None`` but raises an exception if the signature
     could not be computed.
 
+  - Similarly, :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>` can not longer fail silently returning ``None``.
+
   - :meth:`inside_view <snappy.Manifold.inside_view>` shows the user as a paper
     plane or eye ball. Also adding button to geodesics window to put camera
     onto a geodesic.

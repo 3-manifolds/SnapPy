@@ -265,7 +265,7 @@ ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
 
 from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation
-ManifoldHP.canonical_retriangulation = canonical.canonical_retriangulation
+ManifoldHP.canonical_retriangulation = canonical.canonical_retriangulation_hp
 
 from . import isometry_signature
 

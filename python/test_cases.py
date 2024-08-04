@@ -49,6 +49,11 @@ sage: M.isometry_signature(verified=True)
 sage: M.isometry_signature(verified=True)
 'sLLvwzvQPAQPQccghmiljkpmqnoorqrrqfafaoaqoofaoooqqaf(3,2)'
 
+sage: M.isometry_signature(verified=True, exact_bits_prec_and_degrees=[]) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+RuntimeError: Could not compute or verify canonical retriangulation of drilled manifold. Geodesic was: abCDaDAd.
+
 Class hierarchy
 ---------------
 
@@ -106,6 +111,51 @@ True
 0
 >>> len(Mhp.isomorphisms_to(Ohp))
 0
+
+Canonical retriangulation
+-------------------------
+
+Some cases that should be rejected
+
+>>> M = Manifold("m004(3,4)")
+>>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+ValueError: Canonical retriangulation needs at least one unfilled cusp.
+
+sage: M.canonical_retriangulation(verified=True) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+ValueError: Canonical retriangulation needs at least one unfilled cusp.
+
+>>> M = Manifold("m125(10,12)")
+>>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
+
+sage: M.canonical_retriangulation(verified=True) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
+
+>>> M = Manifold("m125(11.1,12)")
+>>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+Traceback (most recent call last):
+...
+ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
+
+sage: M.canonical_retriangulation(verified=True)
+Traceback (most recent call last):
+...
+ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
+
+>>> M = Manifold("m125(3,4)")
+>>> M.canonical_retriangulation().triangulation_isosig()
+'eLAkbbcdddhrhj_BaaB'
+
+sage: M.canonical_retriangulation(verified=True).triangulation_isosig()
+'eLAkbbcdddhrhj_BaaB'
 
 """
 

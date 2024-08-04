@@ -53,7 +53,7 @@ def isometry_signature(
         sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = []) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        RuntimeError: Could not compute canonical retriangulation.
+        snappy.verify.exceptions.TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: ... < 0
 
     """
 
@@ -89,9 +89,6 @@ def isometry_signature_cusped(
         interval_bits_precs=interval_bits_precs,
         exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
         verbose=verbose)
-
-    if not retrig:
-        raise RuntimeError("Could not compute canonical retriangulation.")
 
     return retrig.triangulation_isosig(decorated=of_link,
                                        ignore_cusp_ordering=True,
@@ -139,16 +136,17 @@ def isometry_signature_closed(
         if verbose:
             print("Computing isometry signature of drilled manifold")
 
-        retrig = drilled_manifold.canonical_retriangulation(
-            verified=verified,
-            interval_bits_precs=interval_bits_precs,
-            exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
-            verbose=verbose)
-
-        if retrig is None:
+        try:
+            retrig = drilled_manifold.canonical_retriangulation(
+                verified=verified,
+                interval_bits_precs=interval_bits_precs,
+                exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
+                verbose=verbose)
+        except Exception as e:
             raise RuntimeError(
-                "Could not compute canonical retriangulation of "
-                "drilled manifold. Geodesic was: %s." % shortest_geodesic)
+                "Could not compute or verify canonical retriangulation of "
+                "drilled manifold. "
+                "Geodesic was: %s." % shortest_geodesic) from e
 
         isosig = retrig.triangulation_isosig(decorated=False)
 

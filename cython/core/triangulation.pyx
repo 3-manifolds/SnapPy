@@ -1006,7 +1006,7 @@ cdef class Triangulation():
 
     def isomorphisms_to(self, Triangulation other not None):
         """
-        This is only here to make the tests that use SnapPy.Triangulation work."
+        This is only here to make the tests that use SnapPy.Triangulation work.
         """
         return self._isomorphisms_to(other)
 
@@ -1257,7 +1257,7 @@ cdef class Triangulation():
 
         return CuspInfo(**info)
 
-    def reverse_orientation(self):
+    def reverse_orientation(self) -> None:
         """
         Reverses the orientation of the Triangulation, presuming that
         it is orientable.

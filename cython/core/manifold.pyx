@@ -1531,8 +1531,8 @@ cdef class Manifold(Triangulation):
                          Manifold other,
                          return_isometries : bool = False):
         """
-        Returns True if M and N are isometric, False if they not.  A
-        RuntimeError is raised in cases where the SnapPea kernel fails
+        Returns ``True`` if M and N are isometric, ``False`` if they not.
+        A ``RuntimeError`` is raised in cases where the SnapPea kernel fails
         to determine either answer.  (This is fairly common for closed
         manifolds.)
 
@@ -1562,7 +1562,7 @@ cdef class Manifold(Triangulation):
         the above example, the meridian of cusp 0 is sent to the
         meridian of cusp 1.
 
-        Note: The answer True is rigorous, but the answer False may
+        Note: The answer ``True`` is rigorous, but the answer ``False`` may
         not be as there could be numerical errors resulting in finding
         an incorrect canonical triangulation.
         """
@@ -1617,7 +1617,7 @@ cdef class Manifold(Triangulation):
                         Manifold other,
                         return_isometries : bool = False):
         """
-        This is only here to make the tests that use SnapPy.Manifold work."
+        This is only here to make the tests that use SnapPy.Manifold work.
         """
         return self._is_isometric_to(
             other, return_isometries = return_isometries)

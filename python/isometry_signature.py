@@ -5,6 +5,7 @@ from .math_basics import is_RealIntervalFieldElement
 from .exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from .geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
 
+
 def isometry_signature(
     manifold, of_link=False, verified=False,
     interval_bits_precs=verify.default_interval_bits_precs,
@@ -69,6 +70,7 @@ def isometry_signature(
             exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
             verbose=verbose)
 
+
 def isometry_signature_cusped(
         manifold, *,
         of_link,
@@ -91,6 +93,7 @@ def isometry_signature_cusped(
     return retrig.triangulation_isosig(decorated=of_link,
                                        ignore_cusp_ordering=True,
                                        ignore_curve_orientations=True)
+
 
 def isometry_signature_closed(
         manifold, *,
@@ -156,11 +159,12 @@ def isometry_signature_closed(
 
     return '%s(%d,%d)' % (isosig, m, l)
 
+
 def find_shortest_geodesics_precisions(
         manifold, *, bits_precs, verified, verbose):
 
     err = ValueError("bits_precs was empty.")
-    
+
     for bits_prec in bits_precs:
         if verbose:
             print("Using precision %d to find shortest geodesics" % bits_prec)
@@ -177,6 +181,7 @@ def find_shortest_geodesics_precisions(
             err = e
 
     raise err
+
 
 def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
     length_spectrum = manifold.length_spectrum_alt_gen(

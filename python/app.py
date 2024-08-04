@@ -361,8 +361,9 @@ class SnapPyPolyhedronViewer(PolyhedronViewer):
     def help_window(self):
         window = self.parent
         if not hasattr(window, 'polyhedron_help'):
-            window.polyhedron_help = InfoWindow(window,  'Polyhedron Viewer Help',
-                                                self.widget.help_text, 'polyhedron_help')
+            window.polyhedron_help = InfoWindow(
+                window, 'Polyhedron Viewer Help',
+                self.widget.help_text, 'polyhedron_help')
         else:
             window.polyhedron_help.deiconify()
             window.polyhedron_help.lift()

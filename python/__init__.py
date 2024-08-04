@@ -474,7 +474,7 @@ def complex_volume(manifold, verified_modulo_2_torsion=False,
     Returns the complex volume modulo :math:`i \\pi^2` which is given by
 
     .. math::
-        \\text{vol} + i \\text{CS} 
+        \\text{vol} + i \\text{CS}
 
     where :math:`\\text{CS}` is the (unnormalized) Chern-Simons invariant.
 

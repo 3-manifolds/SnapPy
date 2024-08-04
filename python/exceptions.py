@@ -1,15 +1,16 @@
-# Exceptions from the SnapPea kernel
 class SnapPeaFatalError(Exception):
     """
     Exception raised by SnapPy when the SnapPea kernel encounters a fatal
     error.
     """
 
+
 class InsufficientPrecisionError(Exception):
     """
     Exception raised when a computation fails and is likely to succeed if
     higher precision is used.
     """
+
 
 class NonorientableManifoldError(ValueError):
     """

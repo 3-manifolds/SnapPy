@@ -3,6 +3,7 @@ from . import Triangulation, Manifold, ManifoldHP
 
 from typing import Optional, Union, Sequence, Tuple
 
+
 def canonical_retriangulation(
     manifold,
     verified : bool = False,

@@ -10,7 +10,7 @@ a consistent result:
     >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
     >>> M = Manifold("v2986")
     >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
+    'kLvvAQQkbhijhghgjijxxacvcccccv_baBbcBba'
 
 Test non-simple geodesic and verified computation:
 

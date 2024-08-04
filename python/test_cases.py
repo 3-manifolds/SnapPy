@@ -4,6 +4,17 @@ nothing before it. In particular, add any includes after the doc string.
 
 Doc tests that we do not want to show up in the documentation.
 
+decorated isomorphism signature
+-------------------------------
+
+An example where the isosig has changed when we were using the permutation
+consistently. The old value was:
+'gLMzQbcdefffaelaaai_acbBaabCbbabbBC'
+
+>>> T = Triangulation("L6n1(0,0)(0,0)(0,0)")
+>>> T.triangulation_isosig()
+'gLMzQbcdefffaelaaai_bCabBBbacBDc'
+
 isometry_signature
 ------------------
 

@@ -14,8 +14,6 @@ space, the permutation may be omitted when it is equal to the identity
 permutation; this is indicated by the fact that the length of the
 decoration is 4n rather than 5n.
 
-Currently, only oriented manifolds are supported.
-
 A simple valid decorated isosig for a two-cusped manifold is::
 
     eLPkbdcddhgggb_abBaaBBaaB
@@ -227,9 +225,6 @@ def decorated_isosig(manifold, triangulation_class,
     N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
-    # in Python3 range is an iterator
-    trivial_perm = list(range(manifold.num_cusps()))
-
     min_encoded = None
     min_perm = None
     min_flips = None
@@ -264,12 +259,9 @@ def decorated_isosig(manifold, triangulation_class,
         # Encode the matrices
         decorations = pack_matrices_applying_flips(matrices, flips)
 
-        if perm == trivial_perm or ignore_cusp_ordering:
-            # Only encode matrices
-            encoded = encode_integer_list(decorations)
-        else:
-            # Encode permutation and matrices
-            encoded = encode_integer_list(perm + decorations)
+        encoded = (
+            '' if ignore_cusp_ordering else encode_integer_list(perm),
+            encode_integer_list(decorations))
 
         if min_encoded is None or encoded < min_encoded:
             # If this is lexicographically smallest, remember it
@@ -277,11 +269,22 @@ def decorated_isosig(manifold, triangulation_class,
             min_perm = perm
             min_flips = flips
 
-    # Add decoration to isosig
-    ans = isosig + separator + min_encoded
+    # Add separator
+    ans = isosig + separator
+
+    encoded_perm, encoded_matrices = min_encoded
+
+    # Add permutation to answer if needed and non-trivial.
+    if not ignore_cusp_ordering:
+        trivial_perm = list(range(manifold.num_cusps()))
+        if min_perm != trivial_perm:
+            ans += encoded_perm
+
+    # Add basis change matrices.
+    ans += encoded_matrices
 
     # Add Dehn-fillings if we have any
-    if False in manifold.cusp_info('complete?'):
+    if not all(manifold.cusp_info('complete?')):
         if ignore_cusp_ordering:
             # If we do not include the permutation in the encoding,
             # we need to apply it to the slopes

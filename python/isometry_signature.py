@@ -46,7 +46,7 @@ def isometry_signature(
     additional options.
 
     Note that interval methods cannot verify a canonical retriangulation
-    with non-tetrahedral cells such as in the cas of ``m412``, so the following
+    with non-tetrahedral cells such as in the case of ``m412``, so the following
     call returns ``None``::
 
         sage: M = Manifold("m412")

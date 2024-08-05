@@ -451,7 +451,7 @@ def _verified_canonical_retriangulation(
     """
     Implements the "inner" retry loop of verified_canonical_retriangulation
 
-    Retrun retriangulation or raises exception.
+    Returns retriangulation or raises exception.
 
     Some exceptions are caught by the "outer" loop to retry, using that
     the SnapPea kernel uses a randomized algorithm to fill incomplete cusps

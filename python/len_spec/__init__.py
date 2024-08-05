@@ -225,19 +225,19 @@ def length_spectrum_alt(manifold,
     Specify number of geodesics::
 
         >>> M = Manifold("m202(3,4)(0,0)")
-        >>> M.length_spectrum_alt(count = 3) # doctest +NUMERIC9
+        >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -]
 
     Specify cut-off::
-    
-        >>> M.length_spectrum_alt(max_len = 1.1) # doctest +NUMERIC9
+
+        >>> M.length_spectrum_alt(max_len = 1.1) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -, 0.93461379591349 + 2.70060614107722*I        a             -]
 
     Also supports verified computations::
-    
-        sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest +NUMERIC9
+
+        sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
         0.147424652685154?  - 1.782870935652013? *I  aabcDabcB     Cusp 0, 0.81161414965958... + 2.72911699294425...*I  b             -, 0.84163270359334... + 2.61245944742151...*I  aB            -]
 

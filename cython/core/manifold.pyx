@@ -2,7 +2,7 @@
 
 cdef class Manifold(Triangulation):
     """
-    A Manifold is a Triangulation together with a geometric structure.
+    A Manifold is a :class:`Triangulation` together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
     compact 3-manifold with torus boundary components, where each
     tetrahedron has been assigned the geometry of an ideal tetrahedron
@@ -69,7 +69,7 @@ cdef class Manifold(Triangulation):
     - A SnapPea triangulation or link projection file: 'filename'
 
       The file will be loaded if found in the current directory or the
-      path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
+      path given by the shell variable ``SNAPPEA_MANIFOLD_DIRECTORY``.
       See :py:meth:`Manifold.save` for details.
 
     - A string containing the contents of a SnapPea triangulation or link

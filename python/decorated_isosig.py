@@ -56,7 +56,7 @@ separator_pat = '[%s]{1}' % separator
 base64_opt_pat = r'([a-zA-Z0-9\+\-]*)'
 isosig_pattern = re.compile(base64_pat + separator_pat + base64_opt_pat + '$')
 
-# We store lists of integers as base64 strings.
+# We store lists of integers as (non-RFC4648) base64 strings.
 
 base64_letters = string.ascii_letters + '0123456789+-'
 base64_lower = string.ascii_lowercase + '01234+'

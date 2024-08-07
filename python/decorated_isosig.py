@@ -225,6 +225,8 @@ def decorated_isosig(manifold, triangulation_class,
     N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
+    trivial_perm = list(range(manifold.num_cusps()))
+
     min_encoded = None
     min_perm = None
     min_flips = None
@@ -259,9 +261,12 @@ def decorated_isosig(manifold, triangulation_class,
         # Encode the matrices
         decorations = pack_matrices_applying_flips(matrices, flips)
 
-        encoded = (
-            '' if ignore_cusp_ordering else encode_integer_list(perm),
-            encode_integer_list(decorations))
+        if ignore_cusp_ordering or perm == trivial_perm:
+            # Only encode matrices
+            encoded = encode_integer_list(decorations)
+        else:
+            # Encode permutation and matrices
+            encoded = encode_integer_list(perm + decorations)
 
         if min_encoded is None or encoded < min_encoded:
             # If this is lexicographically smallest, remember it
@@ -270,18 +275,7 @@ def decorated_isosig(manifold, triangulation_class,
             min_flips = flips
 
     # Add separator
-    ans = isosig + separator
-
-    encoded_perm, encoded_matrices = min_encoded
-
-    # Add permutation to answer if needed and non-trivial.
-    if not ignore_cusp_ordering:
-        trivial_perm = list(range(manifold.num_cusps()))
-        if min_perm != trivial_perm:
-            ans += encoded_perm
-
-    # Add basis change matrices.
-    ans += encoded_matrices
+    ans = isosig + separator + min_encoded
 
     # Add Dehn-fillings if we have any
     if not all(manifold.cusp_info('complete?')):

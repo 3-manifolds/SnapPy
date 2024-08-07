@@ -7,13 +7,13 @@ Doc tests that we do not want to show up in the documentation.
 decorated isomorphism signature
 -------------------------------
 
-An example where the isosig has changed when we were using the permutation
-consistently. The old value was:
-'gLMzQbcdefffaelaaai_acbBaabCbbabbBC'
+An example where the isosig doesn't pick up the identity perm
+because the lexicographic order of the perm interacts with the
+matrices.
 
 >>> T = Triangulation("L6n1(0,0)(0,0)(0,0)")
 >>> T.triangulation_isosig()
-'gLMzQbcdefffaelaaai_bCabBBbacBDc'
+'gLMzQbcdefffaelaaai_acbBaabCbbabbBC'
 
 isometry_signature
 ------------------

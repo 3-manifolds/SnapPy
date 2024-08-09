@@ -136,8 +136,8 @@ def decode_integer_list(encoded):
             ans.append(sign*decode_nonnegative_int(current))
     return ans
 
+###############################################################################
 # Some helper functions
-
 
 def det(A):
     return A[0][0]*A[1][1] - A[0][1]*A[1][0]
@@ -155,67 +155,128 @@ def as_two_by_two_matrices(L):
     return [[(L[i], L[i+1]), (L[i+2], L[i+3])] for i in range(0, len(L), 4)]
 
 
+def first_non_zero_entry_in_column(matrix, col):
+    e = matrix[0, col] 
+    if e != 0:
+        return e
+    return matrix[1, col]
+
+
 def sgn_column(matrix, col):
     """
     Returns +1 or -1 depending on the sign of the first non-zero entry
     in the column of the given matrix.
     """
-    first_non_zero_entry = (
-        matrix[0, col] if matrix[0, col] != 0 else matrix[1, col])
-    return +1 if first_non_zero_entry > 0 else -1
+    if first_non_zero_entry_in_column(matrix, col) > 0:
+        return +1
+    else:
+        return -1
 
 
-def determine_flips(matrices, orientable):
+def apply_peripheral_curve_flips(
+        matrix, slope, manifold_orientable, isomorphism_orientation):
     """
-    Returns pairs [(l,m)] for each given matrix. Multiplying the columns of
-    each matrix with the respective pair brings the matrix in "canonical" form.
+    Flips peripheral curves (as encoded by matrix) to bring them into
+    canonical form and updates slope accordingly.
     """
 
-    if orientable:
-        # Determine whether the given matrices are reversing the orientation of
-        # the entire manifold
-        det_sign = (  matrices[0][0,0] * matrices[0][1,1]
-                      - matrices[0][0,1] * matrices[0][1,0])
+    # Determine whether to flip meridian
+    f0 = sgn_column(matrix, 0)
 
+    # Determine whether to flip longitude
+    if manifold_orientable:
         # We conform the matrix such that the first non-zero entry in the
         # first column and the determinant are always positive
-        return [ (sgn_column(matrix, 0), sgn_column(matrix, 0) * det_sign)
-                 for matrix in matrices ]
+        f1 = f0 * isomorphism_orientation
     else:
         # We conform the matrix such that the first non-zero entry in each
         # column is always positive
-        return [ (sgn_column(matrix, 0), sgn_column(matrix, 1))
-                 for matrix in matrices ]
+        f1 = sgn_column(matrix, 1)
 
+    flips = [ f0, f1 ]
 
-def pack_matrices_applying_flips(matrices, flips):
+    for col, flip in enumerate(flips):
+        for row in range(2):
+            matrix[row,col] *= flip
+        slope[col] *= flip
+
+def pack_matrices(matrices):
     """
     Multiplies the columns of each matrix by the entries in flips and
     packs all the matrices into one array, column-major.
     """
-    result = []
 
-    for matrix, flip in zip(matrices, flips):
-        for col in range(2):
-            for row in range(2):
-                result.append(matrix[row,col] * flip[col])
-
-    return result
+    return  [ matrix[row,col]
+              for matrix in matrices
+              for col in range(2)
+              for row in range(2) ]
 
 
 def supress_minus_zero(x):
-    return 0 if x == 0 else x
+    if x == 0:
+        return 0
+    else:
+        return x
+
+
+def is_trivial_perm(perm):
+    return all(i == p for i, p in enumerate(perm))
+
+
+def candidate_decoration_info(
+        isomorphism,
+        slopes,
+        manifold_orientable,
+        ignore_cusp_ordering,
+        ignore_curve_orientations,
+        ignore_orientation):
+
+    matrices = isomorphism.cusp_maps()
+    isomorphism_orientation = matrices[0].det()
+
+    # Do not consider orientation-reversing isomorphisms if
+    # ignore_orientation isn't specified.
+    if manifold_orientable and not ignore_orientation:
+        if isomorphism_orientation < 0:
+            return None
+
+    # Make a copy using lists so that we can modify it in place.
+    slopes = [ [ slope_m, slope_l ] for slope_m, slope_l in slopes ]
+
+    # Permutation of cusps
+    perm = inverse_perm(isomorphism.cusp_images())
+
+    if ignore_cusp_ordering:
+        # If we do not include the permutation in the encoding,
+        # we need to apply it to the matrices
+        matrices = [ matrices[i] for i in perm ]
+        slopes = [ slopes[i] for i in perm ]
+
+    if ignore_curve_orientations:
+        for matrix, slope in zip(matrices, slopes):
+            apply_peripheral_curve_flips(
+                matrix, slope, manifold_orientable, isomorphism_orientation)
+
+    # Encode the matrices
+    decorations = pack_matrices(matrices)
+
+    if ignore_cusp_ordering or is_trivial_perm(perm):
+        # Only encode matrices
+        encoded = encode_integer_list(decorations)
+    else:
+        # Encode permutation and matrices
+        encoded = encode_integer_list(perm + decorations)
+
+    return encoded, slopes
 
 # main two functions
-
 
 def decorated_isosig(manifold, triangulation_class,
                      ignore_cusp_ordering=False,
                      ignore_curve_orientations=False,
                      ignore_orientation=True):
 
-    isosig = manifold.triangulation_isosig(
-        decorated=False,
+    isosig = manifold._undecorated_triangulation_isosig(
         ignore_orientation=ignore_orientation)
 
     # Do not decorate if no cusps
@@ -225,74 +286,33 @@ def decorated_isosig(manifold, triangulation_class,
     N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
-    trivial_perm = list(range(manifold.num_cusps()))
+    manifold_orientable = manifold.is_orientable()
+    slopes = manifold.cusp_info('filling')
 
-    min_encoded = None
-    min_perm = None
-    min_flips = None
-
-    # Try all combinatorial isomorphisms
-    for tri_iso in manifold.isomorphisms_to(N):
-
-        # Do not consider orientation-reversing isomorphisms if
-        # ignore_orientation isn't specified.
-        if ( manifold.is_orientable() and
-             not ignore_orientation and
-             det(tri_iso.cusp_maps()[0]) < 0):
-            continue
-
-        # Permutation of cusps
-        perm = inverse_perm(tri_iso.cusp_images())
-
-        if ignore_cusp_ordering:
-            # If we do not include the permutation in the encoding,
-            # we need to apply it to the matrices
-            matrices = [ tri_iso.cusp_maps()[i] for i in perm ]
-        else:
-            matrices = tri_iso.cusp_maps()
-
-        if ignore_curve_orientations:
-            # Determine the multipliers for the columns of the matrices
-            # to bring them into canonical form if so desired
-            flips = determine_flips(matrices, manifold.is_orientable())
-        else:
-            flips = [ (1,1) for matrix in matrices ]
-
-        # Encode the matrices
-        decorations = pack_matrices_applying_flips(matrices, flips)
-
-        if ignore_cusp_ordering or perm == trivial_perm:
-            # Only encode matrices
-            encoded = encode_integer_list(decorations)
-        else:
-            # Encode permutation and matrices
-            encoded = encode_integer_list(perm + decorations)
-
-        if min_encoded is None or encoded < min_encoded:
-            # If this is lexicographically smallest, remember it
-            min_encoded = encoded
-            min_perm = perm
-            min_flips = flips
+    # Try all combinatorial isomorphisms and pick
+    # lexicographically smallest info.
+    encoded, slopes = min(
+        info
+        for isomorphism in manifold.isomorphisms_to(N)
+        if (
+            info := candidate_decoration_info(
+                isomorphism,
+                slopes,
+                manifold_orientable=manifold_orientable,
+                ignore_cusp_ordering=ignore_cusp_ordering,
+                ignore_curve_orientations=ignore_curve_orientations,
+                ignore_orientation=ignore_orientation)
+            ) is not None)
 
     # Add separator
-    ans = isosig + separator + min_encoded
+    ans = isosig + separator + encoded
 
-    # Add Dehn-fillings if we have any
     if not all(manifold.cusp_info('complete?')):
-        if ignore_cusp_ordering:
-            # If we do not include the permutation in the encoding,
-            # we need to apply it to the slopes
-            slopes = [ manifold.cusp_info('filling')[i] for i in min_perm ]
-        else:
-            slopes = manifold.cusp_info('filling')
-
-        for flip, slope in zip(min_flips, slopes):
-            # Apply the flips to the slopes
-            ans += '(%g,%g)' % (supress_minus_zero(flip[0] * slope[0]),
-                                supress_minus_zero(flip[1] * slope[1]))
+        for slope_m, slope_l in slopes:
+            ans += '(%g,%g)' % (supress_minus_zero(slope_m),
+                                supress_minus_zero(slope_l))
 
     return ans
-
 
 def set_peripheral_from_decoration(manifold, decoration):
     """

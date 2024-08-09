@@ -3011,7 +3011,6 @@ cdef class Triangulation():
         the SnapPy source code.
         """
 
-        cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         args = (decorated,
@@ -3023,20 +3022,28 @@ cdef class Triangulation():
         except KeyError:
             pass
 
-        if not decorated:
-            try:
-                c_string = get_isomorphism_signature(
-                    self.c_triangulation, ignore_orientation)
-                result = to_str(c_string)
-            finally:
-                free(c_string)
-        else:
+        if decorated:
             result = decorated_isosig.decorated_isosig(
                 self, _triangulation_class,
                 ignore_cusp_ordering = ignore_cusp_ordering,
                 ignore_curve_orientations = ignore_curve_orientations,
                 ignore_orientation = ignore_orientation)
+        else:
+            result = self._undecorated_triangulation_isosig(
+                ignore_orientation = ignore_orientation)
         return self._cache.save(result, 'triangulation_isosig', *args)
+
+    def _undecorated_triangulation_isosig(self, ignore_orientation : bool) -> str:
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        cdef char *c_string
+        try:
+            c_string = get_isomorphism_signature(
+                self.c_triangulation, ignore_orientation)
+            return to_str(c_string)
+        finally:
+            free(c_string)
 
     def _symplectic_form(self, u, v):
         return sum([u[2 * i] * v[2 * i + 1] - u[2 * i + 1] * v[2 * i] for i in range(len(u) // 2)])

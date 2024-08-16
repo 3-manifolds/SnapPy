@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage, sage_method
 from ...math_basics import prod
 
-from ...geometric_structure.cusp_neighborhood.cusp_cross_section import ComplexCuspCrossSection
+from ...geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
 from ...snap import peripheral
 from ...snap.t3mlite import simplex
 
@@ -9,7 +9,7 @@ if _within_sage:
     from sage.all import pi, xgcd
     import sage.all
 
-from .. import verifyHyperbolicity
+from .. import hyperbolicity
 
 from .adjust_torsion import *
 from .compute_ptolemys import *
@@ -116,7 +116,7 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
         'rect', bits_prec=bits_prec, intervals=True)
 
     # Check it is a valid hyperbolic structure
-    verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+    hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shapes)
 
     # Compute holonomy

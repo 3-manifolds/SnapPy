@@ -95,6 +95,10 @@ def word_as_list(word, int num_generators):
 
     return word_list
 
+def list_as_word(int_list, int num_generators, verbose_form):
+    return _letter_seperator(verbose_form).join(
+        int_to_gen_string(g, num_generators, verbose_form)
+        for g in int_list)
 
 cdef class CFundamentalGroup():
     cdef c_GroupPresentation *c_group_presentation
@@ -223,10 +227,7 @@ cdef class CFundamentalGroup():
             return words[1:]
         else:
             n = self.num_original_generators()
-            return [_letter_seperator(verbose_form).join(
-                            int_to_gen_string(g, n, verbose_form)
-                            for g in word)
-                    for word in words[1:]]
+            return [ list_as_word(word, n, verbose_form) for word in words[1:]]
 
     def _word_moves(self):
         cdef int *c_moves

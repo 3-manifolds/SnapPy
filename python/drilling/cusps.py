@@ -1,7 +1,9 @@
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
 from ..geometric_structure import Filling, FillingMatrix
 
 from ..snap.t3mlite import Mcomplex, simplex
+
+from . import exceptions
 
 from typing import Tuple, Optional, Sequence
 
@@ -49,7 +51,7 @@ class CuspPostDrillInfo:
 
 
 def index_geodesics_and_add_post_drill_infos(
-        geodesics : Sequence[GeodesicInfo],
+        geodesics : Sequence[GeodesicStartPointInfo],
         mcomplex : Mcomplex) -> None:
 
     all_reindexed_verts = {
@@ -66,11 +68,15 @@ def index_geodesics_and_add_post_drill_infos(
 
     for i, g in enumerate(geodesics):
         if g.core_curve_cusp:
+            if g.core_curve_multiplicity not in [-1, +1]:
+                raise exceptions.GeodesicMultipleOfCoreCurve(
+                    g.word, g.core_curve_multiplicity)
+
             g.core_curve_cusp.post_drill_info = CuspPostDrillInfo(
                 index=n + i,
                 peripheral_matrix=_multiply_filling_matrix(
                     g.core_curve_cusp.filling_matrix,
-                    g.core_curve_direction))
+                    g.core_curve_multiplicity))
         else:
             g.index = n + i
 

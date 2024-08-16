@@ -19,21 +19,21 @@ from typing import Sequence, Union
 class Tile:
     def __init__(self,
                  lower_bound_distance,
-                 lifted_geometric_object,
+                 inverse_lifted_geometric_object,
                  lifted_tetrahedron : LiftedTetrahedron,
                  object_index = None):
         self.lower_bound_distance = lower_bound_distance
-        self.lifted_geometric_object = lifted_geometric_object
+        self.inverse_lifted_geometric_object = inverse_lifted_geometric_object
         self.lifted_tetrahedron = lifted_tetrahedron
+        # Used in maximal_cusp_area_matrix
         self.object_index = object_index
 
-def compute_tiles(geometric_object,
-                  base_point,
-                  canonical_keys_function,
-                  act_on_base_point_by_inverse,
-                  min_inner_product,
+def compute_tiles(*, # Everything is a keyword argument
+                  geometric_object,
+                  visited_lifted_tetrahedra : LiftedTetrahedronSet,
                   initial_lifted_tetrahedra : Sequence[LiftedTetrahedron],
-                  verified
+                  replace_lifted_tetrahedron_function = None,
+                  verified : bool
                   ) -> Sequence[Tile]:
 
     """
@@ -56,11 +56,20 @@ def compute_tiles(geometric_object,
     base_point is used to determine whether two lifted tetrahedra
     are the same in H^3 or a quotient space of H^3.
 
-    Missing documentation: other parameters.
+    visited_lifted_tetrahedra: data structure (passed in as empty) which
+    will be used here to record which lifted tetrahedra have already been
+    visited and been added to the result while tiling the quotient space.
+
+    An optional replace_lifted_tetrahedron_function callback can be
+    specified. This callback is invoked on any new lifted tetrahedron
+    and can return None or a list of lifted tetrahedra to replace the given
+    lifted tetrahedra. This is used when developing a geodesic (tube) to
+    skip over the pieces of a geodesic completely contained in a tube
+    about a core curve.
     """
 
-    RF = base_point[0].parent()
-    
+    RF = visited_lifted_tetrahedra._base_point[0].parent()
+
     if verified:
         minus_infinity = RF(-sage.all.Infinity)
     else:
@@ -70,14 +79,15 @@ def compute_tiles(geometric_object,
     # but we use heapq to access it.
     pending_lifted_tetrahedra : Sequence[_PendingLiftedTetrahedron] = []
 
-    # Start tiling the tube about the geodesic with the lifted
-    # tetrahedra computed with GeodesicInfo.find_tet_or_core_curve.
+    # Start tiling the neighborhood about the geometric object using
+    # the given lifted tetrahedra.
     #
-    # Note that that method guarantees that at least one of the
-    # lifted tetrahedra it intersects the above line. Thus, the tiling
-    # is seeded correctly. That is, we cannot fail in the following way:
+    # It is assumed that at least one of the given lifted tetraheedra
+    # intersects the given geometric object for the tiling to be correct.
+    #
+    # If this assumption is false, we could fail in the following way:
     # assume that the given lifted tetrahedra are far away from the given
-    # line. Then the algorithm below thinks we are done, before we
+    # object. Then the algorithm below thinks we are done, before we
     # even started properly tiling - and we obviously get an incomplete
     # result.
     #
@@ -86,17 +96,6 @@ def compute_tiles(geometric_object,
             pending_lifted_tetrahedra,
             _PendingLiftedTetrahedron(
                 lifted_tetrahedron, minus_infinity))
-
-    # Initialize data structure recording which lifted tetrahedra have
-    # already been visited and been added to the result while tiling
-    # the quotient space.
-    visited_lifted_tetrahedra : LiftedTetrahedronSet = (
-        get_lifted_tetrahedron_set(
-            base_point,
-            canonical_keys_function,
-            act_on_base_point_by_inverse,
-            min_inner_product,
-            verified))
 
     while True:
         pending_lifted_tetrahedron : _PendingLiftedTetrahedron = (
@@ -109,19 +108,34 @@ def compute_tiles(geometric_object,
         tet = pending_lifted_tetrahedron.lifted_tetrahedron.tet
         m = pending_lifted_tetrahedron.lifted_tetrahedron.o13_matrix
 
-        # Imagine the fixed lift of the given geodesic and how it
+        # Imagine the fixed lift of the given geometric object and how it
         # relates to the lifted tetrahedron which is the image of
         # the tetrahedron in the fundamental domain under the matrix.
         #
         # Applying the inverse matrix moves the tetrahedron back into
-        # the fundamental domain and thus we obtain the line we want
-        # to record in GeodesicTubePiece.
+        # the fundamental domain and thus we obtain the (inverse) lift of
+        # the geometric object intresecting the fundamental domain.
         #
-        lifted_geometric_object = geometric_object.transformed(o13_inverse(m))
+        inverse_lifted_geometric_object = (
+            geometric_object.transformed(o13_inverse(m)))
+
+        if replace_lifted_tetrahedron_function:
+            new_lifted_tetrahedra = replace_lifted_tetrahedron_function(
+                pending_lifted_tetrahedron.lifted_tetrahedron,
+                geometric_object,
+                inverse_lifted_geometric_object,
+                verified)
+            if new_lifted_tetrahedra is not None:
+                for lifted_tetrahedron in new_lifted_tetrahedra:
+                    heapq.heappush(
+                        pending_lifted_tetrahedra,
+                        _PendingLiftedTetrahedron(
+                            lifted_tetrahedron, minus_infinity))
+                continue
 
         # Emit Tile
         yield Tile(pending_lifted_tetrahedron.lower_bound_distance,
-                   lifted_geometric_object,
+                   inverse_lifted_geometric_object,
                    pending_lifted_tetrahedron.lifted_tetrahedron)
 
         # For all faces ...
@@ -138,32 +152,32 @@ def compute_tiles(geometric_object,
                         new_tet,
                         # Inverse of tet.O13_matrices[f]
                         m * new_tet.O13_matrices[entry_face]),
-                    # Distance of this face to lifted geodesic
+                    # Distance of this face to inverse lifted
+                    # geometric object
                     # (equal to distance of face entry_face of
                     # new_tet)
                     lower_bound_distance_to_r13_triangle(
-                        lifted_geometric_object,
+                        inverse_lifted_geometric_object,
                         tet.R13_triangles[f],
                         verified),
                     entry_cell=entry_face))
 
 class _PendingLiftedTetrahedron:
     """
-    A lifted tetrahedron that still needs to be processed by GeodesicTube
+    A lifted tetrahedron that still needs to be processed by by compute_tiles
     together with the face through which this lifted tetrahedron was
     reached.
 
-    The lifted tetrahedron lives in the quotient space of the hyperboloid
-    model by (powers of) the matrix corresponding to the closed geodesic,
-    see ZQuotientLiftedTetrahedronSet.
+    The lifted tetrahedron lives in a (potentially trivial) quotient space of
+    the hyperboloid model.
 
-    The algorithm in GeodesicTube might add the same lifted tetrahedron
+    The algorithm in compute_tile might add the same lifted tetrahedron
     multiple times to the queue of pending pieces as there are four
     neighboring lifted tetrahedra from which this lifted tetrahedron can
     be reached.
 
-    Let L be the line (in the quotient space) about which we develop the
-    geodesic tube. lower_bound is a lower bound on the distance between
+    Let L be the geometric object (in the quotient space) about which we
+    develop a neighborhood. lower_bound is a lower bound on the distance between
     L and the face through which this lifted tetrahedron was reached.
     Note that lower_bound might be larger than the distance between L and
     this lifted tetrahedron (which is the minimum of all distances between

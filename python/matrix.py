@@ -3,13 +3,51 @@ from .sage_helper import _within_sage
 from . import number
 from .math_basics import is_Interval
 
+def snappy_make_vector(entries, *, ring=None):
+    return SimpleVector(entries, ring)
+
+def snappy_make_matrix(entries, *, ring=None):
+    return SimpleMatrix(entries, ring)
+
+def snappy_make_identity_matrix(*, n, ring):
+    return SimpleMatrix.identity(ring, n)
+
+if _within_sage:
+    from sage.modules.free_module_element import vector as _sage_vector
+    from sage.matrix.constructor import matrix as _sage_matrix
+
+    def sage_make_vector(entries, *, ring=None):
+        if ring is None:
+            return _sage_vector(entries)
+        else:
+            return _sage_vector(ring, entries)
+
+    def sage_make_matrix(entries, *, ring=None):
+        if ring is None:
+            return _sage_matrix(entries)
+        else:
+            return _sage_matrix(ring, entries)
+
+    def sage_make_identity_matrix(*, n, ring):
+        return _sage_matrix.identity(ring, n)
+
+    make_vector = sage_make_vector
+    make_matrix = sage_make_matrix
+    make_identity_matrix = sage_make_identity_matrix
+else:
+    make_vector = snappy_make_vector
+    make_matrix = snappy_make_matrix
+    make_identity_matrix = snappy_make_identity_matrix
 
 class SimpleVector(number.SupportsMultiplicationByNumber):
-    def __init__(self, list_of_values):
-        self.data = list_of_values
+    def __init__(self, entries, ring=None):
+        if ring is None:
+            self.data = entries
+        else:
+            self.data = [ ring(e) for e in entries ]
         try:
             self.type = type(self.data[0])
-            self.shape = (len(list_of_values),)
+            self.shape = (len(entries),)
         except IndexError:
             self.type = type(0)
             self.shape = (0,)
@@ -93,12 +131,15 @@ class SimpleMatrix(number.SupportsMultiplicationByNumber):
     """
     A simple matrix class that wraps a list of lists.
     """
-    def __init__(self, list_of_lists, ring=None):
+    def __init__(self, list_of_lists, base_ring=None, ring=None):
 
         if isinstance(list_of_lists, SimpleMatrix):
             list_of_lists = list_of_lists.data
-        if ring is not None:
-            self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
+        if base_ring is None:
+            base_ring = ring  # Sage has deprecated "ring"
+        if base_ring is not None:
+            self.data = [ [ base_ring(e) for e in row ]
+                              for row in list_of_lists ]
         else:
             # XXX
             # We should really copy the data here since otherwise we might
@@ -481,4 +522,4 @@ def mat_solve(m, v, epsilon=0):
     # Return the last column
     # (11/7, -164/133, 46/133, 32/133)
 
-    return vector([ row[-1] for row in m1])
+    return make_vector([ row[-1] for row in m1])

@@ -1,7 +1,7 @@
 from .line import R13LineWithMatrix
 from ...tiling.floor import floor_as_integers
 
-from ...matrix import matrix # type: ignore
+from ...matrix import make_identity_matrix # type: ignore
 from ...hyperboloid import r13_dot, o13_inverse # type: ignore
 from ...hyperboloid.line import R13Line
 
@@ -43,8 +43,8 @@ class _O13MatrixPowerCache:
 class _MatrixNonNegativePowerCache:
     def __init__(self, m):
         self._m = m
-        self._powers = [ matrix.identity(ring=m.base_ring(),
-                                         n=m.dimensions()[0]) ]
+        self._powers = [ make_identity_matrix(ring=m.base_ring(),
+                                              n=m.dimensions()[0]) ]
 
     def power(self, i):
         while not i < len(self._powers):

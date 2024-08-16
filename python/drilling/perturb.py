@@ -3,18 +3,18 @@ from . import epsilons
 from . import exceptions
 
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
+from ..geometric_structure.geodesic.check_away_from_core_curve import check_away_from_core_curve_iter
 from ..hyperboloid import ( # type: ignore
     unit_time_vector_to_o13_hyperbolic_translation,
     r13_dot,
-    time_r13_normalise,
-    distance_unit_time_r13_points)
+    time_r13_normalise)
 from ..hyperboloid.line import R13Line
-from ..hyperboloid.distances import distance_r13_lines
+from ..hyperboloid.distances import distance_r13_lines, distance_r13_points
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex # type: ignore
 from ..exceptions import InsufficientPrecisionError # type: ignore
-from ..matrix import vector # type: ignore
+from ..matrix import make_vector # type: ignore
 from ..math_basics import correct_min # type: ignore
 
 from typing import Sequence, Tuple, List, Any
@@ -37,11 +37,11 @@ _tube_developing_radius = 0
 
 def perturb_geodesics(
         mcomplex : Mcomplex,
-        geodesics : Sequence[GeodesicInfo],
+        geodesics : Sequence[GeodesicStartPointInfo],
         verbose=False):
     """
     Given a triangulation with structures added by add_r13_geometry
-    and GeodesicInfo's with start points on the line that is a lift
+    and GeodesicStartPointInfo's with start points on the line that is a lift
     of the closed geodesic, perturbs the start point away from the line
     and computes a new end point (as image of the new start point under
     the matrix associated to the geodesic line). The line segment
@@ -49,7 +49,7 @@ def perturb_geodesics(
     curve in the manifold which is guaranteed to be isotopic to the
     closed geodesic.
 
-    If several GeodesicInfo's are given and/or there are filled
+    If several GeodesicStartPointInfo's are given and/or there are filled
     cusps with core curves, the system of simple closed curves
     resulting from the perturbation together with the core curves
     is guaranteed to be isotopic to the original system of closed
@@ -91,7 +91,7 @@ def perturb_geodesics(
 
 def compute_lower_bound_injectivity_radius(
         mcomplex : Mcomplex,
-        geodesics : Sequence[GeodesicInfo]):
+        geodesics : Sequence[GeodesicStartPointInfo]):
 
     if len(geodesics) == 0:
         raise Exception("No geodesic tubes given")
@@ -104,14 +104,20 @@ def compute_lower_bound_injectivity_radius(
 
     tet_to_lines : List[List[R13Line]] = [[] for tet in mcomplex.Tetrahedra ]
 
+    core_curve_epsilon = _compute_core_curve_epsilon(mcomplex)
+
     for geodesic in geodesics:
-        for tile in compute_tiles_for_geodesic(mcomplex, geodesic):
+        for tile in (
+                check_away_from_core_curve_iter(
+                    compute_tiles_for_geodesic(mcomplex, geodesic),
+                    epsilon=core_curve_epsilon,
+                    obj_name='Geodesic %s' % geodesic.word)):
             if tile.lower_bound_distance > min_radius:
                 distances.append(tile.lower_bound_distance)
                 break
             tet_index = tile.lifted_tetrahedron.tet.Index
             tet_to_lines[tet_index].append(
-                tile.lifted_geometric_object)
+                tile.inverse_lifted_geometric_object)
 
     for tet in mcomplex.Tetrahedra:
         for curve in tet.core_curves.values():
@@ -125,11 +131,11 @@ def compute_lower_bound_injectivity_radius(
     return correct_min(distances) / 2
 
 
-def perturb_geodesic(geodesic : GeodesicInfo,
+def perturb_geodesic(geodesic : GeodesicStartPointInfo,
                      injectivity_radius,
                      verified : bool):
     if geodesic.line is None:
-        raise ValueError("GeodesicInfo needs line to be perturbed.")
+        raise ValueError("GeodesicStartPointInfo needs line to be perturbed.")
 
     perturbed_point = perturb_unit_time_point(
         time_r13_normalise(geodesic.unnormalised_start_point),
@@ -150,8 +156,9 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
     RF = point.base_ring()
 
     amt = RF(0.5) * max_amt
-    direction = vector([RF(x) for x in constants.point_perturbation_direction])
-    perturbed_origin = vector(
+    direction = make_vector(
+        [RF(x) for x in constants.point_perturbation_direction])
+    perturbed_origin = make_vector(
         [ amt.cosh() ] + list(amt.sinh() * direction.normalized()))
 
     m = unit_time_vector_to_o13_hyperbolic_translation(point)
@@ -162,9 +169,9 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
 
     space_coords = [ RF(x.center()) for x in perturbed_point[1:4] ]
     time_coord = sum((x**2 for x in space_coords), RF(1)).sqrt()
-    perturbed_point = vector([time_coord] + space_coords)
+    perturbed_point = make_vector([time_coord] + space_coords)
 
-    d = distance_unit_time_r13_points(point, perturbed_point)
+    d = distance_r13_points(point, perturbed_point)
     if not d < RF(0.75) * max_amt:
         raise InsufficientPrecisionError(
             "Could not verify perturbed point is close enough to original "
@@ -172,3 +179,10 @@ def perturb_unit_time_point(point, max_amt, verified : bool):
             "Increasing the precision will probably fix this.")
 
     return perturbed_point
+
+def _compute_core_curve_epsilon(mcomplex):
+    if mcomplex.verified:
+        return 0
+    else:
+        RF = mcomplex.RF
+        return RF(0.5) ** (RF.prec() // 2 - 8)

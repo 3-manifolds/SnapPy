@@ -231,7 +231,7 @@ cdef class PresentationMatrix():
         Continue until no units remain.  When a generator is removed,
         remember its column index.
         """
-        cdef int temp, m, i = 0, j = 0, k, l
+        cdef int i = 0, j = 0, k, l
         while len(self._units) > 0:
             for i, j in self._units:
                 break

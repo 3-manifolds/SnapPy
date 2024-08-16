@@ -122,3 +122,7 @@ class TransferKernelStructuresEngine(McomplexEngine):
     def reindex_cusps_and_transfer_peripheral_curves(self):
         self.reindex_cusps_and_add_peripheral_curves(
             self.snappyTriangulation._get_cusp_indices_and_peripheral_curve_data())
+
+        for cusp, cusp_info in zip(self.mcomplex.Vertices,
+                                   self.snappyTriangulation.cusp_info()):
+            cusp.is_complete = cusp_info['complete?']

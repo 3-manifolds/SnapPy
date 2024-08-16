@@ -1,18 +1,19 @@
-from .cusp_cross_section import RealCuspCrossSection, IncompleteCuspError
+from .exceptions import IncompleteCuspError
+from .real_cusp_cross_section import RealCuspCrossSection
+from .vertices import scale_vertices_from_horotriangles
 from .. import add_r13_geometry
 
-from ...hyperboloid import r13_dot
 from ...hyperboloid.horoball import R13Horoball
-from ...tiling.tile import compute_tiles
+from ...tiling.tile import Tile, compute_tiles
 from ...tiling.triangle import add_triangles_to_tetrahedra
+from ...tiling.lifted_tetrahedron import LiftedTetrahedron
+from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                              get_lifted_tetrahedron_set)
+from ...tiling.iter_utils import IteratorCache
 from ...snap.t3mlite import Mcomplex, Vertex, Corner
-from ...snap.t3mlite import simplex
-from ...matrix import matrix
+from ...matrix import make_identity_matrix
 from ...math_basics import correct_min
 
-from ...tiling.tile import Tile, compute_tiles
-from ...tiling.lifted_tetrahedron import LiftedTetrahedron
-from ...tiling.iterable_cache import IterableCache
 
 from typing import Sequence
 
@@ -40,13 +41,14 @@ def mcomplex_for_tiling_cusp_neighborhoods(
 
     add_triangles_to_tetrahedra(mcomplex)
 
-    add_cusp_cross_section_and_scale_vertices(mcomplex)
+    add_cusp_cross_section(mcomplex)
+    scale_vertices_from_horotriangles(mcomplex)
 
     for v in mcomplex.Vertices:
         v._tiles = None
         def tiles(v=v, verified=verified):
             if v._tiles is None:
-                v._tiles = IterableCache(
+                v._tiles = IteratorCache(
                     compute_tiles_for_cusp_neighborhood(
                         v, verified))
             return v._tiles
@@ -70,40 +72,44 @@ def compute_tiles_for_cusp_neighborhood(
     RF = horoball_defining_vec[0].parent()
 
     # Lowest non-zero value expected is
-    # -2 * (v.lower_bound_embedding_scale ** 2)
+    # 2 * (v.lower_bound_embedding_scale ** 2)
     #
     # Divide by half so that we have some margin.
-    min_inner_product = - (v.lower_bound_embedding_scale ** 2)
+
+    min_neg_prod_distinct = (v.lower_bound_embedding_scale ** 2)
+
+    if verified:
+        max_neg_prod_equal = min_neg_prod_distinct
+    else:
+        max_neg_prod_equal = _compute_prod_epsilon(RF)
 
     initial_lifted_tetrahedron = LiftedTetrahedron(
-        corner.Tetrahedron, matrix.identity(RF, 4))
+        corner.Tetrahedron, make_identity_matrix(ring=RF, n=4))
+
+    lifted_tetrahedron_set : LiftedTetrahedronSet = (
+        get_lifted_tetrahedron_set(
+            base_point=horoball_defining_vec,
+            act_on_base_point_by_inverse=True,
+            max_neg_prod_equal=max_neg_prod_equal,
+            min_neg_prod_distinct=min_neg_prod_distinct,
+            canonical_keys_function=None,
+            verified=verified))
 
     return compute_tiles(
         geometric_object=R13Horoball(horoball_defining_vec),
-        base_point=horoball_defining_vec,
-        canonical_keys_function=None,
-        act_on_base_point_by_inverse=True,
-        min_inner_product=min_inner_product,
+        visited_lifted_tetrahedra=lifted_tetrahedron_set,
         initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
         verified=verified)
 
-def add_cusp_cross_section_and_scale_vertices(mcomplex : Mcomplex):
+def add_cusp_cross_section(mcomplex : Mcomplex):
     """
     Adds cross section to all cusps. Recall that a cusp cross
     section corresponds to a choice of horoballs about the vertices
     corresponding to the cusp. Scales the defining light-like vectors
     of the vertices of the tetrahedra such that they correspond to
     these horoballs.
-
-    Also computes for each vertex of the mcomplex the cusp area for
-    the chosen cusp cross section and other data, see
-    _add_cusp_cross_section.
     """
 
-    _add_cusp_cross_section(mcomplex)
-    _scale_vertices(mcomplex)
-
-def _add_cusp_cross_section(mcomplex : Mcomplex):
     c = RealCuspCrossSection(mcomplex)
     c.add_structures(None)
 
@@ -133,22 +139,21 @@ def _add_cusp_cross_section(mcomplex : Mcomplex):
                 [ v.scale_for_std_form,
                   v.exp_self_distance_along_edges.sqrt() ])
 
-def _scale_vertices(mcomplex):
-    for tet in mcomplex.Tetrahedra:
-        R13_vertex_products = {
-            v0 | v1 : r13_dot(pt0, pt1)
-            for v0, pt0 in tet.R13_vertices.items()
-            for v1, pt1 in tet.R13_vertices.items()
-            if v0 > v1 }
+def _compute_prod_epsilon(RF):
+    p = RF.precision()
 
-        for v0 in simplex.ZeroSubsimplices:
-            v1, v2, _ = simplex.VerticesOfFaceCounterclockwise[simplex.comp(v0)]
+    # We try to be a factor of at least several magnitudes smaller than
+    # 1/_compute_epsilon_inverse(RF) in hyperboloid_dict.py.
+    #
+    # This factor will even grow larger as the precision increases.
+    #
+    # That way, we will hopefully fail in _equality_predicate
+    # in hyperboloid_dict rather than failing by not hashing together
+    # lifted tetrahedra that should be the same but are not recognised
+    # as such because of numerical error.
 
-            length_on_cusp = tet.horotriangles[v0].lengths[v0 | v1 | v2]
-            length_on_horosphere = (
-                -2 * R13_vertex_products[v1 | v2] / (
-                     R13_vertex_products[v0 | v1] *
-                     R13_vertex_products[v0 | v2])).sqrt()
-            s = length_on_horosphere / length_on_cusp
+    result = RF(1e-8)
+    if p > 53:
+        result *= RF(0.5) ** ((p - 53) / 2)
 
-            tet.R13_vertices[v0] = s * tet.R13_vertices[v0]
+    return result

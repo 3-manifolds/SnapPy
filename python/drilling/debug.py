@@ -1,4 +1,5 @@
 from ..snap.t3mlite import simplex
+from ..matrix import make_identity_matrix
 from ..hyperboloid import *
 
 
@@ -82,7 +83,7 @@ def check_points_consistency(m):
 
 def check_edge_consistency(m):
     RF = m.Tetrahedra[0].O13_matrices[simplex.F0].base_ring()
-    id_matrix = matrix.identity(ring=RF, n=4)
+    id_matrix = make_identity_matrix(ring=RF, n=4)
 
     for e in m.Edges:
         t = id_matrix

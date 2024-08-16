@@ -5,25 +5,28 @@ import snappy.snap.test
 import spherogram.test
 import snappy.matrix
 import snappy.verify.test
+import snappy.geometric_structure.test
 import snappy.ptolemy.test
-import snappy.tiling.floor
-import snappy.tiling.real_hash_dict
-import snappy.tiling.canonical_key_dict
-import snappy.cusps.maximal_cusp_area_matrix
-import snappy.raytracing.cohomology_fractal
-import snappy.raytracing.geodesic_tube_info
-import snappy.raytracing.geodesics
-import snappy.raytracing.ideal_raytracing_data
-import snappy.raytracing.upper_halfspace_utilities
-import snappy.drilling
+import snappy.tiling.test
+import snappy.cusps.test
+import snappy.raytracing.test
+import snappy.len_spec.test
+import snappy.drilling.test
+import snappy.canonical
+import snappy.cusps.cusp_area_matrix
+import snappy.cusps.cusp_areas_from_matrix
+import snappy.isometry_signature
 import snappy.exterior_to_link.test
 import snappy.pari
+import snappy.test_cases
+import snappy.numeric_output_checker
 
-from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
-                                tk_root, root_is_fake, DocTestParser)
-from snappy import numeric_output_checker
-modules = []
+from snappy.sage_helper import _within_sage
+from snappy.testing import (doctest_modules, cyopengl_works,
+                            tk_root, root_is_fake, DocTestParser)
 
+# The following line doesn't seem to be needed. Can we just remove it?
+# MG 2024-07-26
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 # Augment tests for SnapPy with those that Cython missed
@@ -47,95 +50,59 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
+# Spherogram Commit 7b6307ea02e536 on 2024-07-26 (after tag 2.2_as_released)
+# sets run_doctests' name.
+spherogram.test.run_doctests.__name__ = spherogram.__name__
 
-def snap_doctester(verbose):
-    return snappy.snap.test.run_doctests(verbose, print_info=False)
+def additional_doctests(verbose=False, print_info=True):
+    """
+    I noticed that some of my changes to move code from here into
+    its own files caused some loss of test coverage.
 
+    In a panic, adding them explicitly here.
 
-snap_doctester.__name__ = 'snappy.snap'
+    There ought to be a better way to do this...
+    """
+    
+    globs = {'Manifold' : snappy.Manifold,
+             'ManifoldHP' : snappy.ManifoldHP}
+    return doctest_modules(
+        [ snappy.isometry_signature,
+          snappy.canonical,
+          snappy.cusps.cusp_area_matrix,
+          snappy.cusps.cusp_areas_from_matrix
+         ],
+        verbose=verbose,
+        print_info=print_info,
+        extraglobs = globs)
+additional_doctests.__name__ = 'snappy.<HARD TO REACH>'
 
+modules = [
+    snappy.exterior_to_link.test.run_doctests,
+    snappy.numeric_output_checker.run_doctests,
+    snappy.number,
+    snappy.SnapPy,
+    snappy.SnapPyHP,
+    snappy.database,
+    additional_doctests,
+    snappy,
+    snappy.snap.test.run_doctests,
+    snappy.matrix,
+    snappy.geometric_structure.test.run_doctests,
+    snappy.tiling.test.run_doctests,
+    snappy.cusps.test.run_doctests,
+    snappy.raytracing.test.run_doctests,
+    snappy.len_spec.test.run_doctests,
+    snappy.drilling.test.run_doctests,
+    snappy.ptolemy.test.run_doctests,
+    spherogram.test.run_doctests,
+    snappy.verify.test.run_doctests,
+    snappy.test_cases
+]
 
-def snappy_database_doctester(verbose):
-    # snappy_manifolds's tests is still relying on
-    # SnapPy Number's _accuracy_for_testing.
-    #
-    # Switch to snappy conversion until snappy_manifolds is
-    # is updated.
-    snappy.number.use_field_conversion('snappy')
-    snappy.number.Number._accuracy_for_testing = 8
-    ans = doctest_modules([snappy.database], verbose)
-    snappy.number.Number._accuracy_for_testing = None
-    if _within_sage:
-        snappy.number.use_field_conversion('sage')
-
-    return ans
-
-
-snappy_database_doctester.__name__ = 'snappy.database'
-
-
-def spherogram_doctester(verbose):
-    ans = spherogram.test.run_doctests(verbose, print_info=False)
-
-    # Spherogram's testing is switching to SnapPy numbers and
-    # setting their accuracy.
-    # Switch back to Sage types until Spherogram has been updated.
-    snappy.number.Number._accuracy_for_testing = None
-    if _within_sage:
-        snappy.number.use_field_conversion('sage')
-
-    return ans
-
-
-spherogram_doctester.__name__ = 'spherogram'
-
-
-def ptolemy_doctester(verbose):
-    return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
-
-
-ptolemy_doctester.__name__ = 'snappy.ptolemy'
-
-modules += [numeric_output_checker.run_doctests]
-
-if not _within_sage:
-    modules.append(snappy.number)
-
-modules += [snappy.SnapPy,
-            snappy.SnapPyHP,
-            snappy_database_doctester,
-            snappy,
-            snap_doctester,
-            snappy.matrix,
-            snappy.tiling.floor,
-            snappy.tiling.real_hash_dict,
-            snappy.tiling.canonical_key_dict,
-            snappy.cusps.maximal_cusp_area_matrix,
-            snappy.raytracing.cohomology_fractal,
-            snappy.raytracing.geodesic_tube_info,
-            snappy.raytracing.geodesics,
-            snappy.raytracing.ideal_raytracing_data,
-            snappy.raytracing.upper_halfspace_utilities,
-            snappy.drilling,
-            ptolemy_doctester,
-            spherogram_doctester]
-
-
-def snappy_verify_doctester(verbose):
-    return snappy.verify.test.run_doctests(verbose, print_info=False)
-
-
-snappy_verify_doctester.__name__ = 'snappy.verify'
-modules.append(snappy_verify_doctester)
-
-
-def snappy_exterior_to_link_doctester(verbose):
-    return snappy.exterior_to_link.test.run_doctests(verbose, print_info=False)
-
-
-snappy_exterior_to_link_doctester.__name__ = 'snappy.exterior_to_link'
-modules.insert(0, snappy_exterior_to_link_doctester)
-
+slow_modules = [
+    snappy.ptolemy.test.run_ptolemy_tests
+]
 
 def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():
@@ -146,7 +113,7 @@ def graphics_failures(verbose, windows, use_modernopengl):
         snappy.Manifold('m125').cusp_neighborhood().view().test()
         if use_modernopengl:
             snappy.Manifold('m004').inside_view().test()
-        snappy.Manifold('4_1').browse().test()
+        snappy.Manifold('4_1').browse().test(use_modernopengl=use_modernopengl)
         snappy.ManifoldHP('m004').dirichlet_domain().view().test()
         snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
         if use_modernopengl:
@@ -162,10 +129,14 @@ def graphics_failures(verbose, windows, use_modernopengl):
                     root.after(7000, root.destroy)
                 root.mainloop()
     else:
-        print("***Warning***: CyOpenGL not installed, so not tested")
+        print("***Warning***: Could not test CyOpenGL.")
+        try:
+            import snappy.CyOpenGL
+            print("Reason: Unsuitable Tk configuration for CyOpenGL")
+        except ImportError as e:
+            print("Reason: CyOpenGL could not be imported, %r" % e)
         result = 0
     return result
-
 
 def runtests(verbose=False,
              quick=False,
@@ -177,18 +148,16 @@ def runtests(verbose=False,
     # doctests to fail.
     snappy.pari.allocatemem(2**24, 2**25, silent=True)
 
-    DocTestParser.use_modernopengl = use_modernopengl
+    DocTestParser.use_cymodernopengl = use_modernopengl
 
-    result = doctest_modules(modules, verbose=verbose)
+    all_modules = modules
     if not quick:
-        print()
-        # No idea why we mess and set snappy.database.Manifold
-        # to SnapPy.Manifold above... But to make ptolemy work,
-        # temporarily setting it to what it should be.
-        original_db_manifold = snappy.database.Manifold
-        snappy.database.Manifold = snappy.Manifold
-        snappy.ptolemy.test.main(verbose=verbose, doctest=False)
-        snappy.database.Manifold = original_db_manifold
+        all_modules += slow_modules
+
+    result = doctest_modules(
+        all_modules, verbose=verbose, print_info=True)
+
+    if not quick:
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)

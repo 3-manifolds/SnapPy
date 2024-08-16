@@ -1,4 +1,4 @@
-from ..matrix import matrix, vector, mat_solve
+from ..matrix import make_matrix, make_vector, mat_solve
 from .. import snap
 from ..sage_helper import _within_sage, sage_method
 
@@ -142,7 +142,7 @@ class IntervalNewtonShapesEngine:
             # Take log of the entire product
             gluing_LHSs.append(prod.log())
 
-        return vector(BaseField, gluing_LHSs)
+        return make_vector(gluing_LHSs, ring=BaseField)
 
     @staticmethod
     def log_gluing_LHS_derivatives(equations, shapes):
@@ -195,7 +195,7 @@ class IntervalNewtonShapesEngine:
 
             gluing_LHS_derivatives.append(row)
 
-        return matrix(BaseField, gluing_LHS_derivatives)
+        return make_matrix(gluing_LHS_derivatives, ring=BaseField)
 
     @staticmethod
     def interval_vector_mid_points(vec):
@@ -322,7 +322,7 @@ class IntervalNewtonShapesEngine:
         Given two vectors of intervals, return the vector of their unions,
         i.e., the smallest interval containing both intervals.
         """
-        return vector([a.union(b) for a, b in zip(vecA, vecB)])
+        return make_vector([a.union(b) for a, b in zip(vecA, vecB)])
 
     @staticmethod
     def certified_newton_iteration(equations, shape_intervals,
@@ -350,6 +350,7 @@ class IntervalNewtonShapesEngine:
 
         Intervals containing the true solution::
 
+            sage: from sage.all import vector
             sage: good_shapes = vector([
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
@@ -367,6 +368,7 @@ class IntervalNewtonShapesEngine:
 
         Intervals not containing a true solution::
 
+            sage: from sage.all import vector
             sage: bad_shapes = vector([
             ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
@@ -447,7 +449,7 @@ class IntervalNewtonShapesEngine:
             raise ValueError("Manifold needs to be orientable")
 
         # Initialize the shape intervals, they have zero length
-        self.initial_shapes = vector(
+        self.initial_shapes = make_vector(
             [self.CIF(shape) for shape in initial_shapes])
 
         # Get an independent set of gluing equations from snap

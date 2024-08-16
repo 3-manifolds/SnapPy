@@ -27,6 +27,42 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.2 (??? 2024):
+
+  - :meth:`inside_view <snappy.Manifold.inside_view>` shows the user as a paper
+    plane or eye ball. Also adding button to geodesics window to put camera
+    onto a geodesic. TODO: PICTURE!
+
+  - An alternative implementation of the length spectrum supporting verified
+    computations and being significantly faster in some cases, see
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
+    and
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+
+  - :meth:`isometry_signature <snappy.Manifold.isometry_signature>` now also
+    works for closed manifolds.
+
+  - It is now safe to call::
+
+        >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
+
+    to determine whether M and N are isometric hyperbolic manifolds since
+    :meth:`isometry_signature <snappy.Manifold.isometry_signature>` no longer
+    fails silently returning ``None`` but raises an exception if the signature
+    could not be computed.
+
+  - Similarly, :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>` can not longer fail silently returning ``None``.
+
+  - The decoration :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>`
+    clearly entangles the cusp indexing from the peripheral curves. Note that this is
+    a very subtle change only occurring in very few cases. The result is fully backwards
+    compatible in that it can be given to older SnapPy versions to recover the
+    triangulation and its decoration.
+
+  - New algorithm to compute maximal cusp area matrix which is faster and more robust
+    (Example:
+    :meth:`Manifold("otet10_00027").cusp_area_matrix(method='maximal') <snappy.Manifold.cusp_area_matrix>`).
+
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`

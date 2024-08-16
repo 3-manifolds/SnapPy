@@ -1,8 +1,9 @@
 from snappy.snap import t3mlite as t3m
 from snappy.snap.mcomplex_base import *
-from snappy.SnapPy import matrix
 
 from .hyperboloid_utilities import *
+
+from ..matrix import make_matrix
 
 __all__ = ['RaytracingData']
 
@@ -82,36 +83,44 @@ class RaytracingData(McomplexEngine):
         d[b'##num_edges##'] = len(self.mcomplex.Edges)
         return d
 
-    def update_view_state(self, boost_tet_num_and_weight,
-                          m=matrix([[1.0, 0.0, 0.0, 0.0],
-                                    [0.0, 1.0, 0.0, 0.0],
-                                    [0.0, 0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 0.0, 1.0]])):
+    def update_view_state(self,
+                          boost_tet_num_and_weight,
+                          m=make_matrix([[1.0, 0.0, 0.0, 0.0],
+                                         [0.0, 1.0, 0.0, 0.0],
+                                         [0.0, 0.0, 1.0, 0.0],
+                                         [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
 
-        boost = matrix(boost, ring=self.RF)
-        m = matrix(m, ring=self.RF)
+        boost = make_matrix(boost, ring=self.RF)
+        m     = make_matrix(m,     ring=self.RF)
 
-        boost = O13_orthonormalise(boost * m)
+        boost, tet, weight = _graph_trace(
+            boost * m, self.mcomplex.Tetrahedra[tet_num], weight)
 
-        entry_F = -1
+        return boost, tet.Index, weight
 
-        for i in range(100):
-            pos = boost.transpose()[0]
-            tet = self.mcomplex.Tetrahedra[tet_num]
+def _graph_trace(boost, tet, weight):
 
-            amount, F = max(
-                [ (r13_dot(pos, tet.R13_planes[F]), F)
-                  for F in t3m.TwoSubsimplices ])
+    boost = O13_orthonormalise(boost)
 
-            if F == entry_F:
-                break
-            if amount < 0.0000001:
-                break
+    entry_face = 0
 
-            boost = O13_orthonormalise(tet.O13_matrices[F] * boost)
-            tet_num = tet.Neighbor[F].Index
-            entry_F = tet.Gluing[F].image(F)
-            weight += tet.Weights[F]
+    for i in range(100):
+        pos = boost.transpose()[0]
 
-        return boost, tet_num, weight
+        signed_dist, face = max(
+            [ (r13_dot(pos, tet.R13_planes[face]), face)
+              for face in t3m.TwoSubsimplices ])
+
+        if face == entry_face:
+            break
+        if signed_dist < 0.0000001:
+            break
+
+        boost      = O13_orthonormalise(tet.O13_matrices[face] * boost)
+        weight    += tet.Weights[face]
+        entry_face = tet.Gluing[face].image(face)
+        tet        = tet.Neighbor[face]
+
+    return boost, tet, weight
+

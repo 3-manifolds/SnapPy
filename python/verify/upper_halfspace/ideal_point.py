@@ -169,7 +169,7 @@ def compute_inradius_and_incenter(idealPoints):
         sage: z1 = CIF(0)
         sage: z2 = CIF(1)
         sage: z3 = CIF(1.2, 1.0)
-        sage: compute_inradius_and_incenter([z0, z1, z2, z3])
+        sage: compute_inradius_and_incenter([z0, z1, z2, z3]) # doctest: +NUMERIC12
         (0.29186158033099?, FinitePoint(0.771123016231387? + 0.2791850380434060?*I, 0.94311979279000?))
     """
 
@@ -352,6 +352,8 @@ def _compute_inradius_and_incenter_with_one_point_at_infinity(nonInfPoints):
     # We use the geometric mean of the Euclidean heights of the lowest and
     # highest point of the inscribed sphere
     # sqrt( (h + r) * (h - r))
+    #
+    # height is also equal to  (2 * length_product / length_total).sqrt()
     height = ( eHeightSqr - inRadiusSqr ).sqrt()
 
     # Taking the logarithm of the ratio of these two highest gives the

@@ -3,14 +3,18 @@
 # logging.basicConfig(filename='example.log',level=logging.DEBUG)
 # logging.debug('This message should go to the log file')
 import sys
-from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
-                     DirichletDomain, CuspNeighborhood, SymmetryGroup,
-                     AlternatingKnotExteriors, NonalternatingKnotExteriors,
+from .SnapPy import (AbelianGroup,
+                     FundamentalGroup,
+                     SymmetryGroup,
+                     Isometry,
+                     AlternatingKnotExteriors,
+                     NonalternatingKnotExteriors,
                      pari)
-from .exceptions import SnapPeaFatalError, InsufficientPrecisionError
 from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
+from .SnapPy import CuspNeighborhood
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
+from .SnapPy import HolonomyGroup
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
 from .SnapPy import Triangulation as _TriangulationLP
@@ -23,16 +27,27 @@ import time
 from .SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
 
+from .exceptions import (SnapPeaFatalError,
+                         InsufficientPrecisionError,
+                         NonorientableManifoldError)
 
+from typing import Union, Tuple, List
+
+# Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
 
-
+# Subclass to be able to monkey-patch
 class TriangulationHP(_TriangulationHP):
     __doc__ = _TriangulationHP.__doc__
 
-
-class Manifold(_ManifoldLP):
+# We want Manifold to be a subclass of Triangulation.
+# Unfortunately, that introduces a diamond pattern here.
+# Luckily, the python resolves methods and bases classes
+# in the presence of a diamond pattern seem to work just
+# fine. In particular, we do not double allocate the underlying
+# C structures.
+class Manifold(_ManifoldLP, Triangulation):
     __doc__ = _ManifoldLP.__doc__
 
     def identify(self, extends_to_link=False):
@@ -86,15 +101,9 @@ class Manifold(_ManifoldLP):
     def low_precision(self):
         return self.copy()
 
-    def is_isometric_to(self, other, return_isometries=False):
-        __doc__ = _ManifoldLP.is_isometric_to.__doc__
-        if other.__class__ is ManifoldHP:
-            return _ManifoldHP.is_isometric_to(self.high_precision(), other,
-                                                  return_isometries)
-        return _ManifoldLP.is_isometric_to(self, other, return_isometries)
-
-
-class ManifoldHP(_ManifoldHP):
+# We want ManifoldHP to be a subclass of TriangulationHP.
+# See comment about Manifold and the diamond pattern.
+class ManifoldHP(_ManifoldHP, TriangulationHP):
     __doc__ = _ManifoldHP.__doc__
 
     def low_precision(self):
@@ -121,13 +130,6 @@ class ManifoldHP(_ManifoldHP):
 
     def high_precision(self):
         return self.copy()
-
-    def is_isometric_to(self, other, return_isometries=False):
-        __doc__ = _ManifoldHP.is_isometric_to.__doc__
-        if other.__class__ is Manifold:
-            return _ManifoldHP.is_isometric_to(self, other.high_precision(),
-                                                   return_isometries)
-        return _ManifoldHP.is_isometric_to(self, other, return_isometries)
 
     def identify(self, extends_to_link=False):
         """
@@ -171,7 +173,75 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'InsufficientPrecisionError',
            'pari', 'twister', ]
 
-from .sage_helper import _within_sage
+def _symmetrize_high_precision_manifold(
+        mfd1 : Union[Manifold, ManifoldHP],
+        mfd2 : Union[Manifold, ManifoldHP]
+              ) -> Union[Tuple[Manifold, Manifold],
+                         Tuple[ManifoldHP, ManifoldHP]]:
+    """
+    Given a (potential) mix of two Manifold and ManifoldHP,
+    promote one to high precision if necessary and return
+    the result as pair.
+    """
+    resolved_mfd1 = mfd1
+    resolved_mfd2 = mfd2
+    high1 = isinstance(mfd1, ManifoldHP)
+    high2 = isinstance(mfd2, ManifoldHP)
+    if high1 and not high2:
+        resolved_mfd2 = ManifoldHP(mfd2)
+    if high2 and not high1:
+        resolved_mfd1 = ManifoldHP(mfd1)
+    return (resolved_mfd1, resolved_mfd2)
+
+def _symmetrize_low_precision_triangulation(
+        tri1 : Union[Triangulation, TriangulationHP],
+        tri2 : Union[Triangulation, TriangulationHP]
+              ) -> Union[Tuple[Triangulation, Triangulation],
+                         Tuple[TriangulationHP, TriangulationHP]]:
+    """
+    Given a (potential) mix of two Triangulation and TriangulationHP,
+    demote one to low precision if necessary and return
+    the result as pair.
+    """
+    resolved_tri1 = tri1
+    resolved_tri2 = tri2
+    low1 = isinstance(tri1, Triangulation)
+    low2 = isinstance(tri2, Triangulation)
+    if low1 and not low2:
+        resolved_tri2 = Triangulation(tri2, remove_finite_vertices=False)
+    if low2 and not low1:
+        resolved_tri1 = Triangulation(tri1, remove_finite_vertices=False)
+    return (resolved_tri1, resolved_tri2)
+
+def is_isometric_to(self,
+                    other : Union[Manifold, ManifoldHP],
+                    return_isometries : bool = False
+                    ) -> Union[bool, List[Isometry]]:
+    resolved_self, resolved_other = (
+        _symmetrize_high_precision_manifold(
+            self, other))
+
+    return resolved_self._is_isometric_to(
+        resolved_other,
+        return_isometries=return_isometries)
+
+is_isometric_to.__doc__ = _ManifoldLP._is_isometric_to.__doc__
+Manifold.is_isometric_to = is_isometric_to
+ManifoldHP.is_isometric_to = is_isometric_to
+
+def isomorphisms_to(self,
+                    other : Union[Triangulation, TriangulationHP]
+                    ) -> List[Isometry]:
+    resolved_self, resolved_other = (
+        _symmetrize_low_precision_triangulation(
+            self, other))
+
+    return resolved_self._isomorphisms_to(
+        resolved_other)
+
+isomorphisms_to.__doc__ = _TriangulationLP._isomorphisms_to.__doc__
+Triangulation.isomorphisms_to = isomorphisms_to
+TriangulationHP.isomorphisms_to = isomorphisms_to
 
 from . import snap
 snap.add_methods(Manifold)
@@ -189,223 +259,27 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
-from .cusps.maximal_cusp_area_matrix import maximal_cusp_area_matrix
+from . import len_spec
+Manifold.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
+ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
+Manifold.length_spectrum_alt = len_spec.length_spectrum_alt
+ManifoldHP.length_spectrum_alt = len_spec.length_spectrum_alt
 
-def canonical_retriangulation(
-    manifold, verified=False,
-    interval_bits_precs=verify.default_interval_bits_precs,
-    exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
-    verbose=False):
-    """
-    The canonical retriangulation which is closely related to the canonical
-    cell decomposition and described in more detail `here
-    <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
+from . import canonical
+Manifold.canonical_retriangulation = canonical.canonical_retriangulation
+ManifoldHP.canonical_retriangulation = canonical.canonical_retriangulation_hp
 
-       >>> M = Manifold("m412")
-       >>> K = M.canonical_retriangulation()
-       >>> len(K.isomorphisms_to(K)) # Unverified size of the isometry group.
-       8
+from . import isometry_signature
 
-    When used inside `Sage <http://sagemath.org/>`_ and ``verified = True`` is
-    passed as argument, the verify module will certify the result to be
-    correct::
+Manifold.isometry_signature = isometry_signature.isometry_signature
+ManifoldHP.isometry_signature = isometry_signature.isometry_signature
 
-      sage: M = Manifold("m412")
-      sage: K = M.canonical_retriangulation(verified = True)
-      sage: len(K.isomorphisms_to(K)) # Verified size of the isometry group.
-      8
+from .cusps import cusp_area_matrix
 
-    See :py:meth:`verify.verified_canonical_retriangulation` for the
-    additional options.
-    """
-    if False in manifold.cusp_info('complete?'):
-        raise ValueError('Canonical retriangulation needs all cusps to be complete')
+Manifold.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
+ManifoldHP.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
 
-    if verified:
-        return verify.verified_canonical_retriangulation(
-            manifold,
-            interval_bits_precs=interval_bits_precs,
-            exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
-            verbose=verbose)
-    else:
-        return manifold._canonical_retriangulation()
-
-
-Manifold.canonical_retriangulation = canonical_retriangulation
-ManifoldHP.canonical_retriangulation = canonical_retriangulation
-
-
-def isometry_signature(
-    manifold, of_link=False, verified=False,
-    interval_bits_precs=verify.default_interval_bits_precs,
-    exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
-    verbose=False):
-    """
-    The isomorphism signature of the canonical retriangulation. This is a
-    complete invariant of the isometry type of a hyperbolic 3-manifold and
-    described in more detail `here
-    <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
-
-        >>> M = Manifold("m125")
-        >>> M.isometry_signature() # Unverified isometry signature
-        'gLLPQccdefffqffqqof'
-
-    When used inside `Sage <http://sagemath.org/>`_ and ``verified = True`` is
-    passed as argument, the verify module will certify the result to be
-    correct::
-
-        sage: M = Manifold("m125")
-        sage: M.isometry_signature(verified = True) # Verified isometry signature
-        'gLLPQccdefffqffqqof'
-
-    When ``of_link = True`` is specified, the peripheral curves are included in
-    such a way that the result is a complete invariant of a link. In particular,
-    ``isometry_signature(of_link=True)`` is invariant under changing the
-    ordering or orientations of the components or flipping all crossings of a
-    link simultaneously (it passes ``ignore_cusp_order = True,
-    ignore_curve_orientations = True`` to
-    :py:meth:`Manifold.triangulation_isosig`)::
-
-        >>> Manifold("5^2_1").isometry_signature(of_link = True)
-        'eLPkbdcddhgggb_baCbbaCb'
-        >>> Manifold("7^2_8").isometry_signature(of_link = True)
-        'eLPkbdcddhgggb_bBcBbaCb'
-
-    See :py:meth:`verify.verified_canonical_retriangulation` for the
-    additional options.
-
-    Note that interval methods cannot verify a canonical retriangulation
-    with non-tetrahedral cells such as in the cas of ``m412``, so the following
-    call returns ``None``::
-
-        sage: M = Manifold("m412")
-        sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = None)
-
-    """
-    if False in manifold.cusp_info('complete?'):
-        raise ValueError('isometry_signature needs all cusps to be complete')
-
-    retrig = manifold.canonical_retriangulation(
-         verified=verified,
-         interval_bits_precs=interval_bits_precs,
-         exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
-         verbose=verbose)
-
-    if not retrig:
-        return None
-
-    return retrig.triangulation_isosig(decorated=of_link,
-                                       ignore_cusp_ordering=True,
-                                       ignore_curve_orientations=True)
-
-
-Manifold.isometry_signature = isometry_signature
-ManifoldHP.isometry_signature = isometry_signature
-
-
-def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
-                     verified=False, bits_prec=None):
-    r"""
-    This function returns a matrix that can be used to check whether
-    cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
-    disjoint: the cusp neighborhoods about cusp i and j are
-    disjoint (respectively, the cusp neighborhood embeds if i and j
-    are equal) if a\ :sub:`i` * a\ :sub:`j` is less than or equal to
-    the entry (i,j) of the cusp area matrix. Note that the "if"
-    becomes "if and only if" if we pick the "maximal cusp area
-    matrix".
-
-    This function can operate in different ways (determined by
-    ``method``). By default (``method='trigDependentTryCanonize'``),
-    it returns a result which can be suboptimal and non-deterministic
-    but is quicker to compute and sufficies for many applications::
-
-        >>> M = Manifold("s776")
-        >>> M.cusp_area_matrix() # doctest: +NUMERIC12
-        [28.0000000000000 7.00000000000000 6.99999999999999]
-        [7.00000000000000 21.4375000000000 7.00000000000000]
-        [6.99999999999999 7.00000000000000 21.4375000000000]
-
-    If ``method='maximal'`` is specified, the result is the "maximal
-    cusp area matrix", thus it is optimal and an invariant of the
-    manifold with labeled cusps. Note that the "maximal cusp area
-    matrix" is only available as verified computation and thus
-    requires passing ``verified = True``::
-
-        sage: M.cusp_area_matrix(method = 'maximal', verified=True) # doctest: +NUMERIC6
-        [28.0000000000?  7.0000000000?  7.0000000000?]
-        [ 7.0000000000?  28.000000000? 7.00000000000?]
-        [ 7.0000000000? 7.00000000000?   28.00000000?]
-
-    If ``verified = True`` is specified and ``method`` is not
-    ``maximal``, the entries are all guaranteed to be less than the
-    corresponding ones in the maximal cusp area matrix (more
-    precisely, the lower end point of the interval is guaranteed to be
-    less than the true value of the corresponding maximal cusp area
-    matrix entry)::
-
-        sage: M.cusp_area_matrix(verified=True, bits_prec=70) # doctest: +NUMERIC15
-        [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
-
-    For expert users:
-
-    Besides the two values above, ``method`` can be ``trigDependent``:
-    this result is also fast to compute by making the assumption that
-    cusp neighborhoods are not only disjoint but also in "standard
-    form" with respect to the triangulation (i.e., when lifting of a
-    cusp neighborhood to a horoball in the universal cover, it
-    intersects a geodesic tetrahedron in three but not four
-    faces). ``trigDependentTryCanonize`` is similar to
-    ``trigDependent`` but tries to "proto-canonize" (a copy of) the
-    triangulation first since this often produces a matrix that is
-    closer to the maximal cusp area matrix, for example::
-
-        >>> M = Manifold("o9_35953")
-        >>> M.cusp_area_matrix(method = 'trigDependent') # doctest: +NUMERIC9
-        [72.9848715318467 12.7560424258060]
-        [12.7560424258060 6.65567118002656]
-        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize') # doctest: +NUMERIC9
-        [72.9848715318466 12.7560424258060]
-        [12.7560424258060 62.1043047674605]
-
-    Compare to maximal area matrix::
-
-        sage: M.cusp_area_matrix(method = 'maximal', verified = True, bits_prec = 100) # doctest: +NUMERIC15
-        [       72.984871531846664? 12.7560424258059765562778?]
-        [12.7560424258059765562778?     62.104304767460978078?]
-
-    """
-
-    if method == 'maximal':
-        return maximal_cusp_area_matrix(
-            manifold, bits_prec=bits_prec, verified=verified)
-    if method == 'maximalLegacy':
-        if not verified:
-            raise NotImplementedError("Maximal cusp area matrix only "
-                                      "available as verified computation. "
-                                      "Pass verified = True.")
-        return verify.verified_maximal_cusp_area_matrix(
-            manifold, bits_prec=bits_prec)
-    if method in ['trigDependent', 'trigDependentTryCanonize']:
-        if method == 'trigDependentTryCanonize':
-            manifold = manifold.copy()
-            manifold.canonize()
-
-        return verify.triangulation_dependent_cusp_area_matrix(
-            manifold, verified=verified, bits_prec=bits_prec)
-
-    raise ValueError("method passed to cusp_area_matrix must be "
-                       "'trigDependent', 'trigDependentTryCanonize', "
-                       "or 'maximal'.")
-
-
-Manifold.cusp_area_matrix = cusp_area_matrix
-ManifoldHP.cusp_area_matrix = cusp_area_matrix
-
-from .verify import cusp_areas as verify_cusp_areas
-
+from .cusps import cusp_areas_from_matrix
 
 def cusp_areas(manifold, policy='unbiased',
                method='trigDependentTryCanonize',
@@ -479,10 +353,9 @@ def cusp_areas(manifold, policy='unbiased',
         method=method, verified=verified, bits_prec=bits_prec)
 
     if policy == 'unbiased':
-        return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
+        return cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix(m)
     else:
-        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
-
+        return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
@@ -603,31 +476,44 @@ ManifoldHP.cusp_translations = cusp_translations
 def complex_volume(manifold, verified_modulo_2_torsion=False,
                    bits_prec=None):
     """
-    Returns the complex volume, i.e.
-    volume + i 2 pi^2 (chern simons)
+    Returns the complex volume modulo :math:`i \\pi^2` which is given by
 
-    >>> M = Manifold('5_2')
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.82812209 - 3.02412838*I
-    >>> c = M.chern_simons()
-    >>> M.dehn_fill((1,2))
-    >>> M.complex_volume() # doctest: +NUMERIC6
-    2.22671790 + 1.52619361*I
-    >>> M = Manifold("3_1")
-    >>> cvol = M.complex_volume()
-    >>> cvol.real() # doctest: +NUMERIC6
-    0
-    >>> cvol.imag() # doctest: +NUMERIC6
-    -1.64493407
+    .. math::
+        \\text{vol} + i \\text{CS}
+
+    where :math:`\\text{CS}` is the (unnormalized) Chern-Simons invariant.
+
+        >>> M = Manifold('5_2')
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.82812209 - 3.02412838*I
+
+    Note that :meth:`chern_simons <snappy.Manifold.chern_simons>`
+    normalizes the Chern-Simons invariant by dividing it by
+    :math:`2 \\pi^2 = 19.7392...` ::
+
+        >>> M.chern_simons() # doctest: +NUMERIC6
+        -0.153204133297152
+
+    More examples::
+
+        >>> M.dehn_fill((1,2))
+        >>> M.complex_volume() # doctest: +NUMERIC6
+        2.22671790 + 1.52619361*I
+        >>> M = Manifold("3_1") # A non-hyperbolic example.
+        >>> cvol = M.complex_volume()
+        >>> cvol.real() # doctest: +NUMERIC6
+        0
+        >>> cvol.imag() # doctest: +NUMERIC6
+        -1.64493407
 
     If no cusp is filled or there is only one cusped (filled or
     unfilled), the complex volume can be verified up to multiples
-    of i pi^2 / 2 by passing `verified_modulo_2_torsion = True`
-    when inside SageMath (and higher precision can be requested
-    with `bits_prec`)::
+    of :math:`i \\pi^2 /2` by passing ``verified_modulo_2_torsion = True``
+    when inside SageMath. Higher precision can be requested
+    with ``bits_prec``::
 
         sage: M = Manifold("m015")
-        sage: M.complex_volume(verified_modulo_2_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
+        sage: M.complex_volume(verified_modulo_2_torsion=True, bits_prec = 93) # doctest: +NUMERIC21
         2.828122088330783162764? + 1.910673824035377649698?*I
         sage: M = Manifold("m015(3,4)")
         sage: M.complex_volume(verified_modulo_2_torsion=True) # doctest: +NUMERIC6
@@ -645,7 +531,6 @@ def complex_volume(manifold, verified_modulo_2_torsion=False,
 
     return manifold._complex_volume()
 
-
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
@@ -653,67 +538,10 @@ from . import drilling
 drilling._add_methods(Manifold)
 drilling._add_methods(ManifoldHP, high_precision=True)
 
-try:
-    from .gui import ViewerWindow
-    from .raytracing.inside_viewer import InsideViewer
-    from .raytracing.inside_viewer import NonorientableUnsupportedError
-    from .raytracing import cohomology_fractal
-except ImportError as e:
-    InsideViewer = None
-    _importErrorRaytracing = str(e)
+from . import raytracing
 
-
-def manifold_inside_view(self, cohomology_class=None, geodesics=[]):
-    """
-    Show raytraced inside view of hyperbolic manifold. See
-    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_
-    and `demo video <https://youtu.be/CAERhmUCkRs>`_.
-
-        >>> M = Manifold("m004")
-        >>> M.inside_view() #doctest: +CYMODERNOPENGL
-
-    Or show the cohomology fractal:
-
-        >>> M = Manifold("m004")
-        >>> M.inside_view(cohomology_class = 0) #doctest: +CYMODERNOPENGL
-
-    The cohomology class in H^2(M, bd M; R) producing the cohomology
-    fractal can be specified as a cocycle or using an automatically computed
-    basis (of, say, length ``n``). Thus, ``cohomology_class`` can be one of
-    the following.
-
-    - An integer ``i`` between 0 and ``n`` - 1 to pick the ``i``-th basis
-      vector.
-    - An array of length ``n`` specifying the cohomology class as linear
-      combination of basis vectors.
-    - A weight for each face of each tetrahedron.
-
-    """
-
-    if InsideViewer is None:
-        raise RuntimeError("Raytraced inside view not imported; "
-        "Tk or CyOpenGL is probably missing "
-        "(original error : %s)" % _importErrorRaytracing)
-
-    if not self.is_orientable():
-        raise NonorientableUnsupportedError(self)
-
-    weights, cohomology_basis, cohomology_class = (
-        cohomology_fractal.compute_weights_basis_class(
-            self, cohomology_class))
-
-    return ViewerWindow(
-        InsideViewer,
-        self,
-        title="Inside view of %s" % self.name(),
-        weights=weights,
-        cohomology_basis=cohomology_basis,
-        cohomology_class=cohomology_class,
-        geodesics=geodesics)
-
-
-Manifold.inside_view = manifold_inside_view
-ManifoldHP.inside_view = manifold_inside_view
+Manifold.inside_view = raytracing.inside_view
+ManifoldHP.inside_view = raytracing.inside_view
 
 
 def all_translations(self, verified=False, bits_prec=None):
@@ -773,7 +601,7 @@ def all_translations(self, verified=False, bits_prec=None):
     """
 
     if verified or bits_prec:
-        # Use the implementation in verify.cuspTranslations that uses
+        # Use the implementation in verify.cusp_translations that uses
         # tetrahedra_shapes and ComplexCuspNeighborhood
         return verify.cusp_translations_for_neighborhood(
             self, verified=verified, bits_prec=bits_prec)
@@ -792,6 +620,7 @@ from . import twister
 
 from . import database
 database.Manifold = Manifold
+database.Triangulation = Triangulation
 snappy_module = sys.modules[__name__]
 database_objects = []
 known_manifold_packages = [('snappy_manifolds', True),

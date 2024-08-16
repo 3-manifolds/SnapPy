@@ -36,7 +36,8 @@
 #endif
 
 #ifdef __APPLE__
-#include "openglAppleFixes.h"
+/* This seems to have been fixed by Apple since then. */
+/* #include "openglAppleFixes.h" */
 #endif
 
 #endif

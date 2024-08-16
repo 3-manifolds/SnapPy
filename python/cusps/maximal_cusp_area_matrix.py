@@ -1,8 +1,8 @@
 from ..geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood import (
-    mcomplex_for_tiling_cusp_neighborhoods,
-    compute_tiles_for_cusp_neighborhood)
+    mcomplex_for_tiling_cusp_neighborhoods)
 from ..tiling.tile import Tile
 
+from ..matrix import make_matrix
 from ..sage_helper import _within_sage
 from ..math_basics import correct_min, is_RealIntervalFieldElement, lower
 
@@ -42,7 +42,7 @@ def maximal_cusp_area_matrix(manifold, bits_prec, verified):
         [ _entry(mcomplex, i, j) for j in range(i + 1) ]
         for i in range(n) ]
 
-    return _to_matrix(
+    return make_matrix(
         [[ lower_entries[i][j] if j < i else lower_entries[j][i]
            for j in range(n) ]
          for i in range(n) ])
@@ -73,7 +73,7 @@ def _diagonal_scale(mcomplex, i):
         if tile.lower_bound_distance > d / 2:
             return (2 * d).exp() # Area, so need square
 
-        new_lift = tile.lifted_geometric_object.defining_vec
+        new_lift = tile.inverse_lifted_geometric_object.defining_vec
 
         tet_index = tile.lifted_tetrahedron.tet.Index
 
@@ -104,18 +104,13 @@ def _non_diagonal_scale(mcomplex, i, j):
         if tile.lower_bound_distance > d:
             return (2 * d).exp()
 
-        new_lift = tile.lifted_geometric_object.defining_vec
+        new_lift = tile.inverse_lifted_geometric_object.defining_vec
         tet_index = tile.lifted_tetrahedron.tet.Index
 
         for lift in obj_to_tet_to_lifts[1 - tile.object_index][tet_index]:
             d = correct_min([d,
                              distance_r13_horoballs(new_lift, lift)])
         obj_to_tet_to_lifts[tile.object_index][tet_index].append(new_lift)
-
-def _to_matrix(m):
-    from snappy.SnapPy import matrix
-
-    return matrix(m)
 
 def _merge_tiles(streams_of_tiles):
 
@@ -128,7 +123,7 @@ def _merge_tiles(streams_of_tiles):
         yield Tile(
             # Relying on -inf + x = -inf
             sum(t.lower_bound_distance for t in tiles),
-            tile.lifted_geometric_object,
+            tile.inverse_lifted_geometric_object,
             tile.lifted_tetrahedron,
             i)
 

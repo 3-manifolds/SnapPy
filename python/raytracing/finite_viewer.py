@@ -65,7 +65,7 @@ class FiniteViewer(ttk.Frame):
 
         UniformDictController(
             self.widget.ui_parameter_dict, 'fov',
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             scale=self.fov_scale,
             label=self.fov_label,
             format_string='%.1f')
@@ -121,7 +121,7 @@ class FiniteViewer(ttk.Frame):
         return frame
 
     def checkbox_update(self):
-        self.widget.redraw_if_initialized()
+        self.widget.draw()
         self.focus_viewer()
 
     def create_fillings_frame(self, parent):
@@ -207,7 +207,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.0,
             right_end=0.35,
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             format_string='%.3f')
 
         row += 1
@@ -219,7 +219,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.0,
             right_end=1.35,
-            update_function=self.widget.redraw_if_initialized,
+            update_function=self.widget.draw,
             format_string='%.3f')
 
         row += 1
@@ -231,7 +231,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.0,
             right_end=0.5,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         return frame
 
@@ -251,7 +251,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=1,
             right_end=100,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -262,7 +262,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=1.0,
             right_end=28.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -273,7 +273,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=1.0,
             right_end=4.25,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         return frame
 
@@ -295,7 +295,7 @@ class FiniteViewer(ttk.Frame):
                 row=row,
                 left_end=0.0,
                 right_end=0.25,
-                update_function=self.widget.redraw_if_initialized,
+                update_function=self.widget.draw,
                 format_string='%.3f')
             row += 1
 
@@ -307,7 +307,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.3,
             right_end=4.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -318,7 +318,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.1,
             right_end=2.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -329,7 +329,7 @@ class FiniteViewer(ttk.Frame):
             row=row,
             left_end=0.3,
             right_end=3.0,
-            update_function=self.widget.redraw_if_initialized)
+            update_function=self.widget.draw)
 
         return frame
 
@@ -578,7 +578,7 @@ class PerfTest:
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
             self.widget.view_state, self.m)
 
-        self.widget.redraw_if_initialized()
+        self.widget.draw()
         self.widget.after(250, self.redraw)
 
 

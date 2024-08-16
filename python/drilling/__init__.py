@@ -13,34 +13,32 @@ from .cusps import (
     reorder_vertices_and_get_post_drill_infos,
     refill_and_adjust_peripheral_curves)
 
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo, compute_geodesic_info
+from .. import Manifold, ManifoldHP
+
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo, compute_geodesic_start_point_info
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
-from ..geometric_structure.geodesic.core_curves import add_r13_core_curves
+from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
-
-import functools
-from typing import Sequence
-
+from typing import Optional, Sequence
 
 def drill_word(manifold,
                word : str,
                verified : bool = False,
-               bits_prec=None,
-               verbose : bool = False):
+               bits_prec : Optional[int] = None,
+               verbose : bool = False) -> Manifold:
     """
     Drills the geodesic corresponding to the given word in the unsimplified
     fundamental group.
 
-        >>> from snappy import Manifold
         >>> M = Manifold("m004")
         >>> M.length_spectrum(1.2, include_words = True, grouped = False)
         mult  length                                  topology     parity word
-        1     1.08707014499574 -  1.72276844987009*I  circle       +      a
-        1     1.08707014499574 +  1.72276844987009*I  circle       +      bC
+        1     1.08707014499574 - 1.72276844987009*I   circle       +      a
+        1     1.08707014499574 + 1.72276844987009*I   circle       +      bC
         >>> N = M.drill_word('a')
         >>> N.identify()
         [m129(0,0)(0,0), 5^2_1(0,0)(0,0), L5a1(0,0)(0,0), ooct01_00001(0,0)(0,0)]
@@ -83,12 +81,12 @@ def drill_word(manifold,
     triangulation and thus combinatorial in nature, the intermediate
     computations to compute the intersections of the geodesic with the
     faces of the tetrahedra is numerical. Sometimes it is necessary to increase
-    the precision with `bits_prec` to make this computation accurate or succeed.
-    If `verified = True` is specified, intervals are used for all computations
+    the precision with ``bits_prec`` to make this computation accurate or succeed.
+    If ``verified = True`` is specified, intervals are used for all computations
     and the result is provably correct (only supported when used inside
     SageMath).
     That is, the algorithm will fail with an exception (most likely
-    InsufficientPrecisionError) if insufficient precision is used. Example of
+    ``InsufficientPrecisionError``) if insufficient precision is used. Example of
     verified computation::
 
         sage: M = Manifold("m004(2,3)")
@@ -97,7 +95,6 @@ def drill_word(manifold,
 
     An example where we drill the core geodesic::
 
-        >>> from snappy import Manifold
         >>> M = Manifold("v2986(3,4)")
         >>> N = M.drill_word('EdFgabcGEdFgaDcc')
         >>> N.is_isometric_to(Manifold("v2986"), return_isometries = True) # doctest: +NORMALIZE_WHITESPACE
@@ -117,17 +114,16 @@ def drill_word(manifold,
 def drill_words(manifold,
                 words : Sequence[str],
                 verified : bool = False,
-                bits_prec=None,
-                verbose : bool = False):
+                bits_prec : Optional[int] = None,
+                verbose : bool = False) -> Manifold:
     """
-    A generalization of M.drill_word taking a list of words to
-    drill several geodesics simultaneously.
+    A generalization of :meth:`drill_word <Manifold.drill_word>` taking a list
+    of words to drill several geodesics simultaneously.
 
     Here is an example where we drill the core curve corresponding to the third cusp
     and a geodesic that is not a core curve:
 
 
-        >>> from snappy import Manifold
         >>> M=Manifold("t12047(0,0)(1,3)(1,4)(1,5)")
         >>> [ info.get('core_length') for info in M.cusp_info() ] # doctest: +NUMERIC9
         [None,
@@ -238,8 +234,8 @@ def drill_words_implementation(
     # matrix and the end points and a sample point on the fixed line.
     # Try to conjugate/translate matrix and end points such that the
     # line intersects the fundamental domain.
-    geodesics : Sequence[GeodesicInfo] = [
-        compute_geodesic_info(mcomplex, word)
+    geodesics : Sequence[GeodesicStartPointInfo] = [
+        compute_geodesic_start_point_info(mcomplex, word)
         for word in words ]
 
     # Record information in the geodesics and triangulation needed
@@ -251,6 +247,11 @@ def drill_words_implementation(
     # cusps. For the other geodesics, we simply unfill the cusp instead.
     geodesics_to_drill = [ g for g in geodesics
                            if not g.core_curve_cusp ]
+
+    if verbose:
+        for g in geodesics:
+            if g.core_curve_cusp:
+                print("%s is core curve" % g.word)
 
     if perturb:
         # Move the sample point for each geodesic a bit and use it
@@ -307,7 +308,7 @@ def drill_words_implementation(
     return drilled_manifold
 
 def drill_geodesics(mcomplex : Mcomplex,
-                    geodesics : Sequence[GeodesicInfo],
+                    geodesics : Sequence[GeodesicStartPointInfo],
                     verbose : bool = False) -> Mcomplex:
     """
     Given a triangulation with geometric structure attached with
@@ -315,7 +316,7 @@ def drill_geodesics(mcomplex : Mcomplex,
     the triangulation (with finite vertices) obtained by drilling
     the geodesics.
 
-    Each provided GeodesicInfo is supposed to have a start point and
+    Each provided GeodesicStartPointInfo is supposed to have a start point and
     a tetrahedron in the fundamental domain that contains the start point
     in its interior and an end point such that the line segment from the
     start to the endpoint forms a closed curve in the manifold.
@@ -376,21 +377,31 @@ def drill_geodesics(mcomplex : Mcomplex,
 
     return result
 
-# Create a version of drill_word and drill_words suitable
-# for ManifoldHP.
-# Use @functools.wraps to carry forward the argument names
-# and default values and the doc string.
+def drill_word_hp(manifold,
+                  word : str,
+                  verified : bool = False,
+                  bits_prec : Optional[int] = None,
+                  verbose : bool = False) -> ManifoldHP:
+    return drill_word(
+        manifold,
+        word = word,
+        verified = verified,
+        bits_prec = bits_prec,
+        verbose = verbose).high_precision()
+drill_word_hp.__doc__ = drill_word.__doc__
 
-
-@functools.wraps(drill_word)
-def drill_word_hp(*args, **kwargs):
-    return drill_word(*args, **kwargs).high_precision()
-
-
-@functools.wraps(drill_words)
-def drill_words_hp(*args, **kwargs):
-    return drill_words(*args, **kwargs).high_precision()
-
+def drill_words_hp(manifold,
+                   words : Sequence[str],
+                   verified : bool = False,
+                   bits_prec : Optional[int] = None,
+                   verbose : bool = False) -> ManifoldHP:
+    return drill_words(
+        manifold,
+        words = words,
+        verified = verified,
+        bits_prec = bits_prec,
+        verbose = verbose).high_precision()
+drill_words_hp.__doc__ = drill_words.__doc__
 
 def _add_methods(mfld_class, high_precision=False):
     if high_precision:
@@ -399,127 +410,3 @@ def _add_methods(mfld_class, high_precision=False):
     else:
         mfld_class.drill_word = drill_word
         mfld_class.drill_words = drill_words
-
-
-def dummy_function_for_additional_doctests():
-    """
-    Test with manifold without symmetry. Note that the code in drilling is
-    deterministic but the SnapPea kernel code to remove the finite vertices
-    and simplify is not. Thus, we need canonical_retriangulation() to get
-    a consistent result:
-
-        >>> from snappy import Manifold, ManifoldHP
-        >>> from snappy.drilling.exceptions import GeodesicSystemNotSimpleError
-        >>> M = Manifold("v2986")
-        >>> M.drill_word('gB').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'kLvvAQQkbhijhghgjijxxacvcccccv_baBaaBDbBa'
-
-    Test non-simple geodesic and verified computation:
-
-        sage: M = ManifoldHP("m004")
-        sage: try:
-        ...       M.drill_word('bbCC', verified = True)
-        ... except GeodesicSystemNotSimpleError as e:
-        ...     print("Not simple")
-        Not simple
-
-    Tests drilling one geodesic that intersects 1-skeleton::
-
-        >>> M = Manifold("m125")
-        >>> M.drill_word('d').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'svLvLQLAzQMMQdifhjmlknlopnqpqrrroaaaaaaoaaaaaaoaaao_aBbaBaaBeDBb'
-
-    Tests drilling two geodesics that intersect each other:
-
-        >>> try: # doctest: +NUMERIC9
-        ...     M.drill_words(['d','Ad'])
-        ... except GeodesicSystemNotSimpleError as e:
-        ...     print("Max tube radius:", e.maximal_tube_radius)
-        Max tube radius: 0.0000000000
-
-    Tests drilling geodesics that are entirely in the 2-skeleton::
-
-        >>> M.drill_words(['a','acAADa']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
-
-    Same test as verified computation::
-
-        sage: M.drill_words(['a','acAADa'], verified = True).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
-
-    Test error when drilling something close to core curve::
-
-        >>> from snappy import Manifold
-        >>> M = Manifold("m125")
-        >>> MM = M.drill_word('d')
-        >>> MM.dehn_fill((1,0),2)
-        >>> bad_word = 'bc'
-        >>> MM.drill_word(bad_word) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        ...
-        snappy.geometric_structure.geodesic.check_core_curve.ObjectCloseToCoreCurve: Geodesic bc is very close to the core curve of cusp 2 and might intersect it.
-
-    There are two places where we detect whether the geodesic is close
-    to a core curve (rather than tiling forever). Test the other place
-    in the GeodesicTube code used to determine the maximal amount we can
-    perturb the geodesic:
-
-        >>> drill_words_implementation(MM, [bad_word], verified = False, bits_prec = 53, perturb = True) # doctest: +ELLIPSIS
-        Traceback (most recent call last):
-        ...
-        snappy.geometric_structure.geodesic.check_core_curve.ObjectCloseToCoreCurve: Geodesic bc is very close to the core curve of cusp 2 and might intersect it.
-
-    A particular tricky case in terms testing that the start piece is correctly
-    handled by 2-3 moves (in particular, commit f9879d04 introduced a bug):
-
-        >>> Manifold("m004").drill_words(['CAC','CCbC']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'qLvvLvAMQQQkcgimopkllmpkonnnpixcaelchapewetvrn_bcaaBbBBbaBaBbB'
-
-
-    An interesting case where geodesic intersects triangulation in only one tetrahedron:
-
-        >>> Manifold("m019").drill_word('A').canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        'gLLPQccdefffqffqqof_BaaBdcbb'
-
-    A bug in an earlier implementation found by Nathan Dunfield (where putting the words in one order caused a failure):
-
-        >>> import sys
-        >>> original_limit = sys.getrecursionlimit()
-        >>> sys.setrecursionlimit(100000)
-        >>> def drilled_isosig(M, words):
-        ...     for i in range(10):
-        ...         try:
-        ...             F = M.drill_words(words).filled_triangulation()
-        ...             return F.canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-        ...         except RuntimeError:
-        ...             pass
-        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
-        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcbDbBba'
-        >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
-        'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
-        >>> sys.setrecursionlimit(original_limit)
-
-    Stress test by using large perturbation. In particular, this is testing the
-    case where two geodesic pieces are adjacent to the same triangle and we
-    need to shorten before crushing. We do white-box testing (verbose = True)
-    to make sure we really hit the shortening case.
-
-        >>> from snappy import Manifold
-        >>> from snappy.drilling import perturb
-        >>> original_radius = perturb._tube_developing_radius
-        >>> perturb._tube_developing_radius = 1
-        >>> Manifold("m307").drill_word('dadadabCdada', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
-        Tubes lower bound injectivity radius: 0.380575727320247
-        Number of geodesic pieces: [9]
-        Number of tets after subdividing: 45
-        Shortening geodesic by sweeping across triangle.
-        'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
-        >>> Manifold("m320").drill_word('daaacDA', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
-        Tubes lower bound injectivity radius: 0.397319067589326
-        Number of geodesic pieces: [9]
-        Number of tets after subdividing: 49
-        Shortening geodesic by sweeping across triangle.
-        'rLLPwAPvvPQQcccdfehgjiqpooqppqoqffaaaaaaaqaaaqaaa_bBbabaab'
-        >>> perturb._tube_developing_radius = original_radius
-
-    """

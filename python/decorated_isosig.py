@@ -14,8 +14,6 @@ space, the permutation may be omitted when it is equal to the identity
 permutation; this is indicated by the fact that the length of the
 decoration is 4n rather than 5n.
 
-Currently, only oriented manifolds are supported.
-
 A simple valid decorated isosig for a two-cusped manifold is::
 
     eLPkbdcddhgggb_abBaaBBaaB
@@ -227,7 +225,6 @@ def decorated_isosig(manifold, triangulation_class,
     N = triangulation_class(isosig, remove_finite_vertices=False)
     N.set_peripheral_curves('combinatorial')
 
-    # in Python3 range is an iterator
     trivial_perm = list(range(manifold.num_cusps()))
 
     min_encoded = None
@@ -264,7 +261,7 @@ def decorated_isosig(manifold, triangulation_class,
         # Encode the matrices
         decorations = pack_matrices_applying_flips(matrices, flips)
 
-        if perm == trivial_perm or ignore_cusp_ordering:
+        if ignore_cusp_ordering or perm == trivial_perm:
             # Only encode matrices
             encoded = encode_integer_list(decorations)
         else:
@@ -277,11 +274,11 @@ def decorated_isosig(manifold, triangulation_class,
             min_perm = perm
             min_flips = flips
 
-    # Add decoration to isosig
+    # Add separator
     ans = isosig + separator + min_encoded
 
     # Add Dehn-fillings if we have any
-    if False in manifold.cusp_info('complete?'):
+    if not all(manifold.cusp_info('complete?')):
         if ignore_cusp_ordering:
             # If we do not include the permutation in the encoding,
             # we need to apply it to the slopes

@@ -7,22 +7,23 @@ import operator
 __all__ = ['prod',
            'xgcd',
            'is_RealIntervalFieldElement',
+           'is_ComplexIntervalFieldElement'
            'is_Interval',
            'correct_min',
            'correct_max',
            'lower']
 
+def is_Interval(x):
+    """
+    Returns True is x is either a real or complex interval as constructed
+    with RealIntervalField or ComplexIntervalField, respectively.
+    """
+    return is_RealIntervalFieldElement(x) or is_ComplexIntervalFieldElement(x)
+
 if _within_sage:
     from sage.all import prod, xgcd
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
     from sage.rings.complex_interval import is_ComplexIntervalFieldElement
-
-    def is_Interval(x):
-        """
-        Returns True is x is either a real or complex interval as constructed
-        with RealIntervalField or ComplexIntervalField, respectively.
-        """
-        return is_RealIntervalFieldElement(x) or is_ComplexIntervalFieldElement(x)
 
 else:
 
@@ -77,10 +78,16 @@ else:
         # so always return False.
         return False
 
-    def is_Interval(x):
+    def is_ComplexIntervalFieldElement(x):
+        """
+        is_ComplexIntervalFieldElement returns whether x is a complex
+        interval (constructed with ComplexIntervalField(precision)(value)).
+        """
+
+        # We do not support interval arithmetic outside of SnapPy,
+        # so always return False.
         return False
-
-
+    
 def correct_min(l):
     """
     A version of min that works correctly even when l is a list of

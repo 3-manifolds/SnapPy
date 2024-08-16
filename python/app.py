@@ -236,8 +236,10 @@ class SnapPyBrowser(Browser, ListedWindow):
         self.dirichlet_viewer.help_button.configure(command=self.dirichlet_help)
 
     def close(self, event=None):
+        terminal.window.focus_force()
         self.unregister_window(self)
-        self.destroy()
+        self.withdraw()
+        self.after(100, self.destroy)
 
     def apply_settings(self):
         if self.inside_view:
@@ -358,8 +360,9 @@ class SnapPyPolyhedronViewer(PolyhedronViewer):
     def help_window(self):
         window = self.parent
         if not hasattr(window, 'polyhedron_help'):
-            window.polyhedron_help = InfoWindow(window,  'Polyhedron Viewer Help',
-                                                self.widget.help_text, 'polyhedron_help')
+            window.polyhedron_help = InfoWindow(
+                window, 'Polyhedron Viewer Help',
+                self.widget.help_text, 'polyhedron_help')
         else:
             window.polyhedron_help.deiconify()
             window.polyhedron_help.lift()

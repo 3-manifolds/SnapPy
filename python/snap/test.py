@@ -1,10 +1,40 @@
-from ..sage_helper import _within_sage, doctest_modules
-from ..pari import pari
+from snappy import testing
 import snappy
-import snappy.snap as snap
-import getopt
-import sys
 
+from snappy.sage_helper import _within_sage
+from snappy.pari import pari
+
+from snappy import snap
+
+modules = [
+    snap,
+    snap.t3mlite.linalg,
+    snap.t3mlite.mcomplex,
+    snap.t3mlite.perm4,
+    snap.t3mlite.spun,
+    snap.character_varieties,
+    snap.slice_obs_HKL,
+    snap.nsagetools,
+    snap.polished_reps,
+    snap.interval_reps,
+    snap.fundamental_polyhedron,
+    snap.peripheral.dual_cellulation,
+    snap.peripheral.link,
+    snap.peripheral.peripheral
+]
+
+def run_doctests(verbose=False, print_info=True):
+    globs = {'Manifold':snappy.Manifold,
+             'ManifoldHP':snappy.ManifoldHP,
+             'Triangulation':snappy.Triangulation,
+             'Mcomplex':snappy.snap.t3mlite.Mcomplex,
+             'LinkSurface':snappy.snap.peripheral.link.LinkSurface}
+    return testing.doctest_modules(modules,
+                                   verbose=verbose,
+                                   print_info=print_info,
+                                   extraglobs=globs)
+
+run_doctests.__name__ = snap.__name__
 
 def _test_gluing_equations(manifold, shapes):
     """
@@ -100,51 +130,5 @@ def big_test():
         test_holonomy()
         test_fields()
 
-
-def run_doctests(verbose=False, print_info=True):
-    from snappy.snap.t3mlite import perm4
-    from snappy.snap.t3mlite import linalg
-    from snappy.snap.t3mlite import spun
-    from snappy.snap.t3mlite import mcomplex
-    from snappy.snap import slice_obs_HKL
-    from snappy.snap import character_varieties
-    from snappy.snap import nsagetools
-    from snappy.snap import polished_reps
-    from snappy.snap import interval_reps
-    from snappy.snap import fundamental_polyhedron
-    from snappy.snap.peripheral import dual_cellulation
-    from snappy.snap.peripheral import link
-    from snappy.snap.peripheral import peripheral
-
-    modules = [
-        perm4,
-        mcomplex,
-        linalg,
-        spun,
-        character_varieties,
-        nsagetools,
-        slice_obs_HKL,
-        polished_reps,
-        snap,
-        interval_reps,
-        fundamental_polyhedron,
-        dual_cellulation,
-        link,
-        peripheral,
-    ]
-
-    globs = {'Manifold':snappy.Manifold,
-             'ManifoldHP':snappy.ManifoldHP,
-             'Triangulation':snappy.Triangulation,
-             'Mcomplex':snappy.snap.t3mlite.Mcomplex,
-             'LinkSurface':snappy.snap.peripheral.link.LinkSurface
-    }
-
-    return doctest_modules(modules, extraglobs=globs,
-                           verbose=verbose, print_info=print_info)
-
-
 if __name__ == '__main__':
-    optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
-    verbose = len(optlist) > 0
-    run_doctests(verbose)
+    testing.run_doctests_as_main(run_doctests)

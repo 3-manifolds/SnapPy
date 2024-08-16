@@ -1,41 +1,9 @@
 from .lifted_tetrahedron import LiftedTetrahedron
-from .real_hash_dict import RealHashDict
 from .canonical_key_dict import CanonicalKeyDict
+from .dict_based_set import DictBasedProductSet
+from .hyperboloid_dict import get_hyperboloid_dict
 
-from ..snap.t3mlite import Mcomplex # type: ignore
-from ..hyperboloid import r13_dot, o13_inverse
-from ..exceptions import InsufficientPrecisionError # type: ignore
-
-class ProductSet:
-    """
-    Behaves like a set of elements in the product AxB.
-    It is implemented using a dictionary mapping A->B.
-
-    Can be combined with RealHashDict or CanonicalKeyDict.
-    """
-
-    def __init__(self, dictionary):
-        self._dictionary = dictionary
-
-    def add(self, key, element):
-        elements = self._get_elements_for_key(key)
-        if element in elements:
-            return False
-        else:
-            elements.add(element)
-            return True
-
-    def _get_elements_for_key(self, key):
-        """
-        Could be used for potential future optimization:
-        When going to a neighboring tetrahedron paired through
-        a trivial face-pairing matrix (so it is a tetrahedron within
-        the same copy of the fundamental polyhedron), we can keep
-        a reference to the set returned by _get_elements_for_key
-        and just add the neighboring tetrahedron to this set rather
-        than doing the look-up from scratch.
-        """
-        return self._dictionary.setdefault(key, set())
+from ..hyperboloid import o13_inverse
 
 class LiftedTetrahedronSet:
     """
@@ -47,7 +15,7 @@ class LiftedTetrahedronSet:
     """
 
     def __init__(self, dictionary, base_point, act_on_base_point_by_inverse):
-        self._set = ProductSet(dictionary)
+        self._set = DictBasedProductSet(dictionary)
         self._base_point = base_point
         self._act_on_base_point_by_inverse = act_on_base_point_by_inverse
 
@@ -64,7 +32,7 @@ class LiftedTetrahedronSet:
 def get_lifted_tetrahedron_set(base_point,
                                canonical_keys_function,
                                act_on_base_point_by_inverse,
-                               min_inner_product,
+                               max_neg_prod_equal, min_neg_prod_distinct,
                                verified
                                ) -> LiftedTetrahedronSet:
     """
@@ -75,43 +43,12 @@ def get_lifted_tetrahedron_set(base_point,
 
     """
 
-    d = RealHashDict(
-        _equality_predicate(min_inner_product),
-        _hash_function(base_point[0].parent()),
-        _epsilon_inverse,
-        verified)
+    d = get_hyperboloid_dict(max_neg_prod_equal, min_neg_prod_distinct,
+                             verified)
 
     if canonical_keys_function:
         d = CanonicalKeyDict(d, canonical_keys_function)
 
     return LiftedTetrahedronSet(d, base_point, act_on_base_point_by_inverse)
 
-def _equality_predicate(min_inner_product):
-    def result(point_0, point_1):
-        inner_product = r13_dot(point_0, point_1)
-        if inner_product > min_inner_product:
-            return True
-        if inner_product < min_inner_product:
-            return False
-
-        raise InsufficientPrecisionError(
-            "Could neither verify that the two given tiles are "
-            "the same nor that they are distinct. "
-            "Inner product is: %r, cut-off is: %s. " % (
-                inner_product, min_inner_product))
-
-    return result
-
-def _hash_function(RF):
-    weights = [ RF(1.2003), RF(0.94553), RF(1.431112), RF(1.2342) ]
-
-    def result(point):
-        return (point[0] * weights[0] +
-                point[1] * weights[1] +
-                point[2] * weights[2] +
-                point[3] * weights[3])
-
-    return result
-
-_epsilon_inverse = 1024
 

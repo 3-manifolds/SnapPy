@@ -347,8 +347,8 @@ cdef class Triangulation():
         If the manifold is stored as a link complement in your
         current session then it returns the number of components
         and crossing of the link. To view and interact with the
-        link see :py:meth:`spherogram.Link.view`
-        and :py:meth:`Manifold.plink`.
+        link see :meth:`spherogram.Link.view`
+        and :meth:`plink <snappy.Triangulation.plink>`.
         """
         if self._PDcode is not None:
             return spherogram.Link(self._PDcode)
@@ -360,7 +360,7 @@ cdef class Triangulation():
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation
 
-    def num_cusps(self, cusp_type='all'):
+    def num_cusps(self, cusp_type='all') -> int:
         """
         Return the total number of cusps.  By giving the optional argument
         'orientable' or 'nonorientable' it will only count cusps of that type.
@@ -424,7 +424,7 @@ cdef class Triangulation():
                                'degree' : 2}
         return new_tri
 
-    def is_orientable(self):
+    def is_orientable(self) -> bool:
         """
         Return whether the underlying 3-manifold is orientable.
 
@@ -590,7 +590,7 @@ cdef class Triangulation():
     def with_hyperbolic_structure(self):
         """
         Add a (possibly degenerate) hyperbolic structure, turning the
-        Triangulation into a Manifold.
+        :class:`Triangulation` into a :class:`Manifold`.
 
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
@@ -966,7 +966,7 @@ cdef class Triangulation():
         free_triangulation_data(data)
         return result
 
-    def isomorphisms_to(self, Triangulation other not None):
+    def _isomorphisms_to(self, Triangulation other not None):
         """
         Returns a complete list of combinatorial isomorphisms between
         the two triangulations:
@@ -1003,6 +1003,12 @@ cdef class Triangulation():
             result = IsometryListToIsometries(isometries)
         free_isometry_list(isometries)
         return result
+
+    def isomorphisms_to(self, Triangulation other not None):
+        """
+        This is only here to make the tests that use SnapPy.Triangulation work.
+        """
+        return self._isomorphisms_to(other)
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -1046,7 +1052,7 @@ cdef class Triangulation():
                     repr += '(%g,%g)'% info['filling']
             return repr
 
-    def name(self):
+    def name(self) -> str:
         """
         Return the name of the triangulation.
 
@@ -1058,7 +1064,7 @@ cdef class Triangulation():
             return
         return to_str(get_triangulation_name(self.c_triangulation))
 
-    def set_name(self, new_name):
+    def set_name(self, new_name : str) -> None:
         """
         Give the triangulation a new name.
 
@@ -1113,7 +1119,7 @@ cdef class Triangulation():
     def _set_PDcode(self, code):
         self._PDcode = code
 
-    def num_tetrahedra(self):
+    def num_tetrahedra(self) -> int:
         """
         Return the number of tetrahedra in the triangulation.
 
@@ -1125,7 +1131,7 @@ cdef class Triangulation():
             return 0
         return get_num_tetrahedra(self.c_triangulation)
 
-    def dehn_fill(self, filling_data, which_cusp=None):
+    def dehn_fill(self, filling_data, which_cusp=None) -> None:
         """
         Set the Dehn filling coefficients of the cusps.  This can be
         specified in the following ways, where the cusps are numbered
@@ -1157,7 +1163,7 @@ cdef class Triangulation():
           >>> N
           m004(-3,4)
 
-        Does not return a new Triangulation.
+        Does not return a new :class:`Triangulation`.
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -1251,7 +1257,7 @@ cdef class Triangulation():
 
         return CuspInfo(**info)
 
-    def reverse_orientation(self):
+    def reverse_orientation(self) -> None:
         """
         Reverses the orientation of the Triangulation, presuming that
         it is orientable.
@@ -1421,11 +1427,9 @@ cdef class Triangulation():
             v += 1
         return ans
 
-    def gluing_equations_pgl(self, N=2, equation_type='all'):
+    def gluing_equations_pgl(self, N : int =2, equation_type='all'):
 
         """
-        M.gluing_equations_pgl(N = 2, equation_type='all')
-
         Returns a NeumannZagierTypeEquations object that contains a matrix
         encoding the gluing equations for boundary-parabolic PGL(N,C)
         representations together with explanations of the meaning
@@ -1437,7 +1441,7 @@ cdef class Triangulation():
         "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds"
         (http://arxiv.org/abs/1207.6711).
 
-        The result of the traditional gluing_equations() can be obtained from
+        The result of the :meth:`gluing_equations` can be obtained from
         the general method by:
 
         >>> M = Triangulation('m004')
@@ -1463,17 +1467,21 @@ cdef class Triangulation():
         The first row of the matrix means that the edge equation for
         edge 0 is
 
-           z_0000_0 ^ 2 * zp_0000_0 * z_0000_1 * zpp_0000_1 ^ 2 = 1.
+        .. math::
+
+           {z_{0000,0}}^2 * z'_{0000,0} * z_{0000,1} * {z''_{0000,1}}^2 = 1.
 
         Similarly, the next row encodes the edge equation for the other edge
         and the next two rows encode peripheral equations.
 
-        Following the SnapPy convention, a z denotes the cross ratio z at the
-        edge (0,1), a zp the cross ratio z' at the edge (0,2) and a zpp the cross
-        ratio z" at the edge (1,2). The entire symbol z_xxxx_y then
+        Following the SnapPy convention, a ``z`` denotes the cross ratio
+        :math:`z` at the edge (0,1), a ``zp`` the cross ratio :math:`z'` at
+        the edge (0,2) and a ``zpp`` the cross
+        ratio :math:`z''` at the edge (1,2). The entire symbol ``z_xxxx_y`` then
         denotes the cross ratio belonging to the subsimplex at integral
-        point xxxx (always 0000 for N = 2) of the simplex y. Note: the
-        SnapPy convention is different from the paper
+        point ``xxxx`` (always ``0000`` for ``N = 2``) of the simplex ``y``.
+
+        Note: the SnapPy convention is different from the paper
         mentioned above, e.g., compare
         kernel_code/edge_classes.c with Figure 3. We follow the SnapPy
         convention here so that all computations done in SnapPy are
@@ -1487,19 +1495,19 @@ cdef class Triangulation():
         ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
 
         A subset of all gluing equations can be obtained by setting the
-        equation_type:
+        ``equation_type``:
 
-        * all gluing equations: 'all'
-        * non-peripheral equations: 'non_peripheral'
+        * all gluing equations: ``all``
+        * non-peripheral equations: ``non_peripheral``
 
-          * edge gluing equations: 'edge'
-          * face gluing equations: 'face'
-          * internal gluing equations: 'internal'
+          * edge gluing equations: ``edge``
+          * face gluing equations: ``face``
+          * internal gluing equations: ``internal``
 
-        * cusp gluing equations: 'peripheral'
+        * cusp gluing equations: ``peripheral``
 
-          * cusp gluing equations for meridians: 'meridian'
-          * cusp gluing equations for longitudes: 'longitude'
+          * cusp gluing equations for meridians: ``meridian``
+          * cusp gluing equations for longitudes: ``longitude``
         """
 
         cdef Integer_matrix_with_explanations c_matrix
@@ -2275,9 +2283,9 @@ cdef class Triangulation():
                                "the homology presentation matrix")
         return AbelianGroup(relations)
 
-    def homology(self):
+    def homology(self) -> AbelianGroup:
         """
-        Returns an AbelianGroup representing the first integral
+        Returns an :class:`AbelianGroup` representing the first integral
         homology group of the underlying (Dehn filled) manifold.
 
         >>> M = Triangulation('m003')
@@ -2359,13 +2367,12 @@ cdef class Triangulation():
 
     def cover(self, permutation_rep):
         """
-        Returns a Triangulation representing the finite cover
-        specified by a transitive permutation representation.  The
-        representation is specified by a list of permutations, one for
-        each generator of the simplified presentation of the
-        fundamental group.  Each permutation is specified as a list P
-        such that set(P) == set(range(d)) where d is the degree of the
-        cover.
+        Returns a :class:`Triangulation` representing the finite cover specified
+        by a transitive permutation representation.  The representation is
+        specified by a list of permutations, one for each generator of the
+        simplified presentation of the fundamental group.  Each permutation is
+        specified as a list ``P`` such that ``set(P) == set(range(d))`` where
+        ``d`` is the degree of the cover.
 
         >>> M = Triangulation('m004')
         >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
@@ -2379,10 +2386,10 @@ cdef class Triangulation():
         5
 
         Within Sage the permutations can also be of type
-        PermutationGroupElement, in which case they act on the set
-        range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
-        of the fundamental group.  For examples, see the docstring for
-        Manifold.cover
+        ``PermutationGroupElement``, in which case they act on the set
+        ``range(1, d + 1)``.  Or, you can specify a GAP or Magma subgroup
+        of the fundamental group.  For more examples, see the docstring for
+        :meth:`Manifold.cover`.
         """
         cdef RepresentationIntoSn* c_representation
         cdef c_Triangulation* c_triangulation
@@ -2459,8 +2466,6 @@ cdef class Triangulation():
 
     def covers(self, degree, method=None, cover_type='all'):
         """
-        M.covers(degree, method=None, cover_type='all')
-
         Returns a list of Triangulations corresponding to all of the
         finite covers of the given degree.  The default method is
         'low_index' for general covers and 'snappea' for cyclic
@@ -2859,9 +2864,9 @@ cdef class Triangulation():
                 raise ValueError('The peripheral data %s is not acceptable.' %
                                  peripheral_data)
 
-    def has_finite_vertices(self):
+    def has_finite_vertices(self) -> bool:
         """
-        Returns True if and only if the triangulation has finite (non-ideal)
+        Returns ``True`` if and only if the triangulation has finite (non-ideal)
         vertices.
 
         >>> T = Triangulation("m004")
@@ -2887,10 +2892,10 @@ cdef class Triangulation():
         return get_num_fake_cusps(self.c_triangulation) > 0
 
     def triangulation_isosig(self,
-                             decorated=True,
-                             ignore_cusp_ordering = False,
-                             ignore_curve_orientations = False,
-                             ignore_orientation = True):
+                             decorated : bool = True,
+                             ignore_cusp_ordering : bool = False,
+                             ignore_curve_orientations : bool = False,
+                             ignore_orientation : bool = True) -> str:
         """
         Returns a compact text representation of the triangulation, called a
         "decorated isomorphism signature"
@@ -2934,7 +2939,7 @@ cdef class Triangulation():
           Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use ignore_cusp_ordering
+        decorated signature, use ``ignore_cusp_ordering``
 
           >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
           >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
@@ -2945,7 +2950,7 @@ cdef class Triangulation():
           True
 
         If you do not care about the orientations of the peripheral curves,
-        use ignore_curve_orientations
+        use ``ignore_curve_orientations``
 
           >>> M = Manifold("L6a1")
           >>> M.triangulation_isosig()
@@ -2965,7 +2970,7 @@ cdef class Triangulation():
 
         By default, the isomorphism signature does not capture the orientation
         of an orientable triangulation. If you specify
-        `ignore_orientation = False`, the isomorphism signature for an oriented
+        ``ignore_orientation = False``, the isomorphism signature for an oriented
         triangulation and its mirror image will be different if the
         triangulation is cheiral.
 
@@ -2977,7 +2982,7 @@ cdef class Triangulation():
           'dLQacccnsnk'
 
         Note that a decorated triangulation isosig with the default values
-        `ignore_orientation = True` but `ignore_curve_orientations = False`
+        ``ignore_orientation = True`` but ``ignore_curve_orientations = False``
         still captures the orientations of the triangulation through the
         peripheral curves.
 
@@ -2989,7 +2994,7 @@ cdef class Triangulation():
           'dLQacccjnjs_aBBb'
 
         The code has been copied from `Regina <https://regina-normal.github.io/>`_ where
-        the corresponding method is called "isoSig".
+        the corresponding method is called ``isoSig``.
 
         Unlike dehydrations for 3-manifold triangulations, an
         isomorphism signature uniquely determines a triangulation up

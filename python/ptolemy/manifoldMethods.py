@@ -26,7 +26,7 @@ def get_ptolemy_obstruction_classes(manifold):
     s_f_t takes values +/-1 and is the value of evaluating the cocycle on
     face f of tetrahedron t.
 
-    === Examples ===
+    **Examples**
 
     Get the obstruction classes for 4_1:
 
@@ -172,8 +172,9 @@ class PtolemyVarietyList(list):
               for p in self ])
 
 
-def get_ptolemy_variety(manifold, N, obstruction_class=None,
-                        simplify=True, eliminate_fixed_ptolemys=False):
+def get_ptolemy_variety(manifold, N, obstruction_class = None,
+                        simplify : bool =True,
+                        eliminate_fixed_ptolemys : bool =False):
     """
     Generates Ptolemy variety as described in
     (1) Garoufalidis, Thurston, Zickert
@@ -187,29 +188,26 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
     The variety can be exported to magma or sage and solved there. The
     solutions can be processed to compute invariants. See below.
 
-    === Arguments ===
+    :param N: which SL(N,C) we want the variety.
 
-    N --- which SL(N,C) we want the variety.
+    :param obstruction_class: class from Definition 1.7 of (1).
+        ``None`` for trivial class,
+        a value returned from :meth:`get_ptolemy_obstruction_classes`,
+        an integer indexing the obstruction classes returned from
+        :meth:`get_ptolemy_obstruction_classes`,
+        or 'all' to return a list of Ptolemy varieties, one for each
+        obstruction class.
 
-    obstruction_class --- class from Definition 1.7 of (1).
-    None for trivial class or a value returned from get_ptolemy_obstruction_classes.
-    Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
-    for each obstruction. For easier iteration, can set obstruction_class to
-    an integer.
+    :param simplify: indicate whether to simplify the equations which
+          significantly reduces the number of variables. Simplifying means that several identified Ptolemy coordinates :math:`x = y = z = ...`
+         are eliminated instead of adding relations :math:`x - y = 0, y - z = 0, ...`
 
-    simplify --- boolean to indicate whether to simplify the equations which
-    significantly reduces the number of variables.
-    Simplifying means that several identified Ptolemy coordinates x = y = z = ...
-    are eliminated instead of adding relations x - y = 0, y - z = 0, ...
-    Defaults to True.
+    :param eliminate_fixed_ptolemys: boolean to indicate whether to eliminate
+       the Ptolemy coordinates that are set to 1 for fixing the decoration.
+       Even though this simplifies the resulting representation, setting it to
+       ``True`` can cause magma to run longer when finding a Groebner basis.
 
-    eliminate_fixed_ptolemys --- boolean to indicate whether to eliminate
-    the Ptolemy coordinates that are set to 1 for fixing the decoration.
-    Even though this simplifies the resulting representation, setting it to
-    True can cause magma to run longer when finding a Groebner basis.
-    Defaults to False.
-
-    === Examples for 4_1 ===
+    **Examples for 4_1**
 
     >>> from snappy import Manifold
     >>> M = Manifold("4_1")
@@ -248,7 +246,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
 
 
 
-    === If you have a magma installation ===
+    **If you have a magma installation**
 
     Call p.compute_solutions() to automatically call magma on the above output
     and produce exact solutions!!!
@@ -258,7 +256,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
     ... except:
     ...     sols = None     # magma failed, use precomputed output instead
 
-    === If you do not have a magma installation ===
+    **If you do not have a magma installation**
 
     Load a precomputed example from magma which is provided with the package:
 
@@ -282,7 +280,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
     >>> if sols is None:    # calling magma failed, so use precomputed example
     ...     sols = solutions_from_magma(_magma_output_for_4_1__sl3)
 
-    === Continue here whether you have or do not have magma ===
+    **Continue here whether you have or do not have magma**
 
     Pick the first solution of the three different solutions (up to Galois
     conjugates):
@@ -306,7 +304,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class=None,
     >>> len(simplified.equations), len(full.equations)
     (24, 72)
 
-    === ONLY DOCTESTS, NOT PART OF DOCUMENTATION ===
+    **ONLY DOCTESTS, NOT PART OF DOCUMENTATION**
 
     >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all", eliminate_fixed_ptolemys = True)
 

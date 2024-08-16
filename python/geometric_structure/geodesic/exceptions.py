@@ -13,8 +13,10 @@ class UnfinishedGraphTraceGeodesicError(RuntimeError):
         super().__init__(
             "The line fixed by the given word could not be moved (by "
             "Decktransformations) to intersect the fundamental domain after "
-            "%d steps. "
+            "%d steps.\n"
             "This is probably due to a pathology, e.g., a bad conjugate "
             "was picked and the line is very far away from the fundamental "
             "domain or the given geodesic is very close to a core curve of "
-            "a filled cusp." % steps)
+            "a filled cusp.\n"
+            "If not a verified computation, it might be due to insufficient "
+            "pecision." % steps)

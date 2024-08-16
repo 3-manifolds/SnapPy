@@ -319,7 +319,7 @@ class NumericOutputChecker(doctest.OutputChecker):
             return base_result + '\nReason for failure: ' + compare_result + '\n'
 
 
-def run_doctests(verbose=False):
+def run_doctests(verbose=False, print_info=True):
     failed, attempted = 0, 0
 
     finder = doctest.DocTestFinder()
@@ -342,5 +342,4 @@ def run_doctests(verbose=False):
 
     return doctest.TestResults(failed, attempted)
 
-
-run_doctests.__name__ = 'NumericOutputChecker'
+run_doctests.__name__ = __name__

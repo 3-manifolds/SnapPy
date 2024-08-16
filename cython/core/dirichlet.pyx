@@ -707,7 +707,8 @@ class DirichletDomain(CDirichletDomain):
     is a local maximum of injectivity radius.  It will have ideal
     vertices if the manifold is not closed.
 
-    Instantiate as M.dirichlet_domain() where M is a Manifold to
+    Instantiate as M.dirichlet_domain()
+    where M is a Manifold to
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
 
@@ -721,7 +722,7 @@ class DirichletDomain(CDirichletDomain):
     You can also create a Dirichlet Domain from a file listing matrix
     generators for the group, in SnapPea's "% Generator" format, via
 
-       D = DirichletDomain(generator_file='test.gens')
+    >>> D = DirichletDomain(generator_file='test.gens') # doctest: +SKIP
 
     Or from matrices:
 
@@ -733,7 +734,7 @@ class DirichletDomain(CDirichletDomain):
 
     The group elements for the face-pairings of the Dirichlet domain
     can be given as words in the original generators by setting
-    include_words = True.
+    ``include_words = True``.
 
     """
 

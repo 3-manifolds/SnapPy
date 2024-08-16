@@ -13,11 +13,11 @@ from ..snap.kernel_structures import TransferKernelStructuresEngine # type: igno
 from ..snap.t3mlite import simplex, Mcomplex, Tetrahedron # type: ignore
 
 from ..hyperboloid import (space_r13_normalise,
-                           r13_dot,
-                           unnormalised_plane_eqn_from_r13_points)
+                           unnormalised_plane_eqn_from_r13_points,
+                           compute_inradius_and_incenter_from_planes)
 from ..upper_halfspace import psl2c_to_o13 # type: ignore
 from ..upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
-from ..matrix import vector, matrix, mat_solve # type: ignore
+from ..matrix import make_matrix # type: ignore
 from ..math_basics import xgcd, prod # type: ignore
 
 from typing import Tuple, Sequence, Optional, Any
@@ -106,7 +106,7 @@ def add_r13_geometry(
     mcomplex.verified = verified
     mcomplex.RF = RF
     # PSL(2,C)-matrices corresponding to generators of fundamental group.
-    # Positive integers map to the generators, negative integrs to their
+    # Positive integers map to the generators, negative integers to their
     # inverses and 0 to the identity.
     mcomplex.GeneratorMatrices = {
         g : _to_matrix(m)
@@ -132,12 +132,13 @@ def add_r13_geometry(
         tet.O13_matrices = {
             F : psl2c_to_o13(mcomplex.GeneratorMatrices.get(-g))
             for F, g in developed_tet.GeneratorsInfo.items() }
+        tet.GeneratorsInfo = developed_tet.GeneratorsInfo
 
     # Set base tetrahedron and compute its in-radius and center.
     mcomplex.baseTet = mcomplex.Tetrahedra[
         poly.mcomplex.ChooseGenInitialTet.Index]
     mcomplex.baseTetInRadius, mcomplex.R13_baseTetInCenter = (
-        _compute_inradius_and_incenter_from_planes(
+        compute_inradius_and_incenter_from_planes(
             [ mcomplex.baseTet.R13_planes[f]
               for f in simplex.TwoSubsimplices]))
 
@@ -171,41 +172,8 @@ def _to_matrix(m):
     This is needed because we have two matrix types outside of Sage:
     SimpleMatrix and Matrix2x2. Convert to the former.
     """
-    return matrix([[m[0,0],m[0,1]],
-                   [m[1,0],m[1,1]]])
-
-# Depending on whether we are using SnapPy inside SageMath or not, we
-# use different python classes to represent numbers, vectors and matrices.
-# Thus, using Any as type annotation for now :(
-
-
-def _compute_inradius_and_incenter_from_planes(planes) -> Tuple[Any, Any]:
-    """
-    Given outside-facing normals for the four faces of a
-    tetrahedron, compute the hyperbolic inradius and the
-    incenter (as unit time vector) of the tetrahedron (in the
-    hyperboloid model).
-    """
-
-    # We need to c and r such that
-    #  * r13_dot(c, c) = -1 and
-    #  * r13_dot(plane, c) = -sinh(r) for every plane
-    #
-    # We instead solve for the following system of linear equations:
-    #  * r13_dot(plane, pt) = -1 for every plane
-
-    RF = planes[0][0].parent()
-    m = matrix([[-plane[0], plane[1], plane[2], plane[3]]
-                for plane in planes])
-    v = vector([RF(-1), RF(-1), RF(-1), RF(-1)])
-
-    pt = mat_solve(m, v)
-
-    # And then use the inverse length of pt to scale pt to be
-    # a unit time vector and to compute the r.
-    scale = 1 / (-r13_dot(pt, pt)).sqrt()
-
-    return scale.arcsinh(), scale * pt
+    return make_matrix([[m[0,0],m[0,1]],
+                        [m[1,0],m[1,1]]])
 
 def _filling_matrix(cusp_info : dict) -> FillingMatrix:
     """

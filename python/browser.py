@@ -751,12 +751,13 @@ class Browser(Tk_.Toplevel):
     def horoball_help(self):
         self.horoball_viewer.widget.help()
 
-    def test(self):
+    def test(self, use_modernopengl=True):
         self.update_idletasks()
         print('Testing browser')
         self.after(1000, self.notebook.select, self.dirichlet_viewer)
         self.after(2500, self.notebook.select, self.horoball_viewer)
-        self.after(4000, self.notebook.select, self.inside_view)
+        if use_modernopengl:
+            self.after(4000, self.notebook.select, self.inside_view)
         if self.link_tab:
             self.after(5500, self.notebook.select, self.link_tab.canvas)
             self.after(7000, self.close)

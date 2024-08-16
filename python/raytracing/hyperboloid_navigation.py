@@ -1,4 +1,5 @@
 from .hyperboloid_utilities import *
+from ..matrix import matrix
 import time
 import sys
 import tempfile
@@ -149,7 +150,7 @@ class HyperboloidNavigation:
       IdealRaytracingData. This is needed to update data
       such as the view matrix
       using self.raytracing_data.update_view_state(...).
-    - self.redraw_if_initialized() to redraw.
+    - self.draw() to redraw.
     - self.read_depth_value(x, y) to return the depth value at a pixel.
       It is used for orbiting about that point.
     - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
@@ -317,7 +318,7 @@ class HyperboloidNavigation:
             self.view_state, m)
 
         # Redraw
-        self.redraw_if_initialized()
+        self.draw()
 
         # And schedule another call of this function.
         # If we don't leave Tk a couple of milliseconds in between,
@@ -383,7 +384,7 @@ class HyperboloidNavigation:
             self.view = (self.view + 1) % 3
             print("Color for rays that have not hit geometry:",
                   _viewModes[self.view])
-            self.redraw_if_initialized()
+            self.draw()
 
         if event.keysym == 'p':
             from snappy.CyOpenGL import get_gl_string
@@ -507,7 +508,7 @@ class HyperboloidNavigation:
         else:
             return
 
-        self.redraw_if_initialized()
+        self.draw()
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None
@@ -529,3 +530,27 @@ class HyperboloidNavigation:
 
     def apply_settings(self, settings):
         self.setup_keymapping(settings.get('keyboard', 'QWERTY'))
+
+    def _start_flight_for_debugging_hitch(self):
+        """
+        On Mac OS, there is a hitch when flying. It is subtle, but when
+        keeping, say the w key pressed, every second or so there a brief
+        moment where we are not moving.
+
+        I couldn't figure out whether this is due to how we are processing
+        the key events or already a problem with calling self.after from
+        within the redraw code.
+
+        This function initiates a flight to isolate the problem to the
+        latter.
+
+        To use it, do:
+            >>> M = Manifold("m004") # doctest: +SKIP
+            >>> v = M.inside_view()
+            >>> v.view.widget._start_flight_for_debugging_hitch()
+
+        """
+
+        self.key_to_last_accounted_and_release_time['w'][0] = time.time()
+        self.schedule_process_key_events_and_redraw(1)
+

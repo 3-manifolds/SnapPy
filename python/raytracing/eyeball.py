@@ -3,9 +3,13 @@ from ..hyperboloid.point import R13Point
 
 from ..tiling.tile import compute_tiles
 from ..tiling.lifted_tetrahedron import LiftedTetrahedron
+from ..tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
+                                             get_lifted_tetrahedron_set)
 from ..tiling.triangle import add_triangles_to_tetrahedra
 
-from ..matrix import matrix, vector
+from ..matrix import make_matrix, make_vector
+
+from ..matrix import matrix
 
 import math
 
@@ -56,27 +60,33 @@ class Eyeball:
 
         RF = self.raytracing_view.raytracing_data.RF
         
-        boost = matrix(boost, ring=RF)
+        boost = make_matrix(boost, ring=RF)
 
-        base_point = vector([b[0] for b in boost])
-
-        initial_lifted_tetrahedron = LiftedTetrahedron(
-            self.mcomplex.Tetrahedra[tet_num], matrix.identity(RF, 4))
-
-        min_inner_product = -RF(1.0 + 1e-7)
+        base_point = make_vector([b[0] for b in boost])
 
         eyeballRadius = self.raytracing_view.ui_parameter_dict['eyeballSize'][1]
         if self.raytracing_view.ui_parameter_dict['eyeballType'][1] == eyeball_type_eyeball:
             eyeballRadius = eyeballRadius / 2.0
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
+        initial_lifted_tetrahedron = LiftedTetrahedron(
+            self.mcomplex.Tetrahedra[tet_num], matrix.identity(RF, 4))
+
+        cut_off = RF(1.0 + 1e-5)
+
+        lifted_tetrahedron_set : LiftedTetrahedronSet = (
+            get_lifted_tetrahedron_set(
+                base_point=base_point,
+                act_on_base_point_by_inverse=True,
+                max_neg_prod_equal=cut_off,
+                min_neg_prod_distinct=cut_off,
+                canonical_keys_function=None,
+                verified=False))
+
         for i, tile in enumerate(
                 compute_tiles(
                     geometric_object=R13Point(base_point),
-                    base_point=base_point,
-                    canonical_keys_function=None,
-                    act_on_base_point_by_inverse=True,
-                    min_inner_product=min_inner_product,
+                    visited_lifted_tetrahedra=lifted_tetrahedron_set,
                     initial_lifted_tetrahedra=[ initial_lifted_tetrahedron ],
                     verified=False)):
 
@@ -88,7 +98,7 @@ class Eyeball:
             m = o13_inverse(boost) * tile.lifted_tetrahedron.o13_matrix
 
             tets_to_data[tile.lifted_tetrahedron.tet.Index].append((
-                tile.lifted_geometric_object.point,
+                tile.inverse_lifted_geometric_object.point,
                 m,
                 o13_inverse(m)))
         

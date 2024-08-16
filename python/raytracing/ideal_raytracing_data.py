@@ -1,11 +1,11 @@
-from snappy.snap import t3mlite as t3m
-from snappy.snap.t3mlite import simplex
-from snappy import Triangulation
+from ..snap import t3mlite as t3m
+from ..snap.t3mlite import simplex
+from .. import Triangulation
 
-from snappy.SnapPy import matrix, vector
+from ..matrix import make_matrix, make_vector
 
 from ..snap.mcomplex_base import *
-from ..geometric_structure.cusp_neighborhood.cusp_cross_section import *
+from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
 from ..geometric_structure import add_r13_planes_to_tetrahedra
 from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
 from ..upper_halfspace.ideal_point import ideal_point_to_r13
@@ -23,7 +23,6 @@ class IdealRaytracingData(RaytracingData):
     Given a SnapPy manifold, computes data for the shader fragment.glsl
     to raytrace the inside view::
 
-        >>> from snappy import *
         >>> data = IdealRaytracingData.from_manifold(Manifold("m004"))
         >>> data = IdealRaytracingData.from_manifold(ManifoldHP("m004"))
 
@@ -41,19 +40,19 @@ class IdealRaytracingData(RaytracingData):
     The shader needs to know in what tetrahedron and where in the tetrahedron
     the camera is. This is encoded as pair matrix and tetrahedron index::
 
-        >>> view_state = (matrix([[ 1.0, 0.0, 0.0, 0.0],
-        ...                       [ 0.0, 1.0, 0.0, 0.0],
-        ...                       [ 0.0, 0.0, 0.0,-1.0],
-        ...                       [ 0.0, 0.0, 1.0, 0.0]]), 0, 0.0)
+        >>> view_state = (make_matrix([[ 1.0, 0.0, 0.0, 0.0],
+        ...                            [ 0.0, 1.0, 0.0, 0.0],
+        ...                            [ 0.0, 0.0, 0.0,-1.0],
+        ...                            [ 0.0, 0.0, 1.0, 0.0]]), 0, 0.0)
 
     To move/rotate the camera which might potentially put the camera
     into a different tetrahedron, the new pair can be computed as
     follows::
 
-        >>> m = matrix([[ 3.0 , 0.0 , 2.82, 0.0 ],
-        ...             [ 0.0 , 1.0 , 0.0 , 0.0 ],
-        ...             [ 2.82, 0.0 , 3.0 , 0.0 ],
-        ...             [ 0.0 , 0.0 , 0.0 , 1.0 ]])
+        >>> m = make_matrix([[ 3.0 , 0.0 , 2.82, 0.0 ],
+        ...                  [ 0.0 , 1.0 , 0.0 , 0.0 ],
+        ...                  [ 2.82, 0.0 , 3.0 , 0.0 ],
+        ...                  [ 0.0 , 0.0 , 0.0 , 1.0 ]])
         >>> view_state = data.update_view_state(view_state, m)
         >>> view_state    # doctest: +NUMERIC6
         ([     1.08997684        1e-16   0.43364676        1e-16 ]
@@ -104,6 +103,11 @@ class IdealRaytracingData(RaytracingData):
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
+        r.log_shapes = [
+            tet.ShapeParameters[e].log()
+            for tet in c.mcomplex.Tetrahedra
+            for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
+
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
@@ -112,7 +116,7 @@ class IdealRaytracingData(RaytracingData):
         r._add_cusp_to_tet_matrices()
         r._add_margulis_tube_ends()
         r._add_inspheres()
-        r._add_log_holonomies()
+        r._add_to_standard_torus_matrices()
 
         r._add_cusp_triangle_vertex_positions()
 
@@ -200,43 +204,70 @@ class IdealRaytracingData(RaytracingData):
 
             tet.cosh_sqr_inradius = tmp.cosh() ** 2
 
-    def _add_log_holonomies_to_cusp(self, cusp, shapes):
+    def _add_to_standard_torus_matrix(self, cusp):
         i = cusp.Index
 
         if cusp.is_complete:
             m_param, l_param = cusp.Translations
         else:
             m_param, l_param = (
-                sum(shape * expo
-                    for shape, expo
-                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+                sum(log_shape * expo
+                    for log_shape, expo
+                    in zip(self.log_shapes, self.peripheral_gluing_equations[2 * i + j]))
                 for j in range(2) )
 
         a, c = m_param.real(), m_param.imag()
         b, d = l_param.real(), l_param.imag()
 
         det = a*d - b * c
-        cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
+        cusp.to_standard_torus_matrix = make_matrix([[d,-b], [-c, a]]) / det
 
         if cusp.is_complete:
             cusp.margulisTubeRadiusParam = 0.0
         else:
-            slope = 2 * self.areas[i] / abs(det)
+            area_ratio = self.areas[i] / abs(det)
 
-            x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
-            y = (1 / (slope ** 2 + 1)).sqrt()
-            rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
-            cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
+            # Imagine a cone above 0 in the upper half space model with slope s
+            # that is, it intersects the plane at Euclidean height 1 in a circle
+            # of Euclidean radius s.
+            #
+            # Let C be the boundary of the upper half space without infinity.
+            # Consider a small rectangle with lengths dtheta and dr in C using
+            # polar coordinates.
+            # The intersection of extrusion of this rectangle with the
+            # boundary of the cone is spanned by two tangent vectors with
+            # Euclidean lengths
+            #
+            # r * dtheta and sqrt(1 + 1/s^2) * dr.
+            #
+            # The corresponding hyperbolic lengths are
+            #
+            # r / (r/s) * dtheta and sqrt(1 + 1/s^2) / (r/s) * dr
+            #
+            # Thus, the area of the intersection is
+            #
+            # dA = s * sqrt(1 + s^2) * dtheta * dr/r
+            #
+            # If m and l are the log lifts of the the holonomies of the
+            # meridian and longitudes in C^*, then we get for the area
+            #
+            # A = s * sqrt(1 + s^2) * (m wedge l)
+            #
+            # Recall that s = sinh R where R is the hyperbolic radius of the
+            # tube. The tube parameter we need to compute the intersection with
+            # a geodesic (in the shader) is given by T = cosh(R)^2/2.
+            #
+            # Letting A_0 = A / (m wedge l), we have
+            # A_0 = sinh R * cosh R = 1/2 sinh(2 * R)
+            # R = 1/2 arcsinh(A_0)
+            # T = 1/4 (1 + sqrt(1 + 4 * A_0^2))
 
-    def _add_log_holonomies(self):
-        shapes = [
-            tet.ShapeParameters[e].log()
-            for tet in self.mcomplex.Tetrahedra
-            for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
+            a = 1 + 4 * area_ratio ** 2
+            cusp.margulisTubeRadiusParam = (1 + a.sqrt()) / 4
 
-        for cusp, cusp_info in zip(self.mcomplex.Vertices,
-                                   self.snappy_manifold.cusp_info()):
-            self._add_log_holonomies_to_cusp(cusp, shapes)
+    def _add_to_standard_torus_matrices(self):
+        for cusp in self.mcomplex.Vertices:
+            self._add_to_standard_torus_matrix(cusp)
 
     def get_uniform_bindings(self):
         # _check_consistency(self.mcomplex)
@@ -294,8 +325,8 @@ class IdealRaytracingData(RaytracingData):
             for V in t3m.ZeroSubsimplices
             ]
 
-        mat_logs = [
-            tet.Class[V].mat_log
+        toStandardTorusMatrices = [
+            tet.Class[V].to_standard_torus_matrix
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
@@ -316,7 +347,7 @@ class IdealRaytracingData(RaytracingData):
         d['cuspTranslations'] = ('mat2[]', cusp_translations)
         d['logAdjustments'] = ('vec2[]', logAdjustments)
         d['cuspTriangleVertexPositions'] = ('mat3x2[]', cuspTriangleVertexPositions)
-        d['matLogs'] = ('mat2[]', mat_logs)
+        d['toStandardTorusMatrices'] = ('mat2[]', toStandardTorusMatrices)
         d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
         d['isNonGeometric'] = ('bool', isNonGeometric)
         d['nonGeometricTexture'] = ('int', 0)
@@ -330,10 +361,10 @@ class IdealRaytracingData(RaytracingData):
         return d
 
     def initial_view_state(self):
-        boost = matrix([[1.0,0.0,0.0,0.0],
-                        [0.0,1.0,0.0,0.0],
-                        [0.0,0.0,1.0,0.0],
-                        [0.0,0.0,0.0,1.0]])
+        boost = make_matrix([[1.0,0.0,0.0,0.0],
+                             [0.0,1.0,0.0,0.0],
+                             [0.0,0.0,1.0,0.0],
+                             [0.0,0.0,0.0,1.0]])
         tet_num = 0
         weight = 0.0
         return (boost, tet_num, weight)
@@ -384,19 +415,19 @@ class NonGeometricRaytracingData(McomplexEngine):
                 ('int', 0)}
 
     def initial_view_state(self):
-        boost = matrix([[1.0,0.0,0.0,0.0],
-                        [0.0,1.0,0.0,0.0],
-                        [0.0,0.0,1.0,0.0],
-                        [0.0,0.0,0.0,1.0]])
+        boost = make_matrix([[1.0,0.0,0.0,0.0],
+                             [0.0,1.0,0.0,0.0],
+                             [0.0,0.0,1.0,0.0],
+                             [0.0,0.0,0.0,1.0]])
         tet_num = 0
         weight = 0.0
         return (boost, tet_num, weight)
 
     def update_view_state(self, boost_tet_num_and_weight,
-                          m=matrix([[1.0, 0.0, 0.0, 0.0],
-                                    [0.0, 1.0, 0.0, 0.0],
-                                    [0.0, 0.0, 1.0, 0.0],
-                                    [0.0, 0.0, 0.0, 1.0]])):
+                          m=make_matrix([[1.0, 0.0, 0.0, 0.0],
+                                         [0.0, 1.0, 0.0, 0.0],
+                                         [0.0, 0.0, 1.0, 0.0],
+                                         [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num, weight = boost_tet_num_and_weight
         boost = boost * m
         return boost, tet_num, weight
@@ -442,7 +473,7 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
         log_z0 = CF(0)
 
         # Inverting matrix here since SageMath screws up :(
-        translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+        translations_to_ml = make_matrix([[d,-b], [-c, a]]) / (a*d - b * c)
 
         vertex_positions = [ translations_to_ml * complex_to_pair(z)
                              for z in vertex_positions ]
@@ -484,7 +515,7 @@ def _compute_margulis_tube_ends(tet, vertex):
     if tet.Class[vertex].is_complete:
         return [(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0)]
 
-    return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
+    return [ tet.cusp_to_tet_matrices[vertex] * make_vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
 
@@ -513,10 +544,11 @@ def _cusp_view_matrix(tet, subsimplex, area):
     factor_to_move_inside = 1.0001
     rotation = l_translation / abs(l_translation)
     scale = factor_to_move_inside/area.sqrt()
-    borel_transform = matrix([[ scale*rotation, translation ],
-                              [     0, 1 ]], ring=CF)
+    borel_transform = make_matrix([[ scale*rotation, translation ],
+                                   [              0,   1 ]],
+                                  ring=CF)
 
-    base_camera_matrix = matrix(
+    base_camera_matrix = make_matrix(
         [[ 1, 0, 0, 0],
          [ 0, 0, 0, 1],
          [ 0, 1, 0, 0],
@@ -553,7 +585,7 @@ def _check_consistency(mcomplex):
         for F in t3m.TwoSubsimplices:
             for V in t3m.ZeroSubsimplices:
                 if V & F:
-                    v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
+                    v0 = tet.O13_matrices[F] * make_vector(tet.R13_vertices[V])
                     v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
                     err = r13_dot(v0, v1)
                     if err > 1e-10 or err < -1e-10:

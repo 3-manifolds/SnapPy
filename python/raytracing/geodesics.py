@@ -1,14 +1,16 @@
-from .geodesic_tube_info import GeodesicTubeInfo
+from .geodesic_tube_info import (GeodesicTubeInfo,
+                                 GeodesicLinePieces,
+                                 avoid_core_curve_tube_radius)
 from .pack import pack_tet_data
-from .upper_halfspace_utilities import *
+from .upper_halfspace_utilities import add_coordinate_transform_to_mcomplex
 from .hyperboloid_utilities import O13_orthonormalise
 
 from ..geometric_structure import (add_r13_geometry,
                                    add_filling_information)
-from ..geometric_structure.geodesic.core_curves import add_r13_core_curves
+from ..geometric_structure.geodesic.add_core_curves import add_r13_core_curves
 from ..tiling.triangle import add_triangles_to_tetrahedra
 from ..snap.t3mlite import Mcomplex, simplex
-from ..upper_halfspace import pgl2c_to_o13, sl2c_inverse
+from ..matrix import make_matrix # type: ignore
 
 import traceback
 
@@ -19,7 +21,6 @@ class Geodesics:
     def __init__(self, manifold, words):
         """
 
-        >>> from snappy import Manifold
         >>> M = Manifold("o9_00000")
         >>> g = Geodesics(M, ["b", "c"])
         >>> g.set_enables_and_radii_and_update([True, True], [0.3, 0.4])
@@ -59,20 +60,32 @@ class Geodesics:
 
         tets_to_data = [ [] for i in range(self.num_tetrahedra) ]
 
+        a_radius = self.RF(avoid_core_curve_tube_radius)
+
         for i, (enable, radius, geodesic_tube) in enumerate(
                 zip(enables, radii, self.geodesic_tube_infos)):
             if enable:
                 radius = self.RF(radius)
 
-                tets_and_endpoints, safe_radius = (
-                    geodesic_tube.compute_tets_and_R13_endpoints_and_radius_for_tube(radius))
+                line_pieces : GeodesicLinePieces = (
+                    geodesic_tube.compute_line_pieces(radius))
 
-                if safe_radius < radius:
+                if (line_pieces.covered_radius < radius or
+                    line_pieces.dist_to_core_curve < radius or
+                    line_pieces.dist_to_core_curve < a_radius):
                     success = False
 
-                radius_param = safe_radius.cosh() ** 2 / 2
+                # A user can always force the tube to have this radius.
+                # Even though it might be incomplete at that point.
+                min_user_radius = 0.1
 
-                for tet, (head, tail) in tets_and_endpoints:
+                effective_radius = min(
+                    radius,
+                    max(line_pieces.covered_radius, self.RF(min_user_radius)))
+
+                radius_param = effective_radius.cosh() ** 2 / 2
+
+                for tet, (head, tail) in line_pieces.tets_and_end_points:
                     tets_to_data[tet].append(
                         {'Heads' : ('vec4', head),
                          'Tails' : ('vec4', tail),
@@ -151,30 +164,22 @@ class Geodesics:
             add_r13_core_curves(
                 self.mcomplex, self.manifold)
             add_triangles_to_tetrahedra(self.mcomplex)
-
-            for tet in self.mcomplex.Tetrahedra:
-                z = tet.ShapeParameters[simplex.E01]
-                vert0 = [ tet.ideal_vertices[v]
-                          for v in simplex.ZeroSubsimplices[:3]]
-                vert1 = symmetric_vertices_for_tetrahedron(z)[:3]
-                tet.to_coordinates_in_symmetric_tet = (
-                    o13_matrix_taking_ideal_vertices_to_ideal_vertices(
-                        vert0, vert1))
+            add_coordinate_transform_to_mcomplex(self.mcomplex)
 
         return self.mcomplex
 
     def view_state_for_geodesic(self, index):
-        geodesic_info = self.geodesic_tube_infos[index].geodesic_info
-        p0, p1 = geodesic_info.line.r13_line.points
+        geodesic_start_point_info = self.geodesic_tube_infos[index].geodesic_start_point_info
+        p0, p1 = geodesic_start_point_info.line.r13_line.points
 
         ring = p0[0].parent()
 
         # Rotate the camera so that it is looking down the x-Axis
-        r = matrix([[1, 0, 0, 0],
-                    [0, 0, 0, 1],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0]],
-                   ring=ring)
+        r = make_matrix([[1, 0, 0, 0],
+                         [0, 0, 0, 1],
+                         [0, 1, 0, 0],
+                         [0, 0, 1, 0]],
+                        ring=ring)
 
         # Create a transform that takes the origin to a point on the
         # geodesic and takes the tangent vector at the origin parallel
@@ -184,7 +189,7 @@ class Geodesics:
         # to right. This is exactly what we want.
         #
         g = O13_orthonormalise(
-            matrix(
+            make_matrix(
                 [ p0 + p1,        # (Projective) point on the geodesic.
                                   # Orthonormalisation just normalizes it
                                   # so that it is on the hyperboloid.
@@ -239,8 +244,3 @@ def geodesic_index_to_color(i):
     return hsv2rgb(golden_angle_by_2_pi * i + 0.1, 1.0, 1.0)
 
 
-def o13_matrix_taking_ideal_vertices_to_ideal_vertices(verts0, verts1):
-    m1 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts0)
-    m2 = pgl2_matrix_taking_0_1_inf_to_given_points(*verts1)
-
-    return pgl2c_to_o13(m2 * sl2c_inverse(m1))

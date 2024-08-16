@@ -5,9 +5,9 @@ from . import exceptions
 from ..snap.t3mlite import simplex, Tetrahedron, Mcomplex # type: ignore
 
 from ..hyperboloid import r13_dot # type: ignore
-from ..geometric_structure.geodesic.geodesic_info import GeodesicInfo
+from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
 from ..geometric_structure.geodesic.line import R13LineWithMatrix
-from ..geometric_structure.geodesic.check_core_curve import check_away_from_core_curve
+from ..geometric_structure.geodesic.check_away_from_core_curve import check_away_from_core_curve
 from ..exceptions import InsufficientPrecisionError # type: ignore
 
 from typing import Sequence, Optional, List
@@ -189,7 +189,7 @@ def compute_plane_intersection_param(
     return num / denom
 
 
-def trace_geodesic(geodesic : GeodesicInfo, verified : bool):
+def trace_geodesic(geodesic : GeodesicStartPointInfo, verified : bool):
     """
     Traces line segment through the tetrahedra in the hyperboloid
     model (though using time-like but not necessarily unit time-like vectors)

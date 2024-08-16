@@ -95,7 +95,7 @@ class GeodesicsWindow(tkinter.Toplevel):
         row = 0
 
         for geodesic in self._geodesics().geodesics_sorted_by_length():
-            if not geodesic.geodesic_info.core_curve_cusp:
+            if not geodesic.geodesic_start_point_info.core_curve_cusp:
                 UniformDictController.create_checkbox(
                     self.geodesics_frame,
                     self.raytracing_view.ui_parameter_dict,
@@ -128,8 +128,8 @@ class GeodesicsWindow(tkinter.Toplevel):
 
             color = geodesic_index_to_color(geodesic.index)
 
-            if geodesic.geodesic_info.core_curve_cusp:
-                cusp_index = geodesic.geodesic_info.core_curve_cusp.Index
+            if geodesic.geodesic_start_point_info.core_curve_cusp:
+                cusp_index = geodesic.geodesic_start_point_info.core_curve_cusp.Index
                 l = tkinter.Label(self.geodesics_frame,
                                   text="Cusp %d" % cusp_index)
             else:
@@ -139,7 +139,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                                   bg=color_to_tkinter(color))
             l.grid(row=row, column=self.color_column, padx=5)
 
-            if geodesic.geodesic_info.core_curve_cusp:
+            if geodesic.geodesic_start_point_info.core_curve_cusp:
                 l = tkinter.Label(self.geodesics_frame,
                                   text="Use Cusp areas tab")
                 l.grid(row=row, column=self.radius_column, padx=5)
@@ -159,7 +159,7 @@ class GeodesicsWindow(tkinter.Toplevel):
                 # Need to color Scale - but the following code fails.
                 # scale.configure(background = color_to_tkinter(color))
 
-            if not geodesic.geodesic_info.core_curve_cusp:
+            if not geodesic.geodesic_start_point_info.core_curve_cusp:
                 btn = ttk.Button(
                     self.geodesics_frame,
                     text='View',
@@ -179,8 +179,8 @@ class GeodesicsWindow(tkinter.Toplevel):
                                         foreground='')
         else:
             self.status_label.configure(
-                text=('Limiting size of geodesic tube to prevent intersection '
-                      'with core curve.'),
+                text=('Geodesic tube intersects core curve. Dropping '
+                      'pieces/limiting size.'),
                 foreground='red')
 
     def add_length_spectrum(self, *args, **kwargs):
@@ -235,14 +235,14 @@ class GeodesicsWindow(tkinter.Toplevel):
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
 
-        self.raytracing_view.update_geodesic_data_and_redraw()
+        self.update_geodesic_data()
 
         self.populate_geodesics_frame()
 
     def geodesic_checkbox_clicked(self):
         if self.raytracing_view.disable_edges_for_geodesics():
             self.inside_viewer.update_edge_and_insphere_controllers()
-        self.raytracing_view.update_geodesic_data_and_redraw()
+        self.update_geodesic_data()
 
     def view_geodesic(self, i):
         self.raytracing_view.view_state = (

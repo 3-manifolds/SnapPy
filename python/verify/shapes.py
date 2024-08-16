@@ -1,9 +1,11 @@
-from . import verifyHyperbolicity
+from . import hyperbolicity
 
 __all__ = ['compute_hyperbolic_shapes']
 
+from typing import Optional
 
-def compute_hyperbolic_shapes(manifold, verified, bits_prec=None):
+def compute_hyperbolic_shapes(manifold,
+                              verified : bool, bits_prec : Optional[int] = None):
 
     # Get shapes, as intervals if requested
     shapes = manifold.tetrahedra_shapes('rect', intervals=verified,
@@ -11,7 +13,7 @@ def compute_hyperbolic_shapes(manifold, verified, bits_prec=None):
 
     # Check it is a valid hyperbolic structure
     if verified:
-        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        hyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
             manifold, shapes)
     else:
         # If not verified, just ask SnapPea kernel for solution type

@@ -155,7 +155,7 @@ class Edge:
         tet, perm = self._first_embedding()
         for i in range(order):
             yield tet, perm
-            face = perm.image(1 | 2 | 8)
+            face = perm.image(F2)
             tet, perm = (
                 tet.Neighbor[face], tet.Gluing[face] * perm * Perm4( (0,1,3,2) ))
 

@@ -72,7 +72,7 @@ cdef class Manifold(Triangulation):
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
       See :py:meth:`Manifold.save` for details.
 
-   - A string containing the contents of a SnapPea triangulation or link
+    - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
 
@@ -142,10 +142,12 @@ cdef class Manifold(Triangulation):
         do_Dehn_filling(self.c_triangulation)
         self.hyperbolic_structure_initialized = True
 
-    def canonize(self):
+    def canonize(self) -> None:
         """
         Change the triangulation to an arbitrary retriangulation of
-        the canonical cell decomposition.
+        the canonical cell decomposition. See
+        :py:meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+        to get the actual canonical cell decomposition.
 
         >>> M = Manifold('m007')
         >>> M.num_tetrahedra()
@@ -154,8 +156,8 @@ cdef class Manifold(Triangulation):
         >>> M.num_tetrahedra()
         4
 
-        Note: due to rounding error, it is possible that this is not
-        actually the canonical triangulation.
+        Note: Due to rounding error, it is possible that this is actually
+        not a retriangulation of the canonical cell decomposition.
         """
         cdef c_FuncResult result
         result = proto_canonize(self.c_triangulation)
@@ -325,11 +327,11 @@ cdef class Manifold(Triangulation):
     def dirichlet_domain(self,
                          vertex_epsilon=default_vertex_epsilon,
                          displacement = (0.0, 0.0, 0.0),
-                         centroid_at_origin=True,
-                         maximize_injectivity_radius=True,
-                         include_words=False):
+                         centroid_at_origin : bool = True,
+                         maximize_injectivity_radius : bool = True,
+                         include_words : bool = False):
         """
-        Returns a DirichletDomain object representing a Dirichlet
+        Returns a :class:`DirichletDomain` object representing a Dirichlet
         domain of the hyperbolic manifold, typically centered at a
         point which is a local maximum of injectivity radius.  It will
         have ideal vertices if the manifold is not closed.
@@ -342,7 +344,7 @@ cdef class Manifold(Triangulation):
 
         The group elements for the face-pairings of the Dirichlet domain
         can be given as words in the original generators of the
-        (unsimplified) fundamental group by setting include_words = True:
+        (unsimplified) fundamental group by setting ``include_words = True``:
 
         >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
         ['A', ...]
@@ -534,15 +536,12 @@ cdef class Manifold(Triangulation):
 
     def cover(self, permutation_rep):
         """
-        M.cover(permutation_rep)
-
-        Returns a Manifold representing the finite cover
-        specified by a transitive permutation representation.  The
-        representation is specified by a list of permutations, one for
-        each generator of the simplified presentation of the
-        fundamental group.  Each permutation is specified as a list P
-        such that set(P) == set(range(d)) where d is the degree of the
-        cover.
+        Returns a :class:`Manifold` representing the finite cover specified by a
+        transitive permutation representation.  The representation is
+        specified by a list of permutations, one for each generator of the
+        simplified presentation of the fundamental group.  Each permutation is
+        specified as a list ``P`` such such that ``set(P) == set(range(d))``
+        where ``d`` is the degree of the cover.
 
         >>> M = Manifold('m004')
         >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
@@ -550,9 +549,9 @@ cdef class Manifold(Triangulation):
         True
 
 
-        If within Sage, the permutations can also be of type
-        PermutationGroupElement, in which case they act on the set
-        range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
+        If within SageMath, the permutations can also be of type
+        ``PermutationGroupElement``, in which case they act on the set
+        ``range(1, d + 1)``.  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.     Some examples::
 
           sage: M = Manifold('m004')
@@ -606,9 +605,7 @@ cdef class Manifold(Triangulation):
 
     def covers(self, degree, method=None, cover_type='all'):
         """
-        M.covers(degree, method=None, cover_type='all')
-
-        Returns a list of Manifolds corresponding to all of the
+        Returns a list of :class:`Manifold`\ s corresponding to all of the
         finite covers of the given degree.  The default method is
         'low_index' for general covers and 'snappea' for cyclic
         covers.  The former uses Sim's algorithm while the latter
@@ -806,7 +803,8 @@ cdef class Manifold(Triangulation):
 
     def chern_simons(self, accuracy = False):
         """
-        Returns the Chern-Simons invariant of the manifold, if it is known.
+        Returns the Chern-Simons invariant of the manifold (normalized by
+        dividing it by :math:`2 \\pi^2`), if it is known.
 
         >>> M = Manifold('m015')
         >>> M.chern_simons() # doctest: +NUMERIC6
@@ -834,9 +832,9 @@ cdef class Manifold(Triangulation):
         >>> M.chern_simons() # doctest: +NUMERIC6
         0.07731787
 
-        works, but will fail with 'Chern-Simons invariant not
-        currently known' if the first call to chern_simons is not
-        made.
+        works, but will fail with
+        ``ValueError: The Chern-Simons invariant isn't currently known.``
+        if the first call to chern_simons is not made.
         """
 
         cs = self._chern_simons()
@@ -847,7 +845,7 @@ cdef class Manifold(Triangulation):
 
     def without_hyperbolic_structure(self):
         """
-        Returns self as a Triangulation, forgetting the hyperbolic
+        Returns self as a :class:`Triangulation`, forgetting the hyperbolic
         structure in the process.
 
         >>> M = Manifold('9_42')
@@ -960,7 +958,7 @@ cdef class Manifold(Triangulation):
             else:
                 engine = verify.CertifiedShapesEngine(
                     self, [a['rect'] for a in result],
-                    bits_prec = Number._default_precision)
+                    bits_prec = self._precision())
             if not engine.expand_until_certified():
                 raise RuntimeError('Could not certify shape intervals, either '
                                    'there are degenerate shapes or the '
@@ -1175,7 +1173,7 @@ cdef class Manifold(Triangulation):
                                 "of cusp_info only "
                                 "implemented for cusp shapes. Pass 'shape' "
                                 "as first argument to cusp_info().")
-            return verify.compute_cusp_shapes(self, verified = verified,
+            return cusps_compute_cusp_shapes(self, verified = verified,
                                               bits_prec = bits_prec)
 
         if data_spec is None:
@@ -1228,7 +1226,7 @@ cdef class Manifold(Triangulation):
 
         return CuspInfo(**info)
 
-    def dehn_fill(self, filling_data, which_cusp=None):
+    def dehn_fill(self, filling_data, which_cusp=None) -> None:
         """
         Set the Dehn filling coefficients of the cusps.  This can be
         specified in the following ways, where the cusps are numbered
@@ -1529,10 +1527,12 @@ cdef class Manifold(Triangulation):
             result.set_c_triangulation(c_triangulation)
             return result
 
-    def is_isometric_to(self, Manifold other, return_isometries=False):
+    def _is_isometric_to(self,
+                         Manifold other,
+                         return_isometries : bool = False):
         """
-        Returns True if M and N are isometric, False if they not.  A
-        RuntimeError is raised in cases where the SnapPea kernel fails
+        Returns ``True`` if M and N are isometric, ``False`` if they not.
+        A ``RuntimeError`` is raised in cases where the SnapPea kernel fails
         to determine either answer.  (This is fairly common for closed
         manifolds.)
 
@@ -1562,7 +1562,7 @@ cdef class Manifold(Triangulation):
         the above example, the meridian of cusp 0 is sent to the
         meridian of cusp 1.
 
-        Note: The answer True is rigorous, but the answer False may
+        Note: The answer ``True`` is rigorous, but the answer ``False`` may
         not be as there could be numerical errors resulting in finding
         an incorrect canonical triangulation.
         """
@@ -1613,7 +1613,16 @@ cdef class Manifold(Triangulation):
 
         return ans
 
-    def is_two_bridge(self):
+    def is_isometric_to(self,
+                        Manifold other,
+                        return_isometries : bool = False):
+        """
+        This is only here to make the tests that use SnapPy.Manifold work.
+        """
+        return self._is_isometric_to(
+            other, return_isometries = return_isometries)
+
+    def is_two_bridge(self) -> bool:
         """
         If the manifold is the complement of a two-bridge knot or link
         in S^3, then this method returns (p,q) where p/q is the
@@ -1831,3 +1840,6 @@ cdef class Manifold(Triangulation):
 
         free_cross_sections(self.c_triangulation)
         return tilts, side_lengths
+
+    def _precision(self):
+        return Number._default_precision

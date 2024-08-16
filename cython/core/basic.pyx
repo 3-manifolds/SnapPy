@@ -41,7 +41,7 @@ try:
 except ImportError:
     pass
 
-from .matrix import matrix, vector, SimpleMatrix
+from .matrix import matrix
 from . import number
 
 # SnapPy components
@@ -52,6 +52,7 @@ from . import twister
 from . import snap
 from . import verify
 from .verify import complex_volume as verify_complex_volume
+from .cusps import compute_cusp_shapes as cusps_compute_cusp_shapes
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 from .export_stl import stl
@@ -370,24 +371,6 @@ class MatrixWithExplanations():
         self.explain_rows = explain_rows
         self.explain_columns = explain_columns
 
-    def __add__(self, other):
-
-        assert self.explain_columns == other.explain_columns, (
-            "matrices with different columns")
-
-        if isinstance(self.matrix, SimpleMatrix):
-            newMatrix = SimpleMatrix(self.matrix.data + other.matrix.data)
-        elif _within_sage:
-            newMatrix = self.matrix.stack(other.matrix)
-        else:
-            raise ValueError('Matrix type in MatrixWithExplanations '
-                             'not supported')
-
-        return MatrixWithExplanations(
-            newMatrix,
-            self.explain_rows+other.explain_rows,
-            self.explain_columns)
-
     def __repr__(self, _type_str = "MatrixWithExplanations"):
 
         def format_explain_list(l):
@@ -418,12 +401,6 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
     def __repr__(self):
         return MatrixWithExplanations.__repr__(self,
                                                "NeumannZagierTypeEquations")
-
-    def __add__(self, other):
-        mat = MatrixWithExplanations.__add__(self, other)
-
-        return NeumannZagierTypeEquations(
-            mat.matrix, mat.explain_rows, mat.explain_columns)
 
 # C type for a function of Real returning an object
 ctypedef object (*func_real_to_obj)(Real)
@@ -601,7 +578,7 @@ class LengthSpectrumInfo(Info):
                 lenStr += " + "
             else:
                 lenStr += " - "
-            lenStr += "%17.14f*I" % absImag
+            lenStr += "%16.14f*I" % absImag
 
         if 'word' in self:
             return LengthSpectrumFormatStringWithWord % (

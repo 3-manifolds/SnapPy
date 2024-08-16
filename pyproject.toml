@@ -1,0 +1,7 @@
+[build-system]
+requires = ["setuptools", "wheel", "cython"]
+
+[tool.cibuildwheel]
+build = "cp312-macosx_*"
+test-command = "python -m snappy.test"
+

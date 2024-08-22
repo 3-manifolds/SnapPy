@@ -2894,7 +2894,9 @@ cdef class Triangulation():
     def triangulation_isosig(self,
                              decorated : bool = True,
                              ignore_cusp_ordering : bool = False,
+                             ignore_curves : bool = False,
                              ignore_curve_orientations : bool = False,
+                             ignore_filling_orientations : bool = False,
                              ignore_orientation : bool = True) -> str:
         """
         Returns a compact text representation of the triangulation, called a
@@ -3013,7 +3015,9 @@ cdef class Triangulation():
             raise ValueError('The Triangulation is empty.')
         args = (decorated,
                 ignore_cusp_ordering,
+                ignore_curves,
                 ignore_curve_orientations,
+                ignore_filling_orientations,
                 ignore_orientation)
         try:
             return self._cache.lookup('triangulation_isosig', *args)
@@ -3024,7 +3028,9 @@ cdef class Triangulation():
             result = decorated_isosig.decorated_isosig(
                 self, _triangulation_class,
                 ignore_cusp_ordering = ignore_cusp_ordering,
+                ignore_curves = ignore_curves,
                 ignore_curve_orientations = ignore_curve_orientations,
+                ignore_filling_orientations = ignore_filling_orientations,
                 ignore_orientation = ignore_orientation)
         else:
             result = self._undecorated_triangulation_isosig(

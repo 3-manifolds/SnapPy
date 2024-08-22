@@ -46,6 +46,8 @@ the decoration is the lexicographically first one.
 import re
 import string
 
+from .matrix import make_vector
+
 # Used between the base isosig and the decorated version.
 separator = '_'
 
@@ -154,13 +156,11 @@ def as_two_by_two_matrices(L):
     assert len(L) % 4 == 0
     return [[(L[i], L[i+1]), (L[i+2], L[i+3])] for i in range(0, len(L), 4)]
 
-
 def first_non_zero_entry_in_column(matrix, col):
     e = matrix[0, col] 
     if e != 0:
         return e
     return matrix[1, col]
-
 
 def sgn_column(matrix, col):
     """
@@ -171,7 +171,6 @@ def sgn_column(matrix, col):
         return +1
     else:
         return -1
-
 
 def apply_peripheral_curve_flips(
         matrix, slope, manifold_orientable, isomorphism_orientation):
@@ -270,7 +269,9 @@ def candidate_decoration_info(
         slopes,
         manifold_orientable,
         ignore_cusp_ordering,
+        ignore_curves,
         ignore_curve_orientations,
+        ignore_filling_orientations,
         ignore_orientation):
 
     matrices = isomorphism.cusp_maps()
@@ -282,8 +283,9 @@ def candidate_decoration_info(
         if isomorphism_orientation < 0:
             return None
 
-    # Make a copy using lists so that we can modify it in place.
-    slopes = [ [ slope_m, slope_l ] for slope_m, slope_l in slopes ]
+    # Make a copy as vectors so that we can modify in place and
+    # apply matrices.
+    slopes = [ make_vector(slope) for slope in slopes ]
 
     # Permutation of cusps
     perm = inverse_perm(isomorphism.cusp_images())
@@ -299,15 +301,23 @@ def candidate_decoration_info(
             apply_peripheral_curve_flips(
                 matrix, slope, manifold_orientable, isomorphism_orientation)
 
-    # Encode the matrices
-    decorations = pack_matrices(matrices)
+    encoded = ''
 
-    if ignore_cusp_ordering or is_trivial_perm(perm):
-        # Only encode matrices
-        encoded = encode_integer_list(decorations)
+    if not ignore_cusp_ordering:
+        if not is_trivial_perm(perm):
+            # Encode permutation
+            encoded += encode_integer_list(perm)
+
+    if ignore_curves:
+        slopes = [ matrix * slope
+                   for matrix, slope in zip(matrices, slopes) ]
     else:
-        # Encode permutation and matrices
-        encoded = encode_integer_list(perm + decorations)
+        # Encode the matrices
+        encoded += encode_integer_list(pack_matrices(matrices))
+
+    if ignore_filling_orientations:
+        slopes = [ normalized_slope(slope)
+                   for slope in slopes ]
 
     return encoded, slopes
 
@@ -315,7 +325,9 @@ def candidate_decoration_info(
 
 def decorated_isosig(manifold, triangulation_class,
                      ignore_cusp_ordering=False,
+                     ignore_curves=False,
                      ignore_curve_orientations=False,
+                     ignore_filling_orientations=False,
                      ignore_orientation=True):
 
     isosig = manifold._undecorated_triangulation_isosig(
@@ -342,13 +354,17 @@ def decorated_isosig(manifold, triangulation_class,
                  slopes,
                  manifold_orientable=manifold_orientable,
                  ignore_cusp_ordering=ignore_cusp_ordering,
+                 ignore_curves=ignore_curves,
                  ignore_curve_orientations=ignore_curve_orientations,
+                 ignore_filling_orientations=ignore_filling_orientations,
                  ignore_orientation=ignore_orientation)
             ) is not None),
         key = key_decoration_info)
 
-    # Add separator
-    ans = isosig + separator + encoded
+    ans = isosig
+
+    if encoded:
+        ans += separator + encoded
 
     if not all(manifold.cusp_info('complete?')):
         for slope_m, slope_l in slopes:
@@ -365,16 +381,25 @@ def set_peripheral_from_decoration(manifold, decoration):
     dec = decode_integer_list(decoration)
     manifold.set_peripheral_curves('combinatorial')
     n = manifold.num_cusps()
-    if len(dec) == 4 * n:
-        cobs = as_two_by_two_matrices(dec)
-    else:
-        assert len(dec) == 5 * n
-        manifold._reindex_cusps(dec[:n])
-        cobs = as_two_by_two_matrices(dec[n:])
-    if det(cobs[0]) < 0 and manifold.is_orientable():
-        manifold.reverse_orientation()
-        cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
-    manifold.set_peripheral_curves(cobs)
+    k = len(dec)
+
+    if k not in [ n, 4 * n, 5 * n]:
+        raise ValueError("Decoration has unexpected length.")
+
+    if k == n or k == 5 * n:
+        if k == n:
+            manifold._reindex_cusps(dec)
+        else:
+            manifold._reindex_cusps(dec[:n])
+    if k == 4 * n or k == 5 * n:
+        if k == 4 * n:
+            cobs = as_two_by_two_matrices(dec)
+        else:
+            cobs = as_two_by_two_matrices(dec[n:])
+        if det(cobs[0]) < 0 and manifold.is_orientable():
+            manifold.reverse_orientation()
+            cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
+        manifold.set_peripheral_curves(cobs)
 
 # Testing code
 

@@ -853,11 +853,13 @@ cdef class Triangulation():
         if self.c_triangulation == NULL:
             return
 
+        if decoration:
+            decorated_isosig.set_peripheral_from_decoration(self, decoration)
+
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
-        if decoration:
-            decorated_isosig.set_peripheral_from_decoration(self, decoration)
+
 
     def __reduce__(self):
         """

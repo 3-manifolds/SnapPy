@@ -240,6 +240,7 @@ class Browser(Tk_.Toplevel):
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
         self.update_idletasks()
+        self.wm_geometry(self.wm_geometry())
 
     def __repr__(self):
         return 'Browser window for %s\n' % self.manifold

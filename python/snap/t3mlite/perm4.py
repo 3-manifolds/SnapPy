@@ -175,7 +175,7 @@ index_mult_table_by_index = {(i, j): perm_basic_to_index(P * Q)
                        for j, Q in enumerate(perm_basic_by_index)}
 
 
-class Perm4():
+class Perm4:
     """
     Class Perm4: A permutation of {0,1,2,3}.
 

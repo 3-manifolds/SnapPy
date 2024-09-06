@@ -126,7 +126,7 @@ def straighten_link(points_list):
     return points_list
 
 
-class Arc():
+class Arc:
     """
     An arc from point a to point b where a and b are labeled by i and j.
     """
@@ -146,7 +146,7 @@ class Arc():
             raise GeneralPositionError('Two crossings on top of one another')
 
 
-class Crossing():
+class Crossing:
     def __init__(self, over_arc, under_arc, s, t, label):
         self.over, self.under, self.label = over_arc, under_arc, label
         self.s, self.t = s, t
@@ -161,7 +161,7 @@ class Crossing():
         under_arc.add_crossing(self, t)
 
 
-class LinkProjection():
+class LinkProjection:
     """
     The idea is to apply a unimodular matrix and to project the knot
     onto the z=0 plane. We then recover the crossing data by finding

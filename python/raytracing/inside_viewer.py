@@ -457,7 +457,7 @@ class InsideViewer(ttk.Frame):
             title='Face boundary thickness',
             row=row,
             left_end=0.0,
-            right_end=0.35,
+            right_end=0.65,
             update_function=self.widget.draw,
             format_string='%.3f').scale
         ToolTip(scale,

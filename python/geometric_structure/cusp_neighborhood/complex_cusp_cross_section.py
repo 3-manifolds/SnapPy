@@ -599,7 +599,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             }
 
     def scale_triangles_to_avoid_standard_tubes(self):
-        """
+        r"""
         Scales each horo triangle so that it is guaranteed to be outside of
         a standard tube about the incompleteness locus from the outside (up
         to rounding errors, it will touch the tube from the outside). Note

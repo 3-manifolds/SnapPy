@@ -3,16 +3,12 @@ import os
 import sys
 import re
 from urllib.request import pathname2url
-
-from IPython.utils import io
-from IPython.core.autocall import IPyAutocall
-
-import snappy
-from .gui import *
+import tkinter as Tk_
+from tkinter import ttk
+from tkinter.font import Font
 from tkinter.messagebox import askyesno
+from IPython.utils import io
 
-snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
-icon_file = os.path.join(snappy_path, 'info_icon.gif')
 debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
@@ -42,15 +38,8 @@ class Tk(Tk_.Tk):
         # calls this function to report their occurrence.
         if error_handler:
             self.report_callback_exception = error_handler
-        # In Python 2.7 the _default root does not get set correctly.
-        if not Tk_._default_root:
-            Tk_._default_root = self
 
-#  Some ideas for the TkTerm class were borrowed from code written by
-#  Eitan Isaacson, IBM Corp.
-
-
-class TkTerm:
+class TkTerminalBase:
     """
     A Tkinter terminal window that runs an IPython shell.  This class
     supports the IOStream interface, and can function as a replacement
@@ -62,8 +51,6 @@ class TkTerm:
             io.stdout = sys.stdout = self
         else:
             self.window = window = Tk(self.report_callback_exception)
-            # self.encoding = sys.stdout.encoding
-            # self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         self._input_buffer = ''
         self._current_indent = 0
@@ -71,7 +58,6 @@ class TkTerm:
         window.option_add('*Menu.tearOff', 0)
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
-        self.icon = Tk_.PhotoImage(file=icon_file)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
                                     width=85,
@@ -377,17 +363,20 @@ class TkTerm:
         return self.handle_return()
 
     def process_return(self, cell):
-        try:
-            self.interact_handle_input(cell)
-        except KeyboardInterrupt:
-            self.write('(IP) Keyboard Interrupt: ')
-            self.reset()
+        line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
+        last_line = int(self.text.index(Tk_.END).split('.')[0])
+        if line == last_line - 1:
+            try:
+                self.interact_handle_input(cell)
+            except KeyboardInterrupt:
+                self.write('(IP) Keyboard Interrupt: ')
+                self.reset()
+            self.hist_pointer = 0
+            self.hist_stem = ''
         self.interact_prompt()
         self.text.see(Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
-        self.hist_pointer = 0
-        self.hist_stem = ''
 
     def jump_up(self, event):
         return self.handle_up(event, jump=True)
@@ -673,28 +662,16 @@ class TkTerm:
 
     def start_interaction(self):
         """
-        Print the banner and issue the first prompt.
+        Display a banner and prepare to begin interaction.
         """
-        self.text.image_create(Tk_.END, image=self.icon)
-        banner_label = Tk_.Label(self.text, text=self.banner,
-                                 background='#ec0fffec0',
-                                 foreground='DarkGreen',
-                                 anchor=Tk_.W,
-                                 justify=Tk_.LEFT,
-                                 font=self.settings['font'])
+        # Subclasses should override this method
+        banner_label = Tk_.Label(self.text,
+            text="Please override the start_interaction method.",
+            anchor=Tk_.W,
+            justify=Tk_.LEFT)
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')
-        # Set a reasonable default directory for files to be saved to.
-        try:
-            home = os.environ['HOME']
-        except KeyError:
-            home = os.path.expanduser("~")
-        desktop = os.path.join(home, "Desktop")
-        default_save_dir = desktop if os.path.exists(desktop) else home
-        self.IP.magics_manager.magics['line']['cd']("-q " + default_save_dir)
-        # Create the prompt and go!
-        self.interact_prompt()
 
     def _input_prompt(self):
         result = [('Prompt', 'In['),

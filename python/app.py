@@ -22,7 +22,7 @@ from .settings import Settings, SettingsDialog
 from .phone_home import update_needed
 from .SnapPy import SnapPea_interrupt, msg_stream
 from .shell import SnapPyInteractiveShellEmbed
-from .tkterminal import TkTerm, snappy_path
+from .tkterminal import TkTerminalBase
 
 from plink import LinkEditor
 from plink.smooth import Smoother
@@ -34,7 +34,7 @@ if 'SNAPPYHOME' in os.environ:
         os.environ['HOME'] = os.environ['SNAPPYHOME']
 
 
-class SnapPyTerm(TkTerm, ListedWindow):
+class SnapPyTerm(TkTerminalBase, ListedWindow):
     """
     The main window of the SnapPy app, which runs an embedded IPython shell.
     """
@@ -47,9 +47,10 @@ class SnapPyTerm(TkTerm, ListedWindow):
         self.main_window = self
         self.menu_title = 'SnapPy Shell'
         self.register_window(self)
-        TkTerm.__init__(self, shell, name='SnapPy Command Shell')
+        TkTerminalBase.__init__(self, shell, name='SnapPy Command Shell')
         self.settings = SnapPySettings(self)
         self.start_interaction()
+        self.interact_prompt()
         if sys.platform == 'darwin':
             assert str(self.window) == "."
             # Under OS X, the main window shouldn't be closable.
@@ -60,6 +61,34 @@ class SnapPyTerm(TkTerm, ListedWindow):
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
         self.encoding = None
+
+    def start_interaction(self):
+        """
+        Display a banner and prepare to begin interaction.
+        """
+        snappy_path = os.path.abspath(os.path.dirname(__file__))
+        icon_file = os.path.join(snappy_path, 'info_icon.gif')
+        # Keep a reference to the icon.
+        self.icon = Tk_.PhotoImage(file=icon_file)
+
+        self.text.image_create(Tk_.END, image=self.icon)
+        banner_label = Tk_.Label(self.text, text=self.banner,
+                                 background='#ec0fffec0',
+                                 foreground='DarkGreen',
+                                 anchor=Tk_.W,
+                                 justify=Tk_.LEFT,
+                                 font=self.settings['font'])
+        self.text.window_create(Tk_.END, window=banner_label)
+        self.text.insert(Tk_.END, '\n')
+        self.text.mark_set('output_end', '2.0')
+        # Set a reasonable default directory for files to be saved to.
+        try:
+            home = os.environ['HOME']
+        except KeyError:
+            home = os.path.expanduser("~")
+        desktop = os.path.join(home, "Desktop")
+        default_save_dir = desktop if os.path.exists(desktop) else home
+        self.IP.magics_manager.magics['line']['cd']("-q " + default_save_dir)
 
     def add_bindings(self):
         self.window.bind('<<Paste>>', self.edit_paste)
@@ -480,17 +509,18 @@ def set_icon(window):
     if sys.platform == 'win32':
         try:
             import snappy
-            ico = os.path.join(os.path.dirname(snappy.__file__), 'SnapPy.ico')
+            ico = os.path.join(os.path.dirname(__file__), 'SnapPy.ico')
             window.iconbitmap(default=ico)
         except:
             pass
     if sys.platform == 'darwin':
         if not sys.executable.endswith('SnapPy.app/Contents/MacOS/python'):
+            snappy_path = os.path.abspath(os.path.dirname(__file__))
+            icon_file = os.path.join(snappy_path, 'info_icon.gif')
             image_file = os.path.join(snappy_path, 'SnapPy.png')
             if os.path.exists(image_file):
                 dock_icon = Tk_.PhotoImage(file=image_file)
                 window.eval('wm iconphoto . -default %s' % dock_icon)
-
 
 # from multiprocessing import Process
 class SnapPyKernelServer():

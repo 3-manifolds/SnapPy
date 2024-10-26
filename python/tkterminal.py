@@ -351,32 +351,35 @@ class TkTerminalBase:
             self.text.tag_add('history', 'output_end', Tk_.INSERT)
 
     def handle_return(self, event=None):
+        # If the input consists of one complete line of code we run it,
+        # regardless of where the insert cursor is located.  Otherwise we only
+        # run the code if the cursor is at the end of the input
         self.clear_completions()
+        if self.running_code:
+            return 'break'
+        cursor = int(self.text.index(Tk_.INSERT).split('.')[0])
+        last = int(self.text.index(Tk_.END).split('.')[0])
+        first = int(self.text.index('output_end').split('.')[0])
+        if cursor == first == last - 1:  # single line input
+            self.text.mark_set(Tk_.INSERT, Tk_.END)
         self.text.insert(Tk_.INSERT, '\n')
-        if not self.running_code:
-            cell = self.text.get('output_end', Tk_.INSERT)
-            self.process_return(cell)
-        return 'break'
-
-    def handle_shift_return(self, event):
-        self.text.mark_set(Tk_.INSERT, Tk_.END)
-        return self.handle_return()
-
-    def process_return(self, cell):
-        line, pos = map(int, self.text.index(Tk_.INSERT).split('.'))
-        last_line = int(self.text.index(Tk_.END).split('.')[0])
-        if line == last_line - 1:
-            try:
-                self.interact_handle_input(cell)
-            except KeyboardInterrupt:
-                self.write('(IP) Keyboard Interrupt: ')
-                self.reset()
+        cell = self.text.get('output_end', Tk_.INSERT)            
+        try:
+            self.interact_handle_input(cell)
+        except KeyboardInterrupt:
+            self.write('(IP) Keyboard Interrupt: ')
+            self.reset()
             self.hist_pointer = 0
             self.hist_stem = ''
         self.interact_prompt()
         self.text.see(Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
+        return 'break'
+
+    def handle_shift_return(self, event):
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        return self.handle_return()
 
     def jump_up(self, event):
         return self.handle_up(event, jump=True)

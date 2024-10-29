@@ -1,6 +1,6 @@
 from ...sage_helper import _within_sage, sage_method
 if _within_sage:
-    from sage.all import pi
+    from sage.symbolic.constants import pi
     import sage.all
 
 from .extended_bloch import *

@@ -1,9 +1,11 @@
 from ...sage_helper import _within_sage, sage_method
 
 if _within_sage:
-    from sage.all import (ComplexBallField,
-                          RealField,
-                          Integer, exp, pi)
+    from sage.rings.complex_arb import ComplexBallField
+    from sage.rings.real_mpfr import RealField
+    from sage.rings.integer import Integer
+    from sage.functions.log import exp
+    from sage.symbolic.constants import pi
 
     import sage.all
 

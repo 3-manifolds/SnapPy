@@ -5,7 +5,7 @@ from ..math_basics import is_RealIntervalFieldElement, is_ComplexIntervalFieldEl
 import math
 
 if _within_sage:
-    from sage.all import gcd
+    from sage.arith.misc import GCD as gcd
 else:
     # Python 3 has gcd in math
     from math import gcd

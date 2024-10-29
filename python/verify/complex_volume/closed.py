@@ -6,7 +6,8 @@ from ...snap import peripheral
 from ...snap.t3mlite import simplex
 
 if _within_sage:
-    from sage.all import pi, xgcd
+    from sage.symbolic.constants import pi
+    from sage.arith.misc import XGCD as xgcd
     import sage.all
 
 from .. import hyperbolicity

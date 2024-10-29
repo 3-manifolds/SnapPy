@@ -18,7 +18,7 @@ from ...sage_helper import _within_sage
 
 if _within_sage:
     import sage.all
-    from sage.all import matrix
+    from sage.matrix.constructor import Matrix as matrix
 
 from .finite_point import *
 from .extended_matrix import *
@@ -398,7 +398,9 @@ class _IdealPointTester():
     """
 
     def matrices(self):
-        from sage.all import RIF, CIF, matrix
+        from sage.rings.real_mpfi import RIF
+        from sage.rings.cif import CIF
+        from sage.matrix.constructor import Matrix as matrix
 
         return [
             matrix.identity(CIF, 2),
@@ -410,7 +412,8 @@ class _IdealPointTester():
                  [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]]) ]
 
     def run_tests(self):
-        from sage.all import RIF, CIF
+        from sage.rings.real_mpfi import RIF
+        from sage.rings.cif import CIF
 
         bias = RIF(1.5)
 

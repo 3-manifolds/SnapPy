@@ -8,7 +8,7 @@ __all__ = [
 
 if _within_sage:
     from sage.symbolic.constants import pi
-    import sage.all
+    from ..sage_helper import I
 
 
 class FalseTuple(tuple):
@@ -103,7 +103,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     CIF = shape_intervals[0].parent()
     RIF = CIF.real_field()
     # 2 pi i in that field
-    two_pi_i = CIF(2 * pi * sage.all.I)
+    two_pi_i = CIF(2 * pi * I)
 
     # Index of the next gluing equation to check
     LHS_index = 0

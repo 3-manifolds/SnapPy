@@ -18,7 +18,11 @@ if _within_sage:
                                        prec_words_to_bits,
                                        prec_bits_to_dec,
                                        prec_dec_to_bits)
-    from sage.all import PariError
+    try:
+        from sage.all import PariError
+    except ImportError:
+        from sage.libs.pari.all import PariError
+
     shut_up = lambda: None
     speak_up = lambda: None
 

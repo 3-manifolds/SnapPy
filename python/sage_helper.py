@@ -37,10 +37,12 @@ if _within_sage:
         from sage.all import Integer, Rational, QQ, RR, CC
         from sage.all import sqrt
         from sage.all import I, Infinity
+        from sage.all import arccosh
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd
         from sage.combinat.subset import powerset
+        from sage.functions.hyperbolic import arccosh
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
         from sage.misc.functional import sqrt

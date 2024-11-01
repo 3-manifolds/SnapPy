@@ -477,7 +477,8 @@ class FundamentalGroup(CFundamentalGroup):
 
 
 if _within_sage:
-    FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+    from sage.structure.sage_object import SageObject
+    FundamentalGroup.__bases__ += (SageObject,)
 
 
 # Holonomy Groups
@@ -594,4 +595,5 @@ class HolonomyGroup(CHolonomyGroup):
 
 
 if _within_sage:
-    HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+    from sage.structure.sage_object import SageObject
+    HolonomyGroup.__bases__ += (SageObject,)

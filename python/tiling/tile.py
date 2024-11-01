@@ -10,7 +10,7 @@ from ..math_basics import is_RealIntervalFieldElement, lower # type: ignore
 from ..sage_helper import _within_sage # type: ignore
 
 if _within_sage:
-    import sage.all # type: ignore
+    from ..sage_helper import Infinity
 
 import heapq
     
@@ -71,7 +71,7 @@ def compute_tiles(*, # Everything is a keyword argument
     RF = visited_lifted_tetrahedra._base_point[0].parent()
 
     if verified:
-        minus_infinity = RF(-sage.all.Infinity)
+        minus_infinity = RF(-Infinity)
     else:
         minus_infinity = RF(-1e20)
 

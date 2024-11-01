@@ -9,7 +9,7 @@ from ..math_basics import correct_min, is_RealIntervalFieldElement, lower
 from ..hyperboloid.distances import distance_r13_horoballs
 
 if _within_sage:
-    import sage.all
+    from ..sage_helper import Infinity
 
 def maximal_cusp_area_matrix(manifold, bits_prec, verified):
     """
@@ -63,7 +63,7 @@ def _diagonal_scale(mcomplex, i):
             return e ** 2
 
     if mcomplex.verified:
-        d = mcomplex.RF(sage.all.Infinity)
+        d = mcomplex.RF(Infinity)
     else:
         d = mcomplex.RF(1e20)
 
@@ -93,7 +93,7 @@ def _non_diagonal_scale(mcomplex, i, j):
             return e ** 2
 
     if mcomplex.verified:
-        d = mcomplex.RF(sage.all.Infinity)
+        d = mcomplex.RF(Infinity)
     else:
         d = mcomplex.RF(1e20)
 

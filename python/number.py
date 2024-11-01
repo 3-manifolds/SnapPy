@@ -11,7 +11,7 @@ left_zeros = re.compile(r'0\.0*')
 precision_of_exact_GEN = pari(0).precision()
 
 if _within_sage:
-    from sage.all import RealField, Integer, Rational, ZZ, QQ, RR, CC, SR
+    from .sage_helper import RealField, Integer, Rational, ZZ, QQ, RR, CC, SR
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom

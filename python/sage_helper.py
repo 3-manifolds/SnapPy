@@ -34,17 +34,23 @@ if _within_sage:
         # Monolithic Sage library
         from sage.all import RealField, ComplexField, gcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
+        from sage.all import Integer, Rational, QQ, RR, CC, SR
     except ImportError:
         # Modularized Sage library
-        from sage.rings.real_mpfr import RealField
-        from sage.rings.complex_mpfr import ComplexField
         from sage.arith.misc import gcd
-        from sage.misc.misc_c import prod
         from sage.combinat.subset import powerset
-        from sage.matrix.matrix_space import MatrixSpace
         from sage.matrix.constructor import Matrix as matrix
+        from sage.matrix.matrix_space import MatrixSpace
+        from sage.misc.misc_c import prod
         from sage.modules.free_module_element import free_module_element as vector
+        from sage.rings.cc import CC
+        from sage.rings.complex_mpfr import ComplexField
+        from sage.rings.integer import Integer
         from sage.rings.integer_ring import ZZ
+        from sage.rings.rational import Rational
+        from sage.rings.rational_field import QQ
+        from sage.rings.real_mpfr import RealField, RR
+        from sage.symbolic.ring import SR
 
     from sage.structure.sage_object import SageObject
 

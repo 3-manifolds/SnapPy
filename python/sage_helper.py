@@ -35,12 +35,14 @@ if _within_sage:
         from sage.all import RealField, ComplexField, gcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
         from sage.all import Integer, Rational, QQ, RR, CC, SR
+        from sage.all import is_RealIntervalFieldElement, sqrt
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd
         from sage.combinat.subset import powerset
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
+        from sage.misc.functional import sqrt
         from sage.misc.misc_c import prod
         from sage.modules.free_module_element import free_module_element as vector
         from sage.rings.cc import CC
@@ -49,6 +51,7 @@ if _within_sage:
         from sage.rings.integer_ring import ZZ
         from sage.rings.rational import Rational
         from sage.rings.rational_field import QQ
+        from sage.rings.real_mpfi import is_RealIntervalFieldElement
         from sage.rings.real_mpfr import RealField, RR
         from sage.symbolic.ring import SR
 

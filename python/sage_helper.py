@@ -36,6 +36,7 @@ if _within_sage:
         from sage.all import MatrixSpace, matrix, vector, ZZ
         from sage.all import Integer, Rational, QQ, RR, CC, SR
         from sage.all import sqrt
+        from sage.all import I, Infinity
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd
@@ -47,6 +48,8 @@ if _within_sage:
         from sage.modules.free_module_element import free_module_element as vector
         from sage.rings.cc import CC
         from sage.rings.complex_mpfr import ComplexField
+        from sage.rings.imaginary_unit import I
+        from sage.rings.infinity import Infinity
         from sage.rings.integer import Integer
         from sage.rings.integer_ring import ZZ
         from sage.rings.rational import Rational

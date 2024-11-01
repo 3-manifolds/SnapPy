@@ -22,17 +22,17 @@ import importlib
 import collections
 
 if _within_sage:
-    import sage.all
+    from .sage_helper import Integer, RealDoubleElement, RealNumber
 
     def is_int(slice):
-        return isinstance(slice, (sage.all.Integer, int))
+        return isinstance(slice, (Integer, int))
 
     def is_int_or_none(slice):
-        return isinstance(slice, (sage.all.Integer, int, type(None)))
+        return isinstance(slice, (Integer, int, type(None)))
 
     def is_float_or_none(slice):
-        return isinstance(slice, (float, sage.all.RealDoubleElement,
-                                  sage.rings.real_mpfr.RealNumber, type(None)))
+        return isinstance(slice, (float, RealDoubleElement,
+                                  RealNumber, type(None)))
 else:
     def is_int(slice):
         return isinstance(slice, int)

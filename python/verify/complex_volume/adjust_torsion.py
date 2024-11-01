@@ -1,6 +1,6 @@
 from ...sage_helper import _within_sage, sage_method
 if _within_sage:
-    from ...sage_helper import pi
+    from sage.symbolic.constants import pi
 
 from .extended_bloch import *
 from ...snap import t3mlite as t3m

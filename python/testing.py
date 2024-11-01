@@ -81,6 +81,7 @@ if _within_sage:
     try:
         from sage.all import PSL, BraidGroup
     except ImportError:
+        import sage.groups.perm_gps.permgroup_element
         from sage.groups.perm_gps.permgroup_named import PSL
         from sage.groups.braid import BraidGroup
     globs = {'PSL': PSL, 'BraidGroup': BraidGroup}

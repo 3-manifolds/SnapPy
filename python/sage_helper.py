@@ -32,7 +32,7 @@ if _within_sage:
 
     try:
         # Monolithic Sage library
-        from sage.all import RealField, ComplexField, gcd, prod, powerset
+        from sage.all import RealField, RealNumber, RealDoubleElement, ComplexField, gcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
         from sage.all import Integer, Rational, QQ, RR, CC
         from sage.all import sqrt
@@ -56,7 +56,8 @@ if _within_sage:
         from sage.rings.integer_ring import ZZ
         from sage.rings.rational import Rational
         from sage.rings.rational_field import QQ
-        from sage.rings.real_mpfr import RealField, RR
+        from sage.rings.real_double import RealDoubleElement
+        from sage.rings.real_mpfr import RealField, RealNumber, RR
 
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
     from sage.structure.sage_object import SageObject

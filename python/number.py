@@ -66,8 +66,13 @@ if _within_sage:
             self._precision = precision
             self.register_coercion(MorphismToSPN(ZZ, self, self._precision))
             self.register_coercion(MorphismToSPN(QQ, self, self._precision))
-            to_SR = Hom(self, SR, Sets())(lambda x: SR(x.sage()))
-            SR.register_coercion(to_SR)
+            try:
+                from sage.symbolic.ring import SR
+            except ImportError:
+                pass
+            else:
+                to_SR = Hom(self, SR, Sets())(lambda x: SR(x.sage()))
+                SR.register_coercion(to_SR)
 
         def _repr_(self):
             return "SnapPy Numbers with %s bits precision" % self._precision

@@ -34,7 +34,7 @@ if _within_sage:
         # Monolithic Sage library
         from sage.all import RealField, ComplexField, gcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
-        from sage.all import Integer, Rational, QQ, RR, CC, SR
+        from sage.all import Integer, Rational, QQ, RR, CC
         from sage.all import sqrt
         from sage.all import I, Infinity
     except ImportError:
@@ -55,7 +55,6 @@ if _within_sage:
         from sage.rings.rational import Rational
         from sage.rings.rational_field import QQ
         from sage.rings.real_mpfr import RealField, RR
-        from sage.symbolic.ring import SR
 
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
     from sage.structure.sage_object import SageObject

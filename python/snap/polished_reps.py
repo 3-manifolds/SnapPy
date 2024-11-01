@@ -10,23 +10,10 @@ from ..pari import pari
 from .fundamental_polyhedron import *
 
 if _within_sage:
-    import sage
-    try:
-        # Monolithic Sage library
-        from sage.all import RealField, ComplexField, gcd, prod, powerset
-        from sage.all import MatrixSpace, matrix, vector, ZZ
-    except ImportError:
-        # Modularized Sage library
-        from sage.rings.real_mpfr import RealField
-        from sage.rings.complex_mpfr import ComplexField
-        from sage.arith.misc import GCD as gcd
-        from sage.misc.misc_c import prod
-        from sage.combinat.subset import powerset
-        from sage.matrix.matrix_space import MatrixSpace
-        from sage.matrix.constructor import Matrix as matrix
-        from sage.modules.free_module_element import free_module_element as vector
-        from sage.rings.integer_ring import Z as ZZ
-    Object = sage.structure.sage_object.SageObject
+    from ..sage_helper import RealField, ComplexField, gcd, prod, powerset
+    from ..sage_helper import MatrixSpace, matrix, vector, ZZ
+    from ..sage_helper import SageObject as Object
+
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
     abelian_group_elt = lambda v: vector(ZZ, v)
 else:

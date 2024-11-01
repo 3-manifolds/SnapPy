@@ -8,7 +8,7 @@ from ..math_basics import is_RealIntervalFieldElement # type: ignore
 from ..sage_helper import _within_sage # type: ignore
 
 if _within_sage:
-    import sage.all # type: ignore
+    from ..sage_helper import Infinity
 
 __all__ = ['distance_r13_lines',
            'lower_bound_distance_r13_line_triangle']
@@ -183,7 +183,7 @@ def _safe_sqrt(p):
 
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = p.intersection(RIF(0, sage.all.Infinity))
+        p = p.intersection(RIF(0, Infinity))
     else:
         if p < 0:
             RF = p.parent()
@@ -193,7 +193,7 @@ def _safe_sqrt(p):
 def _safe_log(p):
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = p.intersection(RIF(0, sage.all.Infinity))
+        p = p.intersection(RIF(0, Infinity))
     else:
         if p <= 0:
             RF = p.parent()
@@ -207,7 +207,7 @@ def _safe_log_non_neg(p):
     if p == 0:
         if is_RealIntervalFieldElement(p):
             RIF = p.parent()
-            return RIF(-sage.all.Infinity)
+            return RIF(-Infinity)
         else:
             RF = p.parent()
             return RF(-1e20)
@@ -217,7 +217,7 @@ def _safe_log_non_neg(p):
 def _safe_arccosh(p):
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = p.intersection(RIF(1, sage.all.Infinity))
+        p = p.intersection(RIF(1, Infinity))
     else:
         if p < 1:
             RF = p.parent()
@@ -233,9 +233,9 @@ def _safe_div(a, b):
     if is_RealIntervalFieldElement(b):
         RIF = b.parent()
         if b == 0:
-            return RIF(sage.all.Infinity)
+            return RIF(Infinity)
         else:
-            return a / b.intersection(RIF(0, sage.all.Infinity))
+            return a / b.intersection(RIF(0, Infinity))
     else:
         if b <= 0:
             RIF = b.parent()

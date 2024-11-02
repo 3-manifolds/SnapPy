@@ -184,6 +184,7 @@ def _canonical_retriangulation(
             else:
                 return Manifold(K)
 
+# Wraps _canonical_retriangulation to have the correct return type
 def canonical_retriangulation(
         manifold : Manifold,
         verified : bool = False,
@@ -198,10 +199,11 @@ def canonical_retriangulation(
         verbose = verbose)
 canonical_retriangulation.__doc__ = _canonical_retriangulation.__doc__
             
+# Wraps _canonical_retriangulation to have the correct return type
 def canonical_retriangulation_hp(
         manifold : ManifoldHP,
         verified : bool = False,
-        interval_bits_precs : Sequence[int] =verify.default_interval_bits_precs,
+        interval_bits_precs : Sequence[int] = verify.default_interval_bits_precs,
         exact_bits_prec_and_degrees : Sequence[Tuple[int, int]] = verify.default_exact_bits_prec_and_degrees,
         verbose : bool = False) -> Union[TriangulationHP, ManifoldHP]:
     return _canonical_retriangulation(

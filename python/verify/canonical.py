@@ -256,8 +256,12 @@ def _retrying_high_precision_canonize(M):
     triangulation. It will retry the kernel function if it fails, switching
     to the quad-double implementation.
     Returns the proto-canonical triangulation if the kernel function was
-    successful eventually. Otherwise None. The original manifold is unchanged.
+    successful eventually. Otherwise, raises an exception.
+    The original manifold is unchanged.
     """
+
+    from .. import ManifoldHP
+
     # Make a copy of the manifold
     Mcopy = M.copy()
 
@@ -265,11 +269,15 @@ def _retrying_high_precision_canonize(M):
     try:
         _retrying_canonize(Mcopy)
         return Mcopy
-    except (RuntimeError, SnapPeaFatalError):
+    except (RuntimeError, SnapPeaFatalError) as e:
+        if isinstance(M, ManifoldHP):
+            # Already using high precision.
+            # Give up.
+            raise e
         # Then try with high precision.
         Mhp = M.high_precision()
         _retrying_canonize(Mhp)
-        return Mhp
+        return Mhp.low_precision()
 
 def _print_exception(e):
     print('%s: %s' % (type(e).__name__, e))

@@ -7,13 +7,15 @@ from ...hyperboloid.line import R13Line
 from typing import Optional
 
 class ObjectCloseToCoreCurve(RuntimeError):
-    def __init__(self, obj_name, cusp_index):
+    def __init__(self, obj_name, cusp_index, distance):
         self.obj_name = obj_name
         self.cusp_index = cusp_index
+        self.distance = distance
         s = self.obj_name if self.obj_name else "Given geometric object"
         super().__init__(
             "%s is very close to the core curve "
-            "of cusp %d and might intersect it." % (s, cusp_index))
+            "of cusp %d and might intersect it. Distance: %r." % (
+                s, cusp_index, distance))
 
 def check_away_from_core_curve_iter(iterator, epsilon, obj_name = None):
     for tile in iterator:
@@ -55,4 +57,4 @@ def check_away_from_core_curve(line : R13Line,
             line)
         if not d > epsilon:
             raise ObjectCloseToCoreCurve(
-                obj_name, tet.Class[v].Index)
+                obj_name, tet.Class[v].Index, d)

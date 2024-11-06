@@ -118,44 +118,15 @@ Canonical retriangulation
 Some cases that should be rejected
 
 >>> M = Manifold("m004(3,4)")
->>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+>>> M.canonical_retriangulation() # doctest: +ELLIPSIS
 Traceback (most recent call last):
 ...
-ValueError: Canonical retriangulation needs at least one unfilled cusp.
+ValueError: Canonical retriangulation needs all cusps to be complete.
 
-sage: M.canonical_retriangulation(verified=True) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
+sage: M.canonical_retriangulation(verified=True) # doctest: +ELLIPSIS
 Traceback (most recent call last):
 ...
-ValueError: Canonical retriangulation needs at least one unfilled cusp.
-
->>> M = Manifold("m125(10,12)")
->>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-...
-ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
-
-sage: M.canonical_retriangulation(verified=True) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-...
-ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
-
->>> M = Manifold("m125(11.1,12)")
->>> M.canonical_retriangulation() # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
-Traceback (most recent call last):
-...
-ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
-
-sage: M.canonical_retriangulation(verified=True)
-Traceback (most recent call last):
-...
-ValueError: Could not compute filled triangulation. Are the filling coefficients co-prime integers?
-
->>> M = Manifold("m125(3,4)")
->>> M.canonical_retriangulation().triangulation_isosig()
-'eLAkbbcdddhrhj_BaaB'
-
-sage: M.canonical_retriangulation(verified=True).triangulation_isosig()
-'eLAkbbcdddhrhj_BaaB'
+ValueError: Canonical retriangulation needs all cusps to be complete.
 
 """
 

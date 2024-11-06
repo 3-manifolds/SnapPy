@@ -83,7 +83,11 @@ def isometry_signature_cusped(
         verbose):
     if not all(manifold.cusp_info('complete?')):
         manifold = manifold.filled_triangulation()
-
+        if not all(manifold.cusp_info('complete?')):
+            raise ValueError(
+                'Could not compute filled triangulation. '
+                'Are the filling coefficients co-prime integers?')
+        
     retrig = manifold.canonical_retriangulation(
         verified=verified,
         interval_bits_precs=interval_bits_precs,

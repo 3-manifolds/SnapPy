@@ -13,10 +13,13 @@ def _canonical_retriangulation(
         verbose : bool) -> Union[Triangulation, TriangulationHP,
                                  Manifold, ManifoldHP]:
     """
-    Returns a triangulation intrinsic to a hyperbolic manifold M. That is, the
+    Returns a triangulation intrinsic to a hyperbolic manifold. That is, the
     triangulation is (up to combinatorial isomorphism relabeling the tetrahedra
     and vertices) completely determined by the isometry type of the hyperbolic
     manifold.
+
+    Manifolds with incomplete cusps are rejected (unlike in the case of
+    :meth:`isometry_signature <snappy.Manifold.isometry_signature>`).
 
     Recall the canonical cell decomposition defined by `Epstein and Penner '88
     <https://projecteuclid.org/euclid.jdg/1214441650>`_. If all its cells are
@@ -155,11 +158,29 @@ def _canonical_retriangulation(
     # SnapPea kernel ``canonize_part_2.c`` and in Section 3.1 of
     # `Fominykh, Garoufalidis, Goerner, Tarkaev, Vesnin <http://arxiv.org/abs/1502.00383>`_.
 
-    if not any(manifold.cusp_info('complete?')):
+    if not all(manifold.cusp_info('complete?')):
+        # It is unclear what to do when there are filling coefficients.
+        # The SnapPea kernel ignores them and uses the complete structure
+        # to compute the canonical retriangulation.
+        #
+        # That makes sense to, e.g., compute a canonical representation
+        # of a surgery diagram.
+        #
+        # In other situations, it makes perfectly sense to fill the cusps
+        # instead. That is, e.g., what the isometry_signature does.
+        #
+        # Since it is ambiguous, I decided to simply reject it here.
+        #
+        # It is easy enough for a user to either call fill_triangulation
+        # or to save the coefficients and unfill all cusps.
+        #
         raise ValueError(
-            'Canonical retriangulation needs at least one unfilled cusp.')
+            'Canonical retriangulation needs all cusps to be complete.')
 
     if verified:
+        # verified_canonical_retriangulation has code to check
+        # for incomplete cusps and fill them that never gets
+        # executed because of the above "if"
         return verify.verified_canonical_retriangulation(
             manifold,
             interval_bits_precs=interval_bits_precs,
@@ -169,6 +190,7 @@ def _canonical_retriangulation(
         # Note that the SnapPea kernel actually ignores Dehn-fillings
         # when computing the canonical retriangulation.
         if not all(manifold.cusp_info('complete?')):
+            # Never executed because of above "if".
             manifold = manifold.filled_triangulation()
             if not all(manifold.cusp_info('complete?')):
                 raise ValueError(

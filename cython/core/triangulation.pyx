@@ -1830,11 +1830,9 @@ cdef class Triangulation():
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
 
-    def ptolemy_generalized_obstruction_classes(self, N):
+    def ptolemy_generalized_obstruction_classes(self, N : int):
 
         """
-        M.ptolemy_generalized_obstruction_classes(N)
-
         Returns the obstruction classes needed to compute
         PGL(N,C)-representations for any N, i.e., it returns a list with
         a representative cocycle for each element in

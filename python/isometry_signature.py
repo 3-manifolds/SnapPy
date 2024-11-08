@@ -4,7 +4,8 @@ from .sage_helper import _within_sage
 from .math_basics import is_RealIntervalFieldElement
 from .exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from .geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
-
+from .decorated_isosig import key_slope, normalized_slope
+from .matrix import make_vector
 
 def isometry_signature(
     manifold, of_link=False, verified=False,
@@ -160,7 +161,7 @@ def isometry_signature_closed(
                 print("Potential isometry signature %s%r" % sig)
             potential_signatures.append(sig)
 
-    isosig, (m, l) = min(potential_signatures, key=signature_key)
+    isosig, (m, l) = min(potential_signatures, key=key_signature)
 
     return '%s(%d,%d)' % (isosig, m, l)
 
@@ -277,19 +278,9 @@ def compute_meridian_slopes(isosig, tri):
     isosig_tri = Triangulation(isosig, remove_finite_vertices=False)
     for iso in tri.isomorphisms_to(isosig_tri):
         cusp_map, = iso.cusp_maps()
-        m = cusp_map[0,0]
-        l = cusp_map[1,0]
+        slope = make_vector([cusp_map[0,0], cusp_map[1,0]])
+        yield normalized_slope(slope)
 
-        if l < 0:
-            yield (-m, -l)
-        elif l > 0:
-            yield ( m,  l)
-        elif m < 0:
-            yield (-m, -l)
-        else:
-            yield ( m,  l)
-
-def signature_key(signature):
-    isosig, (m, l) = signature
-
-    return (isosig, l, abs(m), -m)
+def key_signature(signature):
+    isosig, slope = signature
+    return (isosig, key_slope(slope))

@@ -223,6 +223,48 @@ def is_trivial_perm(perm):
     return all(i == p for i, p in enumerate(perm))
 
 
+def key_prefer_pos(x):
+    """
+    Intended for key argument to min.
+
+    Prefers positive and then absolute value.
+    """
+    
+    if x >= 0:
+        return (0,  x)
+    else:
+        return (1, -x)
+
+def key_slope(slope):
+    """
+    Intended for key argument to min.
+
+    Prefers positive and small denominator.
+    """
+
+    slope_m, slope_l = slope
+    return (key_prefer_pos(slope_l), key_prefer_pos(slope_m))
+
+def key_decoration_info(info):
+    encoded, slopes = info
+    return [encoded, [key_slope(slope) for slope in slopes]]
+
+def normalized_slope(slope):
+    """
+    Returns slope or -slope preferring positive and small denominator.
+
+    Equivalent to min([slope, -slope], key=key_slope)
+    """
+
+    slope_m, slope_l = slope
+    if slope_l < 0:
+        return -slope
+    if slope_l > 0:
+        return slope
+    if slope_m < 0:
+        return -slope
+    return slope
+
 def candidate_decoration_info(
         isomorphism,
         slopes,
@@ -292,17 +334,18 @@ def decorated_isosig(manifold, triangulation_class,
     # Try all combinatorial isomorphisms and pick
     # lexicographically smallest info.
     encoded, slopes = min(
-        info
-        for isomorphism in manifold.isomorphisms_to(N)
-        if (
-            info := candidate_decoration_info(
-                isomorphism,
-                slopes,
-                manifold_orientable=manifold_orientable,
-                ignore_cusp_ordering=ignore_cusp_ordering,
-                ignore_curve_orientations=ignore_curve_orientations,
-                ignore_orientation=ignore_orientation)
-            ) is not None)
+        (info
+         for isomorphism in manifold.isomorphisms_to(N)
+         if (
+             info := candidate_decoration_info(
+                 isomorphism,
+                 slopes,
+                 manifold_orientable=manifold_orientable,
+                 ignore_cusp_ordering=ignore_cusp_ordering,
+                 ignore_curve_orientations=ignore_curve_orientations,
+                 ignore_orientation=ignore_orientation)
+            ) is not None),
+        key = key_decoration_info)
 
     # Add separator
     ans = isosig + separator + encoded

@@ -101,16 +101,49 @@ def has_value(v, values):
     return False
 
 if __name__ == '__main__':
-
+    # Use 5_2(1,2) as an example.
     from snappy import ManifoldHP
 
     M = ManifoldHP("5_2")
     M.chern_simons()
     M.dehn_fill((1,2))
 
-    cvol = M.complex_volume() * sage.all.I
+    # Complex volume of geometric representation of 5_2(1,2).
+    # Unverified.
+    geom_cvol = M.complex_volume()
 
-    # Because of ordering issues, only correct up to pi^2/2
-    cvols = sum(complex_volumes(M, precision = 300), [])
+    # This file uses a different convention (simply adding Neumann's
+    # extensions of Roger's dilogarithm to the Abelian cover of C \ {0,1})
+    # from the rest of SnapPy, so convert.
+    geom_cvol = sage.all.I * geom_cvol
 
-    print(has_value(cvol, cvols))
+    # The complex volumes as verified intervals of the SL(2,C)-representations
+    # detected by the (spun-)triangulation.
+    # Grouped by algebraic component of the extended Ptolemy variety.
+    #
+    # We can only compute it in this file up to multiples of pi^2/2.
+    #
+    # (Note that Neumann's method can compute it up to multiple of pi^2 but
+    # assumes an ordered triangulation. Most census triangulations are not
+    # orderable and would require subdivision).
+    #
+    # The method uses SageMath's giac to compute the rational univariate
+    # representation and evaluates it at the roots of the defining polynomial
+    # using complex intervals.
+    #
+    # It can be accessed from sage (with SnapPy installed) by:
+    # from snappy.dev.extended_ptolemy.complexVolumesClosed import complex_volumes
+    #
+    # Tested with SageMath 9.7 and 10.0.
+    #
+    cvols_by_component = complex_volumes(M, precision = 300)
+
+    print(cvols_by_component)
+
+    # Concatenate the grouped complex volumes to just have a single list.
+    cvols = sum(cvols_by_component, [])
+
+    if not has_value(geom_cvol, cvols):
+        raise RuntimeError(
+            "There is a problem. The complex volume of the geometric "
+            "representation is not included.")

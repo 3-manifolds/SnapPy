@@ -285,7 +285,10 @@ def candidate_decoration_info(
 
     # Make a copy as vectors so that we can modify in place and
     # apply matrices.
-    slopes = [ make_vector(slope) for slope in slopes ]
+    # Outside of SnapPy, SimpleVector is not making a copy of the
+    # tuple and we need a list to modify things in place.
+    slopes = [ make_vector([slope_m, slope_l])
+               for slope_m, slope_l in slopes ]
 
     # Permutation of cusps
     perm = inverse_perm(isomorphism.cusp_images())

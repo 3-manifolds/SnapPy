@@ -1339,7 +1339,7 @@ cdef class Manifold(Triangulation):
             cusps = [which_cusp] if which_cusp else range(self.num_cusps())
             cobs = []
             for i in cusps:
-                d = round((1/self.cusp_info(i)['shape']).real, 0)
+                d = (1/self.cusp_info(i)['shape']).real().round()
                 self.set_peripheral_curves([(1, -d), (0,1)], i)
                 cobs.append([[1,d],[0,1]])
             if return_matrices:
@@ -1351,7 +1351,7 @@ cdef class Manifold(Triangulation):
             cusps = [which_cusp] if which_cusp else range(self.num_cusps())
             cobs = []
             for i in cusps:
-                d = round(self.cusp_info(i)['shape'].real, 0)
+                d = self.cusp_info(i)['shape'].real().round()
                 self.set_peripheral_curves([(1, 0), (-d,1)], i)
                 cobs.append([[1,0],[d,1]])
             if return_matrices:

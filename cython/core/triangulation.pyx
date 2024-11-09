@@ -2983,6 +2983,10 @@ cdef class Triangulation():
           >>> M.triangulation_isosig(decorated = False, ignore_orientation = False)
           'dLQacccnsnk'
 
+        Note: the decorated triangulation isosig captures the orientation if
+        either ``ignore_orientation = False`` or if both ``ignore_curves = False``
+        and ``ignore_curve_orientations = False``.
+
         Note that a decorated triangulation isosig with the default values
         ``ignore_orientation = True`` but ``ignore_curve_orientations = False``
         still captures the orientations of the triangulation through the

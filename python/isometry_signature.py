@@ -283,6 +283,8 @@ def drill_manifold_precisions(
 
 def compute_meridian_slopes(isosig, tri):
     isosig_tri = Triangulation(isosig, remove_finite_vertices=False)
+    # Do not call isosig_tri.set_peripheral_curves('combinatorial')
+    # here.
     for iso in tri.isomorphisms_to(isosig_tri):
         cusp_map, = iso.cusp_maps()
         slope = make_vector([cusp_map[0,0], cusp_map[1,0]])

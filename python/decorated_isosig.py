@@ -302,9 +302,6 @@ def candidate_decoration_info(
     if ignore_curves:
         slopes = [ matrix * slope
                    for matrix, slope in zip(matrices, slopes) ]
-        if manifold_orientable:
-            for slope in slopes:
-                slope[0] *= isomorphism_orientation
     else:
         if ignore_curve_orientations:
             for matrix, slope in zip(matrices, slopes):
@@ -345,7 +342,15 @@ def decorated_isosig(manifold, triangulation_class,
         return isosig
 
     N = triangulation_class(isosig, remove_finite_vertices=False)
-    N.set_peripheral_curves('combinatorial')
+    if not (ignore_cusp_ordering and ignore_curves):
+        # Note that data_to_triangulation determines the peripheral
+        # curves before orienting the manifold.
+        # Thus, we get different peripheral curves when calling
+        # N.set_peripheral_curves.
+        # For backwards compatibility (set_peripheral_from_decoration),
+        # we need to keep callingN.set_peripheral_curves here unless there is
+        # no decoration.
+        N.set_peripheral_curves('combinatorial')
 
     manifold_orientable = manifold.is_orientable()
     slopes = manifold.cusp_info('filling')

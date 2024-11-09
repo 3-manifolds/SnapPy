@@ -15,6 +15,58 @@ matrices.
 >>> T.triangulation_isosig()
 'gLMzQbcdefffaelaaai_acbBaabCbbabbBC'
 
+Test that slopes are computed correctly.
+
+>>> M=Manifold("L14n63023(-5,1)(5,1)(10,1)")
+>>> M.triangulation_isosig(decorated=False, ignore_orientation=False)
+'vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt'
+
+The canonical orientation (used to compute the unoriented isosig)
+is the reverse of the actual orientation:
+
+>>> M.triangulation_isosig(decorated=False)
+'vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth'
+>>> Mop = M.copy()
+>>> Mop.reverse_orientation()
+>>> Mop.triangulation_isosig(decorated=False, ignore_orientation=False)
+'vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth'
+
+It is not just the triangulation that is chiral, the manifold itself is:
+
+>>> isom_sig_pos = M.isometry_signature(ignore_orientation = False)
+>>> isom_sig_pos
+'KLALvLwLLwMQLQPAMzMzMPzMPcbbeghnklntpqpqvrswtuvxyzABCDEFEGHIJJhhkofnaocnmrlsiaowxfcsaxhxhxhxhjhhhhs'
+>>> isom_sig_neg = Mop.isometry_signature(ignore_orientation = False)
+>>> isom_sig_neg
+'KLAMvMvvAwLvQPPPQMPzMPzMPcbbdegilopoouqtryvuxvwxzzBACDEFEGHIJJhhkhhohahrscaagwxkkgbvwpuxwqxqxwxxxxr'
+
+So we expect the oriented isometry signature to flip when neither the isomorphism
+signature nor its decoration capture the orientation.
+
+>>> for ignore_cusp_ordering in [False, True]:
+...     for ignore_curves in [False, True]:
+...         for ignore_curve_orientations in [False, True]:
+...             for ignore_filling_orientations in [False, True]:
+...                 for ignore_orientation in [False, True]:
+...                     isosig = M.triangulation_isosig(
+...                         ignore_cusp_ordering = ignore_cusp_ordering,
+...                         ignore_curves = ignore_curves,
+...                         ignore_curve_orientations = ignore_curve_orientations,
+...                         ignore_filling_orientations = ignore_filling_orientations,
+...                         ignore_orientation = ignore_orientation)
+...                     isom_sig = (
+...                         Manifold(isosig)
+...                              .isometry_signature(ignore_orientation = False))
+...                     does_ignore_orientation = (
+...                         ignore_orientation and
+...                         (ignore_curve_orientations or ignore_curves))
+...                     expected_isom_sig = (
+...                         isom_sig_neg
+...                         if does_ignore_orientation
+...                         else isom_sig_pos)
+...                     if isom_sig != expected_isom_sig:
+...                         print("Bad")
+
 isometry_signature
 ------------------
 
@@ -53,6 +105,26 @@ sage: M.isometry_signature(verified=True, exact_bits_prec_and_degrees=[]) # doct
 Traceback (most recent call last):
 ...
 RuntimeError: Could not compute or verify canonical retriangulation of drilled manifold. Geodesic was: abCDaDAd.
+
+Test isometry_signature's ignore_orientation
+
+>>> M = Manifold("m006")
+>>> M.isometry_signature(ignore_orientation=False)
+'eLMkaccddjgbaj'
+>>> M.isometry_signature(ignore_orientation=True)
+'eLAkaccddngbak'
+>>> M.isometry_signature() # default value
+'eLAkaccddngbak'
+>>> M.dehn_fill((3,4))
+>>> M.isometry_signature(ignore_orientation=False)
+'eLMkaccddjgbaj(-1,4)'
+>>> M.isometry_signature(ignore_orientation=True)
+'eLAkaccddngbak(-3,4)'
+
+Test isometry_signature's of_link and filling.
+
+>>> Manifold("o9_44206(2,3)").isometry_signature(of_link=True)
+'jLLvMQQacggfiihhijkkjkehhtb_abBabBbabaab'
 
 Class hierarchy
 ---------------

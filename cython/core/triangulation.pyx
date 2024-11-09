@@ -3033,7 +3033,8 @@ cdef class Triangulation():
                 ignore_orientation = ignore_orientation)
         return self._cache.save(result, 'triangulation_isosig', *args)
 
-    def _undecorated_triangulation_isosig(self, ignore_orientation : bool) -> str:
+    def _undecorated_triangulation_isosig(self,
+                                          ignore_orientation : bool = False) -> str:
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 

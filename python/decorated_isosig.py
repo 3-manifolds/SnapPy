@@ -299,10 +299,17 @@ def candidate_decoration_info(
         matrices = [ matrices[i] for i in perm ]
         slopes = [ slopes[i] for i in perm ]
 
-    if ignore_curve_orientations:
-        for matrix, slope in zip(matrices, slopes):
-            apply_peripheral_curve_flips(
-                matrix, slope, manifold_orientable, isomorphism_orientation)
+    if ignore_curves:
+        slopes = [ matrix * slope
+                   for matrix, slope in zip(matrices, slopes) ]
+        if manifold_orientable:
+            for slope in slopes:
+                slope[0] *= isomorphism_orientation
+    else:
+        if ignore_curve_orientations:
+            for matrix, slope in zip(matrices, slopes):
+                apply_peripheral_curve_flips(
+                    matrix, slope, manifold_orientable, isomorphism_orientation)
 
     encoded = ''
 
@@ -311,10 +318,7 @@ def candidate_decoration_info(
             # Encode permutation
             encoded += encode_integer_list(perm)
 
-    if ignore_curves:
-        slopes = [ matrix * slope
-                   for matrix, slope in zip(matrices, slopes) ]
-    else:
+    if not ignore_curves:
         # Encode the matrices
         encoded += encode_integer_list(pack_matrices(matrices))
 

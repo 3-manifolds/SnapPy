@@ -8,7 +8,7 @@ from .decorated_isosig import key_slope, normalized_slope
 from .matrix import make_vector
 
 def isometry_signature(
-    manifold, of_link=False, verified=False,
+    manifold, of_link=False, ignore_orientation=True, verified=False,
     interval_bits_precs=verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees=verify.default_exact_bits_prec_and_degrees,
     verbose=False) -> str:
@@ -62,6 +62,7 @@ def isometry_signature(
         return isometry_signature_cusped(
             manifold,
             of_link=of_link,
+            ignore_orientation=ignore_orientation,
             verified=verified,
             interval_bits_precs=interval_bits_precs,
             exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
@@ -69,6 +70,7 @@ def isometry_signature(
     else:
         return isometry_signature_closed(
             manifold,
+            ignore_orientation=ignore_orientation,
             verified=verified,
             interval_bits_precs=interval_bits_precs,
             exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
@@ -78,6 +80,7 @@ def isometry_signature(
 def isometry_signature_cusped(
         manifold, *,
         of_link,
+        ignore_orientation,
         verified,
         interval_bits_precs,
         exact_bits_prec_and_degrees,
@@ -95,13 +98,15 @@ def isometry_signature_cusped(
         exact_bits_prec_and_degrees=exact_bits_prec_and_degrees,
         verbose=verbose)
 
-    return retrig.triangulation_isosig(decorated=of_link,
-                                       ignore_cusp_ordering=True,
-                                       ignore_curve_orientations=True)
-
+    return retrig.triangulation_isosig(
+        decorated=of_link,
+        ignore_cusp_ordering=True,
+        ignore_curve_orientations=True,
+        ignore_orientation=ignore_orientation)
 
 def isometry_signature_closed(
         manifold, *,
+        ignore_orientation,
         verified,
         interval_bits_precs,
         exact_bits_prec_and_degrees,
@@ -153,7 +158,9 @@ def isometry_signature_closed(
                 "drilled manifold. "
                 "Geodesic was: %s." % shortest_geodesic) from e
 
-        isosig = retrig.triangulation_isosig(decorated=False)
+        isosig = retrig.triangulation_isosig(
+            decorated=False,
+            ignore_orientation=ignore_orientation)
 
         for slope in compute_meridian_slopes(isosig, retrig):
             sig = (isosig, slope)

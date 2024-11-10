@@ -311,7 +311,26 @@ def candidate_decoration_info(
     encoded = ''
 
     if not ignore_cusp_ordering:
-        if not is_trivial_perm(perm):
+        #
+        # Force decoration to fix a very subtle bug!
+        #
+        # Recall that we call N.set_peripheral_curves('combinatorial')
+        # in decorated_isosig below if either ignore_cusp_ordering or
+        # ignore_curves is False.
+        #
+        # On the decoding site, we thus also need to call
+        # manifold.set_peripheral_curves('combinatorial') in those cases.
+        # This happens in set_peripheral_from_decoration and thus only
+        # if the isosig returned here has a decoration, that is "encoded"
+        # is not empty.
+        #
+        # Assume that ignore_cusp_ordering is False and ignore_curves is
+        # True and the permutation happens to be the identity.
+        #
+        # We need to make sure not to have an empty "encoded" in this case.
+        force_decoration = ignore_curves
+        
+        if (not is_trivial_perm(perm)) or force_decoration:
             # Encode permutation
             encoded += encode_integer_list(perm)
 
@@ -347,8 +366,8 @@ def decorated_isosig(manifold, triangulation_class,
         # curves before orienting the manifold.
         # Thus, we get different peripheral curves when calling
         # N.set_peripheral_curves.
-        # For backwards compatibility (set_peripheral_from_decoration),
-        # we need to keep callingN.set_peripheral_curves here unless there is
+        # For backwards compatibility (see set_peripheral_from_decoration),
+        # we need to keep calling N.set_peripheral_curves here unless there is
         # no decoration.
         N.set_peripheral_curves('combinatorial')
 

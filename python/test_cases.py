@@ -82,6 +82,19 @@ vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0
 vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
 vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
 
+The special case where we do not encode the matrices and have the identity perm
+and need it:
+
+>>> T = Triangulation('ovLMvvPQQQccddlmnijklmnmnlgvfamtvfblhaumx_BBbacBbacBbaBCaB(312,241)(332,441)(3322,1441)(726,541)')
+>>> T.homology()
+Z/4684873938228
+>>> isosig = T.triangulation_isosig(ignore_curves=True, ignore_cusp_ordering=False)
+>>> isosig
+'ovLMvvPQQQccddlmnijklmnmnlgvfamtvfblhaumx_abcd(71,312)(-1105,332)(-8085,3322)(726,1993)'
+>>> Triangulation(isosig).homology()
+Z/4684873938228
+
+
 isometry_signature
 ------------------
 

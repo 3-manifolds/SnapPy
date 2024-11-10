@@ -31,15 +31,6 @@ is the reverse of the actual orientation:
 >>> Mop.triangulation_isosig(decorated=False, ignore_orientation=False)
 'vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth'
 
-It is not just the triangulation that is chiral, the manifold itself is:
-
->>> isom_sig_pos = M.isometry_signature(ignore_orientation = False)
->>> isom_sig_pos
-'KLALvLwLLwMQLQPAMzMzMPzMPcbbeghnklntpqpqvrswtuvxyzABCDEFEGHIJJhhkofnaocnmrlsiaowxfcsaxhxhxhxhjhhhhs'
->>> isom_sig_neg = Mop.isometry_signature(ignore_orientation = False)
->>> isom_sig_neg
-'KLAMvMvvAwLvQPPPQMPzMPzMPcbbdegilopoouqtryvuxvwxzzBACDEFEGHIJJhhkhhohahrscaagwxkkgbvwpuxwqxqxwxxxxr'
-
 So we expect the oriented isometry signature to flip when neither the isomorphism
 signature nor its decoration capture the orientation.
 
@@ -58,38 +49,38 @@ The 32 calls to ManifoldHP.isometry_signature are just too expensive for the tes
 ...                         ignore_filling_orientations = ignore_filling_orientations,
 ...                         ignore_orientation = ignore_orientation)
 ...                     print(isosig)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(-5,-1)(-10,-1)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(5,-1)(-10,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(5,1)(10,1)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(-5,1)(-10,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(-10,-1)(-5,-1)(-5,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(5,-1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(10,1)(5,1)(-5,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(-5,1)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
-    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
-    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(-5,-1)(-10,-1)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(5,-1)(-10,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(5,1)(10,1)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(-5,1)(-10,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(-10,-1)(-5,-1)(-5,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(5,-1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(10,1)(5,1)(-5,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(-5,1)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
+vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
+vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
 
 isometry_signature
 ------------------

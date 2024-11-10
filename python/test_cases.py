@@ -43,6 +43,9 @@ It is not just the triangulation that is chiral, the manifold itself is:
 So we expect the oriented isometry signature to flip when neither the isomorphism
 signature nor its decoration capture the orientation.
 
+The following is a baked version of snappy.decorated_isosig.test_slope_transformations().
+The 32 calls to ManifoldHP.isometry_signature are just too expensive for the test suite.
+
 >>> for ignore_cusp_ordering in [False, True]:
 ...     for ignore_curves in [False, True]:
 ...         for ignore_curve_orientations in [False, True]:
@@ -54,18 +57,39 @@ signature nor its decoration capture the orientation.
 ...                         ignore_curve_orientations = ignore_curve_orientations,
 ...                         ignore_filling_orientations = ignore_filling_orientations,
 ...                         ignore_orientation = ignore_orientation)
-...                     isom_sig = (
-...                         Manifold(isosig)
-...                              .isometry_signature(ignore_orientation = False))
-...                     does_ignore_orientation = (
-...                         ignore_orientation and
-...                         (ignore_curve_orientations or ignore_curves))
-...                     expected_isom_sig = (
-...                         isom_sig_neg
-...                         if does_ignore_orientation
-...                         else isom_sig_pos)
-...                     if isom_sig != expected_isom_sig:
-...                         print("Bad")
+...                     print(isosig)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBBbBaBbCbBbCb(-5,1)(5,1)(10,1)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdBacbbBCbaBBBbabB(-5,1)(5,1)(10,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(-5,-1)(-10,-1)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(5,-1)(-10,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcbaabBBbBbabBcBbBcB(-5,1)(5,1)(10,1)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabdbacbbBcBabBBbaBb(5,1)(-5,1)(-10,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(-1,-6)(-6,5)(-12,11)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(3,-4)(-1,-11)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_dcba(1,6)(-6,5)(-12,11)(0,0)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_cabd(7,1)(-3,4)(1,11)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_BbCbBbCbBbBaabBB(0,0)(10,1)(5,1)(-5,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_aBBBBacbbBCbbabB(10,1)(-5,1)(5,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(-10,-1)(-5,-1)(-5,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(5,-1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt_bBcBbBcBbBbaabBB(0,0)(10,1)(5,1)(-5,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth_abBBbacbbBcBbaBb(-10,1)(5,1)(-5,1)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(6,-1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(-1,-11)(7,1)(3,-4)(0,0)
+    vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt(0,0)(-12,11)(-6,5)(-6,1)
+    vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth(1,11)(7,1)(-3,4)(0,0)
 
 isometry_signature
 ------------------

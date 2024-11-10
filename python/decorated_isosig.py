@@ -576,9 +576,76 @@ def test_by_dehn_filling():
 
     print("Tested %d randomly Dehn filled manifolds" % count)
 
+def test_slope_transformations():
+    """
+    Tests that slopes are transformed so that the filled
+    manifold is the same.
+    """
 
-if __name__ == '__main__':
+    import snappy
+    M = snappy.ManifoldHP("L14n63023(-5,1)(5,1)(10,1)")
+    oriented_isosig = M.triangulation_isosig(
+        decorated=False, ignore_orientation=False)
+    isosig = M.triangulation_isosig(
+        decorated=False)
+    Mop = M.copy()
+    Mop.reverse_orientation()
+    reverse_oriented_isosig = Mop.triangulation_isosig(
+        decorated=False, ignore_orientation=False)
+
+    if oriented_isosig != 'vLLvvLLMALQQzQQceillmnppqrlmrqtruututiivimllaelaqxrvdoxqltt':
+        raise AssertionError()
+    if isosig != 'vLLvLLPwPQLAMPQcefikkmnplkopqrsttutuuiixvimqlippawidlabavth':
+        raise AssertionError()
+
+    # The canonical orientation (used to compute the unoriented isosig)
+    # is the reverse of the actual orientation:
+    if reverse_oriented_isosig != isosig:
+        raise AssertionError()
+    if oriented_isosig == isosig:
+        raise ValueError()
+
+    isom_sig_pos = M.isometry_signature(ignore_orientation = False)
+    if isom_sig_pos != 'KLALvLwLLwMQLQPAMzMzMPzMPcbbeghnklntpqpqvrswtuvxyzABCDEFEGHIJJhhkofnaocnmrlsiaowxfcsaxhxhxhxhjhhhhs':
+        raise AssertionError()
+    isom_sig_neg = Mop.isometry_signature(ignore_orientation = False)
+    if isom_sig_neg != 'KLAMvMvvAwLvQPPPQMPzMPzMPcbbdegilopoouqtryvuxvwxzzBACDEFEGHIJJhhkhhohahrscaagwxkkgbvwpuxwqxqxwxxxxr':
+        raise AssertionError()
+
+    # It is not just the triangulation that is chiral, the manifold itself is:
+    if isom_sig_pos == isom_sig_neg:
+        raise ValueError()
+
+    # So we expect the oriented isometry signature to flip when neither the isomorphism
+    # signature nor its decoration capture the orientation.
+    for ignore_cusp_ordering in [False, True]:
+        for ignore_curves in [False, True]:
+            for ignore_curve_orientations in [False, True]:
+                for ignore_filling_orientations in [False, True]:
+                    for ignore_orientation in [False, True]:
+                        isosig = M.triangulation_isosig(
+                            ignore_cusp_ordering = ignore_cusp_ordering,
+                            ignore_curves = ignore_curves,
+                            ignore_curve_orientations = ignore_curve_orientations,
+                            ignore_filling_orientations = ignore_filling_orientations,
+                            ignore_orientation = ignore_orientation)
+                        isom_sig = (
+                            snappy.ManifoldHP(isosig)
+                                 .isometry_signature(ignore_orientation = False))
+                        does_ignore_orientation = (
+                            ignore_orientation and
+                            (ignore_curve_orientations or ignore_curves))
+                        expected_isom_sig = (
+                            isom_sig_neg
+                            if does_ignore_orientation
+                            else isom_sig_pos)
+                        if isom_sig != expected_isom_sig:
+                            raise AssertionError()
+    print("Tested slope transformations")
+
+def run_tests():
     test_integer_list_encoder()
     main_test()
     test_link_invariant()
     test_by_dehn_filling()
+    test_slope_transformations()

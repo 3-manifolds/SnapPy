@@ -45,10 +45,9 @@ following computations:
   (Note that when using verified computation, the Chern-Simons invariant is only computed
   modulo pi^2/2 even though it is defined modulo pi^2.)
 
-* Give the :doc:`canonical retriangulation <verify_canon>` (a close
-  relative to the canonical cell decomposition) of a cusped hyperbolic
-  manifold using intervals or exact arithmetic if necessary with
-  :py:meth:`~snappy.Manifold.canonical_retriangulation`::
+* Give the (a close relative to the canonical cell decomposition) of a cusped
+  hyperbolic manifold using intervals or exact arithmetic if necessary with
+  :meth:`~snappy.Manifold.canonical_retriangulation`::
 
    sage: M = Manifold("m412")
    sage: K = M.canonical_retriangulation(verified = True)
@@ -65,7 +64,7 @@ following computations:
   a higher value for 
   :py:attr:`exact_bits_prec_and_degrees`.
 
-* The :doc:`isometry signature <verify_canon>` which is a complete invariant of the isometry type
+* The isometry signature which is a complete invariant of the isometry type
   of a cusped hyperbolic manifold (i.e., two manifolds are isometric if and only
   if they have the same isometry signature)::
 
@@ -146,5 +145,4 @@ Verified computation topics
 .. toctree::
    :maxdepth: 1
 
-   verify_canon   
    verify_internals

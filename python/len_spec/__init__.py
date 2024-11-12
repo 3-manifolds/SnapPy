@@ -11,7 +11,7 @@ from ..upper_halfspace import psl2c_to_o13
 from ..hyperboloid.distances import distance_r13_point_line
 from ..hyperboloid.line import R13Line
 from ..SnapPy import list_as_word, inverse_list_word
-from ..math_basics import lower # type: ignore
+from ..math_basics import lower, correct_max # type: ignore
 from ..exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from ..sage_helper import _within_sage, SageNotAvailable
 
@@ -229,42 +229,49 @@ def length_spectrum_alt(manifold,
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
-        0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -]
+         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0,
+         0.81161414965958 + 2.72911699294426*I        b             -,
+         0.84163270359334 + 2.61245944742151*I        aB            -]
 
+    The method might actually produce more geodesics, in particular, if the
+    same length appears multiple times. This is to guarantee that the list of
+    returned geodesics contains the n shortest geodesics.
+
+        >>> M = Manifold("m129(5,4)(5,4)")
+        >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
+        [Length                                       Word          Core curve
+         0.15921765142239 + 1.47453892742236*I        adbd          Cusp 0,
+         0.15921765142240 + 1.47453892742236*I        aBDB          Cusp 1,
+         0.90555081281824 + 2.25826657371478*I        aBc           -,
+         0.90555081281824 + 2.25826657371478*I        bd            -]
+    
     Specify cut-off::
 
         >>> M.length_spectrum_alt(max_len = 1.1) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
-        0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0, 0.81161414965958 + 2.72911699294426*I        b             -, 0.84163270359334 + 2.61245944742151*I        aB            -, 0.93461379591349 + 2.70060614107722*I        a             -]
+         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0,
+         0.81161414965958 + 2.72911699294426*I        b             -,
+         0.84163270359334 + 2.61245944742151*I        aB            -,
+         0.93461379591349 + 2.70060614107722*I        a             -]
 
     Also supports verified computations::
 
         sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest: +NUMERIC9
         [Length                                       Word          Core curve
-        0.147424652685154?  - 1.782870935652013? *I  aabcDabcB     Cusp 0, 0.81161414965958... + 2.72911699294425...*I  b             -, 0.84163270359334... + 2.61245944742151...*I  aB            -]
+         0.147424652685154?  - 1.782870935652013? *I  aabcDabcB     Cusp 0,
+         0.81161414965958... + 2.72911699294425...*I  b             -,
+         0.84163270359334... + 2.61245944742151...*I  aB            -]
 
     Cut-off will be cast to interval::
 
         sage: M.length_spectrum_alt(max_len = 1.1, verified = True, bits_prec = 110)
         [Length                                       Word          Core curve
-        0.14742465268515... - 1.78287093565201...*I  aabcDabcB     Cusp 0, 0.81161414965958... + 2.72911699294425...*I  b             -, 0.84163270359334... + 2.61245944742151...*I  aB            -, 0.93461379591349... + 2.70060614107721...*I  a             -]
+         0.14742465268515... - 1.78287093565201...*I  aabcDabcB     Cusp 0,
+         0.81161414965958... + 2.72911699294425...*I  b             -,
+         0.84163270359334... + 2.61245944742151...*I  aB            -,
+         0.93461379591349... + 2.70060614107721...*I  a             -]
 
     """
-    
-    return list(
-        _length_spectrum_alt_impl(
-            manifold,
-            count = count,
-            max_len = max_len,
-            bits_prec = bits_prec,
-            verified = verified))
-
-def _length_spectrum_alt_impl(
-        manifold,
-        count : Optional[int],
-        max_len : Optional[Any],
-        bits_prec : Optional[int],
-        verified : bool):
 
     has_count = count is not None
     has_max_len = max_len is not None
@@ -274,29 +281,106 @@ def _length_spectrum_alt_impl(
             "Must specify exactly one of count or max_len.")
 
     if has_max_len:
-        if verified:
-            if _within_sage:
-                if bits_prec is None:
-                    resolved_bits_prec = manifold._precision()
-                else:
-                    resolved_bits_prec = bits_prec
-                RIF = RealIntervalField(resolved_bits_prec)
-                resolved_max_len = RIF(max_len)
-            else:
-                raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
-        else:
-            resolved_max_len = max_len
+        return list(
+            _length_spectrum_alt_max_len(
+                manifold,
+                max_len = max_len,
+                bits_prec = bits_prec,
+                verified = verified))
+    else:
+        return list(
+            _length_spectrum_alt_count(
+                manifold,
+                count = count,
+                bits_prec = bits_prec,
+                verified = verified))
 
+def _length_spectrum_alt_max_len(
+        manifold, *,
+        max_len : Any,
+        bits_prec : Optional[int],
+        verified : bool):
+    """
+    Generator to produce all geodesics up to a given length.
+    """
+
+    if verified:
+        if not _within_sage:
+            raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
+        if bits_prec is None:
+            resolved_bits_prec = manifold._precision()
+        else:
+            resolved_bits_prec = bits_prec
+        RIF = RealIntervalField(resolved_bits_prec)
+        resolved_max_len = RIF(max_len)
+    else:
+        # A bit of fudge
+        resolved_max_len = max_len * 1.0000152
+
+    for info in length_spectrum_alt_gen(manifold = manifold,
+                                        bits_prec = bits_prec,
+                                        verified = verified):
+        # For verified computation:
+        #
+        # Recall that length_spectrum_alt_gen gives geodesics in the
+        # order such that the lower bound of info.length.real() is
+        # guaranteed to be (not strictly) increasing.
+        #
+        # The inequality checks that the lower bound of info.length.real()
+        # is larger than the given max_len.
+        #
+        # Thus, if true, any further geodesics will have length larger
+        # than max_len.
+        #
+        if info.length.real() > resolved_max_len:
+            break
+        yield info
+
+def _length_spectrum_alt_count(
+        manifold, *,
+        count : int,
+        bits_prec : Optional[int],
+        verified : bool):
+    """
+    Generator to return a (potential) superset of geodesics containing
+    the count shortest geodesics.
+
+    In the verified case, this is a bit tricky since the only guarantee
+    we have is that the lower bound of the interval of the length
+    is (non-strictly) increasing.
+    """
+
+    if not count > 0:
+        # Sanitycheck.
+        return
+    
     for i, info in enumerate(
             length_spectrum_alt_gen(manifold = manifold,
                                     bits_prec = bits_prec,
                                     verified = verified)):
-        if has_max_len:
-            if info.length.real() > resolved_max_len:
-                break
+        this_len = info.length.real()
+
+        if i >= count:
+            if verified:
+                # The lower bound of the length of the current geodesic
+                # is larger than the maximum length of any geodesic
+                # encountered so far.
+                # Thus all following geodesics will be longer than any
+                # of geodesic encountered so far.
+                if this_len > max_len:
+                    break
+            else:
+                # Add a fudge factor to account for geodesics with
+                # true equal length might have slightly different
+                # length due to numeric noise.
+                if this_len > 1.0000152 * max_len:
+                    break
+
+        # Update the maximal length of geodesics encountered so far.
+        if i == 0:
+            max_len = this_len
         else:
-            if i == count:
-                break
+            max_len = correct_max([max_len, this_len])
 
         yield info
         

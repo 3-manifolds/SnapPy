@@ -310,7 +310,7 @@ def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
 
     return words_to_drill
 
-_cutoff_digits = 16
+_cutoff_binary_digits = 16
 
 def compute_cutoff(systole):
     RF = systole.parent()
@@ -325,11 +325,12 @@ def compute_cutoff(systole):
     if is_RealIntervalFieldElement(l):
         is_int, f_int = f.is_int()
         if not is_int:
-            raise Exception("Not an integer.")
+            raise InsufficientPrecisionError(
+                "Could not determine magnitude of systole.")
     else:
         f_int = f
 
-    return systole + RF(2) ** (f_int - _cutoff_digits)
+    return systole + RF(2) ** (f_int - _cutoff_binary_digits)
 
 def drill_manifold_precisions(
         manifold, word, *,

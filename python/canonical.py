@@ -13,20 +13,20 @@ def _canonical_retriangulation(
         verbose : bool) -> Union[Triangulation, TriangulationHP,
                                  Manifold, ManifoldHP]:
     """
-    Returns a triangulation intrinsic to a hyperbolic manifold. That is, the
-    triangulation is (up to combinatorial isomorphism relabeling the tetrahedra
-    and vertices) completely determined by the isometry type of the hyperbolic
-    manifold.
+    Returns a triangulation canonically associated to the hyperbolic manifold.
+    That is, the triangulation is (up to combinatorial isomorphism relabeling
+    the tetrahedra and vertices) completely determined by the isometry type of
+    the hyperbolic manifold.
 
     Manifolds with incomplete cusps are rejected (unlike in the case of
     :meth:`isometry_signature <snappy.Manifold.isometry_signature>`).
 
-    Recall the canonical cell decomposition defined by `Epstein and Penner '88
-    <https://projecteuclid.org/euclid.jdg/1214441650>`_. If all its cells are
-    tetrahedral,
+    We now describe the canonical retriangulation. If all cells of
+    the canonical cell decomposition (defined by `Epstein and Penner '88
+    <https://projecteuclid.org/euclid.jdg/1214441650>`_) are tetrahedral,
     :meth:`canonical_retriangulation <Manifold.canonical_retriangulation>`
-    simply returns the ideal triangulation that is the canonical cell
-    decomposition as a :class:`Manifold <snappy.Manifold>`. Here is an example::
+    simply returns that ideal triangulation as a
+    :class:`Manifold <snappy.Manifold>`. Here is an example::
 
        >>> M = Manifold("m015")
        >>> K = M.canonical_retriangulation()
@@ -35,9 +35,9 @@ def _canonical_retriangulation(
        >>> K.solution_type()
        'all tetrahedra positively oriented'
 
-    Otherwise,
+    If there are non-tetrahedral cells,
     :meth:`canonical_retriangulation <Manifold.canonical_retriangulation>`
-    will subdivide the canonical cell decomposition introducing a finite vertex
+    subdivides the canonical cell decomposition. It introduces a finite vertex
     for each canonical cell resulting in a
     :class:`Triangulation <snappy.Triangulation>`. Here is an example where the
     canonical cell is a cube::
@@ -48,8 +48,9 @@ def _canonical_retriangulation(
        True
 
     The canonical retriangulation can be used to find the symmetries of a
-    manifold, respectively, isometries between two manifolds as combinatorial
-    isomorphisms with :meth:`isomorphisms_to <snappy.Triangulation.isomorphisms_to>`::
+    single manifold. It also can compute the isometries between two
+    manifolds. We do this using
+    :meth:`isomorphisms_to <snappy.Triangulation.isomorphisms_to>`::
 
        >>> M = Manifold("5_2").canonical_retriangulation()
        >>> N = Manifold("m015").canonical_retriangulation()
@@ -69,8 +70,8 @@ def _canonical_retriangulation(
 
     **Subdivision**
 
-    If the canonical cell decomposition has a non-tetrahedral cell, a
-    subdivision is applied that can be obtained in the following
+    If the canonical cell decomposition has a non-tetrahedral cell, the method
+    subdivides. You can think of the subdivision in either of the following
     (equivalent) ways:
 
     - A coarsening of the barycentric subdivision with only a quarter of the
@@ -78,16 +79,16 @@ def _canonical_retriangulation(
       merge the four tetrahedra adjacent to a barycentric edge connecting
       an edge midpoint to a face midpoint.
     - Taking the double suspension of each face (which is an ideal n-gon)
-      about the centers of the two neighboring 3-cells. Then take each of
-      these topological "diamonds" and split them into n tetrahedra along its
-      central axis.
+      about the centers of the two neighboring 3-cells. Then split each
+      such topological "lens" into n tetrahedra along its central axis.
 
     **Verified computations**
 
-    Note that while the result of this method is combinatorial, some
-    intermediate computations are numerical and can suffer from numerical issues.
-    Indeed, this arguably caused the duplicate ``x101`` and ``x103`` pair in the
-    census found by `Burton '14 <http://arxiv.org/abs/1311.7615>`_.
+    While the canonical retriangulation is combinatorial, some intermediate
+    computations are numerical. Thus, if ``verified = False``, floating-point
+    issues can arise (Arguably this gave rise to a mistake in the
+    non-orientable census. ``x101`` and ``x103`` were later identified as
+    the same by `Burton '14 <http://arxiv.org/abs/1311.7615>`_).
 
     The method can be made verified by passing ``verified = True``::
 

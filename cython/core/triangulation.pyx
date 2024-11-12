@@ -2912,8 +2912,10 @@ cdef class Triangulation():
           >>> T == U
           True
 
-        The isomorphism signature comes in two flavors controlled by the
-        ``decorated`` flag.
+        The isomorphism signature is also used to compute the isometry
+        signature, see
+        :meth:`isometry_signature <snappy.Manifold.isometry_signature>`.
+        It comes in two flavors controlled by the ``decorated`` flag.
 
         **Undecorated isomorphism signature**
 

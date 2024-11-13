@@ -86,9 +86,9 @@ def _canonical_retriangulation(
 
     While the canonical retriangulation is combinatorial, some intermediate
     computations are numerical. Thus, if ``verified = False``, floating-point
-    issues can arise (Arguably this gave rise to a mistake in the
+    issues can arise. (Arguably this gave rise to a mistake in the
     non-orientable census. ``x101`` and ``x103`` were later identified as
-    the same by `Burton '14 <http://arxiv.org/abs/1311.7615>`_).
+    the same by `Burton '14 <http://arxiv.org/abs/1311.7615>`_.)
 
     The method can be made verified by passing ``verified = True``::
 
@@ -125,9 +125,9 @@ def _canonical_retriangulation(
     version, :meth:`Manifold.canonical_retriangulation` could return ``None``
     instead.)
 
-    Here is an example where the method fails (early, with an exception)
-    because we skip the (potentially lengthy) exact methods needed to verify a
-    non-tetrahedral cell decomposition::
+    Here is an example where we skip the (potentially lengthy) exact methods
+    needed to verify a non-tetrahedral cell. The method fails (early
+    and with an exception) since the cells are actually tetrahedral::
 
       sage: M = Manifold("m412")
       sage: K = M.canonical_retriangulation(verified = True, exact_bits_prec_and_degrees = []) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL

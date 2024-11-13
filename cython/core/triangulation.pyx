@@ -2912,8 +2912,7 @@ cdef class Triangulation():
           >>> T == U
           True
 
-        The isomorphism signature is also used to compute the isometry
-        signature, see
+        The isomorphism signature is also used to compute the
         :meth:`isometry_signature <snappy.Manifold.isometry_signature>`.
         It comes in two flavors controlled by the ``decorated`` flag.
 
@@ -2926,12 +2925,12 @@ cdef class Triangulation():
             >>> T.triangulation_isosig(decorated=False)
             'dLQbcccdero'
 
-        The isomorphism signature was introduced in
-        `Burton '11 <http://arxiv.org/abs/1110.6080>`_ and canonizes and
+        It was introduced in
+        `Burton '11 <http://arxiv.org/abs/1110.6080>`_. It canonizes and
         generalizes the ealier dehydration string by
         `Callahan, Hildebrand and Weeks '99
         <https://doi.org/10.1090/S0025-5718-99-01036-4>`_.
-        The resulting string can also be given to
+        The undecorated isomorphism signature can also be given to
         `Regina <https://regina-normal.github.io/>`_'s
         ``Triangulation3.fromIsoSig``.
 
@@ -2946,9 +2945,9 @@ cdef class Triangulation():
             >>> T.triangulation_isosig(decorated=False)
             'dLQbcccdero'
 
-        By specifying ``ignore_orientation = False``, the result
-        encodes the orientation (if orientable) so the result is different
-        if the triangulation is chiral::
+        When specifying ``ignore_orientation = False``, the result
+        encodes the orientation (if orientable). This means that the result is
+        different if the triangulation is chiral::
 
             >>> T = Triangulation('m015')
             >>> T.triangulation_isosig(decorated=False, ignore_orientation=False)
@@ -2980,7 +2979,7 @@ cdef class Triangulation():
 
            * We say that the Dehn-filling coefficients :math:`(m,l)` and
              :math:`(-m, -l)` correspond to two different oriented
-             Dehn-fillings but the same unoriented Dehn-filling.
+             Dehn-fillings, but the same unoriented Dehn-filling.
            * By default, the decoration encodes the oriented Dehn-fillings.
              By specifying ``ignore_filling_orientations = True``, the
              decoration encodes the unoriented Dehn-fillings.

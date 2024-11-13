@@ -29,12 +29,8 @@ News
 
 * Version 3.2 (??? 2024):
 
-  - :meth:`inside_view <snappy.Manifold.inside_view>` shows the user as a paper
-    plane or eye ball. Also adding button to geodesics window to put camera
-    onto a geodesic. TODO: PICTURE!
-
-  - An alternative implementation of the length spectrum supporting verified
-    computations and being significantly faster in some cases, see
+  - An alternative implementation of the length spectrum. It supports verified
+    computations and is significantly faster in some cases. See
     :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
     and
     :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
@@ -42,22 +38,30 @@ News
   - :meth:`isometry_signature <snappy.Manifold.isometry_signature>` now also
     works for closed manifolds.
 
-  - It is now safe to call::
+  - A paper plane or eye ball in the
+    :meth:`inside_view <snappy.Manifold.inside_view>` showing the position
+    and bearing of the user in the hyperbolic manifold. The geodesics window
+    now also features a button to put the camera onto a geodesic.
+    TODO: PICTURE!
+
+  - A faster and more robust algorithm to the compute maximal cusp area matrix.
+    Example:
+    :meth:`Manifold("otet10_00027").cusp_area_matrix(method='maximal') <snappy.Manifold.cusp_area_matrix>`
+
+  - New options ``ignore_curves`` and ``ignore_filling_orientations``
+    for :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>`. Also
+    fixing a subtle bug where the filling coefficients returned by
+    :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>` were
+    not canonical when ``ignore_curve_orientations = True``.
+
+  - :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+    and
+    :meth:`isometry_signature <snappy.Manifold.isometry_signature>` fail with
+    exceptions rather than silently returning ``None``. In particular, it now
+    safe to compare isometry signatures (without further checks) to determine
+    whether M and N are isometry hyperbolic manifolds::
 
         >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
-
-    to determine whether M and N are isometric hyperbolic manifolds since
-    :meth:`isometry_signature <snappy.Manifold.isometry_signature>` no longer
-    fails silently returning ``None`` but raises an exception if the signature
-    could not be computed.
-
-  - Similarly, :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>` can no longer fail silently returning ``None``.
-
-  - Bug fix: The decoration :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>` is canonical when giving ``ignore_curve_orientations = True``.
-
-  - New algorithm to compute maximal cusp area matrix which is faster and more robust
-    (Example:
-    :meth:`Manifold("otet10_00027").cusp_area_matrix(method='maximal') <snappy.Manifold.cusp_area_matrix>`).
 
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 

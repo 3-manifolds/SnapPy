@@ -67,9 +67,9 @@ def isometry_signature(
        'cPcbbbiht_bacb'
 
     In general, the isometry signature is the isomorphism signature (see
-    :meth:`.triangulation_isosig`) of the canonical
-    retriangulation (see :meth:`.canonical_retriangulation`) of the
-    filled triangulation (see :meth:`.filled_triangulation`)::
+    :meth:`.triangulation_isosig`) of the
+    :meth:`.canonical_retriangulation` of the
+    :meth:`.filled_triangulation`::
 
        >>> T = M.filled_triangulation().canonical_retriangulation()
        >>> T.triangulation_isosig(ignore_cusp_ordering = True,

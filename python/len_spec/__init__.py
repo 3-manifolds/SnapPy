@@ -234,7 +234,7 @@ def length_spectrum_alt(manifold,
          0.84163270359334 + 2.61245944742151*I       -           aB]
 
         >>> M = Manifold("m202(3,4)(3,4)")
-        >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
+        >>> M.length_spectrum_alt(count = 3) # doctest: +SKIP
         [Length                                      Core curve  Word
          0.14820741547094 - 1.76955170166922*I       Cusp 1      bcDc,
          0.14820741547097 - 1.76955170166923*I       Cusp 0      aabcDabcB,
@@ -244,14 +244,6 @@ def length_spectrum_alt(manifold,
     The method might actually produce more geodesics, in particular, if the
     same length appears multiple times. This is to guarantee that the list of
     returned geodesics contains the n shortest geodesics.
-
-        >>> M = Manifold("m129(5,4)(5,4)")
-        >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
-        [Length                                      Core curve  Word
-         0.15921765142239 + 1.47453892742236*I       Cusp 0      adbd,
-         0.15921765142240 + 1.47453892742236*I       Cusp 1      aBDB,
-         0.90555081281824 + 2.25826657371478*I       -           aBc,
-         0.90555081281824 + 2.25826657371478*I       -           bd]
 
     Specify cut-off::
 

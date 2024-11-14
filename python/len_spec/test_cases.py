@@ -18,6 +18,32 @@ Length                                      Core curve  Word
 >>> next(spec).length # doctest: +NUMERIC9
 1.63203771292969 + 2.30009520293758*I
 
+Examples with +SKIP from length_spectrum_alt
+
+>>> M = Manifold("m202(3,4)(3,4)")
+>>> spec = M.length_spectrum_alt(count = 3)
+>>> len(spec)
+4
+>>> spec[0].length # doctest: +NUMERIC9
+0.14820741547094 - 1.76955170166922*I
+>>> spec[1].length # doctest: +NUMERIC9
+0.14820741547097 - 1.76955170166923*I
+>>> spec[2].length # doctest: +NUMERIC9
+0.79356651781096 + 2.65902431489655*I
+>>> spec[3].length # doctest: +NUMERIC9
+0.79356651781096 + 2.65902431489655*I
+sage: spec = M.length_spectrum_alt(count = 3, verified = True, bits_prec = 110)
+sage: len(spec)
+4
+sage: spec[0].length # doctest: +NUMERIC9
+0.14820741547094772? - 1.76955170166923543?*I
+sage: spec[1].length # doctest: +NUMERIC9
+0.14820741547094772? - 1.76955170166923543?*I
+sage: spec[2].length # doctest: +NUMERIC9
+0.79356651781095741? + 2.65902431489655135?*I
+sage: spec[3].length # doctest: +NUMERIC9
+0.79356651781095741? + 2.65902431489655135?*I
+
 """
 
 if not __doc__:

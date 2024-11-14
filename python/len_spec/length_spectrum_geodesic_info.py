@@ -12,8 +12,8 @@ class LengthSpectrumGeodesicInfo(Info):
     def _body(self) -> str:
         return _format % (
             _format_length(self.length),
-            _format_word(self.word, _max_word_length),
-            _format_core_curve(self.core_curve))
+            _format_core_curve(self.core_curve),
+            self.word)
 
     def __repr__(self) -> str:
         if self._is_first:
@@ -21,19 +21,19 @@ class LengthSpectrumGeodesicInfo(Info):
         else:
             return self._body()
 
-_max_word_length = 13
+_core_curve_label = 'Core curve'
 _verified_num_digits = 19
 
 _format = (
-    '%%-%ds  '       # Length
-    '%%-%ds '        # Word
-    '%%s'            # Core curve
+    '%%-%ds '        # Length
+    '%%-%ds  '       # Core curve
+    '%%s'            # Word
     ) % (_verified_num_digits + len(' + ') + _verified_num_digits + len('*I'),
-         _max_word_length)
+         len(_core_curve_label))
 
 _header = _format % ( 'Length',
-                      'Word',
-                      'Core curve')
+                      _core_curve_label,
+                      'Word')
 
 _total_length = len("Out [100:] " + _header)
 

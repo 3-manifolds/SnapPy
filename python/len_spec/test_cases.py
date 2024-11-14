@@ -5,8 +5,8 @@ nothing before it. In particular, add any includes after the doc string.
 >>> M = Manifold("m125(3,4)(0,0)")
 >>> spec = M.length_spectrum_alt_gen()
 >>> next(spec) # doctest: +NUMERIC9
-Length                                       Word          Core curve
-0.24208261435543 - 1.73621300277325*I        aBDcDcb       Cusp 0
+Length                                      Core curve  Word
+0.24208261435543 - 1.73621300277325*I       Cusp 0      aBDcDcb
 >>> next(spec).length # doctest: +NUMERIC9
 0.90986906036840 + 3.03574280072295*I
 >>> next(spec).length # doctest: +NUMERIC9

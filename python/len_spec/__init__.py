@@ -36,15 +36,15 @@ def length_spectrum_alt_gen(manifold,
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> spec = M.length_spectrum_alt_gen()
         >>> next(spec) # doctest: +NUMERIC9
-        Length                                       Word          Core curve
-        0.14742465268510 - 1.78287093565206*I        aabcDabcB     Cusp 0
+        Length                                      Core curve  Word
+        0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB
         >>> next(spec) # doctest: +NUMERIC9
-        0.81161414965959 + 2.72911699294425*I        b             -
+        0.81161414965958 + 2.72911699294426*I       -           b
         >>> next(spec) # doctest: +NUMERIC9
-        0.84163270359334 + 2.61245944742151*I        aB            -
+        0.84163270359334 + 2.61245944742151*I       -           aB
         >>> next(spec) # doctest: +NUMERIC9
-        0.93461379591349 + 2.70060614107722*I        a             -
-
+        0.93461379591349 + 2.70060614107722*I       -           a
+    
     Note that the shortest geodesic in the above example happens to be the
     core curve of the filled cusp (Cusp 0).
 
@@ -72,10 +72,10 @@ def length_spectrum_alt_gen(manifold,
         sage: M = Manifold("m019")
         sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
         sage: next(spec)
-        Length                                       Word          Core curve
-        0.43153441294719... + 2.35105908147863...*I  a             -
+        Length                                      Core curve  Word
+        0.43153441294719... + 2.35105908147863...*I -           a
         sage: next(spec)
-        0.88944299721255... - 2.94185904702273...*I  bD            -
+        0.88944299721255... - 2.94185904702273...*I -           bD
 
     **Performance**
 
@@ -111,8 +111,8 @@ def length_spectrum_alt_gen(manifold,
         >>> N.dehn_fill((1,0),-1) # This is isometric to m125(0,0)(34,55)
         >>> spec = N.length_spectrum_alt_gen()
         >>> next(spec) # doctest: +NUMERIC9
-        Length                                       Word          Core curve
-        0.00150226276052 - 2.39996262244127*I        cDcDDcDcDD... Cusp 1
+        Length                                      Core curve  Word
+        0.00150226276073 - 2.39996262244128*I       Cusp 1      cDcDDcDcDDcDDcDcDDcDcDDcDDcDcDDcDD
         >>> next(spec).length.real() # doctest: +NUMERIC9
         0.96218768626877
 
@@ -228,18 +228,18 @@ def length_spectrum_alt(manifold,
 
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
-        [Length                                       Word          Core curve
-         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0,
-         0.81161414965958 + 2.72911699294426*I        b             -,
-         0.84163270359334 + 2.61245944742151*I        aB            -]
+        [Length                                      Core curve  Word
+         0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB,
+         0.81161414965958 + 2.72911699294426*I       -           b,
+         0.84163270359334 + 2.61245944742151*I       -           aB]
 
         >>> M = Manifold("m202(3,4)(3,4)")
         >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
-        [Length                                       Word          Core curve
-         0.14820741547094 - 1.76955170166922*I        bcDc          Cusp 1,
-         0.14820741547097 - 1.76955170166923*I        aabcDabcB     Cusp 0,
-         0.79356651781096 + 2.65902431489655*I        aB            -,
-         0.79356651781096 + 2.65902431489655*I        b             -]
+        [Length                                      Core curve  Word
+         0.14820741547094 - 1.76955170166922*I       Cusp 1      bcDc,
+         0.14820741547097 - 1.76955170166923*I       Cusp 0      aabcDabcB,
+         0.79356651781096 + 2.65902431489655*I       -           aB,
+         0.79356651781096 + 2.65902431489655*I       -           b]
 
     The method might actually produce more geodesics, in particular, if the
     same length appears multiple times. This is to guarantee that the list of
@@ -247,38 +247,39 @@ def length_spectrum_alt(manifold,
 
         >>> M = Manifold("m129(5,4)(5,4)")
         >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
-        [Length                                       Word          Core curve
-         0.15921765142239 + 1.47453892742236*I        adbd          Cusp 0,
-         0.15921765142240 + 1.47453892742236*I        aBDB          Cusp 1,
-         0.90555081281824 + 2.25826657371478*I        aBc           -,
-         0.90555081281824 + 2.25826657371478*I        bd            -]
-    
+        [Length                                      Core curve  Word
+         0.15921765142239 + 1.47453892742236*I       Cusp 0      adbd,
+         0.15921765142240 + 1.47453892742236*I       Cusp 1      aBDB,
+         0.90555081281824 + 2.25826657371478*I       -           aBc,
+         0.90555081281824 + 2.25826657371478*I       -           bd]
+
     Specify cut-off::
 
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> M.length_spectrum_alt(max_len = 1.1) # doctest: +NUMERIC9
-        [Length                                       Word          Core curve
-         0.14742465268512 - 1.78287093565202*I        aabcDabcB     Cusp 0,
-         0.81161414965958 + 2.72911699294426*I        b             -,
-         0.84163270359334 + 2.61245944742151*I        aB            -,
-         0.93461379591349 + 2.70060614107722*I        a             -]
+        [Length                                      Core curve  Word
+         0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB,
+         0.81161414965958 + 2.72911699294426*I       -           b,
+         0.84163270359334 + 2.61245944742151*I       -           aB,
+         0.93461379591349 + 2.70060614107722*I       -           a]
 
     Also supports verified computations::
 
         sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest: +NUMERIC9
-        [Length                                       Word          Core curve
-         0.147424652685154?  - 1.782870935652013? *I  aabcDabcB     Cusp 0,
-         0.81161414965958... + 2.72911699294425...*I  b             -,
-         0.84163270359334... + 2.61245944742151...*I  aB            -]
+        [Length                                      Core curve  Word
+         0.147424652685154?  - 1.782870935652013? *I Cusp 0      aabcDabcB,
+         0.81161414965958... + 2.72911699294425...*I -           b,
+         0.84163270359334... + 2.61245944742151...*I -           aB]
+
 
     Cut-off will be cast to interval::
 
-        sage: M.length_spectrum_alt(max_len = 1.1, verified = True, bits_prec = 110)
-        [Length                                       Word          Core curve
-         0.14742465268515... - 1.78287093565201...*I  aabcDabcB     Cusp 0,
-         0.81161414965958... + 2.72911699294425...*I  b             -,
-         0.84163270359334... + 2.61245944742151...*I  aB            -,
-         0.93461379591349... + 2.70060614107721...*I  a             -]
+        sage: M.length_spectrum_alt(max_len = 1.1, verified = True, bits_prec = 110) # doctest: +NORMALIZE_WHITESPACE
+        [Length                                      Core curve  Word
+         0.14742465268515... - 1.78287093565201...*I Cusp 0      aabcDabcB,
+         0.81161414965958... + 2.72911699294425...*I -           b,
+         0.84163270359334... + 2.61245944742151...*I -           aB,
+         0.93461379591349... + 2.70060614107721...*I -           a]
 
     """
 

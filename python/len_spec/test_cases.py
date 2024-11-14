@@ -32,6 +32,9 @@ Examples with +SKIP from length_spectrum_alt
 0.79356651781096 + 2.65902431489655*I
 >>> spec[3].length # doctest: +NUMERIC9
 0.79356651781096 + 2.65902431489655*I
+
+Verified:
+
 sage: spec = M.length_spectrum_alt(count = 3, verified = True, bits_prec = 110)
 sage: len(spec)
 4

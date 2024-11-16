@@ -4,6 +4,10 @@
 News
 ====
 
+* Version 3.2 (??? 2024):
+
+  - TODO: Copy from index.rst once this has been finalized!
+
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`

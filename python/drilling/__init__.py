@@ -164,7 +164,7 @@ def drill_words(manifold,
     cusps correspond to the drilled geodesics and appear in the same order than
     the geodesics were given as words. Note that in the above example, we expect
     six cusps since we started with four cusps and drilled two geodesics. However,
-    we only obtain five cusps since one geodesic was a core curve. The
+    we only obtain five cusps because one geodesic was a core curve. The
     corresponding cusp was unfilled (from ``(1,4)``) and grouped with the other
     cusps coming from drilling.
 

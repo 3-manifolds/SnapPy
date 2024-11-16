@@ -41,8 +41,29 @@ News
   - A paper plane or eye ball in the
     :meth:`inside_view <snappy.Manifold.inside_view>` showing the position
     and bearing of the user in the hyperbolic manifold. The geodesics window
-    now also features a button to put the camera onto a geodesic.
-    TODO: PICTURE!
+    now also features a button to put the camera onto a geodesic. Here are some
+    examples:
+
+    .. list-table::
+       :width: 100%
+       :class: borderless
+
+       * - .. image:: images/o9_00000_systole_paper_plane.png
+              :width: 90%
+              :align: center
+              :alt: Paper plane near shortest geodesic of o9_00000
+         - .. image:: images/o9_00000_systole_paper_plane_closer.png
+              :width: 90%
+              :align: center
+              :alt: Paper plane very near shortest geodesic of o9_00000
+         - .. image:: images/m004_paper_plane_on_systole.png
+              :width: 90%
+              :align: center
+              :alt: Paper plane on shortest geodesic of m004
+         - .. image:: images/m125_paper_plane.png
+              :width: 90%
+              :align: center
+              :alt: Paper plane coming out of a cusp of m125
 
   - A faster and more robust algorithm to the compute maximal cusp area matrix.
     Example:
@@ -59,7 +80,7 @@ News
     :meth:`isometry_signature <snappy.Manifold.isometry_signature>` fail with
     exceptions rather than silently returning ``None``. In particular, it now
     safe to compare isometry signatures (without further checks) to determine
-    whether M and N are isometry hyperbolic manifolds::
+    whether M and N are isometric hyperbolic manifolds::
 
         >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
 
@@ -100,10 +121,6 @@ News
   - Support for Python 3.11 and SageMath 10.0.
 
   - Modernized styling of the documentation.
-
-* Version 3.0.3 (December 2021):
-
-  - Runs natively on Macs with Apple Silicon processors (M1, M2, and variants).
 
 * :doc:`Complete version history <news>`.
 

@@ -47,6 +47,22 @@ sage: spec[2].length # doctest: +NUMERIC9
 sage: spec[3].length # doctest: +NUMERIC9
 0.79356651781095741? + 2.65902431489655135?*I
 
+>>> M = Manifold("m202(3,4)(0,0)")
+>>> M.length_spectrum_alt(max_len = 1.1) # doctest: +NUMERIC9
+[Length                                      Core curve  Word
+ 0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB,
+ 0.81161414965958 + 2.72911699294426*I       -           b,
+ 0.84163270359334 + 2.61245944742151*I       -           aB,
+ 0.93461379591349 + 2.70060614107722*I       -           a]
+
+sage: M.length_spectrum_alt(max_len = 1.1, verified=True, bits_prec=130) # doctest: +NORMALIZE_WHITESPACE
+[Length                                      Core curve  Word
+ 0.14742465268515... - 1.78287093565201...*I Cusp 0      aabcDabcB,
+ 0.81161414965958... + 2.72911699294425...*I -           b,
+ 0.84163270359334... + 2.61245944742151...*I -           aB,
+ 0.93461379591349... + 2.70060614107721...*I -           a]
+
+
 """
 
 if not __doc__:

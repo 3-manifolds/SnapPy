@@ -126,6 +126,23 @@ following computations:
   (`arXiv:1109.0903 <https://arxiv.org/abs/1109.0903>`_ and
   `arXiv:1310.3472 <https://arxiv.org/abs/1310.3472>`_).
 
+* An example of finding all geodesics up to length 1::
+
+    sage: from sage.all import RIF
+    sage: L = RIF(1)
+    sage: M = Manifold("m003")
+    sage: spec = M.length_spectrum_alt_gen(verified=True)
+    sage: n = 0
+    sage: for g in spec:
+    ...       if g.length.real() > L:
+    ...           break # Done! All subsequent geodesics will be longer.
+    ...       if g.length.real() < L:
+    ...           n += 1
+    ...           continue
+    ...       raise Exception("Interval too large. Increase precision.")
+    sage: n
+    4
+
 This is all based on a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which
 pioneered the use of interval methods for hyperbolic manifolds (also see

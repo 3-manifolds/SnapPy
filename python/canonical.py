@@ -135,8 +135,10 @@ def _canonical_retriangulation(
       ...
       snappy.verify.exceptions.TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: ... < 0
 
-    :param verified: Use verified computation.
-    :param interval_bits_precs: Only relevant if ``verified = True``.
+    :param verified:
+            Use verified computation.
+    :param interval_bits_precs:
+            Only relevant if ``verified = True``.
             A list of (increasing) precisions used to try to
             certify the canonical cell decomposition using intervals. Each
             precision is tried until we succeed. If none succeeded, we move on
@@ -145,10 +147,14 @@ def _canonical_retriangulation(
             Only relevant if ``verified = True``.
             A list of pairs (precision, max degree) used when the
             LLL-algorithm is trying to find the defining
-            polynomial of the shape field. Each pair is tried until we succeed.
-    :param verbose: Print information about the methods tried to compute and
-            verify the canonical retriangulation.
-    :return: If the canonical cell decomposition exists entirely of
+            polynomial of the shape field with
+            ``ListOfApproximateAlgebraicNumbers.find_field``.
+            Each pair is tried until we succeed.
+    :param verbose:
+            Print information about the methods tried to compute and verify the
+            canonical retriangulation.
+    :return:
+            If the canonical cell decomposition exists entirely of
             (hyperbolic ideal) tetrahedra, a :class:`Manifold` with those
             tetrahedra.
             Otherwise, a :class:`Triangulation` that is a subdivision of the

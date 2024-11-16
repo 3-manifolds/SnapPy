@@ -45,10 +45,10 @@ def drill_word(manifold,
 
     The last cusp of the new manifold corresponds to the drilled
     geodesic and the longitude and meridian for that cusp are chosen such that
-    (1,0)-filling results in the original (undrilled) manifold. The orientation
+    ``(1,0)``-filling results in the given (undrilled) manifold. The orientation
     of the new longitude is chosen so that it is parallel to the closed geodesic.
     That is, the new longitude is homotopic to the closed geodesic when embedding
-    the drilled manifold into the original manifold.
+    the drilled manifold into the given manifold.
 
         >>> N.dehn_fill((1,0),1)
         >>> M.is_isometric_to(N)
@@ -77,22 +77,6 @@ def drill_word(manifold,
         >>> N.volume() # doctest: +NUMERIC9
         1.73712388065
 
-    Even though the output of the drilling geodesic algorithm is a
-    triangulation and thus combinatorial in nature, the intermediate
-    computations to compute the intersections of the geodesic with the
-    faces of the tetrahedra is numerical. Sometimes it is necessary to increase
-    the precision with ``bits_prec`` to make this computation accurate or succeed.
-    If ``verified = True`` is specified, intervals are used for all computations
-    and the result is provably correct (only supported when used inside
-    SageMath).
-    That is, the algorithm will fail with an exception (most likely
-    ``InsufficientPrecisionError``) if insufficient precision is used. Example of
-    verified computation::
-
-        sage: M = Manifold("m004(2,3)")
-        sage: M.drill_word('caa', verified = True, bits_prec = 100)
-        m004_drilled(2,3)(0,0)
-
     An example where we drill the core geodesic::
 
         >>> M = Manifold("v2986(3,4)")
@@ -102,6 +86,42 @@ def drill_word(manifold,
          [3 -1]
          [4 -1]
          Does not extend to link]
+
+    While the result of drilling a geodesic is a triangulation and thus
+    combinatorial in nature, some intermediate computations (for example,
+    to compute the intersections of the geodesic with the faces of the
+    tetrahedra) are numerical. Sometimes, it is necessary to increase the
+    precision with ``bits_prec`` to make the method succeed and produce
+    the correct result.
+    
+    **Verified computation**
+
+    If ``verified = False``, floating-point issues can arise resulting
+    in drilling the wrong loop. The method can be made verified by passing
+    ``verified = True``::
+
+        sage: M = Manifold("m004(2,3)")
+        sage: M.drill_word('caa', verified = True, bits_prec = 100)
+        m004_drilled(2,3)(0,0)
+
+    That is, if the precision is insufficient to prove the result is correct,
+    the algorithm fails with an exception (most likely
+    ``InsufficientPrecisionError``).
+
+    :param word:
+             The word in the unsimplified fundamental group specifying the
+             geodesic to be drilled.
+    :param bits_prec:
+             The precision used in the intermediate computation. Increase
+             if the computation failed.
+    :param verified:
+             Use verified computation.
+    :param verbose:
+             Print intermediate results and statistics.
+
+    :return:
+            Manifold obtained by drilling geodesic. ``(1,0)``-filling the
+            last cusp gives the given (undrilled) manifold.
     """
 
     return drill_words(manifold,
@@ -117,12 +137,13 @@ def drill_words(manifold,
                 bits_prec : Optional[int] = None,
                 verbose : bool = False) -> Manifold:
     """
-    A generalization of :meth:`drill_word <Manifold.drill_word>` taking a list
-    of words to drill several geodesics simultaneously.
+    A generalization of :meth:`drill_word <Manifold.drill_word>` to drill
+    several geodesics simultaneously. It takes a list of words in the
+    unsimplified fundamental group.
 
-    Here is an example where we drill the core curve corresponding to the third cusp
-    and a geodesic that is not a core curve:
-
+    Here is an example where we drill two geodesics. One geodesic is the
+    core curve corresponding to the third cusp. The other geodesic is not
+    a core curve::
 
         >>> M=Manifold("t12047(0,0)(1,3)(1,4)(1,5)")
         >>> [ info.get('core_length') for info in M.cusp_info() ] # doctest: +NUMERIC9
@@ -139,14 +160,16 @@ def drill_words(manifold,
         >>> N
         t12047_drilled(0,0)(1,3)(1,5)(0,0)(0,0)
 
-    The last n cusps correspond to the n geodesics that were drilled, appearing
-    in the same order the words for the geodesics were given. Note that in the
-    above example, the drilled manifold has only five cusps even though the
-    original manifold had four cusps and we drilled two geodesics. This is
-    because one geodesic was a core curve. The corresponding cusp was unfilled
-    (from (1,4)) and grouped with the other cusps coming from drilling.
+    Let n be the number of geodesics that were drilled. Then the last n
+    cusps correspond to the drilled geodesics and appear in the same order than
+    the geodesics were given as words. Note that in the above example, we expect
+    six cusps since we started with four cusps and drilled two geodesics. However,
+    we only obtain five cusps since one geodesic was a core curve. The
+    corresponding cusp was unfilled (from ``(1,4)``) and grouped with the other
+    cusps coming from drilling.
 
-    We obtain the original (undrilled) manifold by (1,0)-filling the last n cusps.
+    We obtain the given (undrilled) manifold by ``(1,0)``-filling the last n
+    cusps.
 
         >>> N.dehn_fill((1,0), 3)
         >>> N.dehn_fill((1,0), 4)
@@ -159,6 +182,21 @@ def drill_words(manifold,
          0.317363079597924 + 1.48157893409218*I,
          1.43914411734251 + 2.66246879992796*I]
 
+    :param word:
+             The words in the unsimplified fundamental group specifying the
+             geodesics to be drilled.
+    :param bits_prec:
+             The precision used in the intermediate computation. Increase
+             if the computation failed.
+    :param verified:
+             Use verified computation.
+    :param verbose:
+             Print intermediate results and statistics.
+
+    :return:
+            Manifold obtained by drilling geodesics. ``(1,0)``-filling the
+            last n cusps gives the given (undrilled) manifold where n is the
+            number of given words.
     """
 
     if isinstance(words, str):

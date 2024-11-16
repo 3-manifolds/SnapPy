@@ -80,28 +80,36 @@ def isometry_signature(
 
     If all cusps are filled, we are in the closed case. In this case, the
     isometry signature gives the resulting closed hyperbolic 3-manifold as
-    canonical surgery on a hyperbolic 1-cusped manifold (encoded by its
-    isometry signature). Only orientable manifolds are supported in the closed
+    canonical surgery on a hyperbolic 1-cusped manifold which is encoded by its
+    isometry signature. Only orientable manifolds are supported in the closed
     case.
 
        >>> M = Manifold("v2000(1,3)")
        >>> M.isometry_signature()
        'fLLQcacdedenbxxrr(-7,12)'
 
-    In detail, the isometry signature is computed by first determining the
-    shortest geodesics (more precisely, the geodesics just barely longer
-    than the shortest geodesics). For each such geodesic, consider the
-    1-cusped manifold obtained by drilling the geodesic. Take
-    the isometry signature of that 1-cusped hyperbolic manifold and any
-    surgery coefficients corresponding to the meridian along the drilled
-    geodesic (because of symmetries of the 1-cusped hyperbolic there might
-    several equivalent Dehn-fillings). Pick a canonical isometry signature
-    from these candidates. Further details can be found in an upcoming paper.
+    The following code illustrates how the isometry signature is computed::
+
+       >>> M.length_spectrum_alt(count=2) # doctest: +NUMERIC9
+       [Length                                      Core curve  Word
+        0.06491027903143 - 2.63765810995071*I       -           d,
+        0.49405010583448 + 2.38451103485706*I       -           a]
+       >>> K = M.drill_word('d').filled_triangulation().canonical_retriangulation()
+       >>> K.dehn_fill((1,0), 0)
+       >>> K.triangulation_isosig(ignore_cusp_ordering=True, ignore_curves=True)
+       'fLLQcacdedenbxxrr(-7,12)'
+
+    Note that there is clearly a unique shortest geodesic in this example.
+    In general, the method first considers a canonical set of geodesics.
+    For each such geodesic, it computes a candidate signature as above. It
+    then picks a canonical signature among the candidates. Further details
+    can be found in an upcoming paper.
 
     **Verified computations**
 
-    Even though the result is purely combinatorial, some intermediate
-    computations are numerical and can suffer from numerical issues.
+    While the isometry signature is purely combinatorial, some intermediate
+    computations are numerical. Thus, if ``verified = False``,
+    floating-point issues can arise.
 
     The method can be made verified by passing ``verified = True``::
 
@@ -115,21 +123,24 @@ def isometry_signature(
     verified canonical retriangulation. If the manifold is closed, interval
     arithmetic is used when finding and drilling the short geodesics.
 
-    :param of_link: Also encode the unoriented peripheral curves.
+    :param of_link:
+            Also encode the unoriented peripheral curves.
             Note that it is not necessary for the manifold to be a link
             complement to invoke this flag.
             Only relevant in the cusped case.
-    :param ignore_orientation: Do not encode the orientation of the
-            3-manifold.
-    :param verified: Use verified computation.
-    :param interval_bits_precs: Passed to :meth:`.canonical_retriangulation`
-            and (in the closed case) also used when calling
-            :meth:`.length_spectrum_alt_gen` and :meth:`.drill_word` to
-            find and drill the short geodesics.
-    :param exact_bits_prec_and_degrees: Passed to
-            :meth:`.canonical_retriangulation`.
-    :param verbose: Print information about finding and drilling the short
-            geodesics. Also passed to :meth:`.canonical_retriangulation`.
+    :param ignore_orientation:
+            Do not encode the orientation of the 3-manifold.
+    :param verified:
+            Use verified computation.
+    :param interval_bits_precs:
+            Passed to :meth:`.canonical_retriangulation` and (in the closed
+            case) also used when calling :meth:`.length_spectrum_alt_gen` and
+            :meth:`.drill_word` to find and drill the short geodesics.
+    :param exact_bits_prec_and_degrees:
+            Passed to :meth:`.canonical_retriangulation`.
+    :param verbose:
+            Print information about finding and drilling the short geodesics.
+            Also passed to :meth:`.canonical_retriangulation`.
     """
 
     if any(manifold.cusp_info('complete?')):

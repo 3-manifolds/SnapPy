@@ -4,7 +4,7 @@ nothing before it. In particular, add any includes after the doc string.
 
 Doc tests that we do not want to show up in the documentation.
 
-decorated isomorphism signature
+Decorated isomorphism signature
 -------------------------------
 
 An example where the isosig doesn't pick up the identity perm

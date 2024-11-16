@@ -29,9 +29,10 @@ def length_spectrum_alt_gen(manifold,
                             verified : bool = False
                              ) -> Sequence[LengthSpectrumGeodesicInfo]:
     """
-    Returns a generator for the closed geodesics sorted by real length (sorted
-    by lower bound of real length when ``verified = True``) for an orientable
-    manifold::
+    Returns a generator for the geodesics sorted by real length. The method
+    only supports orientable manifolds.
+
+    Here is an example::
 
         >>> M = Manifold("m202(3,4)(0,0)")
         >>> spec = M.length_spectrum_alt_gen()
@@ -42,11 +43,17 @@ def length_spectrum_alt_gen(manifold,
         0.81161414965958 + 2.72911699294426*I       -           b
         >>> next(spec) # doctest: +NUMERIC9
         0.84163270359334 + 2.61245944742151*I       -           aB
-        >>> next(spec) # doctest: +NUMERIC9
-        0.93461379591349 + 2.70060614107722*I       -           a
     
     Note that the shortest geodesic in the above example happens to be the
     core curve of the filled cusp (Cusp 0).
+
+    Access just the length or word::
+
+        >>> g = next(spec)
+        >>> g.length # doctest: +NUMERIC9
+        0.93461379591349 + 2.70060614107722*I
+        >>> g.word
+        'a'
 
     The word is given with respect to the unsimplified fundamental group::
 
@@ -54,38 +61,22 @@ def length_spectrum_alt_gen(manifold,
         >>> G.complex_length('a') # doctest: +NUMERIC9
         0.93461379591349 + 2.70060614107722*I
 
-    Access just the length::
-
-        >>> g = next(spec)
-        >>> g.length # doctest: +NUMERIC9
-        1.50642474995261 + 3.13101560181284*I
-
-    Also supports higher precision::
+    The method also supports higher precision::
 
         >>> M = Manifold("m003(-3,1)")
         >>> spec = M.length_spectrum_alt_gen(bits_prec=100)
         >>> next(spec).length # doctest: +NUMERIC24
         0.58460368501798696932015666264 + 2.4953704555604684110903962008*I
 
-    And verified computation::
-
-        sage: M = Manifold("m019")
-        sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
-        sage: next(spec)
-        Length                                      Core curve  Word
-        0.43153441294719... + 2.35105908147863...*I -           a
-        sage: next(spec)
-        0.88944299721255... - 2.94185904702273...*I -           bD
-
     **Performance**
 
-    A note about performance: this method uses a different algorithm than
+    This method uses a different algorithm than
     :meth:`length_spectrum <Manifold.length_spectrum>`. In particular,
-    it does not need to compute the Dirichlet domain first. It allows for
-    verified computations and is also implemented in python and thus
+    it does not compute the Dirichlet domain. It allows for
+    verified computations. It is also implemented in python and thus
     typically slower than :meth:`length_spectrum <Manifold.length_spectrum>`.
-    But there are also some cases where it is significantly faster. This
-    applies, in particular, to spun triangulations such as ``m004(21,10)``.
+    But there are also some cases where it is significantly faster. In
+    particular, this applies to spun triangulations such as ``m004(21,10)``.
 
     Here is example where we can help the algorithm by guessing and drilling
     and filling a short geodesic::
@@ -118,54 +109,53 @@ def length_spectrum_alt_gen(manifold,
 
     **Verified computations**
 
+    The method also supports verified computations::
+
+        sage: M = Manifold("m019")
+        sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
+        sage: next(spec)
+        Length                                      Core curve  Word
+        0.43153441294719... + 2.35105908147863...*I -           a
+        sage: next(spec)
+        0.88944299721255... - 2.94185904702273...*I -           bD
+
     If ``verified = True`` is passed, the algorithm guarantees that the lower
-    bound of the real length is (non-strictly) increasing. This means that the
-    geodesics we have found so far will include all geodesics with real length
-    less than the lower bound for the real length of the last geodesic we have
-    enumerated. In particular, the following code will tell us how many
-    geodesics there are up to length 1::
+    bound of the real length is (non-strictly) increasing. In particular, we know
+    that we have found all geodesics less than the following length::
 
-        sage: from sage.all import RIF
-        sage: L = RIF(1)
-        sage: M = Manifold("m003")
-        sage: spec = M.length_spectrum_alt_gen(verified=True)
-        sage: n = 0
-        sage: for g in spec:
-        ...       if g.length.real() > L:
-        ...           break # Done! All subsequent geodesics will be longer.
-        ...       if g.length.real() < L:
-        ...           n += 1
-        ...           continue
-        ...       raise Exception("Interval too large. Increase precision.")
-        sage: n
-        4
+        sage: next(spec).length.real().lower() # doctest: +NUMERIC12
+        0.94135129037387168886341739832
 
-    Recall that, in general, we cannot use interval arithmetic to show that two
-    quantities are equal. In particular, if the intervals for the real lengths
-    of two geodesics overlap, it could mean that the two real lengths are equal
-    or just very close. This is why (unlike :py:meth:`Manifold.length_spectrum`)
-    this method does not give the multiplicity of a geodesic in the length
-    spectrum. Furthermore, if intervals overlap, this method could list the
-    geodesics in the wrong order of their true length. In that case, increasing
-    the precision will necessarily mean that the order in which the geodesics
-    are emitted changes.
+    To illustrate some pitfalls, here is a potential result of the method:
 
-    A (constructed) example: let :math:`g_0`, :math:`g_1` and :math:`g_2` be
-    geodesics with real lengths 1.1, 1.2 and 1.3, respectively. This method
-    could, in theory, list them in the following order and with the following
-    real lengths for the intervals:
-    :math:`g_2` [1.05, 1.4], :math:`g_0` [1.09, 1.11], :math:`g_1` [1.19, 1.21].
-    Note that the intervals prove that the second emitted geodesic is shorter
-    than the third, but we cannot conclude that the first emitted geodesic is
-    indeed the shortest.
+    +----------------------+-------+
+    | Real length interval | Word  |
+    +======================+=======+
+    | ``[1.0, 2.0]``       | ``a`` |
+    +----------------------+-------+
+    | ``[1.2, 1.3]``       | ``b`` |
+    +----------------------+-------+
+    | ``[1.7, 1.8]``       | ``c`` |
+    +----------------------+-------+
+    | ``[3.0, 4.0]``       | ``d`` |
+    +----------------------+-------+
+
+    Note that we cannot say whether geodesic ``a`` is actually the first,
+    second or third shortest geodesic or tied with ``b`` or ``c``. Increasing
+    precision can change the order (and representative words) in which the
+    geodesics are emitted.
+
+    We can say that together ``a``, ``b`` and ``c`` are the three shortest
+    geodesics. Furthermore, we can also say that the systole
+    of the manifold is in ``[1.0, 2.0]`` even though ``a`` itself might not be
+    the shortest geodesic. The latter is true in general:
 
     **Verified systole**
 
-    Even though we do not know whether the first enumerated geodesic really
-    is the shortest geodesic (and thus cannot trust that the first enumerated
-    word and the corresponding imaginary length really correspond to the
-    shortest geodesic), we still have that the interval for the real length
-    of the first enumerated geodesic does contain the systole of the manifold::
+    It is not necessarily true that the first geodesic returned
+    by the method is the shortest geodesic. Despite this, the interval for
+    the real length of the first geodesic always contains the systole of
+    the manifold::
 
         sage: M = Manifold("m004")
         sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
@@ -174,7 +164,14 @@ def length_spectrum_alt_gen(manifold,
         sage: systole # doctest: +NUMERIC21
         1.08707014499573909978528?
 
-
+    :param bits_prec:
+            Precision used for the computation. Increase if computation did
+            not succeed.
+    :param verified:
+            Use verified computation.
+    :return:
+            A generator to enumerate the geodesics such that the (lower bound
+            of the) real length is non-decreasing.
     """
 
     if not manifold.is_orientable():
@@ -220,18 +217,38 @@ def length_spectrum_alt(manifold,
                         verified : bool = False
                         ) -> List[LengthSpectrumGeodesicInfo]:
     """
-    Convenience method for
+    Returns a list of geodesics. How far this list goes can be specified
+    by either a cut-off length or a count. The method only supports
+    orientable manifolds. It is a convenience method for 
     :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
-    TODO: Write more documentation.
+    We refer the reader to
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`
+    for further details not covered here.
 
-    Specify number of geodesics::
+    **Cut-off length**
 
-        >>> M = Manifold("m202(3,4)(0,0)")
-        >>> M.length_spectrum_alt(count = 3) # doctest: +NUMERIC9
+    Here is an example where a cut-off length for the geodesics is specified::
+
+        >>> M = Manifold("m202(3,4)(3,4)")
+        >>> M.length_spectrum_alt(max_len = 0.5) # doctest: +SKIP
         [Length                                      Core curve  Word
-         0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB,
-         0.81161414965958 + 2.72911699294426*I       -           b,
-         0.84163270359334 + 2.61245944742151*I       -           aB]
+         0.14820741547094 - 1.76955170166922*I       Cusp 1      bcDc,
+         0.14820741547097 - 1.76955170166923*I       Cusp 0      aabcDabcB]
+
+    It also supports verified computations::
+
+        sage: M.length_spectrum_alt(max_len = 0.5, verified = True, bits_prec = 100) # doctest: +SKIP
+        [Length                                      Core curve  Word
+         0.148207415470948?  - 1.76955170166924?  *I Cusp 0      aabcDabcB,
+         0.14820741547094... - 1.76955170166923...*I Cusp 1      bcDc]
+
+    If ``verified=True``, the returned list is guaranteed to include all
+    geodesics up to the given cut-off length and might include additional
+    geodesics.
+
+    **Count**
+
+    Here is an example where a count is specified::
 
         >>> M = Manifold("m202(3,4)(3,4)")
         >>> M.length_spectrum_alt(count = 3) # doctest: +SKIP
@@ -241,38 +258,29 @@ def length_spectrum_alt(manifold,
          0.79356651781096 + 2.65902431489655*I       -           aB,
          0.79356651781096 + 2.65902431489655*I       -           b]
 
-    The method might actually produce more geodesics, in particular, if the
-    same length appears multiple times. This is to guarantee that the list of
-    returned geodesics contains the n shortest geodesics.
+    Note that the number of geodesics listed might be larger than the given
+    count. In particular, this happens when the same (real) length appears
+    multiple times. If ``verified=True``, the returned list is guaranteed
+    to include the ``count`` shortest geodesics and might include additional
+    geodesics.
 
-    Specify cut-off::
-
-        >>> M = Manifold("m202(3,4)(0,0)")
-        >>> M.length_spectrum_alt(max_len = 1.1) # doctest: +NUMERIC9
-        [Length                                      Core curve  Word
-         0.14742465268512 - 1.78287093565202*I       Cusp 0      aabcDabcB,
-         0.81161414965958 + 2.72911699294426*I       -           b,
-         0.84163270359334 + 2.61245944742151*I       -           aB,
-         0.93461379591349 + 2.70060614107722*I       -           a]
-
-    Also supports verified computations::
-
-        sage: M.length_spectrum_alt(count = 3, verified = True, bits_prec = 100) # doctest: +NUMERIC9
-        [Length                                      Core curve  Word
-         0.147424652685154?  - 1.782870935652013? *I Cusp 0      aabcDabcB,
-         0.81161414965958... + 2.72911699294425...*I -           b,
-         0.84163270359334... + 2.61245944742151...*I -           aB]
-
-
-    Cut-off will be cast to interval::
-
-        sage: M.length_spectrum_alt(max_len = 1.1, verified = True, bits_prec = 110) # doctest: +NORMALIZE_WHITESPACE
-        [Length                                      Core curve  Word
-         0.14742465268515... - 1.78287093565201...*I Cusp 0      aabcDabcB,
-         0.81161414965958... + 2.72911699294425...*I -           b,
-         0.84163270359334... + 2.61245944742151...*I -           aB,
-         0.93461379591349... + 2.70060614107721...*I -           a]
-
+    :param count:
+            Number of shortest geodesics to list. The actual result might
+            contain additional geodesics. Exactly one of ``count`` and
+            ``max_len`` have to be specified.
+    :param max_len:
+            Cut-off length for geodesics. The actual result includes all
+            geodesics up to the given length and might include additional
+            geodesics. Exactly one of ``count`` and ``max_len`` have to be
+            specified.
+    :param bits_prec:
+            Precision used for the computation. Increase if computation did
+            not succeed.
+    :param verified:
+            Use verified computation.
+    :return:
+            A list of geodesics such that the (lower bound of) the real
+            length is non-decreasing.
     """
 
     has_count = count is not None

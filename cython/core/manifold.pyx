@@ -1446,9 +1446,9 @@ cdef class Manifold(Triangulation):
 
     def length_spectrum(self,
                         cutoff=1.0,
-                        full_rigor=True,
-                        grouped = True,
-                        include_words = False):
+                        full_rigor : bool =True,
+                        grouped : bool = True,
+                        include_words : bool = False):
         """
         Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)

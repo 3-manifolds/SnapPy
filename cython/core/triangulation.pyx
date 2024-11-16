@@ -3087,26 +3087,30 @@ cdef class Triangulation():
         In these cases, re-constructing a triangulation from the isomorphism
         signature yields a triangulation with the same handedness.
 
-        :param decorated: Include peripheral information such as indexing
-                of the cusps, (oriented or unoriented) peripheral curves and
+        :param decorated:
+                Include peripheral information such as indexing of the cusps,
+                (oriented or unoriented) peripheral curves and
                 (oriented or unoriented) Dehn-fillings.
-        :param ignore_cusp_ordering: Do not encode the indexing of the cusps.
+        :param ignore_cusp_ordering:
+                Do not encode the indexing of the cusps.
                 Only relevant if ``decorated = True``.
-        :param ignore_curves: Do not encode the peripheral curves.
+        :param ignore_curves:
+                Do not encode the peripheral curves.
                 Only relevant if ``decorated = True``.
                 This is new in SnapPy version 3.2.
                 If ``ignore_curves = True``, the result of this method cannot
                 be given to prior versions.
-        :param ignore_curve_orientations: Do not encode the orientations of
-                the peripheral curves.
+        :param ignore_curve_orientations:
+                Do not encode the orientations of the peripheral curves.
                 Only relevant if ``decorated = True`` and
                 ``ignore_curves = False``.
-        :param ignore_filling_orientations: Do not encode the orientations
-                of the Dehn-fillings.
+        :param ignore_filling_orientations:
+                Do not encode the orientations of the Dehn-fillings.
                 Only relevant if ``decorated = True``.
-        :param ignore_orientation: Do not encode the orientation of the
-                triangulation in the undecorated part of the triangulation
-                isosig. See above section about orientation.
+        :param ignore_orientation:
+                Do not encode the orientation of the triangulation in the
+                undecorated part of the triangulation isosig.
+                See above section about orientation.
         """
 
         if self.c_triangulation is NULL:

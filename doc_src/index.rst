@@ -48,19 +48,19 @@ News
        :width: 100%
        :class: borderless
 
-       * - .. image:: images/o9_00000_systole_paper_plane.png
+       * - .. image:: images/o9_00000_systole_paper_plane.jpg
               :width: 90%
               :align: center
               :alt: Paper plane near shortest geodesic of o9_00000
-         - .. image:: images/o9_00000_systole_paper_plane_closer.png
+         - .. image:: images/o9_00000_systole_paper_plane_closer.jpg
               :width: 90%
               :align: center
               :alt: Paper plane very near shortest geodesic of o9_00000
-         - .. image:: images/m004_paper_plane_on_systole.png
+         - .. image:: images/m004_paper_plane_on_systole.jpg
               :width: 90%
               :align: center
               :alt: Paper plane on shortest geodesic of m004
-         - .. image:: images/m125_paper_plane.png
+         - .. image:: images/m125_paper_plane.jpg
               :width: 90%
               :align: center
               :alt: Paper plane coming out of a cusp of m125

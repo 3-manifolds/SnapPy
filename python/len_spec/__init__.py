@@ -73,7 +73,8 @@ def length_spectrum_alt_gen(manifold,
     This method uses a different algorithm than
     :meth:`length_spectrum <Manifold.length_spectrum>`. In particular,
     it does not compute the Dirichlet domain. It allows for
-    verified computations. It is also implemented in python and thus
+    :ref:`verified computations <verify-primer>`.
+    It is also implemented in python and thus
     typically slower than :meth:`length_spectrum <Manifold.length_spectrum>`.
     But there are also some cases where it is significantly faster. In
     particular, this applies to spun triangulations such as ``m004(21,10)``.
@@ -109,7 +110,7 @@ def length_spectrum_alt_gen(manifold,
 
     **Verified computations**
 
-    The method also supports verified computations::
+    The method also supports :ref:`verified computations <verify-primer>`::
 
         sage: M = Manifold("m019")
         sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
@@ -119,7 +120,7 @@ def length_spectrum_alt_gen(manifold,
         sage: next(spec)
         0.88944299721255... - 2.94185904702273...*I -           bD
 
-    If ``verified = True`` is passed, the algorithm guarantees that the lower
+    If :attr:`verified = True` is passed, the algorithm guarantees that the lower
     bound of the real length is (non-strictly) increasing. In particular, we know
     that we have found all geodesics less than the following length::
 
@@ -168,7 +169,7 @@ def length_spectrum_alt_gen(manifold,
             Precision used for the computation. Increase if computation did
             not succeed.
     :param verified:
-            Use verified computation.
+            Use :ref:`verified computation <verify-primer>`.
     :return:
             A generator to enumerate the geodesics such that the (lower bound
             of the) real length is non-decreasing.
@@ -235,14 +236,14 @@ def length_spectrum_alt(manifold,
          0.14820741547094 - 1.76955170166922*I       Cusp 1      bcDc,
          0.14820741547097 - 1.76955170166923*I       Cusp 0      aabcDabcB]
 
-    It also supports verified computations::
+    It also supports :ref:`verified <verify-primer>` computations::
 
         sage: M.length_spectrum_alt(max_len = 0.5, verified = True, bits_prec = 100) # doctest: +SKIP
         [Length                                      Core curve  Word
          0.148207415470948?  - 1.76955170166924?  *I Cusp 0      aabcDabcB,
          0.14820741547094... - 1.76955170166923...*I Cusp 1      bcDc]
 
-    If ``verified=True``, the returned list is guaranteed to include all
+    If :attr:`verified=True`, the returned list is guaranteed to include all
     geodesics up to the given cut-off length and might include additional
     geodesics.
 
@@ -260,24 +261,24 @@ def length_spectrum_alt(manifold,
 
     Note that the number of geodesics listed might be larger than the given
     count. In particular, this happens when the same (real) length appears
-    multiple times. If ``verified=True``, the returned list is guaranteed
-    to include the ``count`` shortest geodesics and might include additional
+    multiple times. If :attr:`verified=True`, the returned list is guaranteed
+    to include the :attr:`count` shortest geodesics and might include additional
     geodesics.
 
     :param count:
             Number of shortest geodesics to list. The actual result might
-            contain additional geodesics. Exactly one of ``count`` and
-            ``max_len`` have to be specified.
+            contain additional geodesics. Exactly one of :attr:`count` and
+            :attr:`max_len` have to be specified.
     :param max_len:
             Cut-off length for geodesics. The actual result includes all
             geodesics up to the given length and might include additional
-            geodesics. Exactly one of ``count`` and ``max_len`` have to be
-            specified.
+            geodesics. Exactly one of :attr:`count` and :attr:`max_len` have
+            to be specified.
     :param bits_prec:
             Precision used for the computation. Increase if computation did
             not succeed.
     :param verified:
-            Use verified computation.
+            Use :ref:`verified computation <verify-primer>`.
     :return:
             A list of geodesics such that the (lower bound of) the real
             length is non-decreasing.

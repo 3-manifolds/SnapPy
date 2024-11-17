@@ -19,12 +19,12 @@ def isometry_signature(
     :meth:`.triangulation_isosig`, and was introduced in
     `Goerner '16 <http://arxiv.org/abs/1502.00383>`_.
 
-    Depending on ``ignore_orientation``, it is a complete invariant of either
-    the oriented (if orientable) or unoriented hyperbolic 3-manifold.
-    If ``of_link = True`` is specified, the signature is decorated by the
+    Depending on :attr:`ignore_orientation`, it is a complete invariant of
+    either the oriented (if orientable) or unoriented hyperbolic 3-manifold.
+    If :attr:`of_link = True` is specified, the signature is decorated by the
     unoriented peripheral curves (aka meridian and longitude, up to homotopy).
     If the 3-manifold arises as a link complement, the decorated isometry
-    signature obtained with ``of_link = True`` is a complete invariant of
+    signature obtained with :attr:`of_link = True` is a complete invariant of
     the link.
 
     The isometry signature is computed differently based on whether there
@@ -108,10 +108,11 @@ def isometry_signature(
     **Verified computations**
 
     While the isometry signature is purely combinatorial, some intermediate
-    computations are numerical. Thus, if ``verified = False``,
+    computations are numerical. Thus, if :attr:`verified = False`,
     floating-point issues can arise.
 
-    The method can be made verified by passing ``verified = True``::
+    The method can be made :ref:`verified <verify-primer>` by passing
+    :attr:`verified = True`::
 
        sage: M=Manifold("m007(4,1)")
        sage: M.isometry_signature(verified=True)
@@ -131,7 +132,7 @@ def isometry_signature(
     :param ignore_orientation:
             Do not encode the orientation of the 3-manifold.
     :param verified:
-            Use verified computation.
+            Use :ref:`verified computation <verify-primer>`.
     :param interval_bits_precs:
             Passed to :meth:`.canonical_retriangulation` and (in the closed
             case) also used when calling :meth:`.length_spectrum_alt_gen` and

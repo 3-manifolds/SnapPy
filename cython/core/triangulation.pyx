@@ -2914,7 +2914,7 @@ cdef class Triangulation():
 
         The isomorphism signature is also used to compute the
         :meth:`isometry_signature <snappy.Manifold.isometry_signature>`.
-        It comes in two flavors controlled by the ``decorated`` flag.
+        It comes in two flavors controlled by the :attr:`decorated` flag.
 
         **Undecorated isomorphism signature**
 
@@ -2935,7 +2935,7 @@ cdef class Triangulation():
         ``Triangulation3.fromIsoSig``.
 
         By default, the orientation (if orientable) is ignored. More
-        precisely, it computes the string for both orientations if orientable
+        precisely, it computes the string for both orientations (if orientable)
         and uses the lexicographically smaller string::
 
             >>> T = Triangulation('m015')
@@ -2945,7 +2945,7 @@ cdef class Triangulation():
             >>> T.triangulation_isosig(decorated=False)
             'dLQbcccdero'
 
-        When specifying ``ignore_orientation = False``, the result
+        When specifying :attr:`ignore_orientation = False`, the result
         encodes the orientation (if orientable). This means that the result is
         different if the triangulation is chiral::
 
@@ -2965,14 +2965,14 @@ cdef class Triangulation():
         #. Indexing of the cusps (that is, ideal vertices).
 
            * Included by default.
-             Can be suppressed with ``ignore_cusp_ordering = True``.
+             Can be suppressed with :attr:`ignore_cusp_ordering = True`.
 
         #. Peripheral curves (aka meridian and longitude, up to homotopy).
 
            * Included by default.
-             Can be suppressed with ``ignore_curves = True``.
+             Can be suppressed with :attr:`ignore_curves = True`.
            * By default, the decoration encodes the oriented peripheral curves.
-             By specifying ``ignore_curve_orientations = True``, it encodes
+             By specifying :attr:`ignore_curve_orientations = True`, it encodes
              the unoriented peripheral curves instead.
 
         #. Dehn-fillings (if present).
@@ -2981,7 +2981,7 @@ cdef class Triangulation():
              :math:`(-m, -l)` correspond to two different oriented
              Dehn-fillings, but the same unoriented Dehn-filling.
            * By default, the decoration encodes the oriented Dehn-fillings.
-             By specifying ``ignore_filling_orientations = True``, the
+             By specifying :attr:`ignore_filling_orientations = True`, the
              decoration encodes the unoriented Dehn-fillings.
              That is, it normalizes the coefficients by picking a canonical
              pair among :math:`(m,l)` and :math:`(-m,-l)`.
@@ -2991,7 +2991,7 @@ cdef class Triangulation():
 
         **Example**
 
-        Let us consider the links ``9^2_34`` and ``L9a21``. Note that we use
+        Let us consider the links :math:`9^2_{34}` and ``L9a21``. Note that we use
         :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
         to make the following examples say something intrinsic about the
         hyperbolic manifold::
@@ -3071,18 +3071,18 @@ cdef class Triangulation():
 
         **Orientation**
 
-        Note that ``ignore_orientation=True`` only applies to the undecorated
+        Note that :attr:`ignore_orientation=True` only applies to the undecorated
         part of the isomorphism signature. The decoration can still capture the
         the orientation.
         More, precisely, the result of :meth:`.triangulation_isosig` depends on
         the orientation (if the triangulation is orientable and chiral) if one
         of the following is true:
 
-        #. ``ignore_orientation = False``.
+        #. :attr:`ignore_orientation = False`.
 
-        #. ``decorated = True`` and
-           ``ignore_curves = False`` and
-           ``ignore_filling_orientations = False``.
+        #. :attr:`decorated = True` and
+           :attr:`ignore_curves = False` and
+           :attr:`ignore_filling_orientations = False`.
 
         In these cases, re-constructing a triangulation from the isomorphism
         signature yields a triangulation with the same handedness.
@@ -3093,20 +3093,20 @@ cdef class Triangulation():
                 (oriented or unoriented) Dehn-fillings.
         :param ignore_cusp_ordering:
                 Do not encode the indexing of the cusps.
-                Only relevant if ``decorated = True``.
+                Only relevant if :attr:`decorated = True`.
         :param ignore_curves:
                 Do not encode the peripheral curves.
-                Only relevant if ``decorated = True``.
+                Only relevant if :attr:`decorated = True`.
                 This is new in SnapPy version 3.2.
-                If ``ignore_curves = True``, the result of this method cannot
+                If :attr:`ignore_curves = True`, the result of this method cannot
                 be given to prior versions.
         :param ignore_curve_orientations:
                 Do not encode the orientations of the peripheral curves.
-                Only relevant if ``decorated = True`` and
-                ``ignore_curves = False``.
+                Only relevant if :attr:`decorated = True` and
+                :attr:`ignore_curves = False`.
         :param ignore_filling_orientations:
                 Do not encode the orientations of the Dehn-fillings.
-                Only relevant if ``decorated = True``.
+                Only relevant if :attr:`decorated = True`.
         :param ignore_orientation:
                 Do not encode the orientation of the triangulation in the
                 undecorated part of the triangulation isosig.

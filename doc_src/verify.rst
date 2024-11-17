@@ -1,27 +1,34 @@
 Verified computations
 ========================================
 
+.. _verify-primer:
+
+Introduction
+------------
+
+Some computations are numerical and can result in incorrect results even if the
+output is purely combinatorial. Many SnapPy methods can be supplied with a
+:attr:`verified` flag to ensure that the result is provably correct. That is, if
+:attr:`verified = True`, an incorrect result is never returned. The method either
+fails with an exception or indicates that the result could not be verified
+otherwise. For example, :meth:`~snappy.Manifold.verify_hyperbolicity` explicitly
+returns a pair with the first entry being a bool indicating whether the hyperbolic
+structure could be verified.
+
+Verified computations are only available inside `SageMath <http://sagemath.org>`_.
+If the result of a method is numerical, the result consists of intervals (in
+SageMath's ``RealIntervalField`` or ``ComplexIntervalField``) that contain
+the true value if :attr:`verified = True`.
+
 Overview
 --------
 
-When used inside `Sage <http://sagemath.org>`_, SnapPy can verify the
-following computations:
+Some examples of verified computations are:
 
-* Complex intervals for the shapes that are guaranteed to contain a true
-  but not necessarily geometric solution to the rectangular gluing equations::
-
-      sage: M = Manifold("m015(3,1)")
-      sage: M.tetrahedra_shapes('rect', intervals=True)
-      [0.625222762246? + 3.177940133813?*I,
-       -0.0075523593782? + 0.5131157955971?*I,
-       0.6515818912107? - 0.1955023488930?*I]
-
-  (Specify :py:attr:`bits_prec` or :py:attr:`dec_prec` for higher precision intervals.)
-  
 * Verify the hyperbolicity
   of an orientable 3-manifold giving complex intervals for the
   shapes corresponding to a hyperbolic structure or holonomy representation with
-  :py:meth:`~snappy.Manifold.verify_hyperbolicity`::
+  :meth:`~snappy.Manifold.verify_hyperbolicity`::
 
    sage: M = Manifold("m015")
    sage: M.verify_hyperbolicity()
@@ -62,7 +69,7 @@ following computations:
   recent improvements so that the computation of the isometry signature of any manifold in ``OrientableCuspedCensus``
   takes at most a couple of seconds, typically, far less. Manifolds with more simplices might require setting
   a higher value for 
-  :py:attr:`exact_bits_prec_and_degrees`.
+  :attr:`exact_bits_prec_and_degrees`.
 
 * The isometry signature which is a complete invariant of the isometry type
   of a cusped hyperbolic manifold (i.e., two manifolds are isometric if and only
@@ -79,14 +86,14 @@ following computations:
    sage: M.isometry_signature(of_link = True, verified = True)
    'eLPkbdcddhgggb_baCbbaCb'
 
-  See :py:meth:`~snappy.Manifold.isometry_signature` for details.
+  See :meth:`~snappy.Manifold.isometry_signature` for details.
 
   **Remark:** The isometry signature is based on the canonical
   retriangulation so the same warning applies.
 
 * The maximal cusp area matrix which characterizes the configuration
   space of disjoint cusp neighborhoods with
-  :py:meth:`~snappy.Manifold.cusp_area_matrix`::
+  :meth:`~snappy.Manifold.cusp_area_matrix`::
 
    sage: M=Manifold("m203")
    sage: M.cusp_area_matrix(method='maximal', verified=True)
@@ -99,7 +106,7 @@ following computations:
   if and only if the product of their areas is less than 9.
 
 * Compute areas for disjoint cusp neighborhoods with
-  :py:meth:`~snappy.Manifold.cusp_areas`::
+  :meth:`~snappy.Manifold.cusp_areas`::
 
    sage: M=Manifold("m203")
    sage: M.cusp_areas(policy = 'unbiased', method='maximal', verified = True)
@@ -116,12 +123,12 @@ following computations:
    [[(1, 0), ...,  (1, 2)], [(1, 0), ...,  (1, 2)]]
 
   First block has all short slopes for first cusp, ..., see
-  :py:meth:`~snappy.Manifold.short_slopes` for details.
+  :meth:`~snappy.Manifold.short_slopes` for details.
 
   By `Agol's <http://arxiv.org/abs/math/9906183>`_ and `Lackenby's
   <http://arxiv.org/abs/math/9808120>`_ 6-Theorem any Dehn-filling
   resulting in a non-hyperbolic manifold must contain one of the above
-  slopes.  Thus, :py:meth:`~snappy.Manifold.short_slopes` can be used
+  slopes.  Thus, :meth:`~snappy.Manifold.short_slopes` can be used
   to implement the techniques to find exceptional Dehn surgeries
   (`arXiv:1109.0903 <https://arxiv.org/abs/1109.0903>`_ and
   `arXiv:1310.3472 <https://arxiv.org/abs/1310.3472>`_).
@@ -142,6 +149,17 @@ following computations:
     ...       raise Exception("Interval too large. Increase precision.")
     sage: n
     4
+
+Additionally, we can compute complex intervals for the shapes that are
+guaranteed to contain a true solution to the rectangular gluing equations
+that is not necessarily a geometric solution (specify :attr:`bits_prec`
+or :attr:`dec_prec` for higher precision intervals.)::
+
+      sage: M = Manifold("m015(3,1)")
+      sage: M.tetrahedra_shapes('rect', intervals=True)
+      [0.625222762246? + 3.177940133813?*I,
+       -0.0075523593782? + 0.5131157955971?*I,
+       0.6515818912107? - 0.1955023488930?*I]
 
 This is all based on a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which

@@ -91,14 +91,14 @@ def drill_word(manifold,
     combinatorial in nature, some intermediate computations (for example,
     to compute the intersections of the geodesic with the faces of the
     tetrahedra) are numerical. Sometimes, it is necessary to increase the
-    precision with ``bits_prec`` to make the method succeed and produce
+    precision with :attr:`bits_prec` to make the method succeed and produce
     the correct result.
     
     **Verified computation**
 
-    If ``verified = False``, floating-point issues can arise resulting
-    in drilling the wrong loop. The method can be made verified by passing
-    ``verified = True``::
+    If :attr:`verified = False`, floating-point issues can arise resulting
+    in drilling the wrong loop. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
 
         sage: M = Manifold("m004(2,3)")
         sage: M.drill_word('caa', verified = True, bits_prec = 100)
@@ -115,7 +115,7 @@ def drill_word(manifold,
              The precision used in the intermediate computation. Increase
              if the computation failed.
     :param verified:
-             Use verified computation.
+             Use :ref:`verified computation <verify-primer>`.
     :param verbose:
              Print intermediate results and statistics.
 
@@ -189,7 +189,7 @@ def drill_words(manifold,
              The precision used in the intermediate computation. Increase
              if the computation failed.
     :param verified:
-             Use verified computation.
+             Use :ref:`verified computation <verify-primer>`.
     :param verbose:
              Print intermediate results and statistics.
 

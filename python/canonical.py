@@ -85,12 +85,14 @@ def _canonical_retriangulation(
     **Verified computations**
 
     While the canonical retriangulation is combinatorial, some intermediate
-    computations are numerical. Thus, if ``verified = False``, floating-point
-    issues can arise. (Arguably this gave rise to a mistake in the
+    computations are numerical. Thus, if :attr:`verified = False`,
+    floating-point issues can arise.
+    (Arguably this gave rise to a mistake in the
     non-orientable census. ``x101`` and ``x103`` were later identified as
     the same by `Burton '14 <http://arxiv.org/abs/1311.7615>`_.)
 
-    The method can be made verified by passing ``verified = True``::
+    The method can be made :ref:`verified <verify-primer>` by passing
+    :attr:`verified = True`::
 
       sage: M = Manifold("v2986")
       sage: K = M.canonical_retriangulation(verified = True)
@@ -136,15 +138,15 @@ def _canonical_retriangulation(
       snappy.verify.exceptions.TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: ... < 0
 
     :param verified:
-            Use verified computation.
+            Use :ref:`verified computation <verify-primer>`.
     :param interval_bits_precs:
-            Only relevant if ``verified = True``.
+            Only relevant if :attr:`verified = True`.
             A list of (increasing) precisions used to try to
             certify the canonical cell decomposition using intervals. Each
             precision is tried until we succeed. If none succeeded, we move on
             to exact methods.
     :param exact_bits_prec_and_degrees:
-            Only relevant if ``verified = True``.
+            Only relevant if :attr:`verified = True`.
             A list of pairs (precision, max degree) used when the
             LLL-algorithm is trying to find the defining
             polynomial of the shape field with

@@ -37,6 +37,7 @@ cdef class Triangulation():
     - SnapPea cusped census manifolds: e.g. 'm123', 's123', 'v123'.
 
     - Link complements:
+ 
         + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
         + Knots and links up to 14 crossings from tabulations by Hoste
           and Thistlethwaite: e.g. 'K12a456' or 'L13n579'.
@@ -2318,13 +2319,15 @@ cdef class Triangulation():
                 result = self.big_homology()
         return self._cache.save(result, 'homology')
 
-    def fundamental_group(self,
-                          simplify_presentation = True,
-                          fillings_may_affect_generators = True,
-                          minimize_number_of_generators = True,
-                          try_hard_to_shorten_relators = True):
+    def fundamental_group(
+            self,
+            simplify_presentation : bool = True,
+            fillings_may_affect_generators : bool = True,
+            minimize_number_of_generators : bool = True,
+            try_hard_to_shorten_relators : bool = True
+            ) -> FundamentalGroup:
         """
-        Returns a FundamentalGroup object representing the fundamental
+        Returns a :class:`FundamentalGroup` object representing the fundamental
         group of the manifold.  If integer Dehn surgery parameters
         have been set, then the corresponding peripheral elements are
         killed.
@@ -2365,7 +2368,7 @@ cdef class Triangulation():
         return self._cache.save(FundamentalGroup(self, *args),
                                 'fundamental_group', *args)
 
-    def cover(self, permutation_rep):
+    def cover(self, permutation_rep) -> Triangulation:
         """
         Returns a :class:`Triangulation` representing the finite cover specified
         by a transitive permutation representation.  The representation is

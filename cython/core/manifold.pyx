@@ -46,6 +46,7 @@ cdef class Manifold(Triangulation):
     - SnapPea cusped census manifolds: e.g. 'm123', 's123', 'v123'.
 
     - Link complements:
+
        + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
        + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
        + Callahan-Dean-Weeks-Champanerkar-Kofman-Patterson knots: e.g. 'K6_21'.
@@ -344,7 +345,7 @@ cdef class Manifold(Triangulation):
 
         The group elements for the face-pairings of the Dirichlet domain
         can be given as words in the original generators of the
-        (unsimplified) fundamental group by setting ``include_words = True``:
+        (unsimplified) fundamental group by setting :attr:`include_words = True`:
 
         >>> sorted(M.dirichlet_domain(include_words = True).pairing_words()) #doctest: +ELLIPSIS
         ['A', ...]
@@ -417,13 +418,15 @@ cdef class Manifold(Triangulation):
             return Triangulation_from_Manifold(filled)
         return filled
 
-    def fundamental_group(self,
-                          simplify_presentation = True,
-                          fillings_may_affect_generators = True,
-                          minimize_number_of_generators = True,
-                          try_hard_to_shorten_relators = True):
+    def fundamental_group(
+            self,
+            simplify_presentation : bool = True,
+            fillings_may_affect_generators : bool = True,
+            minimize_number_of_generators : bool = True,
+            try_hard_to_shorten_relators : bool = True
+        ) -> HolonomyGroup:
         """
-        Return a HolonomyGroup representing the fundamental group of
+        Return a :class:`HolonomyGroup` representing the fundamental group of
         the manifold, together with its holonomy representation.  If
         integer Dehn surgery parameters have been set, then the
         corresponding peripheral elements are killed.
@@ -467,7 +470,7 @@ cdef class Manifold(Triangulation):
         result = HolonomyGroup(self, *args)
         return self._cache.save(result, 'fundamental_group', *args)
 
-    def symmetry_group(self, of_link=False):
+    def symmetry_group(self, of_link : bool = False) -> SymmetryGroup:
         """
         Returns the symmetry group of the Manifold.
         If the flag "of_link" is set, then it only returns symmetries
@@ -534,7 +537,7 @@ cdef class Manifold(Triangulation):
             self.symmetry_group()
             return self._cache.lookup('symmetric_triangulation')
 
-    def cover(self, permutation_rep):
+    def cover(self, permutation_rep) -> Manifold:
         """
         Returns a :class:`Manifold` representing the finite cover specified by a
         transitive permutation representation.  The representation is

@@ -507,24 +507,26 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         else:
             return None
 
-    def SL2C(self, word):
+    def SL2C(self, word : str):
         """
         Return the image of the element represented by the input word
-        under some SL(2,C) representation that lifts the holonomy
-        representation.  Note: the choice of lift is not guaranteed to
+        under some :math:`\\text{SL}(2,\\mathbb{C})`-representation that
+        lifts the holonomy representation.
+        Note: the choice of lift is not guaranteed to
         vary continuously when filling coefficients are changed.
         """
         return self._matrices(word)[0]
 
-    def O31(self, word):
+    def O31(self, word : str):
         """
         Return the image of the element represented by the input word
-        under the holonomy representation, where Isom(H^3) is
-        identified with SO(3,1).
+        under the holonomy representation, where
+        :math:`\\text{Isom}(\\mathbb{H}^3)` is
+        identified with :math:`\\text{SO}(3,1)`.
         """
         return self._matrices(word)[1]
 
-    def complex_length(self, word):
+    def complex_length(self, word : str):
         """
         Return the complex length of the isometry represented by the
         input word.

@@ -37,7 +37,7 @@ cdef class Triangulation():
     - SnapPea cusped census manifolds: e.g. 'm123', 's123', 'v123'.
 
     - Link complements:
- 
+
         + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
         + Knots and links up to 14 crossings from tabulations by Hoste
           and Thistlethwaite: e.g. 'K12a456' or 'L13n579'.

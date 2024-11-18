@@ -6,19 +6,48 @@ Verified computations
 Introduction
 ------------
 
-Some computations are numerical and can result in incorrect results even if the
-output is purely combinatorial. Many SnapPy methods can be supplied with a
-:attr:`verified` flag to ensure that the result is provably correct. That is, if
-:attr:`verified = True`, an incorrect result is never returned. The method either
-fails with an exception or indicates that the result could not be verified
-otherwise. For example, :meth:`~snappy.Manifold.verify_hyperbolicity` explicitly
-returns a pair with the first entry being a bool indicating whether the hyperbolic
-structure could be verified.
+Several SnapPy methods use numerical computations with floating point
+approximations and can potentially result in incorrect results. This even
+applies to methods whose output is purely combinatorial such as
+:meth:`~snappy.Manifold.canonical_retriangulation`.
 
-Verified computations are only available inside `SageMath <http://sagemath.org>`_.
-If the result of a method is numerical, the result consists of intervals (in
-SageMath's ``RealIntervalField`` or ``ComplexIntervalField``) that contain
-the true value if :attr:`verified = True`.
+Many of these SnapPy methods can be supplied with a :attr:`verified` flag to
+ensure that the result is provably correct. Note that verified computations are
+only available when using SnapPy inside `SageMath <http://sagemath.org>`_.
+If the flag :attr:`verified=True` is specified, an incorrect result is
+never returned. Instead the method clearly indicates a failure, usually through
+an exception::
+
+  sage: M=Manifold("m004")
+  sage: M.drill_word('abc', verified=True, bits_prec = 40)
+  ...
+  InsufficientPrecisionError: When re-tracing the geodesic, the intersection with the next tetrahedron face was too close to the previous to tell them apart. Increasing the precision will probably avoid this problem.
+
+Often, such a failure can be advoided by increasing the precision. In
+particular, this applies if the exception is a (subclass of)
+:class:`InsufficientPrecisionError`::
+         
+  sage: M.drill_word('abc', verified=True, bits_prec = 60)
+  m004_drilled(0,0)(0,0)
+
+Note that, :meth:`~snappy.Manifold.verify_hyperbolicity` is different though
+and does not throw an exception. Instead, it returns a bool indicating success
+as part of its output. This is for compatibility with
+`HIKMOT <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_'s
+``verify_hyperbolicty``::
+
+  sage: M.verify_hyperbolicity(bits_prec=10)
+  (False, [])
+  sage: M.verify_hyperbolicity()
+  (True,
+   [0.50000000000000? + 0.86602540378444?*I,
+    0.50000000000000? + 0.86602540378444?*I])
+
+As illustrated above, the result consists of intervals
+(of type SageMath's ``RealIntervalField`` or
+``ComplexIntervalField``) if the output of a computation is numerical
+and :attr:`verified=True` is specified. These intervals contain the true
+value.
 
 Overview
 --------
@@ -167,9 +196,7 @@ pioneered the use of interval methods for hyperbolic manifolds (also see
 `Zgliczynski's notes <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_). It
 can be used in a way very similar to HIKMOT, but uses Sage's complex
 interval types for certification. It furthermore makes use of code by 
-`Dunfield, Hoffman, Licata <http://arxiv.org/abs/1407.7827/>`_. The code to
-compute the isomorphism signature was ported over from
-`Regina <https://regina-normal.github.io/>`_.
+`Dunfield, Hoffman, Licata <http://arxiv.org/abs/1407.7827/>`_.
 
 This verification code was contributed by Matthias Goerner.  
 

@@ -1,6 +1,8 @@
 from .cache import SnapPyCache
 import low_index
 
+from cython import annotation_typing
+
 _low_index_version = [int(n) for n in low_index.version().split('.')]
 
 cdef class Triangulation():
@@ -1431,7 +1433,9 @@ cdef class Triangulation():
             v += 1
         return ans
 
-    def gluing_equations_pgl(self, N =2, equation_type='all'):
+    # Allow Sage integers to be accepted.
+    @annotation_typing(False)
+    def gluing_equations_pgl(self, N : int = 2, equation_type : str = 'all'):
 
         """
         Returns a NeumannZagierTypeEquations object that contains a matrix
@@ -1832,7 +1836,9 @@ cdef class Triangulation():
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
 
-    def ptolemy_generalized_obstruction_classes(self, N):
+    # Allow Sage integers to be accepted.
+    @annotation_typing(False)
+    def ptolemy_generalized_obstruction_classes(self, N : int):
 
         """
         Returns the obstruction classes needed to compute
@@ -1897,7 +1903,9 @@ cdef class Triangulation():
             ptolemyManifoldMethods.get_generalized_ptolemy_obstruction_classes(
                 self, N))
 
-    def ptolemy_variety(self, N, obstruction_class = None,
+    # Allow Sage integers to be accepted.
+    @annotation_typing(False)
+    def ptolemy_variety(self, N : int, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
 
         """
@@ -2468,9 +2476,11 @@ cdef class Triangulation():
                             self.num_cusps())
         return cover
 
+    # Allow Sage integers to be accepted.
+    @annotation_typing(False)
     def covers(
             self,
-            degree,
+            degree : int,
             method : typing.Optional[str] = None,
             cover_type : str ='all'
         ) -> 'list[snappy.Triangulation]':

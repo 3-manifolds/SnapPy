@@ -4,8 +4,8 @@ cdef class Manifold(Triangulation):
     """
     A Manifold is a :class:`Triangulation` together with a geometric structure.
     That is, a Manifold is an ideal triangulation of the interior of a
-    compact 3-manifold with torus boundary components, where each
-    tetrahedron has been assigned the geometry of an ideal tetrahedron
+    compact 3-manifold with torus and Klein-bottle boundary components, where
+    each tetrahedron has been assigned the geometry of an ideal tetrahedron
     in hyperbolic 3-space. A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds,
     some orbifolds and cone 3-manifolds. Here's a quick example:
@@ -609,7 +609,7 @@ cdef class Manifold(Triangulation):
 
     def covers(
             self,
-            degree : int,
+            degree,
             method : typing.Optional[str] = None,
             cover_type : str  = 'all'
         ) -> 'list[snappy.Manifold]':

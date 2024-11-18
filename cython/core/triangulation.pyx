@@ -1431,7 +1431,7 @@ cdef class Triangulation():
             v += 1
         return ans
 
-    def gluing_equations_pgl(self, N : int =2, equation_type='all'):
+    def gluing_equations_pgl(self, N =2, equation_type='all'):
 
         """
         Returns a NeumannZagierTypeEquations object that contains a matrix
@@ -1832,7 +1832,7 @@ cdef class Triangulation():
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
 
-    def ptolemy_generalized_obstruction_classes(self, N : int):
+    def ptolemy_generalized_obstruction_classes(self, N):
 
         """
         Returns the obstruction classes needed to compute
@@ -2470,7 +2470,7 @@ cdef class Triangulation():
 
     def covers(
             self,
-            degree : int,
+            degree,
             method : typing.Optional[str] = None,
             cover_type : str ='all'
         ) -> 'list[snappy.Triangulation]':

@@ -309,7 +309,7 @@ cdef class Manifold(Triangulation):
             return empty
         return Manifold_from_Triangulation(self, manifold_class=self.__class__)
 
-    def cusp_neighborhood(self):
+    def cusp_neighborhood(self) -> CuspNeighborhood:
         """
         Returns information about the cusp neighborhoods of the
         manifold, in the form of data about the corresponding horoball
@@ -330,7 +330,7 @@ cdef class Manifold(Triangulation):
                          displacement = (0.0, 0.0, 0.0),
                          centroid_at_origin : bool = True,
                          maximize_injectivity_radius : bool = True,
-                         include_words : bool = False):
+                         include_words : bool = False) -> DirichletDomain:
         """
         Returns a :class:`DirichletDomain` object representing a Dirichlet
         domain of the hyperbolic manifold, typically centered at a
@@ -391,7 +391,8 @@ cdef class Manifold(Triangulation):
             raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")
         return Browser(self)
 
-    def filled_triangulation(self, cusps_to_fill='all'):
+    def filled_triangulation(
+            self, cusps_to_fill='all') -> 'snappy.Manifold':
         """
         Return a new Manifold where the specified cusps have been
         permanently filled in.
@@ -537,7 +538,7 @@ cdef class Manifold(Triangulation):
             self.symmetry_group()
             return self._cache.lookup('symmetric_triangulation')
 
-    def cover(self, permutation_rep) -> Manifold:
+    def cover(self, permutation_rep) -> 'snappy.Manifold':
         """
         Returns a :class:`Manifold` representing the finite cover specified by a
         transitive permutation representation.  The representation is
@@ -606,7 +607,12 @@ cdef class Manifold(Triangulation):
         return Manifold_from_Triangulation(cover, recompute=False,
                                            manifold_class=self.__class__)
 
-    def covers(self, degree, method=None, cover_type='all'):
+    def covers(
+            self,
+            degree : int,
+            method : typing.Optional[str] = None,
+            cover_type : str  = 'all'
+        ) -> 'list[snappy.Manifold]':
         """
         Returns a list of :class:`Manifold`\ s corresponding to all of the
         finite covers of the given degree.  The default method is

@@ -1277,7 +1277,8 @@ cdef class Triangulation():
         reorient(self.c_triangulation)
         self._cache.clear(message='reverse_orientation')
 
-    def filled_triangulation(self, cusps_to_fill='all'):
+    def filled_triangulation(
+            self, cusps_to_fill='all') -> 'snappy.Triangulation':
         """
         Return a new manifold where the specified cusps have been
         permanently filled in.  Examples:
@@ -2368,7 +2369,7 @@ cdef class Triangulation():
         return self._cache.save(FundamentalGroup(self, *args),
                                 'fundamental_group', *args)
 
-    def cover(self, permutation_rep) -> Triangulation:
+    def cover(self, permutation_rep) -> 'snappy.Triangulation':
         """
         Returns a :class:`Triangulation` representing the finite cover specified
         by a transitive permutation representation.  The representation is
@@ -2467,7 +2468,12 @@ cdef class Triangulation():
                             self.num_cusps())
         return cover
 
-    def covers(self, degree, method=None, cover_type='all'):
+    def covers(
+            self,
+            degree : int,
+            method : typing.Optional[str] = None,
+            cover_type : str ='all'
+        ) -> 'list[snappy.Triangulation]':
         """
         Returns a list of Triangulations corresponding to all of the
         finite covers of the given degree.  The default method is

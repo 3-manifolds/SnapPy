@@ -3,6 +3,7 @@ Defines the main function `exterior_to_link`.
 """
 
 import random
+import typing
 from .exceptions import ExteriorToLinkError
 from .simplify_to_base_tri import good_simplification
 from . import put_in_S3
@@ -40,13 +41,13 @@ def filled_is_3sphere(manifold):
 
 
 def exterior_to_link(manifold,
-                     verbose=False,
-                     check_input=True,
-                     check_answer=True,
-                     careful_perturbation=True,
-                     simplify_link=True,
-                     pachner_search_tries=10,
-                     seed=None):
+                     verbose : bool = False,
+                     check_input : bool = True,
+                     check_answer : bool = True,
+                     careful_perturbation : bool = True,
+                     simplify_link : bool = True,
+                     pachner_search_tries :int = 10,
+                     seed : typing.Optional[int] = None) -> 'Link':
     """
     For a triangulation of the exterior of a link in the 3-sphere,
     return a planar diagram for the link.  The peripheral curves whose

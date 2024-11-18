@@ -12,6 +12,7 @@ import atexit
 import math
 import string
 import time
+import typing
 python_major_version = sys.version_info.major
 
 # Sage interaction

@@ -607,11 +607,9 @@ cdef class Manifold(Triangulation):
         return Manifold_from_Triangulation(cover, recompute=False,
                                            manifold_class=self.__class__)
 
-    # Allow Sage integers to be accepted.
-    @annotation_typing(False)
     def covers(
             self,
-            degree : int,
+            degree,
             method : typing.Optional[str] = None,
             cover_type : str  = 'all'
         ) -> 'list[snappy.Manifold]':

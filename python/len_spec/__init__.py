@@ -143,7 +143,7 @@ def length_spectrum_alt_gen(manifold,
 
     Note that we cannot say whether geodesic ``a`` is actually the first,
     second or third shortest geodesic or tied with ``b`` or ``c``. Increasing
-    precision can change the order (and representative words) in which the
+    precision can change (representative words and) the order in which the
     geodesics are emitted.
 
     We can say that together ``a``, ``b`` and ``c`` are the three shortest
@@ -221,9 +221,9 @@ def length_spectrum_alt(manifold,
     Returns a list of geodesics. How far this list goes can be specified
     by either a cut-off length or a count. The method only supports
     orientable manifolds. It is a convenience method for 
-    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+    :meth:`~snappy.Manifold.length_spectrum_alt_gen`.
     We refer the reader to
-    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`
+    :meth:`~snappy.Manifold.length_spectrum_alt_gen`
     for further details not covered here.
 
     **Cut-off length**

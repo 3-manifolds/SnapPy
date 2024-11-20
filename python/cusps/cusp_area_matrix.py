@@ -40,7 +40,7 @@ def cusp_area_matrix(
 
     These lower bounds can still be accessed::
 
-        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize')
+        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize') # doctest: +NUMERIC12
         [21.4375000000000 7.00000000000000 7.00000000000000]
         [7.00000000000000 28.0000000000000 7.00000000000000]
         [7.00000000000000 7.00000000000000 28.0000000000000]

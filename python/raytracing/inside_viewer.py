@@ -92,8 +92,9 @@ class InsideViewer(ttk.Frame):
             self.view_scale_value_label,
             update_function=self.widget.draw)
 
-        self.widget.report_time_callback = FpsLabelUpdater(
+        self.widget.fps_label_updater = FpsLabelUpdater(
             self.fps_label)
+        self.widget.report_time_callback = self.widget.fps_label_updater
 
         self.update_volume_label()
 
@@ -543,6 +544,19 @@ class InsideViewer(ttk.Frame):
             left_end=1.0,
             right_end=4.25,
             update_function=self.widget.draw)
+        row += 1
+
+        misc_frame = ttk.Frame(frame)
+        misc_frame.grid(row=row, column=1, columnspan=3)
+
+        self.fps_box_var = tkinter.BooleanVar()
+        self.fps_box_var.set(False)
+        fps_box = ttk.Checkbutton(misc_frame, takefocus=0)
+        fps_box.grid(row=0, column=0)
+        fps_box.configure(
+            variable = self.fps_box_var,
+            text='Show fps',
+            command=self.show_fps)
 
         return frame
 
@@ -829,6 +843,10 @@ class InsideViewer(ttk.Frame):
 
     def build_menus(self):
         pass
+
+    def show_fps(self):
+        self.widget.fps_label_updater.set_visible(
+            self.fps_box_var.get())
 
     def test(self):
         X = 100

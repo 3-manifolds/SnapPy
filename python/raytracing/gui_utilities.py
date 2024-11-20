@@ -198,6 +198,17 @@ class FpsLabelUpdater:
         self.num_iterations = 0
         self.total_time = 0.0
         self.last_time = time.time()
+        self._visible = False
+        self._text = '-fps (-ms)'
+
+    def set_visible(self, visible):
+        if self._visible == visible:
+            return
+        self._visible = visible
+        if visible:
+            self.label.configure(text = self._text)
+        else:
+            self.label.configure(text = '')
 
     def __call__(self, t):
         self.num_iterations += 1
@@ -206,8 +217,9 @@ class FpsLabelUpdater:
             current_time = time.time()
             fps = self.num_iterations / (current_time - self.last_time)
             time_ms = 1000 * self.total_time / self.num_iterations
-
-            self.label.configure(text='%.1ffps (%dms)' % (fps, time_ms))
+            self._text = '%.1ffps (%dms)' % (fps, time_ms)
+            if self._visible:
+                self.label.configure(text=self._text)
             self.last_time = current_time
             self.num_iterations = 0
             self.total_time = 0.0

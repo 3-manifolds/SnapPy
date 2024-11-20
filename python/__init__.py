@@ -31,7 +31,7 @@ from .exceptions import (SnapPeaFatalError,
                          InsufficientPrecisionError,
                          NonorientableManifoldError)
 
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Optional
 
 # Subclass to be able to monkey-patch
 class Triangulation(_TriangulationLP):
@@ -281,69 +281,86 @@ ManifoldHP.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
 
 from .cusps import cusp_areas_from_matrix
 
-def cusp_areas(manifold, policy='unbiased',
-               method='trigDependentTryCanonize',
-               verified=False, bits_prec=None, first_cusps=[]):
+def cusp_areas(manifold,
+               policy : str = 'unbiased',
+               method : str = 'maximal',
+               verified : bool = False,
+               bits_prec : Optional[int] = None,
+               first_cusps : List[int] = []):
     """
-    Picks areas for the cusps such that the corresponding cusp
-    neighborhoods are disjoint. By default, the ``policy`` is
-    ``unbiased`` which means that the cusp neighborhoods are blown up
-    simultaneously with a cusp neighborhood stopping to grow when it
-    touches another cusp neighborhood or itself::
+    Returns a list of areas, one for each cusp. The cusp neighborhoods
+    defined by these areas are embedded and disjoint. Furthermore, these
+    neighborhoods are maximal in that they fail to be embedded or
+    disjoint if any cusp neighborhood is enlarged (unless :attr:`method`
+    is set to a value different from the default).
+
+    There are different policies how these cusp neighborhoods are found.
+
+    The default :attr:`policy` is ``unbiased``. This means that the
+    cusp neighborhoods are blown up simultaneously and a cusp neighborhood
+    stops growing when it touches any cusp neighborhood including itself::
 
         >>> M = Manifold("s776")
         >>> M.cusp_areas() # doctest: +NUMERIC9
         [2.64575131106459, 2.64575131106459, 2.64575131106459]
 
-    Alternatively, ``policy='greedy'`` means that the first cusp
-    neighborhood is blown up until it touches itself, then the second
-    cusp neighborhood is blown up until it touches itself or the first
-    cusp neighborhood, ...::
+    Alternatively, :attr:`policy='greedy'` can be specified. This means
+    that the first cusp neighborhood is blown up until it touches itself,
+    then the second cusp neighborhood is blown up until it touches itself
+    or the first cusp neighborhood, and so on::
 
         >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
         [5.29150262212918, 1.32287565553230, 1.32287565553229]
 
-    To specify cusps to be blown up first, and in which order to blow
-    them up, set ``first_cusps`` to the appropriate list of cusps.
+    Use :attr:`first_cusps` to specify the order in which the cusp
+    neighborhoods are blown up::
 
-        >>> M = Manifold('o9_44210')
-        >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
-        [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[]) # doctest: +NUMERIC9
-        [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,]) # doctest: +NUMERIC9
-        [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1]) # doctest: +NUMERIC9
-        [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,1,2]) # doctest: +NUMERIC9
-        [7.053940530873898, 3.2712450270, 2.7091590087]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[0,2,1]) # doctest: +NUMERIC9
-        [7.053940530873898, 2.3513135103, 3.7690945490]
-        >>> M.cusp_areas(policy='greedy', first_cusps=[1,]) # doctest: +NUMERIC9
-        [4.0302253322, 5.725527974287718, 1.5478612583]
+        >>> M.cusp_areas(policy='greedy', first_cusps=[1,0,2]) # doctest: +NUMERIC9
+        [1.32287565553230, 5.29150262212918, 1.32287565553229]
 
-    ``cusp_areas`` is implemented using
-    :py:meth:`Manifold.cusp_area_matrix` and the same arguments
-    (``method``, ``verified``, ``bits_prec``) are accepted. For
-    example, verified computations are supported::
+    An incomplete list can be given to :attr:`first_cusps`. In this case,
+    the list is automatically completed by appending the remaining cusps in
+    order. Thus, the above call is equivalent to::
 
-        sage: M=Manifold("v2854")
+        >>> M.cusp_areas(policy='greedy', first_cusps=[1]) # doctest: +NUMERIC9
+        [1.32287565553230, 5.29150262212918, 1.32287565553229]
+
+    Under the hood, this method is using
+    :meth:`~snappy.Manifold.cusp_area_matrix`.
+
+    **Verified computation**
+
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
+
+        sage: M=Manifold("s776")
         sage: M.cusp_areas(verified=True) # doctest: +NUMERIC9
-        [3.6005032476?, 3.6005032476?]
-
-    If ``method='maximal'``, ``policy='unbiased'`` and
-    ``verified=True``, the result is an invariant of the manifold with
-    labeled cusps and the corresponding cusp neighborhoods are maximal
-    in that every cusp neighborhood is touching some (not necessarily
-    distinct) cusp neighborhood.
-
-    Area of the cusp neighborhood touching itself for a one-cusped
-    manifold::
-
-        sage: M=Manifold("v1959")
-        sage: M.cusp_areas(method='maximal', verified=True, bits_prec=100) # doctest: +NUMERIC15
-        [7.15679216175810579?]
-
+        [2.64575131107?, 2.64575131107?, 2.64575131107?]
+    
+    :param verified:
+            Use :ref:`verified computation <verify-primer>`.
+    :param bits_prec:
+            Precision used for computation. Increase if computation
+            did not succeed or a more precise result is desired.
+    :param method:
+            Passed to :meth:`~snappy.Manifold.cusp_area_matrix`. If set
+            to a value different from the default ``maximal``, the cusp
+            neighborhoods stop growing when the corresponding value
+            in the computed cusp area matrix is exceeded. At this point,
+            the cusp neighborhood might not necessarily touch any other
+            cusp neighborhood since we do not use the maximal cusp area
+            matrix.
+    :param policy:
+            Specifies process of choosing cusp neighborhoods.
+            Either ``unbiased`` or ``greedy``, see above.
+    :param first_cusps:
+            Preference order of cusps.
+            Only relevant if :attr:`policy='greedy'`, see above.
+    :return:
+            Areas of maximal embedded and disjoint cusp neighborhoods
+            (default). Or areas of some embedded and disjoint cusp
+            neighborhoods (if :attr:`method` switches to older algorithm).
     """
     if policy not in ['unbiased', 'greedy']:
         raise ValueError("policy passed to cusp_areas must be 'unbiased' "
@@ -365,26 +382,29 @@ from .verify import short_slopes as verify_short_slopes
 
 def short_slopes(manifold,
                  length=6,
-                 policy='unbiased', method='trigDependentTryCanonize',
-                 verified=False, bits_prec=None, first_cusps=[]):
+                 policy : str = 'unbiased',
+                 method : str = 'maximal',
+                 verified : bool = False,
+                 bits_prec : Optional[int] = None,
+                 first_cusps : List[int] = []):
     """
-    Picks disjoint cusp neighborhoods (using
-    :py:meth:`Manifold.cusp_areas`, thus the same arguments can be
-    used) and returns for each cusp the slopes that have length less
-    or equal to given ``length`` (defaults to 6) when measured on the
-    boundary of the cusp neighborhood::
+    Returns a list of short slopes (for Dehn-fillings) for each cusp.
+
+    That is, the method uses :meth:`~snappy.Manifold.cusp_areas` to find
+    (maximal) embedded and disjoint cusp neighborhoods. It uses the boundaries
+    of these cusp neighborhoods to measure the length of a peripheral curve.
+    For each cusp, it determines all simple peripheral curves shorter than
+    the given :attr:`length` (which defaults to 6). The result is a list
+    of the corresponding slopes for each cusp::
 
         >>> M = Manifold("otet20_00022")
         >>> M.short_slopes()
         [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
 
-    When ``verified=True``, the result is guaranteed
-    to contain all slopes of length less or equal to given ``length``
-    (and could contain additional slopes if precision is not high
-    enough)::
+    It takes the same arguments as :meth:`~snappy.Manifold.cusp_areas`::
 
-        sage: M.short_slopes(verified = True)
-        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+        >>> M.short_slopes(policy = 'greedy')
+        [[(1, 0)], [(1, 0)]]
 
     The ten exceptional slopes of the figure-eight knot::
 
@@ -392,12 +412,28 @@ def short_slopes(manifold,
         >>> M.short_slopes()
         [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
 
-    Two more slopes appear when increasing length to 2 pi::
+    Two more slopes appear when increasing length to :math:`2\\pi`::
 
         >>> M.short_slopes(length = 6.283185307179586)
         [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
 
-    When using verified computations, ``length`` is converted into the ``RealIntervalField`` of requested precision::
+    **Verified computation**
+
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
+
+        sage: M = Manifold("4_1")
+        sage: M.short_slopes(verified = True)
+        [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    If :attr:`verified = True`, the result is guaranteed to contain all short
+    slopes and might contain additional slopes (with lengths slightly longer
+    than the given :attr:`length` but this could not be proven using the
+    interval estimates).
+
+    The given :attr:`length` is cast to a SageMath ``RealIntervalField`` of the
+    given precision if :attr:`verified = True`::
 
         sage: from sage.all import pi
         sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100)
@@ -420,42 +456,43 @@ Manifold.short_slopes = short_slopes
 ManifoldHP.short_slopes = short_slopes
 
 
-def cusp_translations(manifold, policy='unbiased',
-                      method='trigDependentTryCanonize',
-                      verified=False, bits_prec=None, first_cusps=[]):
+def cusp_translations(manifold,
+                      policy : str = 'unbiased',
+                      method : str = 'maximal',
+                      verified : bool = False,
+                      bits_prec : Optional[int] = None,
+                      first_cusps : List[int] = []):
     """
-    Picks disjoint cusp neighborhoods and returns the respective
-    (complex) Euclidean translations of the meridian and longitude for
-    each cusp. The method takes the same arguments as
-    :py:meth:`Manifold.cusp_areas` and uses that method to pick the
-    cusp neighborhood. The result is a list of pairs, the second entry
-    corresponding to a longitude is always real::
+    Returns a list of the (complex) Euclidean translations corresponding to the
+    meridian and longitude of each cusp.
+
+    That is, the method uses :meth:`~snappy.Manifold.cusp_areas` to find
+    (maximal) embedded and disjoint cusp neighborhoods. It then uses the
+    boundaries of these cusp neighborhoods to measure the meridian and
+    longitude of each cusp. The result is a pair for each cusp. The first
+    entry of the pair corresponds to the meridian and is complex. The
+    second entry corresponds to the longitude and is always real::
 
         >>> M = Manifold("s776")
         >>> M.cusp_translations() # doctest: +NUMERIC9
         [(0.500000000000000 + 1.32287565553230*I, 2.00000000000000), (0.500000000000000 + 1.32287565553230*I, 2.00000000000000), (0.499999999999999 + 1.32287565553230*I, 2.00000000000000)]
 
-    Arguments such as ``policy='greedy'`` are interpreted the same way as
-    for :py:meth:`Manifold.cusp_areas`::
+    It takes the same arguments as :meth:`~snappy.Manifold.cusp_areas`::
 
-        >>> M.cusp_translations(policy = 'greedy', first_cusps = [], bits_prec = 100) # doctest: +NUMERIC21
+        >>> M.cusp_translations(policy = 'greedy') # doctest: +NUMERIC9
         [(0.70710678118654752440084436210 + 1.8708286933869706927918743662*I, 2.8284271247461900976033774484), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242)]
 
-    and can return verified intervals::
+    **Verified computations**
 
-        sage: M.cusp_translations(method = 'maximal', verified = True) # doctest: +NUMERIC9
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
+
+        sage: M.cusp_translations(verified = True) # doctest: +NUMERIC9
         [(0.50000000000? + 1.32287565553?*I, 2.00000000000?), (0.500000000000? + 1.32287565554?*I, 2.00000000000?), (0.500000000000? + 1.32287565554?*I, 2.00000000000?)]
 
-    that are guaranteed to contain the true translations of cusp neighborhoods
-    verified to be disjoint (the element corresponding to a longitude
-    is always in a ``RealIntervalField``).
-
-    **Remark:** The default ``method = 'trigDependentTryCanonize'`` is
-    (potentially) non-deterministic and thus the result of
-
-        [ M.cusp_translations()[i] for i in range(M.num_cusps()) ]
-
-    might not correspond to disjoint cusp neighborhoods.
+    Note that the first element of each pair is a SageMath ``ComplexIntervalField`` and
+    the second element a ``RealIntervalField``.
     """
 
     return [

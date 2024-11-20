@@ -2955,8 +2955,8 @@ cdef class Triangulation():
             'dLQbcccdero'
 
         When specifying :attr:`ignore_orientation = False`, the result
-        encodes the orientation (if orientable). This means that the result is
-        different if the triangulation is chiral::
+        encodes the orientation (if orientable). Now the result is
+        different if we change the orientation of a chiral triangulation::
 
             >>> T = Triangulation('m015')
             >>> T.triangulation_isosig(decorated=False, ignore_orientation=False)
@@ -2986,14 +2986,14 @@ cdef class Triangulation():
 
         #. Dehn-fillings (if present).
 
-           * We say that the Dehn-filling coefficients :math:`(m,l)` and
-             :math:`(-m, -l)` correspond to two different oriented
-             Dehn-fillings, but the same unoriented Dehn-filling.
            * By default, the decoration encodes the oriented Dehn-fillings.
+             That is, we also encodes the orientation of the peripheral curve
+             that is used for the Dehn-filling (this explanation only
+             works if the coefficients are integral).
              By specifying :attr:`ignore_filling_orientations = True`, the
              decoration encodes the unoriented Dehn-fillings.
-             That is, it normalizes the coefficients by picking a canonical
-             pair among :math:`(m,l)` and :math:`(-m,-l)`.
+             That is, it normalizes the Dehn-filling coefficients by picking
+             a canonical pair among :math:`(m,l)` and :math:`(-m,-l)`.
 
         Details of the encoding are explained in the
         `SnapPy source code <https://github.com/3-manifolds/SnapPy/blob/master/python/decorated_isosig.py>`_.
@@ -3084,7 +3084,7 @@ cdef class Triangulation():
         part of the isomorphism signature. The decoration can still capture the
         the orientation.
         More, precisely, the result of :meth:`.triangulation_isosig` depends on
-        the orientation (if the triangulation is orientable and chiral) if one
+        the orientation (if the triangulation is orientable and chiral) if any
         of the following is true:
 
         #. :attr:`ignore_orientation = False`.

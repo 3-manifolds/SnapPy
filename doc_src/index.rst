@@ -66,18 +66,21 @@ News
               :alt: Paper plane coming out of a cusp of m125
 
   - A faster and more robust algorithm to the compute maximal cusp area matrix.
-    Example:
-    :meth:`Manifold("otet10_00027").cusp_area_matrix(method='maximal') <snappy.Manifold.cusp_area_matrix>`
+    The new algorithm is now the default for
+    :meth:`~snappy.Manifold.cusp_area_matrix`,
+    :meth:`~snappy.Manifold.cusp_areas`,
+    :meth:`~snappy.Manifold.short_slopes` and
+    :meth:`~snappy.Manifold.cusp_translations`.
 
   - New options ``ignore_curves`` and ``ignore_filling_orientations``
-    for :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>`. Also
+    for :meth:`~snappy.Triangulation.triangulation_isosig`. Also
     fixing a subtle bug where the filling coefficients returned by
     :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>` were
     not canonical when ``ignore_curve_orientations = True``.
 
-  - :meth:`canonical_retriangulation <snappy.Manifold.canonical_retriangulation>`
+  - :meth:`~snappy.Manifold.canonical_retriangulation`
     and
-    :meth:`isometry_signature <snappy.Manifold.isometry_signature>` fail with
+    :meth:`~snappy.Manifold.isometry_signature` fail with
     exceptions rather than silently returning ``None``. In particular, it now
     safe to compare isometry signatures (without further checks) to determine
     whether M and N are isometric hyperbolic manifolds::

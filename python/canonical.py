@@ -106,11 +106,11 @@ def _canonical_retriangulation(
     Interval arithmetic can only be used to verify the canonical cell decomposition
     if all cells are tetrahedral. For non-tetrahedral cells, the method
     automatically switches to
-    exact methods to verify the canonical cell decomposition. That is, using
+    exact methods to verify the canonical cell decomposition. That is, it uses
     snap-like methods
     (`LLL-algorithm <http://en.wikipedia.org/wiki/Lenstra%E2%80%93Lenstra%E2%80%93Lov%C3%A1sz_lattice_basis_reduction_algorithm>`_)
     to guess a representation of the
-    shapes in the shape field, it then uses exact arithmetic to verify the
+    shapes in the shape field. It then uses exact arithmetic to verify the
     shapes form a valid geometric structure and compute the necessary tilts
     to verify the canonical cell decomposition. Note that this can take a
     long time!

@@ -72,9 +72,9 @@ def length_spectrum_alt_gen(manifold,
 
     This method uses a different algorithm than
     :meth:`length_spectrum <Manifold.length_spectrum>`. In particular,
-    it does not compute the Dirichlet domain. It allows for
+    it does not compute the Dirichlet domain. It also allows for
     :ref:`verified computations <verify-primer>`.
-    It is also implemented in python and thus
+    It is implemented in python and thus
     typically slower than :meth:`length_spectrum <Manifold.length_spectrum>`.
     But there are also some cases where it is significantly faster. In
     particular, this applies to spun triangulations such as ``m004(21,10)``.
@@ -100,7 +100,7 @@ def length_spectrum_alt_gen(manifold,
     After drilling and filling, less than a second to compute::
 
         >>> N = M.drill_word('a')
-        >>> N.dehn_fill((1,0),-1) # This is isometric to m125(0,0)(34,55)
+        >>> N.dehn_fill((1,0),-1) # N is now isometric to o9_00639 but as a surgery m125(0,0)(34,55)
         >>> spec = N.length_spectrum_alt_gen()
         >>> next(spec) # doctest: +NUMERIC9
         Length                                      Core curve  Word
@@ -127,7 +127,8 @@ def length_spectrum_alt_gen(manifold,
         sage: next(spec).length.real().lower() # doctest: +NUMERIC12
         0.94135129037387168886341739832
 
-    To illustrate some pitfalls, here is a potential result of the method:
+    To illustrate some pitfalls, here is an example of a potential a result
+    of the method:
 
     +----------------------+-------+
     | Real length interval | Word  |
@@ -159,11 +160,11 @@ def length_spectrum_alt_gen(manifold,
     the manifold::
 
         sage: M = Manifold("m004")
-        sage: spec = M.length_spectrum_alt_gen(verified=True, bits_prec=100)
+        sage: spec = M.length_spectrum_alt_gen(verified=True)
         sage: g = next(spec) # g might or might not be shortest geodesic
         sage: systole = g.length.real() # But interval is large enough to contain systole
-        sage: systole # doctest: +NUMERIC21
-        1.08707014499573909978528?
+        sage: systole # doctest: +NUMERIC6
+        1.08707015?
 
     :param bits_prec:
             Precision used for the computation. Increase if computation did
@@ -265,14 +266,24 @@ def length_spectrum_alt(manifold,
     to include the :attr:`count` shortest geodesics and might include additional
     geodesics.
 
+    **Verified systole**
+
+    Even though, the first reported geodesic might not be the shortest, we
+    obtain an interval containing the systole as follows, also see
+    :meth:`~snappy.Manifold.length_spectrum_alt_gen`::
+
+        sage: M = Manifold("m004")
+        sage: M.length_spectrum_alt(count=1, verified=True, bits_prec=100)[0].length.real() # doctest: +NUMERIC21
+        1.0870701449957390997853?
+    
     :param count:
             Number of shortest geodesics to list. The actual result might
             contain additional geodesics. Exactly one of :attr:`count` and
-            :attr:`max_len` have to be specified.
+            :attr:`max_len` has to be specified.
     :param max_len:
             Cut-off length for geodesics. The actual result includes all
             geodesics up to the given length and might include additional
-            geodesics. Exactly one of :attr:`count` and :attr:`max_len` have
+            geodesics. Exactly one of :attr:`count` and :attr:`max_len` has
             to be specified.
     :param bits_prec:
             Precision used for the computation. Increase if computation did

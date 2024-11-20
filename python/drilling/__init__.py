@@ -32,34 +32,33 @@ def drill_word(manifold,
                verbose : bool = False) -> Manifold:
     """
     Drills the geodesic corresponding to the given word in the unsimplified
-    fundamental group.
+    fundamental group. Here is an example::
 
         >>> M = Manifold("m004")
-        >>> M.length_spectrum(1.2, include_words = True, grouped = False)
-        mult  length                                  topology     parity word
-        1     1.08707014499574 - 1.72276844987009*I   circle       +      a
-        1     1.08707014499574 + 1.72276844987009*I   circle       +      bC
+        >>> M.length_spectrum_alt(max_len=1.2) # doctest: +NUMERIC9
+        [Length                                      Core curve  Word
+         1.08707014499574 + 1.72276844987009*I       -           bC,
+         1.08707014499574 - 1.72276844987009*I       -           a]
         >>> N = M.drill_word('a')
         >>> N.identify()
         [m129(0,0)(0,0), 5^2_1(0,0)(0,0), L5a1(0,0)(0,0), ooct01_00001(0,0)(0,0)]
 
-    The last cusp of the new manifold corresponds to the drilled
-    geodesic and the longitude and meridian for that cusp are chosen such that
-    ``(1,0)``-filling results in the given (undrilled) manifold. The orientation
-    of the new longitude is chosen so that it is parallel to the closed geodesic.
-    That is, the new longitude is homotopic to the closed geodesic when embedding
-    the drilled manifold into the given manifold.
+    The last cusp of the resulting manifold corresponds to the drilled
+    geodesic. The longitude and meridian for that cusp are chosen such that
+    ``(1,0)``-filling the last cusp results in the given (undrilled) manifold::
 
-        >>> N.dehn_fill((1,0),1)
+        >>> N.dehn_fill((1,0),-1)
         >>> M.is_isometric_to(N)
         True
         >>> N.cusp_info(1)['core_length'] # doctest: +NUMERIC9
         1.08707014499574 - 1.72276844987009*I
+    
+    The orientation of the new longitude is chosen so that it is parallel to
+    the closed geodesic. That is, the new longitude is homotopic to the closed
+    geodesic when embedding the drilled manifold into the given manifold.
 
-    If the drilled geodesic coincides with a core curve of a filled cusp, the
-    cusp is unfilled instead and the longitude and meridian changed so that
-    the above again applies. The cusp order is also changed so that the unfilled
-    cusp becomes the last cusp.
+    If the given geodesic coincides with a core curve of a filled cusp, the
+    cusp is unfilled instead::
 
         >>> M = Manifold("m004(2,3)")
         >>> M.volume() # doctest: +NUMERIC9
@@ -73,11 +72,18 @@ def drill_word(manifold,
         m004_drilled(0,0)
         >>> N.num_cusps()
         1
-        >>> N.dehn_fill((1,0))
+    
+    In this case, the peripheral information is also
+    updated such that the above remark about ``(1,0)``-filling applies again::
+
+        >>> N.dehn_fill((1,0), -1)
         >>> N.volume() # doctest: +NUMERIC9
         1.73712388065
 
-    An example where we drill the core geodesic::
+    That is, the longitude and meridian of the unfilled cusps are reinstalled
+    and the cusps reindexed so that the unfilled cusp becomes the last cusp.
+
+    Here is another example where we drill the core geodesic::
 
         >>> M = Manifold("v2986(3,4)")
         >>> N = M.drill_word('EdFgabcGEdFgaDcc')
@@ -141,8 +147,8 @@ def drill_words(manifold,
     several geodesics simultaneously. It takes a list of words in the
     unsimplified fundamental group.
 
-    Here is an example where we drill two geodesics. One geodesic is the
-    core curve corresponding to the third cusp. The other geodesic is not
+    Here is an example where we drill two geodesics. One of the geodesics is
+    the core curve corresponding to the third cusp. The other geodesic is not
     a core curve::
 
         >>> M=Manifold("t12047(0,0)(1,3)(1,4)(1,5)")
@@ -171,8 +177,8 @@ def drill_words(manifold,
     We obtain the given (undrilled) manifold by ``(1,0)``-filling the last n
     cusps.
 
-        >>> N.dehn_fill((1,0), 3)
-        >>> N.dehn_fill((1,0), 4)
+        >>> N.dehn_fill((1,0), -2)
+        >>> N.dehn_fill((1,0), -1)
         >>> M.is_isometric_to(N)
         True
         >>> [ info.get('core_length') for info in N.cusp_info() ] # doctest: +NUMERIC9

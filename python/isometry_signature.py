@@ -80,9 +80,9 @@ def isometry_signature(
 
     If all cusps are filled, we are in the closed case. In this case, the
     isometry signature gives the resulting closed hyperbolic 3-manifold as
-    canonical surgery on a hyperbolic 1-cusped manifold which is encoded by its
-    isometry signature. Only orientable manifolds are supported in the closed
-    case.
+    canonical surgery on a hyperbolic 1-cusped manifold (which is encoded by
+    its isometry signature). Only orientable manifolds are supported in the
+    closed case.
 
        >>> M = Manifold("v2000(1,3)")
        >>> M.isometry_signature()

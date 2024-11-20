@@ -2,79 +2,79 @@ from .maximal_cusp_area_matrix import maximal_cusp_area_matrix
 from .trig_cusp_area_matrix import triangulation_dependent_cusp_area_matrix
 from ..verify.maximal_cusp_area_matrix import legacy_verified_maximal_cusp_area_matrix
 
-def cusp_area_matrix(manifold, method='trigDependentTryCanonize',
-                     verified=False, bits_prec=None):
-    r"""
-    This function returns a matrix that can be used to check whether
-    cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
-    disjoint: the cusp neighborhoods about cusp i and j are
-    disjoint (respectively, the cusp neighborhood embeds if i and j
-    are equal) if a\ :sub:`i` * a\ :sub:`j` is less than or equal to
-    the entry (i,j) of the cusp area matrix. Note that the "if"
-    becomes "if and only if" if we pick the "maximal cusp area
-    matrix".
+from typing import Optional
 
-    This function can operate in different ways (determined by
-    ``method``). By default (``method='trigDependentTryCanonize'``),
-    it returns a result which can be suboptimal and non-deterministic
-    but is quicker to compute and sufficies for many applications::
+def cusp_area_matrix(
+        manifold,
+        method : str = 'maximal',
+        verified : bool = False,
+        bits_prec : Optional[int] = None):
+    """
+    Returns the maximal cusp area matrix :math:`(A_{ij})` where
+    :math:`A_{ij}` is defined as follows.
+    Let :math:`C_i` and :math:`C_j` be the (open) cusp neighborhoods about cusp
+    :math:`i` and :math:`j`. Let :math:`A(C_i)` and :math:`A(C_j)` be the
+    areas of :math:`C_i` and :math:`C_j`, respectively. Then, :math:`C_i`
+    and :math:`C_j` are embedded (if :math:`i = j`) or disjoint (otherwise)
+    if and only if :math:`A(C_i)A(C_j) \\leq A_{ij}`.
 
-        >>> M = Manifold("s776")
+    Here is an example::
+    
+        >>> M = Manifold("L6a5")
         >>> M.cusp_area_matrix() # doctest: +NUMERIC12
-        [28.0000000000000 7.00000000000000 6.99999999999999]
-        [7.00000000000000 21.4375000000000 7.00000000000000]
-        [6.99999999999999 7.00000000000000 21.4375000000000]
+        [27.9999999999996 7.00000000000000 7.00000000000000]
+        [7.00000000000000 27.9999999999999 7.00000000000000]
+        [7.00000000000000 7.00000000000000 28.0000000000001]
 
-    If ``method='maximal'`` is specified, the result is the "maximal
-    cusp area matrix", thus it is optimal and an invariant of the
-    manifold with labeled cusps. Note that the "maximal cusp area
-    matrix" is only available as verified computation and thus
-    requires passing ``verified = True``::
 
-        sage: M.cusp_area_matrix(method = 'maximal', verified=True) # doctest: +NUMERIC6
-        [28.0000000000?  7.0000000000?  7.0000000000?]
-        [ 7.0000000000?  28.000000000? 7.00000000000?]
-        [ 7.0000000000? 7.00000000000?   28.00000000?]
+    **Faster lower bounds**
 
-    If ``verified = True`` is specified and ``method`` is not
-    ``maximal``, the entries are all guaranteed to be less than the
-    corresponding ones in the maximal cusp area matrix (more
-    precisely, the lower end point of the interval is guaranteed to be
-    less than the true value of the corresponding maximal cusp area
-    matrix entry)::
+    This section can be skipped by most users!
 
-        sage: M.cusp_area_matrix(verified=True, bits_prec=70) # doctest: +NUMERIC15
-        [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
-        [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
+    Prior to SnapPy version 3.2, the algorithm to compute the maximal cusp
+    area matrix was much slower and required :attr:`verified = True` and
+    SageMath. Thus, in prior versions, :attr:`method` defaulted to
+    ``trigDependentTryCanonize``. This meant, that, by default,
+    :meth:`~snappy.Manifold.cusp_area_matrix` only returned
+    (some) lower bounds for the maximal cusp area matrix entries.
 
-    **For expert users**
+    These lower bounds can still be accessed::
 
-    Besides the two values above, ``method`` can be ``trigDependent``:
-    this result is also fast to compute by making the assumption that
-    cusp neighborhoods are not only disjoint but also in "standard
-    form" with respect to the triangulation (i.e., when lifting of a
-    cusp neighborhood to a horoball in the universal cover, it
-    intersects a geodesic tetrahedron in three but not four
-    faces). ``trigDependentTryCanonize`` is similar to
-    ``trigDependent`` but tries to "proto-canonize" (a copy of) the
-    triangulation first since this often produces a matrix that is
-    closer to the maximal cusp area matrix, for example::
+        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize')
+        [21.4375000000000 7.00000000000000 7.00000000000000]
+        [7.00000000000000 28.0000000000000 7.00000000000000]
+        [7.00000000000000 7.00000000000000 28.0000000000000]
 
-        >>> M = Manifold("o9_35953")
-        >>> M.cusp_area_matrix(method = 'trigDependent') # doctest: +NUMERIC9
-        [72.9848715318467 12.7560424258060]
-        [12.7560424258060 6.65567118002656]
-        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize') # doctest: +NUMERIC9
-        [72.9848715318466 12.7560424258060]
-        [12.7560424258060 62.1043047674605]
+    If :attr:`method = 'trigDependent'` or
+    :attr:`method = 'trigDependenyTryCanonize'`, the result is triangulation
+    dependent or not even deterministic, respectively.
+    Furthermore, if :attr:`verified = True` is also set, while the left
+    endpoints of the intervals are lower bounds for the maximal cusp area
+    matrix entries, the right endpoints are meaningless and could be smaller
+    or larger than the maximal cusp area matrix entries.
 
-    Compare to maximal area matrix::
+    **Verified computation**
 
-        sage: M.cusp_area_matrix(method = 'maximal', verified = True, bits_prec = 100) # doctest: +NUMERIC15
-        [       72.984871531846664? 12.7560424258059765562778?]
-        [12.7560424258059765562778?     62.104304767460978078?]
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
 
+        sage: M.cusp_area_matrix(verified=True) # doctest: +NUMERIC3
+        [       28.0000? 7.000000000000?  7.00000000000?]
+        [7.000000000000?      28.000000?  7.00000000000?]
+        [ 7.00000000000?  7.00000000000?       28.00000?]
+
+    :param verified:
+            Use :ref:`verified computation <verify-primer>`.
+    :param bits_prec:
+            Precision used for computation. Increase if computation
+            did not succeed or a more precise result is desired.
+    :param method:
+            Switches to older algorithms giving lower bounds when
+            ``trigDependentTryCanonize`` and ``trigDependent``.
+    :return:
+            Maximal cusp area matrix (default) or lower bounds
+            (if :attr:`method` switches to older algorithm).
     """
 
     if method == 'maximal':

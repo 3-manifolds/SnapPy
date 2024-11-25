@@ -9,11 +9,12 @@ options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
 imports += collect_submodules('snappy_15_knots')
-imports += collect_submodules('tkinter_gl')
 imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 imports += collect_submodules('pyx')
 imports += collect_submodules('low_index')
+imports += collect_submodules('tkinter_gl')
+
 
 datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('pyx')
@@ -23,6 +24,7 @@ datafiles += collect_data_files('snappy_15_knots')
 datafiles += collect_data_files('snappy')
 datafiles += collect_data_files('plink')
 datafiles += collect_data_files('spherogram')
+datafiles += collect_data_files('tkinter_gl')
 
 
 # SnapPyHP.pyd and twister_core.pyd are compiled with the MS Visual

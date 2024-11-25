@@ -4,7 +4,7 @@ import sys
 import re
 os.environ["ARGVZERO"] = sys.argv[0]
 os.environ["RESOURCEPATH"] = os.path.split(__file__)[0]
-PYTHON = 'python3.11'
+PYTHON = 'python3.13'
 
 def _reset_sys_path():
     # Clear generic sys.path[0]
@@ -96,12 +96,12 @@ def _setup_ctypes():
 _setup_ctypes()
 
 
-def _boot_tkinter():
-    import os
-
-    resourcepath = os.environ["RESOURCEPATH"]
-    os.putenv("TCL_LIBRARY", os.path.join(resourcepath, "lib/tcl8"))
-    os.putenv("TK_LIBRARY", os.path.join(resourcepath, "lib/tk8.6"))
+#def _boot_tkinter():
+#    import os
+#
+#    resourcepath = os.environ["RESOURCEPATH"]
+#    os.putenv("TCL_LIBRARY", os.path.join(resourcepath, "lib/tcl8"))
+#    os.putenv("TK_LIBRARY", os.path.join(resourcepath, "lib/tk8.6"))
 #_boot_tkinter()
 
 

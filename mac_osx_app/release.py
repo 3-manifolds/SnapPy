@@ -9,15 +9,14 @@ import configparser
 from subprocess import check_call, call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
-APP_PYTHON = 'python3.11'
-PYTHON_ZIP = 'python311.zip'
+APP_PYTHON = 'python3.13'
+PYTHON_ZIP = 'python313.zip'
 
 # Make sure that we have our frameworks.
 if not os.path.exists('Frameworks.tgz'):
     print("Please build the frameworks for SnapPy.app first.")
     sys.exit(1)
 
-# Disable M1 builds until we can test.
 os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-universal2'
 os.environ['ARCHFLAGS'] = '-arch arm64 -arch x86_64'
 
@@ -170,7 +169,7 @@ if __name__ == '__main__':
         nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
         if os.path.exists(nmd_python_dir):
             print('Using virtualenv Pythons')
-            python3 = nmd_python_dir + '/py311/bin/python'
+            python3 = nmd_python_dir + '/py313/bin/python'
         else:
             python3 = APP_PYTHON
         freshen = '--no-freshen' not in sys.argv

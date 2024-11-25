@@ -67,7 +67,7 @@ plist_dict['PythonInfoDict']['PythonExecutable'] = sys.executable
 plist_dict['PythonInfoDict']['PythonLongVersion'] = sys.version
 plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
 packages = 'snappy,spherogram,snappy_manifolds,snappy_15_knots,plink,cypari,FXrays,'
-packages += 'IPython,pygments,plink,pyx,lib2to3,knot_floer_homology,low_index'
+packages += 'IPython,pygments,plink,pyx,knot_floer_homology,low_index,tkinter_gl'
 
 try:
   import jedi
@@ -84,7 +84,7 @@ except ImportError:
 APP = ['SnapPyApp.py']
 DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
-           'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas',
+           'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas,OpenGL',
            'packages': packages,
 #           'frameworks': 'Tcl.framework,Tk.framework',
            'includes': 'tkinter,gzip,tarfile,readline,pydoc,fractions',

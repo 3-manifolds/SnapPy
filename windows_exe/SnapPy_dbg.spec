@@ -9,6 +9,7 @@ options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
 imports += collect_submodules('snappy_15_knots')
+imports += collect_submodules('tkinter_gl')
 imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 imports += collect_submodules('pyx')

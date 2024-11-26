@@ -162,6 +162,7 @@ class SnapPyTest(Command):
         print('Running tests ...')
         sys.exit(runtests())
 
+
 class SnapPyApp(Command):
     user_options = []
     def initialize_options(self):
@@ -173,6 +174,7 @@ class SnapPyApp(Command):
         import snappy.app
         snappy.app.main()
 
+
 def check_call(args):
     try:
         subprocess.check_call(args)
@@ -181,56 +183,6 @@ def check_call(args):
         command = [a for a in args if not a.startswith('-')][-1]
         raise RuntimeError(command + ' failed for ' + executable)
 
-try:
-    from wheel.bdist_wheel import bdist_wheel
-    class SnapPyBuildWheel(bdist_wheel):
-        def run(self):
-            python = sys.executable
-            check_call([python, 'setup.py', 'build'])
-            bdist_wheel.run(self)
-        @staticmethod
-        def check_command_available():
-            pass
-except ImportError:
-    class SnapPyBuildWheel(Command):
-        user_options = []
-        def initialize_options(self):
-            pass
-        def finalize_options(self):
-            pass
-        def run(self):
-            self.check_command_available()
-        @staticmethod
-        def check_command_available():
-            raise ImportError(no_wheel_message)
-
-class SnapPyRelease(Command):
-    user_options = [('install', 'i', 'install the release into each Python')]
-    def initialize_options(self):
-        self.install = False
-    def finalize_options(self):
-        pass
-    def run(self):
-        if exists('build'):
-            shutil.rmtree('build')
-        if exists('dist'):
-            shutil.rmtree('dist')
-
-        pythons = os.environ.get('RELEASE_PYTHONS', sys.executable)
-        for python in pythons:
-            check_call([python, 'setup.py', 'bdist_wheel'])
-            check_call([python, 'setup.py', 'test'])
-            if self.install:
-                check_call([python, 'setup.py', 'pip_install'])
-
-        # Build sdist using the *first* specified Python
-        check_call([pythons[0], 'setup.py', 'sdist'])
-
-        # Double-check the Linux wheels
-        if sys.platform.startswith('linux'):
-            for name in os.listdir('dist'):
-                if name.endswith('.whl'):
-                    subprocess.check_call(['auditwheel', 'repair', os.path.join('dist', name)])
 
 from setuptools.command.sdist import sdist
 class SnapPySdist(sdist):
@@ -556,7 +508,7 @@ except ImportError:
         install_requires.append('ipython>=5.0') # circa 2016
     else:
         install_requires.append('ipython>=1.0')
-        
+
 if CyOpenGL_has_headers:
     ext_modules.append(CyOpenGL)
 elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
@@ -596,7 +548,7 @@ setup( name = 'snappy',
                    'snappy/exterior_to_link',
                    'snappy/raytracing',
                    'snappy/raytracing/shaders',
-                   'snappy/raytracing/zoom_slider',                   
+                   'snappy/raytracing/zoom_slider',
                    'snappy/dev',
                    'snappy/dev/extended_ptolemy',
                    'snappy/dev/vericlosed',
@@ -658,8 +610,6 @@ setup( name = 'snappy',
                     'build_docs': SnapPyBuildDocs,
                     'test': SnapPyTest,
                     'app': SnapPyApp,
-                    'release': SnapPyRelease,
-                    'bdist_wheel':SnapPyBuildWheel,
                     'sdist':SnapPySdist,
                     'pip_install':SnapPyPipInstall,
        },

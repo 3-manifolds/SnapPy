@@ -199,8 +199,6 @@ class SnapPyPipInstall(Command):
     def finalize_options(self):
         pass
     def run(self):
-        SnapPyBuildWheel.check_command_available()
-
         python = sys.executable
         check_call([python, 'setup.py', 'bdist_wheel'])
         egginfo = 'snappy.egg-info'

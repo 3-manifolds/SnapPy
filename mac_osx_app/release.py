@@ -9,15 +9,19 @@ import configparser
 from subprocess import check_call, call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
-APP_PYTHON = 'python3.13'
-PYTHON_ZIP = 'python313.zip'
+
+PYTHON_VERSION = '3.13'
+PYTHON_VERSION_SHORT = PYTHON_VERSION.replace('.', '')
+APP_PYTHON = 'python' + PYTHON_VERSION
+PYTHON_ZIP = 'python' + PYTHON_VERSION_SHORT + '.zip'
+FRAMEWORKS_TARBALL = 'Frameworks-' + PYTHON_VERSION + '.tgz'
 
 # Make sure that we have our frameworks.
-if not os.path.exists('Frameworks.tgz'):
+if not os.path.exists(FRAMEWORKS_TARBALL):
     print("Please build the frameworks for SnapPy.app first.")
     sys.exit(1)
 
-os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.9-universal2'
+os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.13-universal2'
 os.environ['ARCHFLAGS'] = '-arch arm64 -arch x86_64'
 
 try:
@@ -62,7 +66,7 @@ def build_app(python):
     check_call([python, "setup.py", "py2app"])
     # Replace the frameworks that py2app installs with our own signed frameworks.
     shutil.rmtree(os.path.join('dist', 'SnapPy.app', 'Contents', 'Frameworks'))
-    check_call(['tar', 'xfz', 'Frameworks.tgz'])
+    check_call(['tar', 'xfz', FRAMEWORKS_TARBALL])
     contents = os.path.join('dist', 'SnapPy.app', 'Contents')
     resources = os.path.join(contents, 'Resources')
     frameworks = os.path.join(contents, 'Frameworks')
@@ -169,7 +173,7 @@ if __name__ == '__main__':
         nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
         if os.path.exists(nmd_python_dir):
             print('Using virtualenv Pythons')
-            python3 = nmd_python_dir + '/py313/bin/python'
+            python3 = nmd_python_dir + '/py' + PYTHON_VERSION_SHORT + '/bin/python'
         else:
             python3 = APP_PYTHON
         freshen = '--no-freshen' not in sys.argv

@@ -2,7 +2,7 @@
 import os, sys, shutil, platform
 
 this_python = sys.executable
-this_pyinstaller = os.path.abspath(i
+this_pyinstaller = os.path.abspath(
     os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
 
 # The Inno Installer config file (*.iss) assumes a 64 bit binary.

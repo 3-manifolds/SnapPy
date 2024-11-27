@@ -156,14 +156,5 @@ def do_release(python, dmg_name, freshen=True):
 
 
 if __name__ == '__main__':
-    if '-m' in sys.argv or '--manual' in sys.argv:
-        do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info.major))
-    else:
-        nmd_python_dir = os.environ['HOME'] + '/pkgs/pythons'
-        if os.path.exists(nmd_python_dir):
-            print('Using virtualenv Pythons')
-            python3 = nmd_python_dir + '/py' + PYTHON_VERSION_SHORT + '/bin/python'
-        else:
-            python3 = APP_PYTHON
-        freshen = '--no-freshen' not in sys.argv
-        do_release(python3, "SnapPy", freshen)
+    freshen = '--no-freshen' not in sys.argv
+    do_release(APP_PYTHON, "SnapPy", freshen)

@@ -1,4 +1,6 @@
+import os
 import sys
+import glob
 import argparse
 import snappy
 import snappy.snap.test
@@ -63,7 +65,7 @@ def additional_doctests(verbose=False, print_info=True):
 
     There ought to be a better way to do this...
     """
-    
+
     globs = {'Manifold' : snappy.Manifold,
              'ManifoldHP' : snappy.ManifoldHP}
     return doctest_modules(
@@ -138,6 +140,17 @@ def graphics_failures(verbose, windows, use_modernopengl):
         result = 0
     return result
 
+
+def check_for_docs():
+    path = os.path.dirname(snappy.__file__)
+    match = os.path.join(path, 'doc', '*.html')
+    html_files = [os.path.basename(file) for file in glob.glob(match)]
+    if len(html_files) > 20 and 'index.html' in html_files:
+        print('HTML docs are included.')
+    else:
+        print('WARNING: HTML docs are missing!')
+
+
 def runtests(verbose=False,
              quick=False,
              windows=False,
@@ -172,11 +185,12 @@ def runtests(verbose=False,
 
     print('Pari stacksize', snappy.pari.stacksize(),
           'max stack size', snappy.pari.stacksizemax())
+
+    check_for_docs()
     return result.failed + num_graphics_failures
 
 
 if __name__ == '__main__':
-
     verbose = False
     quick = False
     windows = False

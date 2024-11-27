@@ -56,10 +56,10 @@ DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas,OpenGL',
            'packages': packages,
-#           'frameworks': 'Tcl.framework,Tk.framework',
            'includes': 'tkinter,gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',
-           'plist'   : plist_dict
+           'plist'   : plist_dict,
+           'arch'    : 'universal2'
 }
 
 # Setting custom commands now causes setup.py py2app to crash.

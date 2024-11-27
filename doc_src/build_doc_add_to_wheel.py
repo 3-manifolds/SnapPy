@@ -16,8 +16,9 @@ if not wheel_path.endswith('.whl'):
 
 python = sys.executable
 tmp_dir = tempfile.mkdtemp()
+doc_src_dir = os.path.dirname(__file__)
 subprocess.check_call([python, '-m', 'sphinx', '-b', 'html', '-E',
-                       '-d', tmp_dir + '/doctrees', '.', tmp_dir + '/doc'])
+                       '-d', tmp_dir + '/doctrees', doc_src_dir, tmp_dir + '/doc'])
 subprocess.check_call([python, '-m', 'wheel', 'unpack', '--dest', tmp_dir, wheel_path])
 pkg, version = os.path.basename(wheel_path).split('-')[:2]
 wheel_dir = os.path.join(tmp_dir, pkg + '-' + version)

@@ -2,7 +2,7 @@
 import os, sys, shutil, platform
 
 this_python = sys.executable
-this_pyinstaller = os.path.abspath(
+this_pyinstaller = os.path.abspath(i
     os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
 
 # The Inno Installer config file (*.iss) assumes a 64 bit binary.
@@ -23,16 +23,14 @@ except ImportError:
     print("ERROR: Need to install snappy_15_knots!")
     sys.exit(1)
 
-
-os.chdir("../windows_exe/../")
-os.system("git pull")
-os.system("rm dist/*.whl")
-
-os.system(this_python + " setup.py pip_install")
+if '--no-freshen' not in sys.argv:
+    os.chdir("../windows_exe/../")
+    os.system("git pull")
+    os.system("rm dist/*.whl")
+    os.system(this_python + " setup.py pip_install")
+    os.chdir("windows_exe")
 
 # Now build the .exe
-
-os.chdir("windows_exe")
 os.system("rm -rf build dist InstallSnapPy.exe InstallSnapPy-Dbg.exe")
 os.system(this_pyinstaller + " SnapPy_py3.spec")
 os.system("iscc InnoSnapPy_py3.iss")

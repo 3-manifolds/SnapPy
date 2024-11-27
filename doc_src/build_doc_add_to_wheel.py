@@ -12,7 +12,14 @@ import shutil
 wheel_path = os.path.abspath(sys.argv[1])
 
 if not wheel_path.endswith('.whl'):
-    raise ValueError('Usage: python build_doc_add_to_wheel.py snappy.whl')
+    if not os.path.isdir(wheel_path):
+        raise ValueError('Usage: python build_doc_add_to_wheel.py snappy.whl')
+    wheel_names = glob.glob(wheel_path + '/snappy-*.whl')
+    if len(wheel_names) == 0:
+        raise ValueError('No snappy wheel in wheeldir')
+    elif len(wheel_names) > 1:
+        raise ValueError('Multiple snappy wheels in wheeldir')
+    wheel_path = wheel_names[0]
 
 python = sys.executable
 tmp_dir = tempfile.mkdtemp()

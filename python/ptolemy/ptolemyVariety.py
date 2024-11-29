@@ -599,7 +599,7 @@ class PtolemyVariety():
                            data_url=None,
                            verbose=True):
 
-        exts = ['magma_out', 'rur']
+        exts = ['magma_out.gz', 'magma_out', 'rur']
         if prefer_rur:
             exts = exts[::-1]
 
@@ -993,8 +993,14 @@ def _retrieve_url(url):
         if sigalrm_handler: # Not supported under windows
             signal.signal(signal.SIGALRM, sigalrm_handler)
 
+    text = s.read()
+
+    if url.endswith('.gz'):
+        import gzip
+        text = gzip.decompress(text)
+
     # Read the text
-    text = s.read().decode('ascii').replace('\r\n', '\n')
+    text = text.decode('ascii').replace('\r\n', '\n')
 
     if not (url.startswith('http:') or url.startswith('https')):
         # If this is a normal file, we are done

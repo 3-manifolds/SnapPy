@@ -97,7 +97,8 @@ class ManifoldTable():
     def __init__(self, table='', db_path=None,
                  mfld_hash=mfld_hash, **filter_args):
         self._table = table
-        self.mfld_hash = mfld_hash
+        self._db_path = db_path
+        self._mfld_hash = mfld_hash
         self._connection = connect_to_db(db_path)
         self._cursor = self._connection.cursor()
         self._set_schema()
@@ -234,7 +235,8 @@ class ManifoldTable():
                     conditions.append('id < %d' % stop_id[0])
                 if self._filter:
                     conditions.append(self._filter)
-                return self.__class__(filter=' and '.join(conditions))
+                return self.__class__(table=self._table, db_path=self._db_path,
+                        filter=' and '.join(conditions))
             else:
                 raise IndexError(
                     'Use two ints or two floats for start and stop.')
@@ -337,7 +339,7 @@ class ManifoldTable():
                                               betti, torsion))
         if not initial_candidates:
             return []
-        return self.find("hash = '%s'" % self.mfld_hash(mfld))
+        return self.find("hash = '%s'" % self._mfld_hash(mfld))
 
     def identify(self, mfld, extends_to_link=False):
         """

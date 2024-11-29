@@ -140,7 +140,7 @@ def _o13_matrix_column(A, m, Aadj):
               fAmj[0][1].imag() ]
 
 if _within_sage:
-    from sage.all import arccosh as _arccosh
+    from ..sage_helper import arccosh as _arccosh
 else:
     def _arccosh(z):
         return z.arccosh()

@@ -9,7 +9,7 @@ than the usual ">>>".
 """
 
 try:
-    import sage.all
+    import sage.structure.sage_object
     _within_sage = True
 except ImportError:
     _within_sage = False
@@ -29,6 +29,38 @@ if _within_sage:
     except ModuleNotFoundError:
         from sage.rings.complex_field import ComplexField, ComplexField_class
         from sage.rings.complex_number import create_ComplexNumber
+
+    try:
+        # Monolithic Sage library
+        from sage.all import RealField, RealNumber, RealDoubleElement, ComplexField, gcd, prod, powerset
+        from sage.all import MatrixSpace, matrix, vector, ZZ
+        from sage.all import Integer, Rational, QQ, RR, CC
+        from sage.all import sqrt
+        from sage.all import I, Infinity
+        from sage.all import arccosh
+    except ImportError:
+        # Modularized Sage library
+        from sage.arith.misc import gcd
+        from sage.combinat.subset import powerset
+        from sage.functions.hyperbolic import arccosh
+        from sage.matrix.constructor import Matrix as matrix
+        from sage.matrix.matrix_space import MatrixSpace
+        from sage.misc.functional import sqrt
+        from sage.misc.misc_c import prod
+        from sage.modules.free_module_element import free_module_element as vector
+        from sage.rings.cc import CC
+        from sage.rings.complex_mpfr import ComplexField
+        from sage.rings.imaginary_unit import I
+        from sage.rings.infinity import Infinity
+        from sage.rings.integer import Integer
+        from sage.rings.integer_ring import ZZ
+        from sage.rings.rational import Rational
+        from sage.rings.rational_field import QQ
+        from sage.rings.real_double import RealDoubleElement
+        from sage.rings.real_mpfr import RealField, RealNumber, RR
+
+    from sage.rings.real_mpfi import is_RealIntervalFieldElement
+    from sage.structure.sage_object import SageObject
 
 else:
     import decorator

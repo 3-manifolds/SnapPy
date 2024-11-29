@@ -10,9 +10,9 @@ import FXrays
 
 from ...sage_helper import _within_sage
 if _within_sage:
-    from sage.all import gcd
-    from sage.all import vector as Vector
-    from sage.all import matrix as Matrix
+    from sage.arith.misc import GCD as gcd
+    from sage.modules.free_module_element import free_module_element as Vector
+    from sage.matrix.constructor import Matrix as Matrix
 else:
     from snappy.snap.t3mlite.linalg import Vector, Matrix, gcd
 

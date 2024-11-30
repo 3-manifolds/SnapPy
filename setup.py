@@ -496,16 +496,13 @@ TwisterCore = Extension(
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 install_requires = ['plink>=2.4.2', 'spherogram>=2.2', 'FXrays>=1.3',
-                    'snappy_manifolds>=1.2', 'low_index>=1.2',
+                    'snappy_manifolds>=1.2.1', 'low_index>=1.2',
                     'pypng', 'decorator', 'packaging', 'tkinter-gl>=1.0a3']
 try:
     import sage
 except ImportError:
     install_requires.append('cypari>=2.3')
-    if sys.platform == 'win32':
-        install_requires.append('ipython>=5.0') # circa 2016
-    else:
-        install_requires.append('ipython>=1.0')
+    install_requires.append('ipython>=5.0')
 
 if CyOpenGL_has_headers:
     ext_modules.append(CyOpenGL)

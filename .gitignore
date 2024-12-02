@@ -1,5 +1,7 @@
 dist/
 build/
+notabot.cfg
+Frameworks*
 old/
 __pycache__/
 .DS_Store

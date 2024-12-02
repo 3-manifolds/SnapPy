@@ -54,7 +54,9 @@ except ImportError:
 APP = ['SnapPyApp.py']
 DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
-           'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas,OpenGL',
+           'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,'
+                       'idlelib,docutils,curses,cython,Cython,pandas,OpenGL,'
+                       'setuptools,test',
            'packages': packages,
            'includes': 'tkinter,gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',

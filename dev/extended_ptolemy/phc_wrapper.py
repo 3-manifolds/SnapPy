@@ -41,9 +41,9 @@ def restore_forbidden(var_str):
 def ideal_to_file(ideal, filename):
     outfile = open(filename, 'w')
     polys = ideal.gens()
-    outfile.write('%d\n' % len(polys))
+    outfile.write(r'%d\n' % len(polys))
     for p in polys:
-        outfile.write('   ' + remove_forbidden(repr(p)) + ';\n')
+        outfile.write('   ' + remove_forbidden(repr(p)) + r';\n')
     outfile.close()
 
 def parse_file(filename, prec=53):
@@ -55,14 +55,14 @@ def parse_file(filename, prec=53):
     data = data.split('THE SOLUTIONS')[-1]
     data = re.subn('[*]{3,}', '', data)[0]
     ans = []
-    solutions = re.findall('(solution \d+ : \s* start residual .*?) ==', data, re.DOTALL)
+    solutions = re.findall(r'(solution \d+ : \s* start residual .*?) ==', data, re.DOTALL)
     for sol in solutions:
         kind = sol.split('=')[-1].strip()
         if kind == 'no solution':
             continue
-        mult = int(re.search('^m : (\d+)', sol, re.MULTILINE).group(1))
-        err = float(re.search('== err :\s+(.*?)\s+= ', sol).group(1))
-        coors = re.findall('^ (.*) :\s+(\S*)\s+(\S*)', sol, re.MULTILINE)
+        mult = int(re.search(r'^m : (\d+)', sol, re.MULTILINE).group(1))
+        err = float(re.search(r'== err :\s+(.*?)\s+= ', sol).group(1))
+        coors = re.findall(r'^ (.*) :\s+(\S*)\s+(\S*)', sol, re.MULTILINE)
         if kind.startswith('real'):
             coors = {restore_forbidden(var):RR(real) for var, real, imag in coors}
             ans.append({'kind':'real', 'mult':mult, 'err':err, 'coors':coors})
@@ -70,8 +70,8 @@ def parse_file(filename, prec=53):
             coors = {restore_forbidden(var):CC(RR(real), RR(imag)) for var, real, imag in coors}
             ans.append({'kind':'complex', 'mult':mult, 'err':err, 'coors':coors})
 
-    num_real = int(re.search('Number of real solutions\s+:\s(.*).', data).group(1))
-    num_complex = int(re.search('Number of complex solutions\s+:\s(.*).', data).group(1))
+    num_real = int(re.search(r'Number of real solutions\s+:\s(.*).', data).group(1))
+    num_complex = int(re.search(r'Number of complex solutions\s+:\s(.*).', data).group(1))
     kinds = [sol['kind'] for sol in ans]
     assert kinds.count('real') == num_real
     assert kinds.count('complex') == num_complex
@@ -185,9 +185,9 @@ def direct_hack(backend, ideal, **kwargs):
     polys = [repr(eqn) for eqn in ideal.gens()]
 
     data = {'backend':backend, 'vars':vars, 'polys':polys, 'kwargs':kwargs}
-    problem_data = json.dumps(data).encode('base64').replace('\n', '')
+    problem_data = json.dumps(data).encode('base64').replace(r'\n', '')
     ans_data = os.popen('sage -python ' + __file__ + ' ' + problem_data).read()
-    ans_data = re.sub('PHCv.*? released .*? works!\n', '',  ans_data)
+    ans_data = re.sub(r'PHCv.*? released .*? works!\n', '',  ans_data)
     if len(ans_data):
         ans = json.loads(ans_data)
         for sol in ans:

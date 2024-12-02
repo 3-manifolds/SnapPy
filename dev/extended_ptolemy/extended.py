@@ -153,7 +153,7 @@ def simplify_equation(poly):
 def extended_ptolemy_equations(manifold, gen_obs_class=None,
                                nonzero_cond=True, return_full_var_dict = False,
                                notation = 'short'):
-    """
+    r"""
     We assign ptolemy coordinates ['a', 'b', 'c', 'd', 'e', 'f'] to the
     *directed* edges::
 
@@ -165,12 +165,12 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
 
              1
             /|\
-          d/ | \e
+         d / | \ e
           /  |  \
          /   |   \
         2----|----3   with back edge from 2 to 3 labelled f.
          \   |   /
-         b\  |a /c
+        b \  |a / c
            \ | /
             \|/
              0

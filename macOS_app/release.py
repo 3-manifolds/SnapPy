@@ -152,7 +152,7 @@ def do_release(python, dmg_name, freshen=True):
     build_app(python)
     cleanup_app(python)
 #    sign_app()
-    package_app(dmg_name)
+#    package_app(dmg_name)
 
 
 if __name__ == '__main__':

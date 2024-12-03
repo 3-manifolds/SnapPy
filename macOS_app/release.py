@@ -9,6 +9,7 @@ import configparser
 from subprocess import check_call, call, Popen, PIPE
 from math import ceil
 from check_target import TkChecker
+from notabot import Notarizer
 
 PYTHON_VERSION = '3.13'
 PYTHON_VERSION_SHORT = PYTHON_VERSION.replace('.', '')
@@ -69,14 +70,26 @@ def cleanup_app(python):
     """
     extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
     shutil.rmtree(extra_dynload)
-    dev_directory = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources', 'lib',
-         python, 'snappy', 'dev')
+    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
+    frameworks = os.path.join(contents, 'Frameworks')
+    resources = os.path.join(contents, 'Resources')
+    python_lib_dir = os.path.join(frameworks, 'Python.framework', 'Versions',
+        'Current', 'lib', python)
+    # Remove the dev directory
+    dev_directory = os.path.join(resources, 'lib', python, 'snappy', 'dev')
     shutil.rmtree(dev_directory, ignore_errors=True)
-    resources = os.path.join('dist', 'SnapPy.app', 'Contents', 'Resources')
     # Remove Python.org junk that may or may not have been added by py2app.
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8.6'), ignore_errors=True)
     shutil.rmtree(os.path.join(resources, 'lib', 'tcl8'), ignore_errors=True)
     shutil.rmtree(os.path.join(resources, 'lib', 'tk8.6'), ignore_errors=True)
+    # Remove everything in the python lib except for the lib-dynloads directory,
+    # since all of that stuff is in the zip filesystem (as bytecode).
+    tmp_dir = os.path.join(frameworks, 'Python.framework', 'Versions', 'Current',
+        'lib', 'tmp')
+    os.mkdir(tmp_dir)
+    shutil.move(os.path.join(python_lib_dir, 'lib-dynload'), tmp_dir)
+    shutil.rmtree(python_lib_dir, ignore_errors= True)
+    os.rename(tmp_dir, python_lib_dir)
 
 def package_app(dmg_name):
     """
@@ -120,41 +133,24 @@ def package_app(dmg_name):
     # Delete the symlink to /Applications or egg_info will be glacial on newer setuptools.
     os.remove("dist/Applications")
 
-def sign_app():
-    if not os.path.exists('notabot.cfg'):
-        print('The notabot.cfg file does not exist.  The app cannot be signed.')
-        return
-    config = configparser.ConfigParser()
-    config.read('notabot.cfg')
-    identity = config['developer']['identity']
-    codesign = ['codesign', '-v', '-s', identity, '--timestamp', '--entitlements', 'entitlement.plist',
-                '--options', 'runtime', '--force']
-    app = os.path.join('dist', 'SnapPy.app')
-    contents = os.path.join(app, 'Contents')
-    resources = os.path.join(contents, 'Resources')
-    python_exe = os.path.join(contents, 'MacOS', 'python')
-
-    def sign(path):
-        subprocess.run(codesign + [path])
-
-    sign(python_exe)
-    for dirpath, dirnames, filenames in os.walk(resources):
-        for name in filenames:
-            base, ext = os.path.splitext(name)
-            if ext in ('.so', '.dylib'):
-                print('Signing', os.path.join(dirpath, name))
-                sign(os.path.join(dirpath, name))
-    sign(app)
-
 def do_release(python, dmg_name, freshen=True):
     if freshen:
         freshen_SnapPy(python)
     build_app(python)
     cleanup_app(python)
-#    sign_app()
-#    package_app(dmg_name)
 
+class SnapPyNotarizer(Notarizer):
+
+    def build_dmg(self):
+        app_name = self.config['app']['app_name']
+        dmg_file = self.config['app']['dmg_path']
+        print('building dmg %s for %s'%(dmg_file, app_name))
+        package_app(app_name)
 
 if __name__ == '__main__':
     freshen = '--no-freshen' not in sys.argv
     do_release(APP_PYTHON, "SnapPy", freshen)
+    if '--notarize' in sys.argv:
+        notarizer = SnapPyNotarizer('notabot.cfg')
+        notarizer.run()
+        

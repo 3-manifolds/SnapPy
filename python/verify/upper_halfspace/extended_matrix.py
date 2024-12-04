@@ -6,7 +6,7 @@ if _within_sage:
 __all__ = ['ExtendedMatrix']
 
 
-class ExtendedMatrix():
+class ExtendedMatrix:
     """
     An extended PGL(2,C)-matrix. It consists of a SageMath ``Matrix`` with
     coefficients in SageMath's ``ComplexIntervalField`` together with a flag

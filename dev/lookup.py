@@ -42,7 +42,7 @@ class ManifoldTable:
         self._connection2 = conn = sqlite3.connect(database_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
-        self.schema = dict([(row[1],row[2].lower()) for row in rows])
+        self.schema = {row[1]: row[2].lower() for row in rows}
         assert self.schema['name'] == 'text' and \
                self.schema['triangulation'] == 'blob', \
                'Not a valid Manifold table.'

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import sys
 import re
@@ -474,7 +473,7 @@ class SnapPyExit:
 # _Helper is not included in the app2py site.py file.
 
 
-class _Helper():
+class _Helper:
     pass
 
 
@@ -523,7 +522,7 @@ def set_icon(window):
                 window.eval('wm iconphoto . -default %s' % dock_icon)
 
 # from multiprocessing import Process
-class SnapPyKernelServer():
+class SnapPyKernelServer:
     """
     Placeholder for a real SnapPyKernelServer which the app can use to
     asynchronously compute data about manifolds.

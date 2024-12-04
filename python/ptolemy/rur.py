@@ -12,7 +12,7 @@ if _within_sage:
     from sage.rings.integer import Integer
 
 
-class RUR():
+class RUR:
 
     """
     A Rational Univariate Representation of an algebraic number.

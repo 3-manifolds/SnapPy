@@ -9,7 +9,7 @@ if sage_helper._within_sage:
     from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
 
 
-class DualCell():
+class DualCell:
     """
     A cell in the dual cellulation
     """
@@ -51,7 +51,7 @@ class Face(DualCell):
         return "<Face: %s>" % self.index
 
 
-class DualCellulation():
+class DualCellulation:
     """
     The dual cellulation to a triangulation of a surface.
     """
@@ -156,7 +156,7 @@ class DualCellulation():
         assert CD.homology() == CT.homology()
 
 
-class OneCycle():
+class OneCycle:
     """
     A cycle on the 1-skeleton of a DualCellulation.
     """
@@ -193,7 +193,7 @@ class OneCycle():
         return ans
 
 
-class OneCocycle():
+class OneCocycle:
     """
     A cocycle on the 1-skeleton of a DualCellulation.
     """

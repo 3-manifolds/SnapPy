@@ -88,14 +88,6 @@ def cleanup_app(python):
     shutil.move(os.path.join(python_lib_dir, 'lib-dynload'), tmp_dir)
     shutil.rmtree(python_lib_dir, ignore_errors= True)
     os.rename(tmp_dir, python_lib_dir)
-    # Py2app requires a zlib extension module to be located in the Resources
-    # directory.  But when it builds the app, it copies the zlib extension
-    # from the local python installation.  Github runners use a HomeBrew
-    # python, which is built for only one architecture.  We need a fat zlib
-    # because we are building a fat app.  So we supply our own zlib.
-    zlib_so = 'zlib.cpython-%s-darwin.so'%PY_VRSN
-    os.unlink(os.path.join(resources, zlib_so))
-    shutil.copy(os.path.join('zlib_bug', zlib_so), resources)
 
 def package_app(dmg_name):
     """

@@ -11,11 +11,15 @@ from math import ceil
 from check_target import TkChecker
 from notabot import Notarizer
 
-PYTHON_VERSION = '3.13'
-PYTHON_VERSION_SHORT = PYTHON_VERSION.replace('.', '')
-APP_PYTHON = 'python' + PYTHON_VERSION
-PYTHON_ZIP = 'python' + PYTHON_VERSION_SHORT + '.zip'
-FRAMEWORKS_TARBALL = 'Frameworks-' + PYTHON_VERSION + '.tgz'
+PY_VERSION = '3.13'
+PY_VRSN = PY_VERSION.replace('.', '')
+APP_PYTHON = 'python' + PY_VERSION
+PYTHON_ZIP = 'python' + PY_VRSN + '.zip'
+FRAMEWORKS_TARBALL = 'Frameworks-' + PY_VERSION + '.tgz'
+
+contents = os.path.join('dist', 'SnapPy.app', 'Contents')
+frameworks = os.path.join(contents, 'Frameworks')
+resources = os.path.join(contents, 'Resources')
 
 # Make sure that we have our frameworks.
 if not os.path.exists(FRAMEWORKS_TARBALL):
@@ -57,30 +61,18 @@ def build_app(python):
     # Replace the frameworks that py2app installs with our own signed frameworks.
     shutil.rmtree(os.path.join('dist', 'SnapPy.app', 'Contents', 'Frameworks'))
     check_call(['tar', 'xfz', FRAMEWORKS_TARBALL])
-    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
-    resources = os.path.join(contents, 'Resources')
-    frameworks = os.path.join(contents, 'Frameworks')
     os.rename('Frameworks', frameworks)
     shutil.copy('Info.plist', contents)
     shutil.copy('__boot__.py', resources)
 
 def cleanup_app(python):
     """
-    Tidy things up.
+    Tidy things up and fix the zlib.
     """
     extra_dynload = glob('dist/SnapPy.app/Contents/Resources/lib/python*/lib-dynload')[0]
     shutil.rmtree(extra_dynload)
-    contents = os.path.join('dist', 'SnapPy.app', 'Contents')
-    frameworks = os.path.join(contents, 'Frameworks')
-    resources = os.path.join(contents, 'Resources')
     python_lib_dir = os.path.join(frameworks, 'Python.framework', 'Versions',
         'Current', 'lib', python)
-    # There are two useless files that break notarization on the CI runner.
-    # Remove the useless python in the MacOS directory
-    os.unlink(os.path.join(contents, 'MacOS', 'python'))
-    # Remove the useless zlib extension module in the Resources directory
-    extra_zlib = glob('dist/SnapPy.app/Contents/Resources/zlib*')[0]
-    os.unlink(extra_zlib)
     # Remove the dev directory
     dev_directory = os.path.join(resources, 'lib', python, 'snappy', 'dev')
     shutil.rmtree(dev_directory, ignore_errors=True)
@@ -96,6 +88,14 @@ def cleanup_app(python):
     shutil.move(os.path.join(python_lib_dir, 'lib-dynload'), tmp_dir)
     shutil.rmtree(python_lib_dir, ignore_errors= True)
     os.rename(tmp_dir, python_lib_dir)
+    # Py2app requires a zlib extension module to be located in the Resources
+    # directory.  But when it builds the app, it copies the zlib extension
+    # from the local python installation.  Github runners use a HomeBrew
+    # python, which is built for only one architecture.  We need a fat zlib
+    # because we are building a fat app.  So we supply our own zlib.
+    zlib_so = 'zlib.cpython-%s-darwin.so'%PY_VRSN
+    os.unlink(os.path.join(resources, zlib_so))
+    shutil.copy(os.path.join('zlib_bug', zlib_so), resources)
 
 def package_app(dmg_name):
     """

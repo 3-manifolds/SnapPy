@@ -75,8 +75,12 @@ def cleanup_app(python):
     resources = os.path.join(contents, 'Resources')
     python_lib_dir = os.path.join(frameworks, 'Python.framework', 'Versions',
         'Current', 'lib', python)
-    # Remove the python in the MacOS directory
+    # There are two useless files that break notarization on the CI runner.
+    # Remove the useless python in the MacOS directory
     os.unlink(os.path.join(contents, 'MacOS', 'python'))
+    # Remove the useless zlib extension module in the Resources directory
+    extra_zlib = glob('dist/SnapPy.app/Contents/Resources/zlib*')[0]
+    os.unlink(extra_zlib)
     # Remove the dev directory
     dev_directory = os.path.join(resources, 'lib', python, 'snappy', 'dev')
     shutil.rmtree(dev_directory, ignore_errors=True)

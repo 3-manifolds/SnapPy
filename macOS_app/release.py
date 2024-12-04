@@ -75,6 +75,8 @@ def cleanup_app(python):
     resources = os.path.join(contents, 'Resources')
     python_lib_dir = os.path.join(frameworks, 'Python.framework', 'Versions',
         'Current', 'lib', python)
+    # Remove the python in the MacOS directory
+    os.unlink(os.path.join(contents, 'MacOS', 'python'))
     # Remove the dev directory
     dev_directory = os.path.join(resources, 'lib', python, 'snappy', 'dev')
     shutil.rmtree(dev_directory, ignore_errors=True)

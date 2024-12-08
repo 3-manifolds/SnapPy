@@ -89,17 +89,16 @@ def cleanup_app(python):
     shutil.rmtree(python_lib_dir, ignore_errors= True)
     os.rename(tmp_dir, python_lib_dir)
 
-def package_app(dmg_name):
+def package_app(dmg_path):
     """
     Create a disk image containing the app, with a nice background and
     a symlink to the Applications folder.
     """
-    image_dir = "disk_images"
+    image_dir, dmg_name = os.path.split(dmg_path)
     if not os.path.exists(image_dir):
         os.mkdir(image_dir)
     mount_name = "/Volumes/SnapPy"
-    dmg_path = os.path.join(image_dir, dmg_name + ".dmg")
-    temp_path = os.path.join(image_dir, dmg_name + "-tmp.dmg")
+    temp_path = dmg_path.replace('.dmg', '-tmp.dmg')
     # Make sure the dmg isn't currently mounted, or this won't work.  
     while os.path.exists(mount_name):
         print("Trying to eject " + mount_name)
@@ -140,10 +139,10 @@ def do_release(python, dmg_name, freshen=True):
 class SnapPyNotarizer(Notarizer):
 
     def build_dmg(self):
-        app_name = self.config['app']['app_name']
-        dmg_file = self.config['app']['dmg_path']
-        print('building dmg %s for %s'%(dmg_file, app_name))
-        package_app(app_name)
+        app_bundle = self.config['paths']['bundle_path']
+        dmg_file = self.config['paths']['dmg_path']
+        print('building dmg %s for %s'%(dmg_file, app_bundle))
+        package_app(dmg_file)
 
 if __name__ == '__main__':
     freshen = '--no-freshen' not in sys.argv

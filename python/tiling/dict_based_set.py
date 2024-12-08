@@ -35,7 +35,7 @@ class DictBasedProductSet:
 
     The resulting object is a set of AxB.
 
-    Can be combined with RealHashDict or CanonicalKeyDict.
+    Can be combined with RealHashDict or QuotientDict.
 
     >>> fruit_number_set = DictBasedProductSet(dict())
     >>> fruit_number_set.add('Apple', 1)

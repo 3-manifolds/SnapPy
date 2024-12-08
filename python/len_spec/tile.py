@@ -146,7 +146,7 @@ def _compute_length_spectrum_tiles_for_tetrahedron(
     visited_lifted_tetrahedra : LiftedTetrahedronSet = (
         get_lifted_tetrahedron_set(
             base_point=mcomplex.R13_baseTetInCenter,
-            canonical_keys_function=None,
+            canonical_representatives_function=None,
             act_on_base_point_by_inverse=False,
             max_neg_prod_equal=max_neg_prod_equal,
             min_neg_prod_distinct=min_neg_prod_distinct,

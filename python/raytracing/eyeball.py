@@ -80,7 +80,7 @@ class Eyeball:
                 act_on_base_point_by_inverse=True,
                 max_neg_prod_equal=cut_off,
                 min_neg_prod_distinct=cut_off,
-                canonical_keys_function=None,
+                canonical_representatives_function=None,
                 verified=False))
 
         for i, tile in enumerate(

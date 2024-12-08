@@ -1,4 +1,4 @@
-class CanonicalKeyDict:
+class QuotientDict:
     """
     Applies a function to canonize key before looking it up
     or setting it in the supplied dictionary.
@@ -10,7 +10,18 @@ class CanonicalKeyDict:
 
     # Modulo 5, canonical representative is 0, 1, ... 4.
 
-    >>> d = CanonicalKeyDict({}, canonical_keys_function = lambda x : x)
+    >>> d = QuotientDict({}, canonical_representative_function = lambda x : [x % 5])
+    >>> d.setdefault(1, []).append('A')
+    >>> d.setdefault(2, []).append('B')
+    >>> d.setdefault(6, []).append('C')
+    >>> d.setdefault(1, [])
+    ['A', 'C']
+
+    # Test with a fuzzy "Modulo 5" that always includes
+    # the canonical representative in 0, 1, ... 4 but sometimes
+    # an additional representative.
+
+    >>> d = QuotientDict({}, canonical_representative_function = lambda x : x)
     >>> d.setdefault([1], []).append('A')
     >>> d.setdefault([2, 7], []).append('B')
     >>> d.setdefault([1,6], [])
@@ -26,9 +37,9 @@ class CanonicalKeyDict:
     ['B']
     """
 
-    def __init__(self, dictionary, canonical_keys_function):
+    def __init__(self, dictionary, canonical_representative_function):
         self._dictionary = dictionary
-        self._canonical_keys_function = canonical_keys_function
+        self._canonical_representative_function = canonical_representative_function
 
     # Not implemented because it was not needed so far:
     # get
@@ -46,7 +57,7 @@ class CanonicalKeyDict:
             raise Exception("Implementation reserved default = None for "
                             "internal purposes.")
 
-        computed_keys = self._canonical_keys_function(key)
+        computed_keys = self._canonical_representative_function(key)
 
         for computed_key in computed_keys:
             value = self._dictionary.get(computed_key)

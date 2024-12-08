@@ -634,7 +634,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         Here, a standard tube is given by a Euclidean cone from zero to
         infinity in the upper halfspace model with cone angle pi/4.
         Its hyperbolic radius is given by
-        arcinh(1) = log(1 + sqrt(2)) = 0.881373... .
+        arcsinh(1) = log(1 + sqrt(2)) = 0.881373... .
         """
 
         for cusp in self.mcomplex.Vertices:

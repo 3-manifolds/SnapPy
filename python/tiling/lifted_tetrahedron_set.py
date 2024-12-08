@@ -1,5 +1,5 @@
 from .lifted_tetrahedron import LiftedTetrahedron
-from .canonical_key_dict import CanonicalKeyDict
+from .quotient_dict import QuotientDict
 from .dict_based_set import DictBasedProductSet
 from .hyperboloid_dict import get_hyperboloid_dict
 
@@ -30,7 +30,7 @@ class LiftedTetrahedronSet:
             lifted_tetrahedron.tet.Index)
 
 def get_lifted_tetrahedron_set(base_point,
-                               canonical_keys_function,
+                               canonical_representatives_function,
                                act_on_base_point_by_inverse,
                                max_neg_prod_equal, min_neg_prod_distinct,
                                verified
@@ -46,8 +46,8 @@ def get_lifted_tetrahedron_set(base_point,
     d = get_hyperboloid_dict(max_neg_prod_equal, min_neg_prod_distinct,
                              verified)
 
-    if canonical_keys_function:
-        d = CanonicalKeyDict(d, canonical_keys_function)
+    if canonical_representatives_function:
+        d = QuotientDict(d, canonical_representatives_function)
 
     return LiftedTetrahedronSet(d, base_point, act_on_base_point_by_inverse)
 

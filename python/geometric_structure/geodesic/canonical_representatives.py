@@ -5,7 +5,7 @@ from ...matrix import make_identity_matrix # type: ignore
 from ...hyperboloid import r13_dot, o13_inverse # type: ignore
 from ...hyperboloid.line import R13Line
 
-def canonical_keys_function_for_line(line_with_matrix : R13LineWithMatrix):
+def canonical_representatives_for_line(line_with_matrix : R13LineWithMatrix):
 
     line : R13Line = line_with_matrix.r13_line
     m = line_with_matrix.o13_matrix

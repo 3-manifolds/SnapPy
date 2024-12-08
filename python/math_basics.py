@@ -22,8 +22,14 @@ def is_Interval(x):
 
 if _within_sage:
     from sage.all import prod, xgcd
-    from sage.rings.real_mpfi import is_RealIntervalFieldElement
-    from sage.rings.complex_interval import is_ComplexIntervalFieldElement
+    from sage.rings.real_mpfi import RealIntervalFieldElement
+    from sage.rings.complex_interval import ComplexIntervalFieldElement
+
+    def is_RealIntervalFieldElement(x):
+        return isinstance(x, RealIntervalFieldElement)
+
+    def is_ComplexIntervalFieldElement(x):
+        return isinstance(x, ComplexIntervalFieldElement)
 
 else:
 

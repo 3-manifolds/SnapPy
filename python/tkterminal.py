@@ -455,7 +455,7 @@ class TkTerminalBase:
         line = self.text.get('output_end', self.tab_index).strip('\n')
         word = delims.split(line)[-1]
         try:
-            completions = self.IP.complete(word)[1]
+            stem, completions = self.IP.complete(word)
         except TypeError:
             completions = []
         if word.find('_') == -1:
@@ -465,15 +465,14 @@ class TkTerminalBase:
             self.window.bell()
             self.tab_count = 0
             return 'break'
-        stem = self.stem(completions)
-        if len(stem) > len(word):
-            self.do_completion(word, stem)
+        if len(completions) == 1:
+            self.do_completion(stem, completions[0])
         elif len(completions) > 60 and self.tab_count == 1:
-            self.show_completions(
+            self.show_completions('', '',
                 ['%s possibilities -- hit tab again to view them all' %
                      len(completions)])
         else:
-            self.show_completions(completions)
+            self.show_completions(word, stem, completions)
             if len(completions) <= 60:
                 self.tab_count += 1
         return 'break'
@@ -482,19 +481,21 @@ class TkTerminalBase:
         self.text.mark_set(Tk_.INSERT, 'output_end')
         return 'break'
 
-    def do_completion(self, word, completion):
-        tail = completion[len(word):]
+    def do_completion(self, stem, completion):
+        tail = completion[len(stem):]
         self.text.insert(self.tab_index, tail)
         self.tab_index = Tk_.END
         self.tab_count = 0
 
-    def show_completions(self, comps):
+    def show_completions(self, word, stem, comps):
+        n = len(stem)
+        comps = [word + c[n:] for c in comps]
         self.text.delete(self.tab_index, Tk_.END)
         width = self.text.winfo_width()
         font = Font(self.text, self.text.cget('font'))
-        charwidth = width//self.char_size
+        charwidth = width // self.char_size
         biggest = 2 + max([len(x) for x in comps])
-        num_cols = charwidth//biggest
+        num_cols = charwidth // biggest
         num_rows = (len(comps) + num_cols - 1)//num_cols
         rows = []
         format = '%%-%ds' % biggest
@@ -511,7 +512,7 @@ class TkTerminalBase:
             self.tab_index = None
             self.tab_count = 0
 
-    def stem(self, wordlist):
+    def XXstem(self, wordlist):
         if len(wordlist) == 1:
             return wordlist[0]
         result = ''

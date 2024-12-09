@@ -467,10 +467,15 @@ class TkTerminalBase:
             return 'break'
         if len(completions) == 1:
             self.do_completion(stem, completions[0])
-        elif len(completions) > 60 and self.tab_count == 1:
+        else:
+            max_stem = self.max_stem(stem, completions)
+            if len(max_stem) > len(word):
+                self.do_completion(stem, max_stem)
+                return 'break'
+        if len(completions) > 60 and self.tab_count == 1:
             self.show_completions('', '',
                 ['%s possibilities -- hit tab again to view them all' %
-                     len(completions)])
+                len(completions)])
         else:
             self.show_completions(word, stem, completions)
             if len(completions) <= 60:
@@ -512,17 +517,17 @@ class TkTerminalBase:
             self.tab_index = None
             self.tab_count = 0
 
-    def XXstem(self, wordlist):
-        if len(wordlist) == 1:
-            return wordlist[0]
-        result = ''
-        for n in range(1,100):
-            heads = {w[:n] for w in wordlist}
+    def max_stem(self, stem, completions):
+        if len(completions) == 1:
+            return completions[0]
+        result = stem
+        for n in range(len(stem) + 1, 100):
+            heads = {w[:n] for w in completions}
             if len(heads) > 1:
                 return result
             elif len(heads) == 1:
                 result = heads.pop()
-        return wordlist[0][:100]
+        return result
 
     def write_continuation_prompt(self):
         prompt_tokens = self._continuation_prompt(self._prompt_size)

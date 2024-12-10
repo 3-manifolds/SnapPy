@@ -461,17 +461,23 @@ class TkTerminalBase:
         if word.find('_') == -1:
             completions = [x for x in completions
                            if x.find('__') == -1 and x.find('._') == -1]
-        if len(completions) == 0:
+        # No meaningful completions.  Ring the bell.
+        if len(completions) == 0 or len(completions) == 1 and completions[0] == stem:
             self.window.bell()
             self.tab_count = 0
             return 'break'
+        # Only one completion.  Use it.
         if len(completions) == 1:
             self.do_completion(stem, completions[0])
-        else:
-            max_stem = self.max_stem(stem, completions)
-            if len(max_stem) > len(word):
-                self.do_completion(stem, max_stem)
-                return 'break'
+            self.tab_count = 0
+            return 'break'
+        max_stem = self.max_stem(stem, completions)
+        # Add the maximal stem of all completions if it extends the word,
+        if len(max_stem) > len(word):
+            self.do_completion(stem, max_stem)
+            self.tab_count = 0
+            return 'break'
+        # Show the possible completions, with a warning if there are lots.
         if len(completions) > 60 and self.tab_count == 1:
             self.show_completions('', '',
                 ['%s possibilities -- hit tab again to view them all' %

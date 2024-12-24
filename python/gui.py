@@ -27,6 +27,11 @@ class SnapPyStyle:
         # The windowBG, groupBG and subgroupBG colors can be used to match Tk objects to
         # Ttk containers.
         if sys.platform == 'darwin':
+            labelframe_font = Tk_.font.Font(name="TkSmallCaptionFont",
+                                            exists=True)
+            labelframe_font.configure(size=15)
+            self.ttk_style.configure('TLabelframe.Label',
+                                     font=labelframe_font)
             try:
                 # check if our Tk supports the new semantic colors
                 test = Tk_._default_root.winfo_rgb('systemWindowBackgroundColor1')

@@ -224,7 +224,7 @@ class Browser(Tk_.Toplevel):
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer, text='Dirichlet')
         notebook.add(self.horoball_viewer, text='Cusp Nbhds')
-        notebook.add(self.build_inside_view(), text='Inside view')
+        notebook.add(self.build_inside_view(), text='Inside View')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')
@@ -506,6 +506,9 @@ class Browser(Tk_.Toplevel):
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
             self.link_tab.draw()
+        elif tab_name == 'Inside View':
+            print('Inside View selected.')
+            self.inside_view.widget.focus_set()
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()

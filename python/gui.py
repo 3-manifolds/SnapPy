@@ -29,7 +29,7 @@ class SnapPyStyle:
         if sys.platform == 'darwin':
             labelframe_font = Tk_.font.Font(name="TkSmallCaptionFont",
                                             exists=True)
-            labelframe_font.configure(size=15)
+            labelframe_font.configure(size=14)
             self.ttk_style.configure('TLabelframe.Label',
                                      font=labelframe_font)
             try:

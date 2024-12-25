@@ -507,7 +507,6 @@ class Browser(Tk_.Toplevel):
             self.update_menus(self.menubar)
             self.link_tab.draw()
         elif tab_name == 'Inside View':
-            print('Inside View selected.')
             self.inside_view.widget.focus_set()
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)

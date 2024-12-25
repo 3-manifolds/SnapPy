@@ -27,11 +27,6 @@ class SnapPyStyle:
         # The windowBG, groupBG and subgroupBG colors can be used to match Tk objects to
         # Ttk containers.
         if sys.platform == 'darwin':
-            labelframe_font = Tk_.font.Font(name="TkSmallCaptionFont",
-                                            exists=True)
-            labelframe_font.configure(size=14)
-            self.ttk_style.configure('TLabelframe.Label',
-                                     font=labelframe_font)
             try:
                 # check if our Tk supports the new semantic colors
                 test = Tk_._default_root.winfo_rgb('systemWindowBackgroundColor1')
@@ -46,7 +41,12 @@ class SnapPyStyle:
         else:
             self.windowBG = ttk_style.lookup('TLabelframe', 'background')
             self.groupBG = self.subgroupBG = self.windowBG
+
         self.font = ttk_style.lookup('TLabel', 'font')
+        # TLabel.font and TLabelframe.Label.font differ in Tk 9.0 (at
+        # least on macOS).  We restore the Tk 8.6 behavior.
+        self.ttk_style.configure('TLabelframe.Label',
+                                 font=self.font)
         self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = int(str(fi['size']))
 

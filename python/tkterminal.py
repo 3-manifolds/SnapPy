@@ -166,7 +166,7 @@ class TkTerminalBase:
         self.blockers = {}
         self.can_quit = True
         self.close_callback = lambda :None
-        
+
     # Emulate a ListedWindow.  We are listed, even though we are unique.
     def bring_to_front(self):
         self.window.deiconify()
@@ -363,7 +363,7 @@ class TkTerminalBase:
         if cursor == first == last - 1:  # single line input
             self.text.mark_set(Tk_.INSERT, Tk_.END)
         self.text.insert(Tk_.INSERT, '\n')
-        cell = self.text.get('output_end', Tk_.INSERT)            
+        cell = self.text.get('output_end', Tk_.INSERT)
         try:
             self.interact_handle_input(cell)
         except KeyboardInterrupt:
@@ -375,6 +375,8 @@ class TkTerminalBase:
         self.text.see(Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
+        self.hist_pointer = 0
+        self.hist_stem = ''
         return 'break'
 
     def handle_shift_return(self, event):

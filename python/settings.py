@@ -12,13 +12,12 @@ class Settings:
         self.text_widget = text_widget
         self.setting_dict = {
             'autocall' : False,
-            'automagic' : False,
             'font' : self.current_font_tuple(),
             'cusp_horoballs' : True,
             'cusp_triangulation' : True,
             'cusp_ford_domain' : True,
             'cusp_parallelogram' : True,
-            'cusp_labels' : True,
+            'cusp_labels' : False,
             'cusp_cutoff' : '0.1000',
             'keyboard' : 'QWERTY'}
         self.cache = {}
@@ -265,7 +264,6 @@ class SettingsDialog(Dialog):
     def build_shell_pane(self, master):
         groupBG = self.style.groupBG
         self.autocall = Tk_.BooleanVar(value=self.settings['autocall'])
-        self.automagic = Tk_.BooleanVar(value=self.settings['automagic'])
         self.update_idletasks()
         self.shell_frame = shell_frame = ttk.Frame(master)
         shell_frame.rowconfigure(3, weight=1)
@@ -281,16 +279,10 @@ class SettingsDialog(Dialog):
                                     text='IPython autocall',
                                     command=self.set_autocall)
         next_check.grid(row=1, column=1, sticky=Tk_.W, pady=(10,0))
-        next_check = ttk.Checkbutton(shell_frame, variable=self.automagic,
-                                    text='IPython automagic',
-                                    command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
 
     def set_autocall(self):
         self.settings['autocall'] = self.autocall.get()
-
-    def set_automagic(self):
-        self.settings['automagic'] = self.automagic.get()
 
     def build_cusp_pane(self, master):
         groupBG = self.style.groupBG

@@ -436,9 +436,9 @@ class SnapPySettings(Settings, ListedWindow):
         self.terminal.quiet = True
         if 'autocall' in changed:
             if self.setting_dict['autocall']:
-                IP.magics_manager.magics['line']['autocall'](2)
+                IP.magics_manager.magics['line']['autocall']('2')
             else:
-                IP.magics_manager.magics['line']['autocall'](0)
+                IP.magics_manager.magics['line']['autocall']('0')
         if 'automagic' in changed:
             if self.setting_dict['automagic']:
                 IP.magics_manager.magics['line']['automagic']('on')

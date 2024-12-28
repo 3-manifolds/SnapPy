@@ -500,7 +500,7 @@ install_requires = ['FXrays>=1.3',
                     'spherogram>=2.2',
                     'snappy_manifolds>=1.2.1',
                     'low_index>=1.2',
-                    'tkinter-gl>=1.0a3',
+                    'tkinter-gl>=1.0',
                     'decorator',
                     'packaging',
                     'pypng', # Used to save OpenGL images.

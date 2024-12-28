@@ -23,7 +23,7 @@ class PolyhedronViewer(ttk.Frame):
         self.main_window = kwargs.get('main_window', None)
         self.topframe = topframe = ttk.Frame(self)
         self.bottomframe = bottomframe = ttk.Frame(self)
-        self.model_var = Tk_.StringVar(self, value='Klein')
+        self.model_var = Tk_.StringVar(self, value='Poincare')
         self.sphere_var = Tk_.IntVar(self, value=1)
         self.klein = ttk.Radiobutton(topframe, text='Klein',
                                      variable=self.model_var,

@@ -434,11 +434,10 @@ class SnapPySettings(Settings, ListedWindow):
         changed = self.changed()
         IP = self.terminal.IP
         self.terminal.quiet = True
-        if 'autocall' in changed:
-            if self.setting_dict['autocall']:
-                IP.magics_manager.magics['line']['autocall']('2')
-            else:
-                IP.magics_manager.magics['line']['autocall']('0')
+        if self.setting_dict['autocall']:
+            IP.magics_manager.magics['line']['autocall']('2')
+        else:
+            IP.magics_manager.magics['line']['autocall']('0')
         self.terminal.quiet = False
         for window in self.window_list:
             window.apply_settings()

@@ -6,6 +6,7 @@ from urllib.request import pathname2url
 import tkinter as Tk_
 from tkinter import ttk
 from tkinter.font import Font
+from tkinter.font import families as font_families
 from tkinter.messagebox import askyesno
 from IPython.utils import io
 

@@ -68,6 +68,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                  *args,
                  **kwargs):
 
+        print('Creating shader widget', file=sys.stderr)
         SimpleImageShaderWidget.__init__(
             self, container,
             *args, **kwargs)

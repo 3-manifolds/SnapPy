@@ -55,12 +55,16 @@ class Settings:
         return self.setting_dict.get(key, default)
 
     def default_font(self):
-        default = Font(font='TkDefaultFont').actual()
-        fixed = Font(font='TkFixedFont').actual()
-        size = default['size']
-        if sys.platform == 'darwin' and Tk_.TkVersion >= 9.0:
-            size = int(1.3*size)
-        return FontChoice(fixed['family'], size, fixed['weight'], fixed['slant'])
+        size = 13 if sys.platform == 'darwin' else 11
+        family = Font(font='TkFixedFont').actual()['family']
+        if sys.platform == 'win32':
+            # Default is Courier New which is ugly and appears blurry.
+            available = font_families()
+            for better in ['Consolas', 'Cascadia Mono SemiLight']:
+                if better in available:
+                    family = better
+
+        return FontChoice(family, size, 'normal', 'roman')
 
     def find_settings(self):
         if sys.platform == 'darwin':
@@ -258,7 +262,8 @@ class SettingsDialog(Dialog):
             families = {f for f in families if Font(family=f).metrics('fixed')}
         families.add(self.settings['font'].family)
         self.families = families = sorted(families)
-        self.font_list.delete(0, self.font_list.size() - 1)
+        if self.font_list.size() > 0:
+            self.font_list.delete(0, self.font_list.size() - 1)
         for family in families:
             self.font_list.insert(Tk_.END, family)
         self.current_family = families.index(self.settings['font'].family)

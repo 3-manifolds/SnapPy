@@ -430,7 +430,7 @@ class SnapPySettings(Settings, ListedWindow):
         self.apply_settings()
 
     def apply_settings(self):
-        self.terminal.set_font(self['font'].as_tuple())
+        self.terminal.set_font(self['font'])
         changed = self.changed()
         IP = self.terminal.IP
         self.terminal.quiet = True

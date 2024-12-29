@@ -31,6 +31,40 @@ ansi_colors = {'0;30m': 'Black',
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
 
+class FontChoice:
+    def __init__(self, family, size, weight, slant):
+        self.family = family
+        self.size = size
+        self.weight = weight
+        self.slant = slant
+        self.rest = f'{self.weight} {self.slant}'
+
+    def as_tuple(self):
+        size = self.size
+        if sys.platform == 'darwin' and Tk_.TkVersion >= 9.0:
+            size = int(size/1.3)
+        return (self.family, size, self.rest)
+
+    def __repr__(self):
+        return 'FontChoice' + repr((self.family, self.size, self.weight, self.slant))
+
+    def bold(self):
+        return FontChoice(self.family, self.size, 'bold', self.slant)
+
+
+def default_terminal_font():
+    size = 13 if sys.platform == 'darwin' else 11
+    family = Font(font='TkFixedFont').actual()['family']
+    if sys.platform == 'win32':
+        # Default is Courier New which is ugly and appears blurry.
+        available = font_families()
+        for better in ['Consolas', 'Cascadia Mono SemiLight']:
+            if better in available:
+                family = better
+
+    return FontChoice(family, size, 'normal', 'roman')
+
+
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
         Tk_.Tk.__init__(self, className='snappy')
@@ -38,6 +72,7 @@ class Tk(Tk_.Tk):
         # calls this function to report their occurrence.
         if error_handler:
             self.report_callback_exception = error_handler
+
 
 class TkTerminalBase:
     """
@@ -69,7 +104,7 @@ class TkTerminalBase:
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )
-        self.set_font(Font(text, text.cget('font')))
+        self.set_font(default_terminal_font())
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand=scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)
@@ -237,11 +272,10 @@ class TkTerminalBase:
         sys.last_traceback = traceback
         self.IP.showtraceback()
 
-    def set_font(self, fontdesc):
-        self.text.config(font=fontdesc)
-        normal_font = Font(self.text, self.text.cget('font'))
-        self.bold_font = bold_font = Font(self.text, self.text.cget('font'))
-        self.bold_font.config(weight='bold')
+    def set_font(self, font_choice):
+        self.normal_font = normal_font = Font(font=font_choice.as_tuple())
+        self.bold_font = bold_font = Font(font=font_choice.bold().as_tuple())
+        self.text.config(font=normal_font)
         self.char_size = normal_font.measure('M')
         text = self.text
         text.tag_config('output', font=normal_font)

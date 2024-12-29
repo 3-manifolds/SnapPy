@@ -3,24 +3,7 @@ import sys
 import plistlib
 from .gui import *
 from .app_menus import ListedWindow
-
-class FontChoice:
-    def __init__(self, family, size, weight, slant):
-        self.family = family
-        self.size = size
-        self.weight = weight
-        self.slant = slant
-        self.rest = f'{self.weight} {self.slant}'
-
-    def as_tuple(self):
-        size = self.size
-        if sys.platform == 'darwin' and Tk_.TkVersion >= 9.0:
-            size = int(size/1.3)
-        return (self.family, size, self.rest)
-
-    def __repr__(self):
-        return 'FontChoice' + repr((self.family, self.size, self.weight, self.slant))
-
+from .tkterminal import FontChoice, default_terminal_font
 
 class Settings:
     def __init__(self):
@@ -55,16 +38,7 @@ class Settings:
         return self.setting_dict.get(key, default)
 
     def default_font(self):
-        size = 13 if sys.platform == 'darwin' else 11
-        family = Font(font='TkFixedFont').actual()['family']
-        if sys.platform == 'win32':
-            # Default is Courier New which is ugly and appears blurry.
-            available = font_families()
-            for better in ['Consolas', 'Cascadia Mono SemiLight']:
-                if better in available:
-                    family = better
-
-        return FontChoice(family, size, 'normal', 'roman')
+        return default_terminal_font()
 
     def find_settings(self):
         if sys.platform == 'darwin':

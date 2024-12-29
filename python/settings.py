@@ -257,7 +257,8 @@ class SettingsDialog(Dialog):
         self.set_font_sample()
 
     def set_font_families(self):
-        families = {f for f in font_families() if f[0] != '@'} # omit vertical fonts
+        families = {f for f in font_families()
+                    if f[0] != '@' and f.lower().find('emoji') < 0} # omit vertical fonts, emojis
         if self.fixed_only.get():
             families = {f for f in families if Font(family=f).metrics('fixed')}
         families.add(self.settings['font'].family)

@@ -273,16 +273,17 @@ class TkTerminalBase:
         self.IP.showtraceback()
 
     def set_font(self, font_choice):
-        self.normal_font = normal_font = Font(font=font_choice.as_tuple())
-        self.bold_font = bold_font = Font(font=font_choice.bold().as_tuple())
-        self.text.config(font=normal_font)
+        normal_tuple = font_choice.as_tuple()
+        bold_tuple = font_choice.bold().as_tuple()
+        normal_font = Font(font=font_choice.as_tuple())
         self.char_size = normal_font.measure('M')
+        self.text.config(font=normal_tuple)
         text = self.text
-        text.tag_config('output', font=normal_font)
-        text.tag_config('Prompt', foreground='#0000cc', font=normal_font)
-        text.tag_config('PromptNum', foreground='#0000bb', font=bold_font)
-        text.tag_config('OutPrompt', foreground='#cc0000', font=normal_font)
-        text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_font)
+        text.tag_config('output', font=normal_tuple)
+        text.tag_config('Prompt', foreground='#0000cc', font=normal_tuple)
+        text.tag_config('PromptNum', foreground='#0000bb', font=bold_tuple)
+        text.tag_config('OutPrompt', foreground='#cc0000', font=normal_tuple)
+        text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_tuple)
 
     def add_blocker(self, window, message):
         self.blockers[window] = message

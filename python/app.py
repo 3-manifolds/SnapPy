@@ -77,7 +77,7 @@ class SnapPyTerm(TkTerminalBase, ListedWindow):
                                  foreground='DarkGreen',
                                  anchor=Tk_.W,
                                  justify=Tk_.LEFT,
-                                 font=self.settings['font'])
+                                 font=self.settings['font'].as_tuple())
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')
@@ -426,11 +426,11 @@ class SnapPyInsideViewer(InsideViewer):
 class SnapPySettings(Settings, ListedWindow):
     def __init__(self, terminal):
         self.terminal = terminal
-        Settings.__init__(self, terminal.text)
+        Settings.__init__(self)
         self.apply_settings()
 
     def apply_settings(self):
-        self.terminal.set_font(self['font'])
+        self.terminal.set_font(self['font'].as_tuple())
         changed = self.changed()
         IP = self.terminal.IP
         self.terminal.quiet = True

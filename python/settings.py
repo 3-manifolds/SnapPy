@@ -1,18 +1,32 @@
 import os
 import sys
-try:
-    import plistlib
-except ImportError:
-    from . import plistlib
+import plistlib
 from .gui import *
 from .app_menus import ListedWindow
 
+class FontChoice:
+    def __init__(self, family, size, weight, slant):
+        self.family = family
+        self.size = size
+        self.weight = weight
+        self.slant = slant
+        self.rest = f'{self.weight} {self.slant}'
+
+    def as_tuple(self):
+        size = self.size
+        if sys.platform == 'darwin' and Tk_.TkVersion >= 9.0:
+            size = int(size/1.3)
+        return (self.family, size, self.rest)
+
+    def __repr__(self):
+        return 'FontChoice' + repr((self.family, self.size, self.weight, self.slant))
+
+
 class Settings:
-    def __init__(self, text_widget):
-        self.text_widget = text_widget
+    def __init__(self):
         self.setting_dict = {
             'autocall' : False,
-            'font' : self.current_font_tuple(),
+            'font' : self.default_font(),
             'cusp_horoballs' : True,
             'cusp_triangulation' : True,
             'cusp_ford_domain' : True,
@@ -40,14 +54,13 @@ class Settings:
     def get(self, key, default):
         return self.setting_dict.get(key, default)
 
-    def current_font_dict(self):
-        font_string = self.text_widget.cget('font')
-        return Font(font=font_string).actual()
-
-    def current_font_tuple(self):
-        font = self.current_font_dict()
-        style = '%s %s' % (font['weight'], font['slant'])
-        return (font['family'], font['size'], style)
+    def default_font(self):
+        default = Font(font='TkDefaultFont').actual()
+        fixed = Font(font='TkFixedFont').actual()
+        size = default['size']
+        if sys.platform == 'darwin' and Tk_.TkVersion >= 9.0:
+            size = int(1.3*size)
+        return FontChoice(fixed['family'], size, fixed['weight'], fixed['slant'])
 
     def find_settings(self):
         if sys.platform == 'darwin':
@@ -74,18 +87,22 @@ class Settings:
                         self.setting_dict.update(plistlib.load(setting_file))
                 else:
                     self.setting_dict.update(plistlib.readPlist(self.setting_file))
-                # plistlib screws up tuples
-                self.setting_dict['font'] = tuple(self.setting_dict['font'])
+                family, size, info = self.setting_dict['font']
+                weight, slant = info.split()
+                self.setting_dict['font'] = FontChoice(family, size, weight, slant)
             except OSError:
                 pass
 
     def write_settings(self):
         if self.setting_file:
+            setting_dict = self.setting_dict.copy()
+            font = self.setting_dict['font']
+            setting_dict['font'] = (font.family, font.size, font.rest)
             if hasattr(plistlib, 'dump'):
                 with open(self.setting_file, 'wb') as setting_file:
-                    plistlib.dump(self.setting_dict, setting_file)
+                    plistlib.dump(setting_dict, setting_file)
             else:
-                plistlib.writePlist(self.setting_dict, self.setting_file)
+                plistlib.writePlist(setting_dict, self.setting_file)
 
     def cache_settings(self):
         self.cache.update(self.setting_dict)
@@ -100,7 +117,6 @@ class Settings:
 
     # Override this in a subclass.
     def apply_settings(self):
-        self.text_widget.config(font=self.setting_dict['font'])
         print(self.setting_dict)
 
 
@@ -133,7 +149,7 @@ class SettingsDialog(Dialog):
 
     def run(self):
         self.wait_window(self)
-        
+
     def validate(self):
         cutoff = self.cutoff.get()
         try:
@@ -172,7 +188,7 @@ class SettingsDialog(Dialog):
         self.body_frame.focus_set()
 
     def build_font_pane(self, master):
-        current_font = self.settings.current_font_dict()
+        current_font = self.settings['font']
         groupBG = self.style.groupBG
         self.font_frame = font_frame = ttk.Frame(master)
         font_frame.columnconfigure(2, weight=1)
@@ -180,14 +196,6 @@ class SettingsDialog(Dialog):
         self.list_frame = list_frame = ttk.Frame(font_frame)
         self.font_list = font_list = Tk_.Listbox(list_frame,
                                                  selectmode=Tk_.SINGLE)
-        self.families = families = [f for f in font_families()
-                                    if f[0] != '@'] # omit vertical fonts
-        families.sort()
-        for family in families:
-            font_list.insert(Tk_.END, family)
-        self.current_family = families.index(current_font['family'])
-        font_list.selection_set(self.current_family)
-        font_list.see(self.current_family)
         font_list.grid(row=0, column=0, pady=(20,30))
         font_scroller = ttk.Scrollbar(list_frame,
                                       command=font_list.yview)
@@ -201,14 +209,14 @@ class SettingsDialog(Dialog):
                                              command=self.set_font_sample,
                                              )
         sizer.delete(0,2)
-        sizer.insert(0, current_font['size'] )
+        sizer.insert(0, current_font.size )
         sizer.bind('<Return>', self.set_font_sample)
         sizer.bind('<Tab>', self.set_font_sample)
-        self.current_size = current_font['size']
+        self.current_size = current_font.size
         sizer.grid(row=0, column=2, sticky=Tk_.W, pady=(20,0))
         label = ttk.Label(font_frame, text='Weight: ')
         label.grid(row=1, column=1, sticky=Tk_.E)
-        self.font_weight = weight = Tk_.StringVar(value=current_font['weight'])
+        self.font_weight = weight = Tk_.StringVar(value=current_font.weight)
         radio = ttk.Radiobutton(font_frame, text='normal', variable=weight,
                                     value='normal', command=self.set_font_sample)
         radio.grid(row=1, column=2, sticky=Tk_.W)
@@ -217,25 +225,45 @@ class SettingsDialog(Dialog):
         radio.grid(row=2, column=2, sticky=Tk_.W)
         label = ttk.Label(font_frame, text='Slant: ')
         label.grid(row=3, column=1, sticky=Tk_.E)
-        self.font_slant = slant = Tk_.StringVar(value=current_font['slant'])
+        self.font_slant = slant = Tk_.StringVar(value=current_font.slant)
         radio = ttk.Radiobutton(font_frame, text='roman', variable=slant,
                                  value='roman', command=self.set_font_sample)
         radio.grid(row=3, column=2, sticky=Tk_.W)
         radio = ttk.Radiobutton(font_frame, text='italic', variable=slant,
                                     value='italic', command=self.set_font_sample)
         radio.grid(row=4, column=2, sticky=Tk_.W)
-        self.sample = sample = Tk_.Text(self.font_frame,
+
+        self.fixed_only =  Tk_.BooleanVar(value=True)
+        self.check_fixed = ttk.Checkbutton(font_frame, variable=self.fixed_only,
+                                           text='Fixed-width fonts only',
+                                           command=self.set_font_families)
+        self.check_fixed.grid(row=6, column=0, pady=(0, 10), sticky=Tk_.N)
+        self.sample = sample = Tk_.Text(font_frame,
                                         width=40, height=6,
                                         highlightthickness=0,
                                         relief=Tk_.FLAT,
-                                        font=self.settings['font'])
+                                        font=self.settings['font'].as_tuple())
         self.sample.bind('<Button-1>', lambda event: 'break')
         self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'
                            'abcdefghijklmnopqrstuvwxyz')
         sample.tag_add('all', '1.0', Tk_.END)
-        self.set_font_sample()
         font_list.bind('<ButtonRelease-1>', self.set_font_sample)
-        self.sample.grid(row=6, columnspan=4, padx=10, pady=10, sticky=Tk_.E+Tk_.W)
+        self.sample.grid(row=7, columnspan=4, padx=10, pady=10, sticky=Tk_.E+Tk_.W)
+        self.set_font_families()
+        self.set_font_sample()
+
+    def set_font_families(self):
+        families = {f for f in font_families() if f[0] != '@'} # omit vertical fonts
+        if self.fixed_only.get():
+            families = {f for f in families if Font(family=f).metrics('fixed')}
+        families.add(self.settings['font'].family)
+        self.families = families = sorted(families)
+        self.font_list.delete(0, self.font_list.size() - 1)
+        for family in families:
+            self.font_list.insert(Tk_.END, family)
+        self.current_family = families.index(self.settings['font'].family)
+        self.font_list.selection_set(self.current_family)
+        self.font_list.see(self.current_family)
 
     def get_font(self):
         selection = self.font_list.curselection()
@@ -252,14 +280,14 @@ class SettingsDialog(Dialog):
             self.font_sizer.delete(0, Tk_.END)
             self.font_sizer.insert(0, str(size))
         self.font_list.selection_set(self.current_family)
-        style = '%s %s' % (self.font_weight.get(), self.font_slant.get())
-        return (family, size, style.strip())
+        return FontChoice(family, size,
+                          self.font_weight.get(), self.font_slant.get())
 
     def set_font_sample(self, event=None):
         new_font = self.get_font()
         self.settings['font'] = new_font
         self.sample.tag_config('all', justify=Tk_.CENTER,
-                               font=new_font)
+                               font=new_font.as_tuple())
 
     def build_shell_pane(self, master):
         groupBG = self.style.groupBG
@@ -368,21 +396,7 @@ class SettingsDialog(Dialog):
 
 if __name__ == '__main__':
     parent = Tk_.Tk(className='snappy')
-    text_widget = Tk_.Text(parent)
-    text_widget.insert(Tk_.INSERT, """
-Lorem ipsum dolor sit amet, consectetur adipisicing
-elit, sed do eiusmod tempor incididunt ut labore et
-dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip
-ex ea commodo consequat. Duis aute irure dolor in
-reprehenderit in voluptate velit esse cillum dolore
-eu fugiat nulla pariatur. Excepteur sint occaecat
-cupidatat non proident, sunt in culpa qui officia
-deserunt mollit anim id est laborum.""")
-    text_widget.tag_add('all', '1.0', Tk_.END)
-    text_widget.tag_config('all', lmargin1=20, lmargin2=20)
-    text_widget.pack()
-    settings = Settings(text_widget)
+    settings = Settings()
     settings.apply_settings()
     SettingsDialog(parent, settings)
     parent.mainloop()

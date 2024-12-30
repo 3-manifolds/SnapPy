@@ -384,7 +384,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     visited.add((tet1.Index, vert1))
 
     def _debug_show_horotriangles(self, cusp : int =0):
-        from sage.all import line, real, imag
+        from sage.plot.line import line
+        from sage.functions.other import real
+        from sage.functions.other import imag
 
         self.add_vertex_positions_to_horotriangles()
 
@@ -398,7 +400,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
               if tet.Class[V].Index == cusp ])
 
     def _debug_show_lifted_horotriangles(self, cusp : int =0):
-        from sage.all import line, real, imag
+        from sage.plot.line import line
+        from sage.functions.other import real
+        from sage.functions.other import imag
 
         self.add_vertex_positions_to_horotriangles()
 

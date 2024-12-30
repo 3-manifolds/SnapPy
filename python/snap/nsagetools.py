@@ -6,9 +6,20 @@ from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     import sage
-    from sage.all import (ZZ, vector, matrix, block_matrix, identity_matrix,
-                          gcd, prod, det, MatrixSpace, AbelianGroup, GroupAlgebra,
-                          SageObject, PolynomialRing, LaurentPolynomialRing)
+    from sage.rings.integer_ring import Z as ZZ
+    from sage.modules.free_module_element import free_module_element as vector
+    from sage.matrix.constructor import Matrix as matrix
+    from sage.matrix.special import block_matrix
+    from sage.matrix.special import identity_matrix
+    from sage.arith.misc import GCD as gcd
+    from sage.misc.misc_c import prod
+    from sage.misc.functional import det
+    from sage.matrix.matrix_space import MatrixSpace
+    from sage.groups.abelian_gps.abelian_group import AbelianGroup
+    from sage.algebras.group_algebra import GroupAlgebra
+    from sage.structure.sage_object import SageObject
+    from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+    from sage.rings.polynomial.laurent_polynomial_ring import LaurentPolynomialRing
 
     from .polished_reps import polished_holonomy, MatrixRepresentation
     Id2 = MatrixSpace(ZZ, 2)(1)

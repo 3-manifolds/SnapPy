@@ -15,7 +15,7 @@ from ..interval_tree import *
 from .cusp_translate_engine import *
 
 if _within_sage:
-    from sage.all import matrix
+    from sage.matrix.constructor import Matrix as matrix
     import sage.all
 
 import heapq

@@ -7,7 +7,7 @@ __all__ = [
     'verify_hyperbolicity' ]
 
 if _within_sage:
-    from sage.all import pi
+    from sage.symbolic.constants import pi
     import sage.all
 
 

@@ -2,7 +2,8 @@ from ...sage_helper import _within_sage
 
 if _within_sage:
     import sage.all
-    from sage.all import matrix, sqrt
+    from sage.matrix.constructor import Matrix as matrix
+    from sage.misc.functional import sqrt
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
 
 from .extended_matrix import ExtendedMatrix

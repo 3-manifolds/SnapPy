@@ -11,7 +11,7 @@ __all__ = ['FundamentalPolyhedronEngine']
 
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import matrix
+    from sage.matrix.constructor import Matrix as matrix
 else:
     from .utilities import Matrix2x2 as matrix
 

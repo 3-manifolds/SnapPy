@@ -1,6 +1,18 @@
-from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
-                      ZZ, QQ, CDF, ComplexField, NumberField, PolynomialRing,
-                      matrix, identity_matrix)
+from sage.misc.cachefunc import cached_method
+from sage.functions.other import real as real_part
+from sage.functions.other import imag as imag_part
+from sage.misc.functional import round
+from sage.functions.other import ceil
+from sage.functions.other import floor
+from sage.misc.functional import log
+from sage.rings.integer_ring import Z as ZZ
+from sage.rings.rational_field import Q as QQ
+from sage.rings.complex_double import CDF
+from sage.rings.complex_mpfr import ComplexField
+from sage.rings.number_field.number_field import NumberField
+from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
+from sage.matrix.constructor import Matrix as matrix
+from sage.matrix.special import identity_matrix
 import itertools
 
 

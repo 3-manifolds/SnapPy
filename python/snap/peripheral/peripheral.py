@@ -3,7 +3,9 @@ from .. import t3mlite as t3m
 from . import link, dual_cellulation
 
 if sage_helper._within_sage:
-    from sage.all import matrix, vector, ZZ
+    from sage.matrix.constructor import Matrix as matrix
+    from sage.modules.free_module_element import free_module_element as vector
+    from sage.rings.integer_ring import Z as ZZ
 
 
 def peripheral_curve_from_snappy(dual_cell, snappy_data):

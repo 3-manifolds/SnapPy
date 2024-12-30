@@ -16,7 +16,10 @@ Notes:
 This file is not currently used by SnapPy, but is kept for possible
 future reference.
 """
-from sage.all import QQ, vector, matrix, VectorSpace
+from sage.rings.rational_field import Q as QQ
+from sage.modules.free_module_element import free_module_element as vector
+from sage.matrix.constructor import Matrix as matrix
+from sage.modules.free_module import VectorSpace
 
 
 class Vector:

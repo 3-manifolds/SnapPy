@@ -27,7 +27,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.2 (??? 2024):
+* Version 3.2 (??? 2025):
 
   - An alternative implementation of the length spectrum. It supports verified
     computations and is significantly faster in some cases. See
@@ -40,9 +40,10 @@ News
 
   - A paper plane or eye ball in the
     :meth:`inside_view <snappy.Manifold.inside_view>` showing the position
-    and bearing of the user in the hyperbolic manifold. The geodesics window
-    now also features a button to put the camera onto a geodesic. Here are some
-    examples:
+    and bearing of the user in the hyperbolic manifold. By default, we now show
+    the paper plane instead of the edges of the triangulation so that the view
+    is intrinsic to the manifold. The geodesics window now also features a
+    button to put the camera onto a geodesic. Here are some examples:
 
     .. list-table::
        :width: 100%

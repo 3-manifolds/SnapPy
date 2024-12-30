@@ -785,7 +785,7 @@ class Driller(SimpleDialog):
         top_frame = ttk.Frame(self.root)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_rowconfigure(2, weight=1)
-        msg_font = Font(family=style.font_info['family'],
+        msg_font = dict(family=style.font_info['family'],
                         weight='bold',
                         size=int(style.font_info['size']*1.2))
         msg = ttk.Label(top_frame, font=msg_font,
@@ -881,7 +881,7 @@ class Coverer(SimpleDialog):
         top_frame.grid_rowconfigure(2, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
-        msg_font = Font(family=style.font_info['family'],
+        msg_font = dict(family=style.font_info['family'],
                         weight='bold',
                         size=int(style.font_info['size']*1.2))
         msg = ttk.Label(top_frame, font=msg_font,

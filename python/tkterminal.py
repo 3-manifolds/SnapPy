@@ -541,7 +541,6 @@ class TkTerminalBase:
         comps = [word + c[n:] for c in comps]
         self.text.delete(self.tab_index, Tk_.END)
         width = self.text.winfo_width()
-        font = Font(self.text, self.text.cget('font'))
         charwidth = width // self.char_size
         biggest = 2 + max([len(x) for x in comps])
         num_cols = charwidth // biggest

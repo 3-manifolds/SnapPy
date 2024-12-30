@@ -21,6 +21,14 @@ else:
     Spinbox = ttk.Spinbox
 
 
+def nominal_font_dict(tk_font):
+    """
+    Like Font.actual() but not messed up by GNOME scaling factors on
+    Linux.
+    """
+    return {key:tk_font.cget(key) for key in tk_font.actual()}
+
+
 class SnapPyStyle:
     def __init__(self):
         self.ttk_style = ttk_style = ttk.Style()
@@ -47,7 +55,7 @@ class SnapPyStyle:
         # least on macOS).  We restore the Tk 8.6 behavior.
         self.ttk_style.configure('TLabelframe.Label',
                                  font=self.font)
-        self.font_info = fi = Font(font=self.font).actual()
+        self.font_info = fi = nominal_font_dict(Font(font=self.font))
         fi['size'] = int(str(fi['size']))
 
 

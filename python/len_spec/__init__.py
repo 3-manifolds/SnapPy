@@ -86,11 +86,11 @@ def length_spectrum_alt_gen(manifold,
 
     Over an hour to compute::
 
-        >>> M.high_precision.length_spectrum(0.1) # doctest: +SKIP
+        >>> M.high_precision().length_spectrum(0.1) # doctest: +SKIP
         mult  length                                  topology     parity
         1     0.00150226276052 - 2.39996262244127*I   circle       +
 
-    A couple of seconds to compute::
+    A couple of minutes to compute::
 
         >>> spec = M.length_spectrum_alt_gen(bits_prec = 150)
         >>> next(spec)  # doctest: +SKIP

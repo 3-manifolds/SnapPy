@@ -543,8 +543,8 @@ class TkTerminalBase:
         width = self.text.winfo_width()
         charwidth = width // self.char_size
         biggest = 2 + max([len(x) for x in comps])
-        num_cols = charwidth // biggest
-        num_rows = (len(comps) + num_cols - 1)//num_cols
+        num_cols = max(charwidth // biggest, 1)
+        num_rows = (len(comps) + num_cols - 1) // num_cols
         rows = []
         format = '%%-%ds' % biggest
         for n in range(num_rows):

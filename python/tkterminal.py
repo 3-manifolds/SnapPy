@@ -778,7 +778,6 @@ class TkTerminalBase:
         prompt and set the 'more' flag.  If the code is valid and
         complete then run the code.
         """
-        transformer = self.IP.input_transformer_manager
         assert cell.endswith('\n')
         if not cell.strip():
             self._current_indent = 0
@@ -787,7 +786,8 @@ class TkTerminalBase:
             self._input_buffer += cell
         else:
             self._input_buffer = self.clean_code(cell)
-        status, indent = transformer.check_complete(self._input_buffer)
+        transformed_cell = self.IP.transform_cell(self._input_buffer)
+        status, indent = self.IP.check_complete(transformed_cell)
         self._current_indent = indent or 0
         if status == 'incomplete':
             self.IP.more = True

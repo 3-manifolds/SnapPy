@@ -272,6 +272,8 @@ class SimpleImageShaderWidget(GLCanvas):
     def draw(self):
         width = self.winfo_width()
         height = self.winfo_height()
+        if width <= 1 or height <= 1:
+            return
 
         self.make_current()
         self.draw_impl(width, height)

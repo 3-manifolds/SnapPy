@@ -398,8 +398,11 @@ class _IdealPointTester():
     """
 
     def matrices(self):
-        from sage.rings.real_mpfi import RIF
-        from sage.rings.cif import CIF
+        try:
+            from sage.rings.real_mpfi import RIF
+            from sage.rings.cif import CIF
+        except ImportError:
+            from sage.all import RIF, CIF
         from sage.matrix.constructor import Matrix as matrix
 
         return [
@@ -412,8 +415,11 @@ class _IdealPointTester():
                  [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]]) ]
 
     def run_tests(self):
-        from sage.rings.real_mpfi import RIF
-        from sage.rings.cif import CIF
+        try:
+            from sage.rings.real_mpfi import RIF
+            from sage.rings.cif import CIF
+        except ImportError:
+            from sage.all import RIF, CIF
 
         bias = RIF(1.5)
 

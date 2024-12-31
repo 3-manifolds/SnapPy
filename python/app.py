@@ -575,6 +575,27 @@ def main():
     LP.UI_callback = HP.UI_callback = terminal.SnapPea_callback
     # if not snappy.SnapPy._within_sage:
     #    snappy.pari.UI_callback = terminal.PARI_callback
+
+    """
+    Experimental optional Tk themes on linux.  You need to install
+    tksvg from source for Python 3.10 or newer like so::
+
+      sudo apt install cmake build-essential tcl-dev tk-dev python3-tk
+      python -m pip install scikit-build
+      git clone --recursive https://github.com/TkinterEP/python-tksvg.git
+      cd python-tksvg
+      python -m pip install .
+
+    then you can do::
+
+      python -m pip install python-awthemes
+
+    and uncomment the next four lines.
+    """
+    # terminal.window.call('tk', 'scaling', 2.0)  # Not sure this actually does anything
+    # import awthemes
+    # style = awthemes.AwthemesStyle(terminal.window)
+    # style.theme_use('awbreeze')
     terminal.window.lift()
     terminal.window.mainloop()
     # kernel_server.stop()

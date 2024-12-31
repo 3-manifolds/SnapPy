@@ -53,11 +53,11 @@ class SnapPyStyle:
         self.font = ttk_style.lookup('TLabel', 'font')
         # TLabel.font and TLabelframe.Label.font differ in Tk 9.0 (at
         # least on macOS).  We restore the Tk 8.6 behavior.
-        self.ttk_style.configure('TLabelframe.Label',
-                                 font=self.font)
         self.font_info = fi = nominal_font_dict(Font(font=self.font))
         fi['size'] = int(str(fi['size']))
-
+        # Linux makes the treeview rows too small, at least with hi-dpi displays.
+        if sys.platform == 'linux':
+            self.ttk_style.configure('Treeview', rowheight=2 * fi['size'])
 
 class ViewerWindow(Tk_.Toplevel):
     def __init__(self, view_class, *args, **kwargs):

@@ -346,7 +346,7 @@ class Browser(Tk_.Toplevel):
         self.aka_viewer = aka_viewer = ttk.Treeview(
             self.aka,
             selectmode='none',
-            height=4,
+            height=2 if sys.platform == 'linux' else 4,
             columns=['manifold', 'as_link'],
             show='headings')
         aka_viewer.heading('manifold', text='Manifold')

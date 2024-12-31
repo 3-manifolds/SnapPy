@@ -22,17 +22,9 @@ if _within_sage:
         function._sage_method = True
         return function
 
-    try:  # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483
-        from sage.rings.complex_mpfr import (ComplexField,
-                                             ComplexField_class,
-                                             create_ComplexNumber)
-    except ModuleNotFoundError:
-        from sage.rings.complex_field import ComplexField, ComplexField_class
-        from sage.rings.complex_number import create_ComplexNumber
-
     try:
         # Monolithic Sage library
-        from sage.all import RealField, RealDoubleElement, ComplexField, gcd, prod, powerset
+        from sage.all import RealField, RealDoubleElement, gcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
         from sage.all import Integer, Rational, QQ, RR, CC
         from sage.all import sqrt
@@ -62,6 +54,14 @@ if _within_sage:
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
     from sage.rings.real_mpfr import RealNumber
     from sage.structure.sage_object import SageObject
+
+    try:  # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483
+        from sage.rings.complex_mpfr import (ComplexField,
+                                             ComplexField_class,
+                                             create_ComplexNumber)
+    except ImportError:
+        from sage.rings.complex_field import ComplexField, ComplexField_class
+        from sage.rings.complex_number import create_ComplexNumber
 
 else:
     import decorator

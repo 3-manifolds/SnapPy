@@ -4,23 +4,14 @@ import sys
 import time
 import tempfile
 import tkinter as Tk_
-from tkinter import ttk as ttk
+from tkinter import ttk
+from tkinter.ttk import Spinbox
 from tkinter.font import Font, families as font_families
 from tkinter.simpledialog import Dialog, SimpleDialog
 from plink.ipython_tools import IPythonTkRoot
 from . import filedialog
 
-if sys.version_info < (3, 7):
-    class Spinbox(ttk.Entry):
-        def __init__(self, container=None, **kw):
-            ttk.Entry.__init__(self, container, "ttk::spinbox", **kw)
-
-        def set(self, value):
-            self.tk.call(self._w, "set", value)
-else:
-    Spinbox = ttk.Spinbox
-
-
+    
 def nominal_font_dict(tk_font):
     """
     Like Font.actual() but not messed up by GNOME scaling factors on
@@ -51,8 +42,12 @@ class SnapPyStyle:
             self.groupBG = self.subgroupBG = self.windowBG
 
         self.font = ttk_style.lookup('TLabel', 'font')
+        if self.font == '':
+            self.font = 'TkDefaultFont'
         # TLabel.font and TLabelframe.Label.font differ in Tk 9.0 (at
         # least on macOS).  We restore the Tk 8.6 behavior.
+        self.ttk_style.configure('TLabelframe.Label',
+                                 font=self.font)
         self.font_info = fi = nominal_font_dict(Font(font=self.font))
         fi['size'] = int(str(fi['size']))
         # Linux makes the treeview rows too small, at least with hi-dpi displays.

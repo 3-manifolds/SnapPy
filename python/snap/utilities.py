@@ -12,10 +12,8 @@ from itertools import chain
 from ..pari import pari, PariError
 from .fundamental_polyhedron import Infinity
 if _within_sage:
-    from sage.matrix.constructor import Matrix as sage_matrix
-    from sage.modules.free_module_element import free_module_element as sage_vector
-    from sage.rings.real_mpfr import RealField_class
-    from ..sage_helper import ComplexField_class
+    from ..sage_helper import matrix as sage_matrix, vector as sage_vector
+    from ..sage_helper import RealField_class, ComplexField_class
 
     def is_field(R):
         return isinstance(R, (SnapPyNumbers, RealField_class,

@@ -2,14 +2,9 @@ from collections import OrderedDict
 from ... import sage_helper
 
 if sage_helper._within_sage:
-    from sage.rings.integer_ring import Z as ZZ
-    from sage.matrix.constructor import Matrix as matrix
-    from sage.modules.free_module_element import free_module_element as vector
+    from ...sage_helper import ZZ, matrix, vector, cached_method
     from sage.homology.chain_complex import ChainComplex
-    from sage.misc.cachefunc import cached_method
-    from sage.plot.line import line
-    from sage.plot.arrow import arrow
-    from sage.plot.text import text
+    from sage.plot.all import line, arrow, text
 else:
     def cached_method(func):
         return func

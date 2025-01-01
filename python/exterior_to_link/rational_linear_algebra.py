@@ -17,11 +17,7 @@ use_pari_even_inside_sage = False
 from .. import sage_helper
 
 if sage_helper._within_sage and not use_pari_even_inside_sage:
-    from sage.rings.rational_field import Q as QQ
-    from sage.rings.real_mpfr import RR
-    from sage.modules.free_module_element import free_module_element as vector
-    from sage.matrix.constructor import Matrix as matrix
-    from sage.modules.free_module import VectorSpace
+    from ..sage_helper import QQ, RR, vector, matrix, VectorSpace
 
     def rational_sqrt(x):
         """

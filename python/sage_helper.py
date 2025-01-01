@@ -33,6 +33,7 @@ if _within_sage:
         from sage.all import RIF, CIF
         from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
                               CDF, ComplexField, NumberField, PolynomialRing, identity_matrix)
+        from sage.all import VectorSpace
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd
@@ -48,6 +49,7 @@ if _within_sage:
         from sage.misc.cachefunc import cached_method
         from sage.misc.functional import log, round, sqrt
         from sage.misc.misc_c import prod
+        from sage.modules.free_module import VectorSpace
         from sage.modules.free_module_element import free_module_element as vector
         from sage.rings.cc import CC
         from sage.rings.cif import CIF

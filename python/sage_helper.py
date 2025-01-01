@@ -34,9 +34,11 @@ if _within_sage:
         from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
                               CDF, ComplexField, NumberField, PolynomialRing, identity_matrix)
         from sage.all import VectorSpace
-        from sage.all import ComplexBallField, exp, sin, block_matrix, prime_range
+        from sage.all import ComplexBallField, exp, sin, block_matrix, prime_range, det
+        from sage.all import LaurentPolynomialRing, AbelianGroup, GroupAlgebra
     except ImportError:
         # Modularized Sage library
+        from sage.algebras.group_algebra import GroupAlgebra
         from sage.arith.misc import gcd, xgcd
         from sage.combinat.subset import powerset
         from sage.functions.hyperbolic import arccosh
@@ -46,11 +48,12 @@ if _within_sage:
                                           ceil,
                                           floor)
         from sage.functions.trig import sin
+        from sage.groups.abelian_gps.abelian_group import AbelianGroup
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
         from sage.matrix.special import block_matrix, identity_matrix
         from sage.misc.cachefunc import cached_method
-        from sage.misc.functional import log, round, sqrt
+        from sage.misc.functional import det, log, round, sqrt
         from sage.misc.misc_c import prod
         from sage.modules.free_module import VectorSpace
         from sage.modules.free_module_element import free_module_element as vector
@@ -64,6 +67,7 @@ if _within_sage:
         from sage.rings.infinity import Infinity
         from sage.rings.integer import Integer
         from sage.rings.integer_ring import ZZ
+        from sage.rings.polynomial.laurent_polynomial_ring import LaurentPolynomialRing
         from sage.rings.number_field.number_field import NumberField
         from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
         from sage.rings.rational import Rational

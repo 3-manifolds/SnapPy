@@ -370,8 +370,7 @@ class _IntervalTreeTester(IntervalTree):
 
     @staticmethod
     def run_test():
-        from ..sage_helper import RIF, Infinity
-        from sage.functions.trig import sin
+        from ..sage_helper import RIF, Infinity, sin
 
         intervals = [
             RIF(sin(1.2 * i), sin(1.2 * i) + sin(1.43 * i) ** 2)

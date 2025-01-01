@@ -32,8 +32,9 @@ if _within_sage:
         from sage.all import arccosh
         from sage.all import RIF, CIF
         from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
-                              CDF, ComplexField, NumberField, PolynomialRing, identity_matrix)
-        from sage.all import VectorSpace
+                              CDF, ComplexDoubleField, ComplexField, CyclotomicField, NumberField, PolynomialRing, identity_matrix)
+        from sage.all import FiniteField as GF
+        from sage.all import VectorSpace, ChainComplex
         from sage.all import ComplexBallField, exp, sin, block_matrix, prime_range, det
         from sage.all import LaurentPolynomialRing, AbelianGroup, GroupAlgebra
     except ImportError:
@@ -49,6 +50,7 @@ if _within_sage:
                                           floor)
         from sage.functions.trig import sin
         from sage.groups.abelian_gps.abelian_group import AbelianGroup
+        from sage.homology.chain_complex import ChainComplex
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
         from sage.matrix.special import block_matrix, identity_matrix
@@ -60,15 +62,16 @@ if _within_sage:
         from sage.rings.cc import CC
         from sage.rings.cif import CIF
         from sage.rings.complex_arb import ComplexBallField
-        from sage.rings.complex_double import CDF
+        from sage.rings.complex_double import CDF, ComplexDoubleField
         from sage.rings.complex_mpfr import ComplexField
         from sage.rings.fast_arith import prime_range
+        from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
         from sage.rings.imaginary_unit import I
         from sage.rings.infinity import Infinity
         from sage.rings.integer import Integer
         from sage.rings.integer_ring import ZZ
         from sage.rings.polynomial.laurent_polynomial_ring import LaurentPolynomialRing
-        from sage.rings.number_field.number_field import NumberField
+        from sage.rings.number_field.number_field import CyclotomicField, NumberField
         from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
         from sage.rings.rational import Rational
         from sage.rings.rational_field import QQ
@@ -76,7 +79,8 @@ if _within_sage:
         from sage.rings.real_mpfi import RIF
         from sage.rings.real_mpfr import RealField, RealNumber, RR
 
-    from sage.rings.real_mpfi import is_RealIntervalFieldElement
+    from sage.rings.complex_interval_field import ComplexIntervalField
+    from sage.rings.real_mpfi import is_RealIntervalFieldElement, RealIntervalField
     from sage.rings.real_mpfr import RealNumber, RealField_class
     from sage.structure.sage_object import SageObject
 

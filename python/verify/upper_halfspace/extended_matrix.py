@@ -1,10 +1,7 @@
 from ...sage_helper import _within_sage
 
 if _within_sage:
-    try:
-        from sage.misc.functional import sqrt
-    except ImportError:
-        from sage.all import sqrt
+    from ...sage_helper import sqrt
 
 __all__ = ['ExtendedMatrix']
 

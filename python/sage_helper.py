@@ -68,7 +68,7 @@ if _within_sage:
         from sage.rings.real_mpfr import RealField, RealNumber, RR
 
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
-    from sage.rings.real_mpfr import RealNumber
+    from sage.rings.real_mpfr import RealNumber, RealField_class
     from sage.structure.sage_object import SageObject
 
     try:  # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483

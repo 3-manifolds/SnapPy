@@ -7,8 +7,7 @@ from ...snap.t3mlite import simplex
 
 if _within_sage:
     from sage.symbolic.constants import pi
-    from sage.arith.misc import XGCD as xgcd
-    from ...sage_helper import I
+    from ...sage_helper import I, xgcd
 
 from .. import hyperbolicity
 

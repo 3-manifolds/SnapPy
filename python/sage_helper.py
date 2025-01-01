@@ -24,7 +24,7 @@ if _within_sage:
 
     try:
         # Monolithic Sage library
-        from sage.all import RealField, RealDoubleElement, gcd, prod, powerset
+        from sage.all import RealField, RealDoubleElement, gcd, xgcd, prod, powerset
         from sage.all import MatrixSpace, matrix, vector, ZZ
         from sage.all import Integer, Rational, QQ, RR, CC
         from sage.all import sqrt
@@ -36,7 +36,7 @@ if _within_sage:
         from sage.all import VectorSpace
     except ImportError:
         # Modularized Sage library
-        from sage.arith.misc import gcd
+        from sage.arith.misc import gcd, xgcd
         from sage.combinat.subset import powerset
         from sage.functions.hyperbolic import arccosh
         from sage.functions.other import (real as real_part,

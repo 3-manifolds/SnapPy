@@ -17,7 +17,7 @@ and is different from the ``Infinity`` that comes from ``sage.all``.
 from ...sage_helper import _within_sage
 
 if _within_sage:
-    from ...sage_helper import I, matrix
+    from ...sage_helper import I, matrix, RIF, CIF
     from ...sage_helper import Infinity as sage_Infinity
 
 from .finite_point import *
@@ -398,13 +398,6 @@ class _IdealPointTester():
     """
 
     def matrices(self):
-        try:
-            from sage.rings.real_mpfi import RIF
-            from sage.rings.cif import CIF
-        except ImportError:
-            from sage.all import RIF, CIF
-        from sage.matrix.constructor import Matrix as matrix
-
         return [
             matrix.identity(CIF, 2),
             matrix(
@@ -415,12 +408,6 @@ class _IdealPointTester():
                  [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]]) ]
 
     def run_tests(self):
-        try:
-            from sage.rings.real_mpfi import RIF
-            from sage.rings.cif import CIF
-        except ImportError:
-            from sage.all import RIF, CIF
-
         bias = RIF(1.5)
 
         triangle = [ CIF(0), Infinity, CIF(1) ]

@@ -30,6 +30,7 @@ if _within_sage:
         from sage.all import sqrt
         from sage.all import I, Infinity
         from sage.all import arccosh
+        from sage.all import RIF, CIF
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd
@@ -41,6 +42,7 @@ if _within_sage:
         from sage.misc.misc_c import prod
         from sage.modules.free_module_element import free_module_element as vector
         from sage.rings.cc import CC
+        from sage.rings.cif import CIF
         from sage.rings.complex_mpfr import ComplexField
         from sage.rings.imaginary_unit import I
         from sage.rings.infinity import Infinity
@@ -49,6 +51,7 @@ if _within_sage:
         from sage.rings.rational import Rational
         from sage.rings.rational_field import QQ
         from sage.rings.real_double import RealDoubleElement
+        from sage.rings.real_mpfi import RIF
         from sage.rings.real_mpfr import RealField, RealNumber, RR
 
     from sage.rings.real_mpfi import is_RealIntervalFieldElement

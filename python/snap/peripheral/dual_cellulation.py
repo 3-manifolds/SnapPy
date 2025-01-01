@@ -6,8 +6,7 @@ from ... import sage_helper
 from .. import t3mlite as t3m
 
 if sage_helper._within_sage:
-    from ...sage_helper import ZZ, matrix, vector
-    from sage.homology.chain_complex import ChainComplex
+    from ...sage_helper import ZZ, matrix, vector, ChainComplex
     from sage.graphs.graph import Graph
 
 

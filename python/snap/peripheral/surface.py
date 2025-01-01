@@ -2,8 +2,7 @@ from collections import OrderedDict
 from ... import sage_helper
 
 if sage_helper._within_sage:
-    from ...sage_helper import ZZ, matrix, vector, cached_method
-    from sage.homology.chain_complex import ChainComplex
+    from ...sage_helper import ZZ, matrix, vector, cached_method, ChainComplex
     from sage.plot.all import line, arrow, text
 else:
     def cached_method(func):

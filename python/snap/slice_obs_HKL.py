@@ -45,13 +45,11 @@ correct.
 
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
-    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace
+    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace, block_matrix, prime_range
     from sage.rings.polynomial.laurent_polynomial_ring import LaurentPolynomialRing
     from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
     from sage.rings.number_field.number_field import CyclotomicField
-    from sage.matrix.special import block_matrix
     from sage.homology.chain_complex import ChainComplex
-    from sage.rings.fast_arith import prime_range
 
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,
                              fox_derivative_with_involution,

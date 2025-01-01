@@ -34,18 +34,21 @@ if _within_sage:
         from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
                               CDF, ComplexField, NumberField, PolynomialRing, identity_matrix)
         from sage.all import VectorSpace
+        from sage.all import ComplexBallField, exp, sin, block_matrix, prime_range
     except ImportError:
         # Modularized Sage library
         from sage.arith.misc import gcd, xgcd
         from sage.combinat.subset import powerset
         from sage.functions.hyperbolic import arccosh
+        from sage.functions.log import exp
         from sage.functions.other import (real as real_part,
                                           imag as imag_part,
                                           ceil,
                                           floor)
+        from sage.functions.trig import sin
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
-        from sage.matrix.special import identity_matrix
+        from sage.matrix.special import block_matrix, identity_matrix
         from sage.misc.cachefunc import cached_method
         from sage.misc.functional import log, round, sqrt
         from sage.misc.misc_c import prod
@@ -53,8 +56,10 @@ if _within_sage:
         from sage.modules.free_module_element import free_module_element as vector
         from sage.rings.cc import CC
         from sage.rings.cif import CIF
+        from sage.rings.complex_arb import ComplexBallField
         from sage.rings.complex_double import CDF
         from sage.rings.complex_mpfr import ComplexField
+        from sage.rings.fast_arith import prime_range
         from sage.rings.imaginary_unit import I
         from sage.rings.infinity import Infinity
         from sage.rings.integer import Integer

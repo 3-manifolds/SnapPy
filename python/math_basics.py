@@ -21,8 +21,8 @@ def is_Interval(x):
     return is_RealIntervalFieldElement(x) or is_ComplexIntervalFieldElement(x)
 
 if _within_sage:
-    from sage.misc.misc_c import prod
-    from sage.arith.misc import XGCD as xgcd
+    from .sage_helper import prod, xgcd
+
     from sage.rings.real_mpfi import RealIntervalFieldElement
     from sage.rings.complex_interval import ComplexIntervalFieldElement
 

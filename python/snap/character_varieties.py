@@ -359,7 +359,7 @@ def character_variety_ideal(gens, rels=None):
     2
     """
     presentation = character_variety(gens, rels)
-    from sage.all import PolynomialRing, QQ
+    from ..sage_helper import PolynomialRing, QQ
     R = PolynomialRing(QQ, [repr(v) for v in presentation.gens])
     return R.ideal([R(p) for p in presentation.rels])
 

@@ -4,9 +4,7 @@ from ..matrix import make_identity_matrix, make_matrix, make_vector
 from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
-    from sage.rings.complex_interval_field import ComplexIntervalField
-    from sage.rings.real_mpfi import RealIntervalField
-    from sage.all import ComplexDoubleField
+    from ..sage_helper import ComplexDoubleField, ComplexIntervalField, RealIntervalField
     from snappy.pari import prec_dec_to_bits
 
 __all__ = ['KrawczykShapesEngine']

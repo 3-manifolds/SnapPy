@@ -5,7 +5,7 @@ from snappy.drilling import drill_words
 from snappy.drilling import exceptions
 from snappy.drilling import perturb
 
-from sage.all import pi
+from sage.symbolic.constants import pi
 
 # perturb._tube_developing_radius = 1
 

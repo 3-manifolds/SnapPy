@@ -49,7 +49,8 @@ cdef class AbelianGroup():
                                  'as a sequence.')
         int_types = [int]
         if _within_sage:
-            int_types += [sage.rings.integer.Integer]
+            from sage.rings.integer import Integer
+            int_types += [Integer]
         for c in self.divisors:
             assert type(c) in int_types and c >= 0,\
                    'Elementary divisors must be non-negative integers.\n'

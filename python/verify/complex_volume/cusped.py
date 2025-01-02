@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage, sage_method
 
 if _within_sage:
-    import sage.all
+    from ...sage_helper import I
 
 from .. import hyperbolicity
 from ...geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
@@ -53,4 +53,4 @@ def verified_complex_volume_cusped_torsion(manifold, bits_prec=None):
     # I.
     # Also add multiples of pi^2/2 to try to get the Chern-Simons part
     # between -pi^2/4 and pi^2/4.
-    return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
+    return normalize_by_pi_square_over_two(complex_volume) / I

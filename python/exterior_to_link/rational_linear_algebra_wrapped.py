@@ -16,7 +16,7 @@ Notes:
 This file is not currently used by SnapPy, but is kept for possible
 future reference.
 """
-from sage.all import QQ, vector, matrix, VectorSpace
+from ..sage_helper import QQ, vector, matrix, VectorSpace
 
 
 class Vector:

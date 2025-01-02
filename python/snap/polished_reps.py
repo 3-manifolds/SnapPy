@@ -10,10 +10,10 @@ from ..pari import pari
 from .fundamental_polyhedron import *
 
 if _within_sage:
-    import sage
-    from sage.all import RealField, ComplexField, gcd, prod, powerset
-    from sage.all import MatrixSpace, matrix, vector, ZZ
-    Object = sage.structure.sage_object.SageObject
+    from ..sage_helper import RealField, ComplexField, gcd, prod, powerset
+    from ..sage_helper import MatrixSpace, matrix, vector, ZZ
+    from ..sage_helper import SageObject as Object
+
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
     abelian_group_elt = lambda v: vector(ZZ, v)
 else:

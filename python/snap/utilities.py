@@ -24,7 +24,7 @@ else:
         return isinstance(R, SnapPyNumbers)
 
 
-class MatrixBase():
+class MatrixBase:
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
     _base_ring = None
 

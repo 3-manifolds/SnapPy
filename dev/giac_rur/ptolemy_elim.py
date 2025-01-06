@@ -27,7 +27,7 @@ def are_set_to_one(eqns):
     for eqn in eqns:
         parts = poly_parts(eqn)
         if len(parts) == 2:
-            if parts.pop(tuple(), 0) == -1:
+            if parts.pop((), 0) == -1:
                 mono = parts.keys()[0]
                 if len(mono) == 1:
                     var, exp = mono[0]
@@ -60,7 +60,7 @@ def simplify_via_linear_combinations(eqns):
     A = matrix(ZZ, [poly_to_vector(eqn, index) for eqn in eqns])
     B = A.hermite_form()
     if any(len(row.support()) == 1 for row in B):
-        return [Polynomial((Monomial(1, tuple()),))]
+        return [Polynomial((Monomial(1, ()),))]
     A = A.LLL()
     return [vector_to_poly(v, index) for v in A if v != 0]
 

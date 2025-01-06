@@ -8,7 +8,7 @@ from future.builtins import input
 from configparser import ConfigParser
 
 
-class AppveyorREST():
+class AppveyorREST:
     """
     Interacts with Appveyor via their REST API.
     """
@@ -92,7 +92,7 @@ class AppveyorREST():
         print('Started build#{build_id}.'.format(build_id=info['buildId']))
 
 def main():
-    if len(sys.argv) == 1 or set(['help', '-help', '--help', '-h']).intersection(sys.argv):
+    if len(sys.argv) == 1 or {'help', '-help', '--help', '-h'}.intersection(sys.argv):
         print('usage: python appveryor.py [help|build|clear|download <to_dir>]')
         sys.exit()
         

@@ -70,7 +70,7 @@ def parse_ptolemy_face(var):
     return int(tet), int(index)
 
 
-class EdgeGluings():
+class EdgeGluings:
     def __init__(self, gen_obs_class):
         assert gen_obs_class._N == 2
         M = gen_obs_class._manifold
@@ -79,7 +79,7 @@ class EdgeGluings():
         primary_faces = [parse_ptolemy_face(x[2]) for x in
                          M._ptolemy_equations_identified_face_classes()]
         ptolemy_idents = M._ptolemy_equations_identified_coordinates(2, gen_obs_class.H2_class)
-        self.edge_gluings = edge_gluings = dict()
+        self.edge_gluings = edge_gluings = {}
 
         for i, (tet0, face0) in enumerate(primary_faces):
             for j in range(3):
@@ -302,7 +302,7 @@ def sample_apoly_points_via_giac_rur(manifold, n):
 
 def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False, notation = 'short'):
     assert manifold.cusp_info('is_complete') == [False]
-    a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
+    a, b = (int(x) for x in manifold.cusp_info(0)['filling'])
     I, var_dict = extended_ptolemy_equations(
         manifold, nonzero_cond=nonzero_cond,
         return_full_var_dict = True if not return_full_var_dict else return_full_var_dict,

@@ -49,7 +49,7 @@ class Vertex(tuple):
         return "Vertex(%d,%d,%d,%d)" % self
 
 
-class Edge():
+class Edge:
     """
     Base class representing a directed edge of the doubly truncated
     simplex.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 import os
 import webbrowser
@@ -180,7 +179,7 @@ class HelpMenu(Tk_.Menu):
                 self.add_command(label=label, command=self.extra_commands[label])
 
 
-class ListedWindow():
+class ListedWindow:
     """
     Mixin class that allows emulation of the Apple Window menu. Windows
     register when they open by calling the class method register_window.  They

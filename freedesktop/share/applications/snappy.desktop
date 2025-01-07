@@ -1,12 +1,11 @@
 [Desktop Entry]
-Version=3.1
+Version=1.0
 Name=SnapPy
 GenericName=Manifold browser
 Comment=Study hyperbolic 3-manifolds.
-MimeType=;
-Exec=/home/culler/venv/bin/python3 -m snappy.app
+Exec=/usr/bin/env python3 -m snappy.app
 Icon=SnapPy
 Type=Application
 Terminal=false
-Categories=Utility;Application;Math;
+Categories=Science
 StartupWMClass=snappy

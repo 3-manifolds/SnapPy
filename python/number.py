@@ -295,7 +295,7 @@ class Number(Number_baseclass):
             self.accuracy = self.decimal_precision
         else:
             if accuracy is None:
-                accuracy = prec_bits_to_dec(64 * self.gen.sizeword())
+                accuracy = self.gen.precision()
             self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:

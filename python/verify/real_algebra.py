@@ -26,7 +26,7 @@ def _find_unique_good_factor(polynomial, eval_method):
     one factor have this property, raise an exception.
     """
 
-    # Factor polynomial. Call eval_method on each factor which is suppsed to
+    # Factor polynomial. Call eval_method on each factor which is supposed to
     # return an interval. Get those factors for which the resulting interval
     # contains 0.
     good_factors = [ factor

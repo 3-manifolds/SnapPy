@@ -220,7 +220,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
     @staticmethod
     def _face_tilt(face : t3m.Face):
         """
-        Tilt of a face in the trinagulation: this is the sum of
+        Tilt of a face in the triangulation: this is the sum of
         the two tilts of the two faces of the two tetrahedra that are
         glued. The argument is a simplex.Face.
         """

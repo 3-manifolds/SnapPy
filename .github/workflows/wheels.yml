@@ -24,7 +24,7 @@ jobs:
             MACOSX_DEPLOYMENT_TARGET=10.12
           CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
           CIBW_SKIP: "*-manylinux_i686 *musllinux* pp*"
-          CIBW_BEFORE_ALL_LINUX: yum install -y tk mesa-libGLU-devel
+          CIBW_BEFORE_ALL_LINUX: yum install -y tk
           CIBW_BEFORE_BUILD: >
             pip install cython
           CIBW_BEFORE_TEST: >

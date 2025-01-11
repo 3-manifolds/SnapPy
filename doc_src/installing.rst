@@ -64,7 +64,7 @@ with pip.)  If you do not have a venv you can create one, say named
 ~/myvenv with this command::
 
   python3 -m venv ~/myvenv
-  
+
 To use the venv, activate it by running the command::
 
   source ~/myvenv/bin/activate

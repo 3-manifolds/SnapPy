@@ -50,9 +50,11 @@ class SnapPyStyle:
                                  font=self.font)
         self.font_info = fi = nominal_font_dict(Font(font=self.font))
         fi['size'] = int(str(fi['size']))
-        # Linux makes the treeview rows too small, at least with hi-dpi displays.
+        # On linux the treeview rows are too small, at least with hi-dpi displays.
         if sys.platform == 'linux':
-            self.ttk_style.configure('Treeview', rowheight=2 * fi['size'])
+            default_font = Font(name='TkDefaultFont', exists=True)
+            line_height = default_font.metrics()['linespace']
+            self.ttk_style.configure('Treeview', rowheight=line_height)
 
 class ViewerWindow(Tk_.Toplevel):
     def __init__(self, view_class, *args, **kwargs):

@@ -76,7 +76,7 @@ Once your venv is activated, or you have added ~/myvenv/bin to the
 front of your PATH, you may install the snappy package in the venv
 with the command::
 
-python3 -m pip install --upgrade snappy
+  python3 -m pip install --upgrade snappy
 
 You will probably also need to install additional system packages
 in order for all features of snappy to work. Below are short recipes

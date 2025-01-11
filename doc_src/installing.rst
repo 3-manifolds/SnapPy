@@ -14,7 +14,7 @@ macOS
 Simply download `SnapPy.dmg
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.  Works with macOS/OS X 10.9 and
+it, just like any other application.  Works with macOS/OS X 10.13 and
 newer.  Earlier releases `can be found here
 <https://github.com/3-manifolds/SnapPy/releases/>`_.
 
@@ -29,34 +29,77 @@ Earlier releases `can be found here
 
 Linux
 -----
+Starting with SnapPy 3.2, the SnapPy app is available for generic linux
+systems as an AppImage, which is a single executable file that embeds all
+of the code required to run the SnapPy app. The
+AppImage project `recommends <https://docs.appimage.org/user-guide/faq.html?highlight=local#id5>`_ that AppImage files be installed in
+one of the three directories: ~/Applications, ~/bin, or ~/.local/bin.
+The first of these has the advantage of being visible with the usual
+ls command,  while the third has the advantage that it is probably already
+in your PATH.  (Instructions for editing your PATH are
+`here <https://opensource.com/article/17/6/set-path-linux>`_.)
 
-Here are short recipes which work on most Linux systems, specifically
-those that run a 64-bit kernel and have Python 3.6 or newer. These
+Below is a recipe for installing the AppImage in ~/Applications
+after you have downloaded `SnapPy-x86_64.AppImage
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-x86_64.AppImage.>`_::
+
+  mkdir -p ~/Appications
+  mv ~/Downloads/SnapPy-x86_64.AppImage ~/Applications
+  chmod +x ~/Applications/SnapPy-x86_64.AppImage
+  ~/Applications/SnapPy-x86_64.AppImage --install
+
+The last command registers the SnapPy app with your desktop system,
+so it can be located with the desktop search tool or main menu, and
+will have an icon which can be pinned to your dock or task bar.
+  
+Python Modules for linux
+------------------------
+
+It is also possible to install SnapPy with pip, so that it is included
+in your python programming environment.  According to current
+recommendations from the Python project, this means creating a python
+venv and installing pip packages in the venv.  (Current Debian-based
+systems enforce this recommendation by not allowing --user installs
+with pip.)  If you do not have a venv you can create one, say named
+~/myvenv with this command::
+
+  python3 -m venv ~/myvenv
+  
+To use the venv, activate it by running the command::
+
+  source ~/myvenv/bin/activate
+
+Alternatively, you can simply add ~/myvenv/bin to the front of your
+PATH.
+
+Once your venv is activated, or you have added ~/myvenv/bin to the
+front of your PATH, you may install the snappy package in the venv
+with the command::
+
+python3 -m pip install --upgrade snappy
+
+You will probably also need to install additional system packages
+in order for all features of snappy to work. Below are short recipes
+for doing this which work on most Linux systems, specifically those
+that run a 64-bit kernel and have Python 3.6 or newer. These
 instructions assume you have system administrator (superuser)
-privileges to install software packages from your Linux distribution
-but want to install SnapPy (and its various Python dependencies) just
-in your own user directory, specifically ``~/.local``.  For other
-Linux systems, try the one closest to yours below, and if that fails,
-follow the instructions for `generic Unix`_.
+privileges to install software packages from your Linux distribution.
+For other Linux systems, try the one closest to yours below, and if
+that fails, follow the instructions for `generic Unix`_.
 
 + **Ubuntu/Debian/Mint**: Tested on Ubuntu 20.04::
 
-    sudo apt-get install python3-tk python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
+    sudo apt-get install python3-tk
 
   Users of Ubuntu 18.04 or older should do::
 
     sudo apt-get install python3-tk python3-pip
-    # Note no "sudo" on the next two
+    # Note no "sudo" below
     python3 -m pip install --upgrade --user pip wheel
-    python3 -m pip install --upgrade --user snappy
 
 + **Fedora**: Tested on Fedora 30::
 
-    sudo yum install python3-tkinter python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
+    sudo yum install python3-tkinter
 
 + **Red Hat Enterprise Linux/CentOS/SciLinux**: These instructions
   are for version 7 or later, and you need to have the `EPEL packages
@@ -68,21 +111,15 @@ follow the instructions for `generic Unix`_.
 
   Now install via::
 
-    sudo yum install python36-tkinter python36-pip
-    # Note no "sudo" on the next one!
-    python36 -m pip install --upgrade --user snappy
+    sudo yum install python36-tkinter
 
 + **Arch/Manjaro**: Install via::
 
-    sudo pacman -Sy python-pip tk
-    # Note no "sudo" on the next one!
-    python -m pip install --upgrade --user snappy
+    sudo pacman -Sy tk
 
 + **openSUSE**: Install via::
 
-    sudo zypper install -y python3-tk python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
+    sudo zypper install -y python3-tk
 
 If you want the larger version of HTLinkExteriors that includes the 15
 crossing knots (uses 110M of disk space), also install the Python
@@ -90,12 +127,14 @@ package ``snappy_15_knots``, e.g. on Ubuntu do::
 
   python3 -m pip install --upgrade --user snappy_15_knots
 
-Once you have installed SnapPy, do the following to start it::
+Once you have installed SnapPy, just run the following command to start
+the app::
 
-    ~/.local/bin/SnapPy
+    SnapPy
 
 You may get a message about creating a ".ipython" directory; this is
-normal, just hit return to continue.  There should also now be a
+normal, just hit return to continue.
+There should also now be a
 command "SnapPy" which does the same thing.  To make it so that you
 can start SnapPy with just the command ``SnapPy``, make sure
 ``~/.local/bin`` is in `in your path

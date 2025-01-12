@@ -891,7 +891,6 @@ class Coverer(SimpleDialog):
         degree_frame = ttk.Frame(top_frame)
         degree_frame.grid_columnconfigure(1, weight=1)
         self.degree_var = degree_var = Tk_.StringVar()
-        degree_var.trace_add('write', self.show_covers)
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, sticky=Tk_.E)
         self.degree_option = degree_option = ttk.OptionMenu(
@@ -902,7 +901,6 @@ class Coverer(SimpleDialog):
             )
         degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_var.trace_add('write', self.show_covers)
         cyclic_or_not = ttk.Checkbutton(degree_frame,
                                         variable=cyclic_var,
                                         text='cyclic covers only',
@@ -946,6 +944,9 @@ class Coverer(SimpleDialog):
         degree_var.set('2')
         cyclic_var.set(True)
         self.show_covers()
+        degree_var.trace_add('write', self.show_covers)
+        cyclic_var.trace_add('write', self.show_covers)
+
 
     def clear_list(self, *args):
         self.covers.delete(*self.covers.get_children())

@@ -190,9 +190,8 @@ class Browser(Tk_.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             self.bind_all('<Command-Key-w>', self.close)
-        elif sys.platform == 'linux2' or sys.platform == 'linux':
+        elif sys.platform == 'linux':
             self.bind_all('<Alt-Key-F4>', self.close)
-
         self.side_panel = side_panel = self.build_side_panel()
 
         self.notebook = notebook = ttk.Notebook(self)
@@ -241,6 +240,8 @@ class Browser(Tk_.Toplevel):
         self.update_modeline()
         self.update_idletasks()
         self.wm_geometry(self.wm_geometry())
+        # Make sure the invariants get computed, even on Windows.
+        self.after_idle(self.update_current_tab)
 
     def __repr__(self):
         return 'Browser window for %s\n' % self.manifold
@@ -541,8 +542,8 @@ class Browser(Tk_.Toplevel):
         except ValueError:
             self.homology.set('')
         self.compute_pi_one()
-        self.update_length_spectrum()
         self.update_dirichlet()
+        self.update_length_spectrum()
         self.update_aka()
         self.recompute_invariants = False
 

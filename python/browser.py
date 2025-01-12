@@ -906,9 +906,6 @@ class Coverer(SimpleDialog):
                                         text='cyclic covers only',
                                        )
         cyclic_or_not.grid(row=0, column=2, padx=6, sticky=Tk_.W)
-        self.action = action = ttk.Button(degree_frame, text='Recompute',
-                                          command=self.show_covers)
-        action.grid(row=0, column=3, padx=8, sticky=Tk_.W)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
         self.covers = covers = ttk.Treeview(
             top_frame,
@@ -951,13 +948,11 @@ class Coverer(SimpleDialog):
     def clear_list(self, *args):
         self.covers.delete(*self.covers.get_children())
         self.browse.config(default='normal')
-        self.action.config(default='active')
         self.state = 'not ready'
 
     def show_covers(self, *args):
         self.state = 'ready'
         self.browse.config(default='active')
-        self.action.config(default='normal')
         self.covers.delete(*self.covers.get_children())
         degree = int(self.degree_var.get())
         if self.cyclic_var.get():

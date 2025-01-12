@@ -889,7 +889,7 @@ class Coverer(SimpleDialog):
                         text='Choose covering spaces to browse:')
         msg.grid(row=0, column=0, columnspan=3, pady=10)
         degree_frame = ttk.Frame(top_frame)
-        degree_frame.grid_columnconfigure(1, weight=1)
+        degree_frame.grid_columnconfigure(2, weight=1)
         self.degree_var = degree_var = Tk_.StringVar()
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, sticky=Tk_.E)

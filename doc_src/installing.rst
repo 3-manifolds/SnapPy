@@ -150,8 +150,8 @@ error is to do the following::
 
 Despite the scary name, provided you don't use ``sudo``, the flags
 ``--user --break-system-packages`` will not actually modify the system
-packages and just installs ``snappy`` into
-``~/.local/share/python3.*/site-packages`` in your home directory,
+packages and will just install ``snappy`` into the subdirectory
+``~/.local/share/python3.*/site-packages`` of your home directory,
 just as ``--user`` does on more permissive systems.
     
 If you want the larger version of HTLinkExteriors that includes the 15

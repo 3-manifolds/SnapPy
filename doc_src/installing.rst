@@ -46,11 +46,11 @@ AppImage in ``~/bin`` after you have downloaded `SnapPy-x86_64.AppImage
   ~/bin/SnapPy-x86_64.AppImage --install
 
 The last command registers the SnapPy app with your desktop system and
-starts SnapPy.  In future, you can start SnapPy as using the desktop
-search tool or main menu, and you can pin it to your dock or
-task bar for easy access.  From a terminal window, you can also start
-the app by typing ``SnapPy`` provided ``~/bin`` is in your `$PATH
-<https://opensource.com/article/17/6/set-path-linux>`_.
+starts SnapPy.  In the future, you can start SnapPy by using the desktop
+search tool with Gnome or the main menu with KDE. You can pin the icon
+to your Dash or Task Bar for easy access.  From a terminal window,
+you can also start the app by typing ``SnapPy`` provided ``~/bin`` is
+in your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
 
 
 Python Modules for Linux

@@ -14,8 +14,7 @@ if _within_sage:
         raise ValueError("you need a more recent version of SageMath")
     from sage.libs.pari import pari
     from cypari2 import Gen
-    from cypari2.pari_instance import (prec_words_to_dec,
-                                       prec_words_to_bits,
+    from cypari2.pari_instance import (prec_words_to_bits,
                                        prec_bits_to_dec,
                                        prec_dec_to_bits)
     try:

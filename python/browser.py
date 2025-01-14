@@ -190,9 +190,8 @@ class Browser(Tk_.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             self.bind_all('<Command-Key-w>', self.close)
-        elif sys.platform == 'linux2' or sys.platform == 'linux':
+        elif sys.platform == 'linux':
             self.bind_all('<Alt-Key-F4>', self.close)
-
         self.side_panel = side_panel = self.build_side_panel()
 
         self.notebook = notebook = ttk.Notebook(self)
@@ -241,6 +240,8 @@ class Browser(Tk_.Toplevel):
         self.update_modeline()
         self.update_idletasks()
         self.wm_geometry(self.wm_geometry())
+        # Make sure the invariants get computed, even on Windows.
+        self.after_idle(self.update_current_tab)
 
     def __repr__(self):
         return 'Browser window for %s\n' % self.manifold
@@ -346,7 +347,7 @@ class Browser(Tk_.Toplevel):
         self.aka_viewer = aka_viewer = ttk.Treeview(
             self.aka,
             selectmode='none',
-            height=4,
+            height=2 if sys.platform == 'linux' else 4,
             columns=['manifold', 'as_link'],
             show='headings')
         aka_viewer.heading('manifold', text='Manifold')
@@ -541,8 +542,8 @@ class Browser(Tk_.Toplevel):
         except ValueError:
             self.homology.set('')
         self.compute_pi_one()
-        self.update_length_spectrum()
         self.update_dirichlet()
+        self.update_length_spectrum()
         self.update_aka()
         self.recompute_invariants = False
 
@@ -888,9 +889,8 @@ class Coverer(SimpleDialog):
                         text='Choose covering spaces to browse:')
         msg.grid(row=0, column=0, columnspan=3, pady=10)
         degree_frame = ttk.Frame(top_frame)
-        degree_frame.grid_columnconfigure(1, weight=1)
+        degree_frame.grid_columnconfigure(2, weight=1)
         self.degree_var = degree_var = Tk_.StringVar()
-        degree_var.trace_add('write', self.show_covers)
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, sticky=Tk_.E)
         self.degree_option = degree_option = ttk.OptionMenu(
@@ -901,15 +901,11 @@ class Coverer(SimpleDialog):
             )
         degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_var.trace_add('write', self.show_covers)
         cyclic_or_not = ttk.Checkbutton(degree_frame,
                                         variable=cyclic_var,
                                         text='cyclic covers only',
                                        )
         cyclic_or_not.grid(row=0, column=2, padx=6, sticky=Tk_.W)
-        self.action = action = ttk.Button(degree_frame, text='Recompute',
-                                          command=self.show_covers)
-        action.grid(row=0, column=3, padx=8, sticky=Tk_.W)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
         self.covers = covers = ttk.Treeview(
             top_frame,
@@ -945,17 +941,18 @@ class Coverer(SimpleDialog):
         degree_var.set('2')
         cyclic_var.set(True)
         self.show_covers()
+        degree_var.trace_add('write', self.show_covers)
+        cyclic_var.trace_add('write', self.show_covers)
+
 
     def clear_list(self, *args):
         self.covers.delete(*self.covers.get_children())
         self.browse.config(default='normal')
-        self.action.config(default='active')
         self.state = 'not ready'
 
     def show_covers(self, *args):
         self.state = 'ready'
         self.browse.config(default='active')
-        self.action.config(default='normal')
         self.covers.delete(*self.covers.get_children())
         degree = int(self.degree_var.get())
         if self.cyclic_var.get():

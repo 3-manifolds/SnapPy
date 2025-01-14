@@ -14,7 +14,7 @@ macOS
 Simply download `SnapPy.dmg
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.  Works with macOS/OS X 10.9 and
+it, just like any other application.  Works with macOS 10.13 and
 newer.  Earlier releases `can be found here
 <https://github.com/3-manifolds/SnapPy/releases/>`_.
 
@@ -27,78 +27,130 @@ Earlier releases `can be found here
 <https://github.com/3-manifolds/SnapPy/releases/>`_.
 
 
-Linux
------
+Linux app
+---------
 
-Here are short recipes which work on most Linux systems, specifically
-those that run a 64-bit kernel and have Python 3.6 or newer. These
-instructions assume you have system administrator (superuser)
-privileges to install software packages from your Linux distribution
-but want to install SnapPy (and its various Python dependencies) just
-in your own user directory, specifically ``~/.local``.  For other
+Starting with SnapPy 3.2, a completely self-contained SnapPy `AppImage
+<https://docs.appimage.org/introduction/quickstart.html#ref-quickstart>`_
+is available that should work on any Linux system from the last 5
+years.  This AppImage contains its own private copy of Python, so if
+you plan to use SnapPy in your own Python program skip ahead to
+`Python Modules for Linux`_.  Here is the recipe for installing the
+AppImage in ``~/bin`` after you have downloaded `SnapPy-x86_64.AppImage
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-x86_64.AppImage.>`_::
+
+  mkdir -p ~/bin
+  mv ~/Downloads/SnapPy-x86_64.AppImage ~/bin
+  chmod +x ~/bin/SnapPy-x86_64.AppImage
+  ln -s -f ~/bin/SnapPy-x86_64.AppImage ~/bin/SnapPy
+  ~/bin/SnapPy-x86_64.AppImage --install
+
+The last command registers the SnapPy app with your desktop system and
+starts SnapPy.  In future, you can start SnapPy as using the desktop
+search tool or main menu, and you can pin it to your dock or
+task bar for easy access.  From a terminal window, you can also start
+the app by typing ``SnapPy`` provided ``~/bin`` is in your `$PATH
+<https://opensource.com/article/17/6/set-path-linux>`_.
+
+
+Python Modules for Linux
+------------------------
+
+If you want SnapPy to use the system version of Python, for example to
+incorporate SnapPy in your own Python scripts, below are short recipes
+for doing this on most common Linux system.  These instructions assume
+you have system administrator (superuser) privileges to install
+software packages from your Linux distribution.  (If you're not a
+superuser, you can still use the `Linux app`_ or try `Conda`_.) For other
 Linux systems, try the one closest to yours below, and if that fails,
-follow the instructions for `generic Unix`_.
+follow the instructions for `generic Unix`_.  The first step is to
+install Python and other requirements.
 
-+ **Ubuntu/Debian/Mint**: Tested on Ubuntu 20.04::
++ **Ubuntu/Debian/Mint/MX Linux/Elementary:** Tested on Ubuntu 24.04::
 
-    sudo apt-get install python3-tk python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
+    sudo apt install python3-pip python3-tk
 
-  Users of Ubuntu 18.04 or older should do::
++ **Fedora**: Tested on Fedora 41::
 
-    sudo apt-get install python3-tk python3-pip
-    # Note no "sudo" on the next two
-    python3 -m pip install --upgrade --user pip wheel
-    python3 -m pip install --upgrade --user snappy
+    sudo dnf install python3-pip python3-tkinter
 
-+ **Fedora**: Tested on Fedora 30::
-
-    sudo yum install python3-tkinter python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
-
-+ **Red Hat Enterprise Linux/CentOS/SciLinux**: These instructions
-  are for version 7 or later, and you need to have the `EPEL packages
-  available
-  <https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F>`_.
-  For CentOS and SciLinux, you can access EPEL packages by doing::
-
-    sudo yum install epel-release
-
-  Now install via::
-
-    sudo yum install python36-tkinter python36-pip
-    # Note no "sudo" on the next one!
-    python36 -m pip install --upgrade --user snappy
-
-+ **Arch/Manjaro**: Install via::
++ **Arch/Manjaro/EndeavourOS**: Install via::
 
     sudo pacman -Sy python-pip tk
-    # Note no "sudo" on the next one!
-    python -m pip install --upgrade --user snappy
 
-+ **openSUSE**: Install via::
++ **openSUSE**: For openSUSE Tumbleweed::
 
-    sudo zypper install -y python3-tk python3-pip
-    # Note no "sudo" on the next one!
-    python3 -m pip install --upgrade --user snappy
+    sudo zypper install python3-tk
 
+  For openSUSE Leap, as of verion 15.6 you need ask for a recent
+  version of Python or it will give you Python 3.6 which is too old
+  for SnapPy::
+    
+    sudo zypper install python3.12-tk
+
+  You will need to replace ``python3`` by ``python3.12`` in subsequent
+  steps.
+    
++ **Red Hat Enterprise Linux/CentOS/Rocky Linux/AlmaLinux:**: These instructions
+  are for version 8 or later; tested on AlmaLinux 8 and 9::
+
+    sudo dnf install python3.11-pip python3.11-tkinter
+
+  You will need to replace ``python3`` by ``python3.11`` in subsequent
+  steps.
+
+
+Next, you need to install SnapPy itself.  The first thing to try is::
+
+  # Note no "sudo" below!
+  python3 -m pip install --upgrade --user snappy
+
+If you get a long error message that starts::
+
+  error: externally-managed-environment
+
+you have two choices. The correct thing to do is to set up a virtual
+environment and install SnapPy into it; here is the `official tutorial
+<https://docs.python.org/3/tutorial/venv.html>`_ and an `indepth
+discussion
+<https://realpython.com/python-virtual-environments-a-primer/>`_.  A
+recipe is::
+
+  python3 -m venv snappy_venv
+  # Switch to snappy_venv's Python
+  source snappy_venv/bin/activate
+  pip install snappy
+  # Start SnapPy app!
+  SnapPy
+  # Return to system Python
+  deactivate
+
+If you always want to use the ``snappy_venv`` Python, adjust your `$PATH
+<https://opensource.com/article/17/6/set-path-linux>`_ to include ``snappy_venv/bin``.
+The easy way around the ``externally-managed-environment`` error to do is::
+
+  # Note no "sudo" below!
+  python3 -m pip install --upgrade --user --break-system-packages snappy
+
+Despite the scary name, provided you don't use ``sudo``, the flags
+``--user --break-system-packages`` will not actually modify the system
+packages and just installs ``snappy`` into
+``~/.local/share/python3.*/site-packages`` in your home directory,
+just as ``--user`` does on more permissive systems.
+    
 If you want the larger version of HTLinkExteriors that includes the 15
 crossing knots (uses 110M of disk space), also install the Python
-package ``snappy_15_knots``, e.g. on Ubuntu do::
+package ``snappy_15_knots``, for example::
 
   python3 -m pip install --upgrade --user snappy_15_knots
 
-Once you have installed SnapPy, do the following to start it::
+Once you have installed SnapPy, just run the following command to start
+the app::
 
     ~/.local/bin/SnapPy
 
-You may get a message about creating a ".ipython" directory; this is
-normal, just hit return to continue.  There should also now be a
-command "SnapPy" which does the same thing.  To make it so that you
-can start SnapPy with just the command ``SnapPy``, make sure
-``~/.local/bin`` is in `in your path
+So that you can start SnapPy with just the command ``SnapPy``, make
+sure ``~/.local/bin`` is in `in your path
 <https://opensource.com/article/17/6/set-path-linux>`_.
 
 
@@ -182,6 +234,11 @@ We also offer `conda environments
 optionally Sage (only on Mac OS and Linux). While it has none of the
 other aforementioned tools, it has the advantage that the GUI elements
 such as the link editor and the browser can be used directly.
+
+Conda
+-----
+
+**FILL IN***
 
 
 Generic Unix

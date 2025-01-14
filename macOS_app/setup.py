@@ -58,7 +58,7 @@ OPTIONS = {'argv_emulation': False,
                        'idlelib,docutils,curses,cython,Cython,pandas,OpenGL,'
                        'setuptools,test',
            'packages': packages,
-           'includes': 'tkinter,gzip,tarfile,readline,pydoc,fractions',
+           'includes': 'tkinter,gzip,tarfile,readline,pydoc,fractions,pickleshare',
            'iconfile': 'icons/SnapPy.icns',
            'plist'   : plist_dict,
            'arch'    : 'universal2'

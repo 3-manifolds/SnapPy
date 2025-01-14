@@ -27,20 +27,6 @@ datafiles += collect_data_files('spherogram')
 datafiles += collect_data_files('tkinter_gl')
 
 
-# SnapPyHP.pyd and twister_core.pyd are compiled with the MS Visual
-# C++ compiler from Visual Studio 2015, which dynamically links them
-# against the C++ runtime library msvcp140.dll.  As of PyInstaller
-# 3.3, vcruntime140.dll (and msvcp100.dll) are listed in
-# PyInstaller.depends.dylib._includes but msvcp140.dll is not.  To
-# work around this we add msvcp140.dll as a binary, specifying
-# that it should be at the top level of the bundle, adjacent to the
-# two .pyd files which depend on it.
-
-if cpu_width == '32bit':
-    binaries = [('C:\\Windows\\SysWOW64\\msvcp140.dll', '.')]
-else:
-    binaries = [('C:\\Windows\\System32\\msvcp140.dll', '.')]
-
 a = Analysis(['SnapPy.py'],
              binaries=binaries,
              hiddenimports=imports + ['linecache', 'pkg_resources.py2_warn'],

@@ -543,8 +543,8 @@ class TkTerminalBase:
         width = self.text.winfo_width()
         charwidth = width // self.char_size
         biggest = 2 + max([len(x) for x in comps])
-        num_cols = charwidth // biggest
-        num_rows = (len(comps) + num_cols - 1)//num_cols
+        num_cols = max(charwidth // biggest, 1)
+        num_rows = (len(comps) + num_cols - 1) // num_cols
         rows = []
         format = '%%-%ds' % biggest
         for n in range(num_rows):
@@ -778,7 +778,6 @@ class TkTerminalBase:
         prompt and set the 'more' flag.  If the code is valid and
         complete then run the code.
         """
-        transformer = self.IP.input_transformer_manager
         assert cell.endswith('\n')
         if not cell.strip():
             self._current_indent = 0
@@ -787,7 +786,8 @@ class TkTerminalBase:
             self._input_buffer += cell
         else:
             self._input_buffer = self.clean_code(cell)
-        status, indent = transformer.check_complete(self._input_buffer)
+        transformed_cell = self.IP.transform_cell(self._input_buffer)
+        status, indent = self.IP.check_complete(transformed_cell)
         self._current_indent = indent or 0
         if status == 'incomplete':
             self.IP.more = True

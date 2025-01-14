@@ -40,6 +40,8 @@ class SnapPyInteractiveShellEmbed(InteractiveShellEmbed):
     colors_force = True
     separate_out = '\n'
     separate_in = ''
+    show_rewritten_input = False
+    pt_app = None
 
     def __init__(self, *args, **kwargs):
         super(InteractiveShellEmbed, self).__init__(*args, **kwargs)

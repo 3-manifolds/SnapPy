@@ -18,12 +18,12 @@ from ..pari import pari
 
 # This is broken down in three steps.
 
-# Step 1: Split into extensions and assingments
+# Step 1: Split into extensions and assignments
 #    extensions, assignments = extensions_and_assignments(polys)
 
 # Split the list of polynomials into two lists, the first list
 # contains triples (poly, var, degree) forming a tower of
-# field extensons and the second group is a dictionary assigning
+# field extensions and the second group is a dictionary assigning
 # all remaining variables polynomials in the variables in the tower.
 
 # Example:

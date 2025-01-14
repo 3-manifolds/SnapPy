@@ -545,6 +545,8 @@ def slicing_is_obstructed(knot_exterior, p, q):
        sage: slicing_is_obstructed(M, 3, 7)
        True
     """
+    p, q = ZZ(p), ZZ(q)
+    assert is_prime(p) and is_prime(q) and q > 2
     reps = list(reps_appearing(knot_exterior, p, q))
     if len(reps) == 0:
         return False
@@ -561,13 +563,14 @@ def slicing_is_obstructed(knot_exterior, p, q):
     return True
 
 
-def expand_prime_spec(spec):
+def expand_prime_spec(spec, min_prime=2):
     if spec in ZZ:
         a, b = 0, spec
     else:
         if len(spec) != 2:
             raise ValueError(f'Spec {spec} does not specify a range')
         a, b = spec
+    a = max(a, min_prime)
     return prime_range(a, b + 1)
 
 
@@ -593,7 +596,6 @@ def slice_obstruction_HKL(self, primes_spec,
        sage: spec = [(10, [0, 20]), (20, [0, 10])]
        sage: M.slice_obstruction_HKL(spec, verbose=True)
           Looking at (2, 3) ...
-          Looking at (3, 2) ...
           Looking at (3, 7) ...
        (3, 7)
 
@@ -602,7 +604,6 @@ def slice_obstruction_HKL(self, primes_spec,
 
        sage: spec = [([3, 10], 10)]
        sage: M.slice_obstruction_HKL(spec, verbose=True)
-          Looking at (3, 2) ...
           Looking at (3, 7) ...
        (3, 7)
 
@@ -636,13 +637,17 @@ def slice_obstruction_HKL(self, primes_spec,
     if len(primes_spec) == 2:
         p, q = primes_spec
         if p in ZZ and q in ZZ:
+            if q == 2:
+                raise ValueError('Must have q > 2 when looking at H_1(cover; F_q)')
+            if not (is_prime(p) and is_prime(q)):
+                raise ValueError('Both p and q must be prime')
             if slicing_is_obstructed(M, p, q):
                 return (p, q)
             else:
                 return None
 
     # Main case
-    primes_spec = [(expand_prime_spec(a), expand_prime_spec(b))
+    primes_spec = [(expand_prime_spec(a), expand_prime_spec(b, min_prime=3))
                    for a, b in primes_spec]
     for ps, qs in primes_spec:
         for p in ps:

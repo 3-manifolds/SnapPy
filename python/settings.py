@@ -5,6 +5,17 @@ from .gui import *
 from .app_menus import ListedWindow
 from .tkterminal import FontChoice, default_terminal_font
 
+def clip_font_size(size):
+    try:
+        value = int(size)
+    except:
+        return 13 if sys.platform == 'darwin' else 11
+    if value < 10:
+        return 10
+    if value > 36:
+        return 36
+    return size
+
 class Settings:
     def __init__(self):
         self.setting_dict = {
@@ -56,7 +67,7 @@ class Settings:
             self.setting_file = os.path.join(home, '.SnapPy.plist')
         else:
             self.setting_file = None
-
+        
     def read_settings(self):
         if self.setting_file:
             try:
@@ -66,6 +77,8 @@ class Settings:
                 else:
                     self.setting_dict.update(plistlib.readPlist(self.setting_file))
                 family, size, info = self.setting_dict['font']
+                # Guard against crazy values in the settings plist file.
+                size = clip_font_size(size)
                 weight, slant = info.split()
                 self.setting_dict['font'] = FontChoice(family, size, weight, slant)
             except OSError:
@@ -165,10 +178,10 @@ class SettingsDialog(Dialog):
                              sticky=Tk_.N + Tk_.S + Tk_.W + Tk_.E)
         self.body_frame.focus_set()
 
-    def build_font_pane(self, master):
+    def build_font_pane(self, parent):
         current_font = self.settings['font']
         groupBG = self.style.groupBG
-        self.font_frame = font_frame = ttk.Frame(master)
+        self.font_frame = font_frame = ttk.Frame(parent)
         font_frame.columnconfigure(2, weight=1)
         font_frame.columnconfigure(0, weight=1)
         self.list_frame = list_frame = ttk.Frame(font_frame)
@@ -184,10 +197,24 @@ class SettingsDialog(Dialog):
         label = ttk.Label(self.font_frame, text='Size: ')
         label.grid(row=0, column=1, sticky=Tk_.E, pady=(20,0))
         self.font_sizer = sizer = Spinbox(font_frame, from_=10, to_=36, width=4,
-                                             command=self.set_font_sample,
-                                             )
+                                          command=self.set_font_sample)
+        def check_font_size(size):
+            try:
+                value = int(size)
+            except:
+                sizer.set(13 if sys.platform == 'darwin' else 11)
+                return False
+            if value < 10:
+                sizer.set(10)
+                return False
+            if value > 36:
+                sizer.set(36)
+                return False
+            return True
+        validator = parent.register(check_font_size)
+        sizer.config(validate ="key", validatecommand =(validator, '%P'))
         sizer.delete(0,2)
-        sizer.insert(0, current_font.size )
+        sizer.insert(0, clip_font_size(current_font.size))
         sizer.bind('<Return>', self.set_font_sample)
         sizer.bind('<Tab>', self.set_font_sample)
         self.current_size = current_font.size
@@ -269,11 +296,11 @@ class SettingsDialog(Dialog):
         self.sample.tag_config('all', justify=Tk_.CENTER,
                                font=new_font.as_tuple())
 
-    def build_shell_pane(self, master):
+    def build_shell_pane(self, parent):
         groupBG = self.style.groupBG
         self.autocall = Tk_.BooleanVar(value=self.settings['autocall'])
         self.update_idletasks()
-        self.shell_frame = shell_frame = ttk.Frame(master)
+        self.shell_frame = shell_frame = ttk.Frame(parent)
         shell_frame.rowconfigure(3, weight=1)
         shell_frame.columnconfigure(0, weight=1)
         shell_frame.columnconfigure(3, weight=1)
@@ -292,9 +319,9 @@ class SettingsDialog(Dialog):
     def set_autocall(self):
         self.settings['autocall'] = self.autocall.get()
 
-    def build_cusp_pane(self, master):
+    def build_cusp_pane(self, parent):
         groupBG = self.style.groupBG
-        self.cusp_frame = cusp_frame = ttk.Frame(master)
+        self.cusp_frame = cusp_frame = ttk.Frame(parent)
         self.horoballs = Tk_.BooleanVar(value=self.settings['cusp_horoballs'])
         self.triangulation = Tk_.BooleanVar(value=self.settings['cusp_triangulation'])
         self.ford = Tk_.BooleanVar(value=self.settings['cusp_ford_domain'])
@@ -353,10 +380,10 @@ class SettingsDialog(Dialog):
     def set_parallelogram(self):
         self.settings['cusp_parallelogram'] = self.parallelogram.get()
 
-    def build_inside_pane(self, master):
+    def build_inside_pane(self, parent):
         groupBG = self.style.groupBG
         self.keyboard = Tk_.Variable(value=self.settings['keyboard'])
-        self.inside_frame = frame = ttk.Frame(master)
+        self.inside_frame = frame = ttk.Frame(parent)
         frame.rowconfigure(3, weight=1)
         frame.columnconfigure(0, weight=1)
         frame.columnconfigure(3, weight=1)

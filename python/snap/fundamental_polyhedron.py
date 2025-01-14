@@ -342,7 +342,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         The GeneratorMatrices computed here are for the face-pairing
         presentation with respect to the fundamental polyhedron.
-        That presentation can be simplfied by M.fundamental_group(...)
+        That presentation can be simplified by M.fundamental_group(...)
         and this function will compute the matrices for the simplified
         presentation from the GeneratorMatrices.
 

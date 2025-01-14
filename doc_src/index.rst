@@ -27,7 +27,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.2 (??? 2025):
+* Version 3.2 (January 2025):
 
   - An alternative implementation of the length spectrum. It supports verified
     computations and is significantly faster in some cases. See
@@ -88,6 +88,16 @@ News
 
         >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
 
+  - Bug fix to :meth:`slice_obstruction_HKL
+    <snappy.Manifold.slice_obstruction_HKL>`: earlier versions
+    incorrectly allowed looking at mod 2 homology of the branched
+    cover, where the theory does not directly apply.
+
+  - New self-contained SnapPy application for Linux. 
+  
+  - Support for Python 3.13.
+
+    
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`

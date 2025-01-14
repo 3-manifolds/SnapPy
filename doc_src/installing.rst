@@ -47,7 +47,7 @@ AppImage in ``~/bin`` after you have downloaded `SnapPy-x86_64.AppImage
 
 The last command registers the SnapPy app with your desktop system and
 starts SnapPy.  In the future, you can start SnapPy by using the desktop
-search tool with Gnome or the main menu with KDE. You can pin the icon
+search tool with GNOME or the main menu with KDE. You can pin the icon
 to your Dash or Task Bar for easy access.  From a terminal window,
 you can also start the app by typing ``SnapPy`` provided ``~/bin`` is
 in your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
@@ -56,16 +56,15 @@ in your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
 Python Modules for Linux
 ------------------------
 
-If you want SnapPy to use the system version of Python, for example to
-incorporate SnapPy in your own Python scripts, below are short recipes
-for doing this on most common Linux system.  These instructions assume
-you have system administrator (superuser) privileges to install
-software packages from your Linux distribution.  (If you're not a
-superuser, you can still use the `Linux app`_ or try `Conda`_.) For other
-Linux systems, try the one closest to yours below, and if that fails,
-follow the instructions for `generic Unix`_.
+You can also use SnapPy with your Linux system's version of Python,
+for example if you want to incorporate SnapPy in your own Python
+scripts.  These instructions assume you have system administrator
+(superuser) privileges to install software packages from your Linux
+distribution.  (If you're not a superuser, use either the
+`Linux app`_ or `Conda`_.)
 
-The first step is to install Python and other requirements.
+The first step is to install Python and other requirements; here's how
+to do that on the most popular kinds of Linux:
 
 + **Ubuntu/Debian/Mint/MX Linux/Elementary:** Tested on Ubuntu 24.04::
 
@@ -86,12 +85,12 @@ The first step is to install Python and other requirements.
   For openSUSE Leap, as of verion 15.6 you need ask for a recent
   version of Python or it will give you Python 3.6 which is too old
   for SnapPy::
-    
+
     sudo zypper install python3.12-tk
 
   You will need to replace ``python3`` by ``python3.12`` in subsequent
   steps.
-    
+
 + **Red Hat Enterprise Linux/CentOS/Rocky Linux/AlmaLinux:**: These instructions
   are for version 8 or later; tested on AlmaLinux 8 and 9::
 
@@ -101,55 +100,56 @@ The first step is to install Python and other requirements.
   steps.
 
 
-Next, you need to install the SnapPy python modules. Ideally, this
-would be done in a venv that you use for your SnapPy project.  However
-if you are not familiar with virtual environments, or if you have
-followed install instructions for previous versions of SnapPy, it may
-be easiest and safest to install the new version the same way, namely
-by doing a ``user install`` with pip. 
+Next, you need to install the SnapPy Python modules. For this, you can
+either use a *virtual environment* (``python -m venv``) or do a *user
+install* (``pip install --user``).  The former will work on any
+version of Linux, whereas the latter is now strongly discouraged on
+many systems (e.g. Ubuntu 24.04).  If you have not previously
+installed SnapPy on this computer, we recommend go with the virtual
+environment route, but suggest you go with a user install if upgrading
+an existing version of SnapPy
 
-To do a ``user install`` with pip, the first thing to try is::
+Virtual environment
+  Here is the `official tutorial
+  <https://docs.python.org/3/tutorial/venv.html>`_ on using virtual
+  environments in Python and an `indepth discussion
+  <https://realpython.com/python-virtual-environments-a-primer/>`_.  A
+  recipe is::
 
-  # Note no "sudo" below!
-  python3 -m pip install --upgrade --user snappy
+    python3 -m venv snappy_venv
+    # Switch to snappy_venv's Python
+    source snappy_venv/bin/activate
+    pip install snappy
+    # Start the SnapPy app!
+    SnapPy
+    # Return to system Python
+    deactivate
 
-If you get a long error message that starts::
+  If you always want to use the ``snappy_venv`` Python, adjust your
+  `$PATH <https://opensource.com/article/17/6/set-path-linux>`_ to
+  start with ``snappy_venv/bin``.
 
-  error: externally-managed-environment
+User install
+  To do a ``user install`` with pip, try::
 
-then you should probably set up a virtual environment and install SnapPy
-into it, although an alternative is suggested below.
+    # Note no "sudo" below!
+    python3 -m pip install --upgrade --user snappy
 
-Here is the `official tutorial
-<https://docs.python.org/3/tutorial/venv.html>`_ on using virtual
-environments and an `indepth discussion
-<https://realpython.com/python-virtual-environments-a-primer/>`_.  A
-recipe is::
+  If you get a long error message that starts::
 
-  python3 -m venv snappy_venv
-  # Switch to snappy_venv's Python
-  source snappy_venv/bin/activate
-  pip install snappy
-  # Start SnapPy app!
-  SnapPy
-  # Return to system Python
-  deactivate
+    error: externally-managed-environment
 
-If you always want to use the ``snappy_venv`` Python, adjust your `$PATH
-<https://opensource.com/article/17/6/set-path-linux>`_ to include ``snappy_venv/bin``.
+  you probably should uses a virtual environment; however,
+  you can force it via::
 
-The alternative way to work around the ``externally-managed-environment``
-error is to do the following::
+    # Note no "sudo" below!
+    python3 -m pip install --upgrade --user --break-system-packages snappy
 
-  # Note no "sudo" below!
-  python3 -m pip install --upgrade --user --break-system-packages snappy
+  Despite the scary name, provided you don't use ``sudo``, this will
+  not actually modify the system packages but rather install
+  ``snappy`` into the subdirectory
+  ``~/.local/share/python3.*/site-packages`` of your home directory.
 
-Despite the scary name, provided you don't use ``sudo``, the flags
-``--user --break-system-packages`` will not actually modify the system
-packages and will just install ``snappy`` into the subdirectory
-``~/.local/share/python3.*/site-packages`` of your home directory,
-just as ``--user`` does on more permissive systems.
-    
 If you want the larger version of HTLinkExteriors that includes the 15
 crossing knots (uses 110M of disk space), also install the Python
 package ``snappy_15_knots``, for example::
@@ -250,7 +250,16 @@ such as the link editor and the browser can be used directly.
 Conda
 -----
 
-**FILL IN***
+Conda can be used to install Python on all platforms and is a
+particularly good choice to use SnapPy on the older Linux systems
+often found on high-performance clusters.  Here is a recipe for
+installing SnapPy into a new conda environment on macOS or Linux::
+
+  source ~/miniforge3/bin/activate
+  mamba create --name snappy_env python=3.12
+  conda activate snappy_env
+  pip install snappy
+  python -m snappy.app
 
 
 Generic Unix

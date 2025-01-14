@@ -496,10 +496,10 @@ TwisterCore = Extension(
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 install_requires = ['FXrays>=1.3',
-                    'plink>=2.4.2',
-                    'spherogram>=2.2',
+                    'plink>=2.4.3',
+                    'spherogram>=2.3',
                     'snappy_manifolds>=1.2.1',
-                    'low_index>=1.2',
+                    'low_index>=1.2.1',
                     'tkinter-gl>=1.0',
                     'decorator',
                     'packaging',

@@ -27,10 +27,6 @@ from snappy.sage_helper import _within_sage
 from snappy.testing import (doctest_modules, cyopengl_works,
                             tk_root, root_is_fake, DocTestParser)
 
-# The following line doesn't seem to be needed. Can we just remove it?
-# MG 2024-07-26
-snappy.database.Manifold = snappy.SnapPy.Manifold
-
 # Augment tests for SnapPy with those that Cython missed
 
 missed_classes = ['Triangulation', 'Manifold',
@@ -51,10 +47,6 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
                  if x.startswith('Manifold.browse')]
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
-
-# Spherogram Commit 7b6307ea02e536 on 2024-07-26 (after tag 2.2_as_released)
-# sets run_doctests' name.
-spherogram.test.run_doctests.__name__ = spherogram.__name__
 
 def additional_doctests(verbose=False, print_info=True):
     """

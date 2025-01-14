@@ -104,9 +104,9 @@ The first step is to install Python and other requirements.
 Next, you need to install the SnapPy python modules. Ideally, this
 would be done in a venv that you use for your SnapPy project.  However
 if you are not familiar with virtual environments, or if you have
-followed install instructions for previous versions of SnapPy it may
+followed install instructions for previous versions of SnapPy, it may
 be easiest and safest to install the new version the same way, namely
-to do a ``user install`` with pip. 
+by doing a ``user install`` with pip. 
 
 To do a ``user install`` with pip, the first thing to try is::
 

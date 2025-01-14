@@ -45,7 +45,7 @@ correct.
 
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
-    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace, block_matrix, prime_range
+    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace, block_matrix, prime_range, is_prime
     from ..sage_helper import LaurentPolynomialRing, GF, CyclotomicField, ChainComplex
 
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,

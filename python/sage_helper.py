@@ -37,10 +37,11 @@ if _within_sage:
         from sage.all import VectorSpace, ChainComplex
         from sage.all import ComplexBallField, exp, sin, block_matrix, prime_range, det
         from sage.all import LaurentPolynomialRing, AbelianGroup, GroupAlgebra
+        from sage.all import is_prime
     except ImportError:
         # Modularized Sage library
         from sage.algebras.group_algebra import GroupAlgebra
-        from sage.arith.misc import gcd, xgcd
+        from sage.arith.misc import gcd, xgcd, is_prime
         from sage.combinat.subset import powerset
         from sage.functions.hyperbolic import arccosh
         from sage.functions.log import exp

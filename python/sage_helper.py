@@ -40,6 +40,10 @@ if _within_sage:
         from sage.all import is_prime
     except ImportError:
         # Modularized Sage library
+        try:
+            import sage.all__sagemath_modules
+        except ImportError:
+            pass
         from sage.algebras.group_algebra import GroupAlgebra
         from sage.arith.misc import gcd, xgcd, is_prime
         from sage.combinat.subset import powerset

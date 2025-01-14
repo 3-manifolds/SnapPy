@@ -63,8 +63,9 @@ you have system administrator (superuser) privileges to install
 software packages from your Linux distribution.  (If you're not a
 superuser, you can still use the `Linux app`_ or try `Conda`_.) For other
 Linux systems, try the one closest to yours below, and if that fails,
-follow the instructions for `generic Unix`_.  The first step is to
-install Python and other requirements.
+follow the instructions for `generic Unix`_.
+
+The first step is to install Python and other requirements.
 
 + **Ubuntu/Debian/Mint/MX Linux/Elementary:** Tested on Ubuntu 24.04::
 
@@ -100,7 +101,14 @@ install Python and other requirements.
   steps.
 
 
-Next, you need to install SnapPy itself.  The first thing to try is::
+Next, you need to install the SnapPy python modules. Ideally, this
+would be done in a venv that you use for your SnapPy project.  However
+if you are not familiar with virtual environments, or if you have
+followed install instructions for previous versions of SnapPy it may
+be easiest and safest to install the new version the same way, namely
+to do a ``user install`` with pip. 
+
+To do a ``user install`` with pip, the first thing to try is::
 
   # Note no "sudo" below!
   python3 -m pip install --upgrade --user snappy
@@ -109,10 +117,12 @@ If you get a long error message that starts::
 
   error: externally-managed-environment
 
-you have two choices. The correct thing to do is to set up a virtual
-environment and install SnapPy into it; here is the `official tutorial
-<https://docs.python.org/3/tutorial/venv.html>`_ and an `indepth
-discussion
+then you should probably set up a virtual environment and install SnapPy
+into it, although an alternative is suggested below.
+
+Here is the `official tutorial
+<https://docs.python.org/3/tutorial/venv.html>`_ on using virtual
+environments and an `indepth discussion
 <https://realpython.com/python-virtual-environments-a-primer/>`_.  A
 recipe is::
 
@@ -127,7 +137,13 @@ recipe is::
 
 If you always want to use the ``snappy_venv`` Python, adjust your `$PATH
 <https://opensource.com/article/17/6/set-path-linux>`_ to include ``snappy_venv/bin``.
-The easy way around the ``externally-managed-environment`` error to do is::
+You may also activate and deactivate your ``snappy_venv`` with the usual
+commands::
+  source snappy_venv/bin/activate
+  deactivate
+
+The alternative way to work around the ``externally-managed-environment``
+error is to do the following::
 
   # Note no "sudo" below!
   python3 -m pip install --upgrade --user --break-system-packages snappy

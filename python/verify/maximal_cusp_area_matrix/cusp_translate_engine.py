@@ -3,7 +3,7 @@ from ...sage_helper import _within_sage
 from ..upper_halfspace.finite_point import *
 
 if _within_sage:
-    from sage.all import vector, matrix
+    from ...sage_helper import vector, matrix
 
 __all__ = ['CuspTranslateEngine']
 

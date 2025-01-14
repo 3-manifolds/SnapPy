@@ -6,8 +6,8 @@ from ...snap import peripheral
 from ...snap.t3mlite import simplex
 
 if _within_sage:
-    from sage.all import pi, xgcd
-    import sage.all
+    from sage.symbolic.constants import pi
+    from ...sage_helper import I, xgcd
 
 from .. import hyperbolicity
 
@@ -68,8 +68,8 @@ def zero_lifted_holonomy(manifold, m, l, f):
 
     # Compute by what multiple of 2 pi i to adjust
     g, a, b = xgcd(m_fill, l_fill)
-    m -= p * a * multiple_of_pi * sage.all.I
-    l -= p * b * multiple_of_pi * sage.all.I
+    m -= p * a * multiple_of_pi * I
+    l -= p * b * multiple_of_pi * I
 
     # For sanity, double check that we compute it right.
     p_interval = (m_fill * m + l_fill * l).imag() / multiple_of_pi
@@ -165,4 +165,4 @@ def verified_complex_volume_closed_torsion(manifold, bits_prec=None):
     # I.
     # Also add multiples of pi^2/2 to try to get the Chern-Simons part
     # between -pi^2/4 and pi^2/4.
-    return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
+    return normalize_by_pi_square_over_two(complex_volume) / I

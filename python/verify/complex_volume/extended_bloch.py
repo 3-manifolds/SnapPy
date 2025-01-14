@@ -1,11 +1,8 @@
 from ...sage_helper import _within_sage, sage_method
 
 if _within_sage:
-    from sage.all import (ComplexBallField,
-                          RealField,
-                          Integer, exp, pi)
-
-    import sage.all
+    from sage.symbolic.constants import pi
+    from ...sage_helper import I, Integer, RealField, ComplexBallField, exp
 
 
 @sage_method
@@ -106,8 +103,8 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
     # Note that the values computed for log(z) and log(1-z)
     # are not verified to have the imaginary part between -pi and pi.
-    logZ = w0 - my_pi * p * sage.all.I
-    logOneMinusZ = - (w1 - my_pi * q * sage.all.I)
+    logZ = w0 - my_pi * p * I
+    logOneMinusZ = - (w1 - my_pi * q * I)
 
     # Neumann's formula for the complex volume is
     #
@@ -143,7 +140,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     # Similar considerations apply to (2) used when Re(z) > 1/2.
 
     term1 = logZ * logOneMinusZ
-    term2 = my_pi * sage.all.I * (p * logOneMinusZ + q * logZ)
+    term2 = my_pi * I * (p * logOneMinusZ + q * logZ)
 
     if z.real().center() < 0.5:
         # Check that we can apply equation (1)

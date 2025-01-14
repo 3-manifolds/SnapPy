@@ -11,7 +11,7 @@ left_zeros = re.compile(r'0\.0*')
 precision_of_exact_GEN = pari(0).precision()
 
 if _within_sage:
-    from sage.all import RealField, Integer, Rational, ZZ, QQ, RR, CC, SR
+    from .sage_helper import RealField, Integer, Rational, ZZ, QQ, RR, CC
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
@@ -66,8 +66,13 @@ if _within_sage:
             self._precision = precision
             self.register_coercion(MorphismToSPN(ZZ, self, self._precision))
             self.register_coercion(MorphismToSPN(QQ, self, self._precision))
-            to_SR = Hom(self, SR, Sets())(lambda x: SR(x.sage()))
-            SR.register_coercion(to_SR)
+            try:
+                from sage.symbolic.ring import SR
+            except ImportError:
+                pass
+            else:
+                to_SR = Hom(self, SR, Sets())(lambda x: SR(x.sage()))
+                SR.register_coercion(to_SR)
 
         def _repr_(self):
             return "SnapPy Numbers with %s bits precision" % self._precision

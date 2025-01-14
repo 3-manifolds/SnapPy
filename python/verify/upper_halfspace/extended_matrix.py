@@ -1,7 +1,7 @@
 from ...sage_helper import _within_sage
 
 if _within_sage:
-    from sage.all import sqrt
+    from ...sage_helper import sqrt
 
 __all__ = ['ExtendedMatrix']
 

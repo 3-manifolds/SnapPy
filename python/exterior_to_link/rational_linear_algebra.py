@@ -17,7 +17,7 @@ use_pari_even_inside_sage = False
 from .. import sage_helper
 
 if sage_helper._within_sage and not use_pari_even_inside_sage:
-    from sage.all import QQ, RR, vector, matrix, VectorSpace
+    from ..sage_helper import QQ, RR, vector, matrix, VectorSpace
 
     def rational_sqrt(x):
         """

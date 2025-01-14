@@ -6,7 +6,8 @@ from ... import sage_helper
 from .. import t3mlite as t3m
 
 if sage_helper._within_sage:
-    from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
+    from ...sage_helper import ZZ, matrix, vector, ChainComplex
+    from sage.graphs.graph import Graph
 
 
 class DualCell():

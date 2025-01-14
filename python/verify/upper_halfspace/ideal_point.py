@@ -17,8 +17,8 @@ and is different from the ``Infinity`` that comes from ``sage.all``.
 from ...sage_helper import _within_sage
 
 if _within_sage:
-    import sage.all
-    from sage.all import matrix
+    from ...sage_helper import I, matrix, RIF, CIF
+    from ...sage_helper import Infinity as sage_Infinity
 
 from .finite_point import *
 from .extended_matrix import *
@@ -211,7 +211,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
         for idealPoint in idealPoints:
             if idealPoint != Infinity:
                 RIF = idealPoint.real().parent()
-                return RIF(sage.all.Infinity)
+                return RIF(sage_Infinity)
 
         raise Exception("What?")
 
@@ -266,7 +266,7 @@ def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
     z = idealPoints[0]
     CIF = z.parent()
     gl_matrix = matrix(CIF, [[ 0, 1], [ 1, -z]])
-    sl_matrix = CIF(sage.all.I) * gl_matrix
+    sl_matrix = CIF(I) * gl_matrix
     inv_sl_matrix = _adjoint2(sl_matrix)
 
     # Apply it
@@ -398,8 +398,6 @@ class _IdealPointTester():
     """
 
     def matrices(self):
-        from sage.all import RIF, CIF, matrix
-
         return [
             matrix.identity(CIF, 2),
             matrix(
@@ -410,8 +408,6 @@ class _IdealPointTester():
                  [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]]) ]
 
     def run_tests(self):
-        from sage.all import RIF, CIF
-
         bias = RIF(1.5)
 
         triangle = [ CIF(0), Infinity, CIF(1) ]

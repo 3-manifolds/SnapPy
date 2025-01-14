@@ -5,11 +5,9 @@ import string
 from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
-    import sage
-    from sage.all import (ZZ, vector, matrix, block_matrix, identity_matrix,
-                          gcd, prod, det, MatrixSpace, AbelianGroup, GroupAlgebra,
-                          SageObject, PolynomialRing, LaurentPolynomialRing)
-
+    from ..sage_helper import ZZ, vector, matrix, block_matrix, identity_matrix, gcd, prod, det
+    from ..sage_helper import MatrixSpace, PolynomialRing, LaurentPolynomialRing
+    from ..sage_helper import SageObject, AbelianGroup, GroupAlgebra
     from .polished_reps import polished_holonomy, MatrixRepresentation
     Id2 = MatrixSpace(ZZ, 2)(1)
 else:

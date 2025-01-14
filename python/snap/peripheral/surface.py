@@ -2,8 +2,8 @@ from collections import OrderedDict
 from ... import sage_helper
 
 if sage_helper._within_sage:
-    from sage.all import (ZZ, matrix, vector, ChainComplex,
-                          cached_method, line, arrow, text)
+    from ...sage_helper import ZZ, matrix, vector, cached_method, ChainComplex
+    from sage.plot.all import line, arrow, text
 else:
     def cached_method(func):
         return func

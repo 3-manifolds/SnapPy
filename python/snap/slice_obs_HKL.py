@@ -45,10 +45,8 @@ correct.
 
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
-    from sage.all import (ZZ, PolynomialRing, LaurentPolynomialRing,
-                          GF, CyclotomicField, vector, matrix,
-                          identity_matrix, block_matrix, is_prime,
-                          MatrixSpace, ChainComplex, prime_range)
+    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace, block_matrix, prime_range
+    from ..sage_helper import LaurentPolynomialRing, GF, CyclotomicField, ChainComplex
 
     from .nsagetools import (MapToFreeAbelianization, compute_torsion,
                              fox_derivative_with_involution,

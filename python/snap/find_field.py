@@ -1,7 +1,8 @@
-from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
-                      ZZ, QQ, CDF, ComplexField, NumberField, PolynomialRing,
-                      matrix, identity_matrix)
 import itertools
+
+from ..sage_helper import (cached_method, real_part, imag_part, round, ceil, floor, log,
+                           ZZ, QQ, CDF, ComplexField, NumberField, PolynomialRing,
+                           matrix, identity_matrix)
 
 
 def error(poly, z, a=ZZ(0)):

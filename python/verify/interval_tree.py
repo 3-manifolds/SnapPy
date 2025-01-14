@@ -300,7 +300,7 @@ class _IntervalTreeTester(IntervalTree):
                     self.brute_force_find(interval)))
 
     def check_consistency(self):
-        from sage.all import Infinity
+        from ..sage_helper import Infinity
         if self._root.isRed:
             raise Exception("Red root")
         _IntervalTreeTester._recursively_check_consistency(
@@ -308,7 +308,7 @@ class _IntervalTreeTester(IntervalTree):
 
     @staticmethod
     def _recursively_check_consistency(node, l, r):
-        from sage.all import Infinity
+        from ..sage_helper import Infinity
 
         if not node:
             return -Infinity, 0
@@ -370,7 +370,7 @@ class _IntervalTreeTester(IntervalTree):
 
     @staticmethod
     def run_test():
-        from sage.all import RIF, sin, Infinity
+        from ..sage_helper import RIF, Infinity, sin
 
         intervals = [
             RIF(sin(1.2 * i), sin(1.2 * i) + sin(1.43 * i) ** 2)

@@ -78,8 +78,13 @@ class DocTestParser(doctest.DocTestParser):
         return doctest.DocTestParser.parse(self, string, name)
 
 if _within_sage:
-    import sage.all
-    globs = {'PSL': sage.all.PSL, 'BraidGroup': sage.all.BraidGroup}
+    try:
+        from sage.all import PSL, BraidGroup
+    except ImportError:
+        import sage.groups.perm_gps.permgroup_element
+        from sage.groups.perm_gps.permgroup_named import PSL
+        from sage.groups.braid import BraidGroup
+    globs = {'PSL': PSL, 'BraidGroup': BraidGroup}
 else:
     globs = {}
 

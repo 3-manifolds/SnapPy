@@ -19,7 +19,6 @@ python_major_version = sys.version_info.major
 from .sage_helper import _within_sage, SageNotAvailable
 from .pari import pari as pari
 try:
-    import sage.all
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
     from sage.groups.perm_gps.permgroup import PermutationGroup

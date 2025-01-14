@@ -15,27 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.2
-        env:
-          # Skip Python 32 bit Linux, and PyPy
-          CIBW_ENVIRONMENT: SNAPPY_ALWAYS_BUILD_CYOPENGL=True
-          CIBW_ENVIRONMENT_MACOS: >
-            SNAPPY_ALWAYS_BUILD_CYOPENGL=True
-            MACOSX_DEPLOYMENT_TARGET=10.12
-          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
-          CIBW_SKIP: "*-manylinux_i686 *musllinux* pp*"
-          CIBW_BEFORE_ALL_LINUX: yum install -y tk
-          CIBW_BEFORE_BUILD: >
-            pip install cython
-          CIBW_BEFORE_TEST: >
-            pip install low_index &&
-            pip install --pre --extra-index-url https://test.pypi.org/simple cypari &&
-            pip install git+https://github.com/3-manifolds/PLink &&
-            pip install git+https://github.com/3-manifolds/snappy_manifolds &&
-            pip install git+https://github.com/3-manifolds/Spherogram
-          CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair --strip -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: python -m snappy.test --skip-gui
-
+        uses: pypa/cibuildwheel@v2.22
 
       - uses: actions/upload-artifact@v4
         with:

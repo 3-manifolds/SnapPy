@@ -46,7 +46,7 @@ class CuspTranslateEngine():
         """
         TESTS::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: t0 = CIF(RIF(2.3, 2.30000000001), 3.4)
             sage: t1 = CIF(4.32, RIF(5.43, 5.4300000001))
             sage: c = CuspTranslateEngine(t0, t1)
@@ -106,7 +106,7 @@ class CuspTranslateEngine():
     def translate_to_match(self, finitePoint, targetFinitePoint):
         """
 
-        sage: from sage.all import *
+        sage: from snappy.sage_helper import *
         sage: t0 = CIF(RIF(2.3, 2.30000000001), 3.4)
         sage: t1 = CIF(4.32, RIF(5.43, 5.4300000001))
         sage: c = CuspTranslateEngine(t0, t1)

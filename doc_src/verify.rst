@@ -164,7 +164,7 @@ Some examples of verified computations are:
 
 * An example of finding all geodesics up to length 1::
 
-    sage: from sage.all import RIF
+    sage: from snappy.sage_helper import RIF
     sage: L = RIF(1)
     sage: M = Manifold("m003")
     sage: spec = M.length_spectrum_alt_gen(verified=True)

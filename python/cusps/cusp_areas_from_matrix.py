@@ -8,7 +8,7 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
 
     Examples::
 
-        sage: from sage.all import matrix, RIF
+        sage: from snappy.sage_helper import matrix, RIF
         sage: unbiased_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
         ...                     [RIF(6.0,6.001 ),RIF(4.0, 4.001)]]))
@@ -35,7 +35,7 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
 def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
     """
 
-        sage: from sage.all import matrix, RIF
+        sage: from snappy.sage_helper import matrix, RIF
         sage: greedy_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
         ...                     [RIF(6.0,6.001 ),RIF(10.0, 10.001)]]))

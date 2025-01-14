@@ -14,7 +14,7 @@ class FinitePoint():
     A point in the upper half space model represented by the quaternion
     z + t * j with t > 0. For example, the point (1 + 2 * i) + 3 * j is::
 
-        sage: from sage.all import *
+        sage: from snappy.sage_helper import *
         sage: FinitePoint(CIF(1,2),RIF(3))
         FinitePoint(1 + 2*I, 3)
 
@@ -32,7 +32,7 @@ class FinitePoint():
         Returns an element in ``RealIntervalField`` which can be used as key
         for an interval tree to implement a mapping from :class:`FinitePoint`::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: FinitePoint(CIF(1,2),RIF(3)).key_interval() # doctest: +NUMERIC12
             36.8919985104477?
 
@@ -52,7 +52,7 @@ class FinitePoint():
         with coefficients in SageMath's ``ComplexIntervalField`` and have
         determinant 1::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: pt = FinitePoint(CIF(1,2),RIF(3))
             sage: m = matrix([[CIF(0.5), CIF(2.4, 2)],[CIF(0.0), CIF(2.0)]])
             sage: pt.translate_PSL(m) # doctest: +NUMERIC12
@@ -72,7 +72,7 @@ class FinitePoint():
         The matrix m should be an :class:`ExtendedMatrix` or a SageMath
         ``Matrix`` with coefficients in SageMath's ``ComplexIntervalField``::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: pt = FinitePoint(CIF(1,2),RIF(3))
             sage: m = matrix([[CIF(0.25), CIF(1.2, 1)],[CIF(0.0), CIF(1.0)]])
             sage: pt.translate_PGL(m) # doctest: +NUMERIC12
@@ -132,7 +132,7 @@ class FinitePoint():
         Returns cosh of the distance of this finite point to another
         finite point::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
             sage: a.cosh_dist(b) # doctest: +NUMERIC12
@@ -177,7 +177,7 @@ class FinitePoint():
         """
         Returns the distance of this finite point to another finite point::
 
-            sage: from sage.all import *
+            sage: from snappy.sage_helper import *
             sage: a = FinitePoint(CIF(1,2),RIF(3))
             sage: b = FinitePoint(CIF(4,5),RIF(6))
             sage: a.dist(b) # doctest: +NUMERIC12

@@ -137,10 +137,6 @@ recipe is::
 
 If you always want to use the ``snappy_venv`` Python, adjust your `$PATH
 <https://opensource.com/article/17/6/set-path-linux>`_ to include ``snappy_venv/bin``.
-You may also activate and deactivate your ``snappy_venv`` with the usual
-commands::
-  source snappy_venv/bin/activate
-  deactivate
 
 The alternative way to work around the ``externally-managed-environment``
 error is to do the following::

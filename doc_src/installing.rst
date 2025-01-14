@@ -29,6 +29,7 @@ Earlier releases `can be found here
 
 Linux
 -----
+
 Starting with SnapPy 3.2, the SnapPy app is available for generic linux
 systems as an AppImage, which is a single executable file that embeds all
 of the code required to run the SnapPy app. The
@@ -51,17 +52,22 @@ after you have downloaded `SnapPy-x86_64.AppImage
 The last command registers the SnapPy app with your desktop system,
 so it can be located with the desktop search tool or main menu, and
 will have an icon which can be pinned to your dock or task bar.
+
+**Warning**: 
   
-Python Modules for linux
+Python Modules for Linux
 ------------------------
 
-It is also possible to install SnapPy with pip, so that it is included
-in your python programming environment.  According to current
-recommendations from the Python project, this means creating a python
-venv and installing pip packages in the venv.  (Current Debian-based
-systems enforce this recommendation by not allowing --user installs
-with pip.)  If you do not have a venv you can create one, say named
-~/myvenv with this command::
+You can also install SnapPy using `pip` so it that it is included in
+your Python programming environment. 
+
+
+According to current recommendations from
+the Python project, this means creating a python venv and installing
+pip packages in the venv.  (Current Debian-based systems enforce this
+recommendation by not allowing --user installs with pip.)  If you do
+not have a venv you can create one, say named ~/myvenv with this
+command::
 
   python3 -m venv ~/myvenv
 

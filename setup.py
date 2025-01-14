@@ -364,7 +364,7 @@ hp_extra_compile_args = []
 if sys.platform == 'win32' and cc == 'msvc':
     if platform.architecture()[0] == '32bit':
         hp_extra_compile_args.append('/arch:SSE2')
-    hp_extra_compile_args.append('/EHsc')
+    hp_extra_compile_args += ['/EHsc', '/MT']
     # Uncomment to get debugging symbols for msvc.
     # hp_extra_compile_args += ['/DDEBUG', '/Zi',
     #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
@@ -483,7 +483,7 @@ twister_kernel_src = [twister_kernel_path + file for file in
 twister_extra_compile_args = []
 twister_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
-    twister_extra_compile_args.append('/EHsc')
+    twister_extra_compile_args += ['/EHsc', '/MT']
 
 TwisterCore = Extension(
     name = 'snappy.twister.twister_core',

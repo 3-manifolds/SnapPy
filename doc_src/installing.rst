@@ -58,8 +58,14 @@ will have an icon which can be pinned to your dock or task bar.
 Python Modules for Linux
 ------------------------
 
+Ubuntu 24.04: sudo apt install python3-pip python3-tk
+Fedora 41: sudo dnf install python3-pip python3-tkinter
+openSUSE Leap 15.6: sudo zypper install python3.12-tk
+
 You can also install SnapPy using `pip` so it that it is included in
-your Python programming environment. 
+your Python programming environment.
+
+
 
 
 According to current recommendations from

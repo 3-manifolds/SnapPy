@@ -25,4 +25,4 @@ repair-wheel-command = "auditwheel repair --strip -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.windows]
 archs = "auto"
-
+skip = "cp313-win32"

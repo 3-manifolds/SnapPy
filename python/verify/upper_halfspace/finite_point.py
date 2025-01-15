@@ -214,7 +214,7 @@ class _FinitePointTester():
     """
 
     def matrix1(self):
-        from sage.all import RIF, CIF, matrix
+        from ...sage_helper import RIF, CIF, matrix
         return matrix(
             [[CIF(RIF(1.3), RIF(-0.4)), CIF(RIF(5.6), RIF(2.3))],
              [CIF(RIF(-0.3), RIF(0.1)), CIF(1)]])
@@ -223,7 +223,7 @@ class _FinitePointTester():
         return ExtendedMatrix(self.matrix1(), isOrientationReversing)
 
     def matrix2(self):
-        from sage.all import RIF, CIF, matrix
+        from ...sage_helper import RIF, CIF, matrix
         return matrix(
             [[CIF(RIF(0.3), RIF(-1.4)), CIF(RIF(3.6), RIF(6.3))],
              [CIF(RIF(-0.3), RIF(1.1)), CIF(1)]])
@@ -234,7 +234,7 @@ class _FinitePointTester():
     def images_have_same_distance(self, m):
         from sage.rings.real_mpfi import RealIntervalFieldElement
 
-        from sage.all import RIF, CIF
+        from ...sage_helper import RIF, CIF
         a = FinitePoint(CIF(RIF(3.5),RIF(-3.0)), RIF(8.5))
         b = FinitePoint(CIF(RIF(4.5),RIF(-4.5)), RIF(9.6))
 
@@ -254,7 +254,7 @@ class _FinitePointTester():
             raise Exception("Distance changed %r %r" % (d_before, d_after))
 
     def matrix_multiplication_works(self, matrices):
-        from sage.all import RIF, CIF, prod
+        from ...sage_helper import RIF, CIF, prod
 
         a = FinitePoint(CIF(RIF(3.5),RIF(-3.0)), RIF(8.5))
 

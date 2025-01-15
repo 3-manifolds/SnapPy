@@ -5,7 +5,7 @@ Installing SnapPy
 
 Here are detailed instructions on how to get SnapPy working on a
 variety of platforms.  The current version is |release| which was released
-on |release_date|.  If you encounter problems installing SnapPy,
+on |release_date|.  If you encounter any problems installing SnapPy,
 :doc:`please let us know <bugs>`.
 
 macOS
@@ -14,8 +14,8 @@ macOS
 Simply download `SnapPy.dmg
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.  Works with macOS 10.13 and
-newer.  Earlier releases `can be found here
+it, just like any other application.  The current version works with macOS 10.13 and
+newer and earlier releases `can be found here
 <https://github.com/3-manifolds/SnapPy/releases/>`_.
 
 Windows
@@ -34,9 +34,10 @@ Starting with SnapPy 3.2, a completely self-contained SnapPy `AppImage
 <https://docs.appimage.org/introduction/quickstart.html#ref-quickstart>`_
 is available that should work on any Linux system from the last 5
 years.  This AppImage contains its own private copy of Python, so if
-you plan to use SnapPy in your own Python program skip ahead to
+you plan to use SnapPy in your own Python programs, skip ahead to
 `Python Modules for Linux`_.  Here is the recipe for installing the
-AppImage in ``~/bin`` after you have downloaded `SnapPy-x86_64.AppImage
+AppImage in ``~/bin`` after you have downloaded the file
+`SnapPy-x86_64.AppImage
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-x86_64.AppImage.>`_::
 
   mkdir -p ~/bin
@@ -46,11 +47,28 @@ AppImage in ``~/bin`` after you have downloaded `SnapPy-x86_64.AppImage
   ~/bin/SnapPy-x86_64.AppImage --install
 
 The last command registers the SnapPy app with your desktop system and
-starts SnapPy.  In the future, you can start SnapPy by using the desktop
-search tool with GNOME or the main menu with KDE. You can pin the icon
-to your Dash or Task Bar for easy access.  From a terminal window,
-you can also start the app by typing ``SnapPy`` provided ``~/bin`` is
-in your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
+starts it.  Next time, you can start SnapPy by using the desktop
+search tool with GNOME or the main menu with KDE. You can pin also the icon
+to your dash or task bar for easy access.  From a terminal window, you
+can also start the app by typing ``SnapPy`` provided ``~/bin`` is in
+your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
+
+
+Python Modules for macOS or Windows
+-----------------------------------
+
+If you write Python programs on macOS or Windows, you may wish to
+install SnapPy as a Python module into your own copy of Python.  We
+support Python 3.9 and up.  (On macOS, use a Python downloaded from
+`Python.org <http://python.org>`_ and not the one provided by Apple.)
+After installing Python, you may install a SnapPy module from your
+Terminal application or Command Prompt with the command::
+
+    python3 -m pip install --upgrade --user snappy snappy_15_knots
+
+If you do not want the larger version of HTLinkExteriors that includes
+the 15 crossing knots (it uses 110M of disk space), omit
+``snappy_15_knots`` from the command.
 
 
 Python Modules for Linux
@@ -61,10 +79,10 @@ for example if you want to incorporate SnapPy in your own Python
 scripts.  These instructions assume you have system administrator
 (superuser) privileges to install software packages from your Linux
 distribution.  (If you're not a superuser, use either the
-`Linux app`_ or `Conda`_.)
+`Linux app`_ or `conda`_.)
 
 The first step is to install Python and other requirements; here's how
-to do that on the most popular kinds of Linux:
+to do that on the most popular Linux distributions:
 
 + **Ubuntu/Debian/Mint/MX Linux/Elementary:** Tested on Ubuntu 24.04::
 
@@ -78,15 +96,14 @@ to do that on the most popular kinds of Linux:
 
     sudo pacman -Sy python-pip tk
 
-+ **openSUSE**: For openSUSE Tumbleweed::
++ **openSUSE**: For Tumbleweed::
 
-    sudo zypper install python3-tk
+    sudo zypper install python3-pip python3-tk
 
-  For openSUSE Leap, as of verion 15.6 you need ask for a recent
-  version of Python or it will give you Python 3.6 which is too old
-  for SnapPy::
+  For Leap, as of version 15.6 you need ask for a recent version of
+  Python or it will give you Python 3.6 which is too old for SnapPy::
 
-    sudo zypper install python3.12-tk
+    sudo zypper install python312-pip python312-tk
 
   You will need to replace ``python3`` by ``python3.12`` in subsequent
   steps.
@@ -105,21 +122,21 @@ either use a *virtual environment* (``python -m venv``) or do a *user
 install* (``pip install --user``).  The former will work on any
 version of Linux, whereas the latter is now strongly discouraged on
 many systems (e.g. Ubuntu 24.04).  If you have not previously
-installed SnapPy on this computer, we recommend go with the virtual
-environment route, but suggest you go with a user install if upgrading
-an existing version of SnapPy
+installed SnapPy on this computer, we recommend using a virtual
+environment, but suggest a user install if you are upgrading an
+existing version of SnapPy that was installed in that manner.
 
 Virtual environment
   Here is the `official tutorial
   <https://docs.python.org/3/tutorial/venv.html>`_ on using virtual
-  environments in Python and an `indepth discussion
+  environments in Python and an `in-depth article
   <https://realpython.com/python-virtual-environments-a-primer/>`_.  A
   recipe is::
 
     python3 -m venv snappy_venv
     # Switch to snappy_venv's Python
     source snappy_venv/bin/activate
-    pip install snappy
+    pip install snappy snappy_15_knots
     # Start the SnapPy app!
     SnapPy
     # Return to system Python
@@ -127,66 +144,37 @@ Virtual environment
 
   If you always want to use the ``snappy_venv`` Python, adjust your
   `$PATH <https://opensource.com/article/17/6/set-path-linux>`_ to
-  start with ``snappy_venv/bin``.
+  **start** with ``snappy_venv/bin``.
 
 User install
-  To do a ``user install`` with pip, try::
+  To do a user install with pip, try::
 
     # Note no "sudo" below!
-    python3 -m pip install --upgrade --user snappy
+    python3 -m pip install --upgrade --user snappy snappy_15_knots
 
   If you get a long error message that starts::
 
     error: externally-managed-environment
 
-  you probably should uses a virtual environment; however,
+  you should probably use a virtual environment; however,
   you can force it via::
 
     # Note no "sudo" below!
-    python3 -m pip install --upgrade --user --break-system-packages snappy
+    python3 -m pip install --upgrade --user --break-system-packages snappy snappy_15_knots
 
   Despite the scary name, provided you don't use ``sudo``, this will
-  not actually modify the system packages but rather install
+  not actually modify the system packages, but rather install
   ``snappy`` into the subdirectory
   ``~/.local/share/python3.*/site-packages`` of your home directory.
 
-If you want the larger version of HTLinkExteriors that includes the 15
-crossing knots (uses 110M of disk space), also install the Python
-package ``snappy_15_knots``, for example::
-
-  python3 -m pip install --upgrade --user snappy_15_knots
-
-Once you have installed SnapPy, just run the following command to start
-the app::
+  After a user install, you run the following command to start
+  the app::
 
     ~/.local/bin/SnapPy
 
-So that you can start SnapPy with just the command ``SnapPy``, make
-sure ``~/.local/bin`` is in `in your path
-<https://opensource.com/article/17/6/set-path-linux>`_.
-
-
-Python Modules for Macintosh or Windows
----------------------------------------
-
-If you write Python programs on a Macintosh or Windows system, you may
-wish to install SnapPy as a Python module into your own copy of
-Python.  We support Python 3.6 and up.  (On macOS, use a Python
-downloaded from `Python.org <http://python.org>`_ and not the one
-provided by Apple.)  After installing Python, you may install a SnapPy
-module from your Terminal application or Command Prompt with the
-commands::
-
-    python3 -m pip install --upgrade --user snappy
-
-If you want the larger version of HTLinkExteriors that includes the 15
-crossing knots (uses 110M of disk space), do::
-
-    python3 -m pip install --upgrade --user snappy_15_knots
-
-If you use Python 2 rather than Python 3, replace ``python3`` with
-``python`` in the above.  If your Python lacks the pip module, `get it
-here <https://pip.pypa.io/en/stable/installing/>`_.
+  So that you can start SnapPy with just the command ``SnapPy``, make
+  sure ``~/.local/bin`` is in `in your path
+  <https://opensource.com/article/17/6/set-path-linux>`_.
 
 
 SageMath
@@ -195,15 +183,9 @@ SageMath
 SnapPy has some special features when used within `SageMath
 <http://sagemath.org>`_, the universal mathematics software based on
 Python.  This section describes how to install SnapPy into your
-existing copy of SageMath, but you may find it easier to use the
-`kitchen sink`_ approach instead.  You can install it as a Sage
-optional package via the following if using Sage 6.4 or newer::
+existing copy of SageMath::
 
-  sage -pip install snappy
-  sage -pip install snappy_15_knots  # Larger version of HTLinkExteriors
-
-If you are on macOS, we recommend use `this binary
-<https://github.com/3-manifolds/Sage_macOS/releases>`_.
+  sage -pip install --upgrade snappy snappy_15_knots
 
 Alternatively, SageMath on `CoCalc <https://cocalc.com/>`_ (formerly
 the SageMathCloud) also has SnapPy preinstalled, and the graphics
@@ -211,17 +193,13 @@ features even work via the `X11 interface
 <http://blog.sagemath.com/cocalc/2018/11/05/x11.html>`_, see the
 bottom of that page for more.
 
-If you previously installed SnapPy into SageMath and want to upgrade
-SnapPy to the latest version, do::
-
-  sage -pip install --upgrade snappy
-
-If it has trouble when compiling CyOpenGL, you are probably missing
-the `"gl.h" headers <openglmesa>`.  The graphical features may or may
-not work, depending on how Tkinter was configured within Sage, and may
-seem to "hang" when you try to start them.  To deal with the latter
-issue type "%gui tk" at the Sage prompt; please note that doing so may
-break Sage's "attach" feature.
+The graphical features may or may not work, depending on how Tkinter
+was configured within Sage.  (There is no problem on macOS if you use
+this `SageMath binary
+<https://github.com/3-manifolds/Sage_macOS/releases>`_.)  If the
+graphical features seem to "hang" when you try to start them, type
+``%gui tk`` at the Sage prompt; please note that doing so may break
+Sage's "attach" feature.
 
 
 Kitchen sink
@@ -237,15 +215,10 @@ computational tools in low-dimensional topology including
 and `flipper <http://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
 <https://hub.docker.com/r/computop/sage/>`_ with all of the above tools
-and many more; using this is frequently the easiest way to get a
-working setup for such multifaceted computations.  For more, watch
+and many more; using this is sometimes the easiest way to get a
+working setup for such multifaceted computations, especially on Windows.  For more, watch
 `this demonstration <https://icerm.brown.edu/video_archive/?play=1992>`_.
 
-We also offer `conda environments
-<https://github.com/unhyperbolic/condaForSnapPy>`_ with SnapPy and
-optionally Sage (only on Mac OS and Linux). While it has none of the
-other aforementioned tools, it has the advantage that the GUI elements
-such as the link editor and the browser can be used directly.
 
 Conda
 -----
@@ -260,74 +233,6 @@ installing SnapPy into a new conda environment on macOS or Linux::
   conda activate snappy_env
   pip install snappy
   python -m snappy.app
-
-
-Generic Unix
-------------
-
-If you use a Unix other than OS X or Linux, or if the prebuilt
-packages don't work for you, you'll need to build SnapPy from source.
-Here are some detailed instructions.
-
-Things you'll need:
-
-- Python 3 with Tkinter: You'll need to have `Python
-  <http://python.org>`_ (version 3.6 or newer) and `Tk
-  <http://tcl.tk>`_ (at least version 8.5) with `Tkinter
-  <http://wiki.python.org/moin/TkInter>`_ to connect them, including
-  the header files.  For instance, on Debian or Ubuntu, install the
-  packages "python3-tk", "python3-pip", and "python3-dev". On Fedora,
-  you'll want e.g. "python3-tkinter", "python3-pip", and
-  "python3-devel", and "python3-wheel".
-
-- Test that Python is in order by installing PLink from source::
-
-      python3 -m pip install --user plink
-      python3 -m plink.app  # Should start the link editor!
-
-.. _openglmesa:
-
-- Support for OpenGL (3D graphics): This is built in on OS X and the
-  most installations of Fedora and Ubuntu.  But you'll need the `MESA
-  <http://www.mesa3d.org/>`_ header files "gl.h" and "glu.h" to compile
-  SnapPy.  On Debian and Ubuntu, install "libglu1-mesa-dev"; On Fedora install
-  "mesa-libGLU-devel".
-
-- `Cython <http://cython.org>`_, which you can install via::
-
-    python3 -m pip install --user cython
-
-- The gcc C++ compiler, g++.
-
-- `CyPari <https://pypi.python.org/pypi/cypari/>`_: a stand-alone version of
-  `Sage's <http://sagemath.org>`_ Python interface to the
-  `PARI <http://pari.math.u-bordeaux.fr/PARI>`_ number theory
-  library.  Usually, you can install this with::
-
-     python3 -m pip install --user cypari
-
-Now download the `source code`_ listed below, for instance
-
-.. parsed-literal::
-
-   wget https://pypi.python.org/packages/source/s/snappy/|tarball|
-   tar xfz |tarball|; cd snappy-*
-
-There is one more dependency that may need to be dealt with:
-
-- `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
-  Linux, there are pre-built binaries of this in the snappy
-  subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built
-  for 64-bit kernels, and should work on most systems.  If they don't,
-  you'll need to edit or follow "build_togl.sh" to build Togl directly.
-
-Finally, compile and install the SnapPy module (which will install
-certain other dependencies) and test::
-
-  python3 setup.py build
-  python3 -m pip install --user .
-  python3 -m snappy.test
-  python3 -m snappy.app
 
 
 Source code

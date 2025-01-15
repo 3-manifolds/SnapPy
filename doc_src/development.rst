@@ -17,11 +17,11 @@ macOS
 
 Here is how to get a clean development setup under macOS.
 
-- Install the latest Python 3.8 from Python.org using the `Mac
+- Install the latest Python 3.13 from Python.org using the `Mac
   Installer Disk Image <http://www.python.org/download/>`_.  Set your
   path so that "python3" is::
       
-    /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
+    /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
 
 - Use `pip <https://pip.pypa.io/en/latest/index.html>`_ to install the
   following packages::
@@ -235,5 +235,50 @@ need to do, one must install additional tools.
 Linux
 -----
 
-See the :ref:`installation instructions on generic Unix
-<installing:Generic Unix>` for how to build SnapPy from source.
+Things you'll need:
+
+- Python 3 with Tkinter: You'll need to have `Python
+  <http://python.org>`_ (version 3.6 or newer) and `Tk
+  <http://tcl.tk>`_ (at least version 8.5) with `Tkinter
+  <http://wiki.python.org/moin/TkInter>`_ to connect them, including
+  the header files.  For instance, on Debian or Ubuntu, install the
+  packages "python3-tk", "python3-pip", and "python3-dev". On Fedora,
+  you'll want e.g. "python3-tkinter", "python3-pip", and
+  "python3-devel", and "python3-wheel".
+
+- Test that Python is in order by installing PLink from source::
+
+      python3 -m pip install --user plink
+      python3 -m plink.app  # Should start the link editor!
+
+.. _openglmesa:
+
+- Support for OpenGL (3D graphics): This is built in on OS X and the
+  most installations of Fedora and Ubuntu.  But you'll need the `MESA
+  <http://www.mesa3d.org/>`_ header files "gl.h" and "glu.h" to compile
+  SnapPy.  On Debian and Ubuntu, install "libglu1-mesa-dev"; On Fedora install
+  "mesa-libGLU-devel".
+
+- `Cython <http://cython.org>`_, which you can install via::
+
+    python3 -m pip install --user cython
+
+- The gcc C++ compiler, g++.
+
+- Fetch the latest development versions of the source straight from
+  the repository::
+
+    git clone https://github.com/3-manifolds/PLink.git
+    git clone https://github.com/3-manifolds/Spherogram.git
+    git clone https://github.com/3-manifolds/Snappy.git
+
+- Build the components, from easiest to hardest, and then test::
+
+    cd PLink
+    python setup.py pip_install
+    cd ../Spherogram
+    python setup.py pip_install
+    cd ../SnapPy
+    python setup.py pip_install
+    cd ..
+    python -m SnapPy.test

@@ -95,7 +95,7 @@ News
 
   - New self-contained SnapPy application for Linux. 
   
-  - Support for Python 3.13.
+  - Support for Python 3.13 and SageMath 10.5.
 
     
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):

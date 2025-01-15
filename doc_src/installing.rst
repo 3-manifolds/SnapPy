@@ -100,7 +100,7 @@ to do that on the most popular Linux distributions:
 
     sudo zypper install python3-pip python3-tk
 
-  For Leap, as of version 15.6 you need ask for a recent version of
+  For Leap, as of version 15.6 you need to ask for a recent version of
   Python or it will give you Python 3.6 which is too old for SnapPy::
 
     sudo zypper install python312-pip python312-tk
@@ -113,7 +113,7 @@ to do that on the most popular Linux distributions:
 
     sudo dnf install python3.11-pip python3.11-tkinter
 
-  You will need to replace ``python3`` by ``python3.11`` in subsequent
+  You will also need to replace ``python3`` by ``python3.11`` in subsequent
   steps.
 
 
@@ -157,7 +157,7 @@ User install
     error: externally-managed-environment
 
   you should probably use a virtual environment; however,
-  you can force it via::
+  you can force pip to do a user install via::
 
     # Note no "sudo" below!
     python3 -m pip install --upgrade --user --break-system-packages snappy snappy_15_knots

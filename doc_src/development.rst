@@ -113,7 +113,7 @@ need to do, one must install additional tools.
   unicode version; tested with version 5.5.9.
 
 - Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
-  appropriate for your version Windows.  Most commonly, you will have
+  appropriate for your version of Windows.  Most commonly, you will have
   a 64-bit Windows and hence want the "x86_64" installer; for
   concreteness the rest of these instructions assume this. (Technical
   note: even if you want to build 32-bit binaries, if your Windows is

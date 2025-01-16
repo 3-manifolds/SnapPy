@@ -27,7 +27,6 @@ datafiles += collect_data_files('tkinter_gl')
 
 
 a = Analysis(['SnapPy.py'],
-             binaries=binaries,
              hiddenimports=imports + ['linecache', 'pkg_resources.py2_warn'],
              datas=datafiles,
              hookspath=[],

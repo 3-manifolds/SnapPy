@@ -35,7 +35,7 @@ Source: "dist\SnapPy_debug\*"; DestDir: "{app}"; Flags: ignoreversion recursesub
 [Icons]
 Name: "{group}\SnapPy"; Filename: "{app}\SnapPy.exe"; IconFileName: "{app}\snappy\SnapPy.ico"
 Name: "{group}\{cm:UninstallProgram,SnapPy}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\SnapPy"; Filename: "{app}\SnapPy.exe"; Tasks: desktopicon; IconFileName: "{app}\snappy\SnapPy.ico"
+Name: "{commondesktop}\SnapPy"; Filename: "{app}\SnapPy.exe"; Tasks: desktopicon; IconFileName: "{app}\_internal\snappy\SnapPy.ico"
 
 [Run]
 Filename: "{app}\SnapPy.exe"; Description: "{cm:LaunchProgram,SnapPy}"; Flags: nowait postinstall skipifsilent

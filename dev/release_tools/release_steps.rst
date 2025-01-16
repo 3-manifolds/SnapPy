@@ -9,11 +9,15 @@ Key tools:
 
      gh run download -R 3-manifolds/snappy
 
-2. The sdist tarballs are built by a GitHub action of the
-   "snappy_release" project.
+2. To build and check an sdist tarball, use ``build``::
+
+     python3 -m build .
+
+   This assumes all dependencies are available on PyPI.  
 
 3. The Windows and macOS apps is are built by a GitHub actions of
-   "snappy_release".
+   "snappy_release".  The Linux AppImage is built by
+   "snappy_appimage".
 
 4. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
@@ -33,13 +37,13 @@ Warmup
 1. Trigger the GitHub actions for "snappy_release".  Download the
    artifacts for the "sdist" action and upload to testpypi::
 
-      twine upload -r test dist/snappy/*.tar.gz
+      twine upload -r testpypi dist/snappy/*.tar.gz
 
    Further details can be found in "pypi.rst".
 
 2. Fire up a Linux test VM and do::
 
-     py36 test_pypi.py -p -t snappy
+     py36 test_pypi.py -t snappy
 
    Repeat for macOS and Windows.  This will flush out any new issues
    with the sdist tarballs.
@@ -112,6 +116,7 @@ g. Version 2.8:     295 Mac,  573 Windows (85% Python 3).
 h. Version 3.0(.1): 292 Mac,  434 Windows.
 i. Version 3.0.2:    68 Mac,   70 Windows.
 j. Version 3.0.3:   667 Mac, 1333 Windows.
+h. Version 3.1.*: 
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

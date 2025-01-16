@@ -109,10 +109,12 @@ need to do, one must install additional tools.
   `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the
   unicode version; tested with version 5.5.9.
 
-- Install `MSYS2 <http://msys2.github.io>`_ is appropriate for your
+- Install `MSYS2 <http://msys2.github.io>`_ as appropriate for your
   version Windows.  Follow the instructions on the webpage to update
   everything to the very latest MSYS2 (``pacman -Sy pacman; pacman
-  -Syu; pacman -Su`` etc.).
+  -Syu; pacman -Su`` etc.).  You should also install the ucrt toolchain::
+
+    pacman -S mingw-w64-ucrt-x86_64-toolchain
 
 - Make a shortcut to ``c:\msys64\msys2.exe`` as you will be using it all
   the time; alternatively, pin ``mys2.exe`` to your taskbar.  

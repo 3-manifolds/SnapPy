@@ -56,7 +56,9 @@ exe = EXE(pyz,
           debug=True,
           strip=False,
           upx=True,
-          console=True)
+          console=True,
+          icon='SnapPy.ico')
+
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

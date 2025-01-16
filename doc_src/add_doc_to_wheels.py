@@ -11,6 +11,7 @@ import re
 import tempfile
 import glob
 import shutil
+from zipfile import Zipfile
 
 doc_zipfile = os.path.abspath(sys.argv[1])
 wheel_names = glob.glob(sys.argv[2] + '/snappy-*.whl')
@@ -23,16 +24,25 @@ def normalize(path):
 for wheel_path in wheel_names:
     python = sys.executable
     tmp_dir = tempfile.mkdtemp()
-    subprocess.check_call([python, '-m', 'wheel', 'unpack', '--dest', tmp_dir, wheel_path])
     pkg, version = os.path.basename(wheel_path).split('-')[:2]
     wheel_dir = os.path.join(tmp_dir, pkg + '-' + version)
+    # We don't use `wheel` here because it will refuse to unpack
+    # wheels with bad hashes, which as of 2025-01-16 happens with the
+    # GitHub macos-13 runner.
+    subprocess.check_call(['unzip', '-q', wheel_path, '-d', wheel_dir])
     target = os.path.join(wheel_dir, pkg)
     target_doc_dir = os.path.join(target, 'doc')
     if os.path.exists(target_doc_dir):
         print('Deleting existing docs...')
         shutil.rmtree(target_doc_dir)
+    else:
+        os.mkdir(target_doc_dir)
+
     print('Unpacking docs..')
-    subprocess.check_call(['unzip', '-q', doc_zipfile, '-d', target])
+    with zipfile.
+    
+    
+    subprocess.check_call(['unzip', '-q', doc_zipfile, '-d', target_doc_dir])
     subprocess.check_call([python, '-m', 'wheel', 'pack', '--dest', tmp_dir, wheel_dir])
     new_whl = glob.glob(os.path.join(tmp_dir,  pkg + '-' + version + '*.whl'))[0]
     if normalize(new_whl) != normalize(wheel_path):

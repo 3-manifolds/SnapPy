@@ -62,15 +62,18 @@ Actual release
 
 1. Bump version numbers to final, trigger "snappy_release" rebuild.
 
-2. Build final macOS app.
+2. **ADD THE DOCS TO THE FINAL WHEELS**  Currently using
+   doc_source/add_doc_to_wheels.py for this.
 
-3. Use twine to upload everything to PyPI.
+3. Build final macOS app.
 
-4. Create releases on GitHub and upload macOS and Windows apps.
+4. Use twine to upload everything to PyPI.
 
-5. Update documentation on web by copying docs into t3m_web/SnapPy.
+5. Create releases on GitHub and upload macOS and Windows apps.
 
-6. **Create** "current.txt" in t3m_web/SnapPy.
+6. Update documentation on web by copying docs into t3m_web/SnapPy.
+
+7. **Create** "current.txt" in t3m_web/SnapPy.
 
 
 Final testing

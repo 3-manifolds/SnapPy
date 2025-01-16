@@ -11,7 +11,7 @@ import re
 import tempfile
 import glob
 import shutil
-from zipfile import Zipfile
+from zipfile import ZipFile
 
 doc_zipfile = os.path.abspath(sys.argv[1])
 wheel_names = glob.glob(sys.argv[2] + '/snappy-*.whl')
@@ -39,8 +39,9 @@ for wheel_path in wheel_names:
         os.mkdir(target_doc_dir)
 
     print('Unpacking docs..')
-    with zipfile.
-    
+    with ZipFile(doc_zipfile) as doc_zip:
+        if len({path.split('/')[0] for path in doc_zip.namelist()}) == 1:
+            raise ValueError('doc zipfile has top-level directory, bailing')
     
     subprocess.check_call(['unzip', '-q', doc_zipfile, '-d', target_doc_dir])
     subprocess.check_call([python, '-m', 'wheel', 'pack', '--dest', tmp_dir, wheel_dir])

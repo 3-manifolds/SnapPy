@@ -2437,7 +2437,7 @@ cdef class Triangulation():
                 permutation_rep = f.FormatHomForSnapPea().sage()
 
             # Not a useful GAP or MAGMA object, so let's try.
-            elif all(is_PermutationGroupElement(p) for p in permutation_rep):
+            elif all(isinstance(p, PermutationGroupElement) for p in permutation_rep):
                 permutation_rep = [[x - 1 for x in perm.domain()]
                                    for perm in permutation_rep]
 

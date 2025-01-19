@@ -71,7 +71,7 @@ Actual release
 
 5. Create releases on GitHub and upload macOS and Windows apps.
 
-6. Update documentation on web by copying docs into t3m_web/SnapPy.
+6. Update documentation on web by update GitHub repo snappy_site.
 
 7. **Create** "current.txt" in t3m_web/SnapPy.
 
@@ -118,8 +118,8 @@ f. Version 2.7:     986 Mac,  636 Windows (89% Python 3).
 g. Version 2.8:     295 Mac,  573 Windows (85% Python 3).
 h. Version 3.0(.1): 292 Mac,  434 Windows.
 i. Version 3.0.2:    68 Mac,   70 Windows.
-j. Version 3.0.3:   667 Mac, 1333 Windows.
-h. Version 3.1.*: 
+j. Version 3.0.3:   667 Mac, 1333 Windows. (36% Mac, 64% Windows for 3.0.*)
+h. Version 3.1.*:   883 Mac, 1482 Windows. (37% Mac, 63% Windows)
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

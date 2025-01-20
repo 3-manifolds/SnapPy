@@ -81,7 +81,7 @@ if _within_sage:
         from sage.rings.real_mpfr import RealField, RealNumber, RR
 
     from sage.rings.complex_interval_field import ComplexIntervalField
-    from sage.rings.real_mpfi import is_RealIntervalFieldElement, RealIntervalField
+    from sage.rings.real_mpfi import RealIntervalFieldElement, RealIntervalField
     from sage.rings.real_mpfr import RealNumber, RealField_class
     from sage.structure.sage_object import SageObject
 

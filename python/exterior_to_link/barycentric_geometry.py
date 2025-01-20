@@ -5,7 +5,7 @@ including the various tetrahedron embeddings used for the 2 <--> 3 and
 """
 
 from ..snap.t3mlite.simplex import *
-from .rational_linear_algebra import Matrix, Vector3, Vector4
+from .rational_linear_algebra import Matrix, Vector3, Vector4, rational_round
 from . import pl_utils
 
 
@@ -185,7 +185,7 @@ class BarycentricPoint(Point):
             v = []
             for y in max_denom * self.vector:
                 if y != 0:
-                    y = max(y.round(), 1)
+                    y = max(rational_round(y), 1)
                 v.append(y)
 
             # Should be just Vector4(v)/sum(v)

@@ -2,7 +2,7 @@ from ...sage_helper import _within_sage
 
 if _within_sage:
     import sage
-    from ...sage_helper import matrix, sqrt, is_RealIntervalFieldElement, Infinity
+    from ...sage_helper import matrix, sqrt, RealIntervalFieldElement, Infinity
 
 from .extended_matrix import ExtendedMatrix
 
@@ -167,7 +167,7 @@ class FinitePoint():
         #
         RIF = r.parent()
         if _within_sage:
-            if is_RealIntervalFieldElement(r):
+            if isinstance(r, RealIntervalFieldElement):
                 return r.intersection(RIF(1, Infinity))
         if r < 1.0:
             return RIF(1.0)

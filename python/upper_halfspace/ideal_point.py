@@ -11,10 +11,13 @@ def ideal_point_to_r13(z, RF):
     or Infinite, and a real field type.
 
     Returns the corresponding unit light vector in the hyperboloid model.
+
+    Compatible with upper_halfspace.psl2c_to_o13.
     """
     if z == Infinity:
         return vector([RF(1), RF(1), RF(0), RF(0)])
 
+    # Do inverse stereographic projection.
     z_re = z.real()
     z_im = z.imag()
     z_abs_sqr = z_re**2 + z_im**2

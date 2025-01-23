@@ -30,15 +30,13 @@ Earlier releases `can be found here
 Linux app
 ---------
 
-Starting with SnapPy 3.2, a completely self-contained SnapPy `AppImage
-<https://docs.appimage.org/introduction/quickstart.html#ref-quickstart>`_
-is available that should work on any Linux system from the last 5
-years.  This AppImage contains its own private copy of Python, so if
-you plan to use SnapPy in your own Python programs, skip ahead to
-`Python Modules for Linux`_.  Here is the recipe for installing the
-AppImage in ``~/bin`` after you have downloaded the file
+Starting with SnapPy 3.2, you can install snappy on Linux by downloading
 `SnapPy-x86_64.AppImage
-<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-x86_64.AppImage.>`_::
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-x86_64.AppImage>`_, which is a completely self-contained SnapPy `AppImage
+<https://docs.appimage.org/introduction/quickstart.html#ref-quickstart>`_
+that should work on any Linux system from the last 5 years.
+
+After downloading the AppImage, follow the recipe below::
 
   mkdir -p ~/bin
   mv ~/Downloads/SnapPy-x86_64.AppImage ~/bin
@@ -52,6 +50,10 @@ search tool with GNOME or the main menu with KDE. You can pin also the icon
 to your dash or task bar for easy access.  From a terminal window, you
 can also start the app by typing ``SnapPy`` provided ``~/bin`` is in
 your `$PATH <https://opensource.com/article/17/6/set-path-linux>`_.
+
+The AppImage contains its own private copy of Python, so if
+you plan to use SnapPy in your own Python programs, skip ahead to
+`Python Modules for Linux`_.
 
 
 Python Modules for macOS or Windows

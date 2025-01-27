@@ -3,7 +3,7 @@ from ...hyperboloid.line import R13Line
 from ...upper_halfspace import psl2c_to_o13, complex_length_of_psl2c_matrix # type: ignore
 from ...upper_halfspace.ideal_point import ideal_point_to_r13 # type: ignore
 from ...matrix import make_matrix # type: ignore
-from ...math_basics import (is_RealIntervalFieldElement,
+from ...math_basics import (lower,
                             is_ComplexIntervalFieldElement) # type: ignore
 
 __all__ = ['r13_fixed_points_of_psl2c_matrix',
@@ -24,19 +24,20 @@ def r13_fixed_points_of_psl2c_matrix(m):
     # To decide whether to conjugate, we compare m[1,0] with
     # the value m[1,0] has after conjugating.
 
-    e0 = abs(m[1,0])
-    e1 = abs(m[1,0] - m[0,0] + m[1,1] - m[0,1])
+    abs_c = _lower_bound_abs(m[1,0])
 
-    if is_RealIntervalFieldElement(e0):
-        if e0.center() > e1.center():
-            return _r13_fixed_points_of_psl2c_matrix(m)
-    else:
-        if e0 > e1:
-            return _r13_fixed_points_of_psl2c_matrix(m)
+    bc = m[1,0] - m[0,1]
+    ad = m[1,1] - m[0,0]
+    abs_c_pm_m_pp = _lower_bound_abs(bc + ad)
 
-    t = make_matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
-    tinv = make_matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
+    if abs_c > abs_c_pm_m_pp:
+        return _r13_fixed_points_of_psl2c_matrix(m)
 
+    pp = make_matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
+    pm = make_matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
+
+    tinv, t = pm, pp
+    
     pts = _r13_fixed_points_of_psl2c_matrix(tinv * m * t)
     o13_t = psl2c_to_o13(t)
 
@@ -91,3 +92,9 @@ def _safe_complex_sqrt(z):
             return CIF((-m, m), (-m, m))
 
     return z.sqrt()
+
+def _lower_bound_abs(z):
+    """
+    Returns a lower bound for the L_1 norm of z in C = R^2.
+    """
+    return max(lower(abs(z.real())), lower(abs(z.imag())))

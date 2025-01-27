@@ -29,14 +29,18 @@ def r13_fixed_points_of_psl2c_matrix(m):
     bc = m[1,0] - m[0,1]
     ad = m[1,1] - m[0,0]
     abs_c_pm_m_pp = _lower_bound_abs(bc + ad)
+    abs_c_pp_m_pm = _lower_bound_abs(bc - ad)
 
-    if abs_c > abs_c_pm_m_pp:
+    if abs_c > abs_c_pm_m_pp and abs_c > abs_c_pp_m_pm:
         return _r13_fixed_points_of_psl2c_matrix(m)
 
     pp = make_matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
     pm = make_matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
 
-    tinv, t = pm, pp
+    if abs_c_pm_m_pp > abs_c_pp_m_pm:
+        tinv, t = pm, pp
+    else:
+        tinv, t = pp, pm
     
     pts = _r13_fixed_points_of_psl2c_matrix(tinv * m * t)
     o13_t = psl2c_to_o13(t)

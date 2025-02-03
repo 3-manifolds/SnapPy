@@ -159,7 +159,7 @@ def process_solutions_provider(py_eval, manifold_thunk, text, for_dimension,
     raise Exception("No parsable solution type given: %s..." % text[:100])
 
 
-class SolutionContainer():
+class SolutionContainer:
     def __init__(self, solutions):
         self._solutions = solutions
 

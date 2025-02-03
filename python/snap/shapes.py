@@ -68,7 +68,7 @@ def enough_gluing_equations(manifold):
                                       for a, b, c in eqns[:n_tet]])
     H, U = edge_eqns.mattranspose().mathnf(flag=1)
     assert H.ncols() == n_tet - n_cusps
-    edge_eqns_with_RHS = pari_matrix_to_lists((edge_eqns_with_RHS.mattranspose() * U))[n_cusps:]
+    edge_eqns_with_RHS = pari_matrix_to_lists(edge_eqns_with_RHS.mattranspose() * U)[n_cusps:]
     edge_eqns_with_RHS = [(e[:n_tet], e[n_tet: 2 * n_tet], pari(-1)**e[-1])
                           for e in edge_eqns_with_RHS]
 

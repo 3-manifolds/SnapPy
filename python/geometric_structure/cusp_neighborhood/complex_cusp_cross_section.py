@@ -628,7 +628,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         Also stores the inverse Euclidean length scale factor in
         inverse_scale_to_be_on_tube for each vertex of the triangle so that
-        the vertex lands on the bounadry of the standard tube.
+        the vertex lands on the boundary of the standard tube.
         The key is the edge corresponding to that vertex of the triangle.
 
         Here, a standard tube is given by a Euclidean cone from zero to

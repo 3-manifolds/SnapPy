@@ -1,7 +1,5 @@
-from .number import Number as RawNumber
-
-class Number(RawNumber):
-    _default_precision=53
+from .number import Number, bit_precision
+from flint import arb, acb
 
 cdef extern from "double_SnapPy.h":
     double PI_SQUARED_BY_2
@@ -11,26 +9,22 @@ cdef extern from "double_SnapPy.h":
 cdef real_to_string(Real x):
     return '%.18f' % x
 
-cdef Real2gen_direct(Real R):
-    """
-    Convert a Real to a pari gen of type t_REAL.
-    """
-    cdef double* qd = <double*>&R
-    return pari(qd[0])
+cdef Real2arb(Real R):
+     with bit_precision(53):
+         return arb(<double> R)
 
-cdef Real2gen_string(Real R):
-    """
-    Convert a Real to a pari gen of type t_REAL.
-    This constructs the gen from the string representation of the real.
-    """
-    return pari(real_to_string(R))
+cdef Complex2acb(Complex Z):
+    with bit_precision(53):
+        return acb(Z.real, Z.imag)
 
-cdef Complex gen2Complex(g):
-    cdef Complex result
-    result.real, result.imag = g.real(), g.imag()
-    return result
+cdef RealImag2acb(Real x, Real y):
+    cdef double re = <double>x
+    cdef double im = <double>y
+    with bit_precision(53):
+        return acb(re, im)
 
 cdef Real2Number(Real R):
-    return Number(Real2gen(R))
-cdef Complex2Number(Complex C):
-    return Number(Complex2gen(C))
+    return Number(Real2arb(R), precision=53)
+
+cdef Complex2Number(Complex Z):
+    return Number(Complex2acb(Z), precision=53)

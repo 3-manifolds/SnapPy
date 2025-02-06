@@ -13,6 +13,7 @@ import math
 import string
 import time
 import typing
+import flint
 python_major_version = sys.version_info.major
 
 # Sage interaction
@@ -403,26 +404,27 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
                                                "NeumannZagierTypeEquations")
 
 # C type for a function of Real returning an object
-ctypedef object (*func_real_to_obj)(Real)
+## ctypedef object (*func_real_to_obj)(Real)
 
-# Convert Real to gen in an appropriate manner for this environment
-cdef func_real_to_obj Real2gen
+# Convert Real to arb in an appropriate manner for this environment
+# (Defined in number/double.pyx or number/qd.pyx.)
+## cdef func_real_to_obj Real2arb
 
-if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
-    Real2gen = Real2gen_direct
-else:
-    Real2gen = Real2gen_string
+#if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
+#    Real2gen = Real2gen_direct
+#else:
+#    Real2gen = Real2gen_string
 
-cdef Complex2gen(Complex C):
-    """
-    Convert a Complex to a pari gen.
-    """
-    cdef real_part = Real2gen(C.real)
-    cdef imag_part = Real2gen(C.imag)
-    return pari.complex(real_part, imag_part)
+# cdef Complex2gen(Complex C):
+#     """
+#     Convert a Complex to a pari gen.
+#     """
+#     cdef real_part = Real2gen(C.real)
+#     cdef imag_part = Real2gen(C.imag)
+#     return pari.complex(real_part, imag_part)
 
-cdef RealImag2gen(Real R, Real I):
-    return pari.complex(Real2gen(R), Real2gen(I))
+# cdef RealImag2gen(Real R, Real I):
+#     return pari.complex(Real2gen(R), Real2gen(I))
 
 cdef Complex2complex(Complex C):
     """

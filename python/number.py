@@ -1,16 +1,84 @@
-# SnapPy Numbers are designed to interoperate with elements of a Sage
-# RealField or ComplexField, with Sage Integers or Rationals, and with
-# other SnapPyNumbers.
+"""This module provides the Number class.
 
-from .sage_helper import _within_sage
-from .pari import *
+A Number is an arbitrary precision real or complex number which
+supports interval arithmetic.  Numbers are designed to interoperate
+with elements of a Sage RealField or ComplexField and with Sage
+Integers or Rationals when used within Sage.
+"""
+
+from flint import *
 import re
+import math
+from contextlib import contextmanager
+
+ball_type = arb | acb
+flint_type = fmpz | fmpq | arb | acb
+rational_flint_type = fmpz | fmpq
+rational_type = fmpz | fmpq | int
+
+_within_sage = False
+
+# Flint uses a global context object to determine the precision of an
+# arb or acb number for every operation, including creation, printing
+# and arithmetic operations.  An arb with 100 bits of precision will be
+# printed as if it had 53 bits of precision if ctx.prec is set to
+# 53 at the time the string is generated.  Also, there is no direct
+# way to get the bit precision of an arb or acb.  The indirect way is:
+#   man, exp = x.mid().man_exp(); man.bit_length()
+# For example:
+# >>> from flint import *
+# >>> ctx.prec = 100
+# >>> x = arb('1.234567890123456789012345678901234567890'); x
+# [1.2345678901234567890123456789 +/- 2.16e-30]
+# >>> ctx.prec = 53
+# >>> x
+# [1.23456789012346 +/- 3.22e-15]
+# >>> man, exp = x.mid().man_exp(); man.bit_length()
+# 100
+#
+# SnapPy Numbers work differently.  Each Number has a precision, and a Number
+# exposes its precision honestly.  Arithmetic operations between numbers
+# convert the operands to the lower precision and produce a result of that
+# lower precision.
+#
+# In order to make this work, we use the context manager below to ensure that
+# every operation is executed in the context which is appropriate for the
+# operand(s).
+
+@contextmanager
+def bit_precision(prec: int):
+    """Context manager used for Number operations."""
+    saved = ctx.prec
+    ctx.prec = prec
+    try:
+        yield ctx
+    finally:
+        ctx.prec = saved
+
+# This doesn't work for, e.g. numbers with real part 0
+#def get_bit_precision(x: flint_type)-> int:
+#    man, exp = x.mid().real.man_exp()
+#    return man.bit_length()
+
+def prec_bits_to_dec(n: int) -> int:
+    """Utility function to convert bit precision to decimal precision."""
+    return round(n * math.log(2) / math.log(10))
+
+def prec_dec_to_bits(n: int) -> int:
+    """Utility function to convert bit precision to decimal precision."""
+    return round(n * math.log(10) / math.log(2))
 
 strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
 left_zeros = re.compile(r'0\.0*')
-precision_of_exact_GEN = pari(0).precision()
+parse_arb = re.compile(r'\[(-{0,1}[0-9.]+).*\]$')
+parse_acb = re.compile(r'\[(-{0,1}[0-9.]+).*\[(-{0,1}[0-9.]+) .*\]j$')
+parse_complex = re.compile('-{0,1} *([0-9.]+) *[+-] *([0-9.]+)j$')
+
+# The Sage parent, or its surrogate when not in Sage.
+# ===================================================
 
 if _within_sage:
+    precision_of_exact_GEN = pari(0).precision()
     from .sage_helper import RealField, Integer, Rational, ZZ, QQ, RR, CC
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
@@ -136,29 +204,33 @@ if _within_sage:
         return pari(x)
 
 else:  # We are not in Sage
+
     Number_baseclass = object
 
-    def is_exact(x):
-        if isinstance(x, int):
+    def is_rational(x):
+        if isinstance(x, rational_type):
             return True
-        if isinstance(x, Gen):
-            return x.precision() == precision_of_exact_GEN
         if isinstance(x, Number):
-            return x.gen.precision() == precision_of_exact_GEN
+            return isinstance(x.flint_obj, rational_flint_type)
         return False
 
-    def float_to_gen(x, precision):
-        return pari._real_coerced_to_bits_prec(x, precision)
+    def float_to_flint(x, precision=None):
+        if not precision is None:
+            with bit_precision(precision):
+                return arb(x)
+        return arb(x)
 
-    def complex_to_gen(x, precision):
-        return pari.complex(
-            pari._real_coerced_to_bits_prec(x.real, precision),
-            pari._real_coerced_to_bits_prec(x.imag, precision))
+    def complex_to_flint(z, precision=None):
+        if not precision is None:
+            with bit_precision(precision):
+                return acb(z)
+        return acb(z)
 
     class SnapPyNumbers():
         """
-        Surrogate parent for a SnapPy Number, to make calls to Number.parent() work
-        in or out of Sage.  This allows the following paradigm to work:
+        Surrogate parent for a SnapPy Number, to make calls to
+        Number.parent() work in or out of Sage.  This allows the following
+        paradigm to work:
 
         >>> from snappy.number import Number
         >>> x = Number(1.5, precision=200)
@@ -229,6 +301,8 @@ else:  # We are not in Sage
             normalizer = self(2.0)**-self._precision
             return min + normalizer * gen.random(limit.gen)
 
+# The Number class
+# =================
 
 class SupportsMultiplicationByNumber():
     pass
@@ -236,13 +310,11 @@ class SupportsMultiplicationByNumber():
 
 class Number(Number_baseclass):
     """
-    Python class which wraps PARI GENs of type t_INT, t_FRAC, t_REAL
-    or t_COMPLEX.
+    Python class which wraps flint types fmpz, fmpq, arb, and acb.
 
     A Number has both a precision and an optional attribute accuracy.
     The precision represents the number of bits in the mantissa of the
-    floating point representation of the number.  It determines the
-    number of words in the pari gen.
+    floating point representation of the number.
 
     THE ACCURACY DOES NOT ACCOUNT FOR ROUNDOFF ERROR. By default, the
     accuracy of a Number is None.  The accuracy attribute is set only
@@ -271,65 +343,84 @@ class Number(Number_baseclass):
     # circumstances this flag is set to None and then ignored
     _accuracy_for_testing = None
 
-    _default_precision = 53
-
     def __init__(self, data, accuracy=None, precision=None):
+        ### Do we really need this?
+        change_precision = False
         if precision is None:
-            if hasattr(data, 'prec'):
-                self._precision = data.prec()
-            else:
-                self._precision = self._default_precision
+            raise ValueError('No precision!')
+            # FIX ME!!!
+            if isinstance(data, ball_type):
+                self._precision = ctx.prec
         else:
             self._precision = precision
+        if isinstance(data, Number):
+            if precision and precision != data._precision:
+                change_precision = True
+                self._precision = data._precision
+            # Use a copy of the flint object from data.
+            data = data.flint_obj.__class__(data.flint_obj)
         self.decimal_precision = prec_bits_to_dec(self._precision)
-        if isinstance(data, Gen):
-            self.gen = data
+        if isinstance(data, flint_type):
+            self.flint_obj = data
         elif isinstance(data, float):
-            self.gen = float_to_gen(data, self._precision)
+            self.flint_obj = float_to_flint(data, self._precision)
         elif isinstance(data, complex):
-            self.gen = complex_to_gen(data, self._precision)
-        else:
-            self.gen = pari(data)
-        type = self.gen.type()
-        if type not in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
+            self.flint_obj = complex_to_flint(data, self._precision)
+        elif isinstance(data, int):
+            with bit_precision(self._precision):
+                self.flint_obj = arb(data)
+        elif isinstance(data, str):
+            with bit_precision(self._precision):
+                try:
+                    self.flint_obj = arb(data)
+                except ValueError:
+                    self.flint_obj = acb(*parse_complex.match(data).groups())
+        if not isinstance(self.flint_obj, flint_type):
             raise ValueError(
-                'Invalid initialization for a Number: %s has type %s!' % (self.gen, type))
-        if type == 't_REAL' or type == 't_COMPLEX':
-            self.gen = self.gen.bitprecision(self._precision)
-        if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
+                'Invalid initialization for a Number: %s has type %s!' % (
+                    self.flint_obj, type(self.flint_obj)))
+        if change_precision:
+            s = str(data)
+            m = parse_arb.match(s) or parse_acb.match(s)
+            with bit_precision(self._precision):
+                self.flint_obj = data.__class__(*m.groups()) 
+        if isinstance(self.flint_obj, rational_flint_type):
             self.accuracy = self.decimal_precision
         else:
             if accuracy is None:
-                accuracy = prec_bits_to_dec(64 * (self.gen.sizeword() - 2))
-
+                man, _ = self.flint_obj.mid().real.man_exp()
+                accuracy = prec_bits_to_dec(man.bit_length())
             self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)
 
     def __hash__(self):
-        return hash(self.gen)
+        return hash(self.flint_obj)
 
-    # How to convert a Number to a Pari gen.
-    def _pari_(self):
-        return self.gen
+# How to convert a Number to a Pari gen.
+#    def _pari_(self):
+#        return self.gen
 
     # Variant for Sage 8.0 and on.
-    def __pari__(self):
-        return self.gen
+#    def __pari__(self):
+#        return self.gen
 
     def _get_acc_prec(self, other):
-        if is_exact(other):
+        """ Used by binary operators. """
+        if is_rational(other):
             return (self.accuracy, self._precision)
         other_accuracy = getattr(other, 'accuracy', None)
         try:
             other_precision = other.prec()
         except AttributeError:
-            if isinstance(other, Gen):
-                other_precision = prec_words_to_bits(other.sizeword())
+            if isinstance(other, flint_type):
+                ### There must be a way to fine the real precieion
+                print('Using other_precision as 53')
+                other_precision = 53
             else:
-                other_precision = self._default_precision
-        if is_exact(self):
+                other_precision = 53
+        if is_rational(self):
             return (other_accuracy, other_precision)
         else:
             if self.accuracy is None or other_accuracy is None:
@@ -386,134 +477,169 @@ class Number(Number_baseclass):
     def as_string(self, full_precision=True):
         """
         Return a string representation of this number.  If full_precision
-        is True, use the full precision of the gen.  Otherwise use the
+        is True, use the full precision of the flint object.  Otherwise use the
         accuracy attribute.
         """
-        gen = self.gen
-        if gen.imag() == 0:
-            return self._real_string(
-                gen.real(), self.accuracy, full_precision)
-        else:
-            real_part = self._real_string(
-                gen.real(), self.accuracy, full_precision)
-            imag_part = self._real_string(
-                gen.imag(), self.accuracy, full_precision)
-            return ('%s + %s*I' % (real_part, imag_part)).replace('+ -', '- ')
+        with bit_precision(self._precision):
+            obj = self.flint_obj
+            try:
+                result = parse_arb.match(str(obj.real))[1]
+            except TypeError:
+                #sometimes the numeric string is empty
+                if str(obj.real)[:3] in ('[+/' or '[± '):
+                    result = '0'
+            if full_precision:
+                result += '...'
+            else:
+                num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
+                result = result[:num_chars]
+            if isinstance(obj, acb):
+                try:
+                    im_part = parse_arb.match(str(obj.imag))[1]
+                except:
+                    print('regex failed on', obj.imag)
+                    im_part = '0'
+                if full_precision:
+                    im_part += '...j'
+                else:
+                    num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
+                    im_part = im_part[:num_chars] + 'j'
+                if im_part[0] == '-':
+                    result += ' - ' + im_part[1:]
+                else:
+                    result += ' + ' + im_part
+            return result
 
     def _binop(self, operator, other):
-        try:
-            shut_up()
-            operand = pari(other)
-        except PariError:
-            speak_up()
-            return NotImplemented
-        speak_up()
-        return Number(operator(operand), *self._get_acc_prec(other))
-
+        if isinstance(other, Number):
+            prec = min(self._precision, other._precision)
+            try:
+                with bit_precision(prec):
+                    result = operator(other.flint_obj)
+                    return Number(result, precision=prec)
+            except ValueError:
+                return NotImplemented
+        else:
+            prec = self._precision
+            try:
+                with bit_precision(prec):
+                    result = operator(other)
+                return Number(result, precision=prec)
+            except ValueError:
+                return NotImplemented
+            
     def __repr__(self):
-        return self.as_string(full_precision=False)
+        return self.as_string()
 
     def __reduce__(self):
         return Number, (self.as_string(), self.accuracy, self._precision)
 
     def __float__(self):
-        return float(self.gen)
+        if isinstance(self.flint_obj, arb):
+            return float(self.flint_obj)
+        else:
+            raise ValueError('Cannot convert a complex Number to a float')
 
     def __complex__(self):
-        return complex(self.gen)
+        if isinstance(self.flint_obj, acb):
+            return complex(self.flint_obj)
+        else:
+            raise ValueError('Cannot convert a real Number to a complex')
+        return complex(self.flint_obj)
 
     def __int__(self):
-        return int(float(self.gen))
+        return int(float(self.flint_obj))
 
     def __add__(self, other):
-        return self._binop(self.gen.__add__, other)
+        return self._binop(self.flint_obj.__add__, other)
     __iadd__ = __add__
 
     def __sub__(self, other):
-        return self._binop(self.gen.__sub__, other)
+        return self._binop(self.flint_obj.__sub__, other)
     __isub__ = __sub__
 
     def __mul__(self, other):
         if isinstance(other, SupportsMultiplicationByNumber):
             return other._multiply_by_scalar(self)
-        return self._binop(self.gen.__mul__, other)
+        return self._binop(self.flint_obj.__mul__, other)
     __imul__ = __mul__
 
     def __div__(self, other):
-        return self._binop(self.gen.__div__, other)
+        return self._binop(self.flint_obj.__div__, other)
     __idiv__ = __div__
 
     def __truediv__(self, other):
-        return self._binop(self.gen.__truediv__, other)
+        return self._binop(self.flint_obj.__truediv__, other)
 
     def __floordiv__(self, other):
-        result = self._binop(self.gen.__truediv__, other)
+        result = self._binop(self.flint_obj.__truediv__, other)
         if result != NotImplemented:
             result = result.floor()
         return result
 
     def __radd__(self, other):
-        return self._binop(self.gen.__radd__, other)
+        return self._binop(self.flint_obj.__radd__, other)
 
     def __rsub__(self, other):
-        return self._binop(self.gen.__rsub__, other)
+        return self._binop(self.flint_obj.__rsub__, other)
 
     def __rmul__(self, other):
-        return self._binop(self.gen.__rmul__, other)
+        return self._binop(self.flint_obj.__rmul__, other)
 
     def __rdiv__(self, other):
-        return self._binop(self.gen.__rdiv__, other)
+        return self._binop(self.flint_obj.__rdiv__, other)
 
     def __rtruediv__(self, other):
-        return self._binop(self.gen.__rtruediv__, other)
+        return self._binop(self.flint_obj.__rtruediv__, other)
 
     def __rfloordiv__(self, other):
-        result = self._binop(self.gen.__rtruediv__, other)
+        result = self._binop(self.flint_obj.__rtruediv__, other)
         if result != NotImplemented:
             result = result.floor()
         return result
 
     def __mod__(self, other):
-        return self._binop(self.gen.__mod__, other)
+        return self._binop(self.flint_obj.__mod__, other)
 
-    def __eq__(self, other):
-        return self.gen.__eq__(pari(other))
+    # def __eq__(self, other):
+    #     return self.flint_obj.__eq__(pari(other))
 
-    def __ne__(self, other):
-        return self.gen.__ne__(pari(other))
+    # def __ne__(self, other):
+    #     return self.flint_obj.__ne__(pari(other))
 
-    def __lt__(self, other):
-        return self.gen.__lt__(pari(other))
+    # def __lt__(self, other):
+    #     return self.flint_obj.__lt__(pari(other))
 
-    def __gt__(self, other):
-        return self.gen.__gt__(pari(other))
+    # def __gt__(self, other):
+    #     return self.flint_obj.__gt__(pari(other))
 
-    def __le__(self, other):
-        return self.gen.__le__(pari(other))
+    # def __le__(self, other):
+    #     return self.flint_obj.__le__(pari(other))
 
-    def __ge__(self, other):
-        return self.gen.__ge__(pari(other))
+    # def __ge__(self, other):
+    #     return self.gen.__ge__(pari(other))
 
     def __neg__(self):
-        return Number(-self.gen, self.accuracy, self._precision)
+        with bit_precision(self._precision):
+            return Number(-self.flint_obj, self.accuracy, self._precision)
 
     def __abs__(self):
-        return Number(self.gen.abs(), self.accuracy, self._precision)
-
-    def __inv__(self):
-        return 1/self
+        with bit_precision(self._precision):
+            return Number(abs(self.flint_obj), self.accuracy, self._precision)
 
     def __pow__(self, *args):
-        return Number(self.gen.__pow__(*args), self.accuracy, self._precision)
+        with bit_precision(self._precision):
+            return Number(self.flint_obj.__pow__(*args), self.accuracy,
+                      self._precision)
 
-    def __round__(self, ndigits):
-        return round(float(self), ndigits)
+    #def __round__(self, ndigits):
+    #    return Number(round(float(self), ndigits))
 
-    def abs(self):
-        return abs(self)
+    # def abs(self):
+    #     return abs(self)
 
-    def conjugate(self):
-        return Number(self.gen.conj(), self.accuracy, self._precision)
+    # def conjugate(self):
+    #     return Number(self.gen.conj(), self.accuracy, self._precision)
 
     def precision(self):
         """Return the *binary* precision of the Number.  Note that the value
@@ -527,36 +653,16 @@ class Number(Number_baseclass):
     # This is needed for some Sage interoperation to work.
     prec = precision
 
-    @property
-    def real(self):
-        return Number(self.gen.real(), self.accuracy, self._precision)
+    # @property
+    # def real(self):
+    #     return Number(self.gen.real(), self.accuracy, self._precision)
 
-    @property
-    def imag(self):
-        return Number(self.gen.imag(), self.accuracy, self._precision)
+    # @property
+    # def imag(self):
+    #     return Number(self.gen.imag(), self.accuracy, self._precision)
 
-    def pari_type(self):
-        return self.gen.type()
-
-    def volume(self):
-        """
-        Return the volume of a tetrahedron with this shape
-        """
-        z = self.gen
-        if z == 0 or z == 1:
-            volume = 0
-        else:
-            zz = 1/(1-z)
-            zzz = 1 - 1/z
-            A = z/z.abs()
-            B = zz/zz.abs()
-            C = zzz/zzz.abs()
-            bits = self._precision
-            volume = ((A * A).dilog(precision=bits).imag()
-                      + (B * B).dilog(precision=bits).imag()
-                      + (C * C).dilog(precision=bits).imag()
-                      ) / 2
-        return Number(volume, self.accuracy, self._precision)
+    # def pari_type(self):
+    #     return self.gen.type()
 
     def sage(self):
         """
@@ -578,42 +684,67 @@ class Number(Number_baseclass):
     def hex(self):
         return float(self).hex()
 
-    def sqrtn(self, n):
+    def volume(self):
         """
-        >>> r = Number(2.0, precision=100)
-        >>> r.sqrtn(10) # doctest: +NUMERIC27
-        (1.071773462536293164213006325023, 0.809016994374947424102293417183 + 0.587785252292473129168705954639*I)
+        Return the volume of a tetrahedron with this shape
         """
-        a, b = self.gen.sqrtn(n, precision=self._precision)
-        return self._parent(a), self._parent(b)
+        z = self.flint_obj
+        if z == 0 or z == 1:
+            volume = 0
+        else:
+            with bit_precision(self._precision):
+                zz = 1 / (1 - z)
+                zzz = 1 - 1 / z
+                A = z * z / (z.real*z.real + z.imag*z.imag)
+                B = zz * zz / (zz.real*zz.real + zz.imag*zz.imag)
+                C = zzz * zzz / (zzz.real*zzz.real + zzz.imag*zzz.imag)
+                volume = (A.polylog(2).imag +
+                          B.polylog(2).imag +
+                          C.polylog(2).imag) / 2
+                return Number(volume, self.accuracy, precision=self._precision)
 
-    def _complex_mpfi_(self, CIF):
-        return CIF(self.sage())
+    def abs(self):
+        with bit_precision(self._precision):
+            return Number(abs(self.flint_obj), precision=self._precision)
+
+    def log(self):
+        with bit_precision(self._precision):
+            return Number(self.flint_obj.log(), precision=self._precision)
+
+    # def sqrtn(self, n):
+    #     """
+    #     >>> r = Number(2.0, precision=100)
+    #     >>> r.sqrtn(10) # doctest: +NUMERIC27
+    #     (1.071773462536293164213006325023, 0.809016994374947424102293417183 + 0.587785252292473129168705954639*I)
+    #     """
+    #     a, b = self.gen.sqrtn(n, precision=self._precision)
+    #     return self._parent(a), self._parent(b)
+
+    # def _complex_mpfi_(self, CIF):
+    #     return CIF(self.sage())
 
 # add a bunch of analytical methods to the Number class
 
 
-def add_number_method(name, include_precision=True):
-    method = getattr(Gen, name)
-    if include_precision:
-        setattr(Number, name, lambda self: self.parent()(
-            method(self.gen, precision=self._precision)))
-    else:
-        setattr(Number, name, lambda self: self.parent()(method(self.gen)))
+# def add_number_method(name, include_precision=True):
+#     method = getattr(Gen, name)
+#     if include_precision:
+#         setattr(Number, name, lambda self: self.parent()(
+#             method(self.gen, precision=self._precision)))
+#     else:
+#         setattr(Number, name, lambda self: self.parent()(method(self.gen)))
+# for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
+#                'cos', 'cosh', 'cotan', 'dilog', 'exp', 'log', 'sin',
+#                'sinh', 'tan', 'tanh', 'sqrt']:
+#     add_number_method(method)
 
+# for method in ['ceil', 'floor', 'round']:
+#     add_number_method(method, include_precision=False)
 
-for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
-               'cos', 'cosh', 'cotan', 'dilog', 'exp', 'log', 'sin',
-               'sinh', 'tan', 'tanh', 'sqrt']:
-    add_number_method(method)
+# for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
+#     setattr(Number, 'arc' + trig, getattr(Number, 'a' + trig))
 
-for method in ['ceil', 'floor', 'round']:
-    add_number_method(method, include_precision=False)
-
-for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
-    setattr(Number, 'arc' + trig, getattr(Number, 'a' + trig))
-
-Number.argument = Number.arg
+# Number.argument = Number.arg
 
 
 def use_field_conversion(func):
@@ -635,16 +766,17 @@ def use_field_conversion(func):
             return n.sage()
     elif func == 'snappy':
         def number_to_native_number(n):
-            """
-            Simply returns the given SnapPy number.
+            """Simply returns the given SnapPy number.
 
-            In general snappy.number.number_to_native_number converts a SnapPy number to
-            the corresponding SageMath type (when in SageMath) or just returns
-            the SnapPy number itself (when SageMath is not available).
+            In general snappy.number.number_to_native_number converts
+            a SnapPy number to the corresponding SageMath type (when
+            in SageMath) or just returns the SnapPy number itself
+            (when SageMath is not available).
 
             However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
+
             """
             return n
     else:

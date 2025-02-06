@@ -77,8 +77,15 @@ cdef class Triangulation():
     cdef readonly LE
     cdef _link_file_full_path
     cdef hyperbolic_structure_initialized
+    cdef int _default_precision
 
     def __cinit__(self, spec=None, remove_finite_vertices=True):
+        if sizeof(Real) == 8:
+            self._default_precision = 53
+        elif sizeof(Real) == 32:
+            self._default_precision = 212
+        else:
+            raise RuntimeError('Unexpected size of Real')
         if UI_callback is not None:
             uLongComputationBegins('Constructing a manifold', 1)
             UI_callback()

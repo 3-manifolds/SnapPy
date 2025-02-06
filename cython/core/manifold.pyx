@@ -82,9 +82,14 @@ cdef class Manifold(Triangulation):
             self.init_hyperbolic_structure()
             do_Dehn_filling(self.c_triangulation)
 
-    @staticmethod
-    def _number_(n):
-        return number.number_to_native_number(n)
+    def _number_(self, x, accuracy=None):
+        if accuracy:
+            return Number(x, precision=self._default_precision, accuracy=accuracy)
+        else:
+            return Number(x, precision=self._default_precision)
+
+    cpdef default_precision(self):
+        return self._default_precision
 
     @classmethod
     def use_field_conversion(cls, func):
@@ -665,14 +670,13 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s' % solution_type)
-        if Number._default_precision > 64:
+        if self._default_precision > 53:
+            vols = [z.volume() for z in self.tetrahedra_shapes('rect')]
             # must provide a start value to get the correct precision
-            result = sum(
-                [z.volume() for z in self._get_tetrahedra_shapes('filled')],
-                Number(0))
+            return sum(vols[1:], vols[0])
         else:
-            result = Number(<double>volume(self.c_triangulation, &acc))
-            result.accuracy = acc
+            vol = Real2arb(volume(self.c_triangulation, &acc))
+            return self._number_(vol, accuracy=acc)
         return result
 
     cdef _cusped_complex_volume(self, Complex *volume, int *accuracy):
@@ -709,13 +713,12 @@ cdef class Manifold(Triangulation):
         if True in self.cusp_info('is_complete'):
             self._cusped_complex_volume(&volume, &accuracy)
             set_CS_value(self.c_triangulation, volume.imag / PI_SQUARED_BY_2)
-            result = Complex2Number(volume)
-            result.accuracy = accuracy
+            return self._number_(Complex2acb(volume), accuracy=accuracy)
         else:
-            result = self._real_volume() + (
-                self._chern_simons() *
-                Real2Number(PI_SQUARED_BY_2) * Number('I'))
-        return self._number_(result)
+            with bit_precision(self._default_precision):
+                return (self._real_volume() + 
+                        self._chern_simons() *
+                        acb(0, Real2arb(PI_SQUARED_BY_2)))
 
     def volume(self, accuracy=False, verified = False, bits_prec = None):
         """
@@ -758,7 +761,7 @@ cdef class Manifold(Triangulation):
 
         vol = self._real_volume()
         if accuracy:
-            return (self._number_(vol), vol.accuracy)
+            return self._number_(vol, accuracy=vol.accuracy)
         else:
             return self._number_(vol)
 
@@ -848,7 +851,7 @@ cdef class Manifold(Triangulation):
 
         cs = self._chern_simons()
         if accuracy:
-            return (self._number_(cs), cs.accuracy)
+            return self._number_(cs, accuracy=accuracy)
         else:
             return self._number_(cs)
 
@@ -940,9 +943,11 @@ cdef class Manifold(Triangulation):
                               &acc_log_re, &acc_log_im,
                               &is_geometric)
 
-                rect_shape=Number(RealImag2gen(rect_re, rect_im))
+                #rect_shape=Number(RealImag2gen(rect_re, rect_im))
+                rect_shape=self._number_(RealImag2acb(rect_re, rect_im))
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
-                log_shape=Number(RealImag2gen(log_re, log_im))
+                #log_shape=Number(RealImag2gen(log_re, log_im))
+                log_shape=self._number_(RealImag2acb(log_re, log_im))
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 if part in ['rect', 'log', 'accuracies']:
                     # Don't compute volumes as they will be thrown away.
@@ -967,7 +972,7 @@ cdef class Manifold(Triangulation):
             else:
                 engine = verify.CertifiedShapesEngine(
                     self, [a['rect'] for a in result],
-                    bits_prec = self._precision())
+                    bits_prec = self._default_precision)
             if not engine.expand_until_certified():
                 raise RuntimeError('Could not certify shape intervals, either '
                                    'there are degenerate shapes or the '
@@ -1011,7 +1016,8 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
-            result.append(Number(RealImag2gen(rect_re, rect_im)))
+            #result.append(Number(RealImag2gen(rect_re, rect_im)))
+            result.append(Number(RealImag2acb(rect_re, rect_im)))
         return result
 
     def set_tetrahedra_shapes(self,
@@ -1203,22 +1209,22 @@ cdef class Manifold(Triangulation):
         get_holonomy(self.c_triangulation, cusp_index,
                      &c_meridian, &c_longitude,
                      &meridian_accuracy, &longitude_accuracy)
-        shape= Complex2Number(current_shape)
+        shape = self._number_(Complex2acb(current_shape))
         shape.accuracy = current_shape_accuracy
-        meridian = Complex2Number(c_meridian)
+        meridian = self._number_(Complex2acb(c_meridian))
         meridian.accuracy = meridian_accuracy
-        longitude = Complex2Number(c_longitude)
+        longitude = self._number_(Complex2acb(c_longitude))
         longitude.accuracy = longitude_accuracy
-        modulus = Complex2Number(current_modulus)
+        modulus = self._number_(Complex2acb(current_modulus))
         info = {
             'index' : cusp_index,
             'topology' : CuspTopology[topology],
             'is_complete' : B2B(is_complete),
             'filling' : (Real2float(m), Real2float(l)),
-            'shape': self._number_(shape),
+            'shape': shape,
             'shape_accuracy': current_shape_accuracy,
-            'modulus': self._number_(modulus),
-            'holonomies': (self._number_(meridian), self._number_(longitude)),
+            'modulus': modulus,
+            'holonomies': (meridian, longitude),
             'holonomy_accuracy': min(meridian_accuracy,longitude_accuracy)
         }
 
@@ -1226,10 +1232,10 @@ cdef class Manifold(Triangulation):
                       &singularity_index, &c_core_length, &accuracy)
 
         if singularity_index != 0:
-            core_length = Complex2Number(c_core_length)
+            core_length = self._number_(Complex2acb(c_core_length))
             core_length.accuracy = accuracy
             info.update({
-                'core_length': self._number_(core_length),
+                'core_length': core_length,
                 'singularity_index': singularity_index
             })
 
@@ -1445,8 +1451,8 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=i,
                     parity=parity,
-                    filled_length=self._number_(Complex2Number(filled_length)),
-                    complete_length=self._number_(Complex2Number(complete_length)),
+                    filled_length=self._number_(Complex2acb(filled_length)),
+                    complete_length=self._number_(Complex2acb(complete_length)),
                     max_segments=max_segments
                   )
                )
@@ -1700,10 +1706,10 @@ cdef class Manifold(Triangulation):
                              tuple([ perm1>>(2 * i) & 3 for i in range(4)]),
                              tuple([ perm2>>(2 * i) & 3 for i in range(4)]),
                              tuple([ perm3>>(2 * i) & 3 for i in range(4)])),
-                 'corners': (self._number_(Complex2Number(c0)),
-                             self._number_(Complex2Number(c1)),
-                             self._number_(Complex2Number(c2)),
-                             self._number_(Complex2Number(c3)) ),
+                 'corners': (self._number_(Complex2acb(c0)),
+                             self._number_(Complex2acb(c1)),
+                             self._number_(Complex2acb(c2)),
+                             self._number_(Complex2acb(c3)) ),
                  'generator_path': generator_path}
                 )
         return ans
@@ -1835,12 +1841,12 @@ cdef class Manifold(Triangulation):
         while tet != &self.c_triangulation.tet_list_end:
             one_tet_tilts, one_tet_lengths = [], []
             for v in range(4):
-                one_tet_tilts.append(self._number_(Real2Number(<Real>tet.tilt[v])))
+                one_tet_tilts.append(self._number_(Real2arb(<Real>tet.tilt[v])))
                 one_vertex_lengths = []
                 for f in range(4):
                     if v != f:
                         one_vertex_lengths.append(self._number_(
-                            Real2Number(<Real>tet.cross_section.edge_length[v][f])))
+                            Real2arb(<Real>tet.cross_section.edge_length[v][f])))
                     else:
                         one_vertex_lengths.append(None)
                 one_tet_lengths.append(one_vertex_lengths)
@@ -1851,5 +1857,12 @@ cdef class Manifold(Triangulation):
         free_cross_sections(self.c_triangulation)
         return tilts, side_lengths
 
-    def _precision(self):
-        return Number._default_precision
+    # def _precision(self):
+    #     print('call to Manifold._precision')
+    #     if self.real_size == 8:
+    #         return 53
+    #     elif self.real_size == 32:
+    #         return 212
+    #     else:
+    #         raise RuntimeError('Unknown real_size')
+    

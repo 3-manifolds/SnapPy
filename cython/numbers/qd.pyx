@@ -1,7 +1,5 @@
-from .number import Number as RawNumber
-
-class Number(RawNumber):
-    _default_precision=212
+from flint import arb, acb
+from .number import Number, bit_precision
 
 from libcpp cimport bool as cpp_bool
 cdef extern from "qd_real_SnapPy.h":
@@ -37,51 +35,23 @@ cdef real_to_string(Real x):
     x.write(buffer, 128, 64)
     return buffer  # this should return a python string
 
-cdef Real2gen_direct(Real R):
-    """
-    Convert a Real to a pari gen of type t_REAL.  This constructs the gen
-    directly, but requires the non-sage cypari method
-    pari._real_coerced_to_bits_prec.
+cdef Real2arb(Real R):
+     cdef double *quad = <double *>&R
+     with bit_precision(212):
+         return arb(quad[0]) + arb(quad[1]) + arb(quad[2]) + arb(quad[3])
 
-    A high precision real with 212 bits of precision is converted to
-    a gen with 256 bits of precision since pari numbers have precision
-    divisible by 32.
+cdef Complex2acb(Complex Z):
+    with bit_precision(212):
+        re = Real2arb(Z.real)
+        im = Real2arb(Z.imag)
+        return acb(re, im)
 
-    """
-    cdef double* qd = <double*>&R
-    cdef int i
-    # The value of a qd_real is the sum of the values of its four doubles.
-    result = pari._real_coerced_to_bits_prec(qd[0], 256)
-    for i in range(1,4):
-        result += pari._real_coerced_to_bits_prec(qd[i], 256)
-    return result
-
-cdef Real2gen_string(Real R):
-    """
-    Convert a Real to a pari gen of type t_REAL.
-    This constructs the gen from the string representation of the real.
-    """
-    return pari(real_to_string(R))
-
-cdef Complex gen2Complex(g):
-    cdef Complex result
-    cdef py_string
-    cdef char* c_string
-    cdef Real real_part, imag_part
-    old_precision = pari.set_real_precision(64)
-
-    py_string = to_byte_str(str(g.real()).replace(' E','E'))  # save a reference
-    c_string = py_string
-    real_part = <Real>c_string
-    py_string = to_byte_str(str(g.imag()).replace(' E','E'))  # save a reference
-    c_string = py_string
-    imag_part = <Real>c_string
-    result.real, result.imag = real_part, imag_part
-
-    pari.set_real_precision(old_precision)
-    return result
+cdef RealImag2acb(Real re, Real im):
+    with bit_precision(212):
+        return acb(Real2arb(re), Real2arb(im))
 
 cdef Real2Number(Real R):
-    return Number(Real2gen(R))
-cdef Complex2Number(Complex C):
-    return Number(Complex2gen(C))
+    return Number(Real2arb(R), precision=212)
+
+cdef Complex2Number(Complex Z):
+    return Number(Complex2acb(Z), precision=212)

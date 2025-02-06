@@ -92,8 +92,9 @@ cdef class CCuspNeighborhood():
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        disp = Number(Real2gen(get_cusp_neighborhood_displacement(
-            self.c_cusp_neighborhood, N)))
+        #disp = Number(Real2gen(get_cusp_neighborhood_displacement(
+        disp = Real2Number(get_cusp_neighborhood_displacement(
+            self.c_cusp_neighborhood, N))
         return self._number_(disp)
 
     def set_displacement(self, new_displacement, which_cusp=0):
@@ -111,7 +112,8 @@ cdef class CCuspNeighborhood():
         (Assumes the other displacements are fixed.)
         """
         N = self.check_index(which_cusp)
-        disp = Number(Real2gen(get_cusp_neighborhood_stopping_displacement(
+        #disp = Number(Real2gen(get_cusp_neighborhood_stopping_displacement(
+        disp = Number(Real2arb(get_cusp_neighborhood_stopping_displacement(
             self.c_cusp_neighborhood, N)))
         return self._number_(disp)
 
@@ -132,7 +134,8 @@ cdef class CCuspNeighborhood():
         distance between nearest horoball lifts.)
         """
         N = self.check_index(which_cusp)
-        reach = Number(Real2gen(get_cusp_neighborhood_reach(
+        #reach = Number(Real2gen(get_cusp_neighborhood_reach(
+        reach = Number(Real2arb(get_cusp_neighborhood_reach(
             self.c_cusp_neighborhood, N)))
         return self._number_(reach)
 
@@ -140,7 +143,8 @@ cdef class CCuspNeighborhood():
         """
         Return the maximum reach over all cusps.
         """
-        reach = Number(Real2gen(get_cusp_neighborhood_max_reach(
+        #reach = Number(Real2gen(get_cusp_neighborhood_max_reach(
+        reach = Number(Real2arb(get_cusp_neighborhood_max_reach(
             self.c_cusp_neighborhood)))
         return self._number_(reach)
 
@@ -165,7 +169,8 @@ cdef class CCuspNeighborhood():
         cusp.
         """
         N = self.check_index(which_cusp)
-        volume = Number(Real2gen(get_cusp_neighborhood_cusp_volume(
+        #volume = Number(Real2gen(get_cusp_neighborhood_cusp_volume(
+        volume = Number(Real2arb(get_cusp_neighborhood_cusp_volume(
                 self.c_cusp_neighborhood, N)))
         return self._number_(volume)
 

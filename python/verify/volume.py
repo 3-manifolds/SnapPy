@@ -61,7 +61,7 @@ def _unprotected_volume_from_shape(z):
     return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
 
 
-def _volume_from_shape(z):
+def _volume_from_shape(z, precision):
     """
     Computes the Bloch-Wigner dilogarithm for z which gives the volume of a
     tetrahedron of the given shape.
@@ -84,7 +84,7 @@ def _volume_from_shape(z):
 
             return RIF(_unprotected_volume_from_shape(CBF(z)))
         else:
-            z = Number(z)
+            z = Number(z, precision=precision)
 
     # Use implementation in number.py that overcomes the cypari bug that you
     # have to explicitly give a precision to dilog, otherwise you lose
@@ -112,6 +112,8 @@ def compute_volume(manifold, verified, bits_prec=None):
     # Compute tetrahedra shapes to arbitrary precision.  If requested,
     # verify that this is indeed a solution to the polynomial gluing
     # equations.
+    if bits_prec is None:
+        bits_prec = manifold.default_precision()
     shape_intervals = manifold.tetrahedra_shapes(
         'rect', bits_prec=bits_prec, intervals=verified)
 
@@ -121,8 +123,6 @@ def compute_volume(manifold, verified, bits_prec=None):
             manifold, shape_intervals)
 
     # Sum up the volumes of all the tetrahedra
-    volume = sum([ _volume_from_shape(shape_interval)
+    volume = sum([_volume_from_shape(shape_interval, bits_prec)
                    for shape_interval in shape_intervals])
-    if isinstance(volume, Number):
-        volume = manifold._number_(volume)
     return volume

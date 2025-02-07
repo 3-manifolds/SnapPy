@@ -47,8 +47,15 @@ cdef Complex2acb(Complex Z):
         return acb(re, im)
 
 cdef RealImag2acb(Real re, Real im):
+    cdef char re_buffer[128]
+    cdef char im_buffer[128]
+    cdef bytes re_bytes, im_bytes
+    re.write(re_buffer, 128, 64)
+    im.write(im_buffer, 128, 64)
+    re_bytes = re_buffer
+    im_bytes = im_buffer
     with bit_precision(212):
-        return acb(Real2arb(re), Real2arb(im))
+        return acb(re_bytes.decode('utf-8'), im_bytes.decode('utf-8'))
 
 cdef Real2Number(Real R):
     return Number(Real2arb(R), precision=212)

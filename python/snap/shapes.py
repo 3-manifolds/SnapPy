@@ -85,15 +85,6 @@ def enough_gluing_equations(manifold):
     # Return the equations as lists of python ints
     return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
 
-#def float_to_pari(x, dec_prec):
-#    return pari(0) if x == 0 else pari(x).precision(dec_prec)
-
-
-#def complex_to_pari(z, dec_prec):
-#    return pari.complex(float_to_pari(z.real, dec_prec),
-#                        float_to_pari(z.imag, dec_prec))
-
-
 def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_solution_type=False):
     """
     Refines the current solution to the gluing equations to one with
@@ -103,7 +94,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
         dec_prec = prec_bits_to_dec(bits_prec)
     else:
         bits_prec = prec_dec_to_bits(dec_prec)
-    working_prec = bits_prec + 30
+    working_prec = 2 * bits_prec + 30
 
     # This is a potentially long calculation, so we cache the result
     # and use the cached values as a start, if possible.
@@ -113,41 +104,43 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
             return curr_sol
 
     # Check to make sure the initial solution is reasonable
-
     if not ignore_solution_type and manifold.solution_type() not in [
             'all tetrahedra positively oriented',
             'contains negatively oriented tetrahedra']:
         raise ValueError('Initial solution to gluing equations has '
                          'flat or degenerate tetrahedra')
+    initial_shapes = [z.flint_obj for z in manifold.tetrahedra_shapes('rect')]
+    original_equations = manifold.gluing_equations('rect')
+    if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
+        raise ValueError('Initial solution not very good')
 
-    initial_equations = manifold.gluing_equations('rect')
+    # Now begin the actual computation
+    eqns = enough_gluing_equations(manifold)
+    n_rows = len(eqns)
+    n_cols = len(initial_shapes)
     with bit_precision(working_prec):
         target_epsilon = arb(2.0) ** -bits_prec
-        initial_shapes = [z.flint_obj for z in manifold.tetrahedra_shapes('rect')]
-        if gluing_equation_error(initial_equations, initial_shapes) > 0.000001:
-            raise ValueError('Initial solution not very good')
-
-        # Now begin the actual computation
-        eqns = enough_gluing_equations(manifold)
-        n_rows = len(eqns)
-        n_cols = len(initial_shapes)
         initial_shapes = acb_mat(n_cols, 1, initial_shapes)
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
         shapes = acb_mat(n_cols, 1, initial_shapes)
         for i in range(100):
             errors = gluing_equation_errors(eqns, shapes)
             error = infinity_norm(errors)
-            if error < target_epsilon or error > 100 * initial_error:
+            if error < target_epsilon:
+                break
+            ir error > 100 * initial_error:
+                print('Diverging at step', i, 'with error', error)
                 break
             derivative = acb_mat(
                 [[eqn[0][i] / z - eqn[1][i] / (1 - z) for i, z in enumerate(shapes)]
                      for eqn in eqns])
             rhs = acb_mat(n_rows, 1, errors)
             correction = derivative.solve(rhs)
-            shapes = shapes - correction
+            # Replace each acb shape by its midpoint for the next iteration.
+            shapes = acb_mat(n_rows, 1, [z.mid() for z in shapes - correction])
 
         # Check that things worked out ok.
-        error = gluing_equation_error(initial_equations, shapes)
+        error = gluing_equation_error(original_equations, shapes)
         total_change = infinity_norm(shapes - initial_shapes)
         if error > 1000 * target_epsilon or total_change > 0.0000001:
             raise ValueError('Did not find a good solution to the gluing equations')

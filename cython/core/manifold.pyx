@@ -1016,8 +1016,7 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
-            #result.append(Number(RealImag2gen(rect_re, rect_im)))
-            result.append(Number(RealImag2acb(rect_re, rect_im)))
+            result.append(self._number_(RealImag2acb(rect_re, rect_im)))
         return result
 
     def set_tetrahedra_shapes(self,
@@ -1856,13 +1855,4 @@ cdef class Manifold(Triangulation):
 
         free_cross_sections(self.c_triangulation)
         return tilts, side_lengths
-
-    # def _precision(self):
-    #     print('call to Manifold._precision')
-    #     if self.real_size == 8:
-    #         return 53
-    #     elif self.real_size == 32:
-    #         return 212
-    #     else:
-    #         raise RuntimeError('Unknown real_size')
     

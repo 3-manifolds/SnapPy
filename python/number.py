@@ -155,7 +155,7 @@ else:  # We are not in Sage
             pari._real_coerced_to_bits_prec(x.real, precision),
             pari._real_coerced_to_bits_prec(x.imag, precision))
 
-    class SnapPyNumbers():
+    class SnapPyNumbers:
         """
         Surrogate parent for a SnapPy Number, to make calls to Number.parent() work
         in or out of Sage.  This allows the following paradigm to work:
@@ -230,7 +230,7 @@ else:  # We are not in Sage
             return min + normalizer * gen.random(limit.gen)
 
 
-class SupportsMultiplicationByNumber():
+class SupportsMultiplicationByNumber:
     pass
 
 

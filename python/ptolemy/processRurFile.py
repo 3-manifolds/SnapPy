@@ -134,7 +134,7 @@ _Z^6-3*_Z^5+3*_Z^4-2*_Z^3+_Z-1 = 0,
 """
 
 
-class SolutionContainer():
+class SolutionContainer:
     def __init__(self, solutions):
         self._solutions = solutions
 

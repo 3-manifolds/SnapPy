@@ -353,7 +353,7 @@ def alexander_polynomial(manifold, **kwargs):
 # --------------------------------------------------------------
 
 
-class PhiAlpha():
+class PhiAlpha:
     def __init__(self, phi, alpha):
         self.base_ring = phi.range()
         self.image_ring = MatrixSpace(self.base_ring, 2)
@@ -586,7 +586,7 @@ def SL2_to_SLN(A, N):
     return matrix(F, [[v.monomial_coefficient(m) for m in monomials] for v in image_vectors])
 
 
-class PhiAlpha3():
+class PhiAlpha3:
     def __init__(self, phi, alpha):
         self.base_ring = phi.range()
         self.image_ring = MatrixSpace(self.base_ring, 3)
@@ -606,7 +606,7 @@ class PhiAlpha3():
         return M
 
 
-class PhiAlphaN():
+class PhiAlphaN:
     def __init__(self, phi, alpha, N):
         self.base_ring = phi.range()
         self.image_ring = MatrixSpace(self.base_ring, N)

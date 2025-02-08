@@ -42,7 +42,7 @@ def apply_Moebius(m, z):
     """
     Applies the matrix m to the ideal point z::
 
-        sage: from sage.all import matrix, CIF, RIF
+        sage: from snappy.sage_helper import matrix, CIF, RIF
         sage: m = matrix([[CIF(2,1), CIF(4,2)], [CIF(2,3), CIF(4,2)]])
         sage: apply_Moebius(m, CIF(3,4)) # doctest: +NUMERIC12
         0.643835616438356? - 0.383561643835617?*I
@@ -68,7 +68,7 @@ def cross_ratio(z0, z1, z2, z3):
     Computes the cross ratio (according to SnapPea conventions) of
     four ideal points::
 
-        sage: from sage.all import CIF
+        sage: from snappy.sage_helper import CIF
         sage: cross_ratio(Infinity, CIF(0), CIF(1), CIF(1.2, 1.3)) # doctest: +NUMERIC12
         1.2000000000000000? + 1.300000000000000?*I
 
@@ -88,7 +88,7 @@ def compute_midpoint_of_triangle_edge_with_offset(idealPoints, offset):
     with the side a b the midpoint. This function returns this point moved
     towards a by hyperbolic distance log(offset)::
 
-        sage: from sage.all import CIF, RIF
+        sage: from snappy.sage_helper import CIF, RIF
         sage: compute_midpoint_of_triangle_edge_with_offset( # doctest: +NUMERIC12
         ...       [ CIF(0), Infinity, CIF(1) ], RIF(5.0))
         FinitePoint(0, 0.2000000000000000?)
@@ -138,7 +138,7 @@ def compute_incenter_of_triangle(idealPoints):
     """
     Computes incenter of the triangle spanned by three ideal points::
 
-        sage: from sage.all import CIF
+        sage: from snappy.sage_helper import CIF
         sage: z0 = Infinity
         sage: z1 = CIF(0)
         sage: z2 = CIF(1)
@@ -164,7 +164,7 @@ def compute_inradius_and_incenter(idealPoints):
     Computes inradius and incenter of the tetrahedron spanned by four
     ideal points::
 
-        sage: from sage.all import CIF
+        sage: from snappy.sage_helper import CIF
         sage: z0 = Infinity
         sage: z1 = CIF(0)
         sage: z2 = CIF(1)
@@ -193,7 +193,7 @@ def Euclidean_height_of_hyperbolic_triangle(idealPoints):
     containing the triangle or the Euclidean radius of one of its hyperbolic
     sides (if the projection onto the boundary is an obtuse triangle)::
 
-        sage: from sage.all import CIF
+        sage: from snappy.sage_helper import CIF
         sage: z0 = CIF(0)
         sage: z1 = CIF(1)
         sage: Euclidean_height_of_hyperbolic_triangle([z0, z1, Infinity])

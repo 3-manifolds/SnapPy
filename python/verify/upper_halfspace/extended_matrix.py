@@ -15,7 +15,7 @@ class ExtendedMatrix():
 
     Multiply two extended matrix::
 
-        sage: from sage.all import matrix, CIF
+        sage: from snappy.sage_helper import matrix, CIF
         sage: m = ExtendedMatrix(matrix([[CIF(2), CIF(0,2)],[CIF(1,2), CIF(3,4)]]))
         sage: m2 = ExtendedMatrix(matrix.identity(CIF, 2), isOrientationReversing = True)
         sage: m * m2

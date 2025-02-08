@@ -533,6 +533,18 @@ setup( name = 'snappy',
        zip_safe = False,
        python_requires = '>=3.8',
        install_requires = install_requires,
+       extras_require = {
+           "passagemath": [
+               "fpylll",
+               "passagemath-combinat",   # sage.algebras.free_algebra
+               "passagemath-flint",      # for sage.rings.imaginary_unit
+               "passagemath-repl",       # --> sage_eval
+               "passagemath-groups",
+               "passagemath-symbolics",  # for sage.symbolic.constants
+               "passagemath-plot",
+               "passagemath-graphs",
+            ],
+       },
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/snap/peripheral',
                    'snappy/ptolemy',

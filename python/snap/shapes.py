@@ -49,42 +49,6 @@ def gluing_equation_error(eqns, shapes):
     return infinity_norm(gluing_equation_errors(eqns, shapes))
 
 
-def XXXenough_gluing_equations(manifold):
-    """
-    Row reduce the gluing equations and select a full-rank subsystem.
-    """
-    n_tet = manifold.num_tetrahedra()
-    n_cusps = manifold.num_cusps()
-    eqns = manifold.gluing_equations("rect")
-    # The first n_tet equations are the edge equations.
-    edge_eqns = fmpz_mat([a + b for a, b, _ in eqns[:n_tet]])
-    RHS = fmpz_mat([[(1 - c) // 2] for _, _, c in eqns[:n_tet]])
-    # Row reduce the equation matrix: U * edge_eqns = H
-    H, U = edge_eqns.hnf(transform=True)
-    # Remove the zero rows
-    reduced_eqns = [row for row in H.tolist() if any(row)]
-    # Check that we have the expected rank:
-    assert  len(reduced_eqns) == n_tet - n_cusps
-    # Apply the same row ops to the right hand side
-    RHS = U * RHS
-    # Convert RHS to a list of ints
-    RHS = [( -1 if RHS[n,0] // 2 else 1) for n in range(len(reduced_eqns))]
-    # Express the row reduced equations as triples. 
-    edge_eqns_with_RHS = [(e[:n_tet], e[n_tet: 2 * n_tet], c)
-                          for e, c in zip(reduced_eqns, RHS)]
-    # Add triples for the row equations
-    cusp_eqns = []
-    j = n_tet
-    for i in range(n_cusps):
-        cusp_eqns.append(eqns[j])
-        j += 2 if manifold.cusp_info(i)['complete?'] else 1
-    ans_eqns = edge_eqns_with_RHS + cusp_eqns
-    assert len(ans_eqns) == n_tet
-    ans_matrix = fmpz_mat([a + b for a, b, _ in ans_eqns])
-    assert ans_matrix.rank() == ans_matrix.nrows()
-    # Return the equations as lists of python ints
-    return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
-
 def enough_gluing_equations(manifold):
     """
     Row reduce the gluing equations and select a full-rank subsystem.
@@ -101,21 +65,23 @@ def enough_gluing_equations(manifold):
     # Check that we have the expected rank:
     non_zero_rows = len([row for row in H.tolist() if any(row)])
     assert non_zero_rows == n_tet - n_cusps
-    # Perform the same row ops on the auugmented matrix
+    # Perform the same row ops on the auugmented matrix.
     edge_eqns_with_RHS = U * edge_eqns_with_RHS
+    # Rewrite the equations as losts of triples.
     edge_eqns_with_RHS = [(e[:n_tet], e[n_tet: 2 * n_tet], (-1)**int(e[-1]))
                           for e in edge_eqns_with_RHS.tolist()[:non_zero_rows]]
-    # Add triples for the cusp equations
+    # Add the cusp equations.
     cusp_eqns = []
     j = n_tet
     for i in range(n_cusps):
         cusp_eqns.append(eqns[j])
         j += 2 if manifold.cusp_info(i)['complete?'] else 1
     ans_eqns = edge_eqns_with_RHS + cusp_eqns
+    # Do sanity checks.
     assert len(ans_eqns) == n_tet
     ans_matrix = fmpz_mat([a + b for a, b, _ in ans_eqns])
     assert ans_matrix.rank() == ans_matrix.nrows()
-    # Return the equations as lists of python ints
+    # Return the equations as lists of python ints.
     return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
 
 

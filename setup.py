@@ -506,6 +506,7 @@ install_requires = ['FXrays>=1.3',
                     'pypng', # Used to save OpenGL images.
                     'PyX', # Used to save PDF images of links.
                     'pickleshare', # To avoid https://github.com/ipython/ipython/issues/14416
+                    'python-flint',
                     ]
 try:
     import sage

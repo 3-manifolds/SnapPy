@@ -482,32 +482,39 @@ class Number(Number_baseclass):
         """
         with bit_precision(self._precision):
             obj = self.flint_obj
-            try:
-                result = parse_arb.match(str(obj.real))[1]
-            except TypeError:
-                #sometimes the numeric string is empty
-                if str(obj.real)[:3] in ('[+/' or '[± '):
-                    result = '0'
-            if full_precision:
-                result += '...'
-            else:
+            real_str = str(obj.real)
+            if real_str[0] == '[':
+                try:
+                    result = parse_arb.match(real_str)[1]
+                except TypeError:
+                    #sometimes the numeric string is empty.  What does that mean?
+                    if str(obj.real)[:3] in ('[+/' or '[± '):
+                        result = '????'
+                if full_precision:
+                    result += '...'
                 num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
                 result = result[:num_chars]
+            else:
+                result = real_str
             if isinstance(obj, acb):
-                try:
-                    im_part = parse_arb.match(str(obj.imag))[1]
-                except:
-                    print('regex failed on', obj.imag)
-                    im_part = '0'
-                if full_precision:
-                    im_part += '...j'
+                imag_str = str(obj.imag)
+                if imag_str[0] == '[':
+                    try:
+                        im_part = parse_arb.match(str(obj.imag))[1]
+                    except:
+                        print('regex failed on', obj.imag)
+                        im_part = '????'
+                    if full_precision:
+                        im_part += '...j'
+                    else:
+                        num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
+                        im_part = im_part[:num_chars] + 'j'
+                    if im_part[0] == '-':
+                        result += ' - ' + im_part[1:]
+                    else:
+                        result += ' + ' + im_part
                 else:
-                    num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
-                    im_part = im_part[:num_chars] + 'j'
-                if im_part[0] == '-':
-                    result += ' - ' + im_part[1:]
-                else:
-                    result += ' + ' + im_part
+                    result += ' + ' + imag_str
             return result
 
     def _binop(self, operator, other):

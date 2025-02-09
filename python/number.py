@@ -1,12 +1,15 @@
 """This module provides the Number class.
 
-A Number is an arbitrary precision real or complex number which
-also supports ball arithmetic via the flint arb or acb type.  Numbers
-are designed to interoperate with elements of a Sage RealField or
-ComplexField and with Sage Integers or Rationals when used within Sage.
+The Number class is a componsition class extending the Flint classes
+arb and acb. A Number represents an arbitrary precision real or complex
+number and also supports ball arithmetic, via the arithmetic operations
+of the arb and acb types.  Numbers are also designed to interoperate
+with elements of a Sage RealField or ComplexField and with Sage
+Integers or Rationals when used within Sage.
 
-Numbers are used in Sage to represent quantities such as tetrahedra
-shapes, cusp translations, and geodesic lengths. 
+Numbers are used in SnapPy to represent geometric quantities such as
+volumes, tetrahedra shapes, cusp translations, or lengths of geodesics.
+
 """
 
 from flint import arb, acb, ctx
@@ -460,32 +463,33 @@ class Number(Number_baseclass):
             obj = self.flint_obj
             real_str = str(obj.real)
             if real_str[0] == '[':
+                num_chars = None
                 try:
                     result = parse_arb.match(real_str)[1]
+                    num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
                 except TypeError:
-                    #sometimes the numeric string is empty.  What does that mean?
-                    if str(obj.real)[:3] in ('[+/' or '[± '):
-                        result = '????'
-                num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
-                result = result[:num_chars]
-                if full_precision:
+                    if str(obj.real)[:3] in ('[+/', '[± '):
+                        result = '~0'
+                if num_chars:
+                    result = result[:num_chars]
+                if full_precision and result[0] != '~':
                     result += '...'
             else:
                 result = real_str
             if isinstance(obj, acb):
+                num_chars = None
                 imag_str = str(obj.imag)
                 if imag_str[0] == '[':
                     try:
                         im_part = parse_arb.match(str(obj.imag))[1]
-                    except:
-                        print('regex failed on', obj.imag)
-                        im_part = '????'
-                    if full_precision:
-                        im_part += '...j'
-                    else:
                         num_chars = (self.accuracy + 1 if '.' in result
                                      else self.accuracy) 
+                    except:
+                        im_part = '~0'
+                    if num_chars:
                         im_part = im_part[:num_chars] + 'j'
+                    if full_precision and result != '~':
+                        im_part += '...j'
                     if im_part[0] == '-':
                         result += ' - ' + im_part[1:]
                     else:
@@ -578,52 +582,62 @@ class Number(Number_baseclass):
 
     def __rfloordiv__(self, other):
         result = self._binop(self.flint_obj.__rtruediv__, other)
-        if result != NotImplemented:
-            result = result.floor()
-        return result
+        with bit_precision(self._precision):
+            if result != NotImplemented:
+                result = result.floor()
+            return result
 
     def __mod__(self, other):
-        return self._binop(self.flint_obj.__mod__, other)
+        with bit_precision(self._precision):
+            return self._binop(self.flint_obj.__mod__, other)
 
-    # def __eq__(self, other):
-    #     return self.flint_obj.__eq__(pari(other))
+    def _compare(self, op, other):
+        with bit_precision(self._precision):
+            try:
+                return op(other.flint_obj)
+            except AttributeError:
+                try:
+                    return op(other)
+                except:
+                    return NotImplemented
+                 
+    def __eq__(self, other):
+        return self._compare(self.flint_obj.__eq__, other)
 
-    # def __ne__(self, other):
-    #     return self.flint_obj.__ne__(pari(other))
+    def __ne__(self, other):
+        return self._compare(self.flint_obj.__ne__, other)
 
-    # def __lt__(self, other):
-    #     return self.flint_obj.__lt__(pari(other))
+    def __gt__(self, other):
+        return self._compare(self.flint_obj.__gt__, other)
 
-    # def __gt__(self, other):
-    #     return self.flint_obj.__gt__(pari(other))
+    def __lt__(self, other):
+        return self._compare(self.flint_obj.__gt__, other)
 
-    # def __le__(self, other):
-    #     return self.flint_obj.__le__(pari(other))
+    def __ge__(self, other):
+        return self._compare(self.flint_obj.__gt__, other)
 
-    # def __ge__(self, other):
-    #     return self.gen.__ge__(pari(other))
+    def __le__(self, other):
+        return self._compare(self.flint_obj.__gt__, other)
 
     def __neg__(self):
         with bit_precision(self._precision):
-            return Number(-self.flint_obj, self.accuracy, self._precision)
+            return Number(-self.flint_obj, accuracy=self.accuracy,
+                          precision=self._precision)
 
     def __abs__(self):
         with bit_precision(self._precision):
-            return Number(abs(self.flint_obj), self.accuracy, self._precision)
+            return Number(abs(self.flint_obj), accuracy=self.accuracy,
+                          precision=self._precision)
 
     def __pow__(self, *args):
         with bit_precision(self._precision):
-            return Number(self.flint_obj.__pow__(*args), self.accuracy,
-                      self._precision)
+            return Number(self.flint_obj.__pow__(*args), accuracy=self.accuracy,
+                      precision=self._precision)
 
-    #def __round__(self, ndigits):
-    #    return Number(round(float(self), ndigits))
-
-    # def abs(self):
-    #     return abs(self)
-
-    # def conjugate(self):
-    #     return Number(self.gen.conj(), self.accuracy, self._precision)
+    def conjugate(self):
+        with bit_precision(self._precision):
+            return Number(self.conjugate(), accuracy=self.accuracy,
+                          precision=self._precision)
 
     def precision(self):
         """Return the *binary* precision of the Number.  Note that the value

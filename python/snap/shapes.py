@@ -1,6 +1,6 @@
 from ..sage_helper import _within_sage
-from flint import *
-from ..pari import pari, Gen
+from flint import arb, acb, fmpz, fmpz_mat, acb_mat
+#from ..pari import pari, Gen
 from snappy.number import (
     Number,
     bit_precision,
@@ -10,8 +10,8 @@ from snappy.number import (
 if _within_sage:
     from ..sage_helper import ComplexField
 
-def is_pari(x) -> bool:
-    return isinstance(x, Gen)
+#def is_pari(x) -> bool:
+#    return isinstance(x, Gen)
 
 # A gluing equation has the form:
 # z_0^a_0 * (1-z_0)^b_0 * ... z_N^a_N*(1-z_N)^b_N = +/-1
@@ -23,8 +23,8 @@ def eval_gluing_equation(eqn, shapes):
     Evaluate the product of cross ratios in an edge equation.
     The result will be 1 if the equation is satisfied.
     """
-    if is_pari(eqn):
-        raise RuntimeError('eval_gluing_equation: got pari eqn')
+#    if is_pari(eqn):
+#        raise RuntimeError('eval_gluing_equation: got pari eqn')
     a, b, c = eqn
     ans = int(c)
     for i, z in enumerate(shapes):
@@ -38,8 +38,8 @@ def gluing_equation_errors(eqns, shapes):
 
 
 def infinity_norm(L):
-    if is_pari(L):
-        raise RuntimeError('infinity_norm: got pari vector')
+#    if is_pari(L):
+#        raise RuntimeError('infinity_norm: got pari vector')
     result = max(map(abs, L))
     return result
 
@@ -49,7 +49,7 @@ def gluing_equation_error(eqns, shapes):
     return infinity_norm(gluing_equation_errors(eqns, shapes))
 
 
-def enough_gluing_equations(manifold):
+def XXXenough_gluing_equations(manifold):
     """
     Row reduce the gluing equations and select a full-rank subsystem.
     """
@@ -84,6 +84,40 @@ def enough_gluing_equations(manifold):
     assert ans_matrix.rank() == ans_matrix.nrows()
     # Return the equations as lists of python ints
     return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
+
+def enough_gluing_equations(manifold):
+    """
+    Row reduce the gluing equations and select a full-rank subsystem.
+    """
+    n_tet = manifold.num_tetrahedra()
+    n_cusps = manifold.num_cusps()
+    eqns = manifold.gluing_equations("rect")
+    # The first n_tet equations are the edge equations.
+    edge_eqns = fmpz_mat([a + b for a, b, _ in eqns[:n_tet]])
+    edge_eqns_with_RHS = fmpz_mat([a + b + [(1 - c) // 2]
+                                         for a, b, c in eqns[:n_tet]])
+    # Row reduce the equation matrix to get: U * edge_eqns = H
+    H, U = edge_eqns.hnf(transform=True)
+    # Check that we have the expected rank:
+    non_zero_rows = len([row for row in H.tolist() if any(row)])
+    assert non_zero_rows == n_tet - n_cusps
+    # Perform the same row ops on the auugmented matrix
+    edge_eqns_with_RHS = U * edge_eqns_with_RHS
+    edge_eqns_with_RHS = [(e[:n_tet], e[n_tet: 2 * n_tet], (-1)**int(e[-1]))
+                          for e in edge_eqns_with_RHS.tolist()[:non_zero_rows]]
+    # Add triples for the cusp equations
+    cusp_eqns = []
+    j = n_tet
+    for i in range(n_cusps):
+        cusp_eqns.append(eqns[j])
+        j += 2 if manifold.cusp_info(i)['complete?'] else 1
+    ans_eqns = edge_eqns_with_RHS + cusp_eqns
+    assert len(ans_eqns) == n_tet
+    ans_matrix = fmpz_mat([a + b for a, b, _ in ans_eqns])
+    assert ans_matrix.rank() == ans_matrix.nrows()
+    # Return the equations as lists of python ints
+    return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
+
 
 def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_solution_type=False):
     """
@@ -128,7 +162,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
             error = infinity_norm(errors)
             if error < target_epsilon:
                 break
-            ir error > 100 * initial_error:
+            if error > 100 * initial_error:
                 print('Diverging at step', i, 'with error', error)
                 break
             derivative = acb_mat(

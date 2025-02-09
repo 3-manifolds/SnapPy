@@ -1,21 +1,22 @@
 """This module provides the Number class.
 
 A Number is an arbitrary precision real or complex number which
-supports interval arithmetic.  Numbers are designed to interoperate
-with elements of a Sage RealField or ComplexField and with Sage
-Integers or Rationals when used within Sage.
+also supports ball arithmetic via the flint arb or acb type.  Numbers
+are designed to interoperate with elements of a Sage RealField or
+ComplexField and with Sage Integers or Rationals when used within Sage.
+
+Numbers are used in Sage to represent quantities such as tetrahedra
+shapes, cusp translations, and geodesic lengths. 
 """
 
-from flint import *
+from flint import arb, acb, ctx
 import re
 import math
 from contextlib import contextmanager
 
 ball_type = arb | acb
-flint_type = fmpz | fmpq | arb | acb
-rational_flint_type = fmpz | fmpq
-rational_type = fmpz | fmpq | int
 
+# For now ...
 _within_sage = False
 
 # Flint uses a global context object to determine the precision of an
@@ -54,11 +55,6 @@ def bit_precision(prec: int):
         yield ctx
     finally:
         ctx.prec = saved
-
-# This doesn't work for, e.g. numbers with real part 0
-#def get_bit_precision(x: flint_type)-> int:
-#    man, exp = x.mid().real.man_exp()
-#    return man.bit_length()
 
 def prec_bits_to_dec(n: int) -> int:
     """Utility function to convert bit precision to decimal precision."""
@@ -207,13 +203,6 @@ else:  # We are not in Sage
 
     Number_baseclass = object
 
-    def is_rational(x):
-        if isinstance(x, rational_type):
-            return True
-        if isinstance(x, Number):
-            return isinstance(x.flint_obj, rational_flint_type)
-        return False
-
     def float_to_flint(x, precision=None):
         if not precision is None:
             with bit_precision(precision):
@@ -360,7 +349,7 @@ class Number(Number_baseclass):
             # Use a copy of the flint object from data.
             data = data.flint_obj.__class__(data.flint_obj)
         self.decimal_precision = prec_bits_to_dec(self._precision)
-        if isinstance(data, flint_type):
+        if isinstance(data, ball_type):
             self.flint_obj = data
         elif isinstance(data, float):
             self.flint_obj = float_to_flint(data, self._precision)
@@ -375,7 +364,7 @@ class Number(Number_baseclass):
                     self.flint_obj = arb(data)
                 except ValueError:
                     self.flint_obj = acb(*parse_complex.match(data).groups())
-        if not isinstance(self.flint_obj, flint_type):
+        if not isinstance(self.flint_obj, ball_type):
             raise ValueError(
                 'Invalid initialization for a Number: %s has type %s!' % (
                     self.flint_obj, type(self.flint_obj)))
@@ -384,8 +373,6 @@ class Number(Number_baseclass):
             m = parse_arb.match(s) or parse_acb.match(s)
             with bit_precision(self._precision):
                 self.flint_obj = data.__class__(*m.groups()) 
-        if isinstance(self.flint_obj, rational_flint_type):
-            self.accuracy = self.decimal_precision
         else:
             if accuracy is None:
                 man, _ = self.flint_obj.mid().real.man_exp()
@@ -398,14 +385,6 @@ class Number(Number_baseclass):
     def __hash__(self):
         return hash(self.flint_obj)
 
-# How to convert a Number to a Pari gen.
-#    def _pari_(self):
-#        return self.gen
-
-    # Variant for Sage 8.0 and on.
-#    def __pari__(self):
-#        return self.gen
-
     def _get_acc_prec(self, other):
         """ Used by binary operators. """
         if is_rational(other):
@@ -414,22 +393,19 @@ class Number(Number_baseclass):
         try:
             other_precision = other.prec()
         except AttributeError:
-            if isinstance(other, flint_type):
-                ### There must be a way to fine the real precieion
-                print('Using other_precision as 53')
-                other_precision = 53
+            if isinstance(other, ball_type):
+                other_precision = ctx.prec
             else:
                 other_precision = 53
-        if is_rational(self):
-            return (other_accuracy, other_precision)
+        if self.accuracy is None or other_accuracy is None:
+            accuracy = None
         else:
-            if self.accuracy is None or other_accuracy is None:
-                accuracy = None
-            else:
-                accuracy = min(self.accuracy, other_accuracy)
-            return accuracy, min(self._precision, other_precision)
+            accuracy = min(self.accuracy, other_accuracy)
+        return accuracy, min(self._precision, other_precision)
 
-    # This makes Number-valued properties, e.g real and imag, also work as methods
+    # This makes Number-valued properties, e.g real and imag,
+    # also work as methods
+
     def __call__(self):
         return self
 
@@ -490,10 +466,10 @@ class Number(Number_baseclass):
                     #sometimes the numeric string is empty.  What does that mean?
                     if str(obj.real)[:3] in ('[+/' or '[± '):
                         result = '????'
-                if full_precision:
-                    result += '...'
                 num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
                 result = result[:num_chars]
+                if full_precision:
+                    result += '...'
             else:
                 result = real_str
             if isinstance(obj, acb):
@@ -507,7 +483,8 @@ class Number(Number_baseclass):
                     if full_precision:
                         im_part += '...j'
                     else:
-                        num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
+                        num_chars = (self.accuracy + 1 if '.' in result
+                                     else self.accuracy) 
                         im_part = im_part[:num_chars] + 'j'
                     if im_part[0] == '-':
                         result += ' - ' + im_part[1:]
@@ -660,30 +637,85 @@ class Number(Number_baseclass):
     # This is needed for some Sage interoperation to work.
     prec = precision
 
-    # @property
-    # def real(self):
-    #     return Number(self.gen.real(), self.accuracy, self._precision)
+    @property
+    def real(self):
+        if isinstance(self.flint_obj, ball_type):
+            return Number(self.flint_obj.real, accuracy=self.accuracy,
+                          precision=self._precision)
+        return self
 
-    # @property
-    # def imag(self):
-    #     return Number(self.gen.imag(), self.accuracy, self._precision)
+    @property
+    def imag(self):
+        if isinstance(self.flint_obj, ball_type):
+            return Number(self.flint_obj.imag, accuracy=self.accuracy,
+                          precision=self._precision)
+        return Number(0, )
 
-    # def pari_type(self):
-    #     return self.gen.type()
+    def flint_type(self):
+        return type(self.flint_obj)
 
-    def sage(self):
-        """
-        Return as an element of the appropriate RealField or
-        ComplexField
-        """
-        if not _within_sage:
-            raise ImportError("Not within SAGE.")
-        if self.gen.type() == 't_REAL':
-            return RealField(self._precision)(self.gen)
-        elif self.gen.type() == 't_COMPLEX':
-            return ComplexField(self._precision)(self.gen)
+    def _binary_arb_interval(self, arb_obj):
+        mid_man, mid_exp = arb_obj.mid().man_exp()
+        rad_man, rad_exp = arb_obj.rad().man_exp()
+        if rad_man != 0:
+            if rad_exp < mid_exp:
+                mid_man *= 2**(mid_exp - rad_exp)
+                exp = int(rad_exp)
+            elif mid_exp < rad_exp:
+                rad_man *= 2**(rad_exp - mid_exp)
+                exp = mid_exp
+            else:
+                exp = mid_exp
         else:
-            return self.gen.sage()
+            exp = mid_exp
+        return ((int(mid_man - rad_man), int(exp)),
+                (int(mid_man + rad_man), int(exp)))
+
+    def interval(self, radix=10, string=True):
+        if radix == 10:
+            re_m, re_r, re_e = map(int, self.flint_obj.real.mid_rad_10exp())
+            im_m, im_r, im_e = map(int, self.flint_obj.imag.mid_rad_10exp())
+            if not string:
+                return ((re_m - re_r, re_m + re_r, re_e),
+                        (im_m - im_r, im_m + im_r, im_e))
+            re_str =  f'[{re_m - re_r}e{re_e}, {re_m + re_r}e{re_e}]' 
+            im_str =  f'[{im_m - im_r}e{im_e}, {im_m + im_r}e{im_e}]'
+            if  im_str[0] == '-':
+                op = ' - '
+                im_str = im_str[1:]
+            else:
+                op = ' + '
+            return re_str + op + im_str + 'j'
+        elif radix == 2:
+            re_lower, re_upper, = self._binary_arb_interval(self.flint_obj.real)
+            im_lower, im_upper = self._binary_arb_interval(self.flint_obj.imag)
+            if not string:
+                return ((re_lower[0], re_upper[0], re_lower[1]),
+                        (im_lower[0], im_upper[0], im_lower[1]))
+            re_str = f'[{re_lower[0]}*2^{re_lower[1]}, {re_upper[0]}*2^{re_upper[1]}]'
+            im_str = f'[{im_lower[0]}*2^{im_lower[1]}, {im_upper[0]}*2^{im_upper[1]}]'
+            if  im_str[0] == '-':
+                op = ' - '
+                im_str = im_str[1:]
+            else:
+                op = ' + '
+            return re_str + op + im_str + 'j'
+        else:
+            raise ValueError('The radix must be 2 or 10.')
+
+    # def sage(self):
+    #     """
+    #     Return as an element of the appropriate RealField or
+    #     ComplexField
+    #     """
+    #     if not _within_sage:
+    #         raise ImportError("Not within SAGE.")
+    #     if self.gen.type() == 't_REAL':
+    #         return RealField(self._precision)(self.gen)
+    #     elif self.gen.type() == 't_COMPLEX':
+    #         return ComplexField(self._precision)(self.gen)
+    #     else:
+    #         return self.gen.sage()
 
     def parent(self):
         return self._parent

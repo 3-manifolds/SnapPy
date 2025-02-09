@@ -128,7 +128,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
         dec_prec = prec_bits_to_dec(bits_prec)
     else:
         bits_prec = prec_dec_to_bits(dec_prec)
-    working_prec = 2 * bits_prec + 30
+    working_prec = bits_prec + 30
 
     # This is a potentially long calculation, so we cache the result
     # and use the cached values as a start, if possible.

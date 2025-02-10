@@ -116,13 +116,12 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
 
     # Now begin the actual computation
     eqns = enough_gluing_equations(manifold)
-    n_rows = len(eqns)
-    n_cols = len(initial_shapes)
+    n = len(eqns)
     with bit_precision(working_prec):
         target_epsilon = arb(2.0) ** -bits_prec
-        initial_shapes = acb_mat(n_cols, 1, initial_shapes)
+        initial_shapes = acb_mat(n, 1, initial_shapes)
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
-        shapes = acb_mat(n_cols, 1, initial_shapes)
+        shapes = acb_mat(n, 1, initial_shapes)
         for i in range(100):
             errors = gluing_equation_errors(eqns, shapes)
             error = infinity_norm(errors)
@@ -134,10 +133,10 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
             derivative = acb_mat(
                 [[eqn[0][i] / z - eqn[1][i] / (1 - z) for i, z in enumerate(shapes)]
                      for eqn in eqns])
-            rhs = acb_mat(n_rows, 1, errors)
+            rhs = acb_mat(n, 1, errors)
             correction = derivative.solve(rhs)
             # Replace each acb shape by its midpoint for the next iteration.
-            shapes = acb_mat(n_rows, 1, [z.mid() for z in shapes - correction])
+            shapes = acb_mat(n, 1, [z.mid() for z in shapes - correction])
 
         # Check that things worked out ok.
         error = gluing_equation_error(original_equations, shapes)

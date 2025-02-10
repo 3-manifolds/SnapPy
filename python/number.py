@@ -1,14 +1,30 @@
 """This module provides the Number class.
 
-The Number class is a componsition class extending the Flint classes
-arb and acb. A Number represents an arbitrary precision real or complex
-number and also supports ball arithmetic, via the arithmetic operations
-of the arb and acb types.  Numbers are also designed to interoperate
-with elements of a Sage RealField or ComplexField and with Sage
+The Number class is a componsition of the two Flint classes arb and acb which
+respectively correspond to real and complex numbers.  Numbers are also designed
+to interoperate with elements of a Sage RealField or ComplexField and with Sage
 Integers or Rationals when used within Sage.
 
 Numbers are used in SnapPy to represent geometric quantities such as
 volumes, tetrahedra shapes, cusp translations, or lengths of geodesics.
+
+Every Number has a binary precision which must be specified when creating the
+Number.  This determines the number of bits used to represent the mantissa of an
+arb, or the mahtissas of both the real and imaginary parts of an acb.  Numbers
+manage their precision differently from the way that Flint objects do; in Flint
+the precision of the result of any operation is specified by a global context
+object. The precision of a Number is set on creation and is immutable.  The
+result of applying an arithmetic binary operation to two Numbers will have
+precision equal to the smaller of the precisions of the two operands.  Unary
+operations, including methods which evaluate trancendental functions, preserve
+the precision.
+
+Every Number represents a closed interval of values, either in the real
+line or the complex plane, where by an interval in the complex plane we
+mean a closed rectangle with sides parallel to the real or imaginary
+axes.  This interval can be a single point in the case where the Number
+was instantiated with a value which can be represented exactly in the
+precision of the Number.
 
 """
 
@@ -297,12 +313,12 @@ else:  # We are not in Sage
 # =================
 
 class SupportsMultiplicationByNumber():
+    # Not used currently.
     pass
-
 
 class Number(Number_baseclass):
     """
-    Python class which wraps flint types fmpz, fmpq, arb, and acb.
+    Python composition class which wraps flint types arb, and acb.
 
     A Number has both a precision and an optional attribute accuracy.
     The precision represents the number of bits in the mantissa of the
@@ -686,13 +702,53 @@ class Number(Number_baseclass):
                 (int(mid_man + rad_man), int(exp)))
 
     def interval(self, radix=10, string=True):
+        """Return an interval containing the values represented by this Number.
+        
+        This method returns a closed interval which contains, usually strictly,
+        the interval of values represented by the Number.  The endpoints, or
+        corners, of the interval can be expressed either in base 2 or base 10,
+        as specified by the radix option. By default this method returns a
+        string, but it will return a tuple or a pair of tuples containing python
+        integer values if the string option is set to False.  The tuple has
+        three components: the first two are the mantissas of the two endpoints
+        with respect to the exponent given by the third value.
+
+        >>> from snappy.number import Number
+        >>> x = Number(0, precision=53)
+        # The interval of 0 contains only one point.
+        >>> x.interval()
+        '[0e0, 0e0]'
+        # This creates an "exact" Number.
+        >>> x = Number(1.23456789, precision=53)
+        # Even though it is exact, it has an interval of positive length.
+        >>> x.interval()
+        '[12345678899999998898e-19, 12345678899999998902e-19]'
+        # Only exact Numbers are equal to themselves.
+        >>> x == x
+        True
+        # Performing arithmetic destroys exactness.
+        >>> y = sum([x]*1000)
+        >>> y == y
+        False
+        # The size of the interval increases with each operation.
+        >>> y.interval()
+        '[12345678899998728009e-16, 12345678900000763353e-16]'
+
+        """
+        is_real = isinstance(self.flint_obj, arb)
         if radix == 10:
             re_m, re_r, re_e = map(int, self.flint_obj.real.mid_rad_10exp())
-            im_m, im_r, im_e = map(int, self.flint_obj.imag.mid_rad_10exp())
+            if not is_real:
+                im_m, im_r, im_e = map(int, self.flint_obj.imag.mid_rad_10exp())
             if not string:
-                return ((re_m - re_r, re_m + re_r, re_e),
-                        (im_m - im_r, im_m + im_r, im_e))
-            re_str =  f'[{re_m - re_r}e{re_e}, {re_m + re_r}e{re_e}]' 
+                if is_real:
+                    return (re_m - re_r, re_m + re_r, re_e)
+                else:
+                    return ((re_m - re_r, re_m + re_r, re_e),
+                            (im_m - im_r, im_m + im_r, im_e))
+            re_str =  f'[{re_m - re_r}e{re_e}, {re_m + re_r}e{re_e}]'
+            if is_real:
+                return re_str
             im_str =  f'[{im_m - im_r}e{im_e}, {im_m + im_r}e{im_e}]'
             if  im_str[0] == '-':
                 op = ' - '
@@ -702,11 +758,17 @@ class Number(Number_baseclass):
             return re_str + op + im_str + 'j'
         elif radix == 2:
             re_lower, re_upper, = self._binary_arb_interval(self.flint_obj.real)
-            im_lower, im_upper = self._binary_arb_interval(self.flint_obj.imag)
+            if not is_real:
+                im_lower, im_upper = self._binary_arb_interval(self.flint_obj.imag)
             if not string:
-                return ((re_lower[0], re_upper[0], re_lower[1]),
-                        (im_lower[0], im_upper[0], im_lower[1]))
+                if is_real:
+                    return (re_lower[0], re_upper[0], re_lower[1])
+                else:
+                    return ((re_lower[0], re_upper[0], re_lower[1]),
+                            (im_lower[0], im_upper[0], im_lower[1]))
             re_str = f'[{re_lower[0]}*2^{re_lower[1]}, {re_upper[0]}*2^{re_upper[1]}]'
+            if is_real:
+                return re_str
             im_str = f'[{im_lower[0]}*2^{im_lower[1]}, {im_upper[0]}*2^{im_upper[1]}]'
             if  im_str[0] == '-':
                 op = ' - '
@@ -738,8 +800,12 @@ class Number(Number_baseclass):
         return float(self).hex()
 
     def volume(self):
-        """
-        Return the volume of a tetrahedron with this shape
+        """Return the volume of a hyperbolid ideal tetrahedron of this shape.
+
+        An ideal tetrahedron has shape z if it is isometric to the ideal
+        tetrahedron with vertices 0, 1, z and ♾️ .  Each tetrahedron has three
+        shapes, the other two being 1/(1-z) and (z-1)/z.
+
         """
         z = self.flint_obj
         if z == 0 or z == 1:

@@ -684,6 +684,8 @@ class Number(Number_baseclass):
     def flint_type(self):
         return type(self.flint_obj)
 
+    ### Check if the interval method could be simplified by using
+    ### lower and upper !!!!
     def _binary_arb_interval(self, arb_obj):
         mid_man, mid_exp = arb_obj.mid().man_exp()
         rad_man, rad_exp = arb_obj.rad().man_exp()

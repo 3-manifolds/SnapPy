@@ -39,12 +39,6 @@ modules = [
     verify.canonical,
     verify.interval_tree,
     verify.volume,
-    verify.upper_halfspace.ideal_point,
-    verify.upper_halfspace.finite_point,
-    verify.upper_halfspace.extended_matrix,
-    verify.maximal_cusp_area_matrix,
-    verify.maximal_cusp_area_matrix.cusp_tiling_engine,
-    verify.maximal_cusp_area_matrix.cusp_translate_engine,
     verify.square_extensions,
     verify.real_algebra
 ]

@@ -67,22 +67,20 @@ class Settings:
             self.setting_file = os.path.join(home, '.SnapPy.plist')
         else:
             self.setting_file = None
-        
+
     def read_settings(self):
-        if self.setting_file:
-            try:
-                if hasattr(plistlib, 'load'):
-                    with open(self.setting_file, 'rb') as setting_file:
-                        self.setting_dict.update(plistlib.load(setting_file))
-                else:
-                    self.setting_dict.update(plistlib.readPlist(self.setting_file))
-                family, size, info = self.setting_dict['font']
+        if self.setting_file and os.path.exists(self.setting_file):
+            with open(self.setting_file, 'rb') as setting_file:
+                new_settings = plistlib.load(setting_file)
+
+            if 'font' in new_settings:
+                family, size, info = new_settings['font']
                 # Guard against crazy values in the settings plist file.
                 size = clip_font_size(size)
                 weight, slant = info.split()
-                self.setting_dict['font'] = FontChoice(family, size, weight, slant)
-            except OSError:
-                pass
+                new_settings['font'] = FontChoice(family, size, weight, slant)
+
+            self.setting_dict.update(new_settings)
 
     def write_settings(self):
         if self.setting_file:

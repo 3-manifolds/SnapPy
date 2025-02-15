@@ -481,7 +481,7 @@ class Number(Number_baseclass):
             if real_str[0] == '[':
                 num_chars = None
                 try:
-                    result = parse_arb.match(real_str)[1]
+                    result = parse_arb.match(real_str)[1][:-1]
                     num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
                 except TypeError:
                     if str(obj.real)[:3] in ('[+/', '[± '):
@@ -497,7 +497,7 @@ class Number(Number_baseclass):
                 imag_str = str(obj.imag)
                 if imag_str[0] == '[':
                     try:
-                        im_part = parse_arb.match(str(obj.imag))[1]
+                        im_part = parse_arb.match(str(obj.imag))[1][:-1]
                         num_chars = (self.accuracy + 1 if '.' in result
                                      else self.accuracy) 
                     except:
@@ -505,7 +505,7 @@ class Number(Number_baseclass):
                     if num_chars:
                         im_part = im_part[:num_chars] + 'j'
                     if full_precision and result != '~':
-                        im_part += '...j'
+                        im_part = im_part.rstrip('j') + '...j'
                     if im_part[0] == '-':
                         result += ' - ' + im_part[1:]
                     else:

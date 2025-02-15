@@ -35,12 +35,6 @@ def gluing_equation_errors(eqns, acb_shapes):
     return [eval_gluing_equation(eqn, acb_shapes) - 1 for eqn in eqns]
 
 
-def gluing_equation_logs(eqns, acb_shapes):
-    """ A list of The logs of the left hand sides of the equations."""
-    return [eval_gluing_equation(eqn, acb_shapes).log() for eqn in eqns]
-
-
-
 def infinity_norm(L):
     result = max(map(abs, L))
     return result
@@ -143,7 +137,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
                 [[eqn[0][i] / z - eqn[1][i] / (1 - z) for i, z in enumerate(shapes)]
                      for eqn in eqns])
             rhs = acb_mat(n, 1, errors)
-            correction = derivative.solve(rhs)
+            correction = derivative.solve(rhs, algorithm="approx")
             corrected_shapes = shapes - correction
 
             # When refining shapes, we don't want our intervals to expand

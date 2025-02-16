@@ -1,5 +1,7 @@
 from ..sage_helper import _within_sage
+import flint
 from flint import arb, acb, fmpz, fmpz_mat, acb_mat
+
 #from ..pari import pari, Gen
 from snappy.number import (
     Number,
@@ -92,7 +94,8 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
         dec_prec = prec_bits_to_dec(bits_prec)
     else:
         bits_prec = prec_dec_to_bits(dec_prec)
-    working_prec = bits_prec + 30
+
+    max_working_prec = bits_prec + 30
 
     # This is a potentially long calculation, so we cache the result
     # and use the cached values as a start, if possible.
@@ -107,7 +110,9 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             'contains negatively oriented tetrahedra']:
         raise ValueError('Initial solution to gluing equations has '
                          'flat or degenerate tetrahedra')
-    initial_shapes = [z.flint_obj for z in manifold.tetrahedra_shapes('rect')]
+    initial_shapes = manifold.tetrahedra_shapes('rect')
+    initial_shape_prec = initial_shapes[0].precision()
+
     original_equations = manifold.gluing_equations('rect')
     if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
         raise ValueError('Initial solution not very good')
@@ -118,39 +123,47 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     # setting the log of the left hand side to 0.
     eqns = enough_gluing_equations(manifold)
     n = len(eqns)
-    with bit_precision(working_prec):
-        target_epsilon = arb(2.0) ** -bits_prec
-        initial_shapes = acb_mat(n, 1, initial_shapes)
-        initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
-        shapes = acb_mat(n, 1, initial_shapes)
-        for i in range(100):
-            errors = gluing_equation_errors(eqns, shapes)
-            error = infinity_norm(errors)
-            if error < target_epsilon:
-                break
-            if error > 100 * initial_error:
-                print('Diverging at step', i, 'with error', error)
-                break
 
-            # Note that these are logarithmic derivatives!
-            derivative = acb_mat(
-                [[eqn[0][i] / z - eqn[1][i] / (1 - z) for i, z in enumerate(shapes)]
-                     for eqn in eqns])
-            rhs = acb_mat(n, 1, errors)
-            correction = derivative.solve(rhs, algorithm="approx")
-            corrected_shapes = shapes - correction
+    original_precision = flint.ctx.prec
+    flint.ctx.prec = min(2*initial_shape_prec, max_working_prec)
 
-            # When refining shapes, we don't want our intervals to expand
-            # with each Newton iteration.  So we reset each shape to an exact
-            # value before starting the next iteration.
-            shapes = acb_mat(n, 1, [z.mid() for z in corrected_shapes])
+    target_epsilon = arb(2.0) ** -bits_prec
+    initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
+    initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
+    shapes = acb_mat(n, 1, initial_shapes.entries())
+    for i in range(100):
+        errors = gluing_equation_errors(eqns, shapes)
+        error = infinity_norm(errors)
+        if error < target_epsilon:
+            break
+        if error > 100 * initial_error:
+            print('Diverging at step', i, 'with error', error)
+            break
 
-        # Check that things worked out ok.
-        error = gluing_equation_error(original_equations, shapes)
-        total_change = infinity_norm(shapes - initial_shapes)
-        if error > 1000 * target_epsilon or total_change > 0.0000001:
-            raise ValueError('Did not find a good solution to the gluing equations')
+        # Note that these are logarithmic derivatives!
+        derivative = acb_mat([[eqn[0][i] / z - eqn[1][i] / (1 - z)
+                               for i, z in enumerate(shapes)]
+                               for eqn in eqns])
+        rhs = acb_mat(n, 1, errors)
+        correction = derivative.solve(rhs, algorithm="approx")
+        corrected_shapes = shapes - correction
 
+        # When refining shapes, we don't want our intervals to expand
+        # with each Newton iteration.  So we reset each shape to an exact
+        # value before starting the next iteration.
+        shapes = corrected_shapes.mid()
+
+        # If shapes didn't move much, increase the working precision.
+        if flint.ctx.prec < max_working_prec:
+            if infinity_norm(correction) < arb(2.0) ** -int(0.8*flint.ctx.prec):
+                flint.ctx.prec = min(2*flint.ctx.prec, max_working_prec)
+
+    # Check that things worked out ok.
+    error = gluing_equation_error(original_equations, shapes)
+    total_change = infinity_norm(shapes - initial_shapes)
+    flint.ctx.prec = original_precision
+    if error > 1000 * target_epsilon or total_change > 0.0000001:
+        raise ValueError('Did not find a good solution to the gluing equations')
     # Prepare the final result
     # We want to preserve the intervals, so use the corrected shapes here
     result = [Number(s, precision=bits_prec) for s in corrected_shapes]

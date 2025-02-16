@@ -127,6 +127,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     original_equations = manifold.gluing_equations('rect')
     if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
         raise ValueError('Initial solution not very good')
+    return initial_shapes
 
     # Now begin the actual computation.
     # This computation does not work with the algebraic shape

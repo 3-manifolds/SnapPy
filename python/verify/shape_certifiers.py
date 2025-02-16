@@ -99,8 +99,8 @@ class ShapeCertifierBase:
     def fZ0(self)-> acb_mat:
         """Compute and return f(z0).
 
-        The result is a column of exact (i.e. radius 0) intervals containing
-        the log of the left hand side of each gluing equation.
+        The result is a column of intervals containing the log of the
+        left hand side of each gluing equation.
 
         """
         logs = []

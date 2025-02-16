@@ -83,6 +83,21 @@ def enough_gluing_equations(manifold):
     return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
 
 
+def masked_equations(eqns):
+    """
+    The equation are quite sparse, so this gives a dictionary of the
+    nonzero coeffcients.
+    """
+    coeffs = dict()
+    n = len(eqns)
+    for i in range(n):
+        for j in range(n):
+            a, b = eqns[i][0][j], eqns[i][1][j]
+            if a != 0 or b != 0:
+                coeffs[i, j] = (a, b)
+    return coeffs
+
+
 def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
                                certify_prec=None, ignore_solution_type=False):
     """
@@ -118,6 +133,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     # equations, but rather with the nearly linear system obtained by
     # setting the log of the left hand side to 0.
     eqns = enough_gluing_equations(manifold)
+    masked = masked_equations(eqns)
     n = len(eqns)
 
     initial_shape_prec = initial_shapes[0].precision()
@@ -131,19 +147,31 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
         target_epsilon = arb(2.0) ** -bits_prec
         shapes = acb_mat(n, 1, initial_shapes.entries())
+        derivative = acb_mat(n, n)
         for i in range(100):
             errors = gluing_equation_errors(eqns, shapes)
             max_error = infinity_norm(errors)
             if max_error < target_epsilon:
                 break
             if max_error > 100 * initial_error:
-                print('Diverging at step', i, 'with error', error)
+                print('Diverging at step', i, 'with error', max_error)
                 break
 
-            # Note that these are logarithmic derivatives!
-            derivative = acb_mat([[a[i] / z - b[i] / (1 - z)
-                                   for i, z in enumerate(shapes)]
-                                   for a, b, _ in eqns])
+            # Note that these are logarithmic derivatives!  The concise formula is:
+            #
+            #  derivative = acb_mat([[a[i] / z - b[i] / (1 - z)
+            #                        for i, z in enumerate(shapes)]
+            #                        for a, b, _ in eqns])
+            #
+            # but we do it more awkwardly to avoid creating unnecessary
+            # acb's that will need to be garbage-collected later.
+
+            zs = shapes.entries()
+            one_on_z = [1/z for z in zs]
+            one_on_z_minus_1 = [1/(z - 1) for z in zs]
+            for (i, j), (a, b) in masked.items():
+                derivative[i, j] = a * one_on_z[j] + b * one_on_z_minus_1[j]
+
             rhs = acb_mat(n, 1, errors)
             correction = derivative.solve(rhs, algorithm="approx")
             corrected_shapes = shapes - correction

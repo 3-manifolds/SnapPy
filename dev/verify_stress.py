@@ -104,7 +104,7 @@ def verified_sage():
       print(f'{tets} tets: overall time {time.time() - mfld_start:.3f}s')
    print(f'Overall: {time.time() - overall_start:.3f}s')
 
-      
+
 if snappy.sage_helper._within_sage:
    print('SAGEMATH')
    verified_sage()

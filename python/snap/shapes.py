@@ -102,15 +102,13 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     if ('polished_shapes', bits_prec) in manifold._cache:
         return manifold._cache['polished_shapes', bits_prec]
 
-    # Check to make sure the initial solution is reasonable
+    # Check to make sure the initial solution is reasonable.
     if not ignore_solution_type and manifold.solution_type() not in [
             'all tetrahedra positively oriented',
             'contains negatively oriented tetrahedra']:
         raise ValueError('Initial solution to gluing equations has '
                          'flat or degenerate tetrahedra')
     initial_shapes = manifold.tetrahedra_shapes('rect')
-    initial_shape_prec = initial_shapes[0].precision()
-
     original_equations = manifold.gluing_equations('rect')
     if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
         raise ValueError('Initial solution not very good')
@@ -122,44 +120,44 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     eqns = enough_gluing_equations(manifold)
     n = len(eqns)
 
-    original_precision = flint.ctx.prec
-    flint.ctx.prec = min(2*initial_shape_prec, max_working_prec)
+    initial_shape_prec = initial_shapes[0].precision()
+    working_prec = min(2 * initial_shape_prec, max_working_prec)
+    with bit_precision(working_prec):
+        initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
+        initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
+        target_epsilon = arb(2.0) ** -bits_prec
+        shapes = acb_mat(n, 1, initial_shapes.entries())
+        for i in range(100):
+            errors = gluing_equation_errors(eqns, shapes)
+            max_error = infinity_norm(errors)
+            if max_error < target_epsilon:
+                break
+            if max_error > 100 * initial_error:
+                print('Diverging at step', i, 'with error', error)
+                break
 
-    target_epsilon = arb(2.0) ** -bits_prec
-    initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
-    initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
-    shapes = acb_mat(n, 1, initial_shapes.entries())
-    for i in range(100):
-        errors = gluing_equation_errors(eqns, shapes)
-        error = infinity_norm(errors)
-        if error < target_epsilon:
-            break
-        if error > 100 * initial_error:
-            print('Diverging at step', i, 'with error', error)
-            break
+            # Note that these are logarithmic derivatives!
+            derivative = acb_mat([[a[i] / z - b[i] / (1 - z)
+                                   for i, z in enumerate(shapes)]
+                                  for a, b, _ in eqns])
+            rhs = acb_mat(n, 1, errors)
+            correction = derivative.solve(rhs, algorithm="approx")
+            corrected_shapes = shapes - correction
 
-        # Note that these are logarithmic derivatives!
-        derivative = acb_mat([[eqn[0][i] / z - eqn[1][i] / (1 - z)
-                               for i, z in enumerate(shapes)]
-                               for eqn in eqns])
-        rhs = acb_mat(n, 1, errors)
-        correction = derivative.solve(rhs, algorithm="approx")
-        corrected_shapes = shapes - correction
+            # When refining shapes, we don't want our intervals to expand
+            # with each Newton iteration.  So we reset each shape to an exact
+            # value before starting the next iteration.
+            shapes = corrected_shapes.mid()
 
-        # When refining shapes, we don't want our intervals to expand
-        # with each Newton iteration.  So we reset each shape to an exact
-        # value before starting the next iteration.
-        shapes = corrected_shapes.mid()
-
-        # If shapes didn't move much, increase the working precision.
-        if flint.ctx.prec < max_working_prec:
-            if infinity_norm(correction) < arb(2.0) ** -int(0.8*flint.ctx.prec):
-                flint.ctx.prec = min(2*flint.ctx.prec, max_working_prec)
+            # If shapes didn't move much, increase the working precision.
+            if working_prec < max_working_prec:
+                if infinity_norm(correction) < arb(2.0) ** -int(0.8 * working_prec):
+                    working_prec = min(2 * working_prec, max_working_prec)
+                    flint.ctx.prec = working_prec
 
     # Check that things worked out ok.
     error = gluing_equation_error(original_equations, shapes)
     total_change = infinity_norm(shapes - initial_shapes)
-    flint.ctx.prec = original_precision
     if error > 1000 * target_epsilon or total_change > 0.0000001:
         raise ValueError('Did not find a good solution to the gluing equations')
     # Prepare the final result

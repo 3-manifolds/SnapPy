@@ -116,13 +116,13 @@ class ShapeCertifierBase:
     def Df_Z0(self)-> acb_mat:
         """Compute and return Df_Z0.
 
-        The result is a matrix of  exact (i.e. radius 0) intervals containing
-        the derivative matrix of f at Z0.  
+        The result is a matrix of intervals containing the derivative matrix
+        of f at Z0.
 
         """
         with bit_precision(self.high_precision):
-            return acb_mat([[eqn[0][i] / z.mid() - eqn[1][i] / (1 - z.mid())
-                 for i, z in enumerate(self.Z)] for eqn in self.equations])
+            return acb_mat([[eqn[0][i] / z - eqn[1][i] / (1 - z)
+                 for i, z in enumerate(self.Z0)] for eqn in self.equations])
 
     def Df_Z(self)-> acb_mat:
         """Compute and return the interval [Df_Z].

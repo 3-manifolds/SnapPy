@@ -99,10 +99,8 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
 
     # This is a potentially long calculation, so we cache the result
     # and use the cached values as a start, if possible.
-    if "polished_shapes" in manifold._cache:
-        curr_bits_prec, curr_sol = manifold._cache["polished_shapes"]
-        if bits_prec <= curr_bits_prec:
-            return curr_sol
+    if ('polished_shapes', bits_prec) in manifold._cache:
+        return manifold._cache['polished_shapes', bits_prec]
 
     # Check to make sure the initial solution is reasonable
     if not ignore_solution_type and manifold.solution_type() not in [
@@ -167,8 +165,5 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     # Prepare the final result
     # We want to preserve the intervals, so use the corrected shapes here
     result = [Number(s, precision=bits_prec) for s in corrected_shapes]
-    if _within_sage:
-        CC = ComplexField(bits_prec)
-        result = [CC(repr(z)) for z in result]
-        manifold._cache["polished_shapes"] = (bits_prec, result)
+    manifold._cache['polished_shapes', bits_prec] = result
     return result

@@ -65,7 +65,7 @@ def enough_gluing_equations(manifold):
     assert non_zero_rows == n_tet - n_cusps
     # Perform the same row ops on the auugmented matrix.
     edge_eqns_with_RHS = U * edge_eqns_with_RHS
-    # Rewrite the equations as losts of triples.
+    # Rewrite the equations as lists of triples.
     edge_eqns_with_RHS = [(e[:n_tet], e[n_tet: 2 * n_tet], (-1)**int(e[-1]))
                           for e in edge_eqns_with_RHS.tolist()[:non_zero_rows]]
     # Add the cusp equations.
@@ -83,19 +83,21 @@ def enough_gluing_equations(manifold):
     return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
 
 
-def masked_equations(eqns):
+def nonzero_exponents(eqns):
+    """Returns (i, j) -> (a[j], b[j]) if a[j] != 0 or b[j] != 0 in equation i.
+
+    This allows us to take advantage of the sparsity of the gluing equations.
+
     """
-    The equation are quite sparse, so this gives a dictionary of the
-    nonzero coeffcients.
-    """
-    coeffs = dict()
+
+    exponents = dict()
     n = len(eqns)
     for i in range(n):
         for j in range(n):
             a, b = eqns[i][0][j], eqns[i][1][j]
             if a != 0 or b != 0:
-                coeffs[i, j] = (a, b)
-    return coeffs
+                exponents[i, j] = (a, b)
+    return exponents
 
 
 def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
@@ -133,15 +135,15 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     # equations, but rather with the nearly linear system obtained by
     # setting the log of the left hand side to 0.
     eqns = enough_gluing_equations(manifold)
-    masked = masked_equations(eqns)
+    coeffs = nonzero_exponents(eqns)
     n = len(eqns)
 
     initial_shape_prec = initial_shapes[0].precision()
     working_prec = min(2 * initial_shape_prec, max_working_prec)
 
-    # It is much faster to increase the working_precision
-    # incrementally during this computation.  For this, we manipulate
-    # the flint's global context later, but starting with working_prec
+    # It is much faster to increase the working_precision incrementally during
+    # this computation.  For this, we need to manipulate flint's global context
+    # in the main loop.
     with bit_precision(working_prec):
         initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
@@ -163,13 +165,12 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             #                        for i, z in enumerate(shapes)]
             #                        for a, b, _ in eqns])
             #
-            # but we do it more awkwardly to avoid creating unnecessary
-            # acb's that will need to be garbage-collected later.
+            # but we do it more awkwardly to avoid creating many zero acb's
+            # that will need to be garbage-collected later.
 
-            zs = shapes.entries()
-            one_on_z = [1/z for z in zs]
-            one_on_z_minus_1 = [1/(z - 1) for z in zs]
-            for (i, j), (a, b) in masked.items():
+            one_on_z = [1/z for z in shapes]
+            one_on_z_minus_1 = [1/(z - 1) for z in shapes]
+            for (i, j), (a, b) in coeffs.items():
                 derivative[i, j] = a * one_on_z[j] + b * one_on_z_minus_1[j]
 
             rhs = acb_mat(n, 1, errors)
@@ -181,9 +182,8 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             # value before starting the next iteration.
             shapes = corrected_shapes.mid()
 
-            # If shapes didn't move much, increase the working
-            # precision. The context manager will restore flint's
-            # precision at the end.
+            # If shapes didn't move much, increase the working precision. The
+            # context manager will restore flint's precision at the end.
             if working_prec < max_working_prec:
                 if infinity_norm(correction) < arb(2.0) ** -int(0.8 * working_prec):
                     working_prec = min(2 * working_prec, max_working_prec)

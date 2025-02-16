@@ -122,6 +122,10 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
 
     initial_shape_prec = initial_shapes[0].precision()
     working_prec = min(2 * initial_shape_prec, max_working_prec)
+
+    # It is much faster to increase the working_precision
+    # incrementally during this computation.  For this, we manipulate
+    # the flint's global context later, but starting with working_prec
     with bit_precision(working_prec):
         initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
@@ -139,7 +143,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             # Note that these are logarithmic derivatives!
             derivative = acb_mat([[a[i] / z - b[i] / (1 - z)
                                    for i, z in enumerate(shapes)]
-                                  for a, b, _ in eqns])
+                                   for a, b, _ in eqns])
             rhs = acb_mat(n, 1, errors)
             correction = derivative.solve(rhs, algorithm="approx")
             corrected_shapes = shapes - correction
@@ -149,16 +153,20 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             # value before starting the next iteration.
             shapes = corrected_shapes.mid()
 
-            # If shapes didn't move much, increase the working precision.
+            # If shapes didn't move much, increase the working
+            # precision. The context manager will restore flint's
+            # precision at the end.
             if working_prec < max_working_prec:
                 if infinity_norm(correction) < arb(2.0) ** -int(0.8 * working_prec):
                     working_prec = min(2 * working_prec, max_working_prec)
                     flint.ctx.prec = working_prec
 
-    # Check that things worked out ok.
-    error = gluing_equation_error(original_equations, shapes)
-    total_change = infinity_norm(shapes - initial_shapes)
-    if error > 1000 * target_epsilon or total_change > 0.0000001:
+        # Check that things worked out ok.
+        error = gluing_equation_error(original_equations, shapes)
+        total_change = infinity_norm(shapes - initial_shapes)
+        failure = error > 1000 * target_epsilon or total_change > 0.0000001
+
+    if failure:
         raise ValueError('Did not find a good solution to the gluing equations')
     # Prepare the final result
     # We want to preserve the intervals, so use the corrected shapes here

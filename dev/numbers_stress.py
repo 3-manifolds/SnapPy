@@ -29,28 +29,42 @@ def gluing_equation_errors(eqns, acb_shapes):
     """ A list containing the difference from 1 for each equation."""
     return [eval_gluing_equation(eqn, acb_shapes) - 1 for eqn in eqns]
 
-def eval_gluing(manifold):
-   shapes = manifold.tetrahedra_shapes('rect')
-   eqns = manifold.gluing_equations('rect')
-   gluing_equation_errors(eqns, shapes) 
 
-def eval_gluing_complex(manifold):
-   shapes = manifold.tetrahedra_shapes('rect')
-   eqns = manifold.gluing_equations('rect')
-   gluing_equation_errors(eqns, [complex(z) for z in shapes]) 
-   
-
-def main():
+def main_number():
    for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
       M = snappy.Manifold(iso)
+      eqns = M.gluing_equations('rect')
+      shapes = M.tetrahedra_shapes('rect')
       for i in range(100):
-         eval_gluing(M)
+         gluing_equation_errors(eqns, shapes)
+
 
 def main_complex():
    for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
       M = snappy.Manifold(iso)
+      eqns = M.gluing_equations('rect')
+      shapes = [complex(z) for z in M.tetrahedra_shapes('rect')]
       for i in range(100):
-         eval_gluing_complex(M)
+         gluing_equation_errors(eqns, shapes)
 
-main()
-# main_complex()
+
+def main_pari():
+   for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
+      M = snappy.Manifold(iso)
+      eqns = M.gluing_equations('rect')
+      shapes = [z.gen for z in M.tetrahedra_shapes('rect')]
+      for i in range(100):
+         gluing_equation_errors(eqns, shapes)
+
+def main_flint():
+   for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
+      M = snappy.Manifold(iso)
+      eqns = M.gluing_equations('rect')
+      shapes = [z.flint_obj for z in M.tetrahedra_shapes('rect')]
+      for i in range(100):
+         gluing_equation_errors(eqns, shapes)
+
+main_number()
+#main_complex()
+#main_pari()
+#main_flint()

@@ -33,6 +33,11 @@ def eval_gluing(manifold):
    shapes = manifold.tetrahedra_shapes('rect')
    eqns = manifold.gluing_equations('rect')
    gluing_equation_errors(eqns, shapes) 
+
+def eval_gluing_complex(manifold):
+   shapes = manifold.tetrahedra_shapes('rect')
+   eqns = manifold.gluing_equations('rect')
+   gluing_equation_errors(eqns, [complex(z) for z in shapes]) 
    
 
 def main():
@@ -41,4 +46,11 @@ def main():
       for i in range(100):
          eval_gluing(M)
 
+def main_complex():
+   for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
+      M = snappy.Manifold(iso)
+      for i in range(100):
+         eval_gluing_complex(M)
+
 main()
+# main_complex()

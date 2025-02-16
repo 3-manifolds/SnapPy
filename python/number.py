@@ -71,7 +71,7 @@ def bit_precision(prec: int):
     saved = ctx.prec
     ctx.prec = prec
     try:
-        yield ctx
+        yield prec
     finally:
         ctx.prec = saved
 

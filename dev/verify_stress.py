@@ -49,10 +49,11 @@ def verified_flint():
    overall_start = time.time()
    for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
       mfld_start = time.time()
-      for prec in [100, 1000, 10000]:
+      for prec in [(100, 150), (1000, 1100), (10000, 10500)]:
          M = snappy.Manifold(iso)
          start = time.time()
-         vfr = KrawczykShapeCertifier(M, bits_prec=prec)
+         vfr = KrawczykShapeCertifier(M, bits_prec=prec[0],
+                                      working_prec=prec[1])
          result = 'verified' if vfr.certify() else 'FAILED'
          tets = M.num_tetrahedra()
          print(f'{tets} tets: {result} {prec} bit shapes in {time.time() - start:.3f}s')
@@ -94,10 +95,11 @@ def verified_sage():
    overall_start = time.time()
    for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
       mfld_start = time.time()
-      for prec in [100, 1000, 10000]:
+      for prec in [(100, 150), (1000, 1100), (10000, 10500)]:
          M = snappy.Manifold(iso)
          start = time.time()
-         success, shapes = M.verify_hyperbolicity(bits_prec=prec)
+         success, shapes = M.verify_hyperbolicity(bits_prec=prec[0],
+                                                  working_prec=prec[1])
          tets = M.num_tetrahedra()
          curr_time = time.time()
          print(f'{tets} tets: verified {prec} bit shapes in {time.time() - start:.3f}s')

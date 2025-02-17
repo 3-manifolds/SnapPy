@@ -389,7 +389,7 @@ class Number(Number_baseclass):
         else:
             if accuracy is None:
                 man, _ = self.flint_obj.mid().real.man_exp()
-                accuracy = bits_to_dec * man.bit_length()
+                accuracy = round(bits_to_dec * man.bit_length())
             self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
@@ -492,8 +492,8 @@ class Number(Number_baseclass):
                 if imag_str[0] == '[':
                     try:
                         im_part = parse_arb.match(str(obj.imag))[1][:-1]
-                        num_chars = (self.accuracy + 1 if '.' in result
-                                     else self.accuracy) 
+                        num_chars = (self.accuracy + 1 if '.' in im_part
+                                     else self.accuracy)
                     except:
                         im_part = '~0'
                     if num_chars:

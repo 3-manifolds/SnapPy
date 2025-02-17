@@ -125,11 +125,6 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
             'contains negatively oriented tetrahedra']:
         raise ValueError('Initial solution to gluing equations has '
                          'flat or degenerate tetrahedra')
-    initial_shapes = manifold.tetrahedra_shapes('rect')
-    original_equations = manifold.gluing_equations('rect')
-    if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
-        raise ValueError('Initial solution not very good')
-
     # Now begin the actual computation.
     # This computation does not work with the algebraic shape
     # equations, but rather with the nearly linear system obtained by
@@ -137,15 +132,21 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     eqns = enough_gluing_equations(manifold)
     coeffs = nonzero_exponents(eqns)
     n = len(eqns)
-
-    initial_shape_prec = initial_shapes[0].precision()
+    initial_shape_numbers = manifold.tetrahedra_shapes('rect')
+    initial_shape_prec = initial_shape_numbers[0].precision()
     working_prec = min(2 * initial_shape_prec, max_working_prec)
 
     # It is much faster to increase the working_precision incrementally during
     # this computation.  For this, we need to manipulate flint's global context
     # in the main loop.
     with bit_precision(working_prec):
-        initial_shapes = acb_mat(n, 1, [z.flint_obj for z in initial_shapes])
+        initial_shapes = acb_mat(manifold.num_tetrahedra(), 1,
+                             [z.flint_obj for z in initial_shape_numbers])
+        original_equations = manifold.gluing_equations('rect')
+        # Bail out if the double precision shapes are not reasonable.
+        if gluing_equation_error(original_equations, initial_shapes) > 0.000001:
+            raise ValueError('Initial solution not very good')
+
         initial_error = infinity_norm(gluing_equation_errors(eqns, initial_shapes))
         target_epsilon = arb(2.0) ** -bits_prec
         shapes = acb_mat(n, 1, initial_shapes.entries())

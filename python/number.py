@@ -1,23 +1,23 @@
 """This module provides the Number class.
 
-The Number class is a componsition of the two Flint classes arb and acb which
-respectively correspond to real and complex numbers.  Numbers are also designed
-to interoperate with elements of a Sage RealField or ComplexField and with Sage
-Integers or Rationals when used within Sage.
+The Number class is a componsition of the two Flint classes arb and acb
+which respectively correspond to real and complex numbers.  Numbers are
+also designed to interoperate with elements of a Sage RealField or
+ComplexField and with Sage Integers or Rationals when used within Sage.
 
 Numbers are used in SnapPy to represent geometric quantities such as
 volumes, tetrahedra shapes, cusp translations, or lengths of geodesics.
 
-Every Number has a binary precision which must be specified when creating the
-Number.  This determines the number of bits used to represent the mantissa of an
-arb, or the mahtissas of both the real and imaginary parts of an acb.  Numbers
-manage their precision differently from the way that Flint objects do; in Flint
-the precision of the result of any operation is specified by a global context
-object. The precision of a Number is set on creation and is immutable.  The
-result of applying an arithmetic binary operation to two Numbers will have
-precision equal to the smaller of the precisions of the two operands.  Unary
-operations, including methods which evaluate trancendental functions, preserve
-the precision.
+Every Number has a binary precision which must be specified when creating
+the Number.  This determines the number of bits used to represent the
+mantissa of an arb, or the mahtissas of both the real and imaginary parts
+of an acb.  Numbers manage their precision differently from the way that
+Flint objects do; in Flint the precision of the result of any operation is
+specified by a global context object. The precision of a Number is set on
+creation and is immutable.  The result of applying an arithmetic binary
+operation to two Numbers will have precision equal to the smaller of the
+precisions of the two operands.  Unary operations, including methods which
+evaluate trancendental functions, preserve the precision.
 
 Every Number represents a closed interval of values, either in the real
 line or the complex plane, where by an interval in the complex plane we
@@ -31,7 +31,6 @@ precision of the Number.
 from flint import arb, acb, ctx
 import re
 import math
-from contextlib import contextmanager
 
 ball_type = arb | acb
 
@@ -65,16 +64,15 @@ _within_sage = False
 # every operation is executed in the context which is appropriate for the
 # operand(s).
 
-@contextmanager
-def bit_precision(prec: int):
-    """Context manager used for Number operations."""
-    saved = ctx.prec
-    ctx.prec = prec
-    try:
-        yield prec
-    finally:
-        ctx.prec = saved
-
+class bit_precision:
+    def __init__(self, prec: int):
+        self.precision = prec
+        self.saved_precision = ctx.prec
+    def __enter__(self, *args, **kwargs):
+        ctx.prec = self.precision
+    def __exit__(self, *args, **kwargs):
+        ctx.prec = self.saved_precision
+    
 bits_to_dec = math.log(2) / math.log(10)
 
 strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')

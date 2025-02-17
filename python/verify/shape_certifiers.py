@@ -85,14 +85,13 @@ class ShapeCertifierBase:
         precise_shapes = M.tetrahedra_shapes('rect',
                             bits_prec=self.high_precision)
         with bit_precision(self.high_precision):
-            epsilon = 2.0 ** -self.precision
+            epsilon = arb(2.0) ** -self.precision
             self.Z0 = acb_mat(self.dim, 1,
                               [z.flint_obj.mid() for z in precise_shapes])
             self.Z = acb_mat(self.dim, 1,
                              [acb(arb(z.real.mid(), epsilon),
                                   arb(z.imag.mid(), epsilon))
                               for z in self.Z0])
-
         # Shapes have not been certified yet.
         self.certified_shapes = None
 

@@ -1,13 +1,13 @@
 from ..sage_helper import _within_sage
 import flint
 from flint import arb, acb, fmpz, fmpz_mat, acb_mat
+import math
 
 #from ..pari import pari, Gen
-from snappy.number import (
-    Number,
-    bit_precision,
-    prec_dec_to_bits,
-    prec_bits_to_dec)
+from snappy.number import Number, bit_precision
+
+bits_to_dec = math.log(2) / math.log(10)
+dec_to_bits = math.log(10) / math.log(2)
 
 if _within_sage:
     from ..sage_helper import ComplexField
@@ -108,9 +108,9 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200,
     """
 
     if dec_prec is None:
-        dec_prec = prec_bits_to_dec(bits_prec)
+        dec_prec = round(bits_to_dec * bits_prec)
     else:
-        bits_prec = prec_dec_to_bits(dec_prec)
+        bits_prec = round(dec_to_bits * dec_prec)
 
     max_working_prec = bits_prec + 30
 

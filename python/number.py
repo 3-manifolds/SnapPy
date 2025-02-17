@@ -75,13 +75,7 @@ def bit_precision(prec: int):
     finally:
         ctx.prec = saved
 
-def prec_bits_to_dec(n: int) -> int:
-    """Utility function to convert bit precision to decimal precision."""
-    return round(n * math.log(2) / math.log(10))
-
-def prec_dec_to_bits(n: int) -> int:
-    """Utility function to convert bit precision to decimal precision."""
-    return round(n * math.log(10) / math.log(2))
+bits_to_dec = math.log(2) / math.log(10)
 
 strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
 left_zeros = re.compile(r'0\.0*')
@@ -367,7 +361,7 @@ class Number(Number_baseclass):
                 self._precision = data._precision
             # Use a copy of the flint object from data.
             data = data.flint_obj.__class__(data.flint_obj)
-        self.decimal_precision = prec_bits_to_dec(self._precision)
+        self.decimal_precision = round(bits_to_dec * self._precision)
         if isinstance(data, ball_type):
             self.flint_obj = data
         elif isinstance(data, float):
@@ -395,7 +389,7 @@ class Number(Number_baseclass):
         else:
             if accuracy is None:
                 man, _ = self.flint_obj.mid().real.man_exp()
-                accuracy = prec_bits_to_dec(man.bit_length())
+                accuracy = bits_to_dec * man.bit_length()
             self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:

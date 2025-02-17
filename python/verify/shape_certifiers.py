@@ -25,14 +25,14 @@ by [XXX LOOKUP PUBLISHED REFERENCES].
 
 """
 
-from ..snap.shapes import (
-    polished_tetrahedra_shapes,
-    enough_gluing_equations,
-    prec_dec_to_bits)
+from ..snap.shapes import polished_tetrahedra_shapes, enough_gluing_equations
 from ..number import Number, bit_precision
 from flint import arb, acb, acb_mat
+import math
 
 __all__ = ['NewtonShapeCertifier', 'KrawczykShapeCertifier']
+
+dec_to_bits = math.log(10) / math.log(2)
 
 # Can it be true that flint does not provide an identity acb_mat?
 def acb_identity(n:int) -> acb_mat:
@@ -59,7 +59,7 @@ class ShapeCertifierBase:
 
         # Convert decimal precision to binary precision if needed.
         if dec_prec:
-            self.precision = prec_dec_to_bits(dec_prec)
+            self.precision = round(dec_to_bits * dec_prec)
         elif bits_prec:
             self.precision = bits_prec
         else:

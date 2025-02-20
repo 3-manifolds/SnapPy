@@ -513,7 +513,7 @@ class Number(Number_baseclass):
                 else:
                     result += ' + ' + imag_str
             if self._certified:
-                result = '!' + result
+                result = f'\u2713({result})'
             return result
 
     def _binop(self, operator, other):
@@ -521,8 +521,10 @@ class Number(Number_baseclass):
             prec = min(self._precision, other._precision)
             try:
                 with bit_precision(prec):
-                    result = operator(other.flint_obj)
-                    return Number(result, precision=prec)
+                    result = Number(operator(other.flint_obj), precision=prec)
+                    # Only set the _certified flag if both are certified.
+                    result._certified = self._certified and other._certified
+                    return result
             except ValueError:
                 return NotImplemented
         else:

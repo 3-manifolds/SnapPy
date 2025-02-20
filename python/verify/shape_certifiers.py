@@ -41,6 +41,13 @@ def acb_identity(n:int) -> acb_mat:
         ID[n, n] = 1
     return ID
 
+class ShapeList(list):
+
+    def __repr__(self):
+        return '[\n' + (',\n').join(str(z) for z in self) + '\n]'
+
+    __str__ = __repr__
+
 class ShapeCertifierBase:
     """Base class for Newton and Krawczyk Shape Certifiers.
 
@@ -142,28 +149,35 @@ class ShapeCertifierBase:
             is_contained = [z.contains(w) for z, w in zip(self.Z, T)]
             result = all(is_contained)
             if result:
-                self.certified_shapes = [
+                self.certified_shapes = ShapeList(
                     Number(z, precision=self.high_precision)
-                    for z in self.Z]
+                    for z in self.Z)
                 for z in self.certified_shapes:
                     z._certified = True
         return result
 
 class KrawczykShapeCertifier(ShapeCertifierBase):
     """
-    >>> M = Manifold('v1234')
-    >>> from snappy.verify.shape_certifiers import KrawczykShapeCertifier
-    # Instantiate a shape certifier with a manifold and a precision.
+    # Instantiate a shape certifier with a manifold and a precision.               \
     # An internal working precision will be selected automatically.
-    >>> K = KrawczykShapeCertifier(M, bits_prec=53)
-    >>> K.certify()
+    >>> from snappy.verify.shape_certifiers import KrawczykShapeCertifier
+    >>> M = Manifold('m234')
+    >>> N = KrawczykShapeCertifier(M, bits_prec=100)
+    >>> N.certify()
     True
     # The certify method finds and stores the certified shapes.
-    >>> z = K.certified_shapes[1]; z
-    1.06629329123300... + 0.24909676637578...j
+    >>> N.certified_shapes
+    [
+    ✓(0.4683556756680171298459626966... + 0.4033840573903558791999282238...j),
+    ✓(1.4191020637416796959932978182... + 1.4080946807325221992688675613...j),
+    ✓(0.77418105706221897111112399316... + 1.0557698871118127723230938854...j),
+    ✓(-0.1941746186057981587348387034... + 0.65238582972145689312316566159...j),
+    ✓(0.4683556756680171298459626966... + 0.4033840573903558791999282238...j)
+    ]
     # The certified interval for each shape is available.
+    >>> z = N.certified_shapes[0]
     >>> z.interval()
-'[10662932912330067784e-19, 10662932912330070008e-19] + [24909676637578189449e-20, 24909676637578211657e-20]j'
+    '[46835567566801712982e-20, 46835567566801712986e-20] + [40338405739035587917e-20, 40338405739035587921e-20]j'
     # The internal working precision can be specified explicitly.
     # If it is too small, certification will fail.
     >>> K = KrawczykShapeCertifier(M, bits_prec=53, working_prec=64)
@@ -209,19 +223,27 @@ class KrawczykShapeCertifier(ShapeCertifierBase):
 
 class NewtonShapeCertifier(ShapeCertifierBase):
     """
-    >>> M = Manifold('v1234')
-    >>> from snappy.verify.shape_certifiers import NewtonShapeCertifier
-    # Instantiate a shape certifier with a manifold and a precision.
+    # Instantiate a shape certifier with a manifold and a precision.               \
     # An internal working precision will be selected automatically.
-    >>> N = NewtonShapeCertifier(M, bits_prec=53)
-    # The certify method finds and stores the certified shapes.
+    >>> from snappy.verify.shape_certifiers import NewtonShapeCertifier
+    >>> M = Manifold('m234')
+    >>> N = NewtonShapeCertifier(M, bits_prec=100)
     >>> N.certify()
     True
-    >>> z = N.certified_shapes[1]; z
-    1.06629329123300... + 0.24909676637578...j
+    # The certify method finds and stores the certified shapes.
+    >>> N.certified_shapes
+    [
+    ✓(0.4683556756680171298459626966... + 0.4033840573903558791999282238...j),
+    ✓(1.4191020637416796959932978182... + 1.4080946807325221992688675613...j),
+    ✓(0.77418105706221897111112399316... + 1.0557698871118127723230938854...j),
+    ✓(-0.1941746186057981587348387034... + 0.65238582972145689312316566159...j),
+    ✓(0.4683556756680171298459626966... + 0.4033840573903558791999282238...j)
+    ]
     # The certified interval for each shape is available.
+    >>> z = N.certified_shapes[0]
     >>> z.interval()
-    '[10662932912330067784e-19, 10662932912330070008e-19] + [24909676637578189449e-20, 24909676637578211657e-20]j'
+    '[46835567566801712982e-20, 46835567566801712986e-20] + [40338405739035587917e-\
+20, 40338405739035587921e-20]j'
     # The internal working precision can be specified explicitly.
     # If it is too small, certification will fail.
     >>> N = NewtonShapeCertifier(M, bits_prec=53, working_prec=60)

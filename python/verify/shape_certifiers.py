@@ -145,6 +145,8 @@ class ShapeCertifierBase:
                 self.certified_shapes = [
                     Number(z, precision=self.high_precision)
                     for z in self.Z]
+                for z in self.certified_shapes:
+                    z._certified = True
         return result
 
 class KrawczykShapeCertifier(ShapeCertifierBase):

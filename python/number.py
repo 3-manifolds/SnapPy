@@ -343,6 +343,10 @@ class Number(Number_baseclass):
     # circumstances this flag is set to None and then ignored
     _accuracy_for_testing = None
 
+    # A function which produces a Number as an interval which is
+    # certified to contain a certain value should set this:
+    _certified = False
+
     def __init__(self, data, accuracy=None, precision=None):
         ### Do we really need this?
         change_precision = False
@@ -461,6 +465,9 @@ class Number(Number_baseclass):
             pari.set_real_precision(old_precision)
         return result
 
+    def is_certified(self):
+        return self._certified
+
     def as_string(self, full_precision=True):
         """
         Return a string representation of this number.  If full_precision
@@ -474,7 +481,8 @@ class Number(Number_baseclass):
                 num_chars = None
                 try:
                     result = parse_arb.match(real_str)[1][:-1]
-                    num_chars = self.accuracy + 1 if '.' in result else self.accuracy 
+                    num_chars = (self.accuracy + 1 if '.' in result
+                                 else self.accuracy)
                 except TypeError:
                     if str(obj.real)[:3] in ('[+/', '[± '):
                         result = '~0'
@@ -504,6 +512,8 @@ class Number(Number_baseclass):
                         result += ' + ' + im_part
                 else:
                     result += ' + ' + imag_str
+            if self._certified:
+                result = '!' + result
             return result
 
     def _binop(self, operator, other):

@@ -858,14 +858,16 @@ class ElementaryFunction:
         else:
             raise ValueError("Expected an argument of class Number.")
 
-function_names = (
-    'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2',
-    'atanh', 'cos', 'cos_pi', 'cosh', 'cot', 'cot_pi', 'coth', 'csc',
-    'csch', 'digamma', 'ei', 'erf', 'erfc', 'erfcinv', 'erfi',
-    'erfinv', 'exp', 'expint', 'gamma', 'li', 'log', 'pi', 'polylog',
-    'rgamma', 'rsqrt', 'sec', 'sech', 'sin', 'sin_cos', 'sin_cos_pi',
-    'sin_pi', 'sinh', 'sinh_cosh', 'sqrt', 'tan', 'tan_pi', 'tanh',
-)
+function_names =(
+    'acos', 'acosh', 'asin', 'asinh', 'atan', 'atanh', 'cos', 'cos_pi',
+    'cosh', 'cot', 'cot_pi', 'coth', 'csc', 'csch', 'digamma', 'ei',
+    'erf', 'erfc', 'erfi', 'exp', 'gamma', 'li', 'log', 'pi',
+    'polylog', 'rgamma', 'rsqrt', 'sec', 'sech', 'sin', 'sin_pi',
+    'sinh', 'sqrt', 'tan', 'tan_pi', 'tanh')
+
+tuple_function_names = ( 'atan2', 'sin_cos', 'sin_cos_pi', 'sinh_cosh')
+
+real_function_names = ('erfcinv',  'erfinv', 'expint')
 
 for f in function_names:
     globals()[f] = ElementaryFunction(f)

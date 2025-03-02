@@ -859,9 +859,9 @@ class ElementaryFunction:
             raise ValueError("Expected an argument of class Number.")
 
 function_names = (
-    'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
-    'cos', 'cos_pi', 'cosh', 'cot', 'cot_pi', 'coth', 'csc', 'csch',
-    'digamma', 'dilog', 'ei', 'erf', 'erfc', 'erfcinv', 'erfi',
+    'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2',
+    'atanh', 'cos', 'cos_pi', 'cosh', 'cot', 'cot_pi', 'coth', 'csc',
+    'csch', 'digamma', 'ei', 'erf', 'erfc', 'erfcinv', 'erfi',
     'erfinv', 'exp', 'expint', 'gamma', 'li', 'log', 'pi', 'polylog',
     'rgamma', 'rsqrt', 'sec', 'sech', 'sin', 'sin_cos', 'sin_cos_pi',
     'sin_pi', 'sinh', 'sinh_cosh', 'sqrt', 'tan', 'tan_pi', 'tanh',

@@ -390,9 +390,13 @@ class Number(Number_baseclass):
                 self.flint_obj = data.__class__(*m.groups())
         else:
             if accuracy is None:
-                man, _ = self.flint_obj.mid().real.man_exp()
-                accuracy = round(bits_to_dec * man.bit_length())
-            self.accuracy = min(accuracy, self.decimal_precision)
+                try:
+                    man, _ = (self.flint_obj.mid().real).man_exp()
+                    accuracy = round(bits_to_dec * man.bit_length())
+                except:
+                    pass
+            if accuracy:
+                self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)
@@ -854,27 +858,6 @@ class ElementaryFunction:
         else:
             raise ValueError("Expected an argument of class Number.")
 
-class ElementaryMethod:
-    """Evaluates an elementary function at a Number.
-
-    The precision is that of the argument.
-
-    """
-
-    def __init__(self, name):
-        self._name = name
-
-    def __call__(self, *args):
-        return (self._name, args)
-        arg = args[0]
-        xargs = args[1:]
-        if isinstance(args[0], Number):
-            with bit_precision(arg._precision):
-                value = getattr(arg.flint_obj, self._name)(*xargs)
-                return Number(value, precision=arg._precision)
-        else:
-            raise ValueError("Expected an argument of class Number.")
-
 function_names = (
     'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
     'cos', 'cos_pi', 'cosh', 'cot', 'cot_pi', 'coth', 'csc', 'csch',
@@ -886,6 +869,10 @@ function_names = (
 
 for f in function_names:
     globals()[f] = ElementaryFunction(f)
+    def method(self, *args, name=f):
+        value = getattr(self.flint_obj, name)()
+        return Number(value, precision=self._precision)
+    setattr(Number, f, method)
 
 def use_field_conversion(func):
     global number_to_native_number

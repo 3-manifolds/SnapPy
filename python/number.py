@@ -72,7 +72,7 @@ class bit_precision:
         ctx.prec = self.precision
     def __exit__(self, *args, **kwargs):
         ctx.prec = self.saved_precision
-    
+
 bits_to_dec = math.log(2) / math.log(10)
 
 strip_zeros = re.compile(r'(-?\d+\.\d*?\d)0*((\s?[eE]-?\d+)?)$')
@@ -387,7 +387,7 @@ class Number(Number_baseclass):
             s = str(data)
             m = parse_arb.match(s) or parse_acb.match(s)
             with bit_precision(self._precision):
-                self.flint_obj = data.__class__(*m.groups()) 
+                self.flint_obj = data.__class__(*m.groups())
         else:
             if accuracy is None:
                 man, _ = self.flint_obj.mid().real.man_exp()
@@ -535,7 +535,7 @@ class Number(Number_baseclass):
                 return Number(result, precision=prec)
             except ValueError:
                 return NotImplemented
-            
+
     def __repr__(self):
         return self.as_string()
 
@@ -620,7 +620,7 @@ class Number(Number_baseclass):
                     return op(other)
                 except:
                     return NotImplemented
-                 
+
     def __eq__(self, other):
         return self._compare(self.flint_obj.__eq__, other)
 
@@ -709,7 +709,7 @@ class Number(Number_baseclass):
 
     def interval(self, radix=10, string=True):
         """Return an interval containing the values represented by this Number.
-        
+
         This method returns a closed interval which contains, usually strictly,
         the interval of values represented by the Number.  The endpoints, or
         corners, of the interval can be expressed either in base 2 or base 10,
@@ -832,61 +832,77 @@ class Number(Number_baseclass):
         with bit_precision(self._precision):
             return Number(abs(self.flint_obj), precision=self._precision)
 
-    def log(self):
-        with bit_precision(self._precision):
-            return Number(self.flint_obj.log(), precision=self._precision)
+# Elementary Functions
 
-    # def sqrtn(self, n):
-    #     """
-    #     >>> r = Number(2.0, precision=100)
-    #     >>> r.sqrtn(10) # doctest: +NUMERIC27
-    #     (1.071773462536293164213006325023, 0.809016994374947424102293417183 + 0.587785252292473129168705954639*I)
-    #     """
-    #     a, b = self.gen.sqrtn(n, precision=self._precision)
-    #     return self._parent(a), self._parent(b)
+class ElementaryFunction:
+    """Evaluates an elementary function at a Number.
 
-    # def _complex_mpfi_(self, CIF):
-    #     return CIF(self.sage())
+    The precision is that of the argument.
 
-# add a bunch of analytical methods to the Number class
+    """
 
+    def __init__(self, name):
+        self._name = name
 
-# def add_number_method(name, include_precision=True):
-#     method = getattr(Gen, name)
-#     if include_precision:
-#         setattr(Number, name, lambda self: self.parent()(
-#             method(self.gen, precision=self._precision)))
-#     else:
-#         setattr(Number, name, lambda self: self.parent()(method(self.gen)))
-# for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
-#                'cos', 'cosh', 'cotan', 'dilog', 'exp', 'log', 'sin',
-#                'sinh', 'tan', 'tanh', 'sqrt']:
-#     add_number_method(method)
+    def __call__(self, *args):
+        arg = args[0]
+        xargs = args[1:]
+        if isinstance(args[0], Number):
+            with bit_precision(arg._precision):
+                value = getattr(arg.flint_obj, self._name)(*xargs)
+                return Number(value, precision=arg._precision)
+        else:
+            raise ValueError("Expected an argument of class Number.")
 
-# for method in ['ceil', 'floor', 'round']:
-#     add_number_method(method, include_precision=False)
+class ElementaryMethod:
+    """Evaluates an elementary function at a Number.
 
-# for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
-#     setattr(Number, 'arc' + trig, getattr(Number, 'a' + trig))
+    The precision is that of the argument.
 
-# Number.argument = Number.arg
+    """
 
+    def __init__(self, name):
+        self._name = name
+
+    def __call__(self, *args):
+        return (self._name, args)
+        arg = args[0]
+        xargs = args[1:]
+        if isinstance(args[0], Number):
+            with bit_precision(arg._precision):
+                value = getattr(arg.flint_obj, self._name)(*xargs)
+                return Number(value, precision=arg._precision)
+        else:
+            raise ValueError("Expected an argument of class Number.")
+
+function_names = (
+    'acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
+    'cos', 'cos_pi', 'cosh', 'cot', 'cot_pi', 'coth', 'csc', 'csch',
+    'digamma', 'dilog', 'ei', 'erf', 'erfc', 'erfcinv', 'erfi',
+    'erfinv', 'exp', 'expint', 'gamma', 'li', 'log', 'pi', 'polylog',
+    'rgamma', 'rsqrt', 'sec', 'sech', 'sin', 'sin_cos', 'sin_cos_pi',
+    'sin_pi', 'sinh', 'sinh_cosh', 'sqrt', 'tan', 'tan_pi', 'tanh',
+)
+
+for f in function_names:
+    globals()[f] = ElementaryFunction(f)
 
 def use_field_conversion(func):
     global number_to_native_number
 
     if func == 'sage':
         def number_to_native_number(n):
-            """
-            Converts a SnapPy number to the corresponding SageMath type.
+            """Converts a SnapPy number to the corresponding SageMath type.
 
-            In general snappy.number.number_to_native_number converts a SnapPy number to
-            the corresponding SageMath type (when in SageMath) or just returns
-            the SnapPy number itself (when SageMath is not available).
+            In general snappy.number.number_to_native_number converts
+            a SnapPy number to the corresponding SageMath type (when
+            in SageMath) or just returns the SnapPy number itself
+            (when SageMath is not available).
 
             However, this behavior can be overridden by
             snappy.number.use_field_conversion which replaces
             number_to_native_number.
+
             """
             return n.sage()
     elif func == 'snappy':
@@ -906,7 +922,6 @@ def use_field_conversion(func):
             return n
     else:
         number_to_native_number = func
-
 
 if _within_sage:
     use_field_conversion('sage')

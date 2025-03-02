@@ -870,8 +870,9 @@ function_names = (
 for f in function_names:
     globals()[f] = ElementaryFunction(f)
     def method(self, *args, name=f):
-        value = getattr(self.flint_obj, name)()
-        return Number(value, precision=self._precision)
+        with bit_precision(self._precision):
+            value = getattr(self.flint_obj, name)(*args)
+            return Number(value, precision=self._precision)
     setattr(Number, f, method)
 
 def use_field_conversion(func):

@@ -1,6 +1,6 @@
 """This module provides the Number class.
 
-The Number class is a componsition of the two Flint classes arb and acb
+The Number class is a composition of the two Flint classes arb and acb
 which respectively correspond to real and complex numbers.  Numbers are
 also designed to interoperate with elements of a Sage RealField or
 ComplexField and with Sage Integers or Rationals when used within Sage.
@@ -841,15 +841,19 @@ class Number(Number_baseclass):
 class ElementaryFunction:
     """Evaluates an elementary function at a Number.
 
-    The precision is that of the argument.
+    The precision of the result is the same as that of the argument.
 
     """
 
-    def __init__(self, name):
+    def __init__(self, name, real_arg_only=False):
         self._name = name
+        self._real_arg_only = real_arg_only
 
     def __call__(self, *args):
         arg = args[0]
+        flint_obj = arg.flint_obj
+        if self._real_arg_only and not flint_obj.imag.is_zero():
+            raise ValueError('A real argument is required.')
         xargs = args[1:]
         if isinstance(args[0], Number):
             with bit_precision(arg._precision):
@@ -872,6 +876,16 @@ real_function_names = ('erfcinv',  'erfinv', 'expint')
 for f in function_names:
     globals()[f] = ElementaryFunction(f)
     def method(self, *args, name=f):
+        with bit_precision(self._precision):
+            value = getattr(self.flint_obj, name)(*args)
+            return Number(value, precision=self._precision)
+    setattr(Number, f, method)
+
+for f in real_function_names:
+    globals()[f] = ElementaryFunction(f, real_arg_only=True)
+    def method(self, *args, name=f):
+        if not self.flint_obj.imag.is_zero():
+            raise ValueError('A real argument is required')
         with bit_precision(self._precision):
             value = getattr(self.flint_obj, name)(*args)
             return Number(value, precision=self._precision)

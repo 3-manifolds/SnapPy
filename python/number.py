@@ -515,7 +515,7 @@ class Number(Number_baseclass):
                     else:
                         result += ' + ' + im_part
                 else:
-                    result += ' + ' + imag_str
+                    result += ' + ' + imag_str + 'j'
             if self._certified:
                 result = f'\u2713({result})'
             return result

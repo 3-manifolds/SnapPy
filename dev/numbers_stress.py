@@ -70,6 +70,7 @@ class DummyNumber2:
 
 try:
     from snappy.number import bit_precision
+    import flint
 except ImportError:
     pass
 
@@ -104,6 +105,38 @@ class DummyNumber3:
     def __repr__(self):
         return repr(self.val)
 
+
+class DummyNumber4:
+    def __init__(self, val, prec=53):
+        self.val = val
+        self.prec = prec
+
+    def _binop(self, operator, other):
+        if isinstance(other, DummyNumber4):
+            prec = min(self.prec, other.prec)
+            if flint.ctx.prec == prec:
+                return DummyNumber4(operator(other.val), prec)
+        prec = self.prec
+        if flint.ctx.prec == prec:
+            return DummyNumber4(operator(other), prec)
+
+    def __mul__(self, other):
+        return self._binop(self.val.__mul__, other)
+
+    def __rmul__(self, other):
+        return self._binop(self.val.__rmul__, other)
+
+    def __pow__(self, other):
+        return self._binop(self.val.__pow__, other)
+
+    def __sub__(self, other):
+        return self._binop(self.val.__sub__, other)
+
+    def __rsub__(self, other):
+        return self._binop(self.val.__rsub__, other)
+
+    def __repr__(self):
+        return repr(self.val)
 
 
 def eval_gluing_equation(eqn, acb_shapes):
@@ -221,6 +254,20 @@ def main_flint_and_dummy3():
     print('dummy3 num + flint', total_time)
 
 
+def main_flint_and_dummy4():
+    total_time = 0
+    for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
+        M = snappy.Manifold(iso)
+        eqns = M.gluing_equations('rect')
+        shapes = [DummyNumber4(z.flint_obj) for z in M.tetrahedra_shapes('rect')]
+        start = time.time()
+        for i in range(100):
+            gluing_equation_errors(eqns, shapes)
+        total_time += (time.time() - start)
+
+    print('dummy4 num + flint', total_time)
+
+
 def main_complex_and_dummy():
     total_time = 0
     for iso in [iso16, iso20, iso34, iso48, iso66, iso90]:
@@ -241,4 +288,5 @@ def main_complex_and_dummy():
 #main_flint_and_dummy()
 #main_flint_and_dummy2()
 #main_flint_and_dummy3()
+#main_flint_and_dummy4()
 #main_complex_and_dummy()

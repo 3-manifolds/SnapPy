@@ -69,9 +69,11 @@ class bit_precision:
         self.precision = prec
         self.saved_precision = ctx.prec
     def __enter__(self, *args, **kwargs):
-        ctx.prec = self.precision
+        if ctx.prec != self.precision:
+            ctx.prec = self.precision
     def __exit__(self, *args, **kwargs):
-        ctx.prec = self.saved_precision
+        if ctx.prec != self.saved_precision:
+            ctx.prec = self.saved_precision
 
 bits_to_dec = math.log(2) / math.log(10)
 
@@ -288,12 +290,6 @@ else:  # We are not in Sage
 
         prec = precision
 
-        def pi(self):
-            return self(pari.pi(precision=self._precision))
-
-        def I(self):
-            return self(pari('I'))
-
         def random_element(self, min=-1, max=1):
             min = self(min)
             max = self(max)
@@ -303,9 +299,8 @@ else:  # We are not in Sage
 
 # The Number class
 # =================
-
 class SupportsMultiplicationByNumber():
-    # Not used currently.
+    # imported by SimpleVector
     pass
 
 class Number(Number_baseclass):
@@ -352,19 +347,18 @@ class Number(Number_baseclass):
         change_precision = False
         if precision is None:
             raise ValueError('No precision!')
-            # FIX ME!!!
-            if isinstance(data, ball_type):
-                self._precision = ctx.prec
         else:
             self._precision = precision
+        self.accuracy = accuracy
+        self.decimal_precision = None
         if isinstance(data, Number):
             if precision and precision != data._precision:
                 change_precision = True
                 self._precision = data._precision
             # Use a copy of the flint object from data.
             data = data.flint_obj.__class__(data.flint_obj)
-        self.decimal_precision = round(bits_to_dec * self._precision)
         if isinstance(data, ball_type):
+            #XXXXX how do we set the precision?
             self.flint_obj = data
         elif isinstance(data, float):
             self.flint_obj = float_to_flint(data, self._precision)
@@ -388,15 +382,6 @@ class Number(Number_baseclass):
             m = parse_arb.match(s) or parse_acb.match(s)
             with bit_precision(self._precision):
                 self.flint_obj = data.__class__(*m.groups())
-        else:
-            if accuracy is None:
-                try:
-                    man, _ = (self.flint_obj.mid().real).man_exp()
-                    accuracy = round(bits_to_dec * man.bit_length())
-                except:
-                    pass
-            if accuracy:
-                self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)
@@ -428,47 +413,6 @@ class Number(Number_baseclass):
     def __call__(self):
         return self
 
-    def _real_string(self, gen, accuracy, full_precision=False):
-        if gen == 0:
-            return '0'
-        if full_precision:
-            accuracy = self._precision
-        elif self._accuracy_for_testing:
-            accuracy = self._accuracy_for_testing
-        if accuracy:
-            # Trick PARI into rounding to the correct number of digits.
-            # Simulates the printf %.Nf format, where N is the accuracy.
-            try:
-                int_part = gen.truncate().abs()
-            except PariError:
-                # Happens if gen holds large number.
-                # Setting to 1 so that we display something.
-                int_part = 1
-            if int_part == 0:
-                # Deal with zeros to the right of the decimal point.
-                try:
-                    left_side = 2 - len(left_zeros.findall(str(gen))[0])
-                except IndexError:  # no zeros
-                    left_side = 0
-            else:
-                left_side = len(str(int_part))
-            if left_side + accuracy > 0:
-                old_precision = pari.set_real_precision(left_side + accuracy)
-                result = str(gen)
-                pari.set_real_precision(old_precision)
-            else:
-                # The number of zeros to the right of the decimal point
-                # exceeds the accuracy.
-                result = '0.0'
-        else:
-            old_precision = pari.set_real_precision(self.decimal_precision)
-            result = str(gen)
-            m = strip_zeros.match(result)
-            if m:
-                result = m.group(1) + m.group(2)
-            pari.set_real_precision(old_precision)
-        return result
-
     def is_certified(self):
         return self._certified
 
@@ -478,6 +422,16 @@ class Number(Number_baseclass):
         is True, use the full precision of the flint object.  Otherwise use the
         accuracy attribute.
         """
+        if self.decimal_precision is None:
+            self.decimal_precision = round(bits_to_dec * self._precision)
+        if self.accuracy is None:
+            try:
+                man, _ = (self.flint_obj.mid().real).man_exp()
+                accuracy = round(bits_to_dec * man.bit_length())
+            except:
+                pass
+        if accuracy:
+            self.accuracy = min(accuracy, self.decimal_precision)
         with bit_precision(self._precision):
             obj = self.flint_obj
             real_str = str(obj.real)
@@ -544,7 +498,8 @@ class Number(Number_baseclass):
         return self.as_string()
 
     def __reduce__(self):
-        return Number, (self.as_string(), self.accuracy, self._precision)
+        return Number(self.as_string(), accuracy=self.accuracy,
+                      precision=self._precision)
 
     def __float__(self):
         if isinstance(self.flint_obj, arb):

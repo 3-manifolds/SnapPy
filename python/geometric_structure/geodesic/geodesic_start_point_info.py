@@ -336,7 +336,7 @@ class GeodesicStartPointInfo:
             # of the lifted core curve and geodesic. These endpoints
             # are light-like. Thus, if they are co-linear (corresponding
             # to the same point), the inner product will be zero.
-            p = [[ r13_dot(pt0, pt1)
+            p = [[ -r13_dot(pt0, pt1)
                    for pt0 in self.line.r13_line.points ]
                  for pt1 in tet.core_curves[v].r13_line.points ]
 
@@ -350,9 +350,9 @@ class GeodesicStartPointInfo:
             # r13_fixed_points_of_psl2c_matrix makes no guarantee
             # on whether the attracting or repelling fixed point is
             # returned first.
-            if not (abs(p[0][0]) > epsilon or abs(p[1][1]) > epsilon):
+            if not (p[0][0] > epsilon or p[1][1] > epsilon):
                 return v
-            if not (abs(p[0][1]) > epsilon or abs(p[1][0]) > epsilon):
+            if not (p[0][1] > epsilon or p[1][0] > epsilon):
                 return v
 
         return None

@@ -6,7 +6,7 @@ from snappy import tiling
 modules = [
     tiling.floor,
     tiling.real_hash_dict,
-    tiling.canonical_key_dict,
+    tiling.quotient_dict,
     tiling.dict_based_set
 ]
 

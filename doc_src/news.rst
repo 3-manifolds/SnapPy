@@ -4,9 +4,77 @@
 News
 ====
 
-* Version 3.2 (??? 2024):
 
-  - TODO: Copy from index.rst once this has been finalized!
+* Version 3.2 (January 2025):
+
+  - An alternative implementation of the length spectrum. It supports verified
+    computations and is significantly faster in some cases. See
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
+    and
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+
+  - :meth:`isometry_signature <snappy.Manifold.isometry_signature>` now also
+    works for closed manifolds.
+
+  - A paper plane or eye ball in the
+    :meth:`inside_view <snappy.Manifold.inside_view>` showing the position
+    and bearing of the user in the hyperbolic manifold. By default, we now show
+    the paper plane instead of the edges of the triangulation so that the view
+    is intrinsic to the manifold. The geodesics window now also features a
+    button to put the camera onto a geodesic. Here are some examples:
+
+    .. list-table::
+       :width: 100%
+       :class: borderless
+
+       * - .. image:: images/o9_00000_systole_paper_plane.jpg
+              :width: 90%
+              :align: center
+              :alt: Paper plane near shortest geodesic of o9_00000
+         - .. image:: images/o9_00000_systole_paper_plane_closer.jpg
+              :width: 90%
+              :align: center
+              :alt: Paper plane very near shortest geodesic of o9_00000
+         - .. image:: images/m004_paper_plane_on_systole.jpg
+              :width: 90%
+              :align: center
+              :alt: Paper plane on shortest geodesic of m004
+         - .. image:: images/m125_paper_plane.jpg
+              :width: 90%
+              :align: center
+              :alt: Paper plane coming out of a cusp of m125
+
+  - A faster and more robust algorithm to the compute maximal cusp area matrix.
+    The new algorithm is now the default for
+    :meth:`~snappy.Manifold.cusp_area_matrix`,
+    :meth:`~snappy.Manifold.cusp_areas`,
+    :meth:`~snappy.Manifold.short_slopes` and
+    :meth:`~snappy.Manifold.cusp_translations`.
+
+  - New options ``ignore_curves`` and ``ignore_filling_orientations``
+    for :meth:`~snappy.Triangulation.triangulation_isosig`. Also
+    fixing a subtle bug where the filling coefficients returned by
+    :meth:`triangulation_isosig <snappy.Triangulation.triangulation_isosig>` were
+    not canonical when ``ignore_curve_orientations = True``.
+
+  - :meth:`~snappy.Manifold.canonical_retriangulation`
+    and
+    :meth:`~snappy.Manifold.isometry_signature` fail with
+    exceptions rather than silently returning ``None``. In particular, it now
+    safe to compare isometry signatures (without further checks) to determine
+    whether M and N are isometric hyperbolic manifolds::
+
+        >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
+
+  - Bug fix to :meth:`slice_obstruction_HKL
+    <snappy.Manifold.slice_obstruction_HKL>`: earlier versions
+    incorrectly allowed looking at mod 2 homology of the branched
+    cover, where the theory does not directly apply.
+
+  - New self-contained SnapPy application for Linux. 
+  
+  - Support for Python 3.13 and SageMath 10.5.
+
 
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 

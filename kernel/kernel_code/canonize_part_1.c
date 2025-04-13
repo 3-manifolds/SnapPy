@@ -85,8 +85,8 @@
 #include "canonize.h"
 #include "kernel_namespace.h"
 
-#define MAX_ATTEMPTS            64
-#define MAX_RETRIANGULATIONS    64
+#define MAX_ATTEMPTS          1000
+#define MAX_RETRIANGULATIONS  1000
 #define MAX_MOVES   1000
 #define ANGLE_EPSILON           1e-6
 
@@ -260,7 +260,7 @@ FuncResult proto_canonize(
          */
 
         if (++num_attempts > MAX_ATTEMPTS)
-            uFatalError("proto_canonize", "canonize_part_1");
+	    break;
 
     } while (all_done == FALSE);
 
@@ -283,7 +283,10 @@ FuncResult proto_canonize(
         compute_CS_fudge_from_value(manifold);
     }
 
-    return func_OK;
+    if (all_done)
+	return func_OK;
+    else
+	return func_failed;
 }
 
 

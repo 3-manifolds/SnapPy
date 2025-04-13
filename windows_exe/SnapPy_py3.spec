@@ -28,7 +28,6 @@ datafiles += collect_data_files('tkinter_gl')
 
 
 a = Analysis(['SnapPy.py'],
-             binaries=binaries,
              hiddenimports=imports + ['linecache', 'pkg_resources.py2_warn'],
              datas=datafiles,
              hookspath=[],
@@ -58,7 +57,9 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False,
+          icon='SnapPy.ico')
+
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

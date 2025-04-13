@@ -20,7 +20,7 @@ from .sage_helper import _within_sage, SageNotAvailable
 from .pari import pari as pari
 try:
     import sage.structure.sage_object
-    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
+    from sage.groups.perm_gps.permgroup_element import PermutationGroupElement
     from sage.groups.perm_gps.permgroup import PermutationGroup
     from sage.groups.free_group import FreeGroup
     from sage.interfaces.gap import gap

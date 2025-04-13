@@ -92,7 +92,7 @@ def compute_tiles_for_cusp_neighborhood(
             act_on_base_point_by_inverse=True,
             max_neg_prod_equal=max_neg_prod_equal,
             min_neg_prod_distinct=min_neg_prod_distinct,
-            canonical_keys_function=None,
+            canonical_representatives_function=None,
             verified=verified))
 
     return compute_tiles(

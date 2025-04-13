@@ -1,4 +1,4 @@
-from .canonical_keys import canonical_keys_function_for_line
+from .canonical_representatives import canonical_representatives_for_line
 from .geodesic_start_point_info import GeodesicStartPointInfo
 from .avoid_core_curves import replace_piece_in_core_curve_tube
 
@@ -61,8 +61,8 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
     lifted_tetrahedron_set : LiftedTetrahedronSet = (
         get_lifted_tetrahedron_set(
             base_point=mcomplex.R13_baseTetInCenter,
-            canonical_keys_function=(
-                canonical_keys_function_for_line(geodesic.line)),
+            canonical_representatives_function=(
+                canonical_representatives_for_line(geodesic.line)),
             act_on_base_point_by_inverse=False,
             max_neg_prod_equal=max_neg_prod_equal,
             min_neg_prod_distinct=min_neg_prod_distinct,

@@ -19,6 +19,10 @@ from .. import sage_helper
 if sage_helper._within_sage and not use_pari_even_inside_sage:
     from ..sage_helper import QQ, RR, vector, matrix, VectorSpace
 
+    def rational_round(x):
+        # This is just to suppress a deprecation warning.
+        return x.round(mode='even')
+
     def rational_sqrt(x):
         """
         Given a nonnegative rational x, return a rational r which is close to
@@ -57,6 +61,9 @@ if sage_helper._within_sage and not use_pari_even_inside_sage:
 else:
     from ..snap.t3mlite import linalg
     QQ = linalg.pari
+
+    def rational_round(x):
+        return x.round()
 
     def rational_sqrt(x):
         """

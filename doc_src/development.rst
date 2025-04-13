@@ -17,11 +17,11 @@ macOS
 
 Here is how to get a clean development setup under macOS.
 
-- Install the latest Python 3.8 from Python.org using the `Mac
+- Install the latest Python 3.13 from Python.org using the `Mac
   Installer Disk Image <http://www.python.org/download/>`_.  Set your
   path so that "python3" is::
       
-    /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
+    /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
 
 - Use `pip <https://pip.pypa.io/en/latest/index.html>`_ to install the
   following packages::
@@ -47,8 +47,8 @@ Here is how to get a clean development setup under macOS.
     python3 setup.py pip_install
     python3 -m plink.app   # Link editor appears!
 
-  This last command runs the script "plink/app.py"; the real code for
-  the link editor is in "plink/__init__.py".
+  This last command runs the script ``plink/app.py``; the real code for
+  the link editor is in ``plink/__init__.py``.
 
 - Build and install Spherogram::
 
@@ -74,17 +74,13 @@ Here is how to get a clean development setup under macOS.
     
 Some major parts of the SnapPy codebase are:
 
-- "SnapPy.pyx", "SnapPycore.pxi", "SnapPy.pxi": The Cython interface
+- ``SnapPy.pyx``, ``SnapPycore.pxi``, ``SnapPy.pxi``: The Cython interface
   to the SnapPea kernel
-- "opengl/CyOpenGL*.pyx": The Cython interface to OpenGL*
-- "snappy/app.py": The core GUI code
-- "snappy/polyviewer.py": The GUI code for Dirichlet domains
-- "snappy/horoviewer.py": The GUI code for horoball pictures
-- "snappy/database.py": Interacts with the sqlite3 manifold database
-
-In addition, Jeff's old prototype for a Tk-based UI can be found in
-"misc/JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
-out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
+- ``opengl/CyOpenGL*.pyx``: The Cython interface to OpenGL*
+- ``snappy/app.py``: The core GUI code
+- ``snappy/polyviewer.py``: The GUI code for Dirichlet domains
+- ``snappy/horoviewer.py``: The GUI code for horoball pictures
+- ``snappy/database.py``: Interacts with the sqlite3 manifold database
 
 
 Windows
@@ -95,12 +91,13 @@ setting up a development environment using the (free) MSVC
 compiler. To build the CyPari subcomponent, which few will want or
 need to do, one must install additional tools.
 
-- Install `Python 3.7 <https://www.python.org/downloads/windows/>`_,
-  specifically the 32 bit version (Windows x86 not Windows x86-64).
+- Install `Python 3.13.1
+  <https://www.python.org/downloads/windows/>`_, specifically the
+  default 64-bit version (the file name will end in ``amd64.exe``).
   These instructions assume it has been installed in the directory
-  ``C:\Python37`` which is not the default.
+  ``C:\Python313`` which is not the default.
 
-- With Python 3.7.4, you need the MSVC command line tools.  You can
+- With Python 3.13.1, you need the MSVC command line tools.  You can
   get them by using Microsoft's free `Build Tools for Visual Studio 2019
   <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16>`_
   installer and selecting the "C++ command line tools" and installing
@@ -112,14 +109,12 @@ need to do, one must install additional tools.
   `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the
   unicode version; tested with version 5.5.9.
 
-- Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
-  appropriate for your version Windows.  Most commonly, you will have
-  a 64-bit Windows and hence want the "x86_64" installer; for
-  concreteness the rest of these instructions assume this. (Technical
-  note: even if you want to build 32-bit binaries, if your Windows is
-  64-bit you want the x86_64 installer.) Follow the instructions on
-  the webpage to update everything to the very latest MSYS2
-  (``pacman -Sy pacman; pacman -Syu; pacman -Su`` etc.).
+- Install `MSYS2 <http://msys2.github.io>`_ as appropriate for your
+  version Windows.  Follow the instructions on the webpage to update
+  everything to the very latest MSYS2 (``pacman -Sy pacman; pacman
+  -Syu; pacman -Su`` etc.).  You should also install the ucrt toolchain::
+
+    pacman -S mingw-w64-ucrt-x86_64-toolchain
 
 - Make a shortcut to ``c:\msys64\msys2.exe`` as you will be using it all
   the time; alternatively, pin ``mys2.exe`` to your taskbar.  
@@ -137,7 +132,7 @@ need to do, one must install additional tools.
   as well as work around some stupid bug, by making the end of your
   "~/.bash_profile" file to read::
 
-    PATH=/c/Python37:/c/Python37/Scripts:$PATH
+    PATH=/c/Python313:/c/Python313/Scripts:$PATH
     PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
     alias emacs="/mingw64/bin/emacs"
@@ -152,7 +147,7 @@ need to do, one must install additional tools.
 
     python --version
 
-  You should see something like ``Python 3.7.4``.
+  You should see something like ``Python 3.13.1``.
 
 - Use pip to install some basic tools::
   
@@ -212,28 +207,53 @@ need to do, one must install additional tools.
     mklink /D Downloads "C:\Users\Nathan Dunfield\Downloads"
 
 
-- To build CyPari, first install the 32-bit gcc compiler::
-
-    pacman -S mingw-w64-i686-gcc
-
-  Then open a *MinGW32 terminal window*, which is **different** than a
-  MSYS2 terminal, and can be started via `c:\msys64\mingw32.exe`.
-  This will put the 32-bit gcc in your path and set the correct
-  "uname".  Now do::
-
-    git clone https://github.com/3-manifolds/CyPari.git
-    cd CyPari
-    sh build_pari.sh
-    python setup.py build --compiler=mingw32
-    python setup.py install
-    python -m cypari.test   # About 30 tests will fail.
-
-  Warning: CyPari will not build if there are spaces in the path to
-  the CyPari directory.  
-
-
 Linux
 -----
 
-See the :ref:`installation instructions on generic Unix
-<installing:Generic Unix>` for how to build SnapPy from source.
+Things you'll need:
+
+- Python 3 with Tkinter: You'll need to have `Python
+  <http://python.org>`_ (version 3.9 or newer) and `Tk
+  <http://tcl.tk>`_ (at least version 8.5) with `Tkinter
+  <http://wiki.python.org/moin/TkInter>`_ to connect them, including
+  the header files.  For instance, on Debian or Ubuntu, install the
+  packages "python3-tk", "python3-pip", and "python3-dev". On Fedora,
+  you'll want e.g. "python3-tkinter", "python3-pip", and
+  "python3-devel", and "python3-wheel".
+
+- Test that Python is in order by installing PLink from source::
+
+      python3 -m pip install --user plink
+      python3 -m plink.app  # Should start the link editor!
+
+.. _openglmesa:
+
+- Support for OpenGL (3D graphics): This is built in on OS X and the
+  most installations of Fedora and Ubuntu.  But you'll need the `MESA
+  <http://www.mesa3d.org/>`_ header files "gl.h" and "glu.h" to compile
+  SnapPy.  On Debian and Ubuntu, install "libglu1-mesa-dev"; On Fedora install
+  "mesa-libGLU-devel".
+
+- `Cython <http://cython.org>`_, which you can install via::
+
+    python3 -m pip install --user cython
+
+- The gcc C++ compiler, g++.
+
+- Fetch the latest development versions of the source straight from
+  the repository::
+
+    git clone https://github.com/3-manifolds/PLink.git
+    git clone https://github.com/3-manifolds/Spherogram.git
+    git clone https://github.com/3-manifolds/Snappy.git
+
+- Build the components, from easiest to hardest, and then test::
+
+    cd PLink
+    python setup.py pip_install
+    cd ../Spherogram
+    python setup.py pip_install
+    cd ../SnapPy
+    python setup.py pip_install
+    cd ..
+    python -m SnapPy.test

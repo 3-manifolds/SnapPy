@@ -1,7 +1,7 @@
 from .geodesic_piece import GeodesicPiece, get_geodesic_piece_dict
 from .geodesic_info import GeodesicKeyInfo
 
-from ..tiling.canonical_key_dict import CanonicalKeyDict
+from ..tiling.quotient_dict import QuotientDict
 from ..tiling.dict_based_set import DictBasedSet
 from ..geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
 from ..geometric_structure.geodesic.geodesic_start_point_info import GeodesicStartPointInfo
@@ -26,9 +26,9 @@ def get_geodesic_key_info_dict(mcomplex : Mcomplex):
     In particular, it assumed that we insert the primitive geodesic before
     we insert a multiple of that primitive geodesic.
     """
-    return CanonicalKeyDict(
+    return QuotientDict(
             get_geodesic_piece_dict(mcomplex),
-            _canonical_keys)
+            _canonical_representatives)
 
 def get_geodesic_key_info_set(mcomplex : Mcomplex):
     """
@@ -39,7 +39,7 @@ def get_geodesic_key_info_set(mcomplex : Mcomplex):
     """
     return DictBasedSet(get_geodesic_key_info_dict(mcomplex))
 
-def _canonical_keys(key_info : GeodesicKeyInfo) -> List[GeodesicPiece]:
+def _canonical_representatives(key_info : GeodesicKeyInfo) -> List[GeodesicPiece]:
     """
     To see whether two geodesics are the same, we compute the intersection
     of the geodesic with each tetrahedron and store the information in

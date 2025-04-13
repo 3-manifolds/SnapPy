@@ -1,6 +1,5 @@
 from .maximal_cusp_area_matrix import maximal_cusp_area_matrix
 from .trig_cusp_area_matrix import triangulation_dependent_cusp_area_matrix
-from ..verify.maximal_cusp_area_matrix import legacy_verified_maximal_cusp_area_matrix
 
 from typing import Optional
 
@@ -80,13 +79,6 @@ def cusp_area_matrix(
     if method == 'maximal':
         return maximal_cusp_area_matrix(
             manifold, bits_prec=bits_prec, verified=verified)
-    if method == 'maximalLegacy':
-        if not verified:
-            raise NotImplementedError("Maximal cusp area matrix only "
-                                      "available as verified computation. "
-                                      "Pass verified = True.")
-        return legacy_verified_maximal_cusp_area_matrix(
-            manifold, bits_prec=bits_prec)
     if method in ['trigDependent', 'trigDependentTryCanonize']:
         if method == 'trigDependentTryCanonize':
             manifold = manifold.copy()

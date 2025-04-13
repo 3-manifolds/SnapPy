@@ -9,11 +9,15 @@ Key tools:
 
      gh run download -R 3-manifolds/snappy
 
-2. The sdist tarballs are built by a GitHub action of the
-   "snappy_release" project.
+2. To build and check an sdist tarball, use ``build``::
+
+     python3 -m build .
+
+   This assumes all dependencies are available on PyPI.  
 
 3. The Windows and macOS apps is are built by a GitHub actions of
-   "snappy_release".
+   "snappy_release".  The Linux AppImage is built by
+   "snappy_appimage".
 
 4. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
@@ -33,13 +37,13 @@ Warmup
 1. Trigger the GitHub actions for "snappy_release".  Download the
    artifacts for the "sdist" action and upload to testpypi::
 
-      twine upload -r test dist/snappy/*.tar.gz
+      twine upload -r testpypi dist/snappy/*.tar.gz
 
    Further details can be found in "pypi.rst".
 
 2. Fire up a Linux test VM and do::
 
-     py36 test_pypi.py -p -t snappy
+     py36 test_pypi.py -t snappy
 
    Repeat for macOS and Windows.  This will flush out any new issues
    with the sdist tarballs.
@@ -58,15 +62,18 @@ Actual release
 
 1. Bump version numbers to final, trigger "snappy_release" rebuild.
 
-2. Build final macOS app.
+2. **ADD THE DOCS TO THE FINAL WHEELS**  Currently using
+   doc_source/add_doc_to_wheels.py for this.
 
-3. Use twine to upload everything to PyPI.
+3. Build final macOS app.
 
-4. Create releases on GitHub and upload macOS and Windows apps.
+4. Use twine to upload everything to PyPI.
 
-5. Update documentation on web by copying docs into t3m_web/SnapPy.
+5. Create releases on GitHub and upload macOS and Windows apps.
 
-6. **Create** "current.txt" in t3m_web/SnapPy.
+6. Update documentation on web by update GitHub repo snappy_site.
+
+7. **Create** "current.txt" in t3m_web/SnapPy.
 
 
 Final testing
@@ -111,7 +118,8 @@ f. Version 2.7:     986 Mac,  636 Windows (89% Python 3).
 g. Version 2.8:     295 Mac,  573 Windows (85% Python 3).
 h. Version 3.0(.1): 292 Mac,  434 Windows.
 i. Version 3.0.2:    68 Mac,   70 Windows.
-j. Version 3.0.3:   667 Mac, 1333 Windows.
+j. Version 3.0.3:   667 Mac, 1333 Windows. (36% Mac, 64% Windows for 3.0.*)
+h. Version 3.1.*:   883 Mac, 1482 Windows. (37% Mac, 63% Windows)
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

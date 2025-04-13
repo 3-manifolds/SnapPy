@@ -613,8 +613,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
 
                    \              /
-                    \         ---- triangle after calling this method and
-                     \          /  applying inverse_scale_to_be_inside_tube
+                    \            * vertex on standard tube when
+                     \          /  applying inverse_scale_to_be_on_tube
                       \        /
                        \      ---- triangle after calling this method
                         \    /
@@ -626,15 +626,15 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         looks like a triangular version of the Giant's Causeway in Northern
         Ireland.
 
-        Also stores the inverse of the Euclidean length scale factor
-        in inverse_scale_to_be_inside_tube to make the horo triangle be inside
-        the standard tube (up to rounding error, touch the standard tube from
-        the inside).
+        Also stores the inverse Euclidean length scale factor in
+        inverse_scale_to_be_on_tube for each vertex of the triangle so that
+        the vertex lands on the boundary of the standard tube.
+        The key is the edge corresponding to that vertex of the triangle.
 
         Here, a standard tube is given by a Euclidean cone from zero to
         infinity in the upper halfspace model with cone angle pi/4.
         Its hyperbolic radius is given by
-        arcinh(1) = log(1 + sqrt(2)) = 0.881373... .
+        arcsinh(1) = log(1 + sqrt(2)) = 0.881373... .
         """
 
         for cusp in self.mcomplex.Vertices:
@@ -648,26 +648,13 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             if cusp.is_complete:
                 z = tet.ShapeParameters[simplex.E01]
                 RF = z.real().parent()
-                trig.inverse_scale_to_be_inside_tube = RF(1)
-                continue
-
-            vertex_positions = [
-                trig.vertex_positions[edge]
-                for face0, edge, face1
-                in _face_edge_face_triples_for_vertex_link[vert] ]
-
-            min_height = correct_min(
-                [ _lower_bound_distance_origin_line_segment(
-                    vertex_positions[0], vertex_positions[1]),
-                  _lower_bound_distance_origin_line_segment(
-                      vertex_positions[1], vertex_positions[2]),
-                  _lower_bound_distance_origin_line_segment(
-                      vertex_positions[2], vertex_positions[0]) ])
-            max_height = correct_max( [ abs(p) for p in vertex_positions ] )
-
-            trig.rescale(1 / min_height)
-
-            trig.inverse_scale_to_be_inside_tube = max_height / min_height
+                one = RF(1)
+                trig.inverse_scale_to_be_on_tube = {
+                    vert | vert1 : one
+                    for vert1 in simplex.ZeroSubsimplices
+                    if vert != vert1 }
+            else:
+                _scale_triangle_to_avoid_standard_tube(trig, vert)
 
 def _lower_bound_distance_origin_line_segment(a, b):
     """
@@ -695,3 +682,24 @@ def _lower_bound_distance_origin_line_segment(a, b):
     #
     # But it is still a lower bound for the distance.
     return abs(z0.imag()) * abs(d)
+
+def _scale_triangle_to_avoid_standard_tube(trig, vert):
+    vertex_positions = [
+        trig.vertex_positions[vert | vert1]
+        for vert1 in simplex.ZeroSubsimplices
+        if vert != vert1 ]
+
+    min_height = correct_min(
+        [ _lower_bound_distance_origin_line_segment(
+              vertex_positions[0], vertex_positions[1]),
+          _lower_bound_distance_origin_line_segment(
+              vertex_positions[1], vertex_positions[2]),
+          _lower_bound_distance_origin_line_segment(
+              vertex_positions[2], vertex_positions[0]) ])
+
+    trig.rescale(1 / min_height)
+
+    trig.inverse_scale_to_be_on_tube = {
+        vert | vert1 : abs(trig.vertex_positions[vert | vert1]) / min_height
+        for vert1 in simplex.ZeroSubsimplices
+        if vert != vert1 }

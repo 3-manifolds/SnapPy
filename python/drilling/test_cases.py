@@ -38,12 +38,12 @@ Tests drilling two geodesics that intersect each other:
 Tests drilling geodesics that are entirely in the 2-skeleton::
 
     >>> M.drill_words(['a','acAADa']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbab'
+    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbBa'
 
 Same test as verified computation::
 
     sage: M.drill_words(['a','acAADa'], verified = True, bits_prec = 60).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbab'
+    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbBa'
 
 Test error when drilling something close to core curve::
 
@@ -70,7 +70,7 @@ A particular tricky case in terms testing that the start piece is correctly
 handled by 2-3 moves (in particular, commit f9879d04 introduced a bug):
 
     >>> Manifold("m004").drill_words(['CAC','CCbC']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'qLvvLvAMQQQkcgimopkllmpkonnnpixcaelchapewetvrn_bcaaBbBBbBaaBbB'
+    'qLvvLvAMQQQkcgimopkllmpkonnnpixcaelchapewetvrn_bcaaBbBBbaBaBbB'
 
 
 An interesting case where geodesic intersects triangulation in only one tetrahedron:
@@ -110,6 +110,12 @@ to make sure we really hit the shortening case.
     Number of tets after subdividing: 69
     Shortening geodesic by sweeping across triangle.
     'mLALzLQMPbcbefjhhijkllxxnnxagbxnhhn_cbBabBcB'
+    >>> Manifold("m307").drill_word('dadadabCdada', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+    Tubes lower bound injectivity radius: 0.380575727319487
+    Number of geodesic pieces: [9]
+    Number of tets after subdividing: 45
+    Shortening geodesic by sweeping across triangle.
+    'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
     >>> Manifold("m307").drill_word('ADADcBADADAD', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
     Tubes lower bound injectivity radius: 0.380575727319372
     Number of geodesic pieces: [9]

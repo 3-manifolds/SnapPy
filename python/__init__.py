@@ -259,6 +259,10 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
+from . import margulis
+Manifold.margulis = margulis.margulis
+ManifoldHP.margulis = margulis.margulis
+
 from . import len_spec
 Manifold.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
 ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen

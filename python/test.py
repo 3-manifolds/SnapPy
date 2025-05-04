@@ -13,6 +13,7 @@ import snappy.tiling.test
 import snappy.cusps.test
 import snappy.raytracing.test
 import snappy.len_spec.test
+import snappy.margulis.test
 import snappy.drilling.test
 import snappy.canonical
 import snappy.cusps.cusp_area_matrix
@@ -87,6 +88,7 @@ modules = [
     snappy.cusps.test.run_doctests,
     snappy.raytracing.test.run_doctests,
     snappy.len_spec.test.run_doctests,
+    snappy.margulis.test.run_doctests,
     snappy.drilling.test.run_doctests,
     snappy.ptolemy.test.run_doctests,
     spherogram.test.run_doctests,

@@ -373,7 +373,7 @@ def mat_solve(m, v, epsilon=0):
 
     Setup a complex interval for example::
 
-        sage: from sage.all import RealIntervalField, ComplexIntervalField
+        sage: from snappy.sage_helper import RealIntervalField, ComplexIntervalField
         sage: RIF = RealIntervalField(80)
         sage: CIF = ComplexIntervalField(80)
         sage: fuzzy_four = CIF(RIF(3.9999,4.0001),RIF(-0.0001,0.0001))

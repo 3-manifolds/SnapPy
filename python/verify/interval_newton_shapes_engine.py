@@ -350,7 +350,7 @@ class IntervalNewtonShapesEngine:
 
         Intervals containing the true solution::
 
-            sage: from sage.all import vector
+            sage: from snappy.sage_helper import vector
             sage: good_shapes = vector([
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
@@ -368,7 +368,7 @@ class IntervalNewtonShapesEngine:
 
         Intervals not containing a true solution::
 
-            sage: from sage.all import vector
+            sage: from snappy.sage_helper import vector
             sage: bad_shapes = vector([
             ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),

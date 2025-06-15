@@ -13,7 +13,7 @@ else:
 # Reject computing short slopes if intervals for translations
 # are too wide (error is more than 1%).
 _min_diameter_translations = 0.01
-    
+
 def short_slopes_from_cusp_shape_and_area(
         cusp_shape, cusp_area, length=6):
     """
@@ -24,7 +24,9 @@ def short_slopes_from_cusp_shape_and_area(
     sage: short_slopes_from_cusp_shape_and_area(CIF(RIF(1.0),RIF(1.3333,1.3334)), RIF(12.0))
     [(1, 0), (-2, 1), (-1, 1), (0, 1)]
 
-    >>> short_slopes_from_cusp_shape_and_area(1.0+1.3333j, 12.0)
+    >>> from snappy import number
+    >>> cusp_shape = number.number_to_native_number(number.Number(1.0+1.3333j))
+    >>> short_slopes_from_cusp_shape_and_area(cusp_shape, 12.0)
     [(1, 0), (-2, 1), (-1, 1), (0, 1)]
 
     """
@@ -74,19 +76,20 @@ def short_slopes_from_translations(translations, length=6):
 
     return _unverified_short_slopes_from_translations(translations, length)
 
+_safety_factor = 1.001
+
 def _unverified_short_slopes_from_translations(translations, length=6):
     m_tran, l_tran = translations
 
-    if isinstance(m_tran, complex):
+    if m_tran.imag() != 0.0:
         raise Exception("Expected real meridian translation")
-    if not isinstance(m_tran, float):
-        if m_tran.imag() != 0.0:
-            raise Exception("Expected real meridian translation")
 
     if not m_tran > 0:
         raise Exception("Expected positive meridian translation")
 
-    length = length * 1.001
+    RF = l_tran.real().parent()
+
+    length = RF(length * RF(_safety_factor))
 
     result = []
     max_abs_l = _floor(length / abs(_imag(l_tran)))
@@ -198,3 +201,17 @@ def _ceil(x):
     if isinstance(x, float):
         return math.ceil(x)
     return int(x.ceil())
+
+def _dummy_for_tests():
+    """
+    >>> M = Manifold("m004")
+    >>> M.short_slopes()
+    [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    >>> M.high_precision().short_slopes()
+    [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    sage: M.short_slopes(verified=True)
+    [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    """

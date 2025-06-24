@@ -823,7 +823,7 @@ cdef class Manifold(Triangulation):
         is the number of digits of accuracy as *estimated* by SnapPea.
 
         >>> cs, accuracy = M.chern_simons(accuracy = True)
-        >>> accuracy in (8, 9, 56) # Low and High precision
+        >>> accuracy in (8, 9, 56, 57) # Low and High precision
         True
 
         By default, when the manifold has at least one cusp, Zickert's

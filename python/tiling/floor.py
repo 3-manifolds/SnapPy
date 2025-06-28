@@ -8,7 +8,7 @@ def floor_as_integers(x) -> Sequence[int]:
     Computes floor of a number or interval, returning a list of integers
     if evaluating floor is ambiguous.
 
-        sage: from sage.all import RIF
+        sage: from snappy.sage_helper import RIF
         sage: floor_as_integers(RIF(1.8, 1.9))
         [1]
         sage: floor_as_integers(RIF(1.9, 2.1))

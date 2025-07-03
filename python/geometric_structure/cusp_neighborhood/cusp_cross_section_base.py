@@ -51,12 +51,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
     def _add_cusp_cross_sections(self, one_cocycle):
         for T in self.mcomplex.Tetrahedra:
-            T.horotriangles = {
-                simplex.V0 : None,
-                simplex.V1 : None,
-                simplex.V2 : None,
-                simplex.V3 : None
-                }
+            T.horotriangles = {}
         for cusp in self.mcomplex.Vertices:
             self._add_one_cusp_cross_section(cusp, one_cocycle)
 
@@ -78,7 +73,7 @@ class CuspCrossSectionBase(McomplexEngine):
             for face0 in simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
-                if tet1.horotriangles[vert1] is None:
+                if not vert1 in tet1.horotriangles:
                     known_side = (self.HoroTriangle.direction_sign() *
                                   tet0.horotriangles[vert0].lengths[face0])
                     if one_cocycle:

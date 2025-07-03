@@ -93,7 +93,7 @@ class CuspCrossSectionBase(McomplexEngine):
         return tetrahedron.Neighbor[face], gluing.image(face), gluing.image(vertex)
 
     @staticmethod
-    def _cusp_area(cusp):
+    def cusp_area(cusp):
         area = 0
         for corner in cusp.Corners:
             subsimplex = corner.Subsimplex
@@ -104,7 +104,7 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         List of all cusp areas.
         """
-        return [ CuspCrossSectionBase._cusp_area(cusp) for cusp in self.mcomplex.Vertices ]
+        return [ CuspCrossSectionBase.cusp_area(cusp) for cusp in self.mcomplex.Vertices ]
 
     @staticmethod
     def _scale_cusp(cusp, scale):

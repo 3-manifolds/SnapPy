@@ -1,5 +1,6 @@
 from .maximal_cusp_area_matrix import maximal_cusp_area_matrix
 from .trig_cusp_area_matrix import triangulation_dependent_cusp_area_matrix
+from ..geometric_structure.cusp_neighborhood.exceptions import IncompleteCuspError
 
 from typing import Optional
 
@@ -75,6 +76,10 @@ def cusp_area_matrix(
             Maximal cusp area matrix (default) or lower bounds
             (if :attr:`method` switches to older algorithm).
     """
+
+    for cusp_info in manifold.cusp_info():
+        if not cusp_info['complete?']:
+            raise IncompleteCuspError(manifold)
 
     if method == 'maximal':
         return maximal_cusp_area_matrix(

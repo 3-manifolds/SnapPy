@@ -114,7 +114,7 @@ def _add_and_scale_cusp_cross_section(mcomplex : Mcomplex):
     """
 
     c = ComplexCuspCrossSection(mcomplex)
-    c.add_structures()
+    c.add_structures(one_cocycle='develop')
 
     # Develop vertices in C for incomplete cusps.
     c.add_vertex_positions_to_horotriangles()

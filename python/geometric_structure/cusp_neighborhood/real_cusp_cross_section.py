@@ -182,10 +182,6 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         sage: len(N.isomorphisms_to(N))
         8
         """
-        for cusp_info in manifold.cusp_info():
-            if not cusp_info['complete?']:
-                raise IncompleteCuspError(manifold)
-
         m = t3m.Mcomplex(manifold)
 
         t = TransferKernelStructuresEngine(m, manifold)

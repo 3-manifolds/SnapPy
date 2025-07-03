@@ -53,7 +53,8 @@ class CuspCrossSectionBase(McomplexEngine):
         for T in self.mcomplex.Tetrahedra:
             T.horotriangles = {}
         for cusp in self.mcomplex.Vertices:
-            self._add_one_cusp_cross_section(cusp, one_cocycle)
+            if cusp.is_complete or one_cocycle:
+                self._add_one_cusp_cross_section(cusp, one_cocycle)
 
     def _add_one_cusp_cross_section(self, cusp, one_cocycle):
         """

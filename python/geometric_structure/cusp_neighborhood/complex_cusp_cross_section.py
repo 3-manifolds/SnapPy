@@ -162,11 +162,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     @staticmethod
     def fromManifoldAndShapes(manifold, shapes, one_cocycle=None):
-        if not one_cocycle:
-            for cusp_info in manifold.cusp_info():
-                if not cusp_info['complete?']:
-                    raise IncompleteCuspError(manifold)
-
         if not manifold.is_orientable():
             raise ValueError("Non-orientable")
 

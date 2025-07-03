@@ -1,15 +1,14 @@
 class IncompleteCuspError(ValueError):
     """
-    Exception raised when trying to construct a CuspCrossSection
-    from a Manifold with Dehn-fillings.
+    Exception raised when trying to use a method requiring a complete
+    geometric structure.
     """
     def __init__(self, manifold):
         self.manifold = manifold
 
     def __str__(self):
-        return (('Cannot construct CuspCrossSection from manifold with '
-                 'Dehn-fillings: %s') % self.manifold)
-
+        return (('Method only supports complete geometric structure but '
+                 'is given a manifold with Dehn-fillings: %s') % self.manifold)
 
 class ConsistencyWithSnapPeaNumericalVerifyError(RuntimeError):
     """

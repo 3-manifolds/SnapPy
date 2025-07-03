@@ -4,6 +4,7 @@ and exceptional slopes.
 """
 
 from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import ComplexCuspCrossSection
+from ..geometric_structure.cusp_neighborhood.exceptions import IncompleteCuspError
 from ..verify.shapes import compute_hyperbolic_shapes
 from ..exceptions import NonorientableManifoldError
 
@@ -27,6 +28,10 @@ def compute_cusp_shapes(manifold, verified, bits_prec=None):
 
     if not manifold.is_orientable():
         raise NonorientableManifoldError(manifold)
+
+    for cusp_info in manifold.cusp_info():
+        if not cusp_info['complete?']:
+            raise IncompleteCuspError(manifold)
 
     shapes = compute_hyperbolic_shapes(
         manifold, verified=verified, bits_prec=bits_prec)

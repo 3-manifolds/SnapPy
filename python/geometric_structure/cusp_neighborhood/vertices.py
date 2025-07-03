@@ -13,20 +13,23 @@ def scale_vertices_from_horotriangles(mcomplex):
         _scale_vertices_tet(tet)
 
 def _scale_vertices_tet(tet):
+    if len(tet.horotriangles) == 0:
+        return
+
     R13_vertex_products = {
         v0 | v1 : r13_dot(pt0, pt1)
         for v0, pt0 in tet.R13_vertices.items()
         for v1, pt1 in tet.R13_vertices.items()
         if v0 > v1 }
 
-    for v0 in simplex.ZeroSubsimplices:
+    for v0, horotriangle in tet.horotriangles.items():
         v1, v2, _ = simplex.VerticesOfFaceCounterclockwise[simplex.comp(v0)]
 
-        length_on_cusp = tet.horotriangles[v0].get_real_lengths()[v0 | v1 | v2]
+        length_on_cusp = horotriangle.get_real_lengths()[v0 | v1 | v2]
         length_on_horosphere = (
             -2 * R13_vertex_products[v1 | v2] / (
-                 R13_vertex_products[v0 | v1] *
-                 R13_vertex_products[v0 | v2])).sqrt()
+                R13_vertex_products[v0 | v1] *
+                R13_vertex_products[v0 | v2])).sqrt()
         s = length_on_horosphere / length_on_cusp
 
         tet.R13_vertices[v0] = s * tet.R13_vertices[v0]

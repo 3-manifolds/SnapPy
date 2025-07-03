@@ -76,7 +76,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 if not vert1 in tet1.horotriangles:
                     known_side = (self.HoroTriangle.direction_sign() *
                                   tet0.horotriangles[vert0].lengths[face0])
-                    if one_cocycle:
+                    if one_cocycle and not one_cocycle == 'develop':
                         known_side *= one_cocycle[tet0.Index, face0, vert0]
 
                     tet1.horotriangles[vert1] = self.HoroTriangle(

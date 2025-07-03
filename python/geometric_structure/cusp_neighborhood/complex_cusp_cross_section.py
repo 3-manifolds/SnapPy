@@ -419,10 +419,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         incomplete cusps. Then moves the vertex positions of the
         corresponding cusp triangles so that the fixed point is at the
         origin.
-
-        It also adds the boolean v.is_complete to all vertices of the
-        triangulation to mark whether the corresponding cusp is
-        complete or not.
         """
 
         # For each cusp

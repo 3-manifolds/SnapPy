@@ -116,8 +116,7 @@ def add_cusp_cross_section(mcomplex : Mcomplex):
     # Save cusp cross section for later
     mcomplex.real_cusp_cross_section = c
 
-    for i, (v, area) in enumerate(
-            zip(mcomplex.Vertices, c.cusp_areas())):
+    for v, area in zip(mcomplex.Vertices, c.cusp_areas()):
         # Area of cusp
         v.cusp_area = area
         # A cusp intersects the triangulation in standard form
@@ -129,7 +128,8 @@ def add_cusp_cross_section(mcomplex : Mcomplex):
         v.scale_for_std_form = (
             c.compute_scale_for_std_form(v))
         v.exp_self_distance_along_edges = (
-            c.exp_distance_neighborhoods_measured_along_edges(i, i))
+            c.exp_distance_neighborhoods_measured_along_edges(
+                v.Index, v.Index))
         # v.lower_bound_embedding_scale: lower bound on how much
         # we can scale the cusp to stay embedded.
         if v.exp_self_distance_along_edges is None:

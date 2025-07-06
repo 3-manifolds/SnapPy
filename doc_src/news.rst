@@ -4,7 +4,6 @@
 News
 ====
 
-
 * Version 3.2 (January 2025):
 
   - An alternative implementation of the length spectrum. It supports verified

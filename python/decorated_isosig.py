@@ -342,6 +342,13 @@ def candidate_decoration_info(
     if ignore_curves:
         slopes = [ matrix * slope
                    for matrix, slope in zip(matrices, slopes) ]
+        if manifold_orientable and isomorphism_orientation < 0:
+            # We want to perserve the direction of the core curve because it is
+            # relevant for preserving which way a geometric spun-triangulation
+            # goes.
+            # That means we need to reverse the direction of the filling if
+            # reversing the manifold orientaiton.
+            slopes = [ -slope for slope in slopes ]
     else:
         if ignore_curve_orientations:
             for matrix, slope in zip(matrices, slopes):

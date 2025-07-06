@@ -2987,14 +2987,18 @@ cdef class Triangulation():
              By specifying :attr:`ignore_curve_orientations = True`, it encodes
              the unoriented peripheral curves instead.
 
-        #. Dehn-fillings (if present).
+        #. Dehn-fillings and orientation of core curve (if present).
 
-           * By default, the decoration encodes the oriented Dehn-fillings.
-             That is, we also encodes the orientation of the peripheral curve
-             that is used for the Dehn-filling (this explanation only
-             works if the coefficients are integral).
+           * By default, the decoration encodes the Dehn-fillings and the
+             orientation of the core curve.
+             That is, we encode the (unoriented) peripheral curve that is
+             used for the Dehn-filling as well as the orientation of the class
+             of peripheral curves intersecting that peripheral curve ones
+             (this explanation only works if the coefficients are co-prime
+             integers). Note that this behavior has changed in Version 3.3.
              By specifying :attr:`ignore_filling_orientations = True`, the
-             decoration encodes the unoriented Dehn-fillings.
+             decoration encodes the Dehn-fillings without any regard to
+             orientation.
              That is, it normalizes the Dehn-filling coefficients by picking
              a canonical pair among :math:`(m,l)` and :math:`(-m,-l)`.
 
@@ -3081,6 +3085,37 @@ cdef class Triangulation():
           ...         ignore_filling_orientations=True)
           'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo(0,0)(1,5)'
 
+        A geometric spun-triangulation of the three-fold cover of m007(3,1)::
+
+          >>> M = Manifold('gLLMQcbeefefujumapn(2,-1)')
+          >>> M.solution_type()
+          'all tetrahedra positively oriented'
+
+        Specifying :attr:`ignore_filling_orientations = True` can change the
+        orientation of the core curve and a triangulation spinning the other
+        way that fails to be geometric::
+
+          >>> isosig = M.triangulation_isosig(
+          ...         ignore_orientation=False,
+          ...         ignore_curves=True,
+          ...         ignore_filling_orientations=True,
+          ...         ignore_cusp_ordering=True)
+          >>> isosig
+          'gLLMQcbeefefujumapn(-2,1)'
+          >>> Manifold(isosig).solution_type()
+          'contains negatively oriented tetrahedra'
+
+        Preserve the unoriented spun-triangulation structure including the
+        direction it is spinning::
+
+          >>> isosig = M.triangulation_isosig(
+          ...         ignore_cusp_ordering=True,
+          ...         ignore_curves=True)
+          >>> isosig
+          'gLLMQcbeefefpjaqupw(1,1)'
+          >>> Manifold(isosig).solution_type()
+          'all tetrahedra positively oriented'
+
         **Orientation**
 
         Note that :attr:`ignore_orientation=True` only applies to the undecorated
@@ -3117,7 +3152,8 @@ cdef class Triangulation():
                 Only relevant if :attr:`decorated = True` and
                 :attr:`ignore_curves = False`.
         :param ignore_filling_orientations:
-                Do not encode the orientations of the Dehn-fillings.
+                Do not encode the orientation of the class of peripheral curves
+                intersecting the Dehn-fillings.
                 Only relevant if :attr:`decorated = True`.
         :param ignore_orientation:
                 Do not encode the orientation of the triangulation in the

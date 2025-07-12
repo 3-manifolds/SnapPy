@@ -23,15 +23,15 @@
  *
  *  proto_canonize() returns
  *
- *      func_OK     if the hyperbolic structure is of type
- *                  geometric_solution or nongeometric_solution
- *                  (in which case it will have found a subdivision
- *                  of the canonical cell decomposition)
+ *      func_OK     if a geometric subdivision of the canonical cell
+ *                  decomposition is achieved;
  *
- *      func_failed if the hyperbolic structure is of type
- *                  flat_solution, degenerate_solution, other_solution,
+ *      func_failed if the hyperbolic structure of the initial triangulation
+ *                  is of type flat_solution, degenerate_solution, other_solution,
  *                  or no_solution (in which case it will not have
- *                  attempted the canonization)
+ *                  attempted the canonization), or if it fails to find a
+ *                  subdivision of the canonical cell decomposition that is geometric
+ *                  (in particular no negatively oriented or flat tetrahedra)
  *
  *  When proto_canonize() returns func_OK, a subdivision of the
  *  canonical cell decomposition will be present, but because of the

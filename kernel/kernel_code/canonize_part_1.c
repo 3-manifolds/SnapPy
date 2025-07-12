@@ -91,6 +91,7 @@
 #define ANGLE_EPSILON           1e-6
 
 static FuncResult   validate_hyperbolic_structure(Triangulation *manifold);
+static Boolean      check_geometric_triangulation(Triangulation *manifold);
 static Boolean      attempt_cancellation(Triangulation *manifold);
 static Boolean      attempt_three_to_two(Triangulation *manifold);
 static Boolean      concave_edge(EdgeClass *edge);
@@ -237,7 +238,8 @@ FuncResult proto_canonize(
          *  oriented Tetrahedra?
          */
 
-        all_done = validate_canonical_triangulation(manifold);
+        remove_hyperbolic_structures(manifold);
+        all_done = check_geometric_triangulation(manifold) && validate_canonical_triangulation(manifold);
 
         /*
          *  If we got stuck on (potential) negatively oriented
@@ -289,6 +291,19 @@ FuncResult proto_canonize(
 	return func_failed;
 }
 
+static Boolean check_geometric_triangulation(
+    Triangulation   *manifold)
+{
+    int i;
+
+    if (manifold->solution_type[complete] == not_attempted)
+        find_complete_hyperbolic_structure(manifold);
+
+    if (manifold->solution_type[complete] == geometric_solution)
+        return TRUE;
+
+    return FALSE;
+}
 
 static FuncResult validate_hyperbolic_structure(
     Triangulation   *manifold)

@@ -2412,9 +2412,12 @@ cdef class Triangulation():
                     gap_image_gens = coset_action.Image().GeneratorsOfGroup()
                     Q = PermutationGroup(gap_image_gens)
                     return self.cover([Q(g) for g in gap_image_gens ])
-                elif permutation_rep.IsToPermGroupHomomorphismByImages():
+                elif (permutation_rep.IsToPermGroupHomomorphismByImages() or
+                      permutation_rep.IsCompositionMappingRep()):
                     f = permutation_rep
                     return self.cover(f.PreImage(f.Image().Stabilizer(1)))
+                else:
+                    raise ValueError('Cover specified by unrecognized GAP type')
 
             elif is_MagmaElement(permutation_rep):
                 input_type = repr(permutation_rep.Type())

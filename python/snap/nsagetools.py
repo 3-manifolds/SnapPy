@@ -297,24 +297,41 @@ def convert_laurent_to_poly(elt, minexp, P):
               for exps, c in elt.dict().items()})
 
 
-def alexander_polynomial_basic(G, phi):
+def alexander_polynomial_basic(G, phi, d=0, pos_leading_coeff=False):
+    """
+    Compute the d-th Alexander polynomial, i.e. the gcd of the
+    (d + 1)-st elementrary ideal of A(M).
+    """
     R = phi.range()
     P = R.polynomial_ring()
+    if G.num_relators() == 0:
+        return 1 if G.num_generators() <= d + 1 else 0
     M = [[fox_derivative(rel, phi, var) for rel in G.relators()]
          for var in G.generators()]
-    minexp = minimum_exponents(join_lists(M))
-    M = matrix(P, [[ convert_laurent_to_poly(p, minexp, P) for p in row]
-                   for row in M])
-    alex_poly = gcd(M.minors(G.num_generators() - 1))
+    entries = sum(M, [])
+    if all(e == 0 for e in entries):
+        M = matrix(P, M)
+    else:
+        minexp = minimum_exponents(entries)
+        M = matrix(P, [[ convert_laurent_to_poly(p, minexp, P) for p in row]
+                       for row in M])
+    alex_poly = gcd(M.minors(G.num_generators() - d - 1))
     if alex_poly == 0:
         return alex_poly
+
     # Normalize it
-    return convert_laurent_to_poly(alex_poly, minimum_exponents( [alex_poly] ), P)
+    alex_poly = convert_laurent_to_poly(alex_poly, minimum_exponents([alex_poly]), P)
+    if pos_leading_coeff:
+        e = max(alex_poly.exponents())
+        if alex_poly[e] < 0:
+            alex_poly = -alex_poly
+
+    return alex_poly
 
 
 def alexander_polynomial_group(G):
     phi = MapToGroupRingOfFreeAbelianization(G)
-    return alexander_polynomial_basic(G, phi)
+    return alexander_polynomial_basic(G, phi, d=0, pos_leading_coeff=True)
 
 
 @sage_method
@@ -339,11 +356,8 @@ def alexander_polynomial(manifold, **kwargs):
             "Alexander polynomial only defined for manifolds with "
             "infinite homology.")
 
-    ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
-    coeffs = ans.coefficients()
-    if coeffs and coeffs[0] < 0:
-        ans = -ans
-    return ans
+    return alexander_polynomial_group(manifold.fundamental_group(**kwargs))
+
 
 # --------------------------------------------------------------
 #

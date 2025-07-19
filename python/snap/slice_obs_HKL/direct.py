@@ -3,31 +3,24 @@ Here, we take a different approach towards computing the HKL
 topological slice obstructions, which in particular allows us to
 consider characters to Z/(q^e Z) where e > 1.
 
-We forgo the representation theory and work directly with the cyclic
-(branched) covers themselves.  This amounts to using the original
-theorem in Kirk-Livingston 1999.
-
-We cut down the number of possible metabolizers via Sawin's
-observation that if M is a metabolizer of an abelian p-group H with
-respect to a nondegenerate bilinear form, then H/M is isomorphic to M.
-
-Note: This code requires GAP, which is standard in SageMath.
+This code corresponds to Section 3.20 of [DG].
 """
 
-from ..sage_helper import _within_sage, sage_method
+from ...sage_helper import _within_sage, sage_method
 if _within_sage:
-    from ..sage_helper import (gcd, gap, ZZ, is_prime, is_prime_power,
-                               CyclotomicField, MatrixSpace,
-                               LaurentPolynomialRing)
+    from ...sage_helper import (gcd, gap, ZZ, is_prime, is_prime_power,
+                                CyclotomicField, MatrixSpace,
+                                LaurentPolynomialRing)
 
-from .nsagetools import MapToFreeAbelianization
-from .slice_obs_HKL import (MatrixRepresentation,
-                            primes_appearing,
-                            homology_of_cyclic_branched_cover,
-                            twisted_alexander_polynomial,
-                            poly_is_a_norm,
-                            poly_is_a_norm_in_some_extension,
-                            print_function)
+from ..nsagetools import MapToFreeAbelianization
+from .basics import (MatrixRepresentation,
+                     primes_appearing,
+                     homology_of_cyclic_branched_cover,
+                     twisted_alexander_polynomial,
+                     print_function)
+
+from .poly_norm import (poly_is_a_norm,
+                        poly_is_a_norm_in_some_extension)
 
 
 def abelian_p_group_as_gap_polycyclic(p, invariants):
@@ -136,9 +129,25 @@ def gap_group_with_meridian_killed(G):
 
 def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, verbose=False):
     """
+    Here, we take a different approach towards computing the HKL
+    topological slice obstructions, which in particular allows us to
+    consider characters to Z/(q^e Z) where e > 1.
+    
+    We forgo the representation theory and work directly with the cyclic
+    (branched) covers themselves.  This amounts to using the original
+    theorem in Kirk-Livingston 1999.
+    
+    We cut down the number of possible metabolizers via Sawin's
+    observation that if M is a metabolizer of an abelian p-group H with
+    respect to a nondegenerate bilinear form, then H/M is isomorphic to M.
+    
+    See Section 3.20 of [DG] for details.
+
     sage: M = Manifold('K11n145')
     sage: slicing_obstructed_by_larger_quotient(M, 2, 3)
     True
+
+    Note: This code requires GAP, which is standard in SageMath.
     """
     print = print_function(verbose)
     M = knot_exterior.copy()

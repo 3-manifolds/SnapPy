@@ -2,6 +2,10 @@
 Implements the Fox-Milnor for test for Alexander polynomials which
 gives an obstruction for a link being strongly slice.
 
+Specifically, we is the basic Fox-Milnor test of Corollary 12.3.14 of
+[Kawauchi, A survey of knot theory] and also Theorem 8.18 of
+[Lickorish, Intro to knot theory].
+
 The main function provided is `fox_milnor_test`.
 """
 
@@ -224,13 +228,11 @@ def poly_is_a_norm(poly):
 @sage_method
 def fox_milnor_test(manifold_or_link):
     """
-    This is the basic Fox-Milnor test of Corollary 12.3.14 of
-    [Kawauchi, A survey of knot theory] and also Theorem 8.18 of
-    [Lickorish, Intro to knot theory].  Returns True if this data is
-    compatible with the link being strongly slice.
-
-    More precisely, it checks if the Alexander nullity is as expected
-    and that the appropriate Alexander polynomial is a norm::
+    Returns ``True`` when the Alexander polynomial data of the link is
+    compatible with it being topologically strongly slice (that is,
+    the link bounds a disjoint collection of locally-flat disks in the
+    4-ball).  More precisely, it checks if the Alexander nullity is as
+    expected and that the appropriate Alexander polynomial is a norm::
 
       sage: mflds = [Manifold('L12n1181'), Manifold('L11n247'), Manifold('L10n107')]
       sage: {M.alexander_polynomial() for M in mflds}
@@ -241,6 +243,10 @@ def fox_milnor_test(manifold_or_link):
     Note: This method only requires that the homology (including the
     meridians) is consistent being the complement of a link in S^3.  It
     does not check that the manifold is actually a link complement.
+
+    References: This test is Corollary 12.3.14 of `[Kawauchi]
+    <https://doi.org/10.1007/978-3-0348-9227-8>`_ and Theorem 8.18 of
+    `[Lickorish] <https://doi.org/10.1007/978-1-4612-0691-0>`_.
     """
 
     M = manifold_or_link

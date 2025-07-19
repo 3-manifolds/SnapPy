@@ -1,7 +1,7 @@
 from .shapes import polished_tetrahedra_shapes
 from ..sage_helper import _within_sage, sage_method
 from .polished_reps import polished_holonomy
-from . import nsagetools, interval_reps, slice_obs_HKL, fox_milnor
+from . import nsagetools, interval_reps, fox_milnor, slice_obs_HKL, slice_obs_HKL_direct
 from .character_varieties import character_variety, character_variety_ideal
 
 if _within_sage:

@@ -15,6 +15,7 @@ modules = [
     snap.character_varieties,
     snap.nsagetools,
     snap.slice_obs_HKL,
+    snap.slice_obs_HKL_direct,
     snap.fox_milnor,
     snap.polished_reps,
     snap.interval_reps,

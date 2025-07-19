@@ -4,12 +4,17 @@ Using metabelian representations to obstruct slicing
 
 Based on::
 
-  Herald, Kirk, Livingston, Math Zeit., 2010
+  Herald, Kirk, and Livingston, Math Zeit., 2010
   https://dx.doi.org/10.1007/s00209-009-0548-1
-  https://arxiv.org/abs/0804.1355
+  https://arXiv.org/abs/0804.1355
 
-In general, the implementation follows their paper closely, with a few
-minor changes:
+and::
+
+  Dunfield and Gong, "Ribbon concordances and slice obstructions:
+  experiments and examples", https://arXiv.org/FILLIN
+
+In in the basic case, the implementation follows the [HKL] paper closely, with a
+few minor changes:
 
 1. We use the default simplified presentation for pi_1(knot exterior)
    that SnapPy provides, rather than a Wirtinger presentation, as the
@@ -30,30 +35,25 @@ minor changes:
    cyclotomic fields into irreducibles, rather than the various
    generalizations of Gauss's Lemma in [HKL].
 
+Additionally, we implement the refinements and generalizations
+introduced in [DG].
 
-Validation
-==========
-
-This code was developed by Nathan Dunfield and Sherry Gong as part of
-an exporation of the slice versus ribbon question.  It was applied to
-a sample of 65,000 knots with square determinant and at most 16
-crossings, and it reported that almost 40,000 were not slice. As those
-40,000 knots were disjoint from the more than 24,000 ribbon knots in
-this sample, this provides decent evidence that this implementation is
-correct.
 """
 
 from ..sage_helper import _within_sage, sage_method
 if _within_sage:
-    from ..sage_helper import ZZ, PolynomialRing, vector, matrix, identity_matrix, MatrixSpace, block_matrix, prime_range, is_prime
-    from ..sage_helper import LaurentPolynomialRing, GF, CyclotomicField, ChainComplex
+    from ..sage_helper import (ZZ, QQ, GF, PolynomialRing, LaurentPolynomialRing,
+                               CyclotomicField, vector, matrix, is_power_of_two,
+                               identity_matrix, block_matrix, gcd,
+                               VectorSpace, MatrixSpace, ChainComplex,
+                               prime_range, prime_powers)
 
-    from .nsagetools import (MapToFreeAbelianization, compute_torsion,
-                             fox_derivative_with_involution,
-                             fox_derivative,
-                             fast_determinant_of_laurent_poly_matrix,
-                             last_square_submatrix,
-                             first_square_submatrix)
+from .nsagetools import (MapToFreeAbelianization, compute_torsion,
+                         fox_derivative_with_involution,
+                         fox_derivative,
+                         fast_determinant_of_laurent_poly_matrix,
+                         last_square_submatrix,
+                         first_square_submatrix)
 
 from .. import SnapPy
 
@@ -128,7 +128,7 @@ class MatrixRepresentation():
 
     def twisted_cochain_complex(self):
         """
-        Returns chain complex of the presentation CW complex of the
+        Returns the cochain complex of the presentation CW complex of the
         given group with coefficients twisted by self.
         """
         gens, rels, rho = self.generators, self.relators, self
@@ -145,8 +145,8 @@ class MatrixRepresentation():
         1-cocycle, construct the representation to GL(R, n + 1)
         corresponding to the semidirect product.
 
-        Note: Since we prefer to stick to left-actions only, unlike [HLK]
-        this is the semidirect produce associated to the left action of
+        Note: Since we prefer to stick to left-actions only, unlike [HLK],
+        this is the semidirect product associated to the left action of
         GL(R, n) on V = R^n.  That is, pairs (v, A) with v in V and A in
         GL(R, n) where (v, A) * (w, B) = (v + A*w, A*B)::
 
@@ -207,7 +207,7 @@ def irreps(p, q):
        157
     """
     p, q = ZZ(p), ZZ(q)
-    assert p.is_prime() and q.is_prime() and p != q
+    assert q.is_prime() and gcd(p, q) == 1
     R = PolynomialRing(GF(q), 'x')
     x = R.gen()
     polys = [f for f, e in (x**p - 1).factor()]
@@ -492,9 +492,15 @@ def poly_involution(f):
        t^2 + z*t - z - 1
     """
     R = f.parent()
+    t = R.gen()
     K = R.base_ring()
-    z, t = K.gen(), R.gen()
-    bar = K.hom([1/z])
+    if K.is_finite():
+        n = K.degree()
+        assert n % 2 == 0
+        bar = K.galois_group().gen()**(n/2)
+    else:
+        z = K.gen()
+        bar = K.hom([1/z])
     ans = R(0)
     d = f.degree()
     for e in f.exponents():
@@ -504,8 +510,8 @@ def poly_involution(f):
 
 def poly_is_a_norm(g):
     """
-    Return whether the polynomial g(t) over a CyclotomicField is equal to
-    (const) f(t) fbar(t) where fbar is poly_involution(f)::
+    Return whether a symmetric polynomial g(t) over a CyclotomicField is
+    equal to (const) f(t) fbar(t) where fbar is poly_involution(f)::
 
        sage: K = CyclotomicField(5, 'z')
        sage: R = PolynomialRing(K, 't')
@@ -534,93 +540,419 @@ def poly_is_a_norm(g):
     return True
 
 
-def slicing_is_obstructed(knot_exterior, p, q):
-    """
-    Applies the test of Section 8 of [HKL] to the F_q homology of the
-    branched cover B_p::
+###########################################################################
+#
+# Dealing with F_2-homology as in Section 3.11 of [DG].
+#
+###########################################################################
 
-       sage: M = Manifold('K12n813')
-       sage: slicing_is_obstructed(M, 2, 3)
-       False
-       sage: slicing_is_obstructed(M, 3, 7)
-       True
+
+# This code was used to generate the `universal_degree_bound` but GAP
+# is invoked in this file.
+
+gap_code = \
+"""
+IsPowerOfTwo := function(n)
+   return 2^PValuation(n, 2) = n;
+end;
+
+# Given a subgroup H of G, checks if
+#
+# a) H is normal in G
+# b) G/H is Z/2^k Z or Z/2 + Z/2^(k - 1)
+#
+# If so, it returns k; otherwise, it returns 0.
+
+QuotientAbelianOfSpecialType := function(G, H)
+   local Q, ab;
+   if IsPowerOfTwo(Index(G, H)) and IsNormal(G, H) then
+      ab := AbelianInvariants(G/H);
+      if Length(ab) = 1 then
+         return PValuation(ab[1], 2);
+      fi;
+      if Length(ab) = 2 and ab[1] = 2 then
+         return PValuation(ab[2], 2) + 1;
+      fi;
+   fi;
+   return 0;
+end;
+
+# For a Galois Group G, return the largest k so that there a normal H
+# in G with [G:H] = 2^k and G/H is Z/2^k Z or Z/2 + Z/2^(k - 1)
+
+DegreeBound := function(G)
+   local sgs;
+   sgs := List(ConjugacyClassesSubgroups(G), C -> Representative(C));
+   return Maximum(List(sgs, H -> QuotientAbelianOfSpecialType(G, H)));
+end;
+
+# This function computes a degree bound that works for any irreducible
+# polynomial of degree n over *any* number field.
+
+UniversalDegreeBound := function(degree)
+   return Maximum(List([1..NrTransitiveGroups(degree)],
+                  k -> DegreeBound(TransitiveGroup(degree, k))));
+end;
+"""
+
+universal_degree_bound = dict([
+    [ 2, 1 ],
+    [ 4, 2 ],
+    [ 6, 2 ],
+    [ 8, 3 ],
+    [ 10, 3 ],
+    [ 12, 3 ],
+    [ 14, 2 ],
+    [ 16, 4 ],
+    [ 18, 4 ],
+    [ 20, 4 ],
+    [ 22, 2 ],
+    [ 24, 4 ],
+    [ 26, 3 ],
+    [ 28, 3 ],
+    [ 30, 4 ]])
+
+
+def size_split_field_intersect_cyclotomic(poly):
     """
-    p, q = ZZ(p), ZZ(q)
-    assert is_prime(p) and is_prime(q) and q > 2
-    reps = list(reps_appearing(knot_exterior, p, q))
-    if len(reps) == 0:
-        return False
-    for A, e in reps:
-        # Can only handle case when all reps appear with mult one.
-        if e > 1:
-            return False
-        # We always use the default chi, could try others as well.
-        chi = lambda v:v[0]
-        f = alex_poly_of_induced_rep(p, knot_exterior, A, chi)
-        if poly_is_a_norm(f):
+    Let G be the Galois group of the given irreducible polynomial. We
+    compute the largest size of G/H where:
+
+    1. H is normal in G, with [G:H] = 2^k.
+
+    2. G/H is abelian and either Z/2^k or Z/2 + Z/2^(k - 1).
+
+    The result is an upper bound on the degree d = 2^k over Q of the
+    intersection of the splitting field of the polynomial with
+    CyclotomicField(2^infinty).  The number k is returned.
+
+    Note: Here we just return the universal degree bound. The
+    implementation used in [SG] computed the actual Galois group when
+    the field is QQ but this avoids a dependancy on GAP.
+    """
+    if poly.degree() <= 1:
+        return 0
+
+    return universal_degree_bound[poly.degree()]
+
+
+def poly_is_a_norm_in_some_extension(g):
+    """
+    Given a symmetric polyomial over the rationals, return whether it
+    is a norm in *any* CyclotomicField(2**k, 'z')::
+
+      sage: t = PolynomialRing(QQ, 't').gen()
+      sage: f = (t - 1)*(t**2 - 3*t + 1)
+      sage: poly_is_a_norm_in_some_extension(f)
+      False
+      sage: f = (t**2 - t + 1)**2 * (t**2 - 3*t + 1)
+      sage: poly_is_a_norm_in_some_extension(f)
+      False
+      sage: f = t**4 + 4*t**2 + 1
+      sage: poly_is_a_norm_in_some_extension(f)
+      True
+    """
+    K = g.parent().base_ring()
+    if K == QQ:
+        cyc_order = 1
+    else:
+        assert isinstance(K, type(CyclotomicField(4, 'z')))
+        cyc_order = K.degree() * 2
+
+    factors = dict(g.factor())
+    for h in factors:
+        assert h.is_monic()
+        hbar = poly_involution(h)
+        hbar = hbar/hbar.leading_coefficient()
+        if hbar == h:
+            if factors[h] % 2 == 0:
+                continue
+            else:
+                if h.degree() % 2 == 1:  # any norm has even degree
+                    return False
+                k = size_split_field_intersect_cyclotomic(h)
+                K = CyclotomicField(2**(cyc_order + k + 1), 'z')
+                if not poly_is_a_norm(h.change_ring(K)):
+                    return False
+
+        elif factors[h] != factors[hbar]:
             return False
 
     return True
 
 
-def expand_prime_spec(spec, min_prime=2):
+# ----- end code for case of F_2 homology  --------------------------------
+
+
+def print_function(verbose):
+    if verbose:
+        return print
+    else:
+        def do_nothing(*args, **kwargs):
+            pass
+    return do_nothing
+
+
+def expand_prime_power_spec(spec):
     if spec in ZZ:
         a, b = 0, spec
     else:
         if len(spec) != 2:
             raise ValueError(f'Spec {spec} does not specify a range')
         a, b = spec
-    a = max(a, min_prime)
+    return prime_powers(a, b + 1)
+
+
+def expand_prime_spec(spec):
+    if spec in ZZ:
+        a, b = 0, spec
+    else:
+        if len(spec) != 2:
+            raise ValueError(f'Spec {spec} does not specify a range')
+        a, b = spec
     return prime_range(a, b + 1)
 
 
-@sage_method
-def slice_obstruction_HKL(self, primes_spec,
-                          verbose=False, check_in_S3=True):
+def twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode=False, verbose=False):
     """
-    For the exterior of a knot in S^3, searches for a topological
-    slicing obstruction from:
+    For an irreducible rep rho from the knot group, consider the
+    rho-isotypic part of H_1(B_p, F_q).  If V is the vector space on
+    which rho acts, this function iterates over equivariant maps::
 
-    Herald, Kirk, Livingston, Math Zeit., 2010
-    https://dx.doi.org/10.1007/s00209-009-0548-1
-    https://arxiv.org/abs/0804.1355
+                 psi: H_1(B_p, F_q) --> V
 
-    The test looks at the cyclic branched covers of the knot of prime
-    order p and the F_q homology thereof where q is an odd prime. The
-    range of such (p, q) pairs searched is given by primes_spec as a
-    list of (p_max, [q_min, q_max]).  It returns the pair (p, q) of
-    the first nonzero obstruction found (in which case K is not
-    slice), and otherwise returns None::
+    as in the start of Section 7 of [HKL] where what we call psi is
+    there denoted rho.  Such a psi can be given by a cocycle
+    representative of a nonzero class in H^1(E, V) where E is knot
+    exterior.  The particular cocycle representative, as well as
+    multiplying [psi] by a nonzero element of F_q, will not change the
+    twisted alexander polynomial, so in fact we iterate [psi] over
+    P^1(H^1(E, V)).
+
+    For each [psi], we consider nonzero characters chi: V --> F_q,
+    up to scaling.  If any of the twisted alexander polynomials
+    associated to (psi, chi) is not a norm, then we yield True, and
+    otherwise False.
+
+    When dim V > 1 and q is large, there are a lot of chi to
+    examine. Experience shows that for a fixed chi it is very unlikely
+    to get a non-norm after encountering many norms; this especially
+    true if some prior chi gave all norms.  For speed, we limit
+    the number of non-norms encountered before giving up on a
+    particular chi.
+    """
+    print = print_function(verbose)
+    
+    G = knot_exterior.fundamental_group()
+    rho = cyclic_rep(G, A)
+    n = rho.dim
+    C = rho.twisted_cochain_complex()
+    F = rho.base_ring
+    cohomology_basis = []
+    for V, chain in C.homology(1, generators=True):
+        assert V.dimension() == 1
+        cohomology_basis.append(chain.vector(1))
+
+    dim = C.homology(1).dimension()
+    d0, d1 = C.differential(0), C.differential(1)
+    B1 = d0.column_space()
+    Z1 = d1.right_kernel()
+    assert (dim == len(cohomology_basis) and
+            all(v in Z1 for v in cohomology_basis) and
+            all(v not in B1 for v in cohomology_basis))
+
+    non_norms = []
+    P1 = [S.basis()[0] for S in VectorSpace(F, dim).subspaces(1)]
+    chi_specs = [S.basis()[0] for S in VectorSpace(F, n).subspaces(1)]
+    all_norm_phis = 0
+    for phi in P1:
+        print(11*' ', phi, end=' ')
+        cocycle = sum(a*v for a, v in zip(phi, cohomology_basis))
+        norms_seen_for_this_chi = 0
+        for chi_spec in chi_specs:
+            def chi(v):
+                return chi_spec * v
+            alpha = induced_rep_from_twisted_cocycle(p, rho, chi, cocycle)
+            delta_chi = twisted_alexander_polynomial(alpha, reduced=True)
+            assert poly_involution(delta_chi) ==  delta_chi
+            if F.order() == 2 and not ribbon_mode:
+                norm = poly_is_a_norm_in_some_extension(delta_chi)
+            else:
+                norm = poly_is_a_norm(delta_chi)
+            print(not norm, end=' ')
+            if not norm:
+                print()
+                yield True
+                break
+            else:
+                norms_seen_for_this_chi += 1
+                if (len(chi_specs) > 3
+                    and all_norm_phis >= 2
+                    and norms_seen_for_this_chi >= 2):
+                    break
+
+        if norms_seen_for_this_chi == len(chi_specs):
+            all_norm_phis += 1
+
+        if norm:
+            print()
+            yield False
+
+
+def min_contrib_to_delta(knot_exterior, p, A, e, ribbon_mode=False, verbose=False):
+    """
+    If V^e is specified by the matrix A, then this computes the
+    quantity delta(V) in Theorem 3.8 of [DG].
+    """
+    print = print_function(verbose)
+    
+    norm_count = 0
+    nonnorm_count = 0
+    for nonnorm in twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode, verbose):
+        if nonnorm:
+            nonnorm_count += 1
+        else:
+            norm_count += 1
+        if norm_count > 0 and nonnorm_count > 0:
+            break
+
+    n = A.nrows()
+    if norm_count == 0:  # strongly obstructed
+        print(12*' ' + 'strongly obstructed')
+        return e*n
+    if nonnorm_count > 0:  # weakly obstructed
+        print(12*' ' + 'weakly obstructed')
+        return n
+    print(12*' ' + 'unobstructed')
+    return 0
+
+
+def slicing_is_obstructed(knot_exterior, p, q,
+                          skip_higher_mult=False,
+                          ribbon_mode=False,
+                          verbose=False):
+    """
+    Applies the tests of Section 3 of [DG] to the F_q homology of the
+    branched cover B_p::
+
+       sage: M = Manifold('K12n813')
+       sage: slicing_is_obstructed(M, 2, 3, skip_higher_mult=True)
+       False
+       sage: slicing_is_obstructed(M, 3, 7)
+       True
+
+    """
+    print = print_function(verbose)
+    
+    p, q = ZZ(p), ZZ(q)
+    if not p.is_prime_power():
+        raise ValueError(f'Degree of cover (={p}) is not a prime power')
+    if not q.is_prime():
+        raise ValueError(f'Field F_{q} is not of prime order')
+
+    reps = list(reps_appearing(knot_exterior, p, q))
+    if len(reps) == 0:
+        return False
+
+    isotypic_dims = [e*A.nrows() for A, e in reps]
+    total_dim = sum(isotypic_dims)
+    meta = 0
+
+    print(8*' ' + f'dim H_1(cover; F_q) = {total_dim} with rep. structure {[(A.nrows(), e) for A, e in reps]}')
+    for i, (A, e) in enumerate(reps):
+        print(8*' ' + f'rep V_{i} of dim={A.nrows()}, multiplicity={e}, generator matrix={A}')
+        if e > 1 and skip_higher_mult:
+            print(12*' ' + 'Skipping as mult > 1 and mode is "basic"')
+        else:
+            contrib = min_contrib_to_delta(knot_exterior, p, A, e, ribbon_mode, verbose)
+            meta += contrib
+            print(12*' ' + f"Have delta(V_{i})={contrib} and sum of delta(V_i)'s is now {meta}")
+        # Stop if criteria already applies or if it will fail even if
+        # all remaining reps are strongly obstructed.
+        if (2*meta > total_dim or
+            2*(meta + sum(isotypic_dims[i + 1:])) <= total_dim):
+            break
+
+    return 2*meta > total_dim
+
+
+@sage_method
+def slice_obstruction_HKL(self,
+                          primes_spec,
+                          verbose=0,
+                          check_in_S3=True,
+                          method='advanced',
+                          ribbon_mode=False):
+    """
+
+    For the exterior of a knot in the 3-sphere, search for a
+    Herald-Kirk-Livingston (HKL) topological slice obstruction as
+    described in:
+    
+    * [DG] Dunfield and Gong, Section 3 of https://arXiv.org/abs/FILLIN
+
+    Specifically, it looks at the cyclic branched covers of the knot
+    of prime-power order p and the F_q homology thereof where q is
+    prime. The range of such (p, q) pairs searched is given by
+    primes_spec as a list of (p_max, [q_min, q_max]).  It returns the
+    pair (p, q) of the first nonzero obstruction found (in which case
+    K is not slice), and otherwise returns ``None``::
 
        sage: M = Manifold('K12n813')
        sage: spec = [(10, [0, 20]), (20, [0, 10])]
-       sage: M.slice_obstruction_HKL(spec, verbose=True)
-          Looking at (2, 3) ...
-          Looking at (3, 7) ...
+       sage: M.slice_obstruction_HKL(spec, method='basic', verbose=1)
+           Looking at (2, 3) ...
+           Looking at (3, 2) ...
+           Looking at (3, 7) ...
        (3, 7)
 
     You can also specify the p to examine by a range [p_min, p_max] or
     the q by just q_max::
 
-       sage: spec = [([3, 10], 10)]
-       sage: M.slice_obstruction_HKL(spec, verbose=True)
-          Looking at (3, 7) ...
-       (3, 7)
+       sage: spec = [([5, 10], 10)]
+       sage: M.slice_obstruction_HKL(spec, method='advanced', verbose=1)
+           Looking at (8, 3) ...
+       (8, 3)
 
     If primes_spec is just a pair (p, q) then only that obstruction is
     checked::
 
-       sage: M.slice_obstruction_HKL((2, 3))
        sage: M.slice_obstruction_HKL((3, 7))
        (3, 7)
 
-    Technical note: As implemented, can only get an obstruction when
-    the decomposition of H_1(cover; F_q) into irreducible Z/pZ-modules
-    has no repeat factors.  The method of [HKL] can be used more
-    broadly, but other cases requires computing many more twisted
-    Alexander polynomials.
-    """
+    The ``method`` argument determines which HKL tests are employed:
 
+    * ``method='basic'`` employs Lemma 3.5 of [DG] and corresponds
+      roughly to the test used in SnapPy 3.1 and 3.2, though earlier
+      versions required p to be prime and forbid q = 2.
+
+    * ``method='advanced'`` is the default and employs Theorem 3.8
+      from [DG]. This subsumes the `basic` method, but can be quite
+      slow when the multiplicity of an irreducible V_i is large.
+      Example::
+
+        sage: M.slice_obstruction_HKL((2, 3), method='basic')  # returns None
+        sage: M.slice_obstruction_HKL((2, 3), method='advanced')
+        (2, 3)
+
+    * ``method='direct'`` employs the method of Section 3.20 of [DG] to
+      consider not just the F_q homology of the cover, but
+      epimorphisms of its group to Z/q^e Z for e > 1.  This is the
+      most computationally expensive method.  Example::
+
+        sage: M = Manifold('K14n16945')
+        sage: M.slice_obstruction_HKL((2, 3), method='advanced') # returns None
+        sage: M.slice_obstruction_HKL((2, 3), method='direct')
+        (2, 3)
+
+    For any method, q = 2 is handled using Section 3.11 of [DG].
+
+    If ``verbose`` is ``1`` or ``True``, it prints each pair (p, q) being considered;
+    when ``verbose==2`` more is printed about each step.
+    """
+    if method not in ['basic', 'advanced', 'direct']:
+        raise ValueError("Argument method is not 'basic', 'advanced', or 'direct'")
+    
     M = self
 
     if M.cusp_info('is_complete') != [True]:
@@ -634,35 +966,28 @@ def slice_obstruction_HKL(self, primes_spec,
             raise ValueError('The (1, 0) filling is not obviously S^3')
 
     # Special case of only one (p, q) to check
-    if len(primes_spec) == 2:
-        p, q = primes_spec
-        if p in ZZ and q in ZZ:
-            if q == 2:
-                raise ValueError('Must have q > 2 when looking at H_1(cover; F_q)')
-            if not (is_prime(p) and is_prime(q)):
-                raise ValueError('Both p and q must be prime')
-            if slicing_is_obstructed(M, p, q):
-                return (p, q)
-            else:
-                return None
-
-    # Main case
-    primes_spec = [(expand_prime_spec(a), expand_prime_spec(b, min_prime=3))
-                   for a, b in primes_spec]
+    if len(primes_spec) == 2 and primes_spec[0] in ZZ and primes_spec[1] in ZZ:
+        primes_spec = [([primes_spec[0]], [primes_spec[1]])]
+    else:
+        primes_spec = [(expand_prime_power_spec(a), expand_prime_spec(b))
+                       for a, b in primes_spec]
+        
     for ps, qs in primes_spec:
         for p in ps:
             d = nonzero_divisor_product(M, p)
             for q in qs:
                 if d % q == 0:
                     if verbose:
-                        print('   Looking at', (p, q), '...')
-                    if slicing_is_obstructed(M, p, q):
+                        print('    Looking at', (p, q), '...')
+                    if method=='direct':
+                        from . import slice_obs_HKL_direct
+                        success = slice_obs_HKL_direct.slicing_obstructed_by_larger_quotient(M, p, q, verbose)
+                    else:
+                        success = slicing_is_obstructed(M, p, q,
+                                                        skip_higher_mult=(method=='basic'),
+                                                        ribbon_mode=ribbon_mode,
+                                                        verbose=(verbose > 1))
+                    if success:
                         return (p, q)
 
 
-if __name__ == '__main__':
-    import doctest
-    import sys
-    results = doctest.testmod()
-    print(results)
-    sys.exit(results[0])

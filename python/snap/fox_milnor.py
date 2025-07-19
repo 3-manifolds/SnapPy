@@ -1,16 +1,8 @@
 """
-
 Implements the Fox-Milnor for test for Alexander polynomials which
 gives an obstruction for a link being strongly slice.
 
-Typical usage::
-
-  sage: import snappy
-  sage: from snappy.snap.fox_milnor import fox_milnor_test
-  sage: K = snappy.Link('K6a3')
-  sage: fox_milnor_test(K)
-  True
-
+The main function provided is `fox_milnor_test`.
 """
 
 from ..sage_helper import _within_sage, sage_method
@@ -46,7 +38,7 @@ def standard_map_to_group_ring_of_abelianization_for_link(manifold_group):
     meridians = [m for m, l in G.peripheral_curves()]
     A = matrix(ZZ, [MapToFreeAbelianization.__call__(phi, m) for m in meridians])
     if not (len(meridians) == phi.U.nrows() == betti and A.is_invertible()):
-        raise ValueError('Homology incompatible with being the exterior of a link in S^3.')
+        raise ValueError('H_1 or meridians incompatible being the exterior of a link in S^3.')
     A = A.transpose().inverse()
     phi = MapToGroupRingOfFreeAbelianization(G)
     phi.U = A * phi.U
@@ -238,19 +230,28 @@ def fox_milnor_test(manifold_or_link):
     compatible with the link being strongly slice.
 
     More precisely, it checks if the Alexander nullity is as expected
-    and that the approriate Alexander polynomial is a norm::
+    and that the appropriate Alexander polynomial is a norm::
 
-      sage: mflds = [Manifold('L12n1181'), Manifold('L11n247'), Link('L10n107')]
+      sage: mflds = [Manifold('L12n1181'), Manifold('L11n247'), Manifold('L10n107')]
       sage: {M.alexander_polynomial() for M in mflds}
       {0}
-      sage: [fox_milnor_test(M) for M in mflds]
+      sage: [M.fox_milnor_test() for M in mflds]
       [True, False, False]
+
+    Note: This method only requires that the homology (including the
+    meridians) is consistent being the complement of a link in S^3.  It
+    does not check that the manifold is actually a link complement.
     """
 
     M = manifold_or_link
     if isinstance(M, Link):
         M = M.exterior()
 
+    if not all(M.cusp_info('is_complete')):
+        raise ValueError('All cusps must be unfilled.')
+
+    if M.homology().elementary_divisors() != M.num_cusps()*[0]:
+        raise ValueError('Homology is not Z^(number of cusps).')
 
     nullity, alex = alexander_data(M)
     if nullity != M.num_cusps() - 1:

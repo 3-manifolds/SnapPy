@@ -624,11 +624,11 @@ def size_split_field_intersect_cyclotomic(poly):
 
     The result is an upper bound on the degree d = 2^k over Q of the
     intersection of the splitting field of the polynomial with
-    CyclotomicField(2^infinty).  The number k is returned.
+    CyclotomicField(2^infinity).  The number k is returned.
 
     Note: Here we just return the universal degree bound. The
     implementation used in [SG] computed the actual Galois group when
-    the field is QQ but this avoids a dependancy on GAP.
+    the field is QQ but this avoids a dependency on GAP.
     """
     if poly.degree() <= 1:
         return 0

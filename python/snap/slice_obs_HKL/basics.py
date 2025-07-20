@@ -14,13 +14,11 @@ from ..nsagetools import (MapToFreeAbelianization,
                           last_square_submatrix,
                           first_square_submatrix)
 
-def print_function(verbose):
-    if verbose:
-        return print
-    else:
-        def do_nothing(*args, **kwargs):
-            pass
-    return do_nothing
+def print_function(verbose, indent=0):
+    def answer(*args, **kwargs):
+        if verbose:
+            print((indent - 1)*' ', *args, **kwargs)
+    return answer
 
 
 def homology_of_cyclic_branched_cover(knot_exterior, p):

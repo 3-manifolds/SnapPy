@@ -127,29 +127,36 @@ def gap_group_with_meridian_killed(G):
     return gap(gap_str)
 
 
-def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, ribbon_mode=False, verbose=False):
+def slicing_obstructed_by_larger_quotient(knot_exterior, p, q,
+                                          ribbon_mode=False, verbose=False):
     """
     Here, we take a different approach towards computing the HKL
     topological slice obstructions, which in particular allows us to
     consider characters to Z/(q^e Z) where e > 1.
-    
+
     We forgo the representation theory and work directly with the cyclic
     (branched) covers themselves.  This amounts to using the original
     theorem in Kirk-Livingston 1999.
-    
+
     We cut down the number of possible metabolizers via Sawin's
     observation that if M is a metabolizer of an abelian p-group H with
     respect to a nondegenerate bilinear form, then H/M is isomorphic to M.
-    
-    See Section 3.20 of [DG] for details.
 
-    sage: M = Manifold('K11n145')
-    sage: slicing_obstructed_by_larger_quotient(M, 2, 3)
-    True
+    See Section 3.20 of [DG] for details::
+
+      sage: M = Manifold('16n192088')
+      sage: slicing_obstructed_by_larger_quotient(M, 2, 3, verbose=True)
+              Homology: [ 81 ]
+              Candidate metabolizers: 1
+              Considing cyclic quotients up to size 3^2
+                  Looking at Z/3^1 with 1 remaining
+                  Looking at Z/3^2 with 1 remaining
+                      Now with 0 remaining
+      True
 
     Note: This code requires GAP, which is standard in SageMath.
     """
-    print = print_function(verbose)
+    print = print_function(verbose, indent=8)
     M = knot_exterior.copy()
     assert M.num_cusps() == 1
     assert is_prime_power(p) and is_prime(q)
@@ -168,7 +175,7 @@ def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, ribbon_mode=False
     assert H_q_size == H_q.Order()
     print(f'Homology: {H_q.AbelianInvariants()}')
     metas = possible_metabolizers(H_q)
-    print(f'Metabolizers: {len(metas)}')
+    print(f'Candidate metabolizers: {len(metas)}')
     n = max(power_appearing(M.Exponent(), q) for M in metas)
     print(f'Considing cyclic quotients up to size {q}^{n}')
 
@@ -177,7 +184,7 @@ def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, ribbon_mode=False
         if not remaining_metas:
             break
 
-        print(f'   Looking at Z/{q}^{e} with {len(remaining_metas)} remaining')
+        print(4*' ' + f'Looking at Z/{q}^{e} with {len(remaining_metas)} remaining')
         C = gap.CyclicGroup(q**e)
         cyclic_quos = H_q.GQuotients(C)
 
@@ -203,7 +210,7 @@ def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, ribbon_mode=False
                     norm = poly_is_a_norm_in_some_extension(alex)
                 if not norm:
                     remaining_metas = remaining_metas - obs
-                    print(f'      Now with  {len(remaining_metas)} remaining')
+                    print(8*' ' + f'Now with {len(remaining_metas)} remaining')
                     if not remaining_metas:
                         break
 

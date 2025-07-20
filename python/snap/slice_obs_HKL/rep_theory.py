@@ -15,7 +15,7 @@ if _within_sage:
                                 identity_matrix, block_matrix, gcd,
                                 VectorSpace, MatrixSpace, ChainComplex,
                                 prime_range, prime_powers)
-    
+
 from ..nsagetools import (MapToFreeAbelianization, compute_torsion,
                           fox_derivative_with_involution,
                           fox_derivative,
@@ -278,7 +278,7 @@ def twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode=False, ver
     particular chi.
     """
     print = print_function(verbose)
-    
+
     G = knot_exterior.fundamental_group()
     rho = cyclic_rep(G, A)
     n = rho.dim
@@ -302,7 +302,7 @@ def twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode=False, ver
     chi_specs = [S.basis()[0] for S in VectorSpace(F, n).subspaces(1)]
     all_norm_phis = 0
     for phi in P1:
-        print(11*' ', phi, end=' ')
+        print(11*' ', phi, end='')
         cocycle = sum(a*v for a, v in zip(phi, cohomology_basis))
         norms_seen_for_this_chi = 0
         for chi_spec in chi_specs:
@@ -315,7 +315,7 @@ def twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode=False, ver
                 norm = poly_is_a_norm_in_some_extension(delta_chi)
             else:
                 norm = poly_is_a_norm(delta_chi)
-            print(not norm, end=' ')
+            print('', not norm, end='')
             if not norm:
                 print()
                 yield True
@@ -340,8 +340,8 @@ def min_contrib_to_delta(knot_exterior, p, A, e, ribbon_mode=False, verbose=Fals
     If V^e is specified by the matrix A, then this computes the
     quantity delta(V) in Theorem 3.8 of [DG].
     """
-    print = print_function(verbose)
-    
+    print = print_function(verbose, indent=12)
+
     norm_count = 0
     nonnorm_count = 0
     for nonnorm in twisted_alex_polys_are_not_norms(knot_exterior, p, A, ribbon_mode, verbose):
@@ -354,12 +354,12 @@ def min_contrib_to_delta(knot_exterior, p, A, e, ribbon_mode=False, verbose=Fals
 
     n = A.nrows()
     if norm_count == 0:  # strongly obstructed
-        print(12*' ' + 'strongly obstructed')
+        print('strongly obstructed')
         return e*n
     if nonnorm_count > 0:  # weakly obstructed
-        print(12*' ' + 'weakly obstructed')
+        print('weakly obstructed')
         return n
-    print(12*' ' + 'unobstructed')
+    print('unobstructed')
     return 0
 
 
@@ -372,14 +372,26 @@ def slicing_is_obstructed(knot_exterior, p, q,
     branched cover B_p::
 
        sage: M = Manifold('K12n813')
-       sage: slicing_is_obstructed(M, 2, 3, skip_higher_mult=True)
+       sage: slicing_is_obstructed(M, 2, 3, skip_higher_mult=True, verbose=True)
+               dim H_1(cover; F_q) = 2 with rep. structure [(1, 2)]
+               rep V_0 of dim 1, multiplicity 2, generator matrix [(2)]
+                   Skipping as mult > 1 and mode is "basic"
        False
-       sage: slicing_is_obstructed(M, 3, 7)
+       sage: slicing_is_obstructed(M, 3, 7, verbose=True)
+               dim H_1(cover; F_q) = 2 with rep. structure [(1, 1), (1, 1)]
+               rep V_0 of dim 1, multiplicity 1, generator matrix [(2)]
+                    (1)  True
+                   strongly obstructed
+                   Have delta(V_0) = 1 and sum of delta(V_i)'s is now 1
+               rep V_1 of dim 1, multiplicity 1, generator matrix [(4)]
+                    (1)  True
+                   strongly obstructed
+                   Have delta(V_1) = 1 and sum of delta(V_i)'s is now 2
        True
 
     """
-    print = print_function(verbose)
-    
+    print = print_function(verbose, 8)
+
     p, q = ZZ(p), ZZ(q)
     if not p.is_prime_power():
         raise ValueError(f'Degree of cover (={p}) is not a prime power')
@@ -394,15 +406,15 @@ def slicing_is_obstructed(knot_exterior, p, q,
     total_dim = sum(isotypic_dims)
     meta = 0
 
-    print(8*' ' + f'dim H_1(cover; F_q) = {total_dim} with rep. structure {[(A.nrows(), e) for A, e in reps]}')
+    print( f'dim H_1(cover; F_q) = {total_dim} with rep. structure {[(A.nrows(), e) for A, e in reps]}')
     for i, (A, e) in enumerate(reps):
-        print(8*' ' + f'rep V_{i} of dim={A.nrows()}, multiplicity={e}, generator matrix={A}')
+        print(f'rep V_{i} of dim {A.nrows()}, multiplicity {e}, generator matrix {list(A)}')
         if e > 1 and skip_higher_mult:
-            print(12*' ' + 'Skipping as mult > 1 and mode is "basic"')
+            print(4*' ' + 'Skipping as mult > 1 and mode is "basic"')
         else:
             contrib = min_contrib_to_delta(knot_exterior, p, A, e, ribbon_mode, verbose)
             meta += contrib
-            print(12*' ' + f"Have delta(V_{i})={contrib} and sum of delta(V_i)'s is now {meta}")
+            print(4*' ' + f"Have delta(V_{i}) = {contrib} and sum of delta(V_i)'s is now {meta}")
         # Stop if criteria already applies or if it will fail even if
         # all remaining reps are strongly obstructed.
         if (2*meta > total_dim or
@@ -410,5 +422,3 @@ def slicing_is_obstructed(knot_exterior, p, q,
             break
 
     return 2*meta > total_dim
-
-

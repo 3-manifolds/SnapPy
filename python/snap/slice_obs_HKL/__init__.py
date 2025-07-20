@@ -74,7 +74,6 @@ def slice_obstruction_HKL(self,
                           method='advanced',
                           ribbon_mode=False):
     """
-
     For the exterior of a knot in the 3-sphere, search for a
     Herald-Kirk-Livingston (HKL) topological slice obstruction as
     described in:
@@ -113,13 +112,14 @@ def slice_obstruction_HKL(self,
     The ``method`` argument determines which HKL tests are employed:
 
     * ``method='basic'`` employs Lemma 3.5 of [DG] and corresponds
-      roughly to the test used in SnapPy 3.1 and 3.2, though earlier
-      versions required p to be prime and forbid q = 2.
+      roughly to the test used in SnapPy 3.1 and 3.2, though these
+      earlier versions required p to be prime and forbid q = 2.
 
     * ``method='advanced'`` is the default and employs Theorem 3.8
       from [DG]. This subsumes the `basic` method, but can be quite
       slow when the multiplicity of an irreducible V_i is large.
-      Example::
+
+      An example where this method has more success::
 
         sage: M.slice_obstruction_HKL((2, 3), method='basic')  # returns None
         sage: M.slice_obstruction_HKL((2, 3), method='advanced')
@@ -138,9 +138,9 @@ def slice_obstruction_HKL(self,
     For any method, q = 2 is handled using Section 3.11 of [DG].
 
     If ``verbose`` is ``1`` or ``True``, it prints each pair (p, q) being considered;
-    when ``verbose`` is ``2``  more is printed about each step.
+    when ``verbose`` is ``2``, information is printed about each step.
 
-    Finally, if ``ribbon_mode`` is ``True`` then it searchs for
+    Finally, if ``ribbon_mode`` is ``True`` then it searches for
     obstructions to being topologically homotopy ribbon.  These differ
     from the slice case only when q = 2; see Theorem 3.12 of [DG]::
 
@@ -187,5 +187,8 @@ def slice_obstruction_HKL(self,
                                                                    skip_higher_mult=(method=='basic'),
                                                                    ribbon_mode=ribbon_mode,
                                                                    verbose=(verbose > 1))
+                    if verbose > 1:
+                        print()
+
                     if success:
                         return (p, q)

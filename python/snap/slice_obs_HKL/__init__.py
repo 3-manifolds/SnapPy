@@ -138,9 +138,16 @@ def slice_obstruction_HKL(self,
     For any method, q = 2 is handled using Section 3.11 of [DG].
 
     If ``verbose`` is ``1`` or ``True``, it prints each pair (p, q) being considered;
-    when ``verbose==2`` more is printed about each step.
+    when ``verbose`` is ``2``  more is printed about each step.
 
-    ADDD RIBBON MODE
+    Finally, if ``ribbon_mode`` is ``True`` then it searchs for
+    obstructions to being topologically homotopy ribbon.  These differ
+    from the slice case only when q = 2; see Theorem 3.12 of [DG]::
+
+      sage: M = Manifold('DT: qaqcJpEHnoDKBMqIgfal')  # The knot 17nh_0630889
+      sage: M.slice_obstruction_HKL((3, 2)) # returns None
+      sage: M.slice_obstruction_HKL((3, 2), ribbon_mode=True)
+      (3, 2)
     """
     if method not in ['basic', 'advanced', 'direct']:
         raise ValueError("Argument method is not 'basic', 'advanced', or 'direct'")
@@ -172,7 +179,9 @@ def slice_obstruction_HKL(self,
                     if verbose:
                         print('    Looking at', (p, q), '...')
                     if method=='direct':
-                        success = direct.slicing_obstructed_by_larger_quotient(M, p, q, verbose)
+                        success = direct.slicing_obstructed_by_larger_quotient(M, p, q,
+                                                                               ribbon_mode=ribbon_mode,
+                                                                               verbose=(verbose > 1))
                     else:
                         success = rep_theory.slicing_is_obstructed(M, p, q,
                                                                    skip_higher_mult=(method=='basic'),

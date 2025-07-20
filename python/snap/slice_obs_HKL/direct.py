@@ -127,7 +127,7 @@ def gap_group_with_meridian_killed(G):
     return gap(gap_str)
 
 
-def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, verbose=False):
+def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, ribbon_mode=False, verbose=False):
     """
     Here, we take a different approach towards computing the HKL
     topological slice obstructions, which in particular allows us to
@@ -197,7 +197,7 @@ def slicing_obstructed_by_larger_quotient(knot_exterior, p, q, verbose=False):
                 images = [f.Image(quo_q.Image(g)) for g in Gbar.GeneratorsOfGroup()]
                 alpha = rep_from_cyclic_quotient(G, C, images)
                 alex = twisted_alexander_polynomial(alpha, reduced=True)
-                if q != 2:
+                if ribbon_mode or q != 2:
                     norm = poly_is_a_norm(alex)
                 else:
                     norm = poly_is_a_norm_in_some_extension(alex)

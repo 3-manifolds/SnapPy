@@ -51,6 +51,14 @@ News
     ``ignore_orientation`` and ``ignore_filling_orientations`` have their
     default values).
 
+  - Fix potential bug (related to global spine radius) in
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
+    and
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+
+    TODO: Determine whether this was really a bug. Write prove that current
+    version actually works.
+
   The first four are based on `[Dunfield and Gong]
   <https://arXiv.org/abs/FILLIN>`_.
 

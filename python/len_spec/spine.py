@@ -89,10 +89,9 @@ def add_spine(mcomplex : Mcomplex):
 
     mcomplex.spine_center = mcomplex.baseTet.spine_center
     mcomplex.spine_radius = correct_max(
-        [ distance_r13_points(mcomplex.spine_center,
-                              tet.spine_points[e])
-          for tet in mcomplex.Tetrahedra
-          for e in simplex.OneSubsimplices ])
+        [ tet.spine_radius + distance_r13_points(
+            mcomplex.spine_center, tet.spine_center)
+          for tet in mcomplex.Tetrahedra ])
 
 def _out_point(tet : Tetrahedron, v0 : int, v1 : int):
     """

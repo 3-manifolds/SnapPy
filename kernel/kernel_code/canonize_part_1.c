@@ -237,10 +237,16 @@ FuncResult proto_canonize(
          *  Or did we just get stuck on (potential) negatively
          *  oriented Tetrahedra?
          */
+        
+        all_done = validate_canonical_triangulation(manifold);
 
-        remove_hyperbolic_structures(manifold);
+        if (all_done == TRUE)
+        {
+        tidy_peripheral_curves(manifold);
+        polish_hyperbolic_structures(manifold);
         all_done = check_geometric_triangulation(manifold) && validate_canonical_triangulation(manifold);
-
+        }
+        
         /*
          *  If we got stuck on (potential) negatively oriented
          *  Tetrahedra, randomize the Triangulation and try
@@ -295,9 +301,6 @@ static Boolean check_geometric_triangulation(
     Triangulation   *manifold)
 {
     int i;
-
-    if (manifold->solution_type[complete] == not_attempted)
-        find_complete_hyperbolic_structure(manifold);
 
     if (manifold->solution_type[complete] == geometric_solution)
         return TRUE;

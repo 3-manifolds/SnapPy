@@ -1,8 +1,11 @@
 from .canonical_representatives import canonical_representatives_for_line
 from .geodesic_start_point_info import GeodesicStartPointInfo
 from .avoid_core_curves import replace_piece_in_core_curve_tube
+from .line import R13LineWithMatrix
 
+from ...matrix import make_identity_matrix
 from ...tiling.tile import Tile, compute_tiles
+from ...tiling.lifted_tetrahedron import LiftedTetrahedron
 from ...tiling.lifted_tetrahedron_set import (LiftedTetrahedronSet,
                                               get_lifted_tetrahedron_set)
 
@@ -48,6 +51,43 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
             "Tiling a tube about a geodesic expected GeodesicStartPointInfo with valid "
             "lifted_tetrahedra.")
 
+    if avoid_core_curves:
+        replace_lifted_tetrahedron_function = replace_piece_in_core_curve_tube
+    else:
+        replace_lifted_tetrahedron_function = None
+
+    return compute_tiles(
+        geometric_object=geodesic.line.r13_line,
+        visited_lifted_tetrahedra=_lifted_tetrahedron_set_for_line(
+            mcomplex, geodesic.line, for_raytracing = for_raytracing),
+        initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
+        replace_lifted_tetrahedron_function=replace_lifted_tetrahedron_function,
+        verified=mcomplex.verified)
+
+def compute_tiles_for_core_curve(mcomplex : Mcomplex,
+                                 core_curve : int
+                                 ) -> Sequence[Tile]:
+    vertex = mcomplex.Vertices[core_curve]
+    corner = vertex.Corners[0]
+    tet = corner.Tetrahedron
+    line : R13LineWithMatrix = tet.core_curves[corner.Subsimplex]
+
+    initial_lifted_tetrahedron = LiftedTetrahedron(
+        tet, make_identity_matrix(ring=mcomplex.RF, n=4))
+
+    return compute_tiles(
+        geometric_object=line.r13_line,
+        visited_lifted_tetrahedra = _lifted_tetrahedron_set_for_line(
+            mcomplex, line),
+        initial_lifted_tetrahedra = [ initial_lifted_tetrahedron ],
+        verified=mcomplex.verified)
+
+def _lifted_tetrahedron_set_for_line(
+        mcomplex : Mcomplex,
+        line : R13LineWithMatrix,
+        for_raytracing : bool = False
+    ) -> LiftedTetrahedronSet:
+
     min_neg_prod_distinct = (mcomplex.baseTetInRadius/2).cosh()
 
     if mcomplex.verified:
@@ -58,26 +98,13 @@ def compute_tiles_for_geodesic(mcomplex : Mcomplex,
         if for_raytracing:
             min_neg_prod_distinct = max_neg_prod_equal
 
-    lifted_tetrahedron_set : LiftedTetrahedronSet = (
-        get_lifted_tetrahedron_set(
-            base_point=mcomplex.R13_baseTetInCenter,
-            canonical_representatives_function=(
-                canonical_representatives_for_line(geodesic.line)),
-            act_on_base_point_by_inverse=False,
-            max_neg_prod_equal=max_neg_prod_equal,
-            min_neg_prod_distinct=min_neg_prod_distinct,
-            verified=mcomplex.verified))
-
-    if avoid_core_curves:
-        replace_lifted_tetrahedron_function = replace_piece_in_core_curve_tube
-    else:
-        replace_lifted_tetrahedron_function = None
-
-    return compute_tiles(
-        geometric_object=geodesic.line.r13_line,
-        visited_lifted_tetrahedra=lifted_tetrahedron_set,
-        initial_lifted_tetrahedra=geodesic.lifted_tetrahedra,
-        replace_lifted_tetrahedron_function=replace_lifted_tetrahedron_function,
+    return get_lifted_tetrahedron_set(
+        base_point=mcomplex.R13_baseTetInCenter,
+        canonical_representatives_function=(
+            canonical_representatives_for_line(line)),
+        act_on_base_point_by_inverse=False,
+        max_neg_prod_equal=max_neg_prod_equal,
+        min_neg_prod_distinct=min_neg_prod_distinct,
         verified=mcomplex.verified)
 
 def _compute_prod_epsilon(RF):

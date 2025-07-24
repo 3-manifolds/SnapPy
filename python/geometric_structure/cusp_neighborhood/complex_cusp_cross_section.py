@@ -275,8 +275,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
     @staticmethod
     def _compute_translations(vertex):
         vertex.Translations = [
-            ComplexCuspCrossSection._get_translation(vertex, i)
-            for i in range(2) ]
+            ComplexCuspCrossSection._get_translation(vertex, ml)
+            for ml in range(2) ]
 
     def compute_translations(self):
         for vertex in self.mcomplex.Vertices:
@@ -303,8 +303,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                  for vertex in self.mcomplex.Vertices ]
 
     @staticmethod
-    def _compute_cusp_shape(vertex : t3m.Vertex):
-        m, l = vertex.Translations
+    def cusp_shape(vertex : t3m.Vertex):
+        m = ComplexCuspCrossSection._get_translation(vertex, 0)
+        l = ComplexCuspCrossSection._get_translation(vertex, 1)
         return (l / m).conjugate()
 
     def cusp_shapes(self):
@@ -313,8 +314,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         corresponding to the longitude and meridian for each cusp (SnapPea
         kernel convention).
         """
-        self.compute_translations()
-        return [ ComplexCuspCrossSection._compute_cusp_shape(vertex)
+        return [ ComplexCuspCrossSection.cusp_shape(vertex)
                  for vertex in self.mcomplex.Vertices ]
 
     def add_vertex_positions_to_horotriangles(self):

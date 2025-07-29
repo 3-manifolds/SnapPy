@@ -27,6 +27,27 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.3 (August 2025??):
+
+  - :class:`Link <spherogram.Link>` now supports band moves and can
+    search for ribbon disks and ribbon concordances. See
+    :meth:`ribbon_concordant_links
+    <spherogram.Link.ribbon_concordant_links>` and :meth:`add_band
+    <spherogram.Link.add_band>`.
+
+  - New census :class:`RibbonLinks <snappy.RibbonLinks>`.
+
+  - Additional slice obstructions added to
+    :meth:`slice_obstruction_HKL
+    <snappy.Triangulation.slice_obstruction_HKL>`.
+
+  - The Fox-Milnor slice obstruction is now available as
+    :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
+
+  The first four are based on `[Dunfield and Gong]
+  <https://arXiv.org/abs/FILLIN>`_.
+
+
 * Version 3.2 (January 2025):
 
   - An alternative implementation of the length spectrum. It supports verified
@@ -93,11 +114,11 @@ News
     incorrectly allowed looking at mod 2 homology of the branched
     cover, where the theory does not directly apply.
 
-  - New self-contained SnapPy application for Linux. 
-  
+  - New self-contained SnapPy application for Linux.
+
   - Support for Python 3.13 and SageMath 10.5.
 
-    
+
 * Versions 3.1 (May 2023) and 3.1.1 (June 2023):
 
   - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`

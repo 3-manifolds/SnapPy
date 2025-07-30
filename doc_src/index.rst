@@ -59,6 +59,18 @@ News
     TODO: Determine whether this was really a bug. Write prove that current
     version actually works.
 
+  - :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>` can be
+    given ``count`` and ``max_len`` at the same time. In that case, it stops
+    when enough geodesics have been listed to ensure that they include the
+    ``count`` shortest geodesics or that they include all geodesics shorter
+    than ``max_len``.
+
+  - Acceleration to
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>` when
+    the next geodesic has large gap to the last geodesic in the result.
+    It uses the new ``include_intermediates=True`` flag of
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+
   The first four are based on `[Dunfield and Gong]
   <https://arXiv.org/abs/FILLIN>`_.
 

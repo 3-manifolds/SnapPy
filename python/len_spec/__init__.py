@@ -1,6 +1,8 @@
 from .geometric_structure import mcomplex_for_len_spec
 from .tile import compute_length_spectrum_tiles, LengthSpectrumTile
-from .geodesic_info import GeodesicInfoBase, GeodesicKeyInfo, CoreCurveGeodesicInfo
+from .geodesic_info import (
+    GeodesicStreamInfoBase, GeodesicIntermediateInfo, GeodesicInfoBase,
+    GeodesicKeyInfo, CoreCurveGeodesicInfo)
 from .geodesic_key_info_dict import get_geodesic_key_info_set
 from .word import simplify_geodesic_word
 from .length_spectrum_geodesic_info import LengthSpectrumGeodesicInfo
@@ -11,7 +13,7 @@ from ..upper_halfspace import psl2c_to_o13
 from ..hyperboloid.distances import distance_r13_point_line
 from ..hyperboloid.line import R13Line
 from ..SnapPy import list_as_word, inverse_list_word
-from ..math_basics import lower, correct_max # type: ignore
+from ..math_basics import lower, correct_max, correct_min # type: ignore
 from ..exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from ..sage_helper import _within_sage, SageNotAvailable
 
@@ -26,8 +28,9 @@ _optimization : bool = False
 
 def length_spectrum_alt_gen(manifold,
                             bits_prec : Optional[int] = None,
-                            verified : bool = False
-                             ) -> Sequence[LengthSpectrumGeodesicInfo]:
+                            verified : bool = False,
+                            include_intermediates : bool = False
+                            ) -> Sequence[LengthSpectrumGeodesicInfo]:
     """
     Returns a generator for the geodesics sorted by real length. The method
     only supports orientable manifolds.
@@ -43,7 +46,7 @@ def length_spectrum_alt_gen(manifold,
         0.81161414965958 + 2.72911699294426*I       -           b
         >>> next(spec) # doctest: +NUMERIC9
         0.84163270359334 + 2.61245944742151*I       -           aB
-    
+
     Note that the shortest geodesic in the above example happens to be the
     core curve of the filled cusp (Cusp 0).
 
@@ -171,6 +174,13 @@ def length_spectrum_alt_gen(manifold,
             not succeed.
     :param verified:
             Use :ref:`verified computation <verify-primer>`.
+    :param include_intermediates:
+            For advanced users, add intermediate lower bounds to the stream.
+            These lower bounds do not correspond to ageodesic but indicate that
+            all geodesics up to the indicated (real) length have already
+            occurred in the stream. When ``verified=True``, the size of the
+            intervals might fluctate and the left endpoint is not guaranteed
+            to be non-decreasing.
     :return:
             A generator to enumerate the geodesics such that the (lower bound
             of the) real length is non-decreasing.
@@ -190,27 +200,35 @@ def length_spectrum_alt_gen(manifold,
                           if g > 0])
     is_first = True
 
-    geodesic : GeodesicInfoBase
-    for geodesic in _length_spectrum_from_mcomplex(mcomplex, manifold):
+    geodesic : GeodesicStreamInfoBase
+    for geodesic in _length_spectrum_from_mcomplex(
+            mcomplex, manifold, include_intermediates):
         # Convert information to user-friendly form
-        if isinstance(geodesic, CoreCurveGeodesicInfo):
-            core_curve = geodesic.core_curve
+        if isinstance(geodesic, GeodesicIntermediateInfo):
+            yield LengthSpectrumGeodesicInfo(
+                _is_first = False,
+                length = geodesic.length,
+                _is_intermediate = True)
         else:
-            core_curve = None
-        yield LengthSpectrumGeodesicInfo(
-            # _is_first indicates whether to print the header
-            _is_first = is_first,
-            length = geodesic.length,
-            # Convert word to a or x1
-            word = list_as_word(
-                simplify_geodesic_word(geodesic.word),
-                num_generators,
-                verbose_form=False),
-            core_curve = core_curve,
-            parity = 'orientation-preserving',
-            topology = 'circle',
-            multiplicity = 1)
-        is_first = False
+            if isinstance(geodesic, CoreCurveGeodesicInfo):
+                core_curve = geodesic.core_curve
+            else:
+                core_curve = None
+            yield LengthSpectrumGeodesicInfo(
+                # _is_first indicates whether to print the header
+                _is_first = is_first,
+                length = geodesic.length,
+                # Convert word to a or x1
+                word = list_as_word(
+                    simplify_geodesic_word(geodesic.word),
+                    num_generators,
+                    verbose_form=False),
+                core_curve = core_curve,
+                parity = 'orientation-preserving',
+                topology = 'circle',
+                multiplicity = 1,
+                _is_intermediate = False)
+            is_first = False
 
 def length_spectrum_alt(manifold,
                         count : Optional[int] = None,
@@ -220,8 +238,8 @@ def length_spectrum_alt(manifold,
                         ) -> List[LengthSpectrumGeodesicInfo]:
     """
     Returns a list of geodesics. How far this list goes can be specified
-    by either a cut-off length or a count. The method only supports
-    orientable manifolds. It is a convenience method for 
+    by a cut-off length or a count. The method only supports
+    orientable manifolds. It is a convenience method for
     :meth:`~snappy.Manifold.length_spectrum_alt_gen`.
     We refer the reader to
     :meth:`~snappy.Manifold.length_spectrum_alt_gen`
@@ -275,16 +293,17 @@ def length_spectrum_alt(manifold,
         sage: M = Manifold("m004")
         sage: M.length_spectrum_alt(count=1, verified=True, bits_prec=100)[0].length.real() # doctest: +NUMERIC21
         1.0870701449957390997853?
-    
+
     :param count:
             Number of shortest geodesics to list. The actual result might
-            contain additional geodesics. Exactly one of :attr:`count` and
-            :attr:`max_len` has to be specified.
+            contain additional geodesics. For advanced users: if
+            :attr:`max_len` is also given, the result contains either the
+            :attr:`count` shortest geodesics or all geodesics shorter than
+            :attr:`max_len` (and maybe additional geodesics).
     :param max_len:
             Cut-off length for geodesics. The actual result includes all
             geodesics up to the given length and might include additional
-            geodesics. Exactly one of :attr:`count` and :attr:`max_len` has
-            to be specified.
+            geodesics. See :attr:`count` when used with :attr:`count`.
     :param bits_prec:
             Precision used for the computation. Increase if computation did
             not succeed.
@@ -295,119 +314,102 @@ def length_spectrum_alt(manifold,
             length is non-decreasing.
     """
 
-    has_count = count is not None
-    has_max_len = max_len is not None
-
-    if not (has_count ^ has_max_len):
+    if count is None and max_len is None:
         raise ValueError(
-            "Must specify exactly one of count or max_len.")
+            "Must specify at least one of count or max_len.")
 
-    if has_max_len:
-        return list(
-            _length_spectrum_alt_max_len(
-                manifold,
-                max_len = max_len,
-                bits_prec = bits_prec,
-                verified = verified))
+    if not count is None:
+        if not hasattr(count, '__index__'):
+            raise ValueError(
+                "count must be an integer.")
+    
+    if max_len is None:
+        resolved_max_len = None
     else:
-        return list(
-            _length_spectrum_alt_count(
-                manifold,
-                count = count,
-                bits_prec = bits_prec,
-                verified = verified))
-
-def _length_spectrum_alt_max_len(
-        manifold, *,
-        max_len : Any,
-        bits_prec : Optional[int],
-        verified : bool):
-    """
-    Generator to produce all geodesics up to a given length.
-    """
-
-    if verified:
-        if not _within_sage:
-            raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
-        if bits_prec is None:
-            resolved_bits_prec = manifold._precision()
+        if verified:
+            if not _within_sage:
+                raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
+            if bits_prec is None:
+                resolved_bits_prec = manifold._precision()
+            else:
+                resolved_bits_prec = bits_prec
+            RIF = RealIntervalField(resolved_bits_prec)
+            resolved_max_len = RIF(max_len)
         else:
-            resolved_bits_prec = bits_prec
-        RIF = RealIntervalField(resolved_bits_prec)
-        resolved_max_len = RIF(max_len)
-    else:
-        # A bit of fudge
-        resolved_max_len = max_len * 1.0000152
+            # A bit of fudge
+            resolved_max_len = max_len * 1.0000152
 
+    return list(
+        _length_spectrum_alt_impl(
+            manifold, count, resolved_max_len, bits_prec, verified))
+
+def _length_spectrum_alt_impl(manifold,
+                              count : Optional[int],
+                              max_len : Optional[Any],
+                              bits_prec : Optional[int],
+                              verified : bool
+                              ) -> Sequence[LengthSpectrumGeodesicInfo]:
+
+    # Number of geodesics encountered so far (only if count is not None).
+    num_geodesics = 0
+    # Maximum length of any geodesic encountered so far (only if count is not None).
+    max_len_geodesics = None
+
+    info : LengthSpectrumGeodesicInfo
     for info in length_spectrum_alt_gen(manifold = manifold,
                                         bits_prec = bits_prec,
-                                        verified = verified):
-        # For verified computation:
-        #
-        # Recall that length_spectrum_alt_gen gives geodesics in the
-        # order such that the lower bound of info.length.real() is
-        # guaranteed to be (not strictly) increasing.
-        #
-        # The inequality checks that the lower bound of info.length.real()
-        # is larger than the given max_len.
-        #
-        # Thus, if true, any further geodesics will have length larger
-        # than max_len.
-        #
-        if info.length.real() > resolved_max_len:
-            break
-        yield info
-
-def _length_spectrum_alt_count(
-        manifold, *,
-        count : int,
-        bits_prec : Optional[int],
-        verified : bool):
-    """
-    Generator to return a (potential) superset of geodesics containing
-    the count shortest geodesics.
-
-    In the verified case, this is a bit tricky since the only guarantee
-    we have is that the lower bound of the interval of the length
-    is (non-strictly) increasing.
-    """
-
-    if not count > 0:
-        # Sanitycheck.
-        return
-    
-    for i, info in enumerate(
-            length_spectrum_alt_gen(manifold = manifold,
-                                    bits_prec = bits_prec,
-                                    verified = verified)):
+                                        verified = verified,
+                                        include_intermediates = True):
+        # By guarantees from length_spectrum_alt_gen guarantees, all geodesics
+        # with real length less than (the left end point) of this_len have
+        # occurred in the length spectrum stream.
         this_len = info.length.real()
 
-        if i >= count:
-            if verified:
-                # The lower bound of the length of the current geodesic
-                # is larger than the maximum length of any geodesic
-                # encountered so far.
-                # Thus all following geodesics will be longer than any
-                # of geodesic encountered so far.
-                if this_len > max_len:
+        if max_len is not None:
+            if this_len > max_len:
+                # We have found all geodesics less than max_len.
+                break
+
+        if count is not None:
+            if num_geodesics >= count:
+                if max_len_geodesics is None:
+                    # Someone used count = 0, no max_len_geodesics available.
                     break
-            else:
-                # Add a fudge factor to account for geodesics with
-                # true equal length might have slightly different
-                # length due to numeric noise.
-                if this_len > 1.0000152 * max_len:
+                if verified:
+                    resolved_max_len_geodesics = max_len_geodesics
+                else:
+                    # Fudge factor when not verified
+                    resolved_max_len_geodesics = 1.0000152 * max_len_geodesics
+                
+                if this_len > resolved_max_len_geodesics:
+                    # The lower bound of the length of the current geodesic
+                    # is larger than the maximum length of any geodesic
+                    # encountered so far.
+                    # Thus all following geodesics will be longer than any
+                    # of geodesic encountered so far.
                     break
 
-        # Update the maximal length of geodesics encountered so far.
-        if i == 0:
-            max_len = this_len
-        else:
-            max_len = correct_max([max_len, this_len])
+        if info._is_intermediate:
+            # Skip intermediates
+            continue
+
+        if count is not None:
+            # Update max_len_geodesics and num_geodesics
+            if max_len_geodesics is None:
+                max_len_geodesics = this_len
+            else:
+                max_len_geodesics = correct_max(
+                    [max_len_geodesics, this_len])
+
+            num_geodesics += 1
 
         yield info
-        
+
 def _length_spectrum_from_mcomplex(
-        mcomplex : Mcomplex, manifold) -> Sequence[GeodesicInfoBase]:
+        mcomplex : Mcomplex,
+        manifold,
+        include_intermediates : bool = False
+        ) -> Sequence[GeodesicStreamInfoBase]:
     """
     Implements length_spectrum given an Mcomplex constructed with
     mcomplex_for_len_spec and the SnapPy Manifold.
@@ -470,7 +472,7 @@ def _length_spectrum_from_mcomplex(
         #
         r = tile.lower_bound_geodesic_length
         while (pending_geodesics and
-               pending_geodesics[0].length.real() + epsilon < r):
+               pending_geodesics[0].length.real() < r - epsilon):
             # We can emit the geodesic g from the top of the priority queue
             # - if we haven't emitted it already earlier.
             # That is because all geodesics that we have not seen when
@@ -555,6 +557,20 @@ def _length_spectrum_from_mcomplex(
             last_real_length = real_length
 
             yield geodesic
+
+        if include_intermediates:
+            # Minimum of length from pre-length spectrum and geodesics
+            # that are still in the priority queue and have not been
+            # emitted yet.
+            if pending_geodesics:
+                lower_bound_geodesic_length = correct_min(
+                    [ r - epsilon,
+                      pending_geodesics[0].length.real() ])
+            else:
+                lower_bound_geodesic_length = (
+                    r - epsilon)
+            yield GeodesicIntermediateInfo(
+                length = lower_bound_geodesic_length)
 
         heapq.heappush(
             pending_geodesics,

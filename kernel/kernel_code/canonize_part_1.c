@@ -23,15 +23,15 @@
  *
  *  proto_canonize() returns
  *
- *      func_OK     if the hyperbolic structure is of type
- *                  geometric_solution or nongeometric_solution
- *                  (in which case it will have found a subdivision
- *                  of the canonical cell decomposition)
+ *      func_OK     if a geometric subdivision of the canonical cell
+ *                  decomposition is achieved;
  *
- *      func_failed if the hyperbolic structure is of type
- *                  flat_solution, degenerate_solution, other_solution,
+ *      func_failed if the hyperbolic structure of the initial triangulation
+ *                  is of type flat_solution, degenerate_solution, other_solution,
  *                  or no_solution (in which case it will not have
- *                  attempted the canonization)
+ *                  attempted the canonization), or if it fails to find a
+ *                  subdivision of the canonical cell decomposition that is geometric
+ *                  (in particular no negatively oriented or flat tetrahedra)
  *
  *  When proto_canonize() returns func_OK, a subdivision of the
  *  canonical cell decomposition will be present, but because of the
@@ -232,13 +232,13 @@ FuncResult proto_canonize(
 
         /*
          *  Did we really find a subdivision of the canonical
-         *  cell decomposition?
+         *  cell decomposition with no flat tetrahedra?
          *  Or did we just get stuck on (potential) negatively
          *  oriented Tetrahedra?
          */
-
+        
         all_done = validate_canonical_triangulation(manifold);
-
+        
         /*
          *  If we got stuck on (potential) negatively oriented
          *  Tetrahedra, randomize the Triangulation and try
@@ -288,7 +288,6 @@ FuncResult proto_canonize(
     else
 	return func_failed;
 }
-
 
 static FuncResult validate_hyperbolic_structure(
     Triangulation   *manifold)
@@ -548,20 +547,36 @@ static Boolean validate_canonical_triangulation(
 {
     Tetrahedron *tet;
     FaceIndex   f;
-
-    /*
-     *  Check whether the sum of the tilts is nonnegative at each 2-simplex.
-     */
+    int i;
+    Real the_angle;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
          tet = tet->next)
+        {
+
+        /*
+        *   Check whether the tetrahedra is flat.
+        */
+
+        for (i = 0; i < 3; i++)
+        {
+            the_angle = tet->shape[complete]->cwl[ultimate][i].log.imag;
+
+            if (the_angle <= CONCAVITY_EPSILON || the_angle >= PI - CONCAVITY_EPSILON)
+                return FALSE;
+        }
+
+        /*
+        *   Check whether the sum of the tilts is nonnegative at each 2-simplex.
+        */
 
         for (f = 0; f < 4; f++)
 
             if (concave_face(tet, f) == TRUE)
 
                 return FALSE;
+        }
 
     return TRUE;
 }

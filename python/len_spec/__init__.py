@@ -556,7 +556,6 @@ def _length_spectrum_from_mcomplex(
 
             yield geodesic
 
-        # Geodesic is processed, remove from priority queue.
         heapq.heappush(
             pending_geodesics,
             GeodesicKeyInfo(mcomplex, tile.word, tile.o13_matrix))

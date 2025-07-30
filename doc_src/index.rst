@@ -44,6 +44,13 @@ News
   - The Fox-Milnor slice obstruction is now available as
     :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
 
+  - :meth:`triangulation_isosig <snappy.Manifold.triangulation_isosig>` now
+    preserves the orientation of the core curve rather than the Dehn-filling
+    curve - thus, preserving the (unoriented) spun-triangulation structure.
+    This only changes the result when ``ignore_curves=True`` (and
+    ``ignore_orientation`` and ``ignore_filling_orientations`` have their
+    default values).
+
   The first four are based on `[Dunfield and Gong]
   <https://arXiv.org/abs/FILLIN>`_.
 

@@ -24,6 +24,8 @@ import heapq
 
 from typing import Any, Optional, List, Sequence
 
+_len_fudge_factor = 1.0000152
+
 _optimization : bool = False
 
 def length_spectrum_alt_gen(manifold,
@@ -322,7 +324,7 @@ def length_spectrum_alt(manifold,
         if not hasattr(count, '__index__'):
             raise ValueError(
                 "count must be an integer.")
-    
+
     if max_len is None:
         resolved_max_len = None
     else:
@@ -337,7 +339,7 @@ def length_spectrum_alt(manifold,
             resolved_max_len = RIF(max_len)
         else:
             # A bit of fudge
-            resolved_max_len = max_len * 1.0000152
+            resolved_max_len = _len_fudge_factor * max_len
 
     return list(
         _length_spectrum_alt_impl(
@@ -350,9 +352,10 @@ def _length_spectrum_alt_impl(manifold,
                               verified : bool
                               ) -> Sequence[LengthSpectrumGeodesicInfo]:
 
-    # Number of geodesics encountered so far (only if count is not None).
+    # Number of geodesics encountered so far.
     num_geodesics = 0
-    # Maximum length of any geodesic encountered so far (only if count is not None).
+    # Maximum length of any geodesic encountered so far (plus a little extra
+    # if not verified).
     max_len_geodesics = None
 
     info : LengthSpectrumGeodesicInfo
@@ -365,43 +368,38 @@ def _length_spectrum_alt_impl(manifold,
         # occurred in the length spectrum stream.
         this_len = info.length.real()
 
-        if max_len is not None:
-            if this_len > max_len:
-                # We have found all geodesics less than max_len.
-                break
+        if max_len_geodesics is None or this_len > max_len_geodesics:
+            # We have a clean break.
+            # That is all subsequent geodesics have length strictly larger than
+            # any geodesics encountered so far.
 
-        if count is not None:
-            if num_geodesics >= count:
-                if max_len_geodesics is None:
-                    # Someone used count = 0, no max_len_geodesics available.
+            # Check whether any of the conditions to stop is fulfilled.
+            if count is not None:
+                if num_geodesics >= count:
                     break
-                if verified:
-                    resolved_max_len_geodesics = max_len_geodesics
-                else:
-                    # Fudge factor when not verified
-                    resolved_max_len_geodesics = 1.0000152 * max_len_geodesics
-                
-                if this_len > resolved_max_len_geodesics:
-                    # The lower bound of the length of the current geodesic
-                    # is larger than the maximum length of any geodesic
-                    # encountered so far.
-                    # Thus all following geodesics will be longer than any
-                    # of geodesic encountered so far.
+
+            if max_len is not None:
+                if this_len > max_len:
                     break
 
         if info._is_intermediate:
             # Skip intermediates
             continue
 
-        if count is not None:
-            # Update max_len_geodesics and num_geodesics
-            if max_len_geodesics is None:
-                max_len_geodesics = this_len
-            else:
-                max_len_geodesics = correct_max(
-                    [max_len_geodesics, this_len])
+        # Update max_len_geodesics
+        if verified:
+            this_len_fudge = this_len
+        else:
+            # Fudge factor when not verified
+            this_len_fudge = _len_fudge_factor * this_len
 
-            num_geodesics += 1
+        if max_len_geodesics is None:
+            max_len_geodesics = this_len_fudge
+        else:
+            max_len_geodesics = correct_max(
+                [max_len_geodesics, this_len_fudge])
+
+        num_geodesics += 1
 
         yield info
 

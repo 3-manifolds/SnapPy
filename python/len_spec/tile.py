@@ -110,6 +110,8 @@ def compute_length_spectrum_tiles(mcomplex : Mcomplex
         if visited_dict.add(tile.o13_matrix * mcomplex.R13_baseTetInCenter):
             yield tile
 
+my_count = 0
+
 def _compute_length_spectrum_tiles_for_tetrahedron(
         mcomplex, initial_tetrahedron) -> Sequence[LengthSpectrumTile]:
 
@@ -197,6 +199,9 @@ def _compute_length_spectrum_tiles_for_tetrahedron(
             lifted_spine_center = (
                 o13_inverse(new_m) * initial_tetrahedron.spine_center)
 
+            global my_count
+            my_count += 1
+            
             heapq.heappush(
                 pending_lifted_tetrahedra,
                 _PendingLiftedTetrahedron(

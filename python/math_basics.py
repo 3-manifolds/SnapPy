@@ -11,7 +11,8 @@ __all__ = ['prod',
            'is_Interval',
            'correct_min',
            'correct_max',
-           'lower']
+           'lower',
+           'upper']
 
 def is_Interval(x):
     """
@@ -172,5 +173,15 @@ def lower(x):
                 "A NaN was encountered during a verified computation. "
                 "Increasing the precision will probably fix this.")
         return x.lower()
+    else:
+        return x
+
+def upper(x):
+    if is_RealIntervalFieldElement(x):
+        if x.is_NaN():
+            raise InsufficientPrecisionError(
+                "A NaN was encountered during a verified computation. "
+                "Increasing the precision will probably fix this.")
+        return x.upper()
     else:
         return x

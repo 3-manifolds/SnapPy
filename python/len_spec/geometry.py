@@ -114,8 +114,6 @@ def lower_bound_distance_r13_point_truncated_tetrahedron(
     a = lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet, verified)
 
-    return a
-    
     b = lower_bound_distance_r13_point_truncated_tetrahedron1(
         point, tet, verified)
 

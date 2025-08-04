@@ -1,5 +1,7 @@
 from ..hyperboloid.distances import (
-    distance_r13_points, lower_bound_distance_r13_point_triangle)
+    distance_r13_points,
+    distance_r13_point_line,
+    lower_bound_distance_r13_point_triangle)
 from ..hyperboloid import r13_dot
 
 from ..math_basics import correct_min, correct_max # type: ignore
@@ -78,7 +80,14 @@ def lower_bound_distance_r13_point_truncated_tetrahedron1(
         [ lower_bound_distance_r13_point_triangle(
             point, tet.R13_triangles[f], verified)
           for f in simplex.TwoSubsimplices ])
+
     return correct_max([d_out, d_faces])
+
+def my_lower_bound_distance_r13_point_triangle(
+        point, triangle, verified : bool):
+    if r13_dot(point, triangle.plane) <= 0:
+        return None
+    return lower_bound_distance_r13_point_triangle(point, triangle, verified)
 
 def lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet : Tetrahedron, verified : bool):
@@ -90,23 +99,23 @@ def lower_bound_distance_r13_point_truncated_tetrahedron2(
 
     plane_signs = [ r13_dot(point, tet.R13_planes[f]) for f in simplex.TwoSubsimplices ]
 
-    pos_indices = [ index for index in range(4)
-                    if plane_signs[index] > 0 ]
-    n = len(pos_indices)
+    maybe_pos_indices = [ index
+                          for index, plane_sign in enumerate(plane_signs)
+                          if not plane_sign <= 0 ]
+    d_faces = [
+        d
+        for f in simplex.TwoSubsimplices
+        if (d := my_lower_bound_distance_r13_point_triangle(
+                point, tet.R13_triangles[f], verified)) is not None ]
+    n = len(d_faces)
     if n == 0:
-        raise Exception("Point inside tetrahedron")
+        raise Exception("Points expected to be outside of tetrahedron.")
     elif n == 1:
-        d_faces = lower_bound_distance_r13_point_triangle(
-            point, tet.R13_triangles[simplex.TwoSubsimplices[pos_indices[0]]], verified)
-    elif n == 2:
-        d_faces = correct_min(
-            [ lower_bound_distance_r13_point_triangle(
-                point, tet.R13_triangles[simplex.TwoSubsimplices[index]], verified)
-              for index in pos_indices ])
+        d_faces_min = d_faces[0]
     else:
-        raise Exception("Insufficient precision")
+        d_faces_min = correct_min(d_faces)
 
-    return correct_max([d_out, d_faces])
+    return correct_max([d_out, d_faces_min])
 
 def lower_bound_distance_r13_point_truncated_tetrahedron(
         point, tet : Tetrahedron, verified : bool):
@@ -120,6 +129,6 @@ def lower_bound_distance_r13_point_truncated_tetrahedron(
     RF = a.parent()
     
     if not abs(a-b) < RF(1e-9):
-        raise Exception("Bad")
+        raise Exception("Bad", a, b)
 
     return a

@@ -10,7 +10,7 @@ from ..math_basics import correct_min, correct_max, lower # type: ignore
 from ..matrix import make_identity_matrix
 
 from .geometry import (lower_bound_geodesic_length,
-                       lower_bound_cosh_distance_r13_point_truncated_tetrahedron)
+                       lower_bound_distance_r13_point_truncated_tetrahedron)
 
 import heapq
 from typing import List, Sequence
@@ -165,7 +165,7 @@ def _compute_length_spectrum_tiles_for_tetrahedron(
                 pending_lifted_tetrahedron.word,
                 pending_lifted_tetrahedron.lifted_tetrahedron.o13_matrix,
                 lower_bound_geodesic_length(
-                    pending_lifted_tetrahedron.lower_bound_cosh_distance,
+                    pending_lifted_tetrahedron.lower_bound_distance,
                     initial_tetrahedron.inv_spine_cosh))
 
         # For all faces ...
@@ -201,7 +201,7 @@ def _compute_length_spectrum_tiles_for_tetrahedron(
                 _PendingLiftedTetrahedron(
                     word,
                     new_lifted_tetrahedron,
-                    lower_bound_cosh_distance_r13_point_truncated_tetrahedron(
+                    lower_bound_distance_r13_point_truncated_tetrahedron(
                         lifted_spine_center,
                         new_tet,
                         mcomplex.verified),
@@ -225,11 +225,11 @@ class _PendingLiftedTetrahedron:
     def __init__(self,
                  word,
                  lifted_tetrahedron : LiftedTetrahedron,
-                 lower_bound_cosh_distance,
+                 lower_bound_distance,
                  entry_cell : int = simplex.T):
         self.word = word
         self.lifted_tetrahedron = lifted_tetrahedron
-        self.lower_bound_cosh_distance = lower_bound_cosh_distance
+        self.lower_bound_distance = lower_bound_distance
 
         # Either element of simplex.ZeroSubsimplices (if piece was reached
         # through another piece) or simplex.T (if this pending piece was
@@ -240,7 +240,7 @@ class _PendingLiftedTetrahedron:
         # the left value of the interval that is relevant and that we
         # should use: A < B can be False for two intervals even
         # when A's left value is lower than B's left value.
-        self._key = lower(lower_bound_cosh_distance)
+        self._key = lower(lower_bound_distance)
 
     def __lt__(self, other):
         return self._key < other._key

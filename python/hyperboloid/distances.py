@@ -181,14 +181,15 @@ def _safe_sqrt(p):
     of two such vectors is always non-positive.
     """
 
+    if p >= 0:
+        return p.sqrt()
+
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = p.intersection(RIF(0, Infinity))
+        return p.intersection(RIF(0, Infinity)).sqrt()
     else:
-        if p < 0:
-            RF = p.parent()
-            return RF(0)
-    return p.sqrt()
+        RF = p.parent()
+        return RF(0)
 
 def _safe_log(p):
     if is_RealIntervalFieldElement(p):
@@ -229,6 +230,9 @@ def _safe_div(a, b):
     Compute a / b where be is known to be non-negative and we should
     return infinity if b is zero.
     """
+
+    if b > 0:
+        return a / b
     
     if is_RealIntervalFieldElement(b):
         RIF = b.parent()
@@ -237,9 +241,6 @@ def _safe_div(a, b):
         else:
             return a / b.intersection(RIF(0, Infinity))
     else:
-        if b <= 0:
-            RIF = b.parent()
-            return RIF(1e20)
-        else:
-            return a / b
+        RIF = b.parent()
+        return RIF(1e20)
 

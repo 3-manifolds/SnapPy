@@ -1,12 +1,19 @@
 from ..hyperboloid.distances import (
     distance_r13_points,
     distance_r13_point_line,
+    cosh_distance_r13_point_line,
     lower_bound_distance_r13_point_triangle)
 from ..hyperboloid import r13_dot
 
+from ..math_basics import is_RealIntervalFieldElement # type: ignore
 from ..math_basics import correct_min, correct_max # type: ignore
 
 from ..snap.t3mlite import simplex, Tetrahedron
+
+from ..sage_helper import _within_sage # type: ignore
+
+if _within_sage:
+    from ..sage_helper import Infinity
 
 def lower_bound_geodesic_length(
         lower_bound_distance, inv_spine_cosh):
@@ -50,7 +57,7 @@ def lower_bound_geodesic_length(
     since we treat core curves separately when computing the length
     spectrum.
     """
-    
+
     if lower_bound_distance > 0:
         q = lower_bound_distance.cosh() * inv_spine_cosh
         if q > 1:
@@ -83,11 +90,24 @@ def lower_bound_distance_r13_point_truncated_tetrahedron1(
 
     return correct_max([d_out, d_faces])
 
-def my_lower_bound_distance_r13_point_triangle(
+def my_lower_bound_cosh_distance_r13_point_triangle(
         point, triangle, verified : bool):
-    if r13_dot(point, triangle.plane) <= 0:
+
+    if verified:
+        epsilon = 0
+    else:
+        RF = point[0].parent()
+        epsilon = _compute_epsilon(RF)
+    
+    sinh_dist_point_plane = r13_dot(point, triangle.plane)
+    if sinh_dist_point_plane <= -epsilon:
         return None
-    return lower_bound_distance_r13_point_triangle(point, triangle, verified)
+    for bounding_plane, edge in zip(triangle.bounding_planes,
+                                    triangle.edges):
+        if r13_dot(point, bounding_plane) > epsilon:
+            return cosh_distance_r13_point_line(point, edge)
+
+    return (sinh_dist_point_plane ** 2 + 1).sqrt()
 
 def lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet : Tetrahedron, verified : bool):
@@ -102,18 +122,20 @@ def lower_bound_distance_r13_point_truncated_tetrahedron2(
     maybe_pos_indices = [ index
                           for index, plane_sign in enumerate(plane_signs)
                           if not plane_sign <= 0 ]
-    d_faces = [
-        d
+    cosh_d_faces = [
+        cosh_d
         for f in simplex.TwoSubsimplices
-        if (d := my_lower_bound_distance_r13_point_triangle(
+        if (cosh_d := my_lower_bound_cosh_distance_r13_point_triangle(
                 point, tet.R13_triangles[f], verified)) is not None ]
-    n = len(d_faces)
+    n = len(cosh_d_faces)
     if n == 0:
         raise Exception("Points expected to be outside of tetrahedron.")
     elif n == 1:
-        d_faces_min = d_faces[0]
+        cosh_d_faces_min = cosh_d_faces[0]
     else:
-        d_faces_min = correct_min(d_faces)
+        cosh_d_faces_min = correct_min(cosh_d_faces)
+
+    d_faces_min = _safe_arccosh(cosh_d_faces_min)
 
     return correct_max([d_out, d_faces_min])
 
@@ -123,6 +145,8 @@ def lower_bound_distance_r13_point_truncated_tetrahedron(
     a = lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet, verified)
 
+    return a
+    
     b = lower_bound_distance_r13_point_truncated_tetrahedron1(
         point, tet, verified)
 
@@ -132,3 +156,16 @@ def lower_bound_distance_r13_point_truncated_tetrahedron(
         raise Exception("Bad", a, b)
 
     return a
+
+def _safe_arccosh(p):
+    if is_RealIntervalFieldElement(p):
+        RIF = p.parent()
+        p = p.intersection(RIF(1, Infinity))
+    else:
+        if p < 1:
+            RF = p.parent()
+            return RF(0)
+    return p.arccosh()
+
+def _compute_epsilon(RF):
+    return RF(0.5) ** (RF.prec() // 2)

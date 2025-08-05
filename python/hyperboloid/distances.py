@@ -62,10 +62,14 @@ def distance_r13_point_line(pt, # Unit time-like
     This also works if line is degenerate and starts and ends at some point.
     """
 
+    return _safe_arccosh(cosh_distance_r13_point_line(pt, line))
+
+def cosh_distance_r13_point_line(pt, # Unit time-like
+                                 line : R13Line):
     p = (r13_dot(line.points[0], pt) *
          r13_dot(line.points[1], pt))
     s = _safe_div(2 * p, -line.inner_product)
-    return _safe_arccosh(_safe_sqrt(s))
+    return _safe_sqrt(s)
 
 def distance_r13_point_plane(pt, # Unit time-like
                              plane_defining_vec): # Unit space-like

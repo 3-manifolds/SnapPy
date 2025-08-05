@@ -1,6 +1,5 @@
 from ..hyperboloid.distances import (
     distance_r13_points, lower_bound_distance_r13_point_triangle)
-from ..hyperboloid import r13_dot
 
 from ..math_basics import correct_min, correct_max # type: ignore
 
@@ -56,7 +55,7 @@ def lower_bound_geodesic_length(
     RF = lower_bound_distance.parent()
     return RF(0)
 
-def lower_bound_distance_r13_point_truncated_tetrahedron1(
+def lower_bound_distance_r13_point_truncated_tetrahedron(
         point, tet : Tetrahedron, verified : bool):
     """
     A lower bound for the distance of a point to a truncated tetrahedron.
@@ -79,49 +78,3 @@ def lower_bound_distance_r13_point_truncated_tetrahedron1(
             point, tet.R13_triangles[f], verified)
           for f in simplex.TwoSubsimplices ])
     return correct_max([d_out, d_faces])
-
-def lower_bound_distance_r13_point_truncated_tetrahedron2(
-        point, tet : Tetrahedron, verified : bool):
-
-    d_out   = distance_r13_points(point, tet.spine_center) - tet.out_radius
-    # Another lower bound is given by computing the distance to the underlying
-    # ideal tetrahedron. Assuming the point is not in the tetrahedron, it is
-    # given by the distances to the ideal faces.
-
-    plane_signs = [ r13_dot(point, tet.R13_planes[f]) for f in simplex.TwoSubsimplices ]
-
-    pos_indices = [ index for index in range(4)
-                    if plane_signs[index] > 0 ]
-    n = len(pos_indices)
-    if n == 0:
-        raise Exception("Point inside tetrahedron")
-    elif n == 1:
-        d_faces = lower_bound_distance_r13_point_triangle(
-            point, tet.R13_triangles[simplex.TwoSubsimplices[pos_indices[0]]], verified)
-    elif n == 2:
-        d_faces = correct_min(
-            [ lower_bound_distance_r13_point_triangle(
-                point, tet.R13_triangles[simplex.TwoSubsimplices[index]], verified)
-              for index in pos_indices ])
-    else:
-        raise Exception("Insufficient precision")
-
-    return correct_max([d_out, d_faces])
-
-def lower_bound_distance_r13_point_truncated_tetrahedron(
-        point, tet : Tetrahedron, verified : bool):
-
-    a = lower_bound_distance_r13_point_truncated_tetrahedron2(
-        point, tet, verified)
-
-    return a
-    
-    b = lower_bound_distance_r13_point_truncated_tetrahedron1(
-        point, tet, verified)
-
-    RF = a.parent()
-    
-    if not abs(a-b) < RF(1e-9):
-        raise Exception("Bad")
-
-    return a

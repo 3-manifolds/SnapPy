@@ -135,15 +135,5 @@ def lower_bound_cosh_distance_r13_point_truncated_tetrahedron(
 
     return correct_max([cosh_d_out, cosh_d_faces_min])
 
-def _safe_arccosh(p):
-    if is_RealIntervalFieldElement(p):
-        RIF = p.parent()
-        p = p.intersection(RIF(1, Infinity))
-    else:
-        if p < 1:
-            RF = p.parent()
-            return RF(0)
-    return p.arccosh()
-
 def _compute_epsilon(RF):
     return RF(0.5) ** (RF.prec() // 2)

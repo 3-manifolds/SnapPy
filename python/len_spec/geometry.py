@@ -112,16 +112,12 @@ def my_lower_bound_cosh_distance_r13_point_triangle(
 def lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet : Tetrahedron, verified : bool):
 
-    d_out   = distance_r13_points(point, tet.spine_center) - tet.out_radius
+
+    # d_out   = distance_r13_points(point, tet.spine_center) - tet.out_radius
     # Another lower bound is given by computing the distance to the underlying
     # ideal tetrahedron. Assuming the point is not in the tetrahedron, it is
     # given by the distances to the ideal faces.
 
-    plane_signs = [ r13_dot(point, tet.R13_planes[f]) for f in simplex.TwoSubsimplices ]
-
-    maybe_pos_indices = [ index
-                          for index, plane_sign in enumerate(plane_signs)
-                          if not plane_sign <= 0 ]
     cosh_d_faces = [
         cosh_d
         for f in simplex.TwoSubsimplices
@@ -135,9 +131,18 @@ def lower_bound_distance_r13_point_truncated_tetrahedron2(
     else:
         cosh_d_faces_min = correct_min(cosh_d_faces)
 
-    d_faces_min = _safe_arccosh(cosh_d_faces_min)
+    cosh_d_spine = -r13_dot(point, tet.spine_center)
+    if not cosh_d_spine > tet.cosh_out_radius:
+        return _safe_arccosh(cosh_d_faces_min)
+        
+    sinh_d_spine = (cosh_d_spine ** 2 - 1).sqrt()
+    cosh_d_out = cosh_d_spine * tet.cosh_out_radius - sinh_d_spine * tet.sinh_out_radius
 
-    return correct_max([d_out, d_faces_min])
+    if not cosh_d_out > 1:
+        return _safe_arccosh(cosh_d_faces_min)
+
+    return _safe_arccosh(
+        correct_max([cosh_d_out, cosh_d_faces_min]))
 
 def lower_bound_distance_r13_point_truncated_tetrahedron(
         point, tet : Tetrahedron, verified : bool):
@@ -145,8 +150,6 @@ def lower_bound_distance_r13_point_truncated_tetrahedron(
     a = lower_bound_distance_r13_point_truncated_tetrahedron2(
         point, tet, verified)
 
-    return a
-    
     b = lower_bound_distance_r13_point_truncated_tetrahedron1(
         point, tet, verified)
 

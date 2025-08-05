@@ -84,6 +84,9 @@ def add_spine(mcomplex : Mcomplex):
               for v1 in simplex.ZeroSubsimplices
               if v0 != v1 ])
 
+        tet.cosh_out_radius = tet.out_radius.cosh()
+        tet.sinh_out_radius = tet.out_radius.sinh()
+
         if False:
             print("out, spine =", tet.out_radius, tet.spine_radius)
 

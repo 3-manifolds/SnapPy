@@ -1,12 +1,14 @@
-from ..hyperboloid.distances import (
-    distance_r13_points, lower_bound_distance_r13_point_triangle)
-
-from ..math_basics import correct_min, correct_max # type: ignore
+from ..hyperboloid.distances import cosh_distance_r13_point_line
+from ..hyperboloid import r13_dot
+from ..math_basics import correct_min, correct_max # type: ignor
+from ..exceptions import InsufficientPrecisionError
 
 from ..snap.t3mlite import simplex, Tetrahedron
 
+from typing import Optional, Any
+
 def lower_bound_geodesic_length(
-        lower_bound_distance, inv_spine_cosh):
+        lower_bound_cosh_distance, inv_spine_cosh):
     """
     This implements a version of Proposition 3.5 of
     Weeks-Hodgson's Symmetries, Isometries and Length Spectra of Closed
@@ -30,7 +32,7 @@ def lower_bound_geodesic_length(
     the factor of 2 through out:
 
                   R = arccosh(cosh(r) cosh(L))
-    
+
     We also want an expression in L:
 
                   L = arccosh(cosh(R) / cosh(r))
@@ -47,34 +49,88 @@ def lower_bound_geodesic_length(
     since we treat core curves separately when computing the length
     spectrum.
     """
-    
-    if lower_bound_distance > 0:
-        q = lower_bound_distance.cosh() * inv_spine_cosh
+
+    if lower_bound_cosh_distance > 1:
+        q = lower_bound_cosh_distance * inv_spine_cosh
         if q > 1:
             return q.arccosh()
-    RF = lower_bound_distance.parent()
+    RF = lower_bound_cosh_distance.parent()
     return RF(0)
 
-def lower_bound_distance_r13_point_truncated_tetrahedron(
-        point, tet : Tetrahedron, verified : bool):
-    """
-    A lower bound for the distance of a point to a truncated tetrahedron.
-    Assuming the point is not inside the truncated tetrahedron.
+def lower_bound_cosh_distance_r13_point_truncated_tetrahedron(
+        point, tet : Tetrahedron, *, verified : bool):
 
-    The truncated tetrahedron is given as follows: we have the ideal
-    triangles for each face of the underlying ideal tetrahedra. We have
-    a lower bound on the radius of the truncated tetrahedron with respect
-    to its spine center (typically the incenter).
+    """
+    A lower bound for cosh of the distance of a point to a truncated
+    tetrahedron tet. Assumes the point is outside the truncated tetrahedron.
+
+    The truncated tetrahedron is given as follows: ideal triangles
+    tet.R13_triangles[f] for each face forming the ideal tetrahedron
+    underlying the truncated tetrahedron, a lower bound tet.out_radius
+    of the truncated tetrahedron about its spine center (which is the
+    ideal tetrahedron's incenter).
     """
 
-    # One lower bound is given by computing the distance of the incenter
-    # and subtracting the radius.
-    d_out   = distance_r13_points(point, tet.spine_center) - tet.out_radius
-    # Another lower bound is given by computing the distance to the underlying
-    # ideal tetrahedron. Assuming the point is not in the tetrahedron, it is
-    # given by the distances to the ideal faces.
-    d_faces = correct_min(
-        [ lower_bound_distance_r13_point_triangle(
-            point, tet.R13_triangles[f], verified)
-          for f in simplex.TwoSubsimplices ])
-    return correct_max([d_out, d_faces])
+    # We compute one lower bound from the distance to the ideal tetrahedron.
+    #
+    # Ignore (irrelevant) contributions to the min from those faces 
+    # where the associated half-space does not contain the point.
+    cosh_d_faces = _min([
+        cosh_d
+        for f in simplex.TwoSubsimplices
+        if (cosh_d := lower_bound_cosh_distance_r13_point_triangle(
+                point, tet.R13_triangles[f], verified=verified)) is not None ])
+
+    # We compute the other lower bound as
+    #
+    # d_out   = distance_r13_points(point, tet.spine_center) - tet.out_radius
+    #
+    # We use trigonometric inequalities to avoid evaluating transcendentals.
+    cosh_d_spine_center = -r13_dot(point, tet.spine_center)
+    if not cosh_d_spine_center > tet.cosh_out_radius:
+        # Only use the second lower bound if d_out has positive sign.
+        return cosh_d_faces
+
+    sinh_d_spine_center = (cosh_d_spine_center ** 2 - 1).sqrt()
+    cosh_d_out = (cosh_d_spine_center * tet.cosh_out_radius -
+                  sinh_d_spine_center * tet.sinh_out_radius)
+
+    if not cosh_d_out > 1:
+        return cosh_d_faces
+
+    return correct_max([cosh_d_out, cosh_d_faces])
+
+def lower_bound_cosh_distance_r13_point_triangle(
+        point, triangle, *, verified : bool) -> Optional[Any]:
+    """
+    Return None if associated half-space does not contain the point.
+    """
+
+    if verified:
+        epsilon = 0
+    else:
+        RF = point[0].parent()
+        epsilon = _compute_epsilon(RF)
+
+    sinh_dist_point_plane = r13_dot(point, triangle.plane)
+    if sinh_dist_point_plane <= -epsilon:
+        return None
+    for bounding_plane, edge in zip(triangle.bounding_planes,
+                                    triangle.edges):
+        if r13_dot(point, bounding_plane) > epsilon:
+            return cosh_distance_r13_point_line(point, edge)
+
+    return (sinh_dist_point_plane ** 2 + 1).sqrt()
+
+def _compute_epsilon(RF):
+    return RF(0.5) ** (RF.prec() // 2)
+
+def _min(values):
+    n = len(values)
+    if n == 0:
+        raise InsufficientPrecisionError(
+            "Could not verify point outside of tetrahedron.")
+    elif n == 1:
+        return values[0]
+    else:
+        return correct_min(values)

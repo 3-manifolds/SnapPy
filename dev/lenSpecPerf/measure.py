@@ -3,13 +3,14 @@
 from snappy import Manifold
 import time
 import sys
-
+import gc
 
 class Timer:
     def __init__(self, times):
         self.times = times
     
     def __enter__(self):
+        gc.collect()
         self.start_time = time.time()
         return self
 

@@ -27,7 +27,7 @@ if _within_sage:
 
 import heapq
 
-from typing import Iterable, Union, List
+from typing import Iterable, Union, List, Tuple
 
 def distance_r13_objects(object1 : Union[R13Line, R13Horoball],
                          object2 : Union[R13Line, R13Horoball]):
@@ -91,7 +91,7 @@ class Neighborhoods:
         return [ neighborhood.info_for_epsilon(self.mu)
                  for neighborhood in self.neighborhoods ]
 
-    def collisions(self) -> List[tuple[int, int]]:
+    def collisions(self) -> List[Tuple[int, int]]:
         if self.mcomplex.verified:
             err_epsilon = 0
         else:

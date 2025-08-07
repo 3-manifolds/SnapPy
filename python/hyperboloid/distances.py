@@ -13,6 +13,15 @@ if _within_sage:
 __all__ = ['distance_r13_lines',
            'lower_bound_distance_r13_line_triangle']
 
+# Pick a value so that pari does not throw an exception when
+# computing exp(r) and arcsinh(exp(r)/2).
+#
+# Pari throws an overflow error for exp(1e-20) instead of just returning 0.
+# Pari throws an out of memory error for
+# snappy.number.Number('1e-1000000').arcsinh().
+# 
+_numeric_log_of_zero = -1e4
+
 def distance_r13_lines(line0 : R13Line, line1 : R13Line):
     """
     Computes distance between two hyperbolic lines.
@@ -202,7 +211,7 @@ def _safe_log(p):
     else:
         if p <= 0:
             RF = p.parent()
-            return RF(-1e20)
+            return RF(_numeric_log_of_zero)
     return p.log()
 
 def _safe_log_of_abs(p):
@@ -215,7 +224,7 @@ def _safe_log_non_neg(p):
             return RIF(-Infinity)
         else:
             RF = p.parent()
-            return RF(-1e20)
+            return RF(_numeric_log_of_zero)
     else:
         return p.log()
 

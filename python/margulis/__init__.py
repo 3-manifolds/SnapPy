@@ -126,7 +126,7 @@ def mcomplex_for_margulis_number(M, bits_prec, *, verified):
     if verified:
         mcomplex.infinity = mcomplex.RF(Infinity)
     else:
-        mcomplex.infinity = mcomplex.RF(1e15)
+        mcomplex.infinity = mcomplex.RF(1e20)
 
     return mcomplex
 
@@ -233,7 +233,7 @@ def margulis(M, bits_prec=None, verified=False, include_thin_part=False):
     In such a case, we conservatively add the tube about the geodesic to
     thin_part (with lower bound on the radius being 0) and to the collisions.
 
-        sage: Manifold("m004").margulis() # doctest: +NUMERIC9
+        >>> Manifold("m004").margulis() # doctest: +NUMERIC9
         0.962423650119202
 
         sage: Manifold("m003").margulis(verified=True,bits_prec=100) # doctest: +NUMERIC15

@@ -27,7 +27,7 @@ if _within_sage:
 
 import heapq
 
-from typing import Iterable, Union
+from typing import Iterable, Union, List
 
 def distance_r13_objects(object1 : Union[R13Line, R13Horoball],
                          object2 : Union[R13Line, R13Horoball]):
@@ -62,8 +62,8 @@ class NeighborhoodPair:
 class Neighborhoods:
     def __init__(self, mcomplex : Mcomplex):
         self.mu = mcomplex.infinity
-        self.neighborhoods : list[Neighborhood] = []
-        self._indices_to_neighborhood_pair : list[list[NeighborhoodPair]] = []
+        self.neighborhoods : List[Neighborhood] = []
+        self._indices_to_neighborhood_pair : List[List[NeighborhoodPair]] = []
         self.mcomplex : Mcomplex = mcomplex
 
     def add_neighborhood(
@@ -87,11 +87,11 @@ class Neighborhoods:
         else:
             return self._indices_to_neighborhood_pair[j][i]
 
-    def thin_part(self) -> list[MargulisInfo]:
+    def thin_part(self) -> List[MargulisInfo]:
         return [ neighborhood.info_for_epsilon(self.mu)
                  for neighborhood in self.neighborhoods ]
 
-    def collisions(self) -> list[tuple[int, int]]:
+    def collisions(self) -> List[tuple[int, int]]:
         if self.mcomplex.verified:
             err_epsilon = 0
         else:
@@ -131,7 +131,7 @@ def mcomplex_for_margulis_number(M, bits_prec, *, verified):
     return mcomplex
 
 def add_cusp_to_queue_and_neighborhoods(
-        neighborhood_queue : list[Neighborhood],
+        neighborhood_queue : List[Neighborhood],
         neighborhoods : Neighborhoods,
         vertex,
         cusp_shape
@@ -143,7 +143,7 @@ def add_cusp_to_queue_and_neighborhoods(
     neighborhoods.add_neighborhood(neighborhood)
 
 def add_geodesic_to_queue(
-        neighborhood_queue : list[Neighborhood],
+        neighborhood_queue : List[Neighborhood],
         neighborhoods : Neighborhoods,
         geodesic_info : LengthSpectrumGeodesicInfo
         ) -> None:
@@ -153,7 +153,7 @@ def add_geodesic_to_queue(
     heapq.heappush(neighborhood_queue, neighborhood)
 
 def expand_next_neighborhood(
-        neighborhood_queue : list[Neighborhood],
+        neighborhood_queue : List[Neighborhood],
         neighborhoods : Neighborhoods,
         len_spec : Iterable[LengthSpectrumGeodesicInfo],
         *,
@@ -253,7 +253,7 @@ def margulis(M, bits_prec=None, verified=False, include_thin_part=False):
         M, bits_prec=bits_prec, verified=verified)
 
     neighborhoods = Neighborhoods(mcomplex)
-    neighborhood_queue : list[Neighborhood] = []
+    neighborhood_queue : List[Neighborhood] = []
 
     cusp_shapes = compute_cusp_shapes(
         M, bits_prec = bits_prec, verified = verified)

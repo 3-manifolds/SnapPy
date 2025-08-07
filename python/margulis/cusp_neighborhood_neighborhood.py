@@ -48,7 +48,7 @@ class CuspNeighborhoodNeighborhood(Neighborhood):
             cusp_area=area)
 
     def __repr__(self):
-        return "Cusp neighborhood neighbood with Euclidean length %r" % self.euclidean_length
+        return "Cusp neighborhood neighborhood with Euclidean length %r" % self.euclidean_length
 
 def length_shortest_slope_from_cusp_shape(cusp_shape):
     RF = cusp_shape.real().parent()

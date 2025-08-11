@@ -27,7 +27,7 @@ if _within_sage:
 
 import heapq
 
-from typing import Iterable, Union, List, Tuple
+from typing import Iterable, Union, List, Tuple, Optional
 
 def distance_r13_objects(object1 : Union[R13Line, R13Horoball],
                          object2 : Union[R13Line, R13Horoball]):
@@ -60,8 +60,11 @@ class NeighborhoodPair:
         self.mu = None
 
 class Neighborhoods:
-    def __init__(self, mcomplex : Mcomplex):
-        self.mu = mcomplex.infinity
+    def __init__(self, mcomplex : Mcomplex, stopper):
+        if stopper:
+            self.mu = mcomplex.RF(stopper)
+        else:
+            self.mu = mcomplex.infinity
         self.neighborhoods : List[Neighborhood] = []
         self._indices_to_neighborhood_pair : List[List[NeighborhoodPair]] = []
         self.mcomplex : Mcomplex = mcomplex
@@ -213,33 +216,28 @@ def expand_next_neighborhood(
 
     return True
 
-def margulis(M, bits_prec=None, verified=False, include_thin_part=False):
+def margulis(
+        M,
+        bits_prec:Optional[int]=None,
+        verified:bool=False,
+        include_thin_part:bool=False,
+        stopper=None):
     """
-    Returns the optimal Margulis number mu(M). It does not work on some
-    manifolds with incomplete cusps where the thin part is intersecting a core
-    curve.
-
-    If include_thin_part = True, returns a triple
-    (optimal_margulis_number, thin_part, collisions). Here, thin_part is a
-    list of the cusp neighborhoods and tubes about geodesics making up the
-    mu(M)-thin part of M which is the union of all essential loops of length
-    less than mu(M). collisions are pairs of indices into thin_part indicating
-    which cusp neighborhoods and tubes are touching.
-
-    If ``verified=True``, we return supersets of thin_part and collisions.
-    For example, assume there is a geodesic of real length really close to
-    mu(M). Numerically, we cannot decide whether the limiting constituent
-    is the geodesic or some other neighborhood or pair of neighborhoods.
-    In such a case, we conservatively add the tube about the geodesic to
-    thin_part (with lower bound on the radius being 0) and to the collisions.
+    Returns the optimal Margulis number :math:`\\mu(M)`::
 
         >>> Manifold("m004").margulis() # doctest: +NUMERIC9
         0.962423650119202
 
-        sage: Manifold("m003").margulis(verified=True,bits_prec=100) # doctest: +NUMERIC15
-        0.9624236501192068949955?
+    If :attr:`include_thin_part=True`, returns a triple
+    (:math:`\\mu(M)`, :math:`\\mu(M)`-thin part, collisions). Recall that the
+    :math:`\\mu(M)`-thin part is the union of all essential loops of length
+    less than :math:`\\mu(M)`. It is a disjoint union of embedded cusp
+    neighborhoods and embedded tubes about geodesics. We encode it as list
+    of objects pertaining information about each component. The collisions are
+    pairs of indices into the thin part indicating which cusp neighborhoods and
+    tubes are touching::
 
-        sage: Manifold("m003").margulis(include_thin_part=True) # doctest: +SKIP
+        >>> Manifold("m003").margulis(include_thin_part=True) # doctest: +SKIP
         (0.962423650119189,
          [Cusp Neighborhood for cusp 0 of area 0.866025403784405,
           Tube about geodesic aC of radius 0.211824465096784,
@@ -247,12 +245,57 @@ def margulis(M, bits_prec=None, verified=False, include_thin_part=False):
           Tube about geodesic bC of radius 0.211824465096782,
           Tube about geodesic b of radius 0.211824465096782],
          [(2, 3), (1, 4)])
+
+    Note that the method fails on some manifolds with incomplete cusps
+    such as ``s479(-3,1)`` where the boundary of the thin part is intersecting
+    a core curve. In such cases (or in order to improve performance), we can
+    use :attr:`stopper` to show that :math:`\\mu(M)` is larger than a given
+    number. Here is an example to prove that :math:`\\mu(M)>0.8`::
+
+        sage: M=ManifoldHP("s479(-3,1)")
+        sage: from sage.all import RealIntervalField
+        sage: M.margulis(verified=True, stopper=0.9)>RealIntervalField()('0.8')
+        True
+
+    **Verified computations**
+
+    The method also supports :ref:`verified computations <verify-primer>`::
+
+        sage: Manifold("m003").margulis(verified=True,bits_prec=100) # doctest: +NUMERIC15
+        0.9624236501192068949955?
+
+    If :attr:`verified=True` and :attr:`include_thin_part=True` are used
+    together, the method returns (not necessarily proper) supersets for the
+    true thin part and the true collisions. For example, assume there is a
+    geodesic of real length equal to (or really close to) :math:`\\mu(M)`.
+    Numerically, we cannot decide whether the limiting constituent of
+    :math:`\\mu(M)` is the geodesic or some other neighborhood or pair of
+    neighborhoods. In such a case, we conservatively add the tube about the
+    geodesic to the thin part (with lower bound on the radius being 0) and to
+    the collisions.
+
+    :param bits_prec:
+            Precision used for the computation. Increase if computation did
+            not succeed.
+    :param verified:
+            Use :ref:`verified computation <verify-primer>`.
+    :param include_thin_part:
+            Return triple
+            (:math:`\\mu(M)`, :math:`\\mu(M)`-thin part, collisions) instead
+            of only the optimal Margulis number :math:`\\mu(M)`.
+    :param stopper:
+            Return the minimum of :attr:`stopper` and the optimal Margulis
+            number :math:`\\mu(M)` (and the corresponding thin part if
+            :attr:`include_thin_part=True`).
+    :return:
+            Optimal Margulis number :math:`\\mu(M)` or triple
+            (:math:`\\mu(M)`, :math:`\\mu(M)`-thin part, collisions).
     """
 
     mcomplex = mcomplex_for_margulis_number(
         M, bits_prec=bits_prec, verified=verified)
 
-    neighborhoods = Neighborhoods(mcomplex)
+    neighborhoods = Neighborhoods(mcomplex, stopper)
     neighborhood_queue : List[Neighborhood] = []
 
     cusp_shapes = compute_cusp_shapes(

@@ -9,7 +9,8 @@ modules = [
 ]
 
 def run_doctests(verbose=False, print_info=True):
-    globs = {'Manifold': snappy.Manifold}
+    globs = {'Manifold': snappy.Manifold,
+             'ManifoldHP': snappy.ManifoldHP}
     return testing.doctest_modules(modules,
                                    verbose=verbose,
                                    print_info=print_info,

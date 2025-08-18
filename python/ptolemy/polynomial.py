@@ -1,6 +1,12 @@
+from ..sage_helper import _within_sage, sage_method
+
 import re
 import operator
 from fractions import Fraction
+
+if _within_sage:
+    from ..sage_helper import prod
+    from sage.symbolic.ring import var as sage_var
 
 #######################################################
 # Public Definitions of Monomial and Polynomial class
@@ -47,10 +53,6 @@ class Monomial():
                 assert isinstance(expo, int)
                 assert expo > 0
             self._vars = vars
-
-#    def __repr__(self):
-#        return "Monomial(%s, %s)" % (repr(self._coefficient),
-#                                     repr(self._vars))
 
     def __str__(self):
         return self.to_string(
@@ -180,6 +182,11 @@ class Monomial():
 
         return Monomial(self.get_coefficient(), vars)
 
+    @sage_method
+    def sage(self):
+        return (
+            self.get_coefficient() *
+            prod(sage_var(var) ** expo for var, expo in self.get_vars()))
 
 # Definition of Polynomial class
 
@@ -368,9 +375,6 @@ class Polynomial():
     def __str__(self):
         return self.to_string(default_print_coefficient_method)
 
-#    def __repr__(self):
-#        return "Polynomial(%s)" % repr(self._monomials)
-
     __repr__ = __str__
 
     # print
@@ -554,6 +558,10 @@ class Polynomial():
 
         return Polynomial(tuple([monomial.reduce_exponents(lowest_powers)
                                  for monomial in self._monomials]))
+
+    @sage_method
+    def sage(self):
+        return sum(m.sage() for m in self.get_monomials())
 
 ###############################################################
 # Default functions for parsing and printing the coefficients

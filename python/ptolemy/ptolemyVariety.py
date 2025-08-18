@@ -7,21 +7,18 @@ from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroeb
 from . import processFileBase, processFileDispatch, processMagmaFile
 from .processFileBase import PtolemyPrecomputedObstructionClassMismatchError
 from . import utilities
+from ..sage_helper import _within_sage, sage_method
 from string import Template
 import signal
 import re
 import os
 import sys
 
-try:
+if _within_sage:
     from sage.rings.rational_field import RationalField
     from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
-    from sage.symbolic.ring import var as sageVariable
     from sage.rings.ideal import Ideal
-    _within_sage = True
-except ImportError:
-    _within_sage = False
-
+    
 from urllib.request import Request, urlopen
 from urllib.request import quote as urlquote
 from urllib.error import HTTPError
@@ -230,28 +227,11 @@ class PtolemyVariety():
             self.equations + [ self._non_zero_condition ])
 
         if _within_sage:
-            def sage_monomial(monomial):
-                r = monomial.get_coefficient()
-                for varName, expo in monomial.get_vars():
-                    r = r * (sageVariable(varName) ** expo)
-                return r
-
-            def sage_eqn(eqn):
-                return sum([sage_monomial(m) for m in eqn.get_monomials()])
-
-            def sage_ideal(vars, eqns):
-
-                polynomialRing = PolynomialRing(
-                    RationalField(), vars, order='lex')
-
-                return Ideal(
-                    polynomialRing, [ sage_eqn(eqn) for eqn in eqns ])
-
-            self.ideal = sage_ideal(
+            self.ideal = _sage_ideal(
                 self.variables,
                 self.equations)
 
-            self.ideal_with_non_zero_condition = sage_ideal(
+            self.ideal_with_non_zero_condition = _sage_ideal(
                 self.variables_with_non_zero_condition,
                  self.equations_with_non_zero_condition)
 
@@ -1027,3 +1007,9 @@ def _retrieve_url(url):
     raise RuntimeError(
         "Problem retrieving file from server, please report to "
         "enischte@gmail.com: %s" % httpErr)
+
+@sage_method
+def _sage_ideal(vars, polynomials, order='lex'):
+    polynomialRing = PolynomialRing(RationalField(), vars, order=order)
+
+    return Ideal(polynomialRing, [ p.sage() for p in polynomials ])

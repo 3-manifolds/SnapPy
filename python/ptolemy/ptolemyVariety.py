@@ -161,7 +161,7 @@ class PtolemyVariety():
                 [ Polynomial.from_variable_name(ptolemy_coord) - one
                   for ptolemy_coord in self._fixed_ptolemy_coordinates])
 
-        variables = _union([eqn.variables() for eqn in self.equations])
+        variables = _union(eqn.variables() for eqn in self.equations)
 
         if simplify:
 
@@ -203,8 +203,7 @@ class PtolemyVariety():
                         Polynomial.from_variable_name(var2))
                 self.equations.append(firstTerm - secondTerm)
 
-        self.variables = _union([ eqn.variables()
-                            for eqn in self.equations])
+        self.variables = _union(eqn.variables() for eqn in self.equations)
 
         # Process interior Ptolemy coordinates such as c_1111_x
         # Only invoked for N >= 4
@@ -764,21 +763,6 @@ class PtolemyVariety():
         # Number of classes
         return len(list(cohomology_classes))
 
-    def equations_as_dicts(self, with_non_zero=True):
-        if with_non_zero:
-            equations = self.equations_with_non_zero_condition
-            variables = self.variables + ['t']
-        else:
-            equations = self.equations
-            variables = self.variables
-        result = []
-        for f in equations:
-            result.append({tuple(m.degree(v) for v in variables):
-                           m.get_coefficient()
-                           for m in f.get_monomials()})
-        return result
-
-
 def _fix_decoration(N, action_by_decoration_change):
 
     action_matrix, ptolemy_coords, decorations_to_be_fixed = (
@@ -840,11 +824,7 @@ def _non_zero_condition(variables):
 
 
 def _union(lists):
-    all = sum(lists, [])
-    all = list(set(all))
-    all.sort()
-    return all
-
+    return sorted(set(e for l in lists for e in l))
 
 def _identified_variables_canonize(identified_variables):
 

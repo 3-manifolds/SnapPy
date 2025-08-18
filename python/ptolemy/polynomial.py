@@ -103,13 +103,13 @@ class Monomial():
 
     def variables(self):
         """Return a list containing the variable names."""
-        return [var[0] for var in self._vars if var[1] > 0]
+        return [var for var, expo in self._vars if expo > 0]
 
     def degree(self, var=None):
         """Return the total degree of this monomial."""
-        return sum([this_degree
-                    for this_var, this_degree in self._vars
-                    if var is None or this_var == var])
+        return sum(this_degree
+                   for this_var, this_degree in self._vars
+                   if var is None or this_var == var)
 
     def __mul__(self, other):
         """Multiply two monomials."""
@@ -335,13 +335,8 @@ class Polynomial():
         return (self * self) ** (other // 2)
 
     def __mul__(self, other):
-        monomials = []
-
-        for m in self._monomials:
-            for n in other._monomials:
-                monomials.append(m * n)
-
-        return Polynomial(tuple(monomials))
+        return Polynomial(tuple(
+            m * n for m in self._monomials for n in other._monomials))
 
     def __mod__(self, other):
 
@@ -381,9 +376,9 @@ class Polynomial():
     # a method to print the coefficients can be supplied
 
     def to_string(self, print_coefficient_method):
-        s = " ".join([monomial.to_string(print_coefficient_method,
-                                         force_print_sign=True)
-                      for monomial in self._monomials])
+        s = " ".join(monomial.to_string(print_coefficient_method,
+                                        force_print_sign=True)
+                     for monomial in self._monomials)
         if s and s[0] == '+':
             return s[1:].lstrip()
         return s
@@ -392,8 +387,8 @@ class Polynomial():
         """Convert all coefficients using conversion_function."""
 
         return Polynomial(tuple(
-            [monomial.convert_coefficient(conversion_function)
-             for monomial in self._monomials]))
+            monomial.convert_coefficient(conversion_function)
+            for monomial in self._monomials))
 
     def substitute(self, d):
         """
@@ -413,15 +408,14 @@ class Polynomial():
 
         def substitute_monomial(monomial):
             vars = monomial.get_vars()
-            new_vars = []
 
-            for var, expo in vars:
-                if var not in d:
-                    new_vars.append((var, expo))
+            new_vars = tuple(
+                (var, expo)
+                for var, expo in vars
+                if var not in d)
 
             poly = Polynomial((
-                Monomial(monomial.get_coefficient(),
-                         tuple(new_vars)),))
+                Monomial(monomial.get_coefficient(), new_vars),))
 
             for var, expo in vars:
                 if var in d:
@@ -429,16 +423,13 @@ class Polynomial():
 
             return poly
 
-        return sum([substitute_monomial(monomial)
-                    for monomial in self._monomials], Polynomial(()))
+        return sum((substitute_monomial(monomial)
+                    for monomial in self._monomials), Polynomial(()))
 
     def variables(self):
         """Return a list of all variables in the polynomial."""
-        all_variables = [monomial.variables() for monomial in self._monomials]
-        all_variables = sum(all_variables, [])
-        all_variables = list(set(all_variables))
-        all_variables.sort()
-        return all_variables
+        return sorted(set(
+            v for monomial in self._monomials for v in monomial.variables()))
 
     def is_constant(self):
         """Return True iff the polynomial is constant."""

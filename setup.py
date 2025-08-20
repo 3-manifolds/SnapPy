@@ -229,7 +229,7 @@ hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 
 # These are the Cython files that directly get compiled
 
-cython_sources = ['cython/SnapPy.pyx', 'opengl/CyOpenGL.pyx']
+cython_sources = ['cython/SnapPy.pyx', 'opengl/CyOpenGL.pyx', 'orb/cython/Orb.pyx']
 cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
 # This is the complete list of Cython files, including those included
@@ -322,6 +322,13 @@ for file in code:
 for hp_file in hp_qd_code:
     hp_snappy_ext_files.add(hp_file)
 
+orb_code = glob(os.path.join('orb', 'kernel', 'snappea', 'code', '*.c'))
+
+orb_ext_files = SourceAndObjectFiles()
+orb_ext_files.add('orb' + os.sep + 'cython' + os.sep + 'Orb.c', cy_source_mod_time)
+for file in orb_code:
+    orb_ext_files.add(file)
+
 # For Windows, check the compiler we will be using.
 
 if sys.platform == 'win32':
@@ -405,6 +412,14 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
+OrbC = Extension(
+    name = 'snappy.Orb',
+    sources = orb_ext_files.sources_to_build,
+    include_dirs = ['orb/kernel/snappea/headers'],
+    language='c++',
+    extra_compile_args = snappy_extra_compile_args,
+    extra_link_args = snappy_extra_link_args,
+    extra_objects = orb_ext_files.up_to_date_objects)
 
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
@@ -493,7 +508,7 @@ TwisterCore = Extension(
     extra_link_args=twister_extra_link_args,
     language='c++' )
 
-ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
+ext_modules = [SnapPyC, SnapPyHP, OrbC, TwisterCore]
 
 install_requires = ['FXrays>=1.3',
                     'plink>=2.4.3',

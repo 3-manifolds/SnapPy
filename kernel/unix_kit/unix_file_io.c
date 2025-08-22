@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "unix_file_io.h"
+#include "string_stream.h"
 
 #include "kernel_namespace.h"
 
@@ -705,135 +706,125 @@ static char *StringNewFileFormat(
         j,
         k,
         v,
-        f,
-        size;
-    char *buffer;
-    char *p;
-    char *end;
+        f;
+    StringStream ss;
+    string_stream_init(&ss);
     
-    size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps + 8*data->num_tetrahedra);
-    buffer = (char *)malloc(size);
-    if ( buffer == NULL)
+    if ( ss.buffer == NULL)
       uFatalError("StringNewFileFormat", "unix file io");
-    p = buffer;
-    end = buffer + size - 1;
 
-    /* Avoid deprecation warnings with C++. */
-#define SPRINTF(pointer, ...) snprintf(pointer, end - p, __VA_ARGS__)
-
-    p += SPRINTF(p, "%% Triangulation\n");
+    string_stream_sprintf(&ss, "%% Triangulation\n");
 
     if (data->name != NULL)
-      p += SPRINTF(p, "%s\n", data->name);
+      string_stream_sprintf(&ss, "%s\n", data->name);
     else
-      p += SPRINTF(p, "untitled\n");
+      string_stream_sprintf(&ss, "untitled\n");
 
     switch (data->solution_type)
     {
         case not_attempted:
-	  p += SPRINTF(p, "not_attempted");
+	  string_stream_sprintf(&ss, "not_attempted");
             break;
 
         case geometric_solution:
-	  p += SPRINTF(p, "geometric_solution");
+	  string_stream_sprintf(&ss, "geometric_solution");
             break;
 
         case nongeometric_solution:
-            p += SPRINTF(p, "nongeometric_solution");
+            string_stream_sprintf(&ss, "nongeometric_solution");
             break;
 
         case flat_solution:
-            p += SPRINTF(p, "flat_solution");
+            string_stream_sprintf(&ss, "flat_solution");
             break;
 
         case degenerate_solution:
-            p += SPRINTF(p, "degenerate_solution");
+            string_stream_sprintf(&ss, "degenerate_solution");
             break;
 
         case other_solution:
-            p += SPRINTF(p, "other_solution");
+            string_stream_sprintf(&ss, "other_solution");
             break;
 
         case no_solution:
-            p += SPRINTF(p, "no_solution");
+            string_stream_sprintf(&ss, "no_solution");
             break;
 
         case externally_computed:
-            p += SPRINTF(p, "externally_computed");
+            string_stream_sprintf(&ss, "externally_computed");
             break;
 
     }
 
     if (data->solution_type != not_attempted && data->solution_type != externally_computed)
-        p += SPRINTF(p, "  %.8f\n", (double)data->volume);
+        string_stream_sprintf(&ss, "  %.8f\n", (double)data->volume);
     else
-        p += SPRINTF(p, "  %.1f\n", 0.0);
+        string_stream_sprintf(&ss, "  %.1f\n", 0.0);
 
     switch (data->orientability)
     {
         case oriented_manifold:
-            p += SPRINTF(p, "oriented_manifold\n");
+            string_stream_sprintf(&ss, "oriented_manifold\n");
             break;
 
         case nonorientable_manifold:
-            p += SPRINTF(p, "nonorientable_manifold\n");
+            string_stream_sprintf(&ss, "nonorientable_manifold\n");
             break;
         case unknown_orientability:
             /* This manifold is garbage */
-            p += SPRINTF(p, "ERROR: orientability not computed!\n");
+            string_stream_sprintf(&ss, "ERROR: orientability not computed!\n");
             break;
     }
 
     if (data->CS_value_is_known == TRUE)
-        p += SPRINTF(p, "CS_known %.16f\n", (double)data->CS_value);
+        string_stream_sprintf(&ss, "CS_known %.16f\n", (double)data->CS_value);
     else
-        p += SPRINTF(p, "CS_unknown\n");
+        string_stream_sprintf(&ss, "CS_unknown\n");
 
-    p += SPRINTF(p, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
+    string_stream_sprintf(&ss, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
     for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
-        p += SPRINTF(p, "    %s %16.12f %16.12f\n",
+        string_stream_sprintf(&ss, "    %s %16.12f %16.12f\n",
             (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
 		     (double)data->cusp_data[i].m,
 		     (double)data->cusp_data[i].l);
-    p += SPRINTF(p, "\n");
+    string_stream_sprintf(&ss, "\n");
 
-    p += SPRINTF(p, "%d\n", data->num_tetrahedra);
+    string_stream_sprintf(&ss, "%d\n", data->num_tetrahedra);
     for (i = 0; i < data->num_tetrahedra; i++)
     {
         for (j = 0; j < 4; j++)
-            p += SPRINTF(p, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
-        p += SPRINTF(p, "\n");
+            string_stream_sprintf(&ss, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
+        string_stream_sprintf(&ss, "\n");
 
         for (j = 0; j < 4; j++)
         {
-            p += SPRINTF(p, " ");
+            string_stream_sprintf(&ss, " ");
             for (k = 0; k < 4; k++)
-                p += SPRINTF(p, "%d", data->tetrahedron_data[i].gluing[j][k]);
+                string_stream_sprintf(&ss, "%d", data->tetrahedron_data[i].gluing[j][k]);
         }
-        p += SPRINTF(p, "\n");
+        string_stream_sprintf(&ss, "\n");
 
         for (j = 0; j < 4; j++)
-            p += SPRINTF(p, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
-        p += SPRINTF(p, "\n");
+            string_stream_sprintf(&ss, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
+        string_stream_sprintf(&ss, "\n");
 
         for (j = 0; j < 2; j++)         /* meridian, longitude     */
             for (k = 0; k < 2; k++)     /* righthanded, lefthanded */
             {
                 for (v = 0; v < 4; v++)
                     for (f = 0; f < 4; f++)
-                        p += SPRINTF(p, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
-                p += SPRINTF(p, "\n");
+                        string_stream_sprintf(&ss, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
+                string_stream_sprintf(&ss, "\n");
             }
 
         if (data->solution_type != not_attempted && data->solution_type != externally_computed)
-            p += SPRINTF(p, "%16.12f %16.12f\n\n",
+            string_stream_sprintf(&ss, "%16.12f %16.12f\n\n",
 		 (double)data->tetrahedron_data[i].filled_shape.real,
 		 (double)data->tetrahedron_data[i].filled_shape.imag);
         else
-            p += SPRINTF(p, "%3.1f %3.1f\n\n", 0.0, 0.0);
+            string_stream_sprintf(&ss, "%3.1f %3.1f\n\n", 0.0, 0.0);
    }
-   return buffer;
-#undef SPRINTF
+   return ss.buffer;
 }
 
 #include "end_namespace.h"

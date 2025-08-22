@@ -316,7 +316,7 @@ hp_snappy_ext_files.add('cython' + os.sep + 'SnapPyHP.cpp', cy_source_mod_time)
 for file in code:
     snappy_ext_files.add(file)
     hp_file = 'quad_double' + replace_ext(file, 'cpp')[len('kernel'):]
-    assert os.path.exists(hp_file)
+    assert os.path.exists(hp_file), hp_file
     hp_snappy_ext_files.add(hp_file, modtime(file))
 
 for hp_file in hp_qd_code:

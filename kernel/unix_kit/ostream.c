@@ -1,4 +1,4 @@
-#include "string_stream.h"
+#include "ostream.h"
 
 #include "kernel_prototypes.h"
 
@@ -6,17 +6,37 @@
 #include <stdio.h>
 #include <string.h>
 
-void string_stream_init(StringStream *s)
+void string_stream_init(OStream *s)
 {
+    s->file = NULL;
+
     s->length = 0; /* Does not include the terminating null character */
     s->capacity = 65536;
     s->buffer = (char*)my_malloc(s->capacity);
     s->buffer[0] = '\0';
 }
 
-void string_stream_sprintf(StringStream *s, const char * format, ...)
+void ofstream_init(OStream *s, FILE * file)
+{
+    s->file = file;
+
+    s->length = 0;
+    s->capacity = 0;
+    s->buffer = NULL;
+}
+
+void ostream_printf(OStream *s, const char * format, ...)
 {
     va_list args;
+
+    if (s->file != NULL)
+    {
+        va_start(args, format);
+        vfprintf(s->file, format, args);
+        va_end(args);
+	return;
+    }
+    
     while (1)
     {
         if (s->buffer == NULL)

@@ -16,14 +16,14 @@ void string_stream_init(StringStream *s)
 
 void string_stream_sprintf(StringStream *s, const char * format, ...)
 {
-    if (s->buffer == NULL)
-    {
-        return;
-    }
-
     va_list args;
     while (1)
     {
+        if (s->buffer == NULL)
+        {
+            break;
+        }
+
         const size_t capacity_left = s->capacity - s->length;
         va_start(args, format);
         const int needed = vsnprintf(

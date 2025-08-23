@@ -1,6 +1,6 @@
 #include "ostream.h"
 
-#include "kernel_prototypes.h"
+#include "kernel.h"
 
 #include <stdarg.h>
 #include <stdio.h>

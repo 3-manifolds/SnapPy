@@ -195,6 +195,7 @@ static Boolean fill_casson_struct(
             } else {
                 t = e->head = NEW_STRUCT(TetEdgeInfo);
             }
+	    t->next = NULL;
 
             for(int i = 0; i < 8; i++ ) {
                 t->curves[i] = 0;

@@ -8,7 +8,7 @@ cdef class Orbifold:
     >>> o.retriangulate() # Recreates triangulation from diagram, forgets what user entered for singular locus
     >>> o.volume() # So we get a different volume
     7.327724753417753
-    >>> o.retriangulate() # Crash/hang - needs investigation.
+    >>> o.retriangulate()
 
     """
 

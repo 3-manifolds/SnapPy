@@ -913,6 +913,12 @@ Graph * diagram_to_graph(
 	else i++;
     }
 
+    for (int i = 0; i < diagram->num_edges; i++) {
+	diagram->edges[i]->num_crossings = 0;
+	my_free(diagram->edges[i]->crossings);
+	diagram->edges[i]->crossings = NULL;
+    }
+
     return graph;
 }
 

@@ -23,6 +23,7 @@ import snappy.exterior_to_link.test
 import snappy.pari
 import snappy.test_cases
 import snappy.numeric_output_checker
+import snappy.cusps
 
 from snappy.sage_helper import _within_sage
 from snappy.testing import (doctest_modules, cyopengl_works,
@@ -81,6 +82,7 @@ modules = [
     snappy.database,
     additional_doctests,
     snappy,
+    snappy.cusps.test.run_doctests,
     snappy.snap.test.run_doctests,
     snappy.matrix,
     snappy.geometric_structure.test.run_doctests,

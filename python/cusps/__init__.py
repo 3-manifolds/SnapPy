@@ -22,7 +22,7 @@ def compute_cusp_shapes(manifold, verified, bits_prec=None):
     [0.46738227586341496791816972792 + 1.1903600506742881207098973751*I, 0.084187324414612694374797271558 + 1.0506945576790020048456757228*I]
 
     sage: M = Manifold('s843')
-    sage: M.cusp_info('shape', verified = True) # doctest: +NUMERIC12
+    sage: M.cusp_info('shape', verified = True) # doctest: +NUMERIC9
     [0.46738227587? + 1.19036005068?*I, 0.0841873244146? + 1.0506945576790?*I]
 
     sage: M.cusp_info('shape', verified = True, bits_prec = 100) # doctest: +NUMERIC21

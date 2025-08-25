@@ -17,11 +17,6 @@ from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
 from .SnapPy import HolonomyGroup
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
-from .SnapPy import Triangulation as _TriangulationLP
-from .SnapPy import Manifold as _ManifoldLP
-from .SnapPyHP import Triangulation as _TriangulationHP
-from .SnapPyHP import Manifold as _ManifoldHP
-
 # seed the kernel's random number generator.
 import time
 from .SnapPy import set_rand_seed
@@ -34,12 +29,12 @@ from .exceptions import (SnapPeaFatalError,
 from typing import Union, Tuple, List, Optional
 
 # Subclass to be able to monkey-patch
-class Triangulation(_TriangulationLP):
-    __doc__ = _TriangulationLP.__doc__
+class Triangulation(SnapPy.Triangulation):
+    __doc__ = SnapPy.Triangulation.__doc__
 
 # Subclass to be able to monkey-patch
-class TriangulationHP(_TriangulationHP):
-    __doc__ = _TriangulationHP.__doc__
+class TriangulationHP(SnapPyHP.Triangulation):
+    __doc__ = SnapPyHP.Triangulation.__doc__
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.
@@ -47,8 +42,8 @@ class TriangulationHP(_TriangulationHP):
 # in the presence of a diamond pattern seem to work just
 # fine. In particular, we do not double allocate the underlying
 # C structures.
-class Manifold(_ManifoldLP, Triangulation):
-    __doc__ = _ManifoldLP.__doc__
+class Manifold(SnapPy.Manifold, Triangulation):
+    __doc__ = SnapPy.Manifold.__doc__
 
     def identify(self, extends_to_link=False):
         """
@@ -103,8 +98,8 @@ class Manifold(_ManifoldLP, Triangulation):
 
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
-class ManifoldHP(_ManifoldHP, TriangulationHP):
-    __doc__ = _ManifoldHP.__doc__
+class ManifoldHP(SnapPyHP.Manifold, TriangulationHP):
+    __doc__ = SnapPyHP.Manifold.__doc__
 
     def low_precision(self):
         """
@@ -224,7 +219,7 @@ def is_isometric_to(self,
         resolved_other,
         return_isometries=return_isometries)
 
-is_isometric_to.__doc__ = _ManifoldLP._is_isometric_to.__doc__
+is_isometric_to.__doc__ = SnapPy.Manifold._is_isometric_to.__doc__
 Manifold.is_isometric_to = is_isometric_to
 ManifoldHP.is_isometric_to = is_isometric_to
 
@@ -238,7 +233,7 @@ def isomorphisms_to(self,
     return resolved_self._isomorphisms_to(
         resolved_other)
 
-isomorphisms_to.__doc__ = _TriangulationLP._isomorphisms_to.__doc__
+isomorphisms_to.__doc__ = SnapPy.Triangulation._isomorphisms_to.__doc__
 Triangulation.isomorphisms_to = isomorphisms_to
 TriangulationHP.isomorphisms_to = isomorphisms_to
 

@@ -323,6 +323,7 @@ for hp_file in hp_qd_code:
     hp_snappy_ext_files.add(hp_file)
 
 orb_code = glob(os.path.join('orb', 'kernel', 'snappea', 'code', '*.c'))
+orb_code += glob(os.path.join('orb', 'kernel', 'snappea', 'unix_kit', '*.c'))
 
 orb_ext_files = SourceAndObjectFiles()
 orb_ext_files.add('orb' + os.sep + 'cython' + os.sep + 'Orb.c', cy_source_mod_time)
@@ -415,7 +416,8 @@ SnapPyHP = Extension(
 OrbC = Extension(
     name = 'snappy.Orb',
     sources = orb_ext_files.sources_to_build,
-    include_dirs = ['orb/kernel/snappea/headers'],
+    include_dirs = ['orb/kernel/snappea/headers',
+                    'orb/kernel/snappea/unix_kit'],
     language='c++',
     extra_compile_args = snappy_extra_compile_args,
     extra_link_args = snappy_extra_link_args,

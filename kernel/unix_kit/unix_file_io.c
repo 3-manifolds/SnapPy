@@ -580,7 +580,6 @@ static void WriteNewFileFormat(
 
     if (data->name != NULL)
     {
-	printf("%s\n", data->name);
         ostream_printf(stream, "%s\n", data->name);
     }
     else

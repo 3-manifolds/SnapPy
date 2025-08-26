@@ -84,6 +84,7 @@ cdef class Triangulation():
             UI_callback()
             uLongComputationEnds()
         # Answers to potentially hard computations are cached
+        self.c_triangulation = NULL
         self._cache = SnapPyCache()
         self._DTcode = None
         self._PDcode = None
@@ -91,19 +92,23 @@ cdef class Triangulation():
         self.LE = None
         self.hyperbolic_structure_initialized = False
         self._link_file_full_path = None
+
         for attr in ['__snappy__', 'snapPea', '_to_string']:
             if hasattr(spec, attr):
                 spec = getattr(spec, attr)()
                 break
-        if spec is not None and spec != 'empty':
+
+        if spec is None:
+            self.get_from_new_plink()
+        elif spec == 'empty':
+            pass
+        else:
             if not isinstance(spec, (str, bytes)):
                 raise TypeError(triangulation_help %
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
             if self.c_triangulation == NULL:
                 raise RuntimeError('An empty triangulation was generated.')
-        elif spec is None:
-            self.get_from_new_plink()
 
         if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:
             remove_hyperbolic_structures(self.c_triangulation)
@@ -123,11 +128,13 @@ cdef class Triangulation():
     cdef get_triangulation(self, spec, remove_finite_vertices=True):
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
-            return self._from_pickle(spec, remove_finite_vertices)
+            self._from_pickle(spec, remove_finite_vertices)
+            return
 
-        if (isinstance(spec, str) and spec.startswith('% Triangulation') or
-                isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
-            return self._from_string(spec, remove_finite_vertices)
+        if ( isinstance(spec, str) and spec.startswith('% Triangulation') or
+             isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
+            self._from_string(spec, remove_finite_vertices)
+            return
 
         # Get fillings, if any
         m = split_filling_info.match(spec)

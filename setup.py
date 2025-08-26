@@ -10,7 +10,7 @@ You need to have setuptools installed to build the snappy module. See:
 
 """
 
-required_cython_version = '0.28'
+required_cython_version = '0.29.14'
 
 no_cython_message = """
 You need to have Cython (>= %s) installed to build the snappy

@@ -152,43 +152,37 @@ cdef class Triangulation():
         # Step 2. Alternate names for the Rolfsen links
         if self.c_triangulation == NULL:
             for regex in rolfsen_link_regexs:
-                m = regex.match(name)
-                if not m:
-                    continue
-                if int(m.group('components')) > 1:
-                    rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
-                                                 int(m.group('components')),
-                                                 int(m.group('index')))
-                else:
-                    rolfsen_name = '%d_%d' % (int(m.group('crossings')),
-                                              int(m.group('index')))
-                database.LinkExteriors._one_manifold(rolfsen_name, self)
+                if m := regex.match(name):
+                    if int(m.group('components')) > 1:
+                        rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
+                                                     int(m.group('components')),
+                                                     int(m.group('index')))
+                    else:
+                        rolfsen_name = '%d_%d' % (int(m.group('crossings')),
+                                                  int(m.group('index')))
+                    database.LinkExteriors._one_manifold(rolfsen_name, self)
 
         # Step 3. Hoste-Thistlethwaite knots
         if self.c_triangulation == NULL:
-            m = is_HT_knot.match(name)
-            if m:
+            if m := is_HT_knot.match(name):
                 self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
                                  int(m.group('index')), remove_finite_vertices)
 
         # Step 4. Once-punctured torus bundles
         if self.c_triangulation == NULL:
-            m = is_torus_bundle.match(name)
-            if m:
+            if m := is_torus_bundle.match(name):
                 self.get_punctured_torus_bundle(m)
 
         # Step 5. (fibered) braid complements
         if self.c_triangulation == NULL:
-            m = is_braid_complement.match(name)
-            if m:
+            if m := is_braid_complement.match(name):
                 word = eval(m.group(1), {})
                 num_strands = max([abs(x) for x in word]) + 1
                 self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
 
         # Step 6. Dowker-Thistlethwaite codes
         if self.c_triangulation == NULL:
-            m = is_int_DT_exterior.match(name)
-            if m:
+            if m := is_int_DT_exterior.match(name):
                 code = eval(m.group(1), {})
                 if isinstance(code, tuple):
                     knot = spherogram.DTcodec(*code)
@@ -202,8 +196,7 @@ cdef class Triangulation():
                 self.set_name(name)
                 self._set_DTcode(knot)
 
-            m = is_alpha_DT_exterior.match(name)
-            if m:
+            if m := is_alpha_DT_exterior.match(name):
                 knot = spherogram.DTcodec(m.group(1))
                 klp=knot.KLPProjection()
                 self.set_c_triangulation(
@@ -214,12 +207,12 @@ cdef class Triangulation():
         # Step 7.  Bundle or splitting is given in Twister's notation
         if self.c_triangulation == NULL:
             shortened_name = name.replace(' ', '')
-            mb = is_twister_bundle.match(shortened_name)
-            ms = is_twister_splitting.match(shortened_name)
-            if mb or ms:
-                func = bundle_from_string if mb else splitting_from_string
-                tri_as_string = func(shortened_name)
-                self._from_string(tri_as_string, remove_finite_vertices)
+            if mb := is_twister_bundle.match(shortened_name):
+                self._from_string(
+                    bundle_from_string(shortened_name), remove_finite_vertices)
+            if ms := is_twister_splitting.match(shortened_name):
+                self._from_string(
+                    splitting_from_string(shortened_name), remove_finite_vertices)
 
         # Step 8. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:

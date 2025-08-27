@@ -9,13 +9,13 @@ cdef extern from "SnapPea.h":
         degenerate_solution
         other_solution
         no_solution
-        externally_computed
+        step_faileld
+        invalid_solution
 
-cdef extern from "SnapPea.h":
-    extern c_SolutionType find_structure(c_Triangulation *manifold, Boolean) except *
-
+    extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold) except *
     extern void free_triangulation(c_Triangulation *manifold) except *
 
+    extern c_SolutionType find_structure(c_Triangulation *manifold, Boolean) except *
     extern Real my_volume(c_Triangulation *manifold, Boolean * ok) except *
 
 cdef extern from "triangulation.h":

@@ -26,6 +26,15 @@ cdef class Orbifold:
         if self.c_diagram != NULL:
             free_diagram(self.c_diagram)
 
+    def solution_type(self, enum=False):
+        if self.c_triangulation is NULL:
+            raise ValueError('The triangulation is empty.')
+        solution_type = get_complete_solution_type(self.c_triangulation)
+        if enum:
+            return solution_type
+        else:
+            return SolutionType[solution_type]
+
     def volume(self):
         if self.c_triangulation == NULL:
             return None

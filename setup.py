@@ -409,7 +409,7 @@ SnapPyC = Extension(
 
 
 ###############################################################################
-# The high precision SnapPy extension
+# The high precision SnapPyHP extension
 
 hp_extra_link_args = []
 hp_extra_compile_args = []
@@ -435,15 +435,6 @@ if have_cython:
 
 if sys.platform == 'darwin':
     hp_extra_compile_args += macOS_quiet_cython
-
-# SnapPyHP depends implicitly on the source for the main kernel, so we
-# we delete certain object files to force distutils to rebuild them.
-
-if len(hp_snappy_ext_files.sources_to_build):
-    ldir = distutils_dir_name('lib')
-    matches = glob(os.path.join(ldir, 'snappy', 'SnapPyHP.*'))
-    if len(matches) > 0:
-        os.remove(matches[0])
 
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',

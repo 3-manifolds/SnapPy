@@ -11,7 +11,10 @@ cdef extern from "SnapPea.h":
         no_solution
         externally_computed
 
+cdef extern from "SnapPea.h":
     extern c_SolutionType find_structure(c_Triangulation *manifold, Boolean) except *
+
+    extern void free_triangulation(c_Triangulation *manifold) except *
 
     extern Real my_volume(c_Triangulation *manifold, Boolean * ok) except *
 
@@ -28,6 +31,8 @@ cdef extern from "diagram.h":
     c_Triangulation * triangulate_diagram_complement(
         c_Diagram *,
         Boolean remove_vertices)
+    void * free_diagram(
+        c_Diagram *)
 
 cdef extern from "orb_io.h":
     extern void read_orb(

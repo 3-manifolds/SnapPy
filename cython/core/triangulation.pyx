@@ -1,8 +1,6 @@
 from .cache import SnapPyCache
 import low_index
 
-_low_index_version = [int(n) for n in low_index.version().split('.')]
-
 cdef class Triangulation():
     """
     A Triangulation object represents a compact 3-manifold with torus

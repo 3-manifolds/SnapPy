@@ -654,11 +654,11 @@ The module defines the following classes:
     subsequent_indent='    ')
 
 # Add easy way to get the version info
-from .version import version as release_info
+from .version import version as version_str
 
 
 def version():
-    return release_info
+    return version_str
 
 
 __version__ = version()

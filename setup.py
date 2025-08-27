@@ -82,6 +82,8 @@ except ValueError:
 from setuptools.extension import Extension
 from setuptools import setup, Command
 
+cythonized_dir = 'cythonized'
+
 # A real clean
 
 class SnapPyClean(Command):
@@ -95,6 +97,7 @@ class SnapPyClean(Command):
                     glob('build/bdist*') +
                     glob('build/temp*') +
                     glob('snappy*.egg-info') +
+                    glob(cythonized_dir) +
                     ['__pycache__', os.path.join('python', 'doc')]
         )
         for dir in junkdirs:
@@ -264,20 +267,18 @@ if not any(  (non_build in sys.argv)
                 'Required version: %s. Installed version: %s.' % (
                     required_cython_version, cython_version))
 
-        cython_sources = [file for file in cython_sources if exists(file)]
-        cythonize(cython_sources,
-                  compiler_directives={'embedsignature': True})
-        cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
-        cythonize(cython_cpp_sources,
-                  compiler_directives={'embedsignature': True})
+        cythonize(cython_sources + cython_cpp_sources,
+                  compiler_directives={'embedsignature': True},
+                  build_dir=cythonized_dir)
     else:  # No Cython, likely building an sdist
         targets = [replace_ext(file, 'c') for file in cython_sources]
         targets += [replace_ext(file, 'cpp') for file in cython_cpp_sources]
         for file in targets:
-            if not exists(file):
+            gen_file = cythonized_dir + '/' + file
+            if not exists(gen_file):
                 raise ImportError(
                     no_cython_message +
-                    'Missing Cythoned file: ' + file +
+                    'Missing Cythoned file: ' + gen_file +
                     '\n[Cython import error: %r]' % cython_import_error +
                     '\n[Command line arguments: %r]' % sys.argv)
 
@@ -310,13 +311,13 @@ snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
 cy_source_mod_time = max([modtime('cython' + os.sep + file)
                           for file in all_cython_files])
-snappy_ext_files.add('cython' + os.sep + 'SnapPy.c', cy_source_mod_time)
-hp_snappy_ext_files.add('cython' + os.sep + 'SnapPyHP.cpp', cy_source_mod_time)
+snappy_ext_files.add(cythonized_dir + os.sep + 'cython' + os.sep + 'SnapPy.c', cy_source_mod_time)
+hp_snappy_ext_files.add(cythonized_dir + os.sep + 'cython' + os.sep + 'SnapPyHP.cpp', cy_source_mod_time)
 
 for file in code:
     snappy_ext_files.add(file)
     hp_file = 'quad_double' + replace_ext(file, 'cpp')[len('kernel'):]
-    assert os.path.exists(hp_file)
+    assert os.path.exists(hp_file), hp_file
     hp_snappy_ext_files.add(hp_file, modtime(file))
 
 for hp_file in hp_qd_code:
@@ -464,7 +465,7 @@ elif sys.platform == 'win32':
 
 CyOpenGL = Extension(
     name = 'snappy.CyOpenGL',
-    sources = ['opengl/CyOpenGL.c'],
+    sources = [cythonized_dir + '/opengl/CyOpenGL.c'],
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
     extra_objects = CyOpenGL_extras,

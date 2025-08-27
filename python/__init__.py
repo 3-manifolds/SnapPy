@@ -17,11 +17,6 @@ from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
 from .SnapPy import HolonomyGroup
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
-from .SnapPy import Triangulation as _TriangulationLP
-from .SnapPy import Manifold as _ManifoldLP
-from .SnapPyHP import Triangulation as _TriangulationHP
-from .SnapPyHP import Manifold as _ManifoldHP
-
 # seed the kernel's random number generator.
 import time
 from .SnapPy import set_rand_seed
@@ -34,12 +29,12 @@ from .exceptions import (SnapPeaFatalError,
 from typing import Union, Tuple, List, Optional
 
 # Subclass to be able to monkey-patch
-class Triangulation(_TriangulationLP):
-    __doc__ = _TriangulationLP.__doc__
+class Triangulation(SnapPy.Triangulation):
+    __doc__ = SnapPy.Triangulation.__doc__
 
 # Subclass to be able to monkey-patch
-class TriangulationHP(_TriangulationHP):
-    __doc__ = _TriangulationHP.__doc__
+class TriangulationHP(SnapPyHP.Triangulation):
+    __doc__ = SnapPyHP.Triangulation.__doc__
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.
@@ -47,8 +42,8 @@ class TriangulationHP(_TriangulationHP):
 # in the presence of a diamond pattern seem to work just
 # fine. In particular, we do not double allocate the underlying
 # C structures.
-class Manifold(_ManifoldLP, Triangulation):
-    __doc__ = _ManifoldLP.__doc__
+class Manifold(SnapPy.Manifold, Triangulation):
+    __doc__ = SnapPy.Manifold.__doc__
 
     def identify(self, extends_to_link=False):
         """
@@ -103,8 +98,8 @@ class Manifold(_ManifoldLP, Triangulation):
 
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
-class ManifoldHP(_ManifoldHP, TriangulationHP):
-    __doc__ = _ManifoldHP.__doc__
+class ManifoldHP(SnapPyHP.Manifold, TriangulationHP):
+    __doc__ = SnapPyHP.Manifold.__doc__
 
     def low_precision(self):
         """
@@ -158,7 +153,6 @@ class ManifoldHP(_ManifoldHP, TriangulationHP):
 
         """
         return self.low_precision()._identify(extends_to_link)
-
 
 SnapPy._manifold_class = Manifold
 SnapPy._triangulation_class = Triangulation
@@ -225,7 +219,7 @@ def is_isometric_to(self,
         resolved_other,
         return_isometries=return_isometries)
 
-is_isometric_to.__doc__ = _ManifoldLP._is_isometric_to.__doc__
+is_isometric_to.__doc__ = SnapPy.Manifold._is_isometric_to.__doc__
 Manifold.is_isometric_to = is_isometric_to
 ManifoldHP.is_isometric_to = is_isometric_to
 
@@ -239,7 +233,7 @@ def isomorphisms_to(self,
     return resolved_self._isomorphisms_to(
         resolved_other)
 
-isomorphisms_to.__doc__ = _TriangulationLP._isomorphisms_to.__doc__
+isomorphisms_to.__doc__ = SnapPy.Triangulation._isomorphisms_to.__doc__
 Triangulation.isomorphisms_to = isomorphisms_to
 TriangulationHP.isomorphisms_to = isomorphisms_to
 
@@ -283,106 +277,12 @@ from .cusps import cusp_area_matrix
 Manifold.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
 
-from .cusps import cusp_areas_from_matrix
+from . import cusps
 
-def cusp_areas(manifold,
-               policy : str = 'unbiased',
-               method : str = 'maximal',
-               verified : bool = False,
-               bits_prec : Optional[int] = None,
-               first_cusps : List[int] = []):
-    """
-    Returns a list of areas, one for each cusp. The cusp neighborhoods
-    defined by these areas are embedded and disjoint. Furthermore, these
-    neighborhoods are maximal in that they fail to be embedded or
-    disjoint if any cusp neighborhood is enlarged (unless :attr:`method`
-    is set to a value different from the default).
-
-    There are different policies how these cusp neighborhoods are found.
-
-    The default :attr:`policy` is ``unbiased``. This means that the
-    cusp neighborhoods are blown up simultaneously and a cusp neighborhood
-    stops growing when it touches any cusp neighborhood including itself::
-
-        >>> M = Manifold("s776")
-        >>> M.cusp_areas() # doctest: +NUMERIC9
-        [2.64575131106459, 2.64575131106459, 2.64575131106459]
-
-    Alternatively, :attr:`policy='greedy'` can be specified. This means
-    that the first cusp neighborhood is blown up until it touches itself,
-    then the second cusp neighborhood is blown up until it touches itself
-    or the first cusp neighborhood, and so on::
-
-        >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
-        [5.29150262212918, 1.32287565553230, 1.32287565553229]
-
-    Use :attr:`first_cusps` to specify the order in which the cusp
-    neighborhoods are blown up::
-
-        >>> M.cusp_areas(policy='greedy', first_cusps=[1,0,2]) # doctest: +NUMERIC9
-        [1.32287565553230, 5.29150262212918, 1.32287565553229]
-
-    An incomplete list can be given to :attr:`first_cusps`. In this case,
-    the list is automatically completed by appending the remaining cusps in
-    order. Thus, the above call is equivalent to::
-
-        >>> M.cusp_areas(policy='greedy', first_cusps=[1]) # doctest: +NUMERIC9
-        [1.32287565553230, 5.29150262212918, 1.32287565553229]
-
-    Under the hood, this method is using
-    :meth:`~snappy.Manifold.cusp_area_matrix`.
-
-    **Verified computation**
-
-    If :attr:`verified = False`, floating-point issues can arise resulting in
-    incorrect values. The method can be made
-    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
-
-        sage: M=Manifold("s776")
-        sage: M.cusp_areas(verified=True) # doctest: +NUMERIC9
-        [2.64575131107?, 2.64575131107?, 2.64575131107?]
-    
-    :param verified:
-            Use :ref:`verified computation <verify-primer>`.
-    :param bits_prec:
-            Precision used for computation. Increase if computation
-            did not succeed or a more precise result is desired.
-    :param method:
-            Passed to :meth:`~snappy.Manifold.cusp_area_matrix`. If set
-            to a value different from the default ``maximal``, the cusp
-            neighborhoods stop growing when the corresponding value
-            in the computed cusp area matrix is exceeded. At this point,
-            the cusp neighborhood might not necessarily touch any other
-            cusp neighborhood since we do not use the maximal cusp area
-            matrix.
-    :param policy:
-            Specifies process of choosing cusp neighborhoods.
-            Either ``unbiased`` or ``greedy``, see above.
-    :param first_cusps:
-            Preference order of cusps.
-            Only relevant if :attr:`policy='greedy'`, see above.
-    :return:
-            Areas of maximal embedded and disjoint cusp neighborhoods
-            (default). Or areas of some embedded and disjoint cusp
-            neighborhoods (if :attr:`method` switches to older algorithm).
-    """
-    if policy not in ['unbiased', 'greedy']:
-        raise ValueError("policy passed to cusp_areas must be 'unbiased' "
-                           "or 'greedy'.")
-
-    m = manifold.cusp_area_matrix(
-        method=method, verified=verified, bits_prec=bits_prec)
-
-    if policy == 'unbiased':
-        return cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix(m)
-    else:
-        return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
-
-Manifold.cusp_areas = cusp_areas
-ManifoldHP.cusp_areas = cusp_areas
+Manifold.cusp_areas = cusps.cusp_areas
+ManifoldHP.cusp_areas = cusps.cusp_areas
 
 from .verify import short_slopes as verify_short_slopes
-
 
 def short_slopes(manifold,
                  length=6,
@@ -754,11 +654,11 @@ The module defines the following classes:
     subsequent_indent='    ')
 
 # Add easy way to get the version info
-from .version import version as release_info
+from .version import version as version_str
 
 
 def version():
-    return release_info
+    return version_str
 
 
 __version__ = version()

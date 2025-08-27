@@ -291,11 +291,15 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
-SolutionType = ['not attempted', 'all tetrahedra positively oriented',
-                'contains negatively oriented tetrahedra',
-                'contains flat tetrahedra', 'contains degenerate tetrahedra',
-                'unrecognized solution type', 'no solution found',
-                'tetrahedra shapes were inserted']
+SolutionType = [
+    'not attempted',
+    'all tetrahedra positively oriented',
+    'contains negatively oriented tetrahedra',
+    'contains flat tetrahedra', # Note that SnapPea.h says that ALL tet are flat!
+    'contains degenerate tetrahedra',
+    'unrecognized solution type',
+    'no solution found',
+    'tetrahedra shapes were inserted']
 
 
 # SnapPea memory usage

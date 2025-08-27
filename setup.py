@@ -327,7 +327,7 @@ orb_code = glob(os.path.join('orb', 'kernel', 'snappea', 'code', '*.c'))
 orb_code += glob(os.path.join('orb', 'kernel', 'snappea', 'unix_kit', '*.c'))
 
 orb_ext_files = SourceAndObjectFiles()
-orb_ext_files.add('orb' + os.sep + 'cython' + os.sep + 'Orb.c', cy_source_mod_time)
+orb_ext_files.add(cythonized_dir + os.sep + 'orb' + os.sep + 'cython' + os.sep + 'Orb.c', cy_source_mod_time)
 for file in orb_code:
     orb_ext_files.add(file)
 

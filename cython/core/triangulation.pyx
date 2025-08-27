@@ -142,7 +142,7 @@ cdef class Triangulation():
         fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
 
         self.get_triangulation_from_name(name, remove_finite_vertices)
-        
+
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
 
@@ -231,7 +231,7 @@ cdef class Triangulation():
             self._from_string(
                 splitting_from_string(shortened_name), remove_finite_vertices)
             return
-            
+
         # Step 8. Regina/Burton isomorphism signatures.
         self._from_isosig(name, remove_finite_vertices)
         if self.c_triangulation != NULL:

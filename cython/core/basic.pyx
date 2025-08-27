@@ -82,11 +82,6 @@ try:
 except ImportError:
     asksaveasfile = None
 
-# This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
-    return string
-
-
 def valid_index(i, n, format_str):
     """
     Return range(n)[i] or raises a nicely formatted IndexError

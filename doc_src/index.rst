@@ -44,6 +44,9 @@ News
   - The Fox-Milnor slice obstruction is now available as
     :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
 
+  - Margulis number can now be computed with
+    :meth:`margulis <snappy.Manifold.margulis>`.
+
   - :meth:`triangulation_isosig <snappy.Manifold.triangulation_isosig>` now
     preserves the orientation of the core curve rather than the Dehn-filling
     curve - thus, preserving the (unoriented) spun-triangulation structure.

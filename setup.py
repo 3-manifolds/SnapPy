@@ -81,7 +81,7 @@ def get_build_temp_dir():
     return dummy_cmd.build_temp
 build_temp_dir = get_build_temp_dir()
 
-cythonized_dir = 'cythonized'
+cythoned_dir = 'cythoned'
 
 # A real clean
 
@@ -96,7 +96,7 @@ class SnapPyClean(Command):
                     glob('build/bdist*') +
                     glob('build/temp*') +
                     glob('snappy*.egg-info') +
-                    glob(cythonized_dir) +
+                    glob(cythoned_dir) +
                     ['__pycache__', os.path.join('python', 'doc')]
         )
         for dir in junkdirs:
@@ -235,15 +235,31 @@ class SourceAndObjectFiles():
         self.cython_file = None
         self.mod_time_dependencies = None
 
-    def set_mod_time_dependencies(self, t):
-        self.mod_time_dependencies = t
-        
-    def set_cython_file_language_and_dependencies(self, cython_file, language, dependencies = []):
+    def set_headers(self, files):
+        """
+        Call before anything else.
+        If set_headers is called, an object file older than any header is forced to
+        be rebuild.
+        """
+        self.mod_time_dependencies = max(modtime(file) for file in files)
+
+    def set_cython_file_language_and_dependencies(
+            self, cython_file, language, dependencies = []):
+        """
+        Sets the cython file. Populates cythoned_file. Forces the object file
+        to be rebuild if cython_file or any file in dependencies is newer.
+        language is the file extension of the cythoned file.
+        """
         self.cython_file = cython_file
-        self.cythonized_file = replace_ext(cythonized_dir + '/' + cython_file, language)
-        self.add(self.cythonized_file, [cython_file] + dependencies)
+        self.cythoned_file = replace_ext(cythoned_dir + '/' + cython_file, language)
+        self.add(self.cythoned_file, [cython_file] + dependencies)
 
     def add(self, source_file, dependencies = []):
+        """
+        Add source file. Forces object file to be rebuild if source file or any
+        file in dependencies is newer.
+        """
+
         object_file = build_temp_dir + os.sep + replace_ext(source_file, self.obj_ext)
         t = modtime(object_file)
 
@@ -254,6 +270,9 @@ class SourceAndObjectFiles():
         else:
             self.up_to_date_objects.append(object_file)
 
+###############################################################################
+# SourceAndObjectFiles for SnapPy and SnapPyHP extension
+
 snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
 
@@ -262,9 +281,8 @@ snappy_headers = (
     glob(os.path.join('kernel', 'addl_code', '*.h')) +
     glob(os.path.join('kernel', 'unix_kit', '*.h')) +
     glob(os.path.join('kernel', 'real_type', '*.h')))
-snappy_mod_time_dependencies = max(modtime(file) for file in snappy_headers)
-snappy_ext_files.set_mod_time_dependencies(snappy_mod_time_dependencies)
-hp_snappy_ext_files.set_mod_time_dependencies(snappy_mod_time_dependencies)
+snappy_ext_files.set_headers(snappy_headers)
+hp_snappy_ext_files.set_headers(snappy_headers)
 
 snappy_cython_deps = ['cython/SnapPycore.pxi', 'cython/SnapPy.pxi']
 snappy_cython_deps += glob(os.path.join('cython','core', '*.pyx'))
@@ -292,9 +310,15 @@ for file in base_code + unix_code + addl_code:
 for file in glob(os.path.join('quad_double', 'qd', 'src', '*.cpp')):
     hp_snappy_ext_files.add(file)
 
+###############################################################################
+# SourceAndObjectFiles for CyOpenGL
+
 cy_opengl_ext_files = SourceAndObjectFiles()
 cy_opengl_ext_files.set_cython_file_language_and_dependencies(
     'opengl/CyOpenGL.pyx', 'c', [])
+
+###############################################################################
+# Cythonize
 
 # If we have Cython, regenerate .c files as needed:
 try:
@@ -323,19 +347,21 @@ if not any(  (non_build in sys.argv)
 
         cythonize([ext.cython_file for ext in exts],
                   compiler_directives={'embedsignature': True},
-                  build_dir=cythonized_dir)
+                  build_dir=cythoned_dir)
     else:  # No Cython, likely building an sdist
         for ext in exts:
-            if not exists(ext.cythonized_file):
+            if not exists(ext.cythoned_file):
                 raise ImportError(
                     no_cython_message +
-                    'Missing Cythoned file: ' + cythonized_filed +
+                    'Missing Cythoned file: ' + cythoned_filed +
                     '\n[Cython import error: %r]' % cython_import_error +
                     '\n[Command line arguments: %r]' % sys.argv)
 
-# For Windows, check the compiler we will be using.
+###############################################################################
+# Common ompiler option
 
 if sys.platform == 'win32':
+    # For Windows, check the compiler we will be using.
     cc = 'msvc'
     for arg in sys.argv:
         if arg.startswith('--compiler='):
@@ -351,8 +377,10 @@ if sys.platform == 'darwin':
     macos_arch = sysconfig.get_platform().split('-')[-1]
     macos_targets = {'x86_64':'10.9', 'arm64': '11', 'universal2': '10.9'}
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_targets[macos_arch]
-            
+
+###############################################################################
 # The SnapPy extension
+
 snappy_extra_compile_args = []
 snappy_extra_link_args = []
 if sys.platform == 'win32':
@@ -364,7 +392,7 @@ if sys.platform == 'win32':
     else:
         if sys.version_info == (3, 4):
             snappy_extra_link_args.append('-lmsvcr100')
-            
+
 if sys.platform == 'darwin':
     snappy_extra_compile_args += macOS_quiet_cython
     snappy_extra_link_args += macOS_link_args
@@ -380,6 +408,7 @@ SnapPyC = Extension(
     extra_objects = snappy_ext_files.up_to_date_objects)
 
 
+###############################################################################
 # The high precision SnapPy extension
 
 hp_extra_link_args = []
@@ -427,6 +456,7 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
+###############################################################################
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
 CyOpenGL_libs = []
@@ -494,7 +524,8 @@ else:
         print("The following directories were searched: %s." % (
             ', '.join(CyOpenGL_includes)))
 
-# Twister
+###############################################################################
+# Twister extension
 
 twister_main_path = 'twister/lib/'
 twister_kernel_path = twister_main_path + 'kernel/'
@@ -518,7 +549,16 @@ TwisterCore = Extension(
     language='c++',
     extra_objects = twister_ext_files.up_to_date_objects)
 
+###############################################################################
+# snappy
+
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
+if CyOpenGL_has_headers:
+    ext_modules.append(CyOpenGL)
+elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
+      not in ['0', 'false', 'False']):
+    raise RuntimeError('Could not find CyOpenGL requirements but '
+                       'SNAPPY_ALWAYS_BUILD_CYOPENGL is set.')
 
 install_requires = ['FXrays>=1.3',
                     'plink>=2.4.3',
@@ -537,13 +577,6 @@ try:
 except ImportError:
     install_requires.append('cypari>=2.3')
     install_requires.append('ipython>=5.0')
-
-if CyOpenGL_has_headers:
-    ext_modules.append(CyOpenGL)
-elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
-      not in ['0', 'false', 'False']):
-    raise RuntimeError('Could not find CyOpenGL requirements but '
-                       'SNAPPY_ALWAYS_BUILD_CYOPENGL is set.')
 
 # Get version number:
 exec(open('python/version.py').read())

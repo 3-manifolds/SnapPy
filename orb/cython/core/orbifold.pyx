@@ -18,7 +18,7 @@ cdef class Orbifold:
     def __cinit__(self, spec=None):
         self.c_triangulation = NULL
         self.c_diagram = NULL
-        read_orb(spec, &self.c_triangulation, &self.c_diagram)
+        read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
 
     def volume(self):
         if self.c_triangulation == NULL:

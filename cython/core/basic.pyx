@@ -126,10 +126,6 @@ def bytearray_to_bytes(x):
     return bytes(x)
 
 
-def to_byte_str(s):
-    return s.encode('utf-8') if type(s) != bytes else s
-
-
 # Types of covering spaces
 cover_types = {1: "irregular", 2: "regular", 3: "cyclic"}
 

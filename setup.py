@@ -370,6 +370,7 @@ if not any(  (non_build in sys.argv)
 
         cythonize([ext.cython_file for ext in exts],
                   compiler_directives={'embedsignature': True},
+                  include_path=['extensions'],
                   build_dir=cythoned_dir)
     else:  # No Cython, likely building an sdist
         for ext in exts:

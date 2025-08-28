@@ -13,7 +13,28 @@ cdef class OrbTriangulation:
     def __cinit__(self, spec=None):
         self.c_triangulation = NULL
         self.c_diagram = NULL
-        read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
+
+        for attr in [
+                '_to_orb_triangulation_string',
+                '_to_snappea_triangulation_string',
+                '__snappy__',
+                'snapPea',
+                '_to_string']:
+            if hasattr(spec, attr):
+                spec = getattr(spec, attr)()
+                break
+
+        if spec is None:
+            self.get_from_new_plink()
+        elif spec == 'empty':
+            pass
+        else:
+            if not isinstance(spec, (str, bytes)):
+                raise TypeError("Expected str or bytes (TODO: fill in error")
+            self.get_triangulation(spec)
+
+            if self.c_triangulation == NULL:
+                raise RuntimeError('An empty triangulation was generated.')
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -21,6 +42,12 @@ cdef class OrbTriangulation:
         if self.c_diagram != NULL:
             free_diagram(self.c_diagram)
 
+    cdef get_from_new_plink(self, file_name=None):
+        raise NotImplementedError("Orbifold PLink not implemented yet.")
+
+    cdef get_triangulation(self, spec):            
+        read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
+    
     def retriangulate_diagram(self):
         """
         Demo
@@ -35,3 +62,5 @@ cdef class OrbTriangulation:
             self.c_diagram, True)
 
         return True
+
+    

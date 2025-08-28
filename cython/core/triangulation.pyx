@@ -91,7 +91,11 @@ cdef class Triangulation():
         self.hyperbolic_structure_initialized = False
         self._link_file_full_path = None
 
-        for attr in ['__snappy__', 'snapPea', '_to_string']:
+        for attr in [
+                '_to_snappea_triangulation_string',
+                '__snappy__',
+                'snapPea',
+                '_to_string']:
             if hasattr(spec, attr):
                 spec = getattr(spec, attr)()
                 break

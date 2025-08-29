@@ -77,6 +77,11 @@ cdef class OrbTriangulation:
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
+    def _remove_finite_vertices(self):
+        if self.c_triangulation == NULL:
+            return
+        remove_finite_vertices(self.c_triangulation)
+
     def retriangulate_diagram(self):
         """
         Demo

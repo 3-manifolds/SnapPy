@@ -19,6 +19,9 @@ cdef extern from "SnapPea.h":
     extern c_SolutionType find_structure(c_Triangulation *manifold, Boolean) except *
     extern Real my_volume(c_Triangulation *manifold, Boolean * ok) except *
 
+cdef extern from "kernel_prototypes.h":
+    extern void remove_finite_vertices(c_Triangulation *manifold)
+
 cdef extern from "triangulation.h":
     ctypedef struct c_Triangulation "Triangulation":
         int num_tetrahedra

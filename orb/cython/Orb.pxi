@@ -1,3 +1,6 @@
+cdef extern from "stdlib.h":
+    void free(void *mem)
+
 cdef extern from "SnapPea.h":
     ctypedef char Boolean
 
@@ -31,6 +34,9 @@ cdef extern from "unix_file_io.h":
     extern c_Triangulation *read_triangulation_from_string(char *file_data)
     extern Boolean write_triangulation(c_Triangulation *manifold, char *file_name)
     extern char *string_triangulation(c_Triangulation *manifold)
+
+cdef extern from "orb_io.h":
+    extern char *write_orb_to_string(c_Triangulation *trig, c_Diagram * diagram)
 
 cdef extern from "diagram.h":
     ctypedef struct c_Diagram "Diagram":

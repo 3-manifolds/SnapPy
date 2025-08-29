@@ -118,9 +118,6 @@ class MsgIO():
 msg_stream = MsgIO()
 
 
-def to_str(s):
-    return s.decode()
-
 
 def bytearray_to_bytes(x):
     return bytes(x)

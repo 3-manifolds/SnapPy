@@ -92,7 +92,7 @@ cdef class Triangulation():
         self._link_file_full_path = None
 
         for attr in [
-                '_to_snappea_triangulation_string',
+                '_to_snappea_string',
                 '__snappy__',
                 'snapPea',
                 '_to_string']:

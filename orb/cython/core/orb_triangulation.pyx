@@ -15,8 +15,8 @@ cdef class OrbTriangulation:
         self.c_diagram = NULL
 
         for attr in [
-                '_to_orb_triangulation_string',
-                '_to_snappea_triangulation_string',
+                '_to_orb_string',
+                '_to_snappea_string',
                 '__snappy__',
                 'snapPea',
                 '_to_string']:
@@ -52,7 +52,7 @@ cdef class OrbTriangulation:
             self._from_triangulation_string(
                 spec, remove_finite_vertices=remove_finite_vertices)
             return
-        
+
         read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
 
     def _from_triangulation_string(self, string, remove_finite_vertices=True):
@@ -82,6 +82,32 @@ cdef class OrbTriangulation:
             return
         remove_finite_vertices(self.c_triangulation)
 
+    def _to_orb_string(self):
+        cdef char *c_string
+        cdef result
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        try:
+            c_string = write_orb_to_string(self.c_triangulation, self.c_diagram)
+            result = c_string
+        finally:
+            free(c_string)
+        return to_str(result)
+
+    def _to_snappea_string(self):
+        cdef char *c_string
+        cdef result
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        try:
+            c_string = string_triangulation(self.c_triangulation)
+            result = c_string
+        finally:
+            free(c_string)
+        return to_str(result)
+
     def retriangulate_diagram(self):
         """
         Demo
@@ -96,5 +122,3 @@ cdef class OrbTriangulation:
             self.c_diagram, True)
 
         return True
-
-    

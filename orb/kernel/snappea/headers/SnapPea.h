@@ -43,6 +43,8 @@ enum
 	degenerate_solution,	/*	at least one tetrahedron has shape = {0, 1, infinity}		*/
 	other_solution,			/*	volume <= 0, but not flat or degenerate						*/
 	no_solution,				/*	gluing equations could not be solved						*/
+	externally_computed,
+
 	step_failed,
 
 	invalid_solution

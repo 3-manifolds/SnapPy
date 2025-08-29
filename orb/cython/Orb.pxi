@@ -9,6 +9,7 @@ cdef extern from "SnapPea.h":
         degenerate_solution
         other_solution
         no_solution
+        externally_computed
         step_faileld
         invalid_solution
 
@@ -23,7 +24,10 @@ cdef extern from "triangulation.h":
         int num_tetrahedra
 
 cdef extern from "unix_file_io.h":
-    extern c_Triangulation *get_triangulation(char *file_name)
+    extern c_Triangulation *read_triangulation(char *file_name)
+    extern c_Triangulation *read_triangulation_from_string(char *file_data)
+    extern Boolean write_triangulation(c_Triangulation *manifold, char *file_name)
+    extern char *string_triangulation(c_Triangulation *manifold)
 
 cdef extern from "diagram.h":
     ctypedef struct c_Diagram "Diagram":

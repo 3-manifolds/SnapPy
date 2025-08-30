@@ -52,6 +52,10 @@ cdef class OrbTriangulation:
             self._from_triangulation_string(
                 spec, remove_finite_vertices=remove_finite_vertices)
             return
+        if (isinstance(spec, str) and spec.startswith('% orb') or
+            isinstance(spec, bytes) and spec.startswith(b'% orb')):
+            self._from_orb_string(
+                spec, remove_finite_vertices=remove_finite_vertices)
 
         read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
 
@@ -74,6 +78,16 @@ cdef class OrbTriangulation:
             raise ValueError('The Triangulation must be empty.')
         b_string = to_byte_str(string)
         self.c_triangulation = read_triangulation_from_string(b_string)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+
+    def _from_orb_string(self, string, remove_finite_vertices=True):
+        if self.c_triangulation is not NULL:
+            raise ValueError('The Triangulation must be empty.')
+        if self.c_diagram is not NULL:
+            raise ValueError('The diagram must be empty.')
+        b_string = to_byte_str(string)
+        read_orb_from_string(b_string, &self.c_triangulation, &self.c_diagram)
         if remove_finite_vertices:
             self._remove_finite_vertices()
 

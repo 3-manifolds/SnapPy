@@ -52,3 +52,7 @@ cdef extern from "orb_io.h":
         const char *file_name,
         c_Triangulation ** trig,
         c_Diagram ** diagram)
+    extern void read_orb_from_string(
+        char *file_data,
+        c_Triangulation ** trig,
+        c_Diagram ** diagram)

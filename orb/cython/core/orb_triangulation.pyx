@@ -57,7 +57,7 @@ cdef class OrbTriangulation:
             self._from_orb_string(
                 spec, remove_finite_vertices=remove_finite_vertices)
 
-        read_orb(to_byte_str(spec), &self.c_triangulation, &self.c_diagram)
+        self.get_from_file(spec, remove_finite_vertices)
 
     def _from_triangulation_string(self, string, remove_finite_vertices=True):
         """
@@ -76,8 +76,8 @@ cdef class OrbTriangulation:
         """
         if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
-        b_string = to_byte_str(string)
-        self.c_triangulation = read_triangulation_from_string(b_string)
+        self.c_triangulation = read_triangulation_from_string(
+            to_byte_str(string))
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
@@ -86,11 +86,37 @@ cdef class OrbTriangulation:
             raise ValueError('The Triangulation must be empty.')
         if self.c_diagram is not NULL:
             raise ValueError('The diagram must be empty.')
-        b_string = to_byte_str(string)
-        read_orb_from_string(b_string, &self.c_triangulation, &self.c_diagram)
+        read_orb_from_string(
+            to_byte_str(string), &self.c_triangulation, &self.c_diagram)
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
+    def get_from_file(self, name, remove_finite_vertices=True):
+        locations = [os.curdir]
+        env_var_name = 'SNAPPEA_MANIFOLD_DIRECTORY'
+        location = os.environ.get(env_var_name)
+        if location is not None:
+            locations.append(location)
+        for location in locations:
+            path = os.path.join(location, name)
+            if os.path.isfile(path):
+                with open(path) as file:
+                    first_line = file.readline()
+                if first_line.startswith('% orb'):
+                    read_orb(
+                        to_byte_str(path),
+                        &self.c_triangulation, &self.c_diagram)
+                elif first_line.startswith('% Triangulation'):
+                    self.c_triangulation = read_triangulation(to_byte_str(path))
+                else:
+                    raise IOError('File %s has unknown file format.' % name)
+                break
+        if self.c_triangulation == NULL:
+            raise IOError(
+                'The orbifold or manifold file %s was not found.' % name)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+            
     def _remove_finite_vertices(self):
         if self.c_triangulation == NULL:
             return

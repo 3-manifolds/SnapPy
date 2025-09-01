@@ -1,3 +1,5 @@
+import os
+
 SolutionType = [
     'not attempted',
     'all tetrahedra positively oriented (Note that list_interface.cpp still checks that contains_flat_tetrahedra is false)',

@@ -27,7 +27,7 @@ def epsilon_thin_tube_radius_candidate(cosh_epsilon, lambda_):
     RIF = f.parent()
     return correct_max([f, RIF(1)]).sqrt().arccosh()
 
-def epsilon_this_tube_radius(epsilon, lambda_):
+def epsilon_thin_tube_radius(epsilon, lambda_):
     cosh_epsilon = epsilon.cosh()
     max_power = _ceil(epsilon / lambda_.real()) + 1
     return correct_max(
@@ -128,7 +128,7 @@ def is_margulis_number(M, epsilon, bits_prec=None, verified=False):
         (index,
          geodesic['word'],
          geodesic['core_curve'],
-         epsilon_this_tube_radius(epsilon, geodesic['length']))
+         epsilon_thin_tube_radius(epsilon, geodesic['length']))
         for index, geodesic in enumerate(geodesics) ]
     
     mcomplex = mcomplex_for_tiling_cusp_neighborhoods(

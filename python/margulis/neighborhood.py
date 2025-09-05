@@ -22,10 +22,8 @@ class Neighborhood:
         self.tet_to_tiles[tet_index].append(next_tile)
 
     def update_radius_and_epsilon(self, next_tile : Tile) -> None:
-        radius = next_tile.lower_bound_distance
-        if self._can_update_radius(radius):
-            self.radius = radius
-            self.epsilon = self.epsilon_from_radius(radius)
+        self.radius = next_tile.lower_bound_distance
+        self.epsilon = self.epsilon_from_radius(self.radius)
 
     def __lt__(self, other):
         return lower(self.epsilon) < lower(other.epsilon)

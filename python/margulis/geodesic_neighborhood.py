@@ -11,6 +11,7 @@ from ..len_spec.length_spectrum_geodesic_info import LengthSpectrumGeodesicInfo
 from ..tiling.tile import Tile
 
 from typing import Iterable
+import itertools
 
 class GeodesicNeighborhood(Neighborhood):
     def __init__(self, mcomplex : Mcomplex,
@@ -32,9 +33,6 @@ class GeodesicNeighborhood(Neighborhood):
             return compute_tiles_for_core_curve(
                 self.mcomplex,
                 self.geodesic_info.core_curve)
-
-    def _can_update_radius(self, radius) -> bool:
-        return radius > 0
 
     def epsilon_from_radius(self, radius):
         return epsilon_from_tube_radius(
@@ -73,36 +71,38 @@ class GeodesicNeighborhood(Neighborhood):
     def __repr__(self):
         return "Geodesic tube with length %r" % self.geodesic_info.length
 
+def epsilon_from_tube_radius(radius, lambda_):
+    if radius < 0:
+        return lambda_.real()
+
+    RF = radius.parent()
+    sqr_cosh_radius = correct_max([RF(0), radius]).cosh() ** 2
+
+    min_cosh_candidate = None
+    for n in itertools.count(1):
+        nlambda = n * lambda_
+        cos_term = nlambda.imag().cos()
+        cosh_term = nlambda.real().cosh()
+
+        cosh_candidate = ((cosh_term - cos_term) * sqr_cosh_radius) + cos_term
+        if min_cosh_candidate is None:
+            min_cosh_candidate = cosh_candidate
+        else:
+            min_cosh_candidate = correct_min([min_cosh_candidate, cosh_candidate])
+        if min_cosh_candidate < ((cosh_term - 1) * sqr_cosh_radius) + 1:
+            return min_cosh_candidate.arccosh()
+
 def candidate_tube_radius_from_cosh_epsilon(cosh_epsilon, lambda_):
-    c = lambda_.imag().cos()
-    f = ((cosh_epsilon - c) /
-         (lambda_.real().cosh() - c))
+    cos_term = lambda_.imag().cos()
+    f = ((cosh_epsilon - cos_term) /
+         (lambda_.real().cosh() - cos_term))
     RIF = f.parent()
     return correct_max([f, RIF(1)]).sqrt().arccosh()
 
-def candidate_epsilon_from_tube_sqr_cosh_radius(sqr_cosh_radius, lambda_):
-    c = lambda_.imag().cos()
-
-    f = ((lambda_.real().cosh() - c) * sqr_cosh_radius) + c
-    return correct_max([lambda_.real(), f.arccosh()])
-
-def _ceil(v):
-    if is_RealIntervalFieldElement(v):
-        return v.ceil().upper().round()
-    else:
-        return int(v.ceil())
-
-def epsilon_from_tube_radius(radius, lambda_):
-    sqr_cosh_radius = radius.cosh() ** 2
-    max_power = _ceil(radius / lambda_.real()) + 1
-    return correct_min(
-        [ candidate_epsilon_from_tube_sqr_cosh_radius(sqr_cosh_radius, n * lambda_)
-          for n in range(1, max_power + 1) ])
-
 def candidate_derivative_tube_radius_from_cosh_sinh_epsilon(cosh_epsilon, sinh_epsilon, lambda_):
-    c = lambda_.imag().cos()
-    n = cosh_epsilon - c
-    d = lambda_.real().cosh() - c
+    cos_term = lambda_.imag().cos()
+    n = cosh_epsilon - cos_term
+    d = lambda_.real().cosh() - cos_term
     f = n / d
     ff = f * (f - 1)
 

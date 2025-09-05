@@ -18,9 +18,6 @@ class CuspNeighborhoodNeighborhood(Neighborhood):
             self.vertex.cusp_area, cusp_shape)
         self.epsilon = mcomplex.RF(0)
 
-    def _can_update_radius(self, radius) -> bool:
-        return True
-
     def epsilon_from_radius(self, radius):
         h = self.euclidean_length * radius.exp()
         return 2 * (h/2).arcsinh()

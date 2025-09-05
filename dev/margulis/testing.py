@@ -1,4 +1,3 @@
-from supremal_margulis_number import margulis_number
 from predicate import is_margulis_number
 import time
 import sys
@@ -28,8 +27,8 @@ def do_census():
         s = time.process_time()
         for bits_prec in [500, 1000, 2000]:
             try:
-                epsilon, thin_part, collisions = margulis_number(
-                    M, bits_prec=bits_prec, verified=True, include_thin_part=True)
+                epsilon, thin_part, collisions = M.margulis(
+                    bits_prec=bits_prec, verified=True, include_thin_part=True)
                 break
             except Exception as e:
                 exception = e
@@ -67,7 +66,7 @@ def do_census():
             except Exception as e:
                 e = e
         if m2:
-            raise Exception("Margulis 1")
+            raise Exception("Margulis 2")
 
         time_predicate = time.process_time() - s
 

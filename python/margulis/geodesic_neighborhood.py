@@ -73,12 +73,6 @@ class GeodesicNeighborhood(Neighborhood):
     def __repr__(self):
         return "Geodesic tube with length %r" % self.geodesic_info.length
 
-def _ceil(v):
-    if is_RealIntervalFieldElement(v):
-        return v.ceil().upper().round()
-    else:
-        return int(v.ceil())
-
 def candidate_tube_radius_from_cosh_epsilon(cosh_epsilon, lambda_):
     c = lambda_.imag().cos()
     f = ((cosh_epsilon - c) /
@@ -91,6 +85,12 @@ def candidate_epsilon_from_tube_sqr_cosh_radius(sqr_cosh_radius, lambda_):
 
     f = ((lambda_.real().cosh() - c) * sqr_cosh_radius) + c
     return correct_max([lambda_.real(), f.arccosh()])
+
+def _ceil(v):
+    if is_RealIntervalFieldElement(v):
+        return v.ceil().upper().round()
+    else:
+        return int(v.ceil())
 
 def epsilon_from_tube_radius(radius, lambda_):
     sqr_cosh_radius = radius.cosh() ** 2
@@ -115,10 +115,16 @@ def candidate_derivative_tube_radius_from_cosh_sinh_epsilon(cosh_epsilon, sinh_e
         print("lambda_", lambda_)
         raise e
 
+def _floor(v):
+    if is_RealIntervalFieldElement(v):
+        return v.floor().upper().round()
+    else:
+        return int(v.floor())
+
 def tube_radius_and_derivative_from_epsilon(epsilon, lambda_, include_derivative, verified):
     cosh_epsilon = epsilon.cosh()
     sinh_epsilon = epsilon.sinh()
-    max_power = _ceil(epsilon / lambda_.real())
+    max_power = _floor(epsilon / lambda_.real())
 
     candidates = [
         candidate_tube_radius_from_cosh_epsilon(cosh_epsilon, n * lambda_)

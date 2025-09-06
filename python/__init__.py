@@ -246,8 +246,6 @@ snap.add_methods(TriangulationHP, hyperbolic=False)
 from . import exterior_to_link
 Triangulation.exterior_to_link = exterior_to_link.exterior_to_link
 TriangulationHP.exterior_to_link = exterior_to_link.exterior_to_link
-Manifold.exterior_to_link = exterior_to_link.exterior_to_link
-ManifoldHP.exterior_to_link = exterior_to_link.exterior_to_link
 
 from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity

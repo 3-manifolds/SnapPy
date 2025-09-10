@@ -40,8 +40,7 @@ modules = [
     verify.interval_tree,
     verify.volume,
     verify.square_extensions,
-    verify.real_algebra,
-    verify.short_slopes
+    verify.real_algebra
 ]
 
 def run_doctests(verbose=False, print_info=True):

@@ -7,6 +7,7 @@ from ..geometric_structure.cusp_neighborhood.complex_cusp_cross_section import C
 from ..geometric_structure.cusp_neighborhood.exceptions import IncompleteCuspError
 from ..verify.shapes import compute_hyperbolic_shapes
 from ..exceptions import NonorientableManifoldError
+from . import short_slopes_for_cusp
 from . import cusp_areas_from_matrix
 
 from typing import Optional, List
@@ -137,3 +138,75 @@ def cusp_areas(manifold,
         return cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix(m)
     else:
         return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
+
+def short_slopes(manifold,
+                 length=6,
+                 policy : str = 'unbiased',
+                 method : str = 'maximal',
+                 verified : bool = False,
+                 bits_prec : Optional[int] = None,
+                 first_cusps : List[int] = []):
+    """
+    Returns a list of short slopes (for Dehn-fillings) for each cusp.
+
+    That is, the method uses :meth:`~snappy.Manifold.cusp_areas` to find
+    (maximal) embedded and disjoint cusp neighborhoods. It uses the boundaries
+    of these cusp neighborhoods to measure the length of a peripheral curve.
+    For each cusp, it determines all simple peripheral curves shorter than
+    the given :attr:`length` (which defaults to 6). The result is a list
+    of the corresponding slopes for each cusp::
+
+        >>> M = Manifold("otet20_00022")
+        >>> M.short_slopes()
+        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+
+    It takes the same arguments as :meth:`~snappy.Manifold.cusp_areas`::
+
+        >>> M.short_slopes(policy = 'greedy')
+        [[(1, 0)], [(1, 0)]]
+
+    The ten exceptional slopes of the figure-eight knot::
+
+        >>> M = Manifold("4_1")
+        >>> M.short_slopes()
+        [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    Two more slopes appear when increasing length to :math:`2\\pi`::
+
+        >>> M.short_slopes(length = 6.283185307179586)
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    **Verified computation**
+
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
+
+        sage: M = Manifold("4_1")
+        sage: M.short_slopes(verified = True)
+        [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    If :attr:`verified = True`, the result is guaranteed to contain all short
+    slopes and might contain additional slopes (with lengths slightly longer
+    than the given :attr:`length` but this could not be proven using the
+    interval estimates).
+
+    The given :attr:`length` is cast to a SageMath ``RealIntervalField`` of the
+    given precision if :attr:`verified = True`::
+
+        sage: from sage.all import pi
+        sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100)
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    """
+
+    cusp_shapes = manifold.cusp_info(
+        'shape', verified=verified, bits_prec=bits_prec)
+    cusp_areas = manifold.cusp_areas(
+        policy=policy, method=method,
+        verified=verified, bits_prec=bits_prec, first_cusps=first_cusps)
+    
+    return [
+        short_slopes_for_cusp.short_slopes_from_cusp_shape_and_area(
+            cusp_shape, cusp_area, length=length)
+        for cusp_shape, cusp_area in zip(cusp_shapes, cusp_areas) ]

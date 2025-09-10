@@ -139,6 +139,22 @@ def cusp_areas(manifold,
     else:
         return cusp_areas_from_matrix.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
+def _cusp_shapes_and_areas(
+        manifold, *,
+        policy : str,
+        method : str,
+        verified : bool,
+        bits_prec : Optional[int],
+        first_cusps : List[int]):
+
+    cusp_shapes = manifold.cusp_info(
+        'shape', verified=verified, bits_prec=bits_prec)
+    cusp_areas = manifold.cusp_areas(
+        policy=policy, method=method,
+        verified=verified, bits_prec=bits_prec, first_cusps=first_cusps)
+
+    return zip(cusp_shapes, cusp_areas)
+
 def short_slopes(manifold,
                  length=6,
                  policy : str = 'unbiased',
@@ -200,13 +216,65 @@ def short_slopes(manifold,
 
     """
 
-    cusp_shapes = manifold.cusp_info(
-        'shape', verified=verified, bits_prec=bits_prec)
-    cusp_areas = manifold.cusp_areas(
-        policy=policy, method=method,
-        verified=verified, bits_prec=bits_prec, first_cusps=first_cusps)
-    
     return [
         short_slopes_for_cusp.short_slopes_from_cusp_shape_and_area(
             cusp_shape, cusp_area, length=length)
-        for cusp_shape, cusp_area in zip(cusp_shapes, cusp_areas) ]
+        for cusp_shape, cusp_area
+        in _cusp_shapes_and_areas(
+            manifold,
+            policy = policy,
+            method = method,
+            verified = verified,
+            bits_prec = bits_prec,
+            first_cusps = first_cusps) ]
+
+def cusp_translations(manifold,
+                      policy : str = 'unbiased',
+                      method : str = 'maximal',
+                      verified : bool = False,
+                      bits_prec : Optional[int] = None,
+                      first_cusps : List[int] = []):
+    """
+    Returns a list of the (complex) Euclidean translations corresponding to the
+    meridian and longitude of each cusp.
+
+    That is, the method uses :meth:`~snappy.Manifold.cusp_areas` to find
+    (maximal) embedded and disjoint cusp neighborhoods. It then uses the
+    boundaries of these cusp neighborhoods to measure the meridian and
+    longitude of each cusp. The result is a pair for each cusp. The first
+    entry of the pair corresponds to the meridian and is complex. The
+    second entry corresponds to the longitude and is always real::
+
+        >>> M = Manifold("s776")
+        >>> M.cusp_translations() # doctest: +NUMERIC9
+        [(0.500000000000000 + 1.32287565553230*I, 2.00000000000000), (0.500000000000000 + 1.32287565553230*I, 2.00000000000000), (0.499999999999999 + 1.32287565553230*I, 2.00000000000000)]
+
+    It takes the same arguments as :meth:`~snappy.Manifold.cusp_areas`::
+
+        >>> M.cusp_translations(policy = 'greedy') # doctest: +NUMERIC9
+        [(0.70710678118654752440084436210 + 1.8708286933869706927918743662*I, 2.8284271247461900976033774484), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242)]
+
+    **Verified computations**
+
+    If :attr:`verified = False`, floating-point issues can arise resulting in
+    incorrect values. The method can be made
+    :ref:`verified <verify-primer>` by passing :attr:`verified = True`::
+
+        sage: M.cusp_translations(verified = True) # doctest: +NUMERIC9
+        [(0.50000000000? + 1.32287565553?*I, 2.00000000000?), (0.500000000000? + 1.32287565554?*I, 2.00000000000?), (0.500000000000? + 1.32287565554?*I, 2.00000000000?)]
+
+    Note that the first element of each pair is a SageMath ``ComplexIntervalField`` and
+    the second element a ``RealIntervalField``.
+    """
+
+    return [
+        short_slopes_for_cusp.translations_from_cusp_shape_and_area(
+            cusp_shape, cusp_area, kernel_convention=True)
+        for cusp_shape, cusp_area
+        in _cusp_shapes_and_areas(
+            manifold,
+            policy = policy,
+            method = method,
+            verified = verified,
+            bits_prec = bits_prec,
+            first_cusps = first_cusps) ]

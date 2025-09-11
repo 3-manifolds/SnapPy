@@ -99,19 +99,3 @@ def holonomy_matrix_entries(manifold,
                               match_kernel=match_kernel)
         return sum( [G.SL2C(g).list() for g in G.generators()], [])
     return ListOfApproximateAlgebraicNumbers(func)
-
-
-def add_methods(mfld_class, hyperbolic=True):
-    mfld_class.alexander_polynomial = nsagetools.alexander_polynomial
-    mfld_class.homological_longitude = nsagetools.homological_longitude
-    mfld_class.slice_obstruction_HKL = slice_obs_HKL.slice_obstruction_HKL
-    mfld_class.fox_milnor_test = fox_milnor.fox_milnor_test
-    if hyperbolic:
-        mfld_class.polished_holonomy = polished_holonomy
-        mfld_class.tetrahedra_field_gens = tetrahedra_field_gens
-        mfld_class.trace_field_gens = trace_field_gens
-        mfld_class.invariant_trace_field_gens = invariant_trace_field_gens
-        mfld_class.holonomy_matrix_entries = holonomy_matrix_entries
-        mfld_class.hyperbolic_torsion = nsagetools.hyperbolic_torsion
-        mfld_class.hyperbolic_adjoint_torsion = nsagetools.hyperbolic_adjoint_torsion
-        mfld_class.hyperbolic_SLN_torsion = nsagetools.hyperbolic_SLN_torsion

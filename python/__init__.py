@@ -36,9 +36,15 @@ from . import cusps
 from . cusps import cusp_area_matrix
 from . import raytracing
 from . import isometry_signature
+from . import snap
+from .snap import nsagetools, slice_obs_HKL, fox_milnor
 
 class TriangulationMixIn:
     exterior_to_link = exterior_to_link.exterior_to_link
+    alexander_polynomial = nsagetools.alexander_polynomial
+    homological_longitude = nsagetools.homological_longitude
+    slice_obstruction_HKL = slice_obs_HKL.slice_obstruction_HKL
+    fox_milnor_test = fox_milnor.fox_milnor_test
 
 class ManifoldMixIn:
     verify_hyperbolicity = verify.verify_hyperbolicity
@@ -51,6 +57,14 @@ class ManifoldMixIn:
     short_slopes = cusps.short_slopes
     cusp_translations = cusps.cusp_translations
     inside_view = raytracing.inside_view
+    polished_holonomy = snap.polished_holonomy
+    tetrahedra_field_gens = snap.tetrahedra_field_gens
+    trace_field_gens = snap.trace_field_gens
+    invariant_trace_field_gens = snap.invariant_trace_field_gens
+    holonomy_matrix_entries = snap.holonomy_matrix_entries
+    hyperbolic_torsion = nsagetools.hyperbolic_torsion
+    hyperbolic_adjoint_torsion = nsagetools.hyperbolic_adjoint_torsion
+    hyperbolic_SLN_torsion = nsagetools.hyperbolic_SLN_torsion
 
 # Subclass to be able to monkey-patch
 class Triangulation(SnapPy.Triangulation, TriangulationMixIn):
@@ -259,10 +273,6 @@ def isomorphisms_to(self,
 
 isomorphisms_to.__doc__ = SnapPy.Triangulation._isomorphisms_to.__doc__
 TriangulationMixIn.isomorphisms_to = isomorphisms_to
-
-from . import snap
-snap.add_methods(ManifoldMixIn)
-snap.add_methods(TriangulationMixIn, hyperbolic=False)
 
 from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation

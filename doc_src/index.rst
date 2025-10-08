@@ -27,7 +27,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.3 (August 2025??):
+* Version 3.3 (October 2025??):
 
   - :class:`Link <spherogram.Link>` now supports band moves and can
     search for ribbon disks and ribbon concordances. See
@@ -54,13 +54,14 @@ News
     ``ignore_orientation`` and ``ignore_filling_orientations`` have their
     default values).
 
-  - Fix potential bug (related to global spine radius) in
+  - Fixing a bug in
     :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
     and
     :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
-
-    TODO: Determine whether this was really a bug. Write prove that current
-    version actually works.
+    The estimate for the upper bound of the global spine radius was not
+    correct in all cases. Note that we expect this bug to be very hard to hit
+    and do not have a single example where the result of these methods was
+    wrong.
 
   - :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>` can be
     given ``count`` and ``max_len`` at the same time. In that case, it stops

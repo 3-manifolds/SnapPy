@@ -66,14 +66,32 @@ def add_spine(mcomplex : Mcomplex):
             for v1 in simplex.ZeroSubsimplices
             if v0 < v1 }
 
+        for v0 in simplex.ZeroSubsimplices:
+            if tet.Class[v0].is_complete:
+                continue
+            for v1 in simplex.ZeroSubsimplices:
+                if v0 == v1:
+                    continue
+                e = v0 | v1
+                mu_v0v1 = tet.horotriangles[v0].inverse_scale_to_be_on_tube[e]
+                mu_v1v0 = tet.horotriangles[v1].inverse_scale_to_be_on_tube[e]
+                f = simplex.RightFace[e]
+                a = tet.horotriangles[v0].get_real_lengths()[f]
+                b = tet.horotriangles[v1].get_real_lengths()[f]
+
+                # mu_v0v1 / mu_v1v0 < 1 / (a * b)
+                if mu_v0v1 * a * b < mu_v1v0:
+                    continue
+
+                tet.spine_points[v0, v1] = _point_on_horosphere(tet.R13_vertices[v0], tet.R13_vertices[v1])
+
         _, tet.spine_center = compute_inradius_and_incenter_from_planes(
             [ tet.R13_planes[f]
               for f in simplex.TwoSubsimplices ])
-        
+
         tet.spine_radius = correct_max(
-            [ distance_r13_points(tet.spine_center,
-                                  tet.spine_points[e])
-              for e in simplex.OneSubsimplices] )
+            [ distance_r13_points(tet.spine_center, p)
+              for e, p in tet.spine_points.items() ])
 
         tet.inv_spine_cosh = 1 / tet.spine_radius.cosh()
 

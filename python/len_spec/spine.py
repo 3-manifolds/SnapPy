@@ -23,25 +23,15 @@ def add_spine(mcomplex : Mcomplex):
     We store the following information about the spine:
     - use the tetrahedron's incenter as its spine center tet.spine_center.
     - compute tet.out_radius, the radius (about the spine center) of a
-      tetrahedron truncated by the smaller horotriangles given by the scale
-      factor.
-    - a point on each edge of the triangulation, stored in tet.spine_points
+      tetrahedron truncated by the generalized cusp neighborhoods (that is
+      cusp neighborhoods for complete cusps and tubes about core curves
+      for incomplete cusps).
+    - points on the edges of the triangulation, stored in tet.spine_points.
     - the maximum distance of the tet.spine_points to tet.spine_center in
       tet.spine_radius.
-      Lemma: There is a spine of the manifold such that for each tetrahedron
-      a ball of this radius about the tetrahedron's spine center will contain
-      the restriction of the spine to the tetrahedron.
-      Proof: For each face, pick as point on that face the point picked for
-      one of the edges of that face. Consider one of the 12 triangles.
-      The point furthest from the spine center will be one of its vertices.
-      We can ignore the vertex that is the spine center itself. Any other
-      vertex of the triangle was considered when computing the maximum
-      distance.
     - tet.inv_spine_cosh = 1 / cosh(r) where r is the tet.spine_radius
-    - for the entire fundamental domain, we have store the spine center
-      of the base tetrahedron in mcomplex.spine_center and the distance of
-      the spine point of any edge in the fundamental domain in
-      mcomplex.spine_radius.
+    - for the entire fundamental domain, we store a global spine center
+      and radius in mcomplex.spine_center and mcomplex.spine_radius.
     """
 
     for tet in mcomplex.Tetrahedra:

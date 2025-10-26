@@ -178,6 +178,7 @@ def exterior_to_link(manifold,
             F = manifold
         else:
             F = manifold.copy()
+            F.set_peripheral_curves('fillings')
             F.dehn_fill(F.num_cusps()*[(0, 0)])
             F.randomize()
         if hasattr(F, 'with_hyperbolic_structure'):

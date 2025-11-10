@@ -2581,7 +2581,10 @@ cdef class Triangulation():
         def index(subgroup):
             return 1 if len(subgroup) == 0 else len(subgroup[0])
 
-        return [self.cover(H) for H in reps if index(H) == degree]
+        covers = [self.cover(H) for H in reps if index(H) == degree]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_gap(self, degree):
         """
@@ -2591,9 +2594,12 @@ cdef class Triangulation():
             raise SageNotAvailable('the "gap" method for covers requires Sage')
 
         G = gap(self.fundamental_group())
-        return [self.cover(H)
-                for H in G.LowIndexSubgroupsFpGroup(degree)
-                if G.Index(H) == degree]
+        covers = [self.cover(H)
+                  for H in G.LowIndexSubgroupsFpGroup(degree)
+                  if G.Index(H) == degree]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_magma(self, degree):
         """
@@ -2603,9 +2609,12 @@ cdef class Triangulation():
             raise SageNotAvailable('the "magma" method for covers requires Sage')
 
         G = magma(self.fundamental_group())
-        return [self.cover(H)
-                for H in G.LowIndexSubgroups('<%d, %d>' %
-                                             (degree, degree))]
+        covers = [self.cover(H)
+                  for H in G.LowIndexSubgroups('<%d, %d>' %
+                                              (degree, degree))]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_snappea(self, degree, cover_type):
         """

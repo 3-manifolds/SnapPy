@@ -58,7 +58,7 @@ class RealHashDict:
     >>> d.get(to_number(10.0000001))
     ['A', 'B']
 
-    sage: from sage.all import RIF
+    sage: from snappy.sage_helper import RIF
     sage: def equality_predicate(x, y):
     ...       d = abs(x - y)
     ...       if d < RIF(0.1):

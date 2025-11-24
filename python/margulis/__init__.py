@@ -263,7 +263,7 @@ def margulis(
     number. Here is an example to prove that :math:`\\mu(M)>0.8`::
 
         sage: M=ManifoldHP("s479(-3,1)")
-        sage: from sage.all import RealIntervalField
+        sage: from snappy.sage_helper import RealIntervalField
         sage: M.margulis(verified=True, stopper=0.9)>RealIntervalField()('0.8')
         True
 

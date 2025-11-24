@@ -288,7 +288,7 @@ class KrawczykShapesEngine:
 
         Do several Krawczyk operations to get a better solution::
 
-            sage: from sage.all import vector
+            sage: from snappy.sage_helper import vector
             sage: M = Manifold("m019")
             sage: shapes = vector(ComplexIntervalField(53), [ 0.5+0.8j, 0.5+0.8j, 0.5+0.8j])
             sage: for i in range(15):

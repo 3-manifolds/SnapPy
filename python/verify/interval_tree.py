@@ -12,7 +12,7 @@ class IntervalTree():
 
     Create an interval tree and add pairs to it::
 
-        sage: from sage.all import RIF
+        sage: from snappy.sage_helper import RIF
         sage: t = IntervalTree()
         sage: t.insert(RIF(1.01,1.02),'1')
         sage: t.insert(RIF(3.01,3.02),'3')

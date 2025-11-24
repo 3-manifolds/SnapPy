@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "unix_file_io.h"
+#include "ostream.h"
 
 #include "kernel_namespace.h"
 
@@ -52,8 +53,7 @@
  */
 
 static TriangulationData    *ReadNewFileFormat(const char *buffer);
-static void                 WriteNewFileFormat(FILE *fp, TriangulationData *data);
-static char                 *StringNewFileFormat(TriangulationData *data);
+static void                 WriteNewFileFormat(OStream *stream, TriangulationData *data);
 
 #if READ_OLD_FILE_FORMAT
 extern FuncResult           read_old_manifold(FILE *fp, Triangulation **manifold);
@@ -537,7 +537,9 @@ Boolean write_triangulation(
         fp = stdout;
 
     triangulation_to_data(manifold, &theTriangulationData);
-    WriteNewFileFormat(fp, theTriangulationData);
+    OStream stream;
+    ofstream_init(&stream, fp);
+    WriteNewFileFormat(&stream, theTriangulationData);
     free_triangulation_data(theTriangulationData);
 
     if (fp != stdout)
@@ -559,8 +561,13 @@ static double limit_value(
     return v;
 }
 
+/* Abstracted to use OStream instead of FILE * by Matthias Goerner 2025-08-22
+ * so that we can use the same code to write a triangulation to both a file
+ * and a string.
+ */
+
 static void WriteNewFileFormat(
-    FILE                *fp,
+    OStream             *stream,
     TriangulationData   *data)
 {
     int i,
@@ -569,117 +576,119 @@ static void WriteNewFileFormat(
         v,
         f;
 
-    fprintf(fp, "%% Triangulation\n");
+    ostream_printf(stream, "%% Triangulation\n");
 
     if (data->name != NULL)
-        fprintf(fp, "%s\n", data->name);
+    {
+        ostream_printf(stream, "%s\n", data->name);
+    }
     else
-        fprintf(fp, "untitled");
+        ostream_printf(stream, "untitled\n");
 
     switch (data->solution_type)
     {
         case not_attempted:
-            fprintf(fp, "not_attempted");
+	    ostream_printf(stream, "not_attempted");
             break;
 
         case geometric_solution:
-            fprintf(fp, "geometric_solution");
+	    ostream_printf(stream, "geometric_solution");
             break;
 
         case nongeometric_solution:
-            fprintf(fp, "nongeometric_solution");
+            ostream_printf(stream, "nongeometric_solution");
             break;
 
         case flat_solution:
-            fprintf(fp, "flat_solution");
+            ostream_printf(stream, "flat_solution");
             break;
 
         case degenerate_solution:
-            fprintf(fp, "degenerate_solution");
+            ostream_printf(stream, "degenerate_solution");
             break;
 
         case other_solution:
-            fprintf(fp, "other_solution");
+            ostream_printf(stream, "other_solution");
             break;
 
         case no_solution:
-            fprintf(fp, "no_solution");
+            ostream_printf(stream, "no_solution");
             break;
 
         case externally_computed:
-            fprintf(fp, "externally_computed");
+            ostream_printf(stream, "externally_computed");
             break;
+
     }
 
     if (data->solution_type != not_attempted && data->solution_type != externally_computed)
-        fprintf(fp, "  %.8f\n", (double)data->volume);
+        ostream_printf(stream, "  %.8f\n", (double)data->volume);
     else
-        fprintf(fp, "  %.1f\n", 0.0);
+        ostream_printf(stream, "  %.1f\n", 0.0);
 
     switch (data->orientability)
     {
         case oriented_manifold:
-            fprintf(fp, "oriented_manifold\n");
+            ostream_printf(stream, "oriented_manifold\n");
             break;
 
         case nonorientable_manifold:
-            fprintf(fp, "nonorientable_manifold\n");
+            ostream_printf(stream, "nonorientable_manifold\n");
             break;
-            
         case unknown_orientability:
             /* This manifold is garbage */
-            fprintf(fp, "ERROR: orientability not computed!\n");
+            ostream_printf(stream, "ERROR: orientability not computed!\n");
             break;
     }
 
     if (data->CS_value_is_known == TRUE)
-        fprintf(fp, "CS_known %.16f\n", (double)data->CS_value);
+        ostream_printf(stream, "CS_known %.16f\n", (double)data->CS_value);
     else
-        fprintf(fp, "CS_unknown\n");
+        ostream_printf(stream, "CS_unknown\n");
 
-    fprintf(fp, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
+    ostream_printf(stream, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
     for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
-        fprintf(fp, "    %s %16.12f %16.12f\n",
+        ostream_printf(stream, "    %s %16.12f %16.12f\n",
             (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
-		(double)data->cusp_data[i].m,
-		(double)data->cusp_data[i].l);
-    fprintf(fp, "\n");
+		     (double)data->cusp_data[i].m,
+		     (double)data->cusp_data[i].l);
+    ostream_printf(stream, "\n");
 
-    fprintf(fp, "%d\n", data->num_tetrahedra);
+    ostream_printf(stream, "%d\n", data->num_tetrahedra);
     for (i = 0; i < data->num_tetrahedra; i++)
     {
         for (j = 0; j < 4; j++)
-            fprintf(fp, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
-        fprintf(fp, "\n");
+            ostream_printf(stream, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
+        ostream_printf(stream, "\n");
 
         for (j = 0; j < 4; j++)
         {
-            fprintf(fp, " ");
+            ostream_printf(stream, " ");
             for (k = 0; k < 4; k++)
-                fprintf(fp, "%d", data->tetrahedron_data[i].gluing[j][k]);
+                ostream_printf(stream, "%d", data->tetrahedron_data[i].gluing[j][k]);
         }
-        fprintf(fp, "\n");
+        ostream_printf(stream, "\n");
 
         for (j = 0; j < 4; j++)
-            fprintf(fp, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
-        fprintf(fp, "\n");
+            ostream_printf(stream, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
+        ostream_printf(stream, "\n");
 
         for (j = 0; j < 2; j++)         /* meridian, longitude     */
             for (k = 0; k < 2; k++)     /* righthanded, lefthanded */
             {
                 for (v = 0; v < 4; v++)
                     for (f = 0; f < 4; f++)
-                        fprintf(fp, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
-                fprintf(fp, "\n");
+                        ostream_printf(stream, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
+                ostream_printf(stream, "\n");
             }
 
-        if (data->solution_type != not_attempted)
-            fprintf(fp, "%16.12f %16.12f\n\n",
-                    limit_value((double)data->tetrahedron_data[i].filled_shape.real),
-                    limit_value((double)data->tetrahedron_data[i].filled_shape.imag));
+        if (data->solution_type != not_attempted && data->solution_type != externally_computed)
+            ostream_printf(stream, "%16.12f %16.12f\n\n",
+		 (double)data->tetrahedron_data[i].filled_shape.real,
+		 (double)data->tetrahedron_data[i].filled_shape.imag);
         else
-            fprintf(fp, "%3.1f %3.1f\n\n", 0.0, 0.0);
-    }
+            ostream_printf(stream, "%3.1f %3.1f\n\n", 0.0, 0.0);
+   }
 }
 
 /* Added by Marc Culler 2010-12-17 to allow writing a triangulation
@@ -693,147 +702,12 @@ char *string_triangulation(
     char                *result;
 
     triangulation_to_data(manifold, &theTriangulationData);
-    result = StringNewFileFormat(theTriangulationData);
+
+    OStream stream;
+    string_stream_init(&stream);
+    WriteNewFileFormat(&stream, theTriangulationData);
     free_triangulation_data(theTriangulationData);
-    return result;
-}
-
-static char *StringNewFileFormat(
-    TriangulationData   *data)
-{
-    int i,
-        j,
-        k,
-        v,
-        f,
-        size;
-    char *buffer;
-    char *p;
-    char *end;
-    
-    size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps + 8*data->num_tetrahedra);
-    buffer = (char *)malloc(size);
-    if ( buffer == NULL)
-      uFatalError("StringNewFileFormat", "unix file io");
-    p = buffer;
-    end = buffer + size - 1;
-
-    /* Avoid deprecation warnings with C++. */
-#define SPRINTF(pointer, ...) snprintf(pointer, end - p, __VA_ARGS__)
-
-    p += SPRINTF(p, "%% Triangulation\n");
-
-    if (data->name != NULL)
-      p += SPRINTF(p, "%s\n", data->name);
-    else
-      p += SPRINTF(p, "untitled\n");
-
-    switch (data->solution_type)
-    {
-        case not_attempted:
-	  p += SPRINTF(p, "not_attempted");
-            break;
-
-        case geometric_solution:
-	  p += SPRINTF(p, "geometric_solution");
-            break;
-
-        case nongeometric_solution:
-            p += SPRINTF(p, "nongeometric_solution");
-            break;
-
-        case flat_solution:
-            p += SPRINTF(p, "flat_solution");
-            break;
-
-        case degenerate_solution:
-            p += SPRINTF(p, "degenerate_solution");
-            break;
-
-        case other_solution:
-            p += SPRINTF(p, "other_solution");
-            break;
-
-        case no_solution:
-            p += SPRINTF(p, "no_solution");
-            break;
-
-        case externally_computed:
-            p += SPRINTF(p, "externally_computed");
-            break;
-
-    }
-
-    if (data->solution_type != not_attempted && data->solution_type != externally_computed)
-        p += SPRINTF(p, "  %.8f\n", (double)data->volume);
-    else
-        p += SPRINTF(p, "  %.1f\n", 0.0);
-
-    switch (data->orientability)
-    {
-        case oriented_manifold:
-            p += SPRINTF(p, "oriented_manifold\n");
-            break;
-
-        case nonorientable_manifold:
-            p += SPRINTF(p, "nonorientable_manifold\n");
-            break;
-        case unknown_orientability:
-            /* This manifold is garbage */
-            p += SPRINTF(p, "ERROR: orientability not computed!\n");
-            break;
-    }
-
-    if (data->CS_value_is_known == TRUE)
-        p += SPRINTF(p, "CS_known %.16f\n", (double)data->CS_value);
-    else
-        p += SPRINTF(p, "CS_unknown\n");
-
-    p += SPRINTF(p, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
-    for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
-        p += SPRINTF(p, "    %s %16.12f %16.12f\n",
-            (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
-		     (double)data->cusp_data[i].m,
-		     (double)data->cusp_data[i].l);
-    p += SPRINTF(p, "\n");
-
-    p += SPRINTF(p, "%d\n", data->num_tetrahedra);
-    for (i = 0; i < data->num_tetrahedra; i++)
-    {
-        for (j = 0; j < 4; j++)
-            p += SPRINTF(p, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
-        p += SPRINTF(p, "\n");
-
-        for (j = 0; j < 4; j++)
-        {
-            p += SPRINTF(p, " ");
-            for (k = 0; k < 4; k++)
-                p += SPRINTF(p, "%d", data->tetrahedron_data[i].gluing[j][k]);
-        }
-        p += SPRINTF(p, "\n");
-
-        for (j = 0; j < 4; j++)
-            p += SPRINTF(p, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
-        p += SPRINTF(p, "\n");
-
-        for (j = 0; j < 2; j++)         /* meridian, longitude     */
-            for (k = 0; k < 2; k++)     /* righthanded, lefthanded */
-            {
-                for (v = 0; v < 4; v++)
-                    for (f = 0; f < 4; f++)
-                        p += SPRINTF(p, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
-                p += SPRINTF(p, "\n");
-            }
-
-        if (data->solution_type != not_attempted && data->solution_type != externally_computed)
-            p += SPRINTF(p, "%16.12f %16.12f\n\n",
-		 (double)data->tetrahedron_data[i].filled_shape.real,
-		 (double)data->tetrahedron_data[i].filled_shape.imag);
-        else
-            p += SPRINTF(p, "%3.1f %3.1f\n\n", 0.0, 0.0);
-   }
-   return buffer;
-#undef SPRINTF
+    return stream.buffer;
 }
 
 #include "end_namespace.h"

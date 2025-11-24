@@ -23,25 +23,15 @@ def add_spine(mcomplex : Mcomplex):
     We store the following information about the spine:
     - use the tetrahedron's incenter as its spine center tet.spine_center.
     - compute tet.out_radius, the radius (about the spine center) of a
-      tetrahedron truncated by the smaller horotriangles given by the scale
-      factor.
-    - a point on each edge of the triangulation, stored in tet.spine_points
+      tetrahedron truncated by the generalized cusp neighborhoods (that is
+      cusp neighborhoods for complete cusps and tubes about core curves
+      for incomplete cusps).
+    - points on the edges of the triangulation, stored in tet.spine_points.
     - the maximum distance of the tet.spine_points to tet.spine_center in
       tet.spine_radius.
-      Lemma: There is a spine of the manifold such that for each tetrahedron
-      a ball of this radius about the tetrahedron's spine center will contain
-      the restriction of the spine to the tetrahedron.
-      Proof: For each face, pick as point on that face the point picked for
-      one of the edges of that face. Consider one of the 12 triangles.
-      The point furthest from the spine center will be one of its vertices.
-      We can ignore the vertex that is the spine center itself. Any other
-      vertex of the triangle was considered when computing the maximum
-      distance.
     - tet.inv_spine_cosh = 1 / cosh(r) where r is the tet.spine_radius
-    - for the entire fundamental domain, we have store the spine center
-      of the base tetrahedron in mcomplex.spine_center and the distance of
-      the spine point of any edge in the fundamental domain in
-      mcomplex.spine_radius.
+    - for the entire fundamental domain, we store a global spine center
+      and radius in mcomplex.spine_center and mcomplex.spine_radius.
     """
 
     for tet in mcomplex.Tetrahedra:
@@ -66,14 +56,32 @@ def add_spine(mcomplex : Mcomplex):
             for v1 in simplex.ZeroSubsimplices
             if v0 < v1 }
 
+        for v0 in simplex.ZeroSubsimplices:
+            if tet.Class[v0].is_complete:
+                continue
+            for v1 in simplex.ZeroSubsimplices:
+                if v0 == v1:
+                    continue
+                e = v0 | v1
+                mu_v0v1 = tet.horotriangles[v0].inverse_scale_to_be_on_tube[e]
+                mu_v1v0 = tet.horotriangles[v1].inverse_scale_to_be_on_tube[e]
+                f = simplex.RightFace[e]
+                a = tet.horotriangles[v0].get_real_lengths()[f]
+                b = tet.horotriangles[v1].get_real_lengths()[f]
+
+                # mu_v0v1 / mu_v1v0 < 1 / (a * b)
+                if mu_v0v1 * a * b < mu_v1v0:
+                    continue
+
+                tet.spine_points[v0, v1] = _point_on_horosphere(tet.R13_vertices[v0], tet.R13_vertices[v1])
+
         _, tet.spine_center = compute_inradius_and_incenter_from_planes(
             [ tet.R13_planes[f]
               for f in simplex.TwoSubsimplices ])
-        
+
         tet.spine_radius = correct_max(
-            [ distance_r13_points(tet.spine_center,
-                                  tet.spine_points[e])
-              for e in simplex.OneSubsimplices] )
+            [ distance_r13_points(tet.spine_center, p)
+              for e, p in tet.spine_points.items() ])
 
         tet.inv_spine_cosh = 1 / tet.spine_radius.cosh()
 
@@ -84,15 +92,17 @@ def add_spine(mcomplex : Mcomplex):
               for v1 in simplex.ZeroSubsimplices
               if v0 != v1 ])
 
+        tet.cosh_out_radius = tet.out_radius.cosh()
+        tet.sinh_out_radius = tet.out_radius.sinh()
+
         if False:
             print("out, spine =", tet.out_radius, tet.spine_radius)
 
     mcomplex.spine_center = mcomplex.baseTet.spine_center
     mcomplex.spine_radius = correct_max(
-        [ distance_r13_points(mcomplex.spine_center,
-                              tet.spine_points[e])
-          for tet in mcomplex.Tetrahedra
-          for e in simplex.OneSubsimplices ])
+        [ tet.spine_radius + distance_r13_points(
+            mcomplex.spine_center, tet.spine_center)
+          for tet in mcomplex.Tetrahedra ])
 
 def _out_point(tet : Tetrahedron, v0 : int, v1 : int):
     """

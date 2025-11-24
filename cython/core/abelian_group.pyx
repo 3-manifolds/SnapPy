@@ -55,7 +55,8 @@ cdef class AbelianGroup():
             assert type(c) in int_types and c >= 0,\
                    'Elementary divisors must be non-negative integers.\n'
         for i in range(len(elementary_divisors) - 1):
-            n, m = elementary_divisors[i:i+2]
+            n = elementary_divisors[i]
+            m = elementary_divisors[i + 1]
             assert (n == m == 0) or (m % n == 0),\
                    'The elementary divisors must form a divisibility chain\n'
 

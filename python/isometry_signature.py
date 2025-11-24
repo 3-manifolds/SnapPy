@@ -29,7 +29,7 @@ def isometry_signature(
 
     The isometry signature is computed differently based on whether there
     is at least one unfilled cusp.
-    
+
     **Cusped manifolds**
 
     If there is at least one unfilled cusped, we are in the cusped case.
@@ -44,7 +44,7 @@ def isometry_signature(
       'eLPkbdcddhgggb'
 
     The complements do have opposite handedness though::
-    
+
       >>> M.isometry_signature(ignore_orientation=False)
       'eLPkbdcddxvvcv'
       >>> N.isometry_signature(ignore_orientation=False)
@@ -284,7 +284,7 @@ def find_shortest_geodesics_precisions(
 
 def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
     length_spectrum = manifold.length_spectrum_alt_gen(
-        bits_prec=bits_prec, verified=verified)
+        bits_prec=bits_prec, verified=verified, include_intermediates=True)
 
     is_first = True
 
@@ -292,6 +292,8 @@ def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
 
     for geodesic in length_spectrum:
         if is_first:
+            if geodesic._is_intermediate:
+                continue
             systole = geodesic.length.real()
             cutoff = compute_cutoff(systole)
             is_first = False
@@ -302,11 +304,16 @@ def find_shortest_geodesics(manifold, *, bits_prec, verified, verbose):
         r = geodesic.length.real()
 
         if verbose:
-            print("Word: ", geodesic.word)
             print("Geodesic length: ", r)
 
         if r > cutoff:
             break
+
+        if geodesic._is_intermediate:
+            continue
+
+        if verbose:
+            print("Word: ", geodesic.word)
 
         if r < cutoff:
             if verbose:

@@ -4,7 +4,7 @@ from ..hyperboloid.distances import distance_r13_points
 from ..snap.t3mlite import Mcomplex
 from ..exceptions import InsufficientPrecisionError
 
-from typing import Tuple
+from typing import Optional
 
 class GeodesicPiece:
     """
@@ -125,17 +125,20 @@ def _equality_predicate(mcomplex):
 
 _is_int_epsilon = 0.001
 
-def _int_or_none(r, verified) -> Tuple[bool, int]:
+def _int_or_none(r, verified) -> Optional[int]:
     if verified:
         if r.floor() < r:
+            # We have verified that r contains no integer
+            # (r.floor() is an interval).
             return None
         is_int, r_int = r.is_int()
         if is_int:
+            # We have verified that r contains a unique integer.
             return r_int
 
+        # We get here for, e.g., RIF(0.5, 2.5).is_int()
         raise InsufficientPrecisionError(
-            "When computing multiplicity of geodesic, "
-            "could not determine whether interval contains an integer or not.")
+            "Interval for multiplicity of geodesic contains multiple integers.")
     else:
         r_int = r.round()
         if abs(r_int -r) < _is_int_epsilon:

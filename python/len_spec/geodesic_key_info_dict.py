@@ -65,11 +65,10 @@ def _canonical_representatives(key_info : GeodesicKeyInfo) -> List[GeodesicPiece
     # we start developing (or a pair of two lifted tetrahedra where one
     # is in the fundamental domain).
 
-    return list(
-        _compute_geodesic_pieces(
-            key_info.mcomplex,
-            key_info.geodesic_start_point_info(),
-            key_info.length.real()))
+    return _compute_geodesic_pieces(
+        key_info.mcomplex,
+        key_info.geodesic_start_point_info(),
+        key_info.length.real())
 
 def _compute_geodesic_pieces(
         mcomplex : Mcomplex,

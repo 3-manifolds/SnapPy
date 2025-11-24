@@ -162,11 +162,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     @staticmethod
     def fromManifoldAndShapes(manifold, shapes, one_cocycle=None):
-        if not one_cocycle:
-            for cusp_info in manifold.cusp_info():
-                if not cusp_info['complete?']:
-                    raise IncompleteCuspError(manifold)
-
         if not manifold.is_orientable():
             raise ValueError("Non-orientable")
 
@@ -176,13 +171,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         t.reindex_cusps_and_transfer_peripheral_curves()
         t.add_shapes(shapes)
 
-        if one_cocycle == 'develop':
-            resolved_one_cocycle = None
-        else:
-            resolved_one_cocycle = one_cocycle
-
         c = ComplexCuspCrossSection(m)
-        c.add_structures(resolved_one_cocycle)
+        c.add_structures(one_cocycle)
 
         # For testing against SnapPea kernel data
         c.manifold = manifold
@@ -285,8 +275,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
     @staticmethod
     def _compute_translations(vertex):
         vertex.Translations = [
-            ComplexCuspCrossSection._get_translation(vertex, i)
-            for i in range(2) ]
+            ComplexCuspCrossSection._get_translation(vertex, ml)
+            for ml in range(2) ]
 
     def compute_translations(self):
         for vertex in self.mcomplex.Vertices:
@@ -313,8 +303,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                  for vertex in self.mcomplex.Vertices ]
 
     @staticmethod
-    def _compute_cusp_shape(vertex : t3m.Vertex):
-        m, l = vertex.Translations
+    def cusp_shape(vertex : t3m.Vertex):
+        m = ComplexCuspCrossSection._get_translation(vertex, 0)
+        l = ComplexCuspCrossSection._get_translation(vertex, 1)
         return (l / m).conjugate()
 
     def cusp_shapes(self):
@@ -323,8 +314,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         corresponding to the longitude and meridian for each cusp (SnapPea
         kernel convention).
         """
-        self.compute_translations()
-        return [ ComplexCuspCrossSection._compute_cusp_shape(vertex)
+        return [ ComplexCuspCrossSection.cusp_shape(vertex)
                  for vertex in self.mcomplex.Vertices ]
 
     def add_vertex_positions_to_horotriangles(self):
@@ -419,10 +409,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         incomplete cusps. Then moves the vertex positions of the
         corresponding cusp triangles so that the fixed point is at the
         origin.
-
-        It also adds the boolean v.is_complete to all vertices of the
-        triangulation to mark whether the corresponding cusp is
-        complete or not.
         """
 
         # For each cusp

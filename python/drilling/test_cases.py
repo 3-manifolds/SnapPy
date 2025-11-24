@@ -38,12 +38,12 @@ Tests drilling two geodesics that intersect each other:
 Tests drilling geodesics that are entirely in the 2-skeleton::
 
     >>> M.drill_words(['a','acAADa']).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
+    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbBa'
 
 Same test as verified computation::
 
-    sage: M.drill_words(['a','acAADa'], verified = True).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
-    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBbabbab'
+    sage: M.drill_words(['a','acAADa'], verified = True, bits_prec = 60).canonical_retriangulation().triangulation_isosig(ignore_orientation=False)
+    'ivvPQQcfhghgfghfaaaaaaaaa_BabBBbBaBBaBbbBa'
 
 Test error when drilling something close to core curve::
 
@@ -91,9 +91,9 @@ A bug in an earlier implementation found by Nathan Dunfield (where putting the w
     ...         except RuntimeError:
     ...             pass
     >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFcdbEiFJ', 'iFJ'])
-    'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcbDbBba'
+    'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_BcaBbBcB'
     >>> drilled_isosig(Manifold('K11n34(0,1)'), ['iFJ', 'iFcdbEiFJ'])
-    'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBbaBcaB'
+    'zLLvLLwzAwPQMQzzQkcdgijkjplssrnrotqruvwyxyxyhsgnnighueqdniblsipklpxgcr_babBcBBcaB'
     >>> sys.setrecursionlimit(original_limit)
 
 Stress test by using large perturbation. In particular, this is testing the
@@ -104,18 +104,24 @@ to make sure we really hit the shortening case.
     >>> from snappy.drilling import perturb
     >>> original_radius = perturb._tube_developing_radius
     >>> perturb._tube_developing_radius = 1
+    >>> Manifold("m209").drill_word('aaaEDBd', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+    Tubes lower bound injectivity radius: 0.505170045966405
+    Number of geodesic pieces: [12]
+    Number of tets after subdividing: 69
+    Shortening geodesic by sweeping across triangle.
+    'mLALzLQMPbcbefjhhijkllxxnnxagbxnhhn_cbBabBcB'
     >>> Manifold("m307").drill_word('dadadabCdada', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
-    Tubes lower bound injectivity radius: 0.380575727320247
+    Tubes lower bound injectivity radius: 0.380575727319487
     Number of geodesic pieces: [9]
     Number of tets after subdividing: 45
     Shortening geodesic by sweeping across triangle.
     'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
-    >>> Manifold("m320").drill_word('daaacDA', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
-    Tubes lower bound injectivity radius: 0.397319067589326
+    >>> Manifold("m307").drill_word('ADADcBADADAD', verbose=True).isometry_signature(of_link=True) # doctest: +NUMERIC9
+    Tubes lower bound injectivity radius: 0.380575727319372
     Number of geodesic pieces: [9]
     Number of tets after subdividing: 49
     Shortening geodesic by sweeping across triangle.
-    'rLLPwAPvvPQQcccdfehgjiqpooqppqoqffaaaaaaaqaaaqaaa_bBbabaab'
+    'oLLwQvvPQQcbeefgemnllnmnmlhhaaaaaahaaaaah_bBbabaab'
     >>> perturb._tube_developing_radius = original_radius
 
 """

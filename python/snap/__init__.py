@@ -1,7 +1,7 @@
 from .shapes import polished_tetrahedra_shapes
 from ..sage_helper import _within_sage, sage_method
 from .polished_reps import polished_holonomy
-from . import nsagetools, interval_reps, slice_obs_HKL
+from . import nsagetools, interval_reps, fox_milnor, slice_obs_HKL
 from .character_varieties import character_variety, character_variety_ideal
 
 if _within_sage:
@@ -105,6 +105,7 @@ def add_methods(mfld_class, hyperbolic=True):
     mfld_class.alexander_polynomial = nsagetools.alexander_polynomial
     mfld_class.homological_longitude = nsagetools.homological_longitude
     mfld_class.slice_obstruction_HKL = slice_obs_HKL.slice_obstruction_HKL
+    mfld_class.fox_milnor_test = fox_milnor.fox_milnor_test
     if hyperbolic:
         mfld_class.polished_holonomy = polished_holonomy
         mfld_class.tetrahedra_field_gens = tetrahedra_field_gens

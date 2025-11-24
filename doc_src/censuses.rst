@@ -22,6 +22,7 @@ manifold passed as an argument.
 ..   autodata:: CensusKnots
 ..   autodata:: LinkExteriors
 ..   autodata:: HTLinkExteriors
+..   autodata:: RibbonLinks
 ..   autodata:: NonorientableCuspedCensus
 ..   autodata:: NonorientableClosedCensus
 

@@ -9,6 +9,8 @@ from ...math_basics import (lower,
 __all__ = ['r13_fixed_points_of_psl2c_matrix',
            'r13_fixed_line_of_psl2c_matrix']
 
+_pref_factor = 64
+
 def r13_fixed_points_of_psl2c_matrix(m):
     """
     Given a PSL(2,C)-matrix m acting on the upper halfspace model,
@@ -22,21 +24,25 @@ def r13_fixed_points_of_psl2c_matrix(m):
     # a fixed matrix t.
 
     # To decide whether to conjugate, we compare m[1,0] with
-    # the value m[1,0] has after conjugating.
+    # the value m[1,0] has after conjugating - with a factor to prefer not
+    # to conjugate.
 
-    abs_c = _lower_bound_abs(m[1,0])
+    abs_c = _lower_bound_abs(m[1,0]) * _pref_factor
 
     bc = m[1,0] - m[0,1]
     ad = m[1,1] - m[0,0]
     abs_c_pm_m_pp = _lower_bound_abs(bc + ad)
-
-    if abs_c > abs_c_pm_m_pp:
+    abs_c_pp_m_pm = _lower_bound_abs(bc - ad)
+    if abs_c > abs_c_pm_m_pp and abs_c > abs_c_pp_m_pm:
         return _r13_fixed_points_of_psl2c_matrix(m)
 
     pp = make_matrix([[ 1, 0],[ 1, 1]], ring=m.base_ring())
     pm = make_matrix([[ 1, 0],[-1, 1]], ring=m.base_ring())
 
-    tinv, t = pm, pp
+    if abs_c_pm_m_pp > abs_c_pp_m_pm:
+        tinv, t = pm, pp
+    else:
+        tinv, t = pp, pm
     
     pts = _r13_fixed_points_of_psl2c_matrix(tinv * m * t)
     o13_t = psl2c_to_o13(t)

@@ -110,7 +110,7 @@ def _adaptive_newton_step(hyperbolicStructure, errors_with_norm, verbose = False
             return (newHyperbolicStructure, 
                     new_errors_with_norm)
 
-    raise NewtonStepError()
+    raise NewtonStepError("Error Newton step")
 
 def compute_approx_hyperbolic_structure_new(mcomplex, verbose = False):
     """
@@ -149,7 +149,7 @@ def compute_approx_hyperbolic_structure_new(mcomplex, verbose = False):
         if max([abs(x) for x in errors_with_norm[0]]) < _iteration_stop:
             return hyperbolicStructure
 
-    raise NewtonMethodConvergenceError()
+    raise NewtonMethodConvergenceError("Error Newton convergence")
 
 def _doctest():
     import doctest

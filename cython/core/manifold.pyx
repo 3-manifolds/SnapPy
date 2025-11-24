@@ -823,7 +823,7 @@ cdef class Manifold(Triangulation):
         is the number of digits of accuracy as *estimated* by SnapPea.
 
         >>> cs, accuracy = M.chern_simons(accuracy = True)
-        >>> accuracy in (8, 9, 56) # Low and High precision
+        >>> accuracy in (8, 9, 56, 57) # Low and High precision
         True
 
         By default, when the manifold has at least one cusp, Zickert's
@@ -1056,26 +1056,31 @@ cdef class Manifold(Triangulation):
         """
         Returns the type of the current solution to the gluing
         equations, basically a summary of how degenerate the solution
-        is.  If the flag enum=True is set, then an integer value is
+        is.  If the flag :attr:`enum=True` is set, then an integer value is
         returned. The possible answers are:
 
-        - 0: 'not attempted'
+        - 0: ``not attempted``
 
-        - 1: 'all tetrahedra positively oriented' aka 'geometric_solution'
+        - 1: ``all tetrahedra positively oriented`` aka *geometric_solution*
+
           Should correspond to a genuine hyperbolic structure.
 
-        - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
+        - 2: ``contains negatively oriented tetrahedra`` aka *nongeometric solution*
+
           Probably corresponds to a hyperbolic structure but some
           simplices have reversed orientations.
 
-        - 3: 'contains flat tetrahedra' All tetrahedra have shape in R - {0, 1}.
+        - 3: ``contains flat tetrahedra`` (should be called ``all tetrahedra flat``)
 
-        - 4: 'contains degenerate tetrahedra' Some shapes are close to
-          {0,1, or infinity}.
+          All tetrahedra have shape in :math:`\\mathbb{R} - \\{0, 1\\}`.
 
-        - 5: 'unrecognized solution type'
+        - 4: ``contains degenerate tetrahedra``
 
-        - 6: 'no solution found'
+          Some shapes are close to :math:`\\{0,1, \\infty\\}`.
+
+        - 5: ``unrecognized solution type``
+
+        - 6: ``no solution found``
 
         >>> M = Manifold('m007')
         >>> M.solution_type()

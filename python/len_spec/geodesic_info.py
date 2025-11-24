@@ -9,7 +9,24 @@ from ..snap.t3mlite import Mcomplex
 
 from typing import List, Optional
 
-class GeodesicInfoBase:
+class GeodesicStreamInfoBase:
+    """
+    Base class for intermediates, core curves and (non-core curve)
+    geodesics in the length spectrum stream. Also used for the
+    data structures used by the length spectrum algorithm such as
+    the priority queue or the dictionary to de-duplicate geodesics.
+    """
+    def __init__(self, length):
+        self.length = length
+
+class GeodesicIntermediateInfo(GeodesicStreamInfoBase):
+    """
+    Intermediate indicating that all geodesics up to this point
+    have been enumerated.
+    """
+    pass
+
+class GeodesicInfoBase(GeodesicStreamInfoBase):
     """
     Basic information about a geodesic, consisting of word and matrix.
 
@@ -24,9 +41,11 @@ class GeodesicInfoBase:
                  o13_matrix):
         self.word = word
         self.o13_matrix = o13_matrix
-
         self.psl2c_matrix = so13_to_psl2c(self.o13_matrix)
-        self.length = complex_length_of_psl2c_matrix(self.psl2c_matrix)
+
+        super().__init__(
+            length=complex_length_of_psl2c_matrix(self.psl2c_matrix))
+
         self._key = lower(self.length.real())
 
     def __lt__(self, other):

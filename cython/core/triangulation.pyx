@@ -1,8 +1,6 @@
 from .cache import SnapPyCache
 import low_index
 
-_low_index_version = [int(n) for n in low_index.version().split('.')]
-
 cdef class Triangulation():
     """
     A Triangulation object represents a compact 3-manifold with torus
@@ -84,6 +82,7 @@ cdef class Triangulation():
             UI_callback()
             uLongComputationEnds()
         # Answers to potentially hard computations are cached
+        self.c_triangulation = NULL
         self._cache = SnapPyCache()
         self._DTcode = None
         self._PDcode = None
@@ -91,19 +90,23 @@ cdef class Triangulation():
         self.LE = None
         self.hyperbolic_structure_initialized = False
         self._link_file_full_path = None
+
         for attr in ['__snappy__', 'snapPea', '_to_string']:
             if hasattr(spec, attr):
                 spec = getattr(spec, attr)()
                 break
-        if spec is not None and spec != 'empty':
+
+        if spec is None:
+            self.get_from_new_plink()
+        elif spec == 'empty':
+            pass
+        else:
             if not isinstance(spec, (str, bytes)):
                 raise TypeError(triangulation_help %
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
             if self.c_triangulation == NULL:
                 raise RuntimeError('An empty triangulation was generated.')
-        elif spec is None:
-            self.get_from_new_plink()
 
         if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:
             remove_hyperbolic_structures(self.c_triangulation)
@@ -123,31 +126,38 @@ cdef class Triangulation():
     cdef get_triangulation(self, spec, remove_finite_vertices=True):
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
-            return self._from_pickle(spec, remove_finite_vertices)
+            self._from_pickle(spec, remove_finite_vertices)
+            return
 
-        if (isinstance(spec, str) and spec.startswith('% Triangulation') or
-                isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
-            return self._from_string(spec, remove_finite_vertices)
+        if ( isinstance(spec, str) and spec.startswith('% Triangulation') or
+             isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
+            self._from_string(spec, remove_finite_vertices)
+            return
 
         # Get fillings, if any
         m = split_filling_info.match(spec)
         name = m.group(1)
         fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
 
+        self.get_triangulation_from_name(name, remove_finite_vertices)
+
+        # Set the dehn fillings
+        Triangulation.dehn_fill(self, fillings)
+
+    cdef get_triangulation_from_name(self, name, remove_finite_vertices=True):
+
         # Step 1. The easy databases
         for db in database.__all_tables__.values():
             try:
                 db._one_manifold(name, self)
-                break
+                return
             except KeyError:
                 pass
 
         # Step 2. Alternate names for the Rolfsen links
-        if self.c_triangulation == NULL:
-            for regex in rolfsen_link_regexs:
-                m = regex.match(name)
-                if not m:
-                    continue
+        for regex in rolfsen_link_regexs:
+            m = regex.match(name)
+            if m:
                 if int(m.group('components')) > 1:
                     rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
                                                  int(m.group('components')),
@@ -156,74 +166,77 @@ cdef class Triangulation():
                     rolfsen_name = '%d_%d' % (int(m.group('crossings')),
                                               int(m.group('index')))
                 database.LinkExteriors._one_manifold(rolfsen_name, self)
+                return
 
         # Step 3. Hoste-Thistlethwaite knots
-        if self.c_triangulation == NULL:
-            m = is_HT_knot.match(name)
-            if m:
-                self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
-                                 int(m.group('index')), remove_finite_vertices)
+        m = is_HT_knot.match(name)
+        if m:
+            self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
+                             int(m.group('index')), remove_finite_vertices)
+            return
 
         # Step 4. Once-punctured torus bundles
-        if self.c_triangulation == NULL:
-            m = is_torus_bundle.match(name)
-            if m:
-                self.get_punctured_torus_bundle(m)
+        m = is_torus_bundle.match(name)
+        if m:
+            self.get_punctured_torus_bundle(m)
+            if self.c_triangulation != NULL:
+                return
 
         # Step 5. (fibered) braid complements
-        if self.c_triangulation == NULL:
-            m = is_braid_complement.match(name)
-            if m:
-                word = eval(m.group(1), {})
-                num_strands = max([abs(x) for x in word]) + 1
-                self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
+        m = is_braid_complement.match(name)
+        if m:
+            word = eval(m.group(1), {})
+            num_strands = max([abs(x) for x in word]) + 1
+            self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
+            return
 
         # Step 6. Dowker-Thistlethwaite codes
-        if self.c_triangulation == NULL:
-            m = is_int_DT_exterior.match(name)
-            if m:
-                code = eval(m.group(1), {})
-                if isinstance(code, tuple):
-                    knot = spherogram.DTcodec(*code)
-                elif isinstance(code, list) and isinstance(code[0], int):
-                    knot = spherogram.DTcodec([tuple(code)])
-                else:
-                    knot = spherogram.DTcodec(code)
-                klp = knot.KLPProjection()
-                self.set_c_triangulation(
-                    get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
-                self.set_name(name)
-                self._set_DTcode(knot)
+        m = is_int_DT_exterior.match(name)
+        if m:
+            code = eval(m.group(1), {})
+            if isinstance(code, tuple):
+                knot = spherogram.DTcodec(*code)
+            elif isinstance(code, list) and isinstance(code[0], int):
+                knot = spherogram.DTcodec([tuple(code)])
+            else:
+                knot = spherogram.DTcodec(code)
+            klp = knot.KLPProjection()
+            self.set_c_triangulation(
+                get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
+            self.set_name(name)
+            self._set_DTcode(knot)
+            return
 
-            m = is_alpha_DT_exterior.match(name)
-            if m:
-                knot = spherogram.DTcodec(m.group(1))
-                klp=knot.KLPProjection()
-                self.set_c_triangulation(
-                    get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
-                self.set_name(name)
-                self._set_DTcode(knot)
+        m = is_alpha_DT_exterior.match(name)
+        if m:
+            knot = spherogram.DTcodec(m.group(1))
+            klp=knot.KLPProjection()
+            self.set_c_triangulation(
+                get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
+            self.set_name(name)
+            self._set_DTcode(knot)
+            return
 
         # Step 7.  Bundle or splitting is given in Twister's notation
-        if self.c_triangulation == NULL:
-            shortened_name = name.replace(' ', '')
-            mb = is_twister_bundle.match(shortened_name)
-            ms = is_twister_splitting.match(shortened_name)
-            if mb or ms:
-                func = bundle_from_string if mb else splitting_from_string
-                tri_as_string = func(shortened_name)
-                self._from_string(tri_as_string, remove_finite_vertices)
+        shortened_name = name.replace(' ', '')
+        mb = is_twister_bundle.match(shortened_name)
+        if mb:
+            self._from_string(
+                bundle_from_string(shortened_name), remove_finite_vertices)
+            return
+        ms = is_twister_splitting.match(shortened_name)
+        if ms:
+            self._from_string(
+                splitting_from_string(shortened_name), remove_finite_vertices)
+            return
 
         # Step 8. Regina/Burton isomorphism signatures.
-        if self.c_triangulation == NULL:
-            self._from_isosig(name, remove_finite_vertices)
+        self._from_isosig(name, remove_finite_vertices)
+        if self.c_triangulation != NULL:
+            return
 
         # Step 9. If all else fails, try to load a manifold from a file.
-        if self.c_triangulation == NULL:
-            self.get_from_file(name, remove_finite_vertices)
-
-        # Set the dehn fillings
-        Triangulation.dehn_fill(self, fillings)
+        self.get_from_file(name, remove_finite_vertices)
 
     cdef get_HT_knot(self, crossings, alternation, index, remove_finite_vertices):
         cdef c_Triangulation* c_triangulation
@@ -2412,9 +2425,12 @@ cdef class Triangulation():
                     gap_image_gens = coset_action.Image().GeneratorsOfGroup()
                     Q = PermutationGroup(gap_image_gens)
                     return self.cover([Q(g) for g in gap_image_gens ])
-                elif permutation_rep.IsToPermGroupHomomorphismByImages():
+                elif (permutation_rep.IsToPermGroupHomomorphismByImages() or
+                      permutation_rep.IsCompositionMappingRep()):
                     f = permutation_rep
                     return self.cover(f.PreImage(f.Image().Stabilizer(1)))
+                else:
+                    raise ValueError('Cover specified by unrecognized GAP type')
 
             elif is_MagmaElement(permutation_rep):
                 input_type = repr(permutation_rep.Type())
@@ -2565,7 +2581,10 @@ cdef class Triangulation():
         def index(subgroup):
             return 1 if len(subgroup) == 0 else len(subgroup[0])
 
-        return [self.cover(H) for H in reps if index(H) == degree]
+        covers = [self.cover(H) for H in reps if index(H) == degree]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_gap(self, degree):
         """
@@ -2575,9 +2594,12 @@ cdef class Triangulation():
             raise SageNotAvailable('the "gap" method for covers requires Sage')
 
         G = gap(self.fundamental_group())
-        return [self.cover(H)
-                for H in G.LowIndexSubgroupsFpGroup(degree)
-                if G.Index(H) == degree]
+        covers = [self.cover(H)
+                  for H in G.LowIndexSubgroupsFpGroup(degree)
+                  if G.Index(H) == degree]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_magma(self, degree):
         """
@@ -2587,9 +2609,12 @@ cdef class Triangulation():
             raise SageNotAvailable('the "magma" method for covers requires Sage')
 
         G = magma(self.fundamental_group())
-        return [self.cover(H)
-                for H in G.LowIndexSubgroups('<%d, %d>' %
-                                             (degree, degree))]
+        covers = [self.cover(H)
+                  for H in G.LowIndexSubgroups('<%d, %d>' %
+                                              (degree, degree))]
+        for i, C in enumerate(covers):
+            C.set_name(C.name() + f'~{i}')
+        return covers
 
     def _covers_snappea(self, degree, cover_type):
         """
@@ -2984,14 +3009,18 @@ cdef class Triangulation():
              By specifying :attr:`ignore_curve_orientations = True`, it encodes
              the unoriented peripheral curves instead.
 
-        #. Dehn-fillings (if present).
+        #. Dehn-fillings and orientation of core curve (if present).
 
-           * By default, the decoration encodes the oriented Dehn-fillings.
-             That is, we also encodes the orientation of the peripheral curve
-             that is used for the Dehn-filling (this explanation only
-             works if the coefficients are integral).
+           * By default, the decoration encodes the Dehn-fillings and the
+             orientation of the core curve.
+             That is, we encode the (unoriented) peripheral curve that is
+             used for the Dehn-filling as well as the orientation of the class
+             of peripheral curves intersecting that peripheral curve ones
+             (this explanation only works if the coefficients are co-prime
+             integers). Note that this behavior has changed in Version 3.3.
              By specifying :attr:`ignore_filling_orientations = True`, the
-             decoration encodes the unoriented Dehn-fillings.
+             decoration encodes the Dehn-fillings without any regard to
+             orientation.
              That is, it normalizes the Dehn-filling coefficients by picking
              a canonical pair among :math:`(m,l)` and :math:`(-m,-l)`.
 
@@ -3078,6 +3107,37 @@ cdef class Triangulation():
           ...         ignore_filling_orientations=True)
           'oLLvzQLLQQccdhifihnlmkmlnnpvuvbvouggbggoo(0,0)(1,5)'
 
+        A geometric spun-triangulation of the three-fold cover of m007(3,1)::
+
+          >>> M = Manifold('gLLMQcbeefefujumapn(2,-1)')
+          >>> M.solution_type()
+          'all tetrahedra positively oriented'
+
+        Specifying :attr:`ignore_filling_orientations = True` can change the
+        orientation of the core curve and a triangulation spinning the other
+        way that fails to be geometric::
+
+          >>> isosig = M.triangulation_isosig(
+          ...         ignore_orientation=False,
+          ...         ignore_curves=True,
+          ...         ignore_filling_orientations=True,
+          ...         ignore_cusp_ordering=True)
+          >>> isosig
+          'gLLMQcbeefefujumapn(-2,1)'
+          >>> Manifold(isosig).solution_type()
+          'contains negatively oriented tetrahedra'
+
+        Preserve the unoriented spun-triangulation structure including the
+        direction it is spinning::
+
+          >>> isosig = M.triangulation_isosig(
+          ...         ignore_cusp_ordering=True,
+          ...         ignore_curves=True)
+          >>> isosig
+          'gLLMQcbeefefpjaqupw(1,1)'
+          >>> Manifold(isosig).solution_type()
+          'all tetrahedra positively oriented'
+
         **Orientation**
 
         Note that :attr:`ignore_orientation=True` only applies to the undecorated
@@ -3114,7 +3174,8 @@ cdef class Triangulation():
                 Only relevant if :attr:`decorated = True` and
                 :attr:`ignore_curves = False`.
         :param ignore_filling_orientations:
-                Do not encode the orientations of the Dehn-fillings.
+                Do not encode the orientation of the class of peripheral curves
+                intersecting the Dehn-fillings.
                 Only relevant if :attr:`decorated = True`.
         :param ignore_orientation:
                 Do not encode the orientation of the triangulation in the

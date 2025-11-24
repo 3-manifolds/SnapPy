@@ -13,6 +13,15 @@ if _within_sage:
 __all__ = ['distance_r13_lines',
            'lower_bound_distance_r13_line_triangle']
 
+# Pick a value so that pari does not throw an exception when
+# computing exp(r) and arcsinh(exp(r)/2).
+#
+# Pari throws an overflow error for exp(1e-20) instead of just returning 0.
+# Pari throws an out of memory error for
+# snappy.number.Number('1e-1000000').arcsinh().
+# 
+_numeric_log_of_zero = -1e4
+
 def distance_r13_lines(line0 : R13Line, line1 : R13Line):
     """
     Computes distance between two hyperbolic lines.
@@ -62,10 +71,14 @@ def distance_r13_point_line(pt, # Unit time-like
     This also works if line is degenerate and starts and ends at some point.
     """
 
+    return _safe_arccosh(cosh_distance_r13_point_line(pt, line))
+
+def cosh_distance_r13_point_line(pt, # Unit time-like
+                                 line : R13Line):
     p = (r13_dot(line.points[0], pt) *
          r13_dot(line.points[1], pt))
     s = _safe_div(2 * p, -line.inner_product)
-    return _safe_arccosh(_safe_sqrt(s))
+    return _safe_sqrt(s)
 
 def distance_r13_point_plane(pt, # Unit time-like
                              plane_defining_vec): # Unit space-like
@@ -181,14 +194,15 @@ def _safe_sqrt(p):
     of two such vectors is always non-positive.
     """
 
+    if p >= 0:
+        return p.sqrt()
+
     if is_RealIntervalFieldElement(p):
         RIF = p.parent()
-        p = p.intersection(RIF(0, Infinity))
+        return p.intersection(RIF(0, Infinity)).sqrt()
     else:
-        if p < 0:
-            RF = p.parent()
-            return RF(0)
-    return p.sqrt()
+        RF = p.parent()
+        return RF(0)
 
 def _safe_log(p):
     if is_RealIntervalFieldElement(p):
@@ -197,7 +211,7 @@ def _safe_log(p):
     else:
         if p <= 0:
             RF = p.parent()
-            return RF(-1e20)
+            return RF(_numeric_log_of_zero)
     return p.log()
 
 def _safe_log_of_abs(p):
@@ -210,7 +224,7 @@ def _safe_log_non_neg(p):
             return RIF(-Infinity)
         else:
             RF = p.parent()
-            return RF(-1e20)
+            return RF(_numeric_log_of_zero)
     else:
         return p.log()
 
@@ -229,6 +243,9 @@ def _safe_div(a, b):
     Compute a / b where be is known to be non-negative and we should
     return infinity if b is zero.
     """
+
+    if b > 0:
+        return a / b
     
     if is_RealIntervalFieldElement(b):
         RIF = b.parent()
@@ -237,9 +254,6 @@ def _safe_div(a, b):
         else:
             return a / b.intersection(RIF(0, Infinity))
     else:
-        if b <= 0:
-            RIF = b.parent()
-            return RIF(1e20)
-        else:
-            return a / b
+        RIF = b.parent()
+        return RIF(1e20)
 

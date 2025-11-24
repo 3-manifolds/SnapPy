@@ -4,6 +4,7 @@ import snappy
 from snappy import cusps
 
 modules = [
+    cusps,
     cusps.maximal_cusp_area_matrix,
     cusps.cusp_areas_from_matrix
 ]

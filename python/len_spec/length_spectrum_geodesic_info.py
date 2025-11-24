@@ -1,5 +1,7 @@
 from ..SnapPy import Info
-from ..math_basics import is_ComplexIntervalFieldElement
+from ..math_basics import (
+    is_RealIntervalFieldElement,
+    is_ComplexIntervalFieldElement)
 
 from typing import Tuple, Optional
 
@@ -10,10 +12,14 @@ class LengthSpectrumGeodesicInfo(Info):
     """
 
     def _body(self) -> str:
-        return _format % (
-            _format_length(self.length),
-            _format_core_curve(self.core_curve),
-            self.word)
+        if self._is_intermediate:
+            return _format_intermediate % (
+                _format_real_length(self.length.real()))
+        else:
+            return _format % (
+                _format_length(self.length),
+                _format_core_curve(self.core_curve),
+                self.word)
 
     def __repr__(self) -> str:
         if self._is_first:
@@ -30,6 +36,11 @@ _format = (
     '%%s'            # Word
     ) % (_verified_num_digits + len(' + ') + _verified_num_digits + len('*I'),
          len(_core_curve_label))
+
+_format_intermediate = (
+    '                     Up to length %%-%ds' % _verified_num_digits)
+
+_format_unverified_real = "%16.14f"
 
 _header = _format % ( 'Length',
                       _core_curve_label,
@@ -85,9 +96,7 @@ def _format_verified_imag_length(length) -> str:
     return result
 
 def _format_unverified_length(length) -> str:
-    formatStr = "%16.14f"
-
-    lenStr = formatStr % length.real()
+    lenStr = _format_unverified_real % length.real()
     absImag = abs(length.imag())
     # Unverified: just drop imaginary part if it is close to zero.
     if absImag > 1e-9:
@@ -95,7 +104,7 @@ def _format_unverified_length(length) -> str:
             lenStr += " + "
         else:
             lenStr += " - "
-        lenStr += (formatStr % absImag) + "*I"
+        lenStr += (_format_unverified_real % absImag) + "*I"
     return lenStr
 
 def _format_word(word : str, max_length : int) -> str:
@@ -130,6 +139,12 @@ def _format_core_curve(core_curve : Optional[int]) -> str:
     else:
         return 'Cusp %d' % core_curve
 
+def _format_real_length(length):
+    if is_RealIntervalFieldElement(length):
+        return _format_verified_real_length(length.real())
+    else:
+        return _format_unverified_real % length.real()
+    
 def _split_scientific_notation(s : str) -> Tuple[str, str]:
     """
     >>> _split_scientific_notation('0.45')

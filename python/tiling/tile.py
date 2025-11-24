@@ -16,6 +16,15 @@ import heapq
     
 from typing import Sequence, Union
 
+# Pick a value so that pari does not throw an exception when
+# computing exp(r) and arcsinh(exp(r)/2).
+#
+# Pari throws an overflow error for exp(1e-20) instead of just returning 0.
+# Pari throws an out of memory error for
+# snappy.number.Number('1e-1000000').arcsinh().
+# 
+_numeric_minus_infinite_tiling_radius = -1e4
+
 class Tile:
     def __init__(self,
                  lower_bound_distance,
@@ -73,7 +82,7 @@ def compute_tiles(*, # Everything is a keyword argument
     if verified:
         minus_infinity = RF(-Infinity)
     else:
-        minus_infinity = RF(-1e20)
+        minus_infinity = RF(_numeric_minus_infinite_tiling_radius)
 
     # The pending pieces as priority queue - that is, a python list
     # but we use heapq to access it.

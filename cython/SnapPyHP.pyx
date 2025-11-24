@@ -1,5 +1,4 @@
 # distutils: language = c++
-# distutils: sources = SnapPyHP.cpp
 # cython: language_level=3str
 # cython: embedsignature = False
 

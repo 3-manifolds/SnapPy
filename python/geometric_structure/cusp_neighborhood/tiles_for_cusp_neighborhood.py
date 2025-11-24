@@ -25,11 +25,6 @@ def mcomplex_for_tiling_cusp_neighborhoods(
     H^3 / peripheral group of corresponding cusp.
     """
     
-
-    for cusp_info in manifold.cusp_info():
-        if not cusp_info['complete?']:
-            raise IncompleteCuspError(manifold)
-
     # Convert SnapPea kernel triangulation to python triangulation
     # snappy.snap.t3mlite.Mcomplex
     mcomplex = Mcomplex(manifold)
@@ -45,14 +40,15 @@ def mcomplex_for_tiling_cusp_neighborhoods(
     scale_vertices_from_horotriangles(mcomplex)
 
     for v in mcomplex.Vertices:
-        v._tiles = None
-        def tiles(v=v, verified=verified):
-            if v._tiles is None:
-                v._tiles = IteratorCache(
-                    compute_tiles_for_cusp_neighborhood(
-                        v, verified))
-            return v._tiles
-        v.tiles = tiles
+        if v.is_complete:
+            v._tiles = None
+            def tiles(v=v, verified=verified):
+                if v._tiles is None:
+                    v._tiles = IteratorCache(
+                        compute_tiles_for_cusp_neighborhood(
+                            v, verified))
+                return v._tiles
+            v.tiles = tiles
 
     return mcomplex
 
@@ -116,28 +112,29 @@ def add_cusp_cross_section(mcomplex : Mcomplex):
     # Save cusp cross section for later
     mcomplex.real_cusp_cross_section = c
 
-    for i, (v, area) in enumerate(
-            zip(mcomplex.Vertices, c.cusp_areas())):
-        # Area of cusp
-        v.cusp_area = area
-        # A cusp intersects the triangulation in standard form
-        # if for each tetrahedron, the corresponding horoball
-        # intersects the tetrahedron in three but not four faces.
-        #
-        # We store here how much the cusp can be scaled before it
-        # is no longer in standard form.
-        v.scale_for_std_form = (
-            c.compute_scale_for_std_form(v))
-        v.exp_self_distance_along_edges = (
-            c.exp_distance_neighborhoods_measured_along_edges(i, i))
-        # v.lower_bound_embedding_scale: lower bound on how much
-        # we can scale the cusp to stay embedded.
-        if v.exp_self_distance_along_edges is None:
-            v.lower_bound_embedding_scale = v.scale_for_std_form
-        else:
-            v.lower_bound_embedding_scale = correct_min(
-                [ v.scale_for_std_form,
-                  v.exp_self_distance_along_edges.sqrt() ])
+    for v in mcomplex.Vertices:
+        if v.is_complete:
+            # Area of cusp
+            v.cusp_area = RealCuspCrossSection.cusp_area(v)
+            # A cusp intersects the triangulation in standard form
+            # if for each tetrahedron, the corresponding horoball
+            # intersects the tetrahedron in three but not four faces.
+            #
+            # We store here how much the cusp can be scaled before it
+            # is no longer in standard form.
+            v.scale_for_std_form = (
+                c.compute_scale_for_std_form(v))
+            v.exp_self_distance_along_edges = (
+                c.exp_distance_neighborhoods_measured_along_edges(
+                    v.Index, v.Index))
+            # v.lower_bound_embedding_scale: lower bound on how much
+            # we can scale the cusp to stay embedded.
+            if v.exp_self_distance_along_edges is None:
+                v.lower_bound_embedding_scale = v.scale_for_std_form
+            else:
+                v.lower_bound_embedding_scale = correct_min(
+                    [ v.scale_for_std_form,
+                      v.exp_self_distance_along_edges.sqrt() ])
 
 def _compute_prod_epsilon(RF):
     p = RF.precision()

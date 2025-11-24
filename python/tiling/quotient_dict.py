@@ -57,12 +57,12 @@ class QuotientDict:
             raise Exception("Implementation reserved default = None for "
                             "internal purposes.")
 
-        computed_keys = self._canonical_representative_function(key)
-
-        for computed_key in computed_keys:
+        computed_keys = []
+        for computed_key in self._canonical_representative_function(key):
             value = self._dictionary.get(computed_key)
             if not value is None:
                 return value
+            computed_keys.append(computed_key)
 
         for computed_key in computed_keys:
             self._dictionary[computed_key] = default

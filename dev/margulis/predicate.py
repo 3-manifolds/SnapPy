@@ -2,7 +2,8 @@ from snappy.geometric_structure.cusp_neighborhood.tiles_for_cusp_neighborhood im
 from snappy.geometric_structure.geodesic.add_core_curves import add_r13_core_curves
 from snappy.geometric_structure.geodesic.geodesic_start_point_info import (
     GeodesicStartPointInfo, compute_geodesic_start_point_info)
-from snappy.geometric_structure.geodesic.tiles_for_geodesic import compute_tiles_for_geodesic
+from snappy.geometric_structure.geodesic.tiles_for_geodesic import (
+    compute_tiles_for_geodesic, compute_tiles_for_core_curve)
 from snappy.geometric_structure import (
     add_r13_geometry, add_filling_information)
 from snappy.hyperboloid.distances import (
@@ -26,7 +27,7 @@ def epsilon_thin_tube_radius_candidate(cosh_epsilon, lambda_):
     RIF = f.parent()
     return correct_max([f, RIF(1)]).sqrt().arccosh()
 
-def epsilon_this_tube_radius(epsilon, lambda_):
+def epsilon_thin_tube_radius(epsilon, lambda_):
     cosh_epsilon = epsilon.cosh()
     max_power = _ceil(epsilon / lambda_.real()) + 1
     return correct_max(
@@ -64,9 +65,13 @@ def compute_tiles_for_cusp(vertex, cusp_area, tet_to_thin_tiles):
              vertex.Index,
              tile.inverse_lifted_geometric_object.defining_vec / scale))
 
-def compute_tiles_for_tube(mcomplex, index, word, radius, tet_to_thin_tiles):
-    info = compute_geodesic_start_point_info(mcomplex, word)
-    for tile in compute_tiles_for_geodesic(mcomplex, info):
+def compute_tiles_for_tube(mcomplex, index, word, core_curve, radius, tet_to_thin_tiles):
+    if core_curve is not None:
+        stream = compute_tiles_for_core_curve(mcomplex, core_curve)
+    else:
+        info = compute_geodesic_start_point_info(mcomplex, word)
+        stream = compute_tiles_for_geodesic(mcomplex, info) 
+    for tile in stream:
         if tile.lower_bound_distance > radius:
             break
         tet_to_thin_tiles[tile.lifted_tetrahedron.tet.Index].append(
@@ -110,10 +115,11 @@ def is_margulis_number(M, epsilon, bits_prec=None, verified=False):
           (2, 'a', 0.646218515259472)])
     """
 
+    cusp_completeness = M.cusp_info('complete?')
     cusp_shapes = M.cusp_info(
         'shape', bits_prec=bits_prec, verified=verified)
-    cusp_areas = [ epsilon_thin_cusp_area(epsilon, cusp_shape)
-                   for cusp_shape in cusp_shapes ]
+    cusp_areas = [ epsilon_thin_cusp_area(epsilon, cusp_shape) if complete else None
+                   for complete, cusp_shape in zip(cusp_completeness, cusp_shapes) ]
 
     geodesics = M.length_spectrum_alt(
         max_len=epsilon, bits_prec=bits_prec, verified=verified)
@@ -121,7 +127,8 @@ def is_margulis_number(M, epsilon, bits_prec=None, verified=False):
     geodesic_tubes = [
         (index,
          geodesic['word'],
-         epsilon_this_tube_radius(epsilon, geodesic['length']))
+         geodesic['core_curve'],
+         epsilon_thin_tube_radius(epsilon, geodesic['length']))
         for index, geodesic in enumerate(geodesics) ]
     
     mcomplex = mcomplex_for_tiling_cusp_neighborhoods(
@@ -135,29 +142,30 @@ def is_margulis_number(M, epsilon, bits_prec=None, verified=False):
     tet_to_thin_tiles = [ [] for tet in mcomplex.Tetrahedra ]
 
     for vertex, cusp_area in zip(mcomplex.Vertices, cusp_areas):
-        # Add the lifts of the this cusp neighborhood as triples
-        # ('Cusp', vertex index, light-like vector)
-        # where light-like vector defines the horoball.
-        compute_tiles_for_cusp(vertex, cusp_area, tet_to_thin_tiles)
+        if cusp_area is not None:
+            # Add the lifts of the this cusp neighborhood as triples
+            # ('Cusp', vertex index, light-like vector)
+            # where light-like vector defines the horoball.
+            compute_tiles_for_cusp(vertex, cusp_area, tet_to_thin_tiles)
 
-    for index, word, radius in geodesic_tubes:
+    for index, word, core_curve, radius in geodesic_tubes:
         # Add the lifts of this geodesic tube as triples
         # ('Geodesic', index of geodesic, snappy.hyperboloid.line.R13Line)
         # where R13Line is the core curve of the tube.
         compute_tiles_for_tube(
-            mcomplex, index, word, radius, tet_to_thin_tiles)
+            mcomplex, index, word, core_curve, radius, tet_to_thin_tiles)
 
     for tiles in tet_to_thin_tiles:
         for i, (tile_type0, index0, object0) in enumerate(tiles):
             for tile_type1, index1, object1 in tiles[:i]:
                 if tile_type0 == 'Cusp':
-                    w0, r0 = (None, 0)
+                    w0, cc0, r0 = (None, None, 0)
                 else:
-                    _, w0, r0 = geodesic_tubes[index0]
+                    _, w0, cc0, r0 = geodesic_tubes[index0]
                 if tile_type1 == 'Cusp':
-                    w1, r1 = (None, 0)
+                    w1, cc1, r1 = (None, None, 0)
                 else:
-                    _, w1, r1 = geodesic_tubes[index1]
+                    _, w1, cc1, r1 = geodesic_tubes[index1]
 
                 if tile_type0 == 'Cusp':
                     if tile_type1 == 'Cusp':
@@ -173,13 +181,13 @@ def is_margulis_number(M, epsilon, bits_prec=None, verified=False):
                 r = r0 + r1
 
                 if d < r:
-                    return False, ((tile_type0, index0, w0),
-                                   (tile_type1, index1, w1)), cusp_areas, geodesic_tubes
+                    return False, ((tile_type0, index0, w0, cc0),
+                                   (tile_type1, index1, w1, cc1)), cusp_areas, geodesic_tubes
                 if d > r:
                     continue
                 raise Exception(
                     "Insufficient precision to determine for %s %d (%s) and %s %d (%s)" % (
-                        tile_type0, index0, format_word(w0),
-                        tile_type1, index1, format_word(w1)))
+                        tile_type0, index0, w0, cc0,
+                        tile_type1, index1, w1, cc1))
 
     return True, None, cusp_areas, geodesic_tubes

@@ -82,11 +82,6 @@ try:
 except ImportError:
     asksaveasfile = None
 
-# This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
-    return string
-
-
 def valid_index(i, n, format_str):
     """
     Return range(n)[i] or raises a nicely formatted IndexError
@@ -296,11 +291,15 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
-SolutionType = ['not attempted', 'all tetrahedra positively oriented',
-                'contains negatively oriented tetrahedra',
-                'contains flat tetrahedra', 'contains degenerate tetrahedra',
-                'unrecognized solution type', 'no solution found',
-                'tetrahedra shapes were inserted']
+SolutionType = [
+    'not attempted',
+    'all tetrahedra positively oriented',
+    'contains negatively oriented tetrahedra',
+    'contains flat tetrahedra', # Note that SnapPea.h says that ALL tet are flat!
+    'contains degenerate tetrahedra',
+    'unrecognized solution type',
+    'no solution found',
+    'tetrahedra shapes were inserted']
 
 
 # SnapPea memory usage

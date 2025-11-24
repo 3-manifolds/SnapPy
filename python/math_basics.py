@@ -104,7 +104,7 @@ def correct_min(l):
     This is needed because python's min returns the wrong result
     for intervals, for example:
 
-        sage: from sage.all import RIF
+        sage: from snappy.sage_helper import RIF
         sage: min(RIF(4,5), RIF(3,6)).endpoints()
         (4.00000000000000, 5.00000000000000)
 

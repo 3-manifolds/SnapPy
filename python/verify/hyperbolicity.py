@@ -68,7 +68,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     for d in manifold.cusp_info():
         m, l = d['filling']
         if not (m.is_integer() and l.is_integer()):
-            raise NonIntegralFillingsError(M)
+            raise NonIntegralFillingsError(manifold)
 
     # Check that the shapes have positive imaginary part.
     for shape in shape_intervals:

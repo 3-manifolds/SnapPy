@@ -562,12 +562,8 @@ install_requires = ['FXrays>=1.3',
                     'pypng', # Used to save OpenGL images.
                     'PyX', # Used to save PDF images of links.
                     'pickleshare', # To avoid https://github.com/ipython/ipython/issues/14416
+                    'ipython>=5.0',
                     ]
-try:
-    import sage
-except ImportError:
-    install_requires.append('cypari>=2.3')
-    install_requires.append('ipython>=5.0')
 
 # Get version number:
 exec(open('python/version.py').read())
@@ -583,6 +579,22 @@ setup( name = 'snappy',
        force = True,
        python_requires = '>=3.8',
        install_requires = install_requires,
+       extras_require = {
+           "cypari": [
+               "cypari>=2.3",
+           ],
+           "passagemath": [
+               "fpylll",
+               "passagemath-pari",       # provides cypari2
+               "passagemath-combinat",   # sage.algebras.free_algebra
+               "passagemath-flint",      # for sage.rings.imaginary_unit
+               "passagemath-repl",       # --> sage_eval
+               "passagemath-groups",
+               "passagemath-symbolics",  # for sage.symbolic.constants
+               "passagemath-plot",
+               "passagemath-graphs",
+            ],
+       },
        packages = ['snappy',
                    'snappy/manifolds',
                    'snappy/twister',

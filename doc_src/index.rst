@@ -81,6 +81,12 @@ News
     It uses the new ``include_intermediates=True`` flag of
     :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
 
+  - Computing maximal cusp areas in an unbiased way uses a simpler algorithm
+    which also returns tighter intervals for verified computations.
+    This affects :meth:`cusp_areas <snappy.Manifold.cusp_areas>` and related
+    methods (which use
+    :py:func:`unbiased_cusp_areas_from_cusp_area_matrix <snappy.cusps.cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix>`).
+
   The first four are based on `[Dunfield and Gong]
   <https://arXiv.org/abs/FILLIN>`_.
 

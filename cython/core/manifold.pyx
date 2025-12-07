@@ -167,7 +167,7 @@ cdef class Manifold(Triangulation):
                                'triangulation.')
         self._cache.clear(message='canonize')
 
-    def _canonical_retriangulation(self, opacities = None):
+    def _canonical_retriangulation(self, opacities=None, top_level_tries=4):
         """
         If this triangulation is a subdivision of the canonical cell
         decomposition, return the canonical retriangulation as Triangulation.
@@ -210,20 +210,28 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             return ""
 
-        copy_triangulation(self.c_triangulation,
-                           &c_retriangulated_triangulation)
-
         if opacities:
             if not len(opacities) == 4 * n:
                 raise Exception("Number of opacities does not match.")
             c_opacities = <Boolean *>malloc(n * 4 * sizeof(Boolean))
             for i in range(4 * n):
                 c_opacities[i] = 1 if opacities[i] else 0
+            copy_triangulation(self.c_triangulation,
+                               &c_retriangulated_triangulation)
         else:
-            c_opacities = NULL
-            result = proto_canonize(c_retriangulated_triangulation)
-            if FuncResult[result] != 'func_OK':
-                free_triangulation(c_retriangulated_triangulation)
+            success = False
+            for i in range(top_level_tries):
+                c_opacities = NULL
+                copy_triangulation(self.c_triangulation,
+                                   &c_retriangulated_triangulation)
+                result = proto_canonize(c_retriangulated_triangulation)
+                if FuncResult[result] == 'func_OK':
+                    success = True
+                    break
+                else:
+                    free_triangulation(c_retriangulated_triangulation)
+
+            if not success:
                 raise RuntimeError('SnapPea failed to find the canonical '
                                    'triangulation.')
 

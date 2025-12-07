@@ -41,7 +41,7 @@ a = Analysis(['SnapPy.py'],
              hookspath=[],
              runtime_hooks=[],
              excludes=['gi', 'pytz', 'td', 'sphinx', 'alabaster', 'babel',
-                       'idlelib', 'bsddb'],
+                       'idlelib', 'bsddb', 'regina'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher)

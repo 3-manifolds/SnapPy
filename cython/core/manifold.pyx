@@ -167,7 +167,7 @@ cdef class Manifold(Triangulation):
                                'triangulation.')
         self._cache.clear(message='canonize')
 
-    def _canonical_retriangulation(self, opacities=None, top_level_tries=4):
+    def _canonical_retriangulation(self, opacities=None, top_level_tries=10):
         """
         If this triangulation is a subdivision of the canonical cell
         decomposition, return the canonical retriangulation as Triangulation.

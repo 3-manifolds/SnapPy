@@ -27,7 +27,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.3 (October 2025??):
+* Version 3.3 (December 2025??):
 
   - :class:`Link <spherogram.Link>` now supports band moves and can
     search for ribbon disks and ribbon concordances. See
@@ -44,6 +44,12 @@ News
   - The Fox-Milnor slice obstruction is now available as
     :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
 
+
+  - The census :class:`OrientableCuspedCensus
+    <snappy.OrientableCuspedCensus>` has been extended to 10 ideal
+    tetrahedra by `[Li] <https://arXiv.org/abs/2512.02142>`_,
+    adding 150,000 new manifolds.
+	  
   - Margulis number can now be computed with
     :meth:`margulis <snappy.Manifold.margulis>`.
 

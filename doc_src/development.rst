@@ -109,10 +109,12 @@ need to do, one must install additional tools.
   `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the
   unicode version; tested with version 5.5.9.
 
-- Install `MSYS2 <http://msys2.github.io>`_ as appropriate for your
-  version Windows.  Follow the instructions on the webpage to update
-  everything to the very latest MSYS2 (``pacman -Sy pacman; pacman
-  -Syu; pacman -Su`` etc.).  You should also install the ucrt toolchain::
+- In the unlikely event you want to build `CyPari
+  <https://github.com/3-manifolds/CyPari`_ from source, you'll need
+  `MSYS2 <http://msys2.github.io>`_.  Follow the instructions on the
+  webpage to update everything to the very latest MSYS2 (``pacman -Sy
+  pacman; pacman -Syu; pacman -Su`` etc.).  You should also install
+  the ucrt toolchain::
 
     pacman -S mingw-w64-ucrt-x86_64-toolchain
 
@@ -152,7 +154,7 @@ need to do, one must install additional tools.
 - Use pip to install some basic tools::
   
     python -m pip install --upgrade pip setuptools wheel  # Upgrades pip to the current version.
-    python -m pip install pyreadline sphinx cython cypari pyx FXrays low_index
+    python -m pip install sphinx cython cypari pyx FXrays low_index
 
 - Fetch the latest development versions of the source straight from
   the t3m repository::

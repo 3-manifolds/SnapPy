@@ -11,7 +11,7 @@ Based on::
 and::
 
   Dunfield and Gong, "Ribbon concordances and slice obstructions:
-  experiments and examples", https://arXiv.org/FILLIN
+  experiments and examples", https://arXiv.org/2512.21825
 
 In in the basic case, the implementation follows the [HKL] paper closely, with a
 few minor changes:

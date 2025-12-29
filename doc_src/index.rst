@@ -88,7 +88,7 @@ News
     :py:func:`unbiased_cusp_areas_from_cusp_area_matrix <snappy.cusps.cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix>`).
 
   The first four are based on `[Dunfield and Gong]
-  <https://arXiv.org/abs/FILLIN>`_.
+  <https://arXiv.org/abs/2512.21825>`_.
 
 
 * Version 3.2 (January 2025):

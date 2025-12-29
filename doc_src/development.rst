@@ -110,7 +110,7 @@ need to do, one must install additional tools.
   unicode version; tested with version 5.5.9.
 
 - In the unlikely event you want to build `CyPari
-  <https://github.com/3-manifolds/CyPari`_ from source, you'll need
+  <https://github.com/3-manifolds/CyPari>`_ from source, you'll need
   `MSYS2 <http://msys2.github.io>`_.  Follow the instructions on the
   webpage to update everything to the very latest MSYS2 (``pacman -Sy
   pacman; pacman -Syu; pacman -Su`` etc.).  You should also install

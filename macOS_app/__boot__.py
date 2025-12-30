@@ -4,7 +4,7 @@ import sys
 import re
 os.environ["ARGVZERO"] = sys.argv[0]
 os.environ["RESOURCEPATH"] = os.path.split(__file__)[0]
-PYTHON = 'python3.13'
+PYTHON = 'python3.14'
 
 def _reset_sys_path():
     # Clear generic sys.path[0]

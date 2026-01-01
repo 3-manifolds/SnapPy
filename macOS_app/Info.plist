@@ -45,11 +45,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.2</string>
+	<string>3.3</string>
 	<key>CFBundleSignature</key>
 	<string>SnPy</string>
 	<key>CFBundleVersion</key>
-	<string>3.2</string>
+	<string>3.3</string>
 	<key>LSHasLocalizedDisplayName</key>
 	<false/>
 	<key>LSRequiresCarbon</key>
@@ -102,9 +102,9 @@
 		<key>PythonExecutable</key>
 		<string>@executable_path/../Frameworks/Python.framework/Versions/Current/bin/python3</string>
 		<key>PythonLongVersion</key>
-		<string>3.13.0</string>
+		<string>3.14</string>
 		<key>PythonShortVersion</key>
-		<string>3.13</string>
+		<string>3.14</string>
 		<key>py2app</key>
 		<dict>
 			<key>alias</key>
@@ -112,8 +112,15 @@
 			<key>template</key>
 			<string>app</string>
 			<key>version</key>
-			<string>0.24</string>
+			<string>0.28.9</string>
 		</dict>
+	</dict>
+	<key>LSEnvironment</key>
+	<dict>
+          <key>LANG</key>
+          <string>en_US.UTF-8</string>
+          <key>LC_ALL</key>
+          <string>en_US.UTF-8</string>
 	</dict>
 </dict>
 </plist>

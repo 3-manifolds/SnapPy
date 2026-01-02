@@ -3,6 +3,9 @@ import os, sys, glob, plistlib
 from py2app import __version__ as py2app_version
 import py2app.util
 
+# This is the minimum supported by Python 3.14
+os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.15'
+
 def codesign_adhoc(bundle):
   print('Monkey patching py2app to prevent codesigning, since we do this ourselves at the end')
 py2app.util.codesign_adhoc = codesign_adhoc
@@ -22,13 +25,9 @@ class clean(Command):
     def run(self):
         os.system("rm -rf build dist *.pyc")
         
-if sys.version_info >= (3,4):
-    with open('Info.plist', 'rb') as info_plist:
-        plist_dict = plistlib.load(info_plist)
-else:
-    plist_dict = plistlib.readPlist('Info.plist')
-
-runtime_path = os.path.join('@executable_path', os.path.pardir, 'Frameworks', 'Python.framework',
+plist_dict = plistlib.readPlist('Info.plist')
+runtime_path = os.path.join('@executable_path', os.path.pardir,
+                            'Frameworks', 'Python.framework',
                             'Versions', '%s.%s'%sys.version_info[:2], 'Python')
 plist_dict['PyRuntimeLocations'] = [runtime_path]
 plist_dict['CFBundleShortVersionString'] = SnapPy_version

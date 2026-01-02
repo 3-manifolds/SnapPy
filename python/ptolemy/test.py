@@ -668,8 +668,8 @@ def testGeometricRep(compute_solutions, print_info=False):
     if compute_solutions:
         sol = geometricRep.compute_geometric_solution(M)
     else:
-        from urllib.request import pathname2url
-        url = pathname2url(os.path.abspath(testing_files_directory))
+        from pathlib import Path
+        url = Path(os.path.abspath(testing_files_directory)).as_uri()
         sol = geometricRep.retrieve_geometric_solution(
             M, data_url=url, verbose = print_info)
 

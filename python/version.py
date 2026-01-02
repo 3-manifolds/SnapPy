@@ -1,2 +1,2 @@
-version = '3.3a1'
-release_date = 'TBA'
+version = '3.3'
+release_date = 'January 2026'

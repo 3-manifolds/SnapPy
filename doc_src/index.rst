@@ -27,22 +27,26 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.3 (December 2025??):
+* Version 3.3 (January 2026):
 
   - :class:`Link <spherogram.Link>` now supports band moves and can
     search for ribbon disks and ribbon concordances. See
     :meth:`ribbon_concordant_links
     <spherogram.Link.ribbon_concordant_links>` and :meth:`add_band
-    <spherogram.Link.add_band>`.
+    <spherogram.Link.add_band>`.  From `[DG]
+    <https://arXiv.org/abs/2512.21825>`_.
 
-  - New census :class:`RibbonLinks <snappy.RibbonLinks>`.
+  - New census :class:`RibbonLinks <snappy.RibbonLinks>`.  From `[DG]
+    <https://arXiv.org/abs/2512.21825>`_.
 
   - Additional slice obstructions added to
     :meth:`slice_obstruction_HKL
     <snappy.Triangulation.slice_obstruction_HKL>`.
+    From `[DG] <https://arXiv.org/abs/2512.21825>`_.
 
   - The Fox-Milnor slice obstruction is now available as
     :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
+    From `[DG] <https://arXiv.org/abs/2512.21825>`_.
 
 
   - The census :class:`OrientableCuspedCensus
@@ -59,6 +63,11 @@ News
     This only changes the result when ``ignore_curves=True`` (and
     ``ignore_orientation`` and ``ignore_filling_orientations`` have their
     default values).
+
+  - The upper bounds on the bridge number of a link from `[BKVV2020]
+    <https://dx.doi.org/10.4310/CAG.2020.v28.n2.a2>`_ and `[BKP2025]
+    <https://arxiv.org/abs/2504.10517>`_ are available as
+    :meth:`bridge_upper_bound <spherogram.Link.bridge_upper_bound>`.
 
   - Fixing a bug in
     :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
@@ -84,11 +93,10 @@ News
   - Computing maximal cusp areas in an unbiased way uses a simpler algorithm
     which also returns tighter intervals for verified computations.
     This affects :meth:`cusp_areas <snappy.Manifold.cusp_areas>` and related
-    methods (which use
-    :py:func:`unbiased_cusp_areas_from_cusp_area_matrix <snappy.cusps.cusp_areas_from_matrix.unbiased_cusp_areas_from_cusp_area_matrix>`).
+    methods.
 
-  The first four are based on `[Dunfield and Gong]
-  <https://arXiv.org/abs/2512.21825>`_.
+  - Support for Python 3.14 and SageMath 10.8.
+    
 
 
 * Version 3.2 (January 2025):
@@ -150,7 +158,7 @@ News
     safe to compare isometry signatures (without further checks) to determine
     whether M and N are isometric hyperbolic manifolds::
 
-        >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
+      >>> M.isometry_signature(verified=True) == N.isometry_signature(verified=True)
 
   - Bug fix to :meth:`slice_obstruction_HKL
     <snappy.Manifold.slice_obstruction_HKL>`: earlier versions
@@ -160,45 +168,6 @@ News
   - New self-contained SnapPy application for Linux.
 
   - Support for Python 3.13 and SageMath 10.5.
-
-
-* Versions 3.1 (May 2023) and 3.1.1 (June 2023):
-
-  - A method :meth:`exterior_to_link <snappy.Manifold.exterior_to_link>`
-    for going from a link exterior to a link diagram taken from
-    `Dunfield-Obeidin-Rudd <https://arxiv.org/abs/2112.03251>`_.
-
-  - Covers now computed by the stand-alone `low_index
-    <https://pypi.org/project/low-index/>`_ module, which uses
-    multiple processor cores and is typically much faster than the old
-    code.  In some cases, it is dramatically faster than even GAP or
-    Magma.
-
-  - Added geodesics to the :meth:`inside_view
-    <snappy.Manifold.inside_view>`.  Here are some intersecting tubes
-    about closed geodesics in the manifold ``v3539(5,1)``:
-
-    .. image:: images/geodesics.jpg
-       :width: 50%
-       :align: center
-       :alt: Geodesic tubes for v3539(5,1)
-
-  - Added drilling any simple geodesic with :meth:`drill_word
-    <snappy.Manifold.drill_word>` and :meth:`drill_words
-    <snappy.Manifold.drill_words>`, not just those that are
-    :meth:`combinatorially simple <snappy.Manifold.dual_curves>`.
-
-  - Added `ignore_orientation` flag to :meth:`triangulation_isosig
-    <snappy.Triangulation.triangulation_isosig>`.
-
-  - Added `include_words` flag to :meth:`length_spectrum
-    <snappy.Manifold.length_spectrum>` for getting the word
-    corresponding to a geodesic which can be given to
-    :meth:`drill_word <snappy.Manifold.drill_word>`.
-
-  - Support for Python 3.11 and SageMath 10.0.
-
-  - Modernized styling of the documentation.
 
 * :doc:`Complete version history <news>`.
 
@@ -239,8 +208,8 @@ Released under the terms of the `GNU General Public License
 
 The development of SnapPy was partially supported by grants from the
 National Science Foundation, including DMS-0707136, DMS-0906155,
-DMS-1105476, DMS-1510204, DMS-1811156, and the Institute for
-Computational and Experimental Research in Mathematics. Any opinions,
-findings, and conclusions or recommendations expressed on this site
-are those of the authors and do not necessarily reflect the views of
-the National Science Foundation.
+DMS-1105476, DMS-1510204, DMS-1811156, and DMS-2303572, and the
+Institute for Computational and Experimental Research in
+Mathematics. Any opinions, findings, and conclusions or
+recommendations expressed on this site are those of the authors and do
+not necessarily reflect the views of the National Science Foundation.

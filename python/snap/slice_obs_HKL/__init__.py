@@ -11,7 +11,7 @@ Based on::
 and::
 
   Dunfield and Gong, "Ribbon concordances and slice obstructions:
-  experiments and examples", https://arXiv.org/2512.21825
+  experiments and examples", https://arXiv.org/abs/2512.21825
 
 In in the basic case, the implementation follows the [HKL] paper closely, with a
 few minor changes:
@@ -74,11 +74,11 @@ def slice_obstruction_HKL(self,
                           method='advanced',
                           ribbon_mode=False):
     """
+
     For the exterior of a knot in the 3-sphere, search for a
     Herald-Kirk-Livingston (HKL) topological slice obstruction as
-    described in:
-
-    * [DG] Dunfield and Gong, Section 3 of https://arXiv.org/abs/FILLIN
+    described in Section 3 of Dunfield and Gong's paper
+    `[DG] <https://arXiv.org/abs/2512.21825>`_.
 
     Specifically, it looks at the cyclic branched covers of the knot
     of prime-power order p and the F_q homology thereof where q is

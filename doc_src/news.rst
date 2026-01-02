@@ -4,6 +4,77 @@
 News
 ====
 
+* Version 3.3 (January 2026):
+
+  - :class:`Link <spherogram.Link>` now supports band moves and can
+    search for ribbon disks and ribbon concordances. See
+    :meth:`ribbon_concordant_links
+    <spherogram.Link.ribbon_concordant_links>` and :meth:`add_band
+    <spherogram.Link.add_band>`.  From `[DG]
+    <https://arXiv.org/abs/2512.21825>`_.
+
+  - New census :class:`RibbonLinks <snappy.RibbonLinks>`.  From `[DG]
+    <https://arXiv.org/abs/2512.21825>`_.
+
+  - Additional slice obstructions added to
+    :meth:`slice_obstruction_HKL
+    <snappy.Triangulation.slice_obstruction_HKL>`.
+    From `[DG] <https://arXiv.org/abs/2512.21825>`_.
+
+  - The Fox-Milnor slice obstruction is now available as
+    :meth:`fox_milnor_test <snappy.Triangulation.fox_milnor_test>`.
+    From `[DG] <https://arXiv.org/abs/2512.21825>`_.
+
+  - The census :class:`OrientableCuspedCensus
+    <snappy.OrientableCuspedCensus>` has been extended to 10 ideal
+    tetrahedra by `[Li] <https://arXiv.org/abs/2512.02142>`_,
+    adding 150,000 new manifolds.
+	  
+  - Margulis number can now be computed with
+    :meth:`margulis <snappy.Manifold.margulis>`.
+
+  - :meth:`triangulation_isosig <snappy.Manifold.triangulation_isosig>` now
+    preserves the orientation of the core curve rather than the Dehn-filling
+    curve - thus, preserving the (unoriented) spun-triangulation structure.
+    This only changes the result when ``ignore_curves=True`` (and
+    ``ignore_orientation`` and ``ignore_filling_orientations`` have their
+    default values).
+
+  - The upper bounds on the bridge number of a link from `[BKVV2020]
+    <https://dx.doi.org/10.4310/CAG.2020.v28.n2.a2>`_ and `[BKP2025]
+    <https://arxiv.org/abs/2504.10517>`_ are available as
+    :meth:`bridge_upper_bound <spherogram.Link.bridge_upper_bound>`.
+
+  - Fixing a bug in
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`
+    and
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+    The estimate for the upper bound of the global spine radius was not
+    correct in all cases. Note that we expect this bug to be very hard to hit
+    and do not have a single example where the result of these methods was
+    wrong.
+
+  - :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>` can be
+    given ``count`` and ``max_len`` at the same time. In that case, it stops
+    when enough geodesics have been listed to ensure that they include the
+    ``count`` shortest geodesics or that they include all geodesics shorter
+    than ``max_len``.
+
+  - Acceleration to
+    :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>` when
+    the next geodesic has large gap to the last geodesic in the result.
+    It uses the new ``include_intermediates=True`` flag of
+    :meth:`length_spectrum_alt_gen <snappy.Manifold.length_spectrum_alt_gen>`.
+
+  - Computing maximal cusp areas in an unbiased way uses a simpler algorithm
+    which also returns tighter intervals for verified computations.
+    This affects :meth:`cusp_areas <snappy.Manifold.cusp_areas>` and related
+    methods.
+
+  - Support for Python 3.14 and SageMath 10.8.
+    
+    
+
 * Version 3.2 (January 2025):
 
   - An alternative implementation of the length spectrum. It supports verified

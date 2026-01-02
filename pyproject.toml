@@ -2,8 +2,8 @@
 requires = ["setuptools", "wheel", "cython"]
 
 [tool.cibuildwheel]
-build = "cp38* cp39* cp310* cp311* cp312* cp313*"
-skip = "*musllinux*"
+build = "cp38* cp39* cp310* cp311* cp312* cp313* cp314*"
+skip = "*musllinux cp313t* cp314t*"
 test-command = "python -m snappy.test --skip-gui"
 environment = { SNAPPY_ALWAYS_BUILD_CYOPENGL="True" }
 before-test = [

@@ -57,17 +57,17 @@ News
   - Margulis number can now be computed with
     :meth:`margulis <snappy.Manifold.margulis>`.
 
+  - The upper bounds on the bridge number of a link from `[BKVV2020]
+    <https://dx.doi.org/10.4310/CAG.2020.v28.n2.a2>`_ and `[BKP2025]
+    <https://arxiv.org/abs/2504.10517>`_ are available as
+    :meth:`bridge_upper_bound <spherogram.Link.bridge_upper_bound>`.
+
   - :meth:`triangulation_isosig <snappy.Manifold.triangulation_isosig>` now
     preserves the orientation of the core curve rather than the Dehn-filling
     curve - thus, preserving the (unoriented) spun-triangulation structure.
     This only changes the result when ``ignore_curves=True`` (and
     ``ignore_orientation`` and ``ignore_filling_orientations`` have their
     default values).
-
-  - The upper bounds on the bridge number of a link from `[BKVV2020]
-    <https://dx.doi.org/10.4310/CAG.2020.v28.n2.a2>`_ and `[BKP2025]
-    <https://arxiv.org/abs/2504.10517>`_ are available as
-    :meth:`bridge_upper_bound <spherogram.Link.bridge_upper_bound>`.
 
   - Fixing a bug in
     :meth:`length_spectrum_alt <snappy.Manifold.length_spectrum_alt>`

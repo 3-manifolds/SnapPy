@@ -10,7 +10,7 @@ from tkinter.font import families as font_families
 from tkinter.messagebox import askyesno
 from IPython.utils import io
 
-debug_Tk = True
+debug_Tk = False
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors = {'0;30m': 'Black',

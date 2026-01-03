@@ -24,8 +24,11 @@ class clean(Command):
         pass
     def run(self):
         os.system("rm -rf build dist *.pyc")
-        
-plist_dict = plistlib.load('Info.plist')
+
+
+with open('Info.plist', 'rb') as info_plist:
+  plist_dict = plistlib.load(info_plist)
+
 runtime_path = os.path.join('@executable_path', os.path.pardir,
                             'Frameworks', 'Python.framework',
                             'Versions', '%s.%s'%sys.version_info[:2], 'Python')

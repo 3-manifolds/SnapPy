@@ -115,5 +115,12 @@
 			<string>0.28.9</string>
 		</dict>
 	</dict>
+	<key>LSEnvironment</key>
+	<dict>
+          <key>LANG</key>
+          <string>en_US.UTF-8</string>
+          <key>LC_ALL</key>
+          <string>en_US.UTF-8</string>
+	</dict>
 </dict>
 </plist>

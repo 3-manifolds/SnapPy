@@ -1,27 +1,25 @@
-# This file is required by BundleUp.
-# It provides a TOML description of the same dictionary
-# that will be described by the app's Info.plist file.
-# Edit appropriately.
+# This TOML file encodes what will go into Info.plist.
+#
+# Update the version below for each release.
+
+CFBundleVersion = "3.3"
+CFBundleShortVersionString = "3.3"
 
 # Required fields
-
 CFBundleDisplayName = "SnapPy"
 CFBundleExecutable = "SnapPy"
 CFBundleIconFile = "SnapPy.icns"
-## Replace with your own unique reverse domain: 
 CFBundleIdentifier = "org.example.SnapPy"
 CFBundleInfoDictionaryVersion = "6.0"
 CFBundleName = "SnapPy"
 CFBundlePackageType = "APPL"
-## Update the version for each release.
-CFBundleVersion = "3.3"
-CFBundleShortVersionString = "3.3"
-## Replace with your copyrignt statement:
-NSHumanReadableCopyright = "Copyright (C)" 
+
+# Replace with your copyrignt statement:
+NSHumanReadableCopyright = "Copyright (C) 2009 - present Marc Culler, Nathan Dunfield, Matthias Goerner and others"
 
 # Optional fields
 CFBundleDevelopmentRegion = "English"
-CFBundleSignature = "????"
+CFBundleSignature = "SnPy"
 LSHasLocalizedDisplayName = false
 LSRequiresCarbon = true
 NSPrincipalClass = "NSApplication"
@@ -30,17 +28,32 @@ NSRequiresAquaSystemAppearance = "No"
 # AppleScript support
 NSAppleScriptEnabled = "YES"
 OSAScriptingDefinition = "SnapPy.sdef"
+
 ## Each document type supported by this app should have a block below.
-## These are examples.
 [[CFBundleDocumentTypes]]
   CFBundleTypeName = "Python script"
   CFBundleTypeExtensions = [ "py", ]
   CFBundleTypeMIMETypes = [ "application/x-python", ]
   CFBundleTypeOSTypes = [ "TEXT", "****", ]
   CFBundleTypeRole = "Viewer"
+
 [[CFBundleDocumentTypes]]
-  CFBundleTypeName = "Plain text file"
-  CFBundleTypeExtensions = [ "txt", ]
+  CFBundleTypeName = "Link Projection"
+  CFBundleTypeExtensions = [ "lnk", ]
+  CFBundleTypeMIMETypes = [ "application/text", ]
+  CFBundleTypeOSTypes = [ "TEXT", "****", ]
+  CFBundleTypeRole = "Viewer"
+
+[[CFBundleDocumentTypes]]
+  CFBundleTypeName = "Triangulation"
+  CFBundleTypeExtensions = [ "tri", ]
+  CFBundleTypeMIMETypes = [ "application/text", ]
+  CFBundleTypeOSTypes = [ "TEXT", "****", ]
+  CFBundleTypeRole = "Viewer"
+
+[[CFBundleDocumentTypes]]
+  CFBundleTypeName = "Surface"
+  CFBundleTypeExtensions = [ "sur", ]
   CFBundleTypeMIMETypes = [ "application/text", ]
   CFBundleTypeOSTypes = [ "TEXT", "****", ]
   CFBundleTypeRole = "Viewer"

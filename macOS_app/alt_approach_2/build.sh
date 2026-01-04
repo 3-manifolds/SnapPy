@@ -2,8 +2,6 @@
 rm -rf SnapPy.app
 python3.14 -m bundle_app.build
 
-cp Info.plist ./SnapPy.app/Contents/Info.plist
-
 TARGET="SnapPy.app/Contents/Frameworks/Python.framework/Versions/Current/lib/python3.14/site-packages/"
 PYTHON="SnapPy.app/Contents/MacOS/Python"
 UNIVERSAL_BINARY=" --platform=macosx_10_15_universal2 --only-binary :all: "

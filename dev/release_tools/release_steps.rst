@@ -82,7 +82,7 @@ Final testing
 On various systems, do::
 
   cd SnapPy/dev/release_tools
-  py27 test_pypi.py -p/-e snappy
+  python3 test_pypi.py -p/-e snappy
 
 including CoCalc (but there's an issue with sys.path in the
 latter).  When testing the stand-alone apps, do "import snappy.test;

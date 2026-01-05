@@ -5,8 +5,7 @@ import re
 import time
 from collections.abc import Mapping  # Python 3.5 or newer
 from IPython.core.displayhook import DisplayHook
-from tkinter.messagebox import askyesno
-
+from tkinter import messagebox
 from .gui import *
 from . import filedialog
 from .exceptions import SnapPeaFatalError
@@ -148,7 +147,7 @@ class SnapPyTerm(TkTerminalBase, ListedWindow):
         dialog.run()
         terminal.remove_blocker(dialog)
         if dialog.okay:
-            answer = askyesno('Save?',
+            answer = messagebox.askyesno('Save?',
                               'Do you want to save these settings?')
             if answer:
                 self.settings.write_settings()
@@ -175,15 +174,15 @@ class SnapPyTerm(TkTerminalBase, ListedWindow):
             lines = openfile.readlines()
             openfile.close()
             if re.search(r"%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", lines[0]):
-                tkMessageBox.showwarning('Bad file',
+                messagebox.showwarning('Bad file',
                     'This is a SnapPea link projection file, '
                     'not a session transcript.')
             elif re.search(r"%\s*[tT]riangulation", lines[0]):
-                tkMessageBox.showwarning('Bad file',
+                messagebox.showwarning('Bad file',
                     'This is a SnapPea triangulation file, '
                     'not a session transcript.')
             elif re.search(r"%\s*Generators", lines[0]):
-                tkMessageBox.showwarning('Bad file',
+                messagebox.showwarning('Bad file',
                     'This is a SnapPea generator file, '
                     'not a session transcript.')
             else:
@@ -210,7 +209,7 @@ class SnapPyTerm(TkTerminalBase, ListedWindow):
                 ("All files", "")])
         if openfile:
             if not re.search(r"%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
-                tkMessageBox.showwarning('Bad file',
+                messagebox.showwarning('Bad file',
                                          'This is not a SnapPea link projection file')
                 openfile.close()
             else:

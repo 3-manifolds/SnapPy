@@ -14,6 +14,7 @@ imports += collect_submodules('jedi')
 imports += collect_submodules('pyx')
 imports += collect_submodules('low_index')
 imports += collect_submodules('tkinter_gl')
+imports += collect_submodules('pip')
 
 datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('pyx')

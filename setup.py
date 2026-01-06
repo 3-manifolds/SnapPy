@@ -353,7 +353,7 @@ if not any(  (non_build in sys.argv)
             if not exists(ext.cythoned_file):
                 raise ImportError(
                     no_cython_message +
-                    'Missing Cythoned file: ' + cythoned_filed +
+                    'Missing Cythoned file: ' + ext.cythoned_file +
                     '\n[Cython import error: %r]' % cython_import_error +
                     '\n[Command line arguments: %r]' % sys.argv)
 

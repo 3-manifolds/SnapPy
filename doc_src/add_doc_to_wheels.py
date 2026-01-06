@@ -14,6 +14,9 @@ import shutil
 from zipfile import ZipFile
 
 doc_zipfile = os.path.abspath(sys.argv[1])
+if not doc_zipfile.endswith('.zip'):
+    raise ValueError('First argument should be a zipfile')
+
 wheel_names = glob.glob(sys.argv[2] + '/snappy-*.whl')
 if len(wheel_names) == 0:
     raise ValueError('No snappy wheels in wheeldir!')
@@ -40,7 +43,7 @@ for wheel_path in wheel_names:
 
     print('Unpacking docs..')
     with ZipFile(doc_zipfile) as doc_zip:
-        if len({path.split('/')[0] for path in doc_zip.namelist()}) == 1:
+        if len({path.split('/')[0] for path in doc_zip.namelist()}) < 5:
             raise ValueError('doc zipfile has top-level directory, bailing')
     
     subprocess.check_call(['unzip', '-q', doc_zipfile, '-d', target_doc_dir])

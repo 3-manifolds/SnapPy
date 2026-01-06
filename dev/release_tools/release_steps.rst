@@ -120,6 +120,7 @@ h. Version 3.0(.1): 292 Mac,  434 Windows.
 i. Version 3.0.2:    68 Mac,   70 Windows.
 j. Version 3.0.3:   667 Mac, 1333 Windows. (36% Mac, 64% Windows for 3.0.*)
 h. Version 3.1.*:   883 Mac, 1482 Windows. (37% Mac, 63% Windows)
+k. Version 3.2:     607 Mac,  740 Windows, 134 Linux (41% Mac, 50% Windows, 9% Linux)
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

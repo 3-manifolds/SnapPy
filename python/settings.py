@@ -71,7 +71,10 @@ class Settings:
     def read_settings(self):
         if self.setting_file and os.path.exists(self.setting_file):
             with open(self.setting_file, 'rb') as setting_file:
-                new_settings = plistlib.load(setting_file)
+                try:
+                    new_settings = plistlib.load(setting_file)
+                except: # file has been corrupted, ignore it.
+                    return
 
             if 'font' in new_settings:
                 family, size, info = new_settings['font']

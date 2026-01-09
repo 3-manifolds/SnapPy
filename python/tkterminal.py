@@ -410,7 +410,11 @@ class TkTerminalBase:
         self.interact_prompt()
         self.text.see(Tk_.INSERT)
         if self.IP.more:
-            self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
+            if isinstance(self._current_indent, str):
+                current_indent = self._current_indent
+            else:
+                current_indent = ' ' * self._current_indent
+            self.text.insert(Tk_.INSERT, current_indent, ())
         self.hist_pointer = 0
         self.hist_stem = ''
         return 'break'

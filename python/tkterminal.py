@@ -10,7 +10,7 @@ from tkinter.font import families as font_families
 from tkinter.messagebox import askyesno
 from IPython.utils import io
 
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors = {'0;30m': 'Black',
@@ -89,7 +89,7 @@ class TkTerminalBase:
             self.window = window = Tk(self.report_callback_exception)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         self._input_buffer = ''
-        self._current_indent = 0
+        self._current_indent = ''
         # Global Tk options
         window.option_add('*Menu.tearOff', 0)
         window.title(name)
@@ -410,11 +410,7 @@ class TkTerminalBase:
         self.interact_prompt()
         self.text.see(Tk_.INSERT)
         if self.IP.more:
-            if isinstance(self._current_indent, str):
-                current_indent = self._current_indent
-            else:
-                current_indent = ' ' * self._current_indent
-            self.text.insert(Tk_.INSERT, current_indent, ())
+            self.text.insert(Tk_.INSERT, self._current_indent, ())
         self.hist_pointer = 0
         self.hist_stem = ''
         return 'break'
@@ -481,7 +477,7 @@ class TkTerminalBase:
             self.text.mark_set(Tk_.INSERT, start)
             self.text.delete(start, '%s.%s' % (line, self._prompt_size))
             return 'break'
-        if self._current_indent >= 4:
+        if len(self._current_indent) >= 4:
             if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':
                 self.text.delete(Tk_.INSERT+'-4c', Tk_.INSERT)
                 return 'break'
@@ -784,7 +780,7 @@ class TkTerminalBase:
         """
         assert cell.endswith('\n')
         if not cell.strip():
-            self._current_indent = 0
+            self._current_indent = ''
             return
         if script:
             self._input_buffer += cell
@@ -792,7 +788,7 @@ class TkTerminalBase:
             self._input_buffer = self.clean_code(cell)
         transformed_cell = self.IP.transform_cell(self._input_buffer)
         status, indent = self.IP.check_complete(transformed_cell)
-        self._current_indent = indent or 0
+        self._current_indent = indent or ''
         if status == 'incomplete':
             self.IP.more = True
             return
@@ -819,7 +815,7 @@ class TkTerminalBase:
             self.running_code = True
             self.editing_hist = False
             last_line = insert_line - 1
-            if last_line > prompt_line:
+            if insert_line == prompt_line:
                 # Delete the last continuation prompt.
                 self.text.delete('%d.0' % last_line, '%d.0 lineend' % last_line)
             self.IP.run_cell(self._input_buffer, store_history=True)
@@ -833,7 +829,7 @@ class TkTerminalBase:
     def reset(self):
         result = self._input_buffer
         self._input_buffer = ''
-        self._current_indent = 0
+        self._current_indent = ''
         self.text.delete('output_end',Tk_.INSERT)
         self.editing_hist = False
         self.multiline = False

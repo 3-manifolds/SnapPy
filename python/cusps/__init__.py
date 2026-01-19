@@ -210,7 +210,7 @@ def short_slopes(manifold,
     The given :attr:`length` is cast to a SageMath ``RealIntervalField`` of the
     given precision if :attr:`verified = True`::
 
-        sage: from snappy.sage_helper import pi
+        sage: from sage.symbolic.constants import pi
         sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100)
         [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
 

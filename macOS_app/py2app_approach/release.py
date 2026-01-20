@@ -11,7 +11,7 @@ from math import ceil
 from check_target import TkChecker
 from notabot import Notarizer
 
-PY_VERSION = '3.13'
+PY_VERSION = '3.14'
 PY_VRSN = PY_VERSION.replace('.', '')
 APP_PYTHON = 'python' + PY_VERSION
 PYTHON_ZIP = 'python' + PY_VRSN + '.zip'
@@ -26,7 +26,7 @@ if not os.path.exists(FRAMEWORKS_TARBALL):
     print("Please build the frameworks for SnapPy.app first.")
     sys.exit(1)
 
-os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.13-universal2'
+os.environ['_PYTHON_HOST_PLATFORM'] = 'macosx-10.15-universal2'
 os.environ['ARCHFLAGS'] = '-arch arm64 -arch x86_64'
 
 try:

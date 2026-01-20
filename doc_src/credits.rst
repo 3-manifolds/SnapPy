@@ -32,7 +32,7 @@ Additional contributions:
 * David Bachman, Henry Segerman and Saul Schleimer, initial code the
   raytraced inside view is based on.
 
-* Zoltán Szabó, computing Knot Floer homology.
+* Zoltán Szabó, computing the knot Floer homology calculator.
 
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 
@@ -40,6 +40,12 @@ Additional contributions:
    <http://crd-legacy.lbl.gov/~dhbailey/mpdist/>`_.
 
 * Frédéric Chapoton, code cleanup and linting.
+
+* Sherry Gong for code related to ribbon concordances and slice
+  obstrutions `[DG] <https://arXiv.org/abs/2512.21825>`_.
+
+* Shana Li for the census of 10 tetrahedra cusped manfiolds `[Li]
+  <https://arXiv.org/abs/2512.02142>`_.
 
 * Others, please let Marc or Nathan know if we've forgotten you. 
 

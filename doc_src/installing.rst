@@ -14,7 +14,7 @@ macOS
 Simply download `SnapPy.dmg
 <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.  The current version works with macOS 10.14 and
+it, just like any other application.  The current version works with macOS 10.15 and
 newer and earlier releases `can be found here
 <https://github.com/3-manifolds/SnapPy/releases/>`_.
 

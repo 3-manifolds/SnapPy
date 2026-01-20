@@ -204,15 +204,22 @@ def expand_next_neighborhood(
         if total_radius < neighborhood_pair.distance_lifts:
             continue
 
+        if neighborhoods.mcomplex.verified:
+            distance_objects = neighborhoods.mcomplex.RF(
+                min(total_radius.lower(),
+                    neighborhood_pair.distance_lifts.lower()),
+                neighborhood_pair.distance_lifts.upper())
+        else:
+            distance_objects = neighborhood_pair.distance_lifts
+
         neighborhood_pair.mu = mu_from_neighborhood_pair(
             neighborhood, other_neighborhood,
-            neighborhood_pair.distance_lifts,
+            distance_objects,
             verified=neighborhoods.mcomplex.verified)
         neighborhoods.mu = correct_min(
             [neighborhoods.mu, neighborhood_pair.mu])
 
-        if neighborhood_pair.distance_lifts < total_radius:
-            neighborhood_pair.finished = True
+        neighborhood_pair.finished = True
 
     neighborhood.add_next_tile(next_tile)
     heapq.heappush(neighborhood_queue, neighborhood)
@@ -256,7 +263,7 @@ def margulis(
     number. Here is an example to prove that :math:`\\mu(M)>0.8`::
 
         sage: M=ManifoldHP("s479(-3,1)")
-        sage: from sage.all import RealIntervalField
+        sage: from snappy.sage_helper import RealIntervalField
         sage: M.margulis(verified=True, stopper=0.9)>RealIntervalField()('0.8')
         True
 

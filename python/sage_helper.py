@@ -41,6 +41,10 @@ if _within_sage:
         from sage.all import gap
     except ImportError:
         # Modularized Sage library
+        try:
+            import sage.all__sagemath_modules
+        except ImportError:
+            pass
         from sage.algebras.group_algebra import GroupAlgebra
         from sage.arith.misc import (gcd, xgcd, is_prime, is_prime_power,
                                      is_power_of_two, prime_range, prime_powers)

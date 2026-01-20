@@ -65,27 +65,9 @@ else: # fall back choice
 
 
 def open_html_docs(page):
-    # In some Linux distros that package their webrowsers via snaps
-    # (e.g. Ubuntu 22.04 LTS), it is not possible to open a local HTML
-    # file if it is either (a) outside of $HOME or (b) in a hidden
-    # subdirectory of $HOME.  As Python's default user-site directory
-    # on Linux is in $HOME/.local, this makes it impossible to access
-    # the local copy of the docs.
-    #
-    # For details, see: https://bugs.launchpad.net/snapd/+bug/1979060
-
     doc_dir = os.path.join(os.path.dirname(snappy_dir), 'doc')
 
-    if sys.platform.startswith('linux'):
-        safe_doc_dir = os.path.join(os.environ['HOME'], 'Downloads',
-                                    f'SnapPy_{version}_help_f8205a5')
-        if os.path.exists(safe_doc_dir):
-            shutil.rmtree(safe_doc_dir)
-        shutil.copytree(doc_dir, safe_doc_dir)
-    else:
-        safe_doc_dir = doc_dir
-
-    path = os.path.join(safe_doc_dir, page)
+    path = os.path.join(doc_dir, page)
     if os.path.exists(path):
         url = 'file:' + pathname2url(path)
         try:

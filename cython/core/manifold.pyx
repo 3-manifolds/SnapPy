@@ -1635,15 +1635,6 @@ cdef class Manifold(Triangulation):
 
         return ans
 
-    def is_isometric_to(self,
-                        Manifold other,
-                        return_isometries : bool = False):
-        """
-        This is only here to make the tests that use SnapPy.Manifold work.
-        """
-        return self._is_isometric_to(
-            other, return_isometries = return_isometries)
-
     def is_two_bridge(self) -> bool:
         """
         If the manifold is the complement of a two-bridge knot or link

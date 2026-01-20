@@ -73,12 +73,32 @@ def additional_doctests(verbose=False, print_info=True):
         extraglobs = globs)
 additional_doctests.__name__ = 'snappy.<HARD TO REACH>'
 
+def run_SnapPy_doctests(verbose=False, print_info=True):
+    globs = {'Triangulation' : snappy.Triangulation,
+             'Manifold' : snappy.Manifold}
+    return doctest_modules(
+        [ snappy.SnapPy ],
+        verbose=verbose,
+        print_info=print_info,
+        extraglobs=globs)
+run_SnapPy_doctests.__name__ = 'snappy.SnapPy'
+
+def run_SnapPyHP_doctests(verbose=False, print_info=True):
+    globs = {'Triangulation' : snappy.TriangulationHP,
+             'Manifold' : snappy.ManifoldHP}
+    return doctest_modules(
+        [ snappy.SnapPyHP ],
+        verbose=verbose,
+        print_info=print_info,
+        extraglobs = globs)
+run_SnapPyHP_doctests.__name__ = 'snappy.SnapPyHP'
+
 modules = [
     snappy.exterior_to_link.test.run_doctests,
     snappy.numeric_output_checker.run_doctests,
     snappy.number,
-    snappy.SnapPy,
-    snappy.SnapPyHP,
+    run_SnapPy_doctests,
+    run_SnapPyHP_doctests,
     snappy.database,
     additional_doctests,
     snappy,

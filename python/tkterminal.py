@@ -788,7 +788,8 @@ class TkTerminalBase:
             self._input_buffer = self.clean_code(cell)
         transformed_cell = self.IP.transform_cell(self._input_buffer)
         status, indent = self.IP.check_complete(transformed_cell)
-        self._current_indent = indent or ''
+        if indent:
+            self._current_indent = indent
         if status == 'incomplete':
             self.IP.more = True
             return
@@ -805,7 +806,15 @@ class TkTerminalBase:
         insert_line = int(self.text.index(Tk_.INSERT).split('.')[0])
         prompt_line = int(self.text.index('output_end').split('.')[0])
         tail = self.text.get('%d.%d' % (insert_line, self._prompt_size), Tk_.END)
-        if not tail.strip():
+        if tail.strip():
+            run_cell = False
+        else:
+            lines = cell.split('\n')
+            if len(lines) <= 2:
+                run_cell = True
+            else:
+                run_cell = not lines[-2][self._prompt_size:].strip()
+        if run_cell:
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
             self.text.delete(Tk_.INSERT, Tk_.END)

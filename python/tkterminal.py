@@ -10,7 +10,7 @@ from tkinter.font import families as font_families
 from tkinter.messagebox import askyesno
 from IPython.utils import io
 
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile(r'(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors = {'0;30m': 'Black',
@@ -142,10 +142,9 @@ class TkTerminalBase:
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             self.window.bind_all('<Alt-Key-q>', self.close)
         self.add_bindings()
-        # 'output_end' marks the end of the text written by us.
-        # Everything above this position should be
-        # immutable, and tagged with the "output" style.
-        # Normally it is set at the end of the input prompt.
+        # 'output_end' marks the end of the text written by us.  After
+        # the input prompt is written, everything above this position
+        # should be immutable, and tagged with the "output" style.
         self.text.mark_set('output_end', Tk_.INSERT)
         self.text.mark_gravity('output_end', Tk_.LEFT)
         text.tag_config('output')
@@ -360,14 +359,18 @@ class TkTerminalBase:
             if keysym == 'V':
                 self.edit_paste()
             # emacs shortcuts (Ctrl-k is built-in)
+            line, column = self.text.index(Tk_.INSERT).split('.')
             if keysym == 'a':
-                self.text.mark_set(Tk_.INSERT, 'output_end')
+                indent = str(self._prompt_size)
+                self.text.mark_set(Tk_.INSERT, '.'.join((line, indent)))
                 return 'break'
             if event.keysym == 'e':
-                self.text.mark_set(Tk_.INSERT, Tk_.END)
+                self.text.mark_set(Tk_.INSERT, '.'.join((line, Tk_.END)))
                 return 'break'
             if event.keysym == 'u':
-                self.text.delete('output_end', Tk_.END)
+                indent = str(self._prompt_size)
+                self.text.mark_set(Tk_.INSERT, '.'.join((line, indent)))
+                self.text.delete(Tk_.INSERT, '.'.join((line, Tk_END)))
                 return 'break'
         # space pages down when viewing protected output
         if keysym == 'space' and protected:

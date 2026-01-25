@@ -874,6 +874,7 @@ class TkTerminalBase:
         if advance:
             self.text.mark_set(mark, Tk_.INSERT)
         if see:
+            self.window.update_idletasks()
             self.text.see(Tk_.INSERT)
         # Give the Text widget a chance to update itself every
         # so often.  In order to force processing of key events
@@ -896,6 +897,7 @@ class TkTerminalBase:
         self.text.mark_set(Tk_.INSERT, str(self.text.index('output_end'))+'linestart')
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
+        self.window.update_idletasks()
         self.text.see('output_end')
 
     def writelines(self, lines):

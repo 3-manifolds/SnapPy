@@ -245,11 +245,11 @@ def run_magma(content,
     if verbose:
         print("Magma's output in:", out_file)
 
-    if sys.platform.startswith('win'):
-        cmd = 'echo | %s "%s" > "%s"' % (magma, in_file, out_file)
-    else:
+    if sys.platform.startswith('linux'):
         cmd = 'ulimit -m %d; echo | %s "%s" > "%s"' % (
-            int(memory_limit / 1024), magma, in_file, out_file)
+        int(memory_limit / 1024), magma, in_file, out_file)
+    else:
+        cmd = 'echo | %s "%s" > "%s"' % (magma, in_file, out_file)
 
     if verbose:
         print("Command:", cmd)

@@ -689,7 +689,8 @@ void reorient(
         /*
          *  Adjust the edge orientations, too.
          */
-        make_all_edge_orientations_right_handed(manifold);
+        replace_edge_classes(manifold);
+        orient_edge_classes(manifold);
     }
 
     /*

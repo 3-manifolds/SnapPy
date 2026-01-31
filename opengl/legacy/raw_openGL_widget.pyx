@@ -81,6 +81,7 @@ class RawOpenGLWidget(GLCanvas):
 
         c_array = array.array('B')
         array.resize(c_array, 3 * width * height)
+        glPixelStorei(GL_PACK_ALIGNMENT, 1)
         glReadPixels(0, 0, width, height,
                      GL_RGB,
                      GL_UNSIGNED_BYTE,

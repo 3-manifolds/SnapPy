@@ -171,6 +171,7 @@ class SimpleImageShaderWidget(GLCanvas):
         # Allocate memory and read framebuffer into it
         c_array = array.array(array_type)
         array.resize(c_array, 3 * width * height)
+        glPixelStorei(GL_PACK_ALIGNMENT, 1)
         glReadPixels(0, 0, width, height,
                      GL_RGB,
                      color_texture_type,

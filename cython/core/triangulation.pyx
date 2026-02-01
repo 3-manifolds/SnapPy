@@ -159,6 +159,7 @@ cdef class Triangulation():
                 if is_HT_knot.match(name):
                     try:
                         db._one_manifold('K' + name, self)
+                        self.set_name(name)
                         return
                     except:
                         pass

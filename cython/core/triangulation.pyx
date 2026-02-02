@@ -146,13 +146,23 @@ cdef class Triangulation():
 
     cdef get_triangulation_from_name(self, name, remove_finite_vertices=True):
 
-        # Step 1. The easy databases
+        # Step 1. The easy databases.
         for db in database.__all_tables__.values():
             try:
                 db._one_manifold(name, self)
                 return
             except KeyError:
-                pass
+                # Whenever possible, we want knots to come from
+                # HTLinkExteriors rather than (Non)AlternatingKnots as
+                # the latter only have DT codes and so return many
+                # different triangulations.
+                if is_HT_knot.match(name):
+                    try:
+                        db._one_manifold('K' + name, self)
+                        self.set_name(name)
+                        return
+                    except:
+                        pass
 
         # Step 2. Alternate names for the Rolfsen links
         for regex in rolfsen_link_regexs:

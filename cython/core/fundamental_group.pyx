@@ -483,28 +483,29 @@ if _within_sage:
 
 # Holonomy Groups
 cdef class CHolonomyGroup(CFundamentalGroup):
-    def _matrices(self, word):
+    def _matrix(self, word, group):
         """
-        Returns (M,O,L) where M = SL2C(word), O = O31(word), and L is
-        the complex length.
+        Returns  SL2C(word) if group == 'M' or O31(word) if group == 'O'
         """
-        cdef MoebiusTransformation M
-        cdef O31Matrix O
         cdef int *c_word
         cdef c_FuncResult result
         cdef int i, j
         word_list = word_as_list(word, self.num_generators())
         c_word = c_word_from_list(word_list)
-        result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
-        if result == 0:
-            sl2 = matrix(
-                [[self._number_(Complex2Number(M.matrix[i][j]))
-                  for j in range(2)] for i in range(2)] )
-            o31 = matrix(
-                [[self._number_(Real2Number(<Real>O[i][j]))
-                  for j in range(4)] for i in range(4)] )
-            L = self._number_(Complex2Number(complex_length_mt(&M)))
-            return sl2, o31, L
+        cdef O31Matrix O
+        cdef MoebiusTransformation M
+        if group == 'M':
+            result = fg_word_to_matrix(self.c_group_presentation, c_word, NULL, &M)
+            if result == 0:
+                return matrix(
+                    [[self._number_(Complex2Number(M.matrix[i][j]))
+                      for j in range(2)] for i in range(2)] )
+        elif group == 'O':
+            result = fg_word_to_matrix(self.c_group_presentation, c_word, O, NULL)
+            if result == 0:
+                return matrix(
+                    [[self._number_(Real2Number(<Real>O[i][j]))
+                      for j in range(4)] for i in range(4)] )
         else:
             return None
 
@@ -516,7 +517,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         Note: the choice of lift is not guaranteed to
         vary continuously when filling coefficients are changed.
         """
-        return self._matrices(word)[0]
+        return self._matrix(word, 'M')
 
     def O31(self, word : str):
         """
@@ -525,15 +526,22 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         :math:`\\text{Isom}(\\mathbb{H}^3)` is
         identified with :math:`\\text{SO}(3,1)`.
         """
-        return self._matrices(word)[1]
+        return self._matrix(word, 'O')
 
     def complex_length(self, word : str):
         """
         Return the complex length of the isometry represented by the
         input word.
         """
-        return self._matrices(word)[2]
-
+        cdef int *c_word
+        cdef c_FuncResult result
+        word_list = word_as_list(word, self.num_generators())
+        c_word = c_word_from_list(word_list)
+        cdef MoebiusTransformation M
+        result = fg_word_to_matrix(self.c_group_presentation, c_word, NULL, &M)
+        if result == 0:
+            return self._number_(Complex2Number(complex_length_mt(&M)))
+        return None
 
 class HolonomyGroup(CHolonomyGroup):
     """

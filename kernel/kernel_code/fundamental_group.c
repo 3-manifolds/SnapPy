@@ -97,10 +97,10 @@
  * *really* long, we store the sequence of moves done during
  * simplification.  These are recorded in group->itsWordMoves in the
  * following scheme:
- * 
+ *
  * (a, a) with a > 0 means that the generator "a" is removed, and
  * replaced with the final generator.
- * 
+ *
  * (a, -a) with a > 0 means that the generator "a" is replaced with
  * it's inverse.
  *
@@ -485,8 +485,8 @@ static void                 free_cyclic_word(CyclicWord *aCyclicWord);
 static void                 update_word_moves(GroupPresentation  *group, int a);
 static void                 update_word_moves2(GroupPresentation  *group, int a, int b);
 
-/* Debugging tool 
-static void                 print_word(CyclicWord *word); 
+/* Debugging tool
+static void                 print_word(CyclicWord *word);
 */
 
 GroupPresentation *fundamental_group(
@@ -538,7 +538,7 @@ GroupPresentation *compute_unsimplified_presentation(
 
     group = NEW_STRUCT(GroupPresentation);
 
-    /* 
+    /*
      *  MC 2012-03-20 added the test for degenerate solutions to avoid
      *  division by zero errors when computing the fundamental groups
      *  of certain MorwenLinks on platforms with accurate arithmetic.
@@ -577,7 +577,7 @@ static void compute_matrix_generators(
      *  properties in the matrix generators, and also forces Triangulations
      *  with all flat tetrahedra to lie in a coordinate plane.
      */
-    
+
     group->itsMatrices = NEW_ARRAY(manifold->num_generators, O31Matrix);
     group->itsMTs = NEW_ARRAY(manifold->num_generators,
 			      MoebiusTransformation);
@@ -1216,9 +1216,9 @@ static void append_word(
     }
 }
 
-/* Not used 
+/* Not used
 static void prepend_word(
-    CyclicWord  *source, 
+    CyclicWord  *source,
     CyclicWord  *dest)
 {
     int     i;
@@ -1292,7 +1292,7 @@ static void initialize_original_generators(
     /*
      *  Initially the original generators are the current generators.
      *  Put the highest numbered generator on the linked list first,
-     *  and work backwards, so that they will appear in the correct order. 
+     *  and work backwards, so that they will appear in the correct order.
      */
 
     group->itsOriginalGenerators = NULL;
@@ -1317,7 +1317,7 @@ static void initialize_original_generators(
      *  so we just start with a dummy record.
      */
 
-    new_letter = NEW_STRUCT(Letter); 
+    new_letter = NEW_STRUCT(Letter);
     new_letter->itsValue = 0;
     new_letter->prev = new_letter;
     new_letter->next = new_letter;
@@ -1357,7 +1357,7 @@ static void simplify(
      *  of steps.
      *
      *  If group->minimize_number_of_generators is FALSE, then we ignore
-     *  the number of generators and try to minimize the ordered quadruple 
+     *  the number of generators and try to minimize the ordered quadruple
      *
      *      (total length of all relations,
      *       total number of runs in all relations,
@@ -1482,10 +1482,10 @@ static void simplify(
 	)
      {
       /*NMD 2008/5/31*/
-      if (uLongComputationContinues() == func_cancelled) 
+      if (uLongComputationContinues() == func_cancelled)
         break;
       }
-     
+
 
     /*
      *  Try to simplify presentations of finite cyclic groups.
@@ -1506,7 +1506,7 @@ static void simplify(
         ||  invert_words_where_necessary(group) == TRUE)
        {
       /*NMD 2008/5/31*/
-      if (uLongComputationContinues() == func_cancelled) 
+      if (uLongComputationContinues() == func_cancelled)
         break;
       }
 
@@ -1852,7 +1852,7 @@ static Boolean handle_slide_improves_presentation(
 
     evaluate_handle_slide_in_group( group,
                                     a,
-                                    b, 
+                                    b,
                                     &shortest_nonempty_relation_before,
                                     &shortest_nonempty_relation_after,
                                     &change_in_total_length,
@@ -1917,7 +1917,7 @@ static void evaluate_handle_slide_in_group(
             evaluate_handle_slide_on_word(
                         word,
                         a,
-                        b, 
+                        b,
                         shortest_nonempty_relation_before,
                         shortest_nonempty_relation_after,
                         change_in_total_length,
@@ -2969,7 +2969,7 @@ static Boolean simplify_one_word_presentations(
      *    Find the unique relation.
      */
     word = group->itsRelations;
-    
+
     /*
      *    If the unique relation is a power of a single variable, don't do anything.
      *    [added 2008/5/31 by JRW]
@@ -3126,7 +3126,7 @@ static CyclicWord *introduce_generator(
     MoebiusTransformation *new_MT_array,
                           the_MT_inverse;
     int         i;
-    Letter      *letter, 
+    Letter      *letter,
                 *new_generator_letter,
                 *letter_copy;
     CyclicWord  *new_word;
@@ -3232,7 +3232,7 @@ static CyclicWord *introduce_generator(
         INSERT_BEFORE(letter_copy, new_generator_letter);
     }
 
-    /*  
+    /*
      *  Record what we done so we can later reconstruct the current
      *  generators in terms of the original ones.
      */
@@ -4179,7 +4179,7 @@ static void handle_slide_word(
     {
         letter = word->itsLetters;
 
-        do 
+        do
         {
             if (letter->itsValue == a)
             {
@@ -4321,7 +4321,7 @@ static void cancel_handles(
      */
 
     int dead_generator;
-  
+
     /*
      *  Double check that the word has length one.
      */
@@ -4342,12 +4342,12 @@ static void cancel_handles(
     /*
      *  Remove all occurrences of the generator from all other words.
      *  Note that even if a word becomes empty, it is *not* deleted,
-     *  because empty words have geometrical significance in the 
+     *  because empty words have geometrical significance in the
      *  pseudo-Heegaard diagram.  For example, S^2 X S^1 has a presentation
      *  with one generator and one empty word.
      */
     remove_generator(group, dead_generator);
-    
+
     /*
      *  The highest numbered generator should assume the index of the
      *  dead_generator, to keep the indexing contiguous.
@@ -4494,7 +4494,7 @@ static void renumber_generator(
     renumber_generator_on_word_list(group->itsMeridians,          old_index, new_index);
     renumber_generator_on_word_list(group->itsLongitudes,         old_index, new_index);
     renumber_generator_on_word_list(group->itsOriginalGenerators, old_index, new_index);
-}				    					
+}
 
 static void renumber_generator_on_word_list(
     CyclicWord  *list,
@@ -4588,7 +4588,7 @@ FuncResult fg_word_to_matrix(
      *
      *  JRW  96/1/6
      */
-    
+
     /*
      *  When input word is not valid, returns func_bad_input instead
      *  of posting a fatal error.   JRW 99/10/30
@@ -4597,8 +4597,12 @@ FuncResult fg_word_to_matrix(
     MoebiusTransformation   theMoebiusFactor;
     O31Matrix               theO31Factor;
 
-    o31_copy    (result_O31,     O31_identity     );
-    Moebius_copy(result_Moebius, &Moebius_identity);
+#define O31(func) if (result_O31) { func }
+#define SL2(func) if (result_Moebius) { func }
+
+
+    O31(o31_copy(result_O31, O31_identity);)
+    SL2(Moebius_copy(result_Moebius, &Moebius_identity);)
 
     for ( ; *word != 0; word++)
     {
@@ -4608,15 +4612,15 @@ FuncResult fg_word_to_matrix(
         if (*word > 0
          && *word <= group->itsNumGenerators)
         {
-            o31_copy( theO31Factor, group->itsMatrices[*word - 1]);
-            Moebius_copy(&theMoebiusFactor, &group->itsMTs[*word - 1]);
+	    O31(o31_copy( theO31Factor, group->itsMatrices[*word - 1]);)
+	    SL2(Moebius_copy(&theMoebiusFactor, &group->itsMTs[*word - 1]);)
         }
         else
         if (*word < 0
          && *word >= - group->itsNumGenerators)
         {
-            o31_invert( group->itsMatrices[-(*word) - 1], theO31Factor );
-            Moebius_invert( &group->itsMTs[-(*word) - 1], &theMoebiusFactor);
+	    O31(o31_invert( group->itsMatrices[-(*word) - 1], theO31Factor );)
+	    SL2(Moebius_invert( &group->itsMTs[-(*word) - 1], &theMoebiusFactor);)
         }
         else
         {
@@ -4626,13 +4630,14 @@ FuncResult fg_word_to_matrix(
         /*
          *  ...and right-multiply it onto the matrix_generator.
          */
-        o31_product    (result_O31,      theO31Factor,     result_O31);
-        Moebius_product(result_Moebius, &theMoebiusFactor, result_Moebius);
+        O31(o31_product(result_O31,      theO31Factor,     result_O31);)
+	SL2(Moebius_product(result_Moebius, &theMoebiusFactor, result_Moebius);)
     }
 
     return func_OK;
 }
-
+#undef O31
+#undef SL2
 
 int fg_get_num_relations(
     GroupPresentation   *group)
@@ -4819,24 +4824,24 @@ static void free_cyclic_word(
 static void update_word_moves(GroupPresentation  *group, int a){
   Letter *letter;
 
-  letter = NEW_STRUCT(Letter); 
+  letter = NEW_STRUCT(Letter);
   letter->itsValue = a;
-  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters);
   group->itsWordMoves->itsLength++;
 }
 
 static void update_word_moves2(GroupPresentation  *group, int a, int b){
   Letter *letter;
 
-  letter = NEW_STRUCT(Letter); 
+  letter = NEW_STRUCT(Letter);
   letter->itsValue = a;
-  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters);
 
-  letter = NEW_STRUCT(Letter); 
+  letter = NEW_STRUCT(Letter);
   letter->itsValue = b;
-  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters);
 
-  group->itsWordMoves->itsLength += 2; 
+  group->itsWordMoves->itsLength += 2;
 }
 
 /*

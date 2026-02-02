@@ -21,6 +21,7 @@ __pycache__/
 *.dmg
 *.pkg
 *.exe
+*.whl
 cythoned/
 opengl/CyOpenGL.c
 opengl/CyOpenGL.h

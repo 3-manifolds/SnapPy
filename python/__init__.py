@@ -436,7 +436,9 @@ snappy_module = sys.modules[__name__]
 database_objects = []
 known_manifold_packages = [('snappy_manifolds', True),
                            ('snappy_15_knots', False),
-                           ('nonexistent_manifolds', False)]
+                           ('nonexistent_manifolds', False),
+                           ('snappy_11_tets', False),
+                           ('snappy_16_knots', False)]
 
 for manifold_package, required in known_manifold_packages:
     table_dict = database.add_tables_from_package(manifold_package, required)

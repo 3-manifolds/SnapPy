@@ -1301,10 +1301,8 @@ material_params(RayHit ray_hit)
         // Thus, we cannot divide the color circle equally.
         //
         // Instead, we multiply the index by the golden angle
-        //          pi * (3 - sqrt(5)) radians
+        //    (3 - sqrt(5)) / 2 * 360degrees ~ 0.381966 * 360degrees
         // so that no geodesics hit the same color.
-        //
-        // For hsv2rgb, we need to divide by 2 * pi:
         //
         float goldenAngleBy2Pi = 0.3819660112501051;
 

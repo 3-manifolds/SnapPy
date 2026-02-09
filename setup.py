@@ -284,14 +284,14 @@ snappy_headers = (
 snappy_ext_files.set_headers(snappy_headers)
 hp_snappy_ext_files.set_headers(snappy_headers)
 
-snappy_cython_deps = ['cython/SnapPycore.pxi', 'cython/SnapPy.pxi']
-snappy_cython_deps += glob(os.path.join('cython','core', '*.pyx'))
+snappy_cython_deps = ['src/snappy/extensions/SnapPy/cython_src/SnapPycore.pxi', 'src/snappy/extensions/SnapPy/cython_src/SnapPy.pxi']
+snappy_cython_deps += glob(os.path.join('src/snappy/extensions/SnapPy/cython_src','core', '*.pyx'))
 
 snappy_ext_files.set_cython_file_language_and_dependencies(
-    'cython/SnapPy.pyx', 'c', snappy_cython_deps)
+    'src/snappy/extensions/SnapPy/cython_src/SnapPy.pyx', 'c', snappy_cython_deps)
 
 hp_snappy_ext_files.set_cython_file_language_and_dependencies(
-    'cython/SnapPyHP.pyx', 'cpp', snappy_cython_deps)
+    'src/snappy/extensions/SnapPy/cython_src/SnapPyHP.pyx', 'cpp', snappy_cython_deps)
 
 unused_unix_files = ['unix_UI.c', 'decode_new_DT.c']
 base_code = glob(os.path.join('kernel', 'kernel_code','*.c'))

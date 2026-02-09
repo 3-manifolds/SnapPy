@@ -11,28 +11,23 @@
  */
 
 #ifdef _MSC_VER
-#define USE_GLEW
-#endif
 
-#ifdef USE_GLEW
+#define USE_GLEW
 #define GLEW_STATIC
 #define GLEW_NO_GLU
-#include "opengl/glew/include/GL/glew.h"
+#include "glew/include/GL/glew.h"
+
 #else
 
 #ifdef __APPLE__
 #ifdef __clang__
+
 #pragma clang diagnostic ignored "-Wunused-function"
+
 #endif
 #endif
 
-#ifdef _MSC_VER
-#include "windows.h"
-#pragma warning(disable:4244 4305)
-#include "gl/gl.h"
-#include "glext.h"
-#else
-#include "gl.h"
-#endif
+#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 
 #endif

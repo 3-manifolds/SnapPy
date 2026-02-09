@@ -465,7 +465,7 @@ SnapPyHP = Extension(
 
 ###############################################################################
 # The CyOpenGL extension
-CyOpenGL_includes = [os.path.join('src','snappy','extensions')]
+CyOpenGL_includes = []
 CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_compile_args = []

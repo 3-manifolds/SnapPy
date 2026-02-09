@@ -104,9 +104,7 @@ class SnapPyClean(Command):
                 shutil.rmtree(dir)
             except OSError:
                 pass
-        junkfiles = glob('src/*.so*') + glob('src/*.pyc') + ['opengl/CyOpenGL.c']
-        for generated in ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']:
-            junkfiles.append(os.path.join('cythoned', generated))
+        junkfiles = glob('src/*.so*') + glob('src/*.pyc')
         for file in junkfiles:
             try:
                 os.remove(file)
@@ -276,7 +274,8 @@ class SourceAndObjectFiles():
 snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
 
-kernel_path = os.path.join('src', 'snappy', 'extensions', 'SnapPy', 'kernel')
+SnapPy_path = os.path.join('src', 'snappy', 'extensions', 'SnapPy')
+kernel_path = os.path.join(SnapPy_path, 'kernel')
 
 snappy_headers = (
     glob(os.path.join(kernel_path, 'headers', '*.h')) +
@@ -286,14 +285,16 @@ snappy_headers = (
 snappy_ext_files.set_headers(snappy_headers)
 hp_snappy_ext_files.set_headers(snappy_headers)
 
-snappy_cython_deps = ['src/snappy/extensions/SnapPy/cython_src/SnapPycore.pxi', 'src/snappy/extensions/SnapPy/cython_src/SnapPy.pxi']
-snappy_cython_deps += glob(os.path.join('src/snappy/extensions/SnapPy/cython_src','core', '*.pyx'))
+snappy_cython_deps = [
+    os.path.join(SnapPy_path, 'cython_src', 'SnapPycore.pxi'),
+    os.path.join(SnapPy_path, 'cython_src', 'SnapPy.pxi') ]
+snappy_cython_deps += glob(os.path.join(SnapPy_path, 'cython_src','core', '*.pyx'))
 
 snappy_ext_files.set_cython_file_language_and_dependencies(
-    'src/snappy/extensions/SnapPy/cython_src/SnapPy.pyx', 'c', snappy_cython_deps)
+    os.path.join(SnapPy_path, 'cython_src', 'SnapPy.pyx'), 'c', snappy_cython_deps)
 
 hp_snappy_ext_files.set_cython_file_language_and_dependencies(
-    'src/snappy/extensions/SnapPy/cython_src/SnapPyHP.pyx', 'cpp', snappy_cython_deps)
+    os.path.join(SnapPy_path, 'cython_src', 'SnapPyHP.pyx'), 'cpp', snappy_cython_deps)
 
 unused_unix_files = ['unix_UI.c', 'decode_new_DT.c']
 base_code = glob(os.path.join(kernel_path, 'kernel_code','*.c'))

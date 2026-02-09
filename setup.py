@@ -465,11 +465,13 @@ SnapPyHP = Extension(
 
 ###############################################################################
 # The CyOpenGL extension
-CyOpenGL_includes = [cy_opengl_path]
+CyOpenGL_includes = []
 CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_compile_args = []
 CyOpenGL_extra_link_args = []
+CyOpenGL_has_headers = False
+
 if sys.platform == 'darwin':
     OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
     sdk_roots = [
@@ -484,21 +486,49 @@ if sys.platform == 'darwin':
     header_dir = '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/'
     poss_includes = [ root + header_dir for root in poss_roots ]
     CyOpenGL_includes += [ path for path in poss_includes if os.path.exists(path)][:1]
+    CyOpenGL_has_headers = any(
+        exists(os.path.join(path, 'gl.h'))
+        for path in CyOpenGL_includes)
+    if not CyOpenGL_has_headers:
+        print("***WARNING***: Not Building CyOpenGL so many graphics features "
+              "will not be availble.")
+        print("This is because the OpenGL header gl.h were not found at: %s" %(
+            ', '.join(CyOpenGL_includes)))
+
     CyOpenGL_extra_compile_args += macOS_quiet_cython
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
     CyOpenGL_extra_link_args += macOS_link_args
 
 elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
+
+    gl_header_path = '/usr/include/GL/gl.h'
+    CyOpenGL_has_headers = exists(gl_header_path)
+
+    if not CyOpenGL_has_headers:
+        print("***WARNING***: Not Building CyOpenGL so many graphics features "
+              "will not be availble.")
+        print("This is because the OpenGL header %s was not found." % gl_header_path)
+
 elif sys.platform == 'win32':
+    # Pick up glew
+    CyOpenGL_includes = [cy_opengl_path]
+    CyOpenGL_has_headers = True
+
     if platform.architecture()[0] == '32bit':
         CyOpenGL_extras += [os.path.join(cy_opengl_path, 'glew/lib/Release/Win32/glew32s.lib')]
     else:
         CyOpenGL_extras += [os.path.join(cy_opengl_path, 'glew/lib/Release/x64/glew32s.lib')]
+
     if cc == 'msvc':
         CyOpenGL_extras += ['opengl32.lib']
     else:
         CyOpenGL_extras += ['/mingw/lib/libopengl32.a']
+
+else:
+    print("***WARNING***: Not Building CyOpenGL so many graphics features "
+          "will not be availble.")
+    print("This is because we have an unsupported platform %s." % sys.platform)
 
 
 CyOpenGL = Extension(
@@ -506,28 +536,11 @@ CyOpenGL = Extension(
     sources = cy_opengl_ext_files.sources_to_build,
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
-    extra_objects = CyOpenGL_extras,
+    extra_objects = cy_opengl_ext_files.up_to_date_objects + CyOpenGL_extras,
     extra_compile_args = CyOpenGL_extra_compile_args,
     extra_link_args = CyOpenGL_extra_link_args,
     language='c++'
 )
-
-CyOpenGL_has_headers = False
-if sys.platform == 'win32':
-    # We use glew, so we do not need GL headers from somewhere
-    # else
-    CyOpenGL_has_headers = True
-else:
-    header = 'gl.h'
-    CyOpenGL_has_headers = any(
-        exists(os.path.join(path, header))
-        for path in CyOpenGL_includes)
-    if not CyOpenGL_has_headers:
-        print("***WARNING***: Not building CyOpenGL so many graphics "
-              "features will not be available.")
-        print("This is because the OpenGL header %s was not found." % header)
-        print("The following directories were searched: %s." % (
-            ', '.join(CyOpenGL_includes)))
 
 ###############################################################################
 # Twister extension

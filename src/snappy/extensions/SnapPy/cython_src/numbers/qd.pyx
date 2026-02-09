@@ -9,11 +9,11 @@ cdef extern from "qd_real_SnapPy.h":
     double default_vertex_epsilon
     qd_real det_error_epsilon
     cdef cppclass qd_real:
-        double x[4]
         qd_real() except +
         qd_real(double) except +
         qd_real(char *) except +
         qd_real(qd_real) except +
+        double operator[](int i)
         qd_real operator+(qd_real)
         qd_real operator-(qd_real)
         qd_real operator*(qd_real)
@@ -48,12 +48,11 @@ cdef Real2gen_direct(Real R):
     divisible by 32.
 
     """
-    cdef double* qd = <double*>&R
     cdef int i
     # The value of a qd_real is the sum of the values of its four doubles.
-    result = pari._real_coerced_to_bits_prec(qd[0], 256)
+    result = pari._real_coerced_to_bits_prec(R[0], 256)
     for i in range(1,4):
-        result += pari._real_coerced_to_bits_prec(qd[i], 256)
+        result += pari._real_coerced_to_bits_prec(R[i], 256)
     return result
 
 cdef Real2gen_string(Real R):

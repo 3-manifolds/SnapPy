@@ -553,7 +553,7 @@ elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
 
 install_requires = ['FXrays>=1.3',
                     'plink>=2.4.8',
-                    'spherogram>=2.4',
+                    'spherogram>=2.4.1',
                     'snappy_manifolds>=1.4',
                     'low_index>=1.2.1',
                     'tkinter-gl>=1.0',

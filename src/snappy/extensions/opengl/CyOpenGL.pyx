@@ -6,7 +6,7 @@
 # configurations with certain cython versions.
 
 include "gl_platform.pxi"
-include "initGlew.pxi"
+include "gl_init.pxi"
 include "SnapPyfont.pxi"
 
 from ..infowindow import InfoWindow

@@ -33,14 +33,15 @@ class RawOpenGLWidget(GLCanvas):
 
         # Check that GLEW set all function pointers that we are calling
         # below.
-        cdef char * missing_gl_function
-        missing_gl_function = checkGlewForLegacyOpenGL()
-        if missing_gl_function:
-            raise Exception(
-                ("Missing gl function: %s. Your graphics card probably does "
-                 "not support the required OpenGL version (2.1). Your "
-                 "OpenGL version is %s.") % (missing_gl_function,
-                                             get_gl_string('GL_VERSION')))
+        cdef char * init_error
+        init_error = initLegacyGLAndReturnError()
+        if init_error:
+            raise RuntimeError(
+                ("Error while initializing GL: %s. "
+                 "Your graphics card probably does not support the required "
+                 "OpenGL version (2.1). "
+                 "Your OpenGL version is %s.") % (init_error,
+                                                    get_gl_string('GL_VERSION')))
 
     def make_current(self):
         """

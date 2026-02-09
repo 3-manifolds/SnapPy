@@ -33,7 +33,7 @@ include "common/error.pyx"
 ##############################################################################
 # Non-OpenGL classes
 
-include "vector3.pyx"
+include "common/vector3.pyx"
 
 ##############################################################################
 # OpenGL utilities for legacy OpenGL (OpenGL 2.1)

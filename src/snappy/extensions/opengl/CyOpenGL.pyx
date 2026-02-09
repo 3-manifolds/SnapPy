@@ -5,7 +5,7 @@
 # "... has no attribute '__reduce_cython__'" on certain
 # configurations with certain cython versions.
 
-include "opengl.pxi"
+include "gl_platform.pxi"
 include "initGlew.pxi"
 include "SnapPyfont.pxi"
 

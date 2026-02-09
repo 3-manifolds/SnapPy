@@ -1,4 +1,4 @@
-cdef extern from "opengl.h":
+cdef extern from "gl_platform.h":
 
 # Datatypes
     ctypedef unsigned int GLenum

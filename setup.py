@@ -534,13 +534,13 @@ else:
 ###############################################################################
 # Twister extension
 
-twister_main_path = 'twister/lib/'
-twister_kernel_path = twister_main_path + 'kernel/'
+twister_main_path = os.path.join('src', 'snappy', 'twister', 'lib')
+twister_kernel_path = os.path.join(twister_main_path, 'kernel')
 
 twister_ext_files = SourceAndObjectFiles()
-twister_ext_files.add(twister_main_path + 'py_wrapper.cpp')
+twister_ext_files.add(os.path.join(twister_main_path, 'py_wrapper.cpp'))
 for file in ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']:
-    twister_ext_files.add(twister_kernel_path + file)
+    twister_ext_files.add(os.path.join(twister_kernel_path, file))
 
 twister_extra_compile_args = []
 twister_extra_link_args = []
@@ -653,7 +653,7 @@ setup( name = 'snappy',
            'snappy/dev/vericlosed/orb' : ['orb_solution_for_snappea_finite_triangulation_mac'],
        },
        package_dir = {'snappy':'src/snappy', 'snappy/manifolds':'src/snappy/manifolds',
-                      'snappy/twister':'twister/lib',  'snappy/snap':'src/snappy/snap',
+                      'snappy/twister':'src/snappy/twister/lib',  'snappy/snap':'src/snappy/snap',
                       'snappy/snap/t3mlite':'src/snappy/snap/t3mlite',
                       'snappy/snap/peripheral':'src/snappy/snap/peripheral',
                       'snappy/snap/slice_obs_HKL':'src/snappy/snap/slice_obs_HKL',

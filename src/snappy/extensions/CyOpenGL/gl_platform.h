@@ -8,18 +8,6 @@
  *
  */
 
-/*
- * GL_GLEXT_PROTOYPTES must be defined in order for prototypes to be
- * provided by glext.h on linux and windows. 
- */
-
-#define GL_GLEXT_PROTOTYPES
-
-/* 
- * When using Visual C++ in Windows it is required that windows.h
- * be included before gl.h.
- */
-
 #ifdef _MSC_VER
 
 #define GL_HEADERS_FROM_GLEW
@@ -38,7 +26,15 @@
 
 #else
 
-// Linux
+/*
+ * Linux
+ *
+ * GL_GLEXT_PROTOYPTES must be defined so that the modern GL
+ * functions appear in the header (and do not need to be loaded
+ * by, e.g., glew).
+ */
+
+#define GL_GLEXT_PROTOTYPES
 
 #include <GL/gl.h>
 

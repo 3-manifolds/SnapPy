@@ -4,6 +4,7 @@
 ctypedef double Real
 
 include "SnapPy.pxi"
+
 include "numbers/double.pyx"
 include "core/basic.pyx"
 include "core/triangulation.pyx"

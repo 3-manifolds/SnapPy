@@ -29,8 +29,3 @@ cdef Complex gen2Complex(g):
     cdef Complex result
     result.real, result.imag = g.real(), g.imag()
     return result
-
-cdef Real2Number(Real R):
-    return Number(Real2gen(R))
-cdef Complex2Number(Complex C):
-    return Number(Complex2gen(C))

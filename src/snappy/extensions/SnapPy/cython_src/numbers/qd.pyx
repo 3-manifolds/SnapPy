@@ -81,7 +81,3 @@ cdef Complex gen2Complex(g):
     pari.set_real_precision(old_precision)
     return result
 
-cdef Real2Number(Real R):
-    return Number(Real2gen(R))
-cdef Complex2Number(Complex C):
-    return Number(Complex2gen(C))

@@ -412,32 +412,45 @@ if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
 else:
     Real2gen = Real2gen_string
 
-cdef Complex2gen(Complex C):
-    """
-    Convert a Complex to a pari gen.
-    """
-    cdef real_part = Real2gen(C.real)
-    cdef imag_part = Real2gen(C.imag)
-    return pari.complex(real_part, imag_part)
+cdef Real2Number(Real R):
+    return Number(Real2gen(R))
+
+cdef Complex2Number(Complex C):
+    return Number(Complex2gen(C))
 
 cdef RealImag2gen(Real R, Real I):
+    """
+    Convert pair of C Real's to pari gen.
+    """
     return pari.complex(Real2gen(R), Real2gen(I))
 
-cdef Complex2complex(Complex C):
+cdef Complex2gen(Complex C):
     """
-    Convert a Complex to a python complex.
+    Convert a C Complex to a pari gen.
     """
-    return complex( float(<double>C.real), float(<double>C.imag) )
+    return RealImag2gen(C.real, C.imag)
+
+cdef double Real2double(Real R):
+    """
+    Convert C Real to C double.
+    """
+    return <double>R
 
 cdef Real2float(Real R):
     """
-    Convert a Real to a python float.
+    Convert a C Real to a python float.
     """
-    return float(<double>R)
+    return float(Real2double(R))
+
+cdef Complex2complex(Complex C):
+    """
+    Convert a C Complex to a python complex.
+    """
+    return complex( Real2float(C.real), Real2float(C.imag) )
 
 cdef Complex complex2Complex(complex z):
     """
-    Convert a python complex to a Complex.
+    Convert a python complex to a C Complex.
     """
     cdef Complex result
     result.real = <Real>z.real
@@ -479,11 +492,6 @@ cdef Complex Object2Complex(obj):
     result.real = real
     result.imag = imag
     return result
-
-
-cdef double Real2double(Real R):
-    cdef double* quad = <double *>&R
-    return quad[0]
 
 cdef B2B(Boolean B):
     return B != 0

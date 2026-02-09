@@ -52,7 +52,7 @@ def word_to_psl2c_matrix(mcomplex : Mcomplex, word : str):
     """
 
     # Delayed import to avoid cyclic dependency
-    from ..SnapPy import word_as_list # type: ignore
+    from ..extensions.SnapPy import word_as_list # type: ignore
 
     return word_list_to_psl2c_matrix(
         mcomplex, word_as_list(word, mcomplex.num_generators))

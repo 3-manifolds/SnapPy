@@ -1,4 +1,4 @@
-from ..SnapPy import Info
+from ..extensions.SnapPy import Info
 from ..math_basics import (
     is_RealIntervalFieldElement,
     is_ComplexIntervalFieldElement)

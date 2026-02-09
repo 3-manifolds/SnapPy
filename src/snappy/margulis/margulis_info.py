@@ -1,4 +1,4 @@
-from ..SnapPy import Info
+from ..extensions.SnapPy import Info
 
 from typing import Optional
 

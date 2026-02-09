@@ -12,7 +12,7 @@ from ..geometric_structure import word_list_to_psl2c_matrix
 from ..upper_halfspace import psl2c_to_o13
 from ..hyperboloid.distances import distance_r13_point_line
 from ..hyperboloid.line import R13Line
-from ..SnapPy import list_as_word, inverse_list_word
+from ..extensions.SnapPy import list_as_word, inverse_list_word
 from ..math_basics import lower, correct_max, correct_min # type: ignore
 from ..exceptions import InsufficientPrecisionError, NonorientableManifoldError
 from ..sage_helper import _within_sage, SageNotAvailable

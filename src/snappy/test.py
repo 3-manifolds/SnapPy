@@ -37,18 +37,18 @@ missed_classes = ['Triangulation', 'Manifold',
                   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors']
 
 for A in missed_classes:
-    snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
-    snappy.SnapPyHP.__test__[A + '_extra'] = getattr(snappy, A).__doc__
+    snappy.extensions.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
+    snappy.extensions.SnapPyHP.__test__[A + '_extra'] = getattr(snappy, A).__doc__
 
 # some things we don't want to test at the extension module level
-identify_tests = [x for x in snappy.SnapPyHP.__test__
+identify_tests = [x for x in snappy.extensions.SnapPyHP.__test__
                   if x.startswith('Manifold.identify')]
-triangulation_tests = [x for x in snappy.SnapPyHP.__test__
+triangulation_tests = [x for x in snappy.extensions.SnapPyHP.__test__
                   if x.startswith('get_triangulation_tester')]
-browser_tests = [x for x in snappy.SnapPyHP.__test__
+browser_tests = [x for x in snappy.extensions.SnapPyHP.__test__
                  if x.startswith('Manifold.browse')]
 for key in identify_tests + triangulation_tests + browser_tests:
-    snappy.SnapPyHP.__test__.pop(key)
+    snappy.extensions.SnapPyHP.__test__.pop(key)
 
 def additional_doctests(verbose=False, print_info=True):
     """
@@ -77,8 +77,8 @@ modules = [
     snappy.exterior_to_link.test.run_doctests,
     snappy.numeric_output_checker.run_doctests,
     snappy.number,
-    snappy.SnapPy,
-    snappy.SnapPyHP,
+    snappy.extensions.SnapPy,
+    snappy.extensions.SnapPyHP,
     snappy.database,
     additional_doctests,
     snappy,
@@ -105,8 +105,8 @@ slow_modules = [
 def graphics_failures(verbose, windows, use_modernopengl):
     if cyopengl_works():
         print("Testing graphics ...")
-        import snappy.CyOpenGL
-        result = doctest_modules([snappy.CyOpenGL], verbose=verbose).failed
+        import snappy.extensions.CyOpenGL
+        result = doctest_modules([snappy.extensions.CyOpenGL], verbose=verbose).failed
         snappy.Manifold('m004').dirichlet_domain().view().test()
         snappy.Manifold('m125').cusp_neighborhood().view().test()
         if use_modernopengl:
@@ -129,7 +129,7 @@ def graphics_failures(verbose, windows, use_modernopengl):
     else:
         print("***Warning***: Could not test CyOpenGL.")
         try:
-            import snappy.CyOpenGL
+            import snappy.extensions.CyOpenGL
             print("Reason: Unsuitable Tk configuration for CyOpenGL")
         except ImportError as e:
             print("Reason: CyOpenGL could not be imported, %r" % e)

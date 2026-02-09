@@ -1,4 +1,4 @@
-from .number import Number as RawNumber
+from ..number import Number as RawNumber
 
 class Number(RawNumber):
     _default_precision=53

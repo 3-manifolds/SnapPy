@@ -7,7 +7,7 @@ from .eyeball import Eyeball
 from .eyeball import eyeball_type_none, eyeball_type_paper_plane
 from . import shaders
 
-from ..CyOpenGL import SimpleImageShaderWidget
+from ..extensions.CyOpenGL import SimpleImageShaderWidget
 
 from ..matrix import make_vector, make_matrix
 

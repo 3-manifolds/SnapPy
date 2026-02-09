@@ -6,7 +6,7 @@ from .gui_utilities import UniformDictController, ScrollableFrame
 from .tooltip import ToolTip
 from .geodesics import geodesic_index_to_color, LengthSpectrumError
 from ..geometric_structure.geodesic.exceptions import WordAppearsToBeParabolic
-from ..SnapPy import word_as_list # type: ignore
+from ..extensions.SnapPy import word_as_list # type: ignore
 
 
 class GeodesicsWindow(tkinter.Toplevel):

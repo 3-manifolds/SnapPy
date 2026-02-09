@@ -1,4 +1,4 @@
-from ..SnapPy import reduce_list_word, inverse_list_word
+from ..extensions.SnapPy import reduce_list_word, inverse_list_word
 
 from typing import List
 

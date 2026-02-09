@@ -2,7 +2,7 @@
 import time
 
 from .gui import *
-from .CyOpenGL import *
+from .extensions.CyOpenGL import *
 from .export_stl import stl
 from . import filedialog
 from plink.ipython_tools import IPythonTkRoot

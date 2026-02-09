@@ -10,7 +10,7 @@ from . import put_in_S3
 from . import link_projection
 from .rational_linear_algebra import Matrix
 from . import hyp_utils
-from ..SnapPy import set_rand_seed
+from ..extensions.SnapPy import set_rand_seed
 
 
 def filled_is_3sphere(manifold):

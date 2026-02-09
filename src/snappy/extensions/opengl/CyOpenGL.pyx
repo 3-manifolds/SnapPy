@@ -9,7 +9,7 @@ include "opengl.pxi"
 include "initGlew.pxi"
 include "CySnapPyfont.pxi"
 
-from .infowindow import InfoWindow
+from ..infowindow import InfoWindow
 
 from cpython cimport array
 from libc.stdlib cimport malloc, free

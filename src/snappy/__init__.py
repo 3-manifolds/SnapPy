@@ -3,23 +3,23 @@
 # logging.basicConfig(filename='example.log',level=logging.DEBUG)
 # logging.debug('This message should go to the log file')
 import sys
-from .SnapPy import (AbelianGroup,
+from .extensions.SnapPy import (AbelianGroup,
                      FundamentalGroup,
                      SymmetryGroup,
                      Isometry,
                      AlternatingKnotExteriors,
                      NonalternatingKnotExteriors,
                      pari)
-from .SnapPy import DirichletDomain
-from .SnapPyHP import DirichletDomain as DirichletDomainHP
-from .SnapPy import CuspNeighborhood
-from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
-from .SnapPy import HolonomyGroup
-from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
+from .extensions.SnapPy import DirichletDomain
+from .extensions.SnapPyHP import DirichletDomain as DirichletDomainHP
+from .extensions.SnapPy import CuspNeighborhood
+from .extensions.SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
+from .extensions.SnapPy import HolonomyGroup
+from .extensions.SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
 # seed the kernel's random number generator.
 import time
-from .SnapPy import set_rand_seed
+from .extensions.SnapPy import set_rand_seed
 set_rand_seed(int(time.time()))
 
 from .exceptions import (SnapPeaFatalError,
@@ -29,12 +29,12 @@ from .exceptions import (SnapPeaFatalError,
 from typing import Union, Tuple, List, Optional
 
 # Subclass to be able to monkey-patch
-class Triangulation(SnapPy.Triangulation):
-    __doc__ = SnapPy.Triangulation.__doc__
+class Triangulation(extensions.SnapPy.Triangulation):
+    __doc__ = extensions.SnapPy.Triangulation.__doc__
 
 # Subclass to be able to monkey-patch
-class TriangulationHP(SnapPyHP.Triangulation):
-    __doc__ = SnapPyHP.Triangulation.__doc__
+class TriangulationHP(extensions.SnapPyHP.Triangulation):
+    __doc__ = extensions.SnapPyHP.Triangulation.__doc__
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.
@@ -42,8 +42,8 @@ class TriangulationHP(SnapPyHP.Triangulation):
 # in the presence of a diamond pattern seem to work just
 # fine. In particular, we do not double allocate the underlying
 # C structures.
-class Manifold(SnapPy.Manifold, Triangulation):
-    __doc__ = SnapPy.Manifold.__doc__
+class Manifold(extensions.SnapPy.Manifold, Triangulation):
+    __doc__ = extensions.SnapPy.Manifold.__doc__
 
     def identify(self, extends_to_link=False):
         """
@@ -98,8 +98,8 @@ class Manifold(SnapPy.Manifold, Triangulation):
 
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
-class ManifoldHP(SnapPyHP.Manifold, TriangulationHP):
-    __doc__ = SnapPyHP.Manifold.__doc__
+class ManifoldHP(extensions.SnapPyHP.Manifold, TriangulationHP):
+    __doc__ = extensions.SnapPyHP.Manifold.__doc__
 
     def low_precision(self):
         """
@@ -154,10 +154,10 @@ class ManifoldHP(SnapPyHP.Manifold, TriangulationHP):
         """
         return self.low_precision()._identify(extends_to_link)
 
-SnapPy._manifold_class = Manifold
-SnapPy._triangulation_class = Triangulation
-SnapPyHP._triangulation_class = TriangulationHP
-SnapPyHP._manifold_class = ManifoldHP
+extensions.SnapPy._manifold_class = Manifold
+extensions.SnapPy._triangulation_class = Triangulation
+extensions.SnapPyHP._triangulation_class = TriangulationHP
+extensions.SnapPyHP._manifold_class = ManifoldHP
 
 __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'FundamentalGroup', 'HolonomyGroup', 'HolonomyGroupHP',
@@ -219,7 +219,7 @@ def is_isometric_to(self,
         resolved_other,
         return_isometries=return_isometries)
 
-is_isometric_to.__doc__ = SnapPy.Manifold._is_isometric_to.__doc__
+is_isometric_to.__doc__ = extensions.SnapPy.Manifold._is_isometric_to.__doc__
 Manifold.is_isometric_to = is_isometric_to
 ManifoldHP.is_isometric_to = is_isometric_to
 
@@ -233,7 +233,7 @@ def isomorphisms_to(self,
     return resolved_self._isomorphisms_to(
         resolved_other)
 
-isomorphisms_to.__doc__ = SnapPy.Triangulation._isomorphisms_to.__doc__
+isomorphisms_to.__doc__ = extensions.SnapPy.Triangulation._isomorphisms_to.__doc__
 Triangulation.isomorphisms_to = isomorphisms_to
 TriangulationHP.isomorphisms_to = isomorphisms_to
 

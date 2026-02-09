@@ -4,7 +4,7 @@ import os
 from .gui import *
 from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer
-from .CyOpenGL import GetColor
+from .extensions.CyOpenGL import GetColor
 from .app_menus import browser_menus
 from . import app_menus
 from .number import Number

@@ -16,8 +16,8 @@ import typing
 python_major_version = sys.version_info.major
 
 # Sage interaction
-from .sage_helper import _within_sage, SageNotAvailable
-from .pari import pari as pari
+from ..sage_helper import _within_sage, SageNotAvailable
+from ..pari import pari as pari
 try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import PermutationGroupElement
@@ -41,44 +41,44 @@ try:
 except ImportError:
     pass
 
-from .matrix import matrix
-from . import number
+from ..matrix import matrix
+from .. import number
 
 # SnapPy components
 import spherogram
-from .manifolds import __path__ as manifold_paths
-from . import database
-from . import twister
-from . import snap
-from . import verify
-from .verify import complex_volume as verify_complex_volume
-from .cusps import compute_cusp_shapes as cusps_compute_cusp_shapes
-from . import decorated_isosig
-from .ptolemy import manifoldMethods as ptolemyManifoldMethods
-from .export_stl import stl
-from .exceptions import SnapPeaFatalError
+from ..manifolds import __path__ as manifold_paths
+from .. import database
+from .. import twister
+from .. import snap
+from .. import verify
+from ..verify import complex_volume as verify_complex_volume
+from ..cusps import compute_cusp_shapes as cusps_compute_cusp_shapes
+from .. import decorated_isosig
+from ..ptolemy import manifoldMethods as ptolemyManifoldMethods
+from ..export_stl import stl
+from ..exceptions import SnapPeaFatalError
 try:
     from plink import LinkEditor, LinkManager
 except ImportError:
     LinkEditor, LinkManager = None, None
 try:
-    from .gui import ViewerWindow
+    from ..gui import ViewerWindow
 except ImportError:
     ViewerWindow = None
 try:
-    from .polyviewer import PolyhedronViewer
+    from ..polyviewer import PolyhedronViewer
 except ImportError:
     PolyhedronViewer = None
 try:
-    from .horoviewer import HoroballViewer
+    from ..horoviewer import HoroballViewer
 except ImportError:
     HoroballViewer = None
 try:
-    from .browser import Browser
+    from ..browser import Browser
 except ImportError:
     Browser = None
 try:
-    from .filedialog import asksaveasfile
+    from ..filedialog import asksaveasfile
 except ImportError:
     asksaveasfile = None
 

@@ -387,7 +387,7 @@ class HyperboloidNavigation:
             self.draw()
 
         if event.keysym == 'p':
-            from snappy.CyOpenGL import get_gl_string
+            from snappy.extensions.CyOpenGL import get_gl_string
             self.make_current()
             for k in ['GL_VERSION', 'GL_SHADING_LANGUAGE_VERSION']:
                 print("%s: %s" % (k, get_gl_string(k)))

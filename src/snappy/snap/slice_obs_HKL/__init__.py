@@ -39,7 +39,7 @@ Additionally, we implement the refinements and generalizations
 introduced in [DG].
 """
 
-from ... import SnapPy
+from ...extensions import SnapPy
 from ...sage_helper import _within_sage, sage_method
 if _within_sage:
     from ...sage_helper import ZZ, prime_range, prime_powers

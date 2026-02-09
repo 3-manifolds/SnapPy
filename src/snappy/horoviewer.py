@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from .gui import *
-from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
-                       GetColor, cyglSetStandardLighting)
+from .extensions.CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
+                                  GetColor, cyglSetStandardLighting)
 from plink.ipython_tools import IPythonTkRoot
 import os
 import sys

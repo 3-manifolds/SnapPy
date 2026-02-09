@@ -1,4 +1,4 @@
-from .cache import SnapPyCache
+from ..cache import SnapPyCache
 import low_index
 
 cdef class Triangulation():

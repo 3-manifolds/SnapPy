@@ -17,7 +17,7 @@ except ImportError:
     _gui_status['tk'] = False
 if _gui_status['tk']:
     try:
-        import snappy.CyOpenGL
+        import snappy.extensions.CyOpenGL
         _gui_status['cyopengl'] = True
     except:
         _gui_status['cyopengl'] = False

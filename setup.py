@@ -407,7 +407,7 @@ if sys.platform == 'darwin':
     snappy_extra_link_args += macOS_link_args
 
 SnapPyC = Extension(
-    name = 'snappy.SnapPy',
+    name = 'snappy.extensions.SnapPy',
     sources = snappy_ext_files.sources_to_build,
     include_dirs = [
         os.path.join(kernel_path, 'headers'),
@@ -449,7 +449,7 @@ if sys.platform == 'darwin':
     hp_extra_compile_args += macOS_quiet_cython
 
 SnapPyHP = Extension(
-    name = 'snappy.SnapPyHP',
+    name = 'snappy.extensions.SnapPyHP',
     sources = hp_snappy_ext_files.sources_to_build,
     include_dirs = [
         os.path.join(kernel_path, 'headers'),
@@ -504,7 +504,7 @@ elif sys.platform == 'win32':
 
 
 CyOpenGL = Extension(
-    name = 'snappy.CyOpenGL',
+    name = 'snappy.extensions.CyOpenGL',
     sources = cy_opengl_ext_files.sources_to_build,
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,

@@ -320,7 +320,7 @@ for file in glob(os.path.join(SnapPyHP_path, 'qd', 'src', '*.cpp')):
 ###############################################################################
 # SourceAndObjectFiles for CyOpenGL
 
-cy_opengl_path = os.path.join('src', 'snappy', 'extensions', 'opengl')
+cy_opengl_path = os.path.join('src', 'snappy', 'extensions', 'CyOpenGL')
 
 cy_opengl_ext_files = SourceAndObjectFiles()
 cy_opengl_ext_files.set_cython_file_language_and_dependencies(

@@ -7,7 +7,7 @@
 
 include "opengl.pxi"
 include "initGlew.pxi"
-include "CySnapPyfont.pxi"
+include "SnapPyfont.pxi"
 
 from ..infowindow import InfoWindow
 

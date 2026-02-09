@@ -276,11 +276,13 @@ class SourceAndObjectFiles():
 snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
 
+kernel_path = os.path.join('src', 'snappy', 'extensions', 'SnapPy', 'kernel')
+
 snappy_headers = (
-    glob(os.path.join('kernel', 'headers', '*.h')) +
-    glob(os.path.join('kernel', 'addl_code', '*.h')) +
-    glob(os.path.join('kernel', 'unix_kit', '*.h')) +
-    glob(os.path.join('kernel', 'real_type', '*.h')))
+    glob(os.path.join(kernel_path, 'headers', '*.h')) +
+    glob(os.path.join(kernel_path, 'addl_code', '*.h')) +
+    glob(os.path.join(kernel_path, 'unix_kit', '*.h')) +
+    glob(os.path.join(kernel_path, 'real_type', '*.h')))
 snappy_ext_files.set_headers(snappy_headers)
 hp_snappy_ext_files.set_headers(snappy_headers)
 
@@ -294,16 +296,16 @@ hp_snappy_ext_files.set_cython_file_language_and_dependencies(
     'src/snappy/extensions/SnapPy/cython_src/SnapPyHP.pyx', 'cpp', snappy_cython_deps)
 
 unused_unix_files = ['unix_UI.c', 'decode_new_DT.c']
-base_code = glob(os.path.join('kernel', 'kernel_code','*.c'))
+base_code = glob(os.path.join(kernel_path, 'kernel_code','*.c'))
 unix_code = [
     file
-    for file in glob(os.path.join('kernel', 'unix_kit','*.c'))
+    for file in glob(os.path.join(kernel_path, 'unix_kit','*.c'))
     if os.path.basename(file) not in unused_unix_files ]
-addl_code = glob(os.path.join('kernel', 'addl_code', '*.c'))
+addl_code = glob(os.path.join(kernel_path, 'addl_code', '*.c'))
 
 for file in base_code + unix_code + addl_code:
     snappy_ext_files.add(file)
-    hp_file = 'quad_double' + replace_ext(file, 'cpp')[len('kernel'):]
+    hp_file = 'quad_double' + replace_ext(file, 'cpp')[len(kernel_path):]
     assert os.path.exists(hp_file), hp_file
     hp_snappy_ext_files.add(hp_file, [file])
 
@@ -400,8 +402,11 @@ if sys.platform == 'darwin':
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = snappy_ext_files.sources_to_build,
-    include_dirs = ['kernel/headers', 'kernel/unix_kit',
-                    'kernel/addl_code', 'kernel/real_type'],
+    include_dirs = [
+        os.path.join(kernel_path, 'headers'),
+        os.path.join(kernel_path, 'unix_kit'),
+        os.path.join(kernel_path, 'addl_code'),
+        os.path.join(kernel_path, 'real_type') ],
     language='c++',
     extra_compile_args = snappy_extra_compile_args,
     extra_link_args = snappy_extra_link_args,
@@ -439,9 +444,13 @@ if sys.platform == 'darwin':
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = hp_snappy_ext_files.sources_to_build,
-    include_dirs = ['kernel/headers', 'kernel/unix_kit',
-                    'kernel/addl_code', 'kernel/kernel_code',
-                    'quad_double/real_type', 'quad_double/qd/include'],
+    include_dirs = [
+        os.path.join(kernel_path, 'headers'),
+        os.path.join(kernel_path, 'unix_kit'),
+        os.path.join(kernel_path, 'addl_code'),
+        os.path.join(kernel_path, 'kernel_code'),
+        'quad_double/real_type',
+        'quad_double/qd/include'],
     language='c++',
     extra_compile_args = hp_extra_compile_args,
     extra_link_args = hp_extra_link_args,

@@ -320,9 +320,11 @@ for file in glob(os.path.join(SnapPyHP_path, 'qd', 'src', '*.cpp')):
 ###############################################################################
 # SourceAndObjectFiles for CyOpenGL
 
+cy_opengl_path = os.path.join('src', 'snappy', 'extensions', 'opengl')
+
 cy_opengl_ext_files = SourceAndObjectFiles()
 cy_opengl_ext_files.set_cython_file_language_and_dependencies(
-    'opengl/CyOpenGL.pyx', 'c', [])
+    os.path.join(cy_opengl_path, 'CyOpenGL.pyx'), 'c', [])
 
 ###############################################################################
 # Cythonize
@@ -463,7 +465,7 @@ SnapPyHP = Extension(
 
 ###############################################################################
 # The CyOpenGL extension
-CyOpenGL_includes = ['.']
+CyOpenGL_includes = [os.path.join('src','snappy','extensions')]
 CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_compile_args = []
@@ -491,9 +493,9 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if platform.architecture()[0] == '32bit':
-        CyOpenGL_extras += ['opengl/glew/lib/Release/Win32/glew32s.lib']
+        CyOpenGL_extras += [os.path.join(cy_opengl_path, 'glew/lib/Release/Win32/glew32s.lib')]
     else:
-        CyOpenGL_extras += ['opengl/glew/lib/Release/x64/glew32s.lib']
+        CyOpenGL_extras += [os.path.join(cy_opengl_path, 'glew/lib/Release/x64/glew32s.lib')]
     if cc == 'msvc':
         CyOpenGL_extras += ['opengl32.lib']
     else:

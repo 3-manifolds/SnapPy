@@ -21,25 +21,26 @@
  */
 
 #ifdef _MSC_VER
+
 #define GL_HEADERS_FROM_GLEW
-#endif
-
-#ifdef __APPLE__
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wunused-function"
-#endif
-#endif
-
-#ifdef GL_HEADERS_FROM_GLEW
-
 #define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "glew/include/GL/glew.h"
 
-#else
+#elif __APPLE__
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
 
 #include <OpenGL/gl.h>
 #include <OpenGL/gl3.h>
+
+#else
+
+// Linux
+
+#include <GL/gl.h>
 
 #endif
 

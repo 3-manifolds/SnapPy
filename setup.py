@@ -465,7 +465,7 @@ SnapPyHP = Extension(
 
 ###############################################################################
 # The CyOpenGL extension
-CyOpenGL_includes = []
+CyOpenGL_includes = [cy_opengl_path]
 CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_compile_args = []
@@ -489,7 +489,6 @@ if sys.platform == 'darwin':
     CyOpenGL_extra_link_args += macOS_link_args
 
 elif sys.platform == 'linux2' or sys.platform == 'linux':
-    CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if platform.architecture()[0] == '32bit':
@@ -499,7 +498,6 @@ elif sys.platform == 'win32':
     if cc == 'msvc':
         CyOpenGL_extras += ['opengl32.lib']
     else:
-        CyOpenGL_includes += ['/mingw/include/GL']
         CyOpenGL_extras += ['/mingw/lib/libopengl32.a']
 
 

@@ -27,7 +27,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 3.3 (January 2026):
+* Version 3.3 (January 2026) and 3.3.1 (February 2026):
 
   - :class:`Link <spherogram.Link>` now supports band moves and can
     search for ribbon disks and ribbon concordances. See

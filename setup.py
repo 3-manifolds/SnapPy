@@ -97,16 +97,16 @@ class SnapPyClean(Command):
                     glob('build/temp*') +
                     glob('snappy*.egg-info') +
                     glob(cythoned_dir) +
-                    ['__pycache__', os.path.join('python', 'doc')]
+                    ['__pycache__', os.path.join('src', 'snappy', 'doc')]
         )
         for dir in junkdirs:
             try:
                 shutil.rmtree(dir)
             except OSError:
                 pass
-        junkfiles = glob('python/*.so*') + glob('python/*.pyc') + ['opengl/CyOpenGL.c']
+        junkfiles = glob('src/*.so*') + glob('src/*.pyc') + ['opengl/CyOpenGL.c']
         for generated in ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']:
-            junkfiles.append(os.path.join('cython', generated))
+            junkfiles.append(os.path.join('cythoned', generated))
         for file in junkfiles:
             try:
                 os.remove(file)
@@ -133,7 +133,7 @@ class SnapPyBuildDocs(Command):
         sphinx_dist = importlib.metadata.Distribution.from_name('sphinx')
         sphinx_cmd = sphinx_dist.entry_points['sphinx-build'].load()
         sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
-                       'doc_src', 'python/doc']
+                       'doc_src', 'src/snappy/doc']
         sys.path.insert(0, build_lib_dir())
         status = sphinx_cmd(sphinx_args)
         if status != 0:
@@ -570,7 +570,7 @@ except ImportError:
     install_requires.append('ipython>=5.0')
 
 # Get version number:
-exec(open('python/version.py').read())
+exec(open('src/snappy/version.py').read())
 
 # Get long description from README
 long_description = open('README.rst').read()
@@ -636,28 +636,28 @@ setup( name = 'snappy',
            'snappy/raytracing/zoom_slider': ['*.png'],
            'snappy/dev/vericlosed/orb' : ['orb_solution_for_snappea_finite_triangulation_mac'],
        },
-       package_dir = {'snappy':'python', 'snappy/manifolds':'python/manifolds',
-                      'snappy/twister':'twister/lib',  'snappy/snap':'python/snap',
-                      'snappy/snap/t3mlite':'python/snap/t3mlite',
-                      'snappy/snap/peripheral':'python/snap/peripheral',
-                      'snappy/snap/slice_obs_HKL':'python/snap/slice_obs_HKL',
-                      'snappy/ptolemy':'python/ptolemy',
-                      'snappy/hyperboloid':'python/hyperboloid',
-                      'snappy/geometric_structure':'python/geometric_structure',
-                      'snappy/geometric_structure/geodesic':'python/geometric_structure/geodesic',
-                      'snappy/geometric_structure/cusp_neighborhood':'python/geometric_structure/cusp_neighborhood',
-                      'snappy/upper_halfspace':'python/upper_halfspace',
-                      'snappy/verify':'python/verify',
-                      'snappy/verify/complex_volume':'python/verify/complex_volume',
-                      'snappy/tiling':'python/tiling',
-                      'snappy/drilling':'python/drilling',
-                      'snappy/cusps':'python/cusps',
-                      'snappy/len_spec':'python/len_spec',
-                      'snappy/margulis':'python/margulis',
-                      'snappy/exterior_to_link':'python/exterior_to_link',
-                      'snappy/raytracing':'python/raytracing',
-                      'snappy/raytracing/shaders':'python/raytracing/shaders',
-                      'snappy/raytracing/zoom_slider':'python/raytracing/zoom_slider',
+       package_dir = {'snappy':'src/snappy', 'snappy/manifolds':'src/snappy/manifolds',
+                      'snappy/twister':'twister/lib',  'snappy/snap':'src/snappy/snap',
+                      'snappy/snap/t3mlite':'src/snappy/snap/t3mlite',
+                      'snappy/snap/peripheral':'src/snappy/snap/peripheral',
+                      'snappy/snap/slice_obs_HKL':'src/snappy/snap/slice_obs_HKL',
+                      'snappy/ptolemy':'src/snappy/ptolemy',
+                      'snappy/hyperboloid':'src/snappy/hyperboloid',
+                      'snappy/geometric_structure':'src/snappy/geometric_structure',
+                      'snappy/geometric_structure/geodesic':'src/snappy/geometric_structure/geodesic',
+                      'snappy/geometric_structure/cusp_neighborhood':'src/snappy/geometric_structure/cusp_neighborhood',
+                      'snappy/upper_halfspace':'src/snappy/upper_halfspace',
+                      'snappy/verify':'src/snappy/verify',
+                      'snappy/verify/complex_volume':'src/snappy/verify/complex_volume',
+                      'snappy/tiling':'src/snappy/tiling',
+                      'snappy/drilling':'src/snappy/drilling',
+                      'snappy/cusps':'src/snappy/cusps',
+                      'snappy/len_spec':'src/snappy/len_spec',
+                      'snappy/margulis':'src/snappy/margulis',
+                      'snappy/exterior_to_link':'src/snappy/exterior_to_link',
+                      'snappy/raytracing':'src/snappy/raytracing',
+                      'snappy/raytracing/shaders':'src/snappy/raytracing/shaders',
+                      'snappy/raytracing/zoom_slider':'src/snappy/raytracing/zoom_slider',
                       'snappy/dev':'dev/python',
                       'snappy/dev/extended_ptolemy':'dev/extended_ptolemy',
                       'snappy/dev/vericlosed':'dev/vericlosed',

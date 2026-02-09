@@ -53,7 +53,7 @@ copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Matthias Goerner, Jeffre
 #
 # The short X.Y version.
 
-with open('../python/version.py') as version:
+with open('../src/snappy/version.py') as version:
     exec(version.read())
 
 # The full version, including alpha/beta/rc tags.

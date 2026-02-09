@@ -156,6 +156,5 @@ cdef extern from *:
 
     """
 
-    int callGlewInitIfNecessary();
     char * checkGlewForLegacyOpenGL();
     char * checkGlewForModernOpenGL();

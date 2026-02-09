@@ -35,9 +35,4 @@
 #include "gl.h"
 #endif
 
-#ifdef __APPLE__
-/* This seems to have been fixed by Apple since then. */
-/* #include "openglAppleFixes.h" */
-#endif
-
 #endif

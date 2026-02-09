@@ -303,13 +303,17 @@ unix_code = [
     if os.path.basename(file) not in unused_unix_files ]
 addl_code = glob(os.path.join(kernel_path, 'addl_code', '*.c'))
 
+SnapPyHP_path = os.path.join('src', 'snappy', 'extensions', 'SnapPyHP')
+
+hp_kernel_path = os.path.join(SnapPyHP_path, 'kernel')
+
 for file in base_code + unix_code + addl_code:
     snappy_ext_files.add(file)
-    hp_file = 'quad_double' + replace_ext(file, 'cpp')[len(kernel_path):]
+    hp_file = replace_ext(file.replace(kernel_path, hp_kernel_path), 'cpp')
     assert os.path.exists(hp_file), hp_file
     hp_snappy_ext_files.add(hp_file, [file])
 
-for file in glob(os.path.join('quad_double', 'qd', 'src', '*.cpp')):
+for file in glob(os.path.join(SnapPyHP_path, 'qd', 'src', '*.cpp')):
     hp_snappy_ext_files.add(file)
 
 ###############################################################################
@@ -449,8 +453,8 @@ SnapPyHP = Extension(
         os.path.join(kernel_path, 'unix_kit'),
         os.path.join(kernel_path, 'addl_code'),
         os.path.join(kernel_path, 'kernel_code'),
-        'quad_double/real_type',
-        'quad_double/qd/include'],
+        os.path.join(hp_kernel_path, 'real_type'),
+        os.path.join(SnapPyHP_path, 'qd', 'include') ],
     language='c++',
     extra_compile_args = hp_extra_compile_args,
     extra_link_args = hp_extra_link_args,

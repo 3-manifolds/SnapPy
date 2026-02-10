@@ -30,6 +30,8 @@ cdef extern from "qd_real_SnapPy.h":
         cpp_bool operator!=(double)
         void write(char *s, int len, int precision)
 
+from ..pari import pari as pari
+        
 cdef pari_real_coerced_to_bits_prec
 
 if hasattr(pari, '_real_coerced_to_bits_prec'):

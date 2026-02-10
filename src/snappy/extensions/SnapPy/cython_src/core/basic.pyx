@@ -22,7 +22,6 @@ cdef extern from "real_type.h":
 
 # Sage interaction
 from ..sage_helper import _within_sage, SageNotAvailable
-from ..pari import pari as pari
 try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import PermutationGroupElement

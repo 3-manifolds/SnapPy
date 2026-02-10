@@ -61,3 +61,4 @@ cdef Real2gen_string(Real R):
     This constructs the gen from the string representation of the real.
     """
     return pari(real_to_string(R))
+

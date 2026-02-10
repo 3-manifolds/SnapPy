@@ -473,24 +473,21 @@ cdef Real Object2Real(obj):
     return Real_from_string(c_string)
 
 cdef Complex Object2Complex(obj):
-    cdef Real real, imag
     cdef Complex result
     if hasattr(obj, 'real') and hasattr(obj, 'imag'):
         try:
             float(obj.real)
-            real = Object2Real(obj.real)
+            result.real = Object2Real(obj.real)
         except TypeError:  # Probably Sage type
-            real = Object2Real(obj.real())
+            result.real = Object2Real(obj.real())
         try:
             float(obj.imag)
-            imag = Object2Real(obj.imag)
+            result.imag = Object2Real(obj.imag)
         except TypeError:  # Probably Sage type
-            imag = Object2Real(obj.imag())
+            result.imag = Object2Real(obj.imag())
     else:
-        real = Object2Real(obj)
-        imag = <Real>0.0
-    result.real = real
-    result.imag = imag
+        result.real = Object2Real(obj)
+        result.imag = <Real>0.0
     return result
 
 cdef B2B(Boolean B):

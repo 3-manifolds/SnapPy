@@ -15,6 +15,11 @@ import time
 import typing
 python_major_version = sys.version_info.major
 
+cdef extern from "real_type.h":
+     Real PI_SQUARED_BY_2
+     double default_vertex_epsilon
+     Real det_error_epsilon
+
 # Sage interaction
 from ..sage_helper import _within_sage, SageNotAvailable
 from ..pari import pari as pari
@@ -400,17 +405,6 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
     def __repr__(self):
         return MatrixWithExplanations.__repr__(self,
                                                "NeumannZagierTypeEquations")
-
-# C type for a function of Real returning an object
-ctypedef object (*func_real_to_obj)(Real)
-
-# Convert Real to gen in an appropriate manner for this environment
-cdef func_real_to_obj Real2gen
-
-if hasattr(pari, '_real_coerced_to_bits_prec'):  # Cypari
-    Real2gen = Real2gen_direct
-else:
-    Real2gen = Real2gen_string
 
 cdef Real2Number(Real R):
     return Number(Real2gen(R))

@@ -15,8 +15,7 @@ cdef Real2gen_direct(Real R):
     """
     Convert a Real to a pari gen of type t_REAL.
     """
-    cdef double* qd = <double*>&R
-    return pari(qd[0])
+    return pari(R)
 
 cdef Real2gen_string(Real R):
     """
@@ -24,8 +23,3 @@ cdef Real2gen_string(Real R):
     This constructs the gen from the string representation of the real.
     """
     return pari(real_to_string(R))
-
-cdef Complex gen2Complex(g):
-    cdef Complex result
-    result.real, result.imag = g.real(), g.imag()
-    return result

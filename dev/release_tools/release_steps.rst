@@ -51,7 +51,7 @@ Warmup
 3. Download Windows installer from "snappy_release" actions and test.
 
 4. Do doctests in the most recent beta Sage if needed (handled by the
-   CI for snappy *if* the Sage docker images are up to date).
+   CI for snappy if the Sage docker images are up to date).
 
 5. Upload GH built wheels to testpypi and test.  Include older
    versions of macOS.
@@ -63,7 +63,7 @@ Actual release
 1. Bump version numbers to final, trigger "snappy_release" rebuild.
 
 2. **ADD THE DOCS TO THE FINAL WHEELS**  Currently using
-   doc_source/add_doc_to_wheels.py for this.
+   doc_src/add_doc_to_wheels.py for this.
 
 3. Build final macOS app.
 

@@ -61,22 +61,3 @@ cdef Real2gen_string(Real R):
     This constructs the gen from the string representation of the real.
     """
     return pari(real_to_string(R))
-
-cdef Complex gen2Complex(g):
-    cdef Complex result
-    cdef py_string
-    cdef char* c_string
-    cdef Real real_part, imag_part
-    old_precision = pari.set_real_precision(64)
-
-    py_string = to_byte_str(str(g.real()).replace(' E','E'))  # save a reference
-    c_string = py_string
-    real_part = <Real>c_string
-    py_string = to_byte_str(str(g.imag()).replace(' E','E'))  # save a reference
-    c_string = py_string
-    imag_part = <Real>c_string
-    result.real, result.imag = real_part, imag_part
-
-    pari.set_real_precision(old_precision)
-    return result
-

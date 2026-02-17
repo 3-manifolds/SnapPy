@@ -911,8 +911,8 @@ class TkTerminalBase:
         the beginning.  You can scroll down to read it.
         """
         index = self.text.index(Tk_.INSERT)
-        self.write('\n'+str(text), see=False)
-        self.window.after_idle(self.text.see, index)
+        self.write('\n' + text, see=False)
+        self.text.after(10, self.text.see, index)
 
     def page_down(self):
         insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])

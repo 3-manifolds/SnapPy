@@ -305,7 +305,7 @@ def alexander_polynomial_basic(G, phi, d=0, pos_leading_coeff=False):
     R = phi.range()
     P = R.polynomial_ring()
     if G.num_relators() == 0:
-        return 1 if G.num_generators() <= d + 1 else 0
+        return P(1) if G.num_generators() <= d + 1 else P(0)
     M = [[fox_derivative(rel, phi, var) for rel in G.relators()]
          for var in G.generators()]
     entries = sum(M, [])

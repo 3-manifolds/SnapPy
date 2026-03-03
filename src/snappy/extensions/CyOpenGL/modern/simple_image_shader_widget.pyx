@@ -46,16 +46,6 @@ class SimpleImageShaderWidget(GLCanvas):
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
 
-        self._vertex_buffer = VertexBuffer()
-        self._vertex_buffer.load(((3,-1), (-1,3), (-1,-1)))
-
-        self.image_shader = GLSLProgram(
-            self.vertex_shader_source,
-            self.fragment_shader_source,
-            name = "fallback image shader")
-        self.textures = []
-        self.report_time_callback = None
-
         self.make_current()
 
         cdef char * init_error
@@ -67,6 +57,16 @@ class SimpleImageShaderWidget(GLCanvas):
                  "OpenGL version (3.2 or later). "
                  "Your OpenGL version is %s.") % (init_error,
                                                   get_gl_string('GL_VERSION')))
+
+        self._vertex_buffer = VertexBuffer()
+        self._vertex_buffer.load(((3,-1), (-1,3), (-1,-1)))
+
+        self.image_shader = GLSLProgram(
+            self.vertex_shader_source,
+            self.fragment_shader_source,
+            name = "fallback image shader")
+        self.textures = []
+        self.report_time_callback = None
 
     def set_textures(self, texture_files):
         self.make_current()
@@ -88,6 +88,8 @@ class SimpleImageShaderWidget(GLCanvas):
     def set_fragment_shader_source(self,
                                    source,
                                    uniform_block_names_sizes_and_offsets = []):
+        self.make_current()
+
         self.image_shader.delete_resource()
         self.image_shader = GLSLProgram(
             self.vertex_shader_source, 

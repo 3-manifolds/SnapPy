@@ -162,7 +162,10 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         HyperboloidNavigation.__init__(self)
 
     def reset_geodesics(self):
-        self.geodesics = Geodesics(self.manifold, [])
+        if self.trig_type == 'ideal':
+            self.additional_structures['geodesics'] = (
+                Geodesics(self.manifold, []))
+
         self.ui_parameter_dict['geodesicTubeRadii'][1] = []
         self.ui_parameter_dict['geodesicTubeEnables'][1] = []
         self._update_geodesic_data()

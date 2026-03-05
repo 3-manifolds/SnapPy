@@ -30,5 +30,5 @@ $PIP_INSTALL cypari
 $PIP_INSTALL knot_floer_homology
 $PIP_INSTALL plink==2.4.8
 $PIP_INSTALL spherogram==2.4.1
-$PIP_INSTALL snappy==3.3.1
+$PIP_INSTALL snappy==3.3.2
 

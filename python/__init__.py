@@ -28,12 +28,50 @@ from .exceptions import (SnapPeaFatalError,
 
 from typing import Union, Tuple, List, Optional
 
+from . import exterior_to_link
+from . import verify
+from . import margulis
+from . import len_spec
+from . import cusps
+from . cusps import cusp_area_matrix
+from . import raytracing
+from . import isometry_signature
+from . import snap
+from .snap import nsagetools, slice_obs_HKL, fox_milnor
+
+class TriangulationMixIn:
+    exterior_to_link = exterior_to_link.exterior_to_link
+    alexander_polynomial = nsagetools.alexander_polynomial
+    homological_longitude = nsagetools.homological_longitude
+    slice_obstruction_HKL = slice_obs_HKL.slice_obstruction_HKL
+    fox_milnor_test = fox_milnor.fox_milnor_test
+
+class ManifoldMixIn:
+    verify_hyperbolicity = verify.verify_hyperbolicity
+    margulis = margulis.margulis
+    length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
+    length_spectrum_alt = len_spec.length_spectrum_alt
+    isometry_signature = isometry_signature.isometry_signature
+    cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
+    cusp_areas = cusps.cusp_areas
+    short_slopes = cusps.short_slopes
+    cusp_translations = cusps.cusp_translations
+    inside_view = raytracing.inside_view
+    polished_holonomy = snap.polished_holonomy
+    tetrahedra_field_gens = snap.tetrahedra_field_gens
+    trace_field_gens = snap.trace_field_gens
+    invariant_trace_field_gens = snap.invariant_trace_field_gens
+    holonomy_matrix_entries = snap.holonomy_matrix_entries
+    hyperbolic_torsion = nsagetools.hyperbolic_torsion
+    hyperbolic_adjoint_torsion = nsagetools.hyperbolic_adjoint_torsion
+    hyperbolic_SLN_torsion = nsagetools.hyperbolic_SLN_torsion
+
 # Subclass to be able to monkey-patch
-class Triangulation(SnapPy.Triangulation):
+class Triangulation(SnapPy.Triangulation, TriangulationMixIn):
     __doc__ = SnapPy.Triangulation.__doc__
 
 # Subclass to be able to monkey-patch
-class TriangulationHP(SnapPyHP.Triangulation):
+class TriangulationHP(SnapPyHP.Triangulation, TriangulationMixIn):
     __doc__ = SnapPyHP.Triangulation.__doc__
 
 # We want Manifold to be a subclass of Triangulation.
@@ -42,7 +80,7 @@ class TriangulationHP(SnapPyHP.Triangulation):
 # in the presence of a diamond pattern seem to work just
 # fine. In particular, we do not double allocate the underlying
 # C structures.
-class Manifold(SnapPy.Manifold, Triangulation):
+class Manifold(SnapPy.Manifold, Triangulation, ManifoldMixIn):
     __doc__ = SnapPy.Manifold.__doc__
 
     def identify(self, extends_to_link=False):
@@ -98,7 +136,7 @@ class Manifold(SnapPy.Manifold, Triangulation):
 
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
-class ManifoldHP(SnapPyHP.Manifold, TriangulationHP):
+class ManifoldHP(SnapPyHP.Manifold, TriangulationHP, ManifoldMixIn):
     __doc__ = SnapPyHP.Manifold.__doc__
 
     def low_precision(self):
@@ -234,55 +272,11 @@ def isomorphisms_to(self,
         resolved_other)
 
 isomorphisms_to.__doc__ = SnapPy.Triangulation._isomorphisms_to.__doc__
-Triangulation.isomorphisms_to = isomorphisms_to
-TriangulationHP.isomorphisms_to = isomorphisms_to
-
-from . import snap
-snap.add_methods(Manifold)
-snap.add_methods(ManifoldHP)
-snap.add_methods(Triangulation, hyperbolic=False)
-snap.add_methods(TriangulationHP, hyperbolic=False)
-
-from . import exterior_to_link
-Triangulation.exterior_to_link = exterior_to_link.exterior_to_link
-TriangulationHP.exterior_to_link = exterior_to_link.exterior_to_link
-
-from . import verify
-Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
-ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
-
-from . import margulis
-Manifold.margulis = margulis.margulis
-ManifoldHP.margulis = margulis.margulis
-
-from . import len_spec
-Manifold.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
-ManifoldHP.length_spectrum_alt_gen = len_spec.length_spectrum_alt_gen
-Manifold.length_spectrum_alt = len_spec.length_spectrum_alt
-ManifoldHP.length_spectrum_alt = len_spec.length_spectrum_alt
+TriangulationMixIn.isomorphisms_to = isomorphisms_to
 
 from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical.canonical_retriangulation_hp
-
-from . import isometry_signature
-
-Manifold.isometry_signature = isometry_signature.isometry_signature
-ManifoldHP.isometry_signature = isometry_signature.isometry_signature
-
-from .cusps import cusp_area_matrix
-
-Manifold.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
-ManifoldHP.cusp_area_matrix = cusp_area_matrix.cusp_area_matrix
-
-from . import cusps
-
-Manifold.cusp_areas = cusps.cusp_areas
-ManifoldHP.cusp_areas = cusps.cusp_areas
-Manifold.short_slopes = cusps.short_slopes
-ManifoldHP.short_slopes = cusps.short_slopes
-Manifold.cusp_translations = cusps.cusp_translations
-ManifoldHP.cusp_translations = cusps.cusp_translations
 
 def complex_volume(manifold, verified_modulo_2_torsion=False,
                    bits_prec=None):
@@ -348,12 +342,6 @@ ManifoldHP.complex_volume = complex_volume
 from . import drilling
 drilling._add_methods(Manifold)
 drilling._add_methods(ManifoldHP, high_precision=True)
-
-from . import raytracing
-
-Manifold.inside_view = raytracing.inside_view
-ManifoldHP.inside_view = raytracing.inside_view
-
 
 def all_translations(self, verified=False, bits_prec=None):
     """

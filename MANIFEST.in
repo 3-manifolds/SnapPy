@@ -1,6 +1,6 @@
-include cython/*.h
-include cython/*.c
-include cython/*.cpp
+include cython/*
+include cython/numbers/*
+include cython/core/*
 include kernel/addl_code/*.h
 include kernel/headers/*.h
 include kernel/real_type/*.h
@@ -10,6 +10,11 @@ include kernel/unix_kit/*.c
 include kernel/addl_code/*.c
 include kernel/addl_code/*.cc
 include opengl/*.h
+include opengl/*.pyx
+include opengl/*.pxi
+include opengl/common/*.pyx
+include opengl/legacy/*.pyx
+include opengl/modern/*.pyx
 include opengl/KHR/*.h
 include opengl/glew/*
 include opengl/glew/bin/Release/Win32/*

@@ -190,7 +190,7 @@ from setuptools.command.sdist import sdist
 class SnapPySdist(sdist):
     def run(self):
         python = sys.executable
-        check_call([python, 'setup.py', 'bdist_wheel'])
+        check_call([python, 'setup.py', 'build_docs'])
         sdist.run(self)
 
 

@@ -280,8 +280,7 @@ kernel_path = os.path.join(SnapPy_path, 'kernel')
 snappy_headers = (
     glob(os.path.join(kernel_path, 'headers', '*.h')) +
     glob(os.path.join(kernel_path, 'addl_code', '*.h')) +
-    glob(os.path.join(kernel_path, 'unix_kit', '*.h')) +
-    glob(os.path.join(kernel_path, 'real_type', '*.h')))
+    glob(os.path.join(kernel_path, 'unix_kit', '*.h')))
 snappy_ext_files.set_headers(snappy_headers)
 hp_snappy_ext_files.set_headers(snappy_headers)
 
@@ -411,9 +410,9 @@ SnapPyC = Extension(
     sources = snappy_ext_files.sources_to_build,
     include_dirs = [
         os.path.join(kernel_path, 'headers'),
+        os.path.join(kernel_path, 'headers', 'precision', 'double'),
         os.path.join(kernel_path, 'unix_kit'),
-        os.path.join(kernel_path, 'addl_code'),
-        os.path.join(kernel_path, 'real_type') ],
+        os.path.join(kernel_path, 'addl_code') ],
     language='c++',
     extra_compile_args = snappy_extra_compile_args,
     extra_link_args = snappy_extra_link_args,
@@ -453,10 +452,10 @@ SnapPyHP = Extension(
     sources = hp_snappy_ext_files.sources_to_build,
     include_dirs = [
         os.path.join(kernel_path, 'headers'),
+        os.path.join(kernel_path, 'headers', 'precision', 'qd'),
         os.path.join(kernel_path, 'unix_kit'),
         os.path.join(kernel_path, 'addl_code'),
         os.path.join(kernel_path, 'kernel_code'),
-        os.path.join(hp_kernel_path, 'real_type'),
         os.path.join(SnapPyHP_path, 'qd', 'include') ],
     language='c++',
     extra_compile_args = hp_extra_compile_args,

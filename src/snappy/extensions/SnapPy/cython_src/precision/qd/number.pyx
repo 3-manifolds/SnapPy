@@ -5,7 +5,7 @@ class Number(RawNumber):
 
 from libcpp cimport bool as cpp_bool
 
-cdef extern from "qd_real_SnapPy.h":
+cdef extern from "qd/qd_real.h":
     cdef cppclass qd_real:
         qd_real() except +
         qd_real(double) except +

@@ -293,8 +293,10 @@ snappy_cython_deps += glob(os.path.join(SnapPy_path, 'cython_src','core', '*.pyx
 snappy_ext_files.set_cython_file_language_and_dependencies(
     os.path.join(SnapPy_path, 'cython_src', 'SnapPy.pyx'), 'c', snappy_cython_deps)
 
+SnapPyHP_path = os.path.join('src', 'snappy', 'extensions', 'SnapPyHP')
+
 hp_snappy_ext_files.set_cython_file_language_and_dependencies(
-    os.path.join(SnapPy_path, 'cython_src', 'SnapPyHP.pyx'), 'cpp', snappy_cython_deps)
+    os.path.join(SnapPyHP_path, 'cython_src', 'SnapPyHP.pyx'), 'cpp', snappy_cython_deps)
 
 unused_unix_files = ['unix_UI.c', 'decode_new_DT.c']
 base_code = glob(os.path.join(kernel_path, 'kernel_code','*.c'))
@@ -303,8 +305,6 @@ unix_code = [
     for file in glob(os.path.join(kernel_path, 'unix_kit','*.c'))
     if os.path.basename(file) not in unused_unix_files ]
 addl_code = glob(os.path.join(kernel_path, 'addl_code', '*.c'))
-
-SnapPyHP_path = os.path.join('src', 'snappy', 'extensions', 'SnapPyHP')
 
 hp_kernel_path = os.path.join(SnapPyHP_path, 'kernel')
 

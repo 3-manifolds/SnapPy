@@ -1,5 +1,7 @@
 from ..number import Number as RawNumber
 
+ctypedef qd_real Real
+
 class Number(RawNumber):
     _default_precision=212
 

@@ -159,7 +159,7 @@ def homological_longitude(manifold, cusp=None):
             cusp = unfilled[0]
         else:
             cusp = 0
-    G = manifold.fundamental_group()
+    G = manifold.fundamental_group(try_hard_to_shorten_relators=False)
     f = MapToFreeAbelianization(G)
     m, l = G.peripheral_curves()[cusp]
     kernel_basis = matrix(ZZ, [f(m), f(l)]).left_kernel().basis()

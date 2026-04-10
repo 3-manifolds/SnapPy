@@ -1,0 +1,6 @@
+include "Orb.pxi"
+include "../../shared/cython_src/basic_conversions.pyx"
+include "../../shared/cython_src/number_conversions.pyx"
+include "core/basic.pyx"
+include "core/orb_triangulation.pyx"
+include "core/orbifold.pyx"

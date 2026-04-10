@@ -319,6 +319,31 @@ for file in glob(os.path.join(SnapPyHP_path, 'qd', 'src', '*.cpp')):
 ###############################################################################
 # SourceAndObjectFiles for CyOpenGL
 
+orb_ext_files = SourceAndObjectFiles()
+
+Orb_path = os.path.join('src', 'snappy', 'extensions', 'Orb')
+OrbKernel_path = os.path.join(Orb_path, 'kernel')
+
+orb_headers = (
+    glob(os.path.join(OrbKernel_path, 'headers', '*.h')) +
+    glob(os.path.join(OrbKernel_path, 'unix_kit', '*.h')))
+orb_ext_files.set_headers(orb_headers)
+
+orb_cython_deps = [os.path.join(Orb_path, 'cython_src', 'Orb.pxi')]
+orb_cython_deps += glob(os.path.join(Orb_path, 'cython_src', '*pyx'))
+
+orb_ext_files.set_cython_file_language_and_dependencies(
+    os.path.join(Orb_path, 'cython_src', 'Orb.pyx'), 'c', orb_cython_deps)
+
+orb_base_code = glob(os.path.join(OrbKernel_path, 'code', '*.c'))
+orb_unix_code = glob(os.path.join(OrbKernel_path, 'unix_kit', '*.c'))
+
+for file in orb_base_code + orb_unix_code:
+    orb_ext_files.add(file)
+
+###############################################################################
+# SourceAndObjectFiles for CyOpenGL
+
 cy_opengl_path = os.path.join('src', 'snappy', 'extensions', 'CyOpenGL')
 
 cy_opengl_ext_files = SourceAndObjectFiles()
@@ -342,6 +367,7 @@ def split_version(s : str):
 
 exts = [ snappy_ext_files,
          hp_snappy_ext_files,
+         orb_ext_files,
          cy_opengl_ext_files ]
 
 if not any(  (non_build in sys.argv)
@@ -462,6 +488,17 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
+OrbC = Extension(
+    name = 'snappy.extensions.Orb',
+    sources = orb_ext_files.sources_to_build,
+    include_dirs = [os.path.join(OrbKernel_path, 'headers'),
+                    os.path.join(OrbKernel_path, 'unix_kit'),
+                    os.path.join('src', 'snappy', 'extensions')],
+    language = 'c',
+    extra_compile_args = snappy_extra_compile_args,
+    extra_link_args = snappy_extra_link_args,
+    extra_objects = orb_ext_files.up_to_date_objects)
+
 ###############################################################################
 # The CyOpenGL extension
 CyOpenGL_includes = []
@@ -569,7 +606,7 @@ TwisterCore = Extension(
 ###############################################################################
 # snappy
 
-ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
+ext_modules = [SnapPyC, SnapPyHP, OrbC, TwisterCore]
 if CyOpenGL_has_headers:
     ext_modules.append(CyOpenGL)
 elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')

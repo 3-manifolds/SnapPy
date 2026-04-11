@@ -1,4 +1,5 @@
 include "SnapPy.pxi"
+include "../../shared/cython_src/number_conversions.pyx"
 include "core/basic.pyx"
 include "core/triangulation.pyx"
 include "core/manifold.pyx"

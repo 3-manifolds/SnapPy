@@ -52,10 +52,10 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         ...    M, M.tetrahedra_shapes('rect', intervals=True))
 
 
-    The SnapPy triangulation of the following hyperbolic manifold contains
-    actually negatively oriented tetrahedra::
+    The SnapPy triangulation of the hyperbolic manifold t02774 actually used
+    to contain negatively oriented tetrahedra::
 
-        sage: M = Manifold("t02774")
+        sage: M = Manifold("iMzzzQcabcefghhhkxxjqoobo_abBa")
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
         ...    M, M.tetrahedra_shapes('rect', intervals=True))    # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):

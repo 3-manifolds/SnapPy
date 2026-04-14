@@ -27,6 +27,9 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
+* Version 3.4 (???)
+  - Make all triangulations of cusped census manifolds geometric. This affected t02774, t03695, t06262, t06288, t06361, t07404.
+
 * Version 3.3 (January 2026) and 3.3.2 (March 2026):
 
   - :class:`Link <spherogram.Link>` now supports band moves and can

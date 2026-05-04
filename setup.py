@@ -413,6 +413,8 @@ def compute_dependencies(
 ###############################################################################
 # The Extensions
 
+ext_modules = []
+
 class SharedExtensionSpec:
     """
     Not a full spec that can be passed to make_extension.
@@ -489,6 +491,8 @@ class SnapPyExtensionSpec:
     extra_compile_args = SharedExtensionSpec.extra_compile_args
     extra_link_args = SharedExtensionSpec.extra_link_args
 
+ext_modules.append(make_extension(SnapPyExtensionSpec))
+
 class SnapPyHPExtensionSpec:
     """
     The SnapPyHP extension. See make_extension for the meaning of the fields.
@@ -559,6 +563,8 @@ class SnapPyHPExtensionSpec:
 
     extra_link_args = SharedExtensionSpec.extra_link_args
 
+ext_modules.append(make_extension(SnapPyHPExtensionSpec))
+
 class OrbExtensionSpec:
     """
     The Orb extension. See make_extension for the meaning of the fields.
@@ -599,98 +605,107 @@ class OrbExtensionSpec:
     extra_compile_args = SharedExtensionSpec.extra_compile_args
     extra_link_args = SharedExtensionSpec.extra_link_args
 
-def find_GL_headers_mac():
-    OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
+ext_modules.append(make_extension(OrbExtensionSpec))
+
+class MissingGLError(RuntimeError):
+    pass
+
+def find_GL_include_dir_mac():
     sdk_roots = [
         '/Library/Developer/CommandLineTools/SDKs',
         '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs'
     ]
+    OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
     version_strings = [ 'MacOSX10.%d.sdk' % OS_X_ver, 'MacOSX.sdk' ]
-    poss_roots = [ '' ] + [
+    possible_roots = [ '' ] + [
         '%s/%s' % (sdk_root, version_string)
         for sdk_root in sdk_roots
         for version_string in version_strings ]
-    header_dir = '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/'
-    poss_includes = [ root + header_dir for root in poss_roots ]
-    return [ path for path in poss_includes if os.path.exists(path)][:1]
+    header_dir = '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers'
+    possible_include_dirs = [ root + header_dir for root in possible_roots ]
+    for include_dir in possible_include_dirs:
+        if exists(os.path.join(include_dir, 'gl.h')):
+            return include_dir
 
+    raise MissingGLError(
+        "The OpenGL header gl.h was not found at either of the following "
+        "locations: %s." % (', '.join(possible_include_dirs)))
 
-class CyOpenGLExtensionSpec:
-    """
-    The CyOpenGL extension. See make_extension for the meaning of the fields.
-    """
+try:
+    class CyOpenGLExtensionSpec:
+        """
+        The CyOpenGL extension. See make_extension for the meaning of the fields.
+        """
 
-    base_path = os.path.join('src', 'snappy', 'extensions', 'CyOpenGL')
+        base_path = os.path.join('src', 'snappy', 'extensions', 'CyOpenGL')
 
-    name = 'snappy.extensions.CyOpenGL'
+        name = 'snappy.extensions.CyOpenGL'
 
-    language = 'c'
+        language = 'c'
 
-    cython_file = os.path.join(base_path, 'CyOpenGL.pyx')
-    cython_paths = [
-        base_path,
-        os.path.join(base_path, 'common'),
-        os.path.join(base_path, 'legacy'),
-        os.path.join(base_path, 'modern') ]
+        cython_file = os.path.join(base_path, 'CyOpenGL.pyx')
+        cython_paths = [
+            base_path,
+            os.path.join(base_path, 'common'),
+            os.path.join(base_path, 'legacy'),
+            os.path.join(base_path, 'modern') ]
 
-    sources = []
+        sources = []
 
-    additional_dependencies = {}
+        additional_dependencies = {}
 
-    include_dirs = []
-    extra_compile_args = SharedExtensionSpec.extra_compile_args
-    extra_link_args = SharedExtensionSpec.extra_link_args
-    extra_objects = []
-    libraries = []
+        include_dirs = []
+        extra_compile_args = SharedExtensionSpec.extra_compile_args
+        extra_link_args = SharedExtensionSpec.extra_link_args
+        extra_objects = []
+        libraries = []
 
-    has_headers = False
+        has_headers = False
 
-    if sys.platform == 'darwin':
-        include_dirs += find_GL_headers_mac()
+        if sys.platform == 'darwin':
+            include_dirs += [ find_GL_include_dir_mac() ]
+            extra_link_args += ['-framework', 'OpenGL']
 
-        has_headers = any(
-            exists(os.path.join(path, 'gl.h'))
-            for path in include_dirs)
-        if not has_headers:
-            print("***WARNING***: Not Building CyOpenGL so many graphics features "
-                  "will not be availble.")
-            print("This is because the OpenGL header gl.h were not found at: %s" %(
-                ', '.join(include_dirs)))
+        elif sys.platform == 'linux2' or sys.platform == 'linux':
+            libraries += ['GL']
+            gl_header = '/usr/include/GL/gl.h'
+            if not exists(gl_header):
+                raise MissingGLError(
+                    "The OpenGL header %s is not installed." % gl_header)
 
-        extra_link_args += ['-framework', 'OpenGL']
+        elif sys.platform == 'win32':
+            # Pick up glew
+            include_dirs += [ base_path ]
 
-    elif sys.platform == 'linux2' or sys.platform == 'linux':
-        libraries += ['GL']
-        gl_header_path = '/usr/include/GL/gl.h'
-        has_headers = exists(gl_header_path)
+            if platform.architecture()[0] == '32bit':
+                extra_objects += [
+                    os.path.join(
+                        base_path, 'glew/lib/Release/Win32/glew32s.lib')]
+            else:
+                extra_objects += [
+                    os.path.join(
+                        base_path, 'glew/lib/Release/x64/glew32s.lib')]
 
-        if not has_headers:
-            print("***WARNING***: Not Building CyOpenGL so many graphics features "
-                  "will not be availble.")
-            print("This is because the OpenGL header %s was not found." % gl_header_path)
-
-    elif sys.platform == 'win32':
-        # Pick up glew
-        include_dirs += [ base_path ]
-        has_headers = True
-
-        if platform.architecture()[0] == '32bit':
-            extra_objects += [
-                os.path.join(
-                    base_path, 'glew/lib/Release/Win32/glew32s.lib')]
+            if win_cc == 'msvc':
+                extra_objects += ['opengl32.lib']
+            else:
+                extra_objects += ['/mingw/lib/libopengl32.a']
         else:
-            extra_objects += [
-                os.path.join(
-                    base_path, 'glew/lib/Release/x64/glew32s.lib')]
+            raise MissingGLError(
+                "The SnapPy build does not support OpenGL on this platform "
+                "(%s)." % sys.platform)
 
-        if win_cc == 'msvc':
-            extra_objects += ['opengl32.lib']
-        else:
-            extra_objects += ['/mingw/lib/libopengl32.a']
-    else:
-        print("***WARNING***: Not Building CyOpenGL so many graphics features "
-              "will not be availble.")
-        print("This is because we have an unsupported platform %s." % sys.platform)
+    ext_modules.append(make_extension(CyOpenGLExtensionSpec))
+
+except MissingGLError as e:
+    print("***WARNING*** Many graphics features will not be available because "
+          "OpenGL cannot be build.")
+    print(e)
+
+    env_var = os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
+    if env_var not in ['0', 'false', 'False']:
+        raise RuntimeError('Cannot build CyOpenGL but '
+                           'SNAPPY_ALWAYS_BUILD_CYOPENGL is set.')
 
 class TwisterCoreExtensionSpec:
     """
@@ -721,22 +736,10 @@ class TwisterCoreExtensionSpec:
 
     extra_link_args = []
 
+ext_modules.append(make_extension(TwisterCoreExtensionSpec))
+
 ###############################################################################
 # snappy
-
-ext_modules = [
-    make_extension(SnapPyExtensionSpec),
-    make_extension(SnapPyHPExtensionSpec),
-    make_extension(OrbExtensionSpec),
-    make_extension(TwisterCoreExtensionSpec)
-]
-
-if CyOpenGLExtensionSpec.has_headers:
-    ext_modules.append(make_extension(CyOpenGLExtensionSpec))
-elif (os.environ.get('SNAPPY_ALWAYS_BUILD_CYOPENGL', 'False')
-      not in ['0', 'false', 'False']):
-    raise RuntimeError('Could not find CyOpenGL requirements but '
-                       'SNAPPY_ALWAYS_BUILD_CYOPENGL is set.')
 
 install_requires = ['FXrays>=1.3',
                     'plink>=2.4.9',

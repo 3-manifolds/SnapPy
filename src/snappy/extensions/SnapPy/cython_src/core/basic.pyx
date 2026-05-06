@@ -612,7 +612,7 @@ cdef IsometryListToIsometries(IsometryList *isometries):
 # PLink communication
 
 def _plink_callback(LE):
-    cdef Manifold manifold
+    cdef KernelManifold manifold
     cdef c_Triangulation* c_triangulation = NULL
     if LE.manifold is None:
         LE.manifold = _manifold_class('empty')
@@ -637,10 +637,10 @@ def _plink_callback(LE):
 
 # Conversion functions Manifold <-> Triangulation
 
-def Manifold_from_Triangulation(Triangulation T, recompute=True,
+def Manifold_from_Triangulation(KernelTriangulation T, recompute=True,
                                 manifold_class=None):
     cdef c_Triangulation *c_triangulation
-    cdef Manifold M
+    cdef KernelManifold M
 
     M = _manifold_class('empty') if manifold_class is None else manifold_class('empty')
     if T.c_triangulation is NULL:
@@ -663,9 +663,9 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     return M
 
 
-def Triangulation_from_Manifold(Manifold M):
+def Triangulation_from_Manifold(KernelManifold M):
     cdef c_Triangulation *c_triangulation
-    cdef Triangulation T
+    cdef KernelTriangulation T
 
     if M.c_triangulation is NULL:
         return _triangulation_class('empty')

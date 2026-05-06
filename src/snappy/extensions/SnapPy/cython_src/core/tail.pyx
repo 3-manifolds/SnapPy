@@ -22,8 +22,8 @@ is_decorated_isosig = decorated_isosig.isosig_pattern
 # Hooks so that global module can monkey patch in modified versions
 # of the Triangulation and Manifold classes.
 
-_triangulation_class = Triangulation
-_manifold_class = Manifold
+_triangulation_class = None
+_manifold_class = None
 
 
 def bundle_from_string(desc):
@@ -183,14 +183,14 @@ def get_triangulation_tester():
              'dLQbcccdxwb']
 
     for spec in specs:
-        M = Manifold(spec)
+        M = KernelManifold(spec)
         vol = M.volume()
         if abs(vol) < 0.1:
             vol = 0.0
         print(M, vol, M.homology())
 
     for spec in specs:
-        M = Triangulation(spec)
+        M = KernelTriangulation(spec)
         print(M, M.homology())
 
 
@@ -383,7 +383,7 @@ class CuspedCensus(Census):
 
     def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
-        cdef Manifold result
+        cdef KernelManifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         if n < 0:
@@ -412,7 +412,7 @@ class CuspedCensus(Census):
             except:
                 raise IOError('The Morwen 8 tetrahedra manifold %s '
                               'was not found.' % spec)
-            result = Manifold(spec='empty')
+            result = KernelManifold(spec='empty')
             result.set_c_triangulation(c_triangulation)
             return result
             # return Manifold('t%d' % census_index)
@@ -423,7 +423,7 @@ class CuspedCensus(Census):
         if c_triangulation == NULL:
             print(num_tet, census_index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
-        result = Manifold(spec='empty')
+        result = KernelManifold(spec='empty')
         result.set_c_triangulation(c_triangulation)
         return result
 
@@ -470,7 +470,7 @@ class ObsOrientableClosedCensus(Census):
 
     def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
-        cdef Manifold result
+        cdef KernelManifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         _, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
@@ -479,7 +479,7 @@ class ObsOrientableClosedCensus(Census):
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
-        result = Triangulation(spec='empty')
+        result = KernelTriangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
         result.dehn_fill((int(m), int(l)))
         return result.with_hyperbolic_structure()
@@ -505,7 +505,7 @@ class ObsNonorientableClosedCensus(Census):
 
     def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
-        cdef Manifold result
+        cdef KernelManifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         _, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
@@ -514,7 +514,7 @@ class ObsNonorientableClosedCensus(Census):
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
-        result = Triangulation(spec='empty')
+        result = KernelTriangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
         result.dehn_fill((int(m), int(l)))
         return result.with_hyperbolic_structure()
@@ -594,7 +594,7 @@ class ObsCensusKnots(Census):
                     c_triangulation = read_triangulation_from_string(filedata)
                 except:
                     raise IOError("The census knot %s was not found." % name)
-                result = Triangulation('empty')
+                result = KernelTriangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
                 return result.with_hyperbolic_structure()
@@ -656,7 +656,7 @@ class ObsLinkExteriors(Census):
                 except:
                     raise IOError('The link complement %s was not '
                                   'found.' % filename)
-                result = Triangulation('empty')
+                result = KernelTriangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
                 return result.with_hyperbolic_structure()
@@ -719,7 +719,7 @@ class ObsMorwenLinks(Census):
             return SC
         else:
             name = str('DT:%s' % self.DT_codes[n])
-            result = Manifold(name)
+            result = KernelManifold(name)
             result.set_name(name)
             return result
 

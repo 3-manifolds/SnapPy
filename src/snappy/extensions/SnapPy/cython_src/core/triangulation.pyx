@@ -1,7 +1,7 @@
 from ..cache import SnapPyCache
 import low_index
 
-cdef class Triangulation():
+cdef class KernelTriangulation():
     """
     A Triangulation object represents a compact 3-manifold with torus
     boundary components, given as an ideal triangulation of the
@@ -142,7 +142,7 @@ cdef class Triangulation():
         self.get_triangulation_from_name(name, remove_finite_vertices)
 
         # Set the dehn fillings
-        Triangulation.dehn_fill(self, fillings)
+        KernelTriangulation.dehn_fill(self, fillings)
 
     cdef get_triangulation_from_name(self, name, remove_finite_vertices=True):
 
@@ -437,7 +437,7 @@ cdef class Triangulation():
             raise ValueError('The Triangulation is already orientable.')
 
         cdef c_Triangulation* cover_c_triangulation = NULL
-        cdef Triangulation new_tri
+        cdef KernelTriangulation new_tri
 
         cover_c_triangulation = double_cover(self.c_triangulation)
         new_tri = self.__class__('empty')
@@ -471,7 +471,7 @@ cdef class Triangulation():
         >>> N = M.copy()
         """
         cdef c_Triangulation* copy_c_triangulation = NULL
-        cdef Triangulation new_tri
+        cdef KernelTriangulation new_tri
 
         if self.c_triangulation is NULL:
             return self.__class__('empty')
@@ -992,7 +992,7 @@ cdef class Triangulation():
         free_triangulation_data(data)
         return result
 
-    def _isomorphisms_to(self, Triangulation other not None):
+    def _isomorphisms_to(self, KernelTriangulation other not None):
         """
         Returns a complete list of combinatorial isomorphisms between
         the two triangulations:
@@ -1034,7 +1034,7 @@ cdef class Triangulation():
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)
 
-    def __richcmp__(Triangulation self, Triangulation other, op):
+    def __richcmp__(KernelTriangulation self, KernelTriangulation other, op):
         """
         Two triangulations are equal if they are combinatorially
         isomorphic.  Currently we don't handle the case where there
@@ -1210,14 +1210,14 @@ cdef class Triangulation():
                                      'you must specify which one you\n'
                                      'are filling, e.g. M.dehn_fill((2,3),1)')
             if num_cusps == 1 and len(filling_data) == 2:
-                Triangulation.dehn_fill(self, filling_data, 0)
+                KernelTriangulation.dehn_fill(self, filling_data, 0)
                 return
             if len(filling_data) > num_cusps:
                 raise IndexError('You provided filling data for too '
                                  'many cusps.  There are only %s.'%
                                  num_cusps)
             for i, fill in enumerate(filling_data):
-                Triangulation.dehn_fill(self, fill, i)
+                KernelTriangulation.dehn_fill(self, fill, i)
 
     # When doctesting, the M,L coefficients acquire an accuracy of 8.
     # So we have to include the zeros in the doctest string.
@@ -1329,7 +1329,7 @@ cdef class Triangulation():
                              'prime integers.')
 
         cdef c_Triangulation* c_filled_tri = NULL
-        cdef Triangulation filled_tri
+        cdef KernelTriangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
 
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
@@ -1387,7 +1387,7 @@ cdef class Triangulation():
         if not all(cusp_is_fillable(self.c_triangulation, c) for c in range(n)):
             raise IndexError('All cusps must be fillable.')
         cdef c_Triangulation* c_new_tri = NULL
-        cdef Triangulation filled_tri
+        cdef KernelTriangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
         cdef Boolean fill_by_fold
         if method == 'fold':
@@ -2414,7 +2414,7 @@ cdef class Triangulation():
         """
         cdef RepresentationIntoSn* c_representation
         cdef c_Triangulation* c_triangulation
-        cdef Triangulation cover
+        cdef KernelTriangulation cover
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -2627,7 +2627,7 @@ cdef class Triangulation():
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
         cdef c_Triangulation* cover
-        cdef Triangulation T
+        cdef KernelTriangulation T
         cdef PermutationSubgroup c_cover_type
 
         if cover_type == 'cyclic':

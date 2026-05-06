@@ -159,7 +159,7 @@ def slice_obstruction_HKL(self,
     if M.homology().elementary_divisors() != [0]:
         raise ValueError('Not the exterior of knot in S^3 as H_1 != Z')
     if check_in_S3:
-        T = SnapPy.Triangulation(M)
+        T = SnapPy.KernelTriangulation(M)
         T.dehn_fill((1, 0))
         if T.fundamental_group().num_generators() != 0:
             raise ValueError('The (1, 0) filling is not obviously S^3')

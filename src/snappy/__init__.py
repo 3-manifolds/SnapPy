@@ -28,10 +28,10 @@ from .exceptions import (SnapPeaFatalError,
 
 from typing import Union, Tuple, List, Optional
 
-class TriangulationMixIn:
+class BaseTriangulation:
     from .exterior_to_link import exterior_to_link
 
-class ManifoldMixIn(TriangulationMixIn):
+class BaseManifold(BaseTriangulation):
     from .verify import verify_hyperbolicity
     from .margulis import margulis
     from .len_spec import (length_spectrum_alt_gen,
@@ -44,12 +44,14 @@ class ManifoldMixIn(TriangulationMixIn):
     from .raytracing import inside_view
 
 # Subclass to be able to monkey-patch
-class Triangulation(extensions.SnapPy.Triangulation, TriangulationMixIn):
-    __doc__ = extensions.SnapPy.Triangulation.__doc__
+class Triangulation(
+        extensions.SnapPy.KernelTriangulation, BaseTriangulation):
+    __doc__ = extensions.SnapPy.KernelTriangulation.__doc__
 
 # Subclass to be able to monkey-patch
-class TriangulationHP(extensions.SnapPyHP.Triangulation, TriangulationMixIn):
-    __doc__ = extensions.SnapPyHP.Triangulation.__doc__
+class TriangulationHP(
+        extensions.SnapPyHP.KernelTriangulation, BaseTriangulation):
+    __doc__ = extensions.SnapPyHP.KernelTriangulation.__doc__
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.
@@ -57,8 +59,9 @@ class TriangulationHP(extensions.SnapPyHP.Triangulation, TriangulationMixIn):
 # in the presence of a diamond pattern seem to work just
 # fine. In particular, we do not double allocate the underlying
 # C structures.
-class Manifold(extensions.SnapPy.Manifold, Triangulation, ManifoldMixIn):
-    __doc__ = extensions.SnapPy.Manifold.__doc__
+class Manifold(
+        extensions.SnapPy.KernelManifold, Triangulation, BaseManifold):
+    __doc__ = extensions.SnapPy.KernelManifold.__doc__
 
     def identify(self, extends_to_link=False):
         """
@@ -113,8 +116,9 @@ class Manifold(extensions.SnapPy.Manifold, Triangulation, ManifoldMixIn):
 
 # We want ManifoldHP to be a subclass of TriangulationHP.
 # See comment about Manifold and the diamond pattern.
-class ManifoldHP(extensions.SnapPyHP.Manifold, TriangulationHP, ManifoldMixIn):
-    __doc__ = extensions.SnapPyHP.Manifold.__doc__
+class ManifoldHP(
+        extensions.SnapPyHP.KernelManifold, TriangulationHP, BaseManifold):
+    __doc__ = extensions.SnapPyHP.KernelManifold.__doc__
 
     def low_precision(self):
         """
@@ -234,7 +238,7 @@ def is_isometric_to(self,
         resolved_other,
         return_isometries=return_isometries)
 
-is_isometric_to.__doc__ = extensions.SnapPy.Manifold._is_isometric_to.__doc__
+is_isometric_to.__doc__ = extensions.SnapPy.KernelManifold._is_isometric_to.__doc__
 Manifold.is_isometric_to = is_isometric_to
 ManifoldHP.is_isometric_to = is_isometric_to
 
@@ -248,12 +252,12 @@ def isomorphisms_to(self,
     return resolved_self._isomorphisms_to(
         resolved_other)
 
-isomorphisms_to.__doc__ = extensions.SnapPy.Triangulation._isomorphisms_to.__doc__
-TriangulationMixIn.isomorphisms_to = isomorphisms_to
+isomorphisms_to.__doc__ = extensions.SnapPy.KernelTriangulation._isomorphisms_to.__doc__
+BaseTriangulation.isomorphisms_to = isomorphisms_to
 
 from . import snap
-snap.add_methods(ManifoldMixIn)
-snap.add_methods(TriangulationMixIn, hyperbolic=False)
+snap.add_methods(BaseManifold)
+snap.add_methods(BaseTriangulation, hyperbolic=False)
 
 from . import canonical
 Manifold.canonical_retriangulation = canonical.canonical_retriangulation

@@ -104,7 +104,7 @@ cdef class CDirichletDomain():
         return number.number_to_native_number(n)
 
     def __cinit__(self,
-                  Manifold manifold=None,
+                  KernelManifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,
                   displacement=None,
                   centroid_at_origin=True,
@@ -538,7 +538,7 @@ cdef class CDirichletDomain():
 
     cdef triangulate(self, return_class):
         cdef c_Triangulation *c_triangulation
-        cdef Triangulation M
+        cdef KernelTriangulation M
         c_triangulation = Dirichlet_to_triangulation(self.c_dirichlet_domain)
         if c_triangulation is NULL:
             raise ValueError('The Dirichlet domain could not be '

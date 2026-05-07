@@ -1,4 +1,3 @@
-from . import Triangulation, TriangulationHP, ManifoldHP
 from . import verify
 from .sage_helper import _within_sage
 from .math_basics import is_RealIntervalFieldElement
@@ -376,6 +375,7 @@ def drill_manifold_precisions(
     raise err
 
 def compute_meridian_slopes(isosig, tri):
+    from . import Triangulation
     isosig_tri = Triangulation(isosig, remove_finite_vertices=False)
     # Do not call isosig_tri.set_peripheral_curves('combinatorial')
     # here.

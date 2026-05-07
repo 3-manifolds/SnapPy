@@ -1,6 +1,5 @@
 from ..snap import t3mlite as t3m
 from ..snap.t3mlite import simplex
-from .. import Triangulation
 
 from ..matrix import make_matrix, make_vector
 
@@ -70,6 +69,8 @@ class IdealRaytracingData(RaytracingData):
             return NonGeometricRaytracingData.from_manifold(manifold)
 
         num_cusps = manifold.num_cusps()
+
+        from .. import Triangulation
 
         # Make a copy of the manifold. On the copy, we can set all
         # the Dehn-fillings to (0,0) so that gluing_equations gives

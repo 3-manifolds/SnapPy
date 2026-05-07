@@ -10,7 +10,7 @@ cdef class CCuspNeighborhood():
     def _number_(n):
         return number.number_to_native_number(n)
 
-    def __cinit__(self, Manifold manifold):
+    def __cinit__(self, KernelManifold manifold):
         if manifold.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         is_complete = manifold.cusp_info('is_complete')
@@ -41,7 +41,7 @@ cdef class CCuspNeighborhood():
         Return a Manifold built from the current canonical triangulation.
         """
         cdef c_Triangulation *c_triangulation
-        cdef Manifold M
+        cdef KernelManifold M
 
         copy_triangulation(self.c_cusp_neighborhood.its_triangulation,
                            &c_triangulation)

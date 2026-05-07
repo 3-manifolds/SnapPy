@@ -105,7 +105,7 @@ cdef class CFundamentalGroup():
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
 
-    def __cinit__(self, Triangulation triangulation,
+    def __cinit__(self, KernelTriangulation triangulation,
                   simplify_presentation=True,
                   fillings_may_affect_generators=True,
                   minimize_number_of_generators=True,

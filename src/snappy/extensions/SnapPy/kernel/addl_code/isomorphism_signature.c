@@ -391,7 +391,7 @@ char* isomorphism_signature_from(
 	1;
 
     /* malloc rather than my_malloc as this is returned "upstairs" to Cython */
-    result = (char*)malloc(totalSize * sizeof(char));
+    result = (char*)malloc(totalSize);
     ans = result;
 
     if (!smallTri) {
@@ -620,9 +620,12 @@ static TriangulationData* triangulation_data_from_isomorphism_signature(
 
     /* Allocate the triangulation data */
     tri = NEW_STRUCT(TriangulationData);
-    tri->name = NEW_ARRAY(strlen(isoSig) + 1, char);
-    /* Just copy the name */
-    strcpy(tri->name, isoSig);
+    {
+	size_t isoSig_len = strlen(isoSig);
+	tri->name = NEW_ARRAY(isoSig_len + 1, char);
+	/* Just copy the name */
+	memcpy(tri->name, isoSig, isoSig_len + 1);
+    }
     tri->num_tetrahedra = nSimp;
     tri->solution_type = not_attempted;
     tri->volume = 0.0;

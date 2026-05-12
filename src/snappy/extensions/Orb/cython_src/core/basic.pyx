@@ -1,6 +1,21 @@
+# Python modules
+import os
+import sys
+import re
+import time
+
+# Sage interaction
+from ..sage_helper import _within_sage, SageNotAvailable
+try:
+    from sage.groups.free_group import FreeGroup
+except ImportError:
+    pass
+
+from ..matrix import matrix
 from .. import number
 
-import os, sys, time
+# SnapPy components
+from .. import snap
 
 SolutionType = [
     'not attempted',

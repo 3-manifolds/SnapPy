@@ -4,8 +4,6 @@ cdef extern from "warnings.h":
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
-    void* malloc(size_t size)
-    void free(void *mem)
     void srand(unsigned seed)
 
 cdef extern from "string.h":
@@ -39,10 +37,6 @@ cdef extern from "SnapPea.h":
     ctypedef enum c_FillingStatus "FillingStatus":
         complete
         filled
-
-    ctypedef enum c_MatrixParity "MatrixParity":
-        orientation_reversing = 0
-        orientation_preserving = 1
 
     ctypedef enum c_Orbifold1 "Orbifold1":
         orbifold1_unknown
@@ -90,16 +84,10 @@ cdef extern from "SnapPea.h":
     # ctypedef char Boolean
     ctypedef int MatrixInt22[2][2]
     ctypedef Real_struct GL4RMatrix[4][4]
-    ctypedef Real_struct O31Matrix[4][4]
     ctypedef Real_struct O31Vector[4]
-    ctypedef Complex SL2CMatrix[2][2]
-    ctypedef struct MoebiusTransformation:
-        SL2CMatrix matrix
-        c_MatrixParity parity
     ctypedef struct c_AbelianGroup "AbelianGroup":
         int num_torsion_coefficients
         long int *torsion_coefficients
-    ctypedef struct c_GroupPresentation "GroupPresentation"
     ctypedef struct c_SymmetryGroup "SymmetryGroup"
     ctypedef struct SymmetryGroupPresentation
     ctypedef struct IsometryList
@@ -441,7 +429,6 @@ cdef extern from "SnapPea.h":
     extern Real complex_modulus_squared(Complex z) except *
     extern Boolean complex_nonzero(Complex z) except *
     extern Boolean complex_infinite(Complex z) except *
-    extern Complex complex_length_mt(MoebiusTransformation *mt) except *
     extern Complex complex_length_o31(O31Matrix m) except *
     extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision) except *
     extern Boolean appears_rational(Real x0, Real x1, Real confidence, long *num, long *den) except *
@@ -492,19 +479,8 @@ cdef extern from "SnapPea.h":
     extern Boolean is_closed_manifold(c_Triangulation *manifold) except *
     extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators, Boolean try_hard_to_shorten_relators) except *
     extern c_GroupPresentation *compute_unsimplified_presentation(c_Triangulation *manifold) except *
-    extern int fg_get_num_generators(c_GroupPresentation *group) except *
-    extern int fg_get_num_orig_gens(c_GroupPresentation *group) except *
     extern Boolean fg_integer_fillings(c_GroupPresentation *group) except *
-    extern c_FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius) except *
-    extern int fg_get_num_relations(c_GroupPresentation *group) except *
-    extern int *fg_get_relation(c_GroupPresentation *group, int which_relation) except *
-    extern void fg_free_relation(int *relation) except *
     extern int fg_get_num_cusps(c_GroupPresentation *group) except *
-    extern int *fg_get_meridian(c_GroupPresentation *group, int which_cusp) except *
-    extern int *fg_get_longitude(c_GroupPresentation *group, int which_cusp) except *
-    extern int *fg_get_original_generator(c_GroupPresentation *group, int which_generator) except *
-    extern int  *fg_get_word_moves(c_GroupPresentation *group) except *
-    extern void free_group_presentation(c_GroupPresentation *group) except *
     extern c_AbelianGroup *homology(c_Triangulation *manifold) except *
     extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group) except *
     extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix) except *
@@ -623,8 +599,6 @@ cdef extern from "SnapPea.h":
     extern void data_to_triangulation(TriangulationData *data, c_Triangulation **manifold_ptr) except *
     extern void triangulation_to_data(c_Triangulation *manifold, TriangulationData **data_ptr) except *
     extern void free_triangulation_data(TriangulationData *data) except *
-    extern void free_triangulation(c_Triangulation *manifold) except *
-    extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination) except *
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q) except *
     extern Real volume(c_Triangulation *manifold, int *precision) except *
     extern Boolean mark_fake_cusps(c_Triangulation   *manifold) except *

@@ -172,6 +172,8 @@ enum
 	unknown_orientation
 };
 
+#define ORIENTATION(n) (n == 0 ? right_handed : left_handed)
+
 typedef MatrixParity GluingParity;
 
 /*

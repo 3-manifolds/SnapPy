@@ -1,3 +1,5 @@
+from ..cache import SnapPyCache
+
 cdef class OrbTriangulation:
     """
 
@@ -9,10 +11,12 @@ cdef class OrbTriangulation:
 
     cdef c_Triangulation* c_triangulation
     cdef c_Diagram* c_diagram
+    cdef readonly _cache
 
     def __cinit__(self, spec=None, remove_finite_vertices=True):
         self.c_triangulation = NULL
         self.c_diagram = NULL
+        self._cache = SnapPyCache()
 
         for attr in [
                 '_to_orb_string',
@@ -162,3 +166,41 @@ cdef class OrbTriangulation:
             self.c_diagram, True)
 
         return True
+
+    def fundamental_group(
+            self,
+            simplify_presentation : bool = True,
+            fillings_may_affect_generators : bool = True,
+            minimize_number_of_generators : bool = True,
+            try_hard_to_shorten_relators : bool = True
+            ) -> FundamentalGroup:
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        args = (simplify_presentation, fillings_may_affect_generators,
+                minimize_number_of_generators, try_hard_to_shorten_relators)
+        try:
+            return self._cache.lookup('fundamental_group', *args)
+        except KeyError:
+            pass
+
+        return self._cache.save(FundamentalGroup(self, *args),
+                                'fundamental_group', *args)
+
+    def num_cusps(self, cusp_type='all') -> int:
+        """
+        Return the total number of cusps.  By giving the optional argument
+        'orientable' or 'nonorientable' it will only count cusps of that type.
+
+        >>> M = Triangulation('m125')
+        >>> M.num_cusps()
+        2
+        """
+        if cusp_type == 'all':
+            return get_num_cusps(self.c_triangulation)
+        elif cusp_type == 'orientable':
+            return get_num_or_cusps(self.c_triangulation)
+        elif cusp_type == 'nonorientable':
+            return get_num_nonor_cusps(self.c_triangulation)
+        else:
+            raise ValueError("Acceptable cusp types are "
+                             "['all', 'orientable', 'nonorientable'].")

@@ -26,6 +26,8 @@
 #ifndef _SnapPea_
 #define _SnapPea_
 
+#define ORB
+
 #include "real_type.h"
 
 /*
@@ -1359,8 +1361,9 @@ extern Boolean is_closed_manifold(Triangulation *manifold);
 extern GroupPresentation *fundamental_group(
 					Triangulation	*manifold,
 					Boolean			simplify_presentation,
-					Boolean			fillings_may_affect_generators,
-					Boolean			minimize_number_of_generators);
+  					Boolean			fillings_may_affect_generators,
+                                        Boolean         minimize_number_of_generators,
+                                        Boolean         try_hard_to_shorten_relators);
 /*
  *	Computes the fundamental group of the manifold, taking into account
  *	Dehn fillings, and returns a pointer to it.  Please see
@@ -1376,6 +1379,13 @@ extern void compute_reflection_in_face( int index, O31Matrix gen, Tetrahedron *t
 extern void compute_reflection_in_truncation_face( int index, O31Matrix gen, Tetrahedron *tet );  DJH 
 */
 extern int fg_get_num_generators(GroupPresentation *group);
+
+/**<
+ *  Returns the number of generators in the GroupPresentation.
+ */
+
+extern int fg_get_num_orig_gens(GroupPresentation   *group);
+
 /*
  *	Returns the number of generators in the GroupPresentation.
  */
@@ -1449,7 +1459,10 @@ extern int	*fg_get_longitude(	GroupPresentation	*group,
  */
 
 extern int	*fg_get_original_generator(	GroupPresentation	*group,
-										int					which_generator);
+                                                int					which_generator);
+
+extern int *fg_get_word_moves(GroupPresentation *group);
+
 /*
  *	Returns a word which expresses one of the standard geometric
  *	generators (as defined in choose_generators.c) in terms of the

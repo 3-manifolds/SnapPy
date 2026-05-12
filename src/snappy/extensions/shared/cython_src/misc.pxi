@@ -6,6 +6,7 @@ cdef extern from "Python.h":
     PyObject* PyErr_Occurred()
 
 cdef extern from "stdlib.h":
+    void* malloc(size_t size)
     void free(void *mem)
 
 # C library declarations

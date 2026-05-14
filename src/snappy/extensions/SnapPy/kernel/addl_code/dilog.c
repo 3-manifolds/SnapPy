@@ -432,12 +432,4 @@ Complex complex_volume_log(Complex z)
     return result;
 }
 
-Real Lobachevsky_via_dilog(Real t)
-{
-    Complex z;
-    z.real = cos(2.0*t);
-    z.imag = sin(2.0*t);
-    return 0.5*complex_volume_dilog(z).imag;
-}
-
 SNAPPEA_NAMESPACE_END_SCOPE

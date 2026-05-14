@@ -662,7 +662,7 @@ cdef class Manifold(Triangulation):
                                             manifold_class=self.__class__)
                 for cover in covers]
 
-    cdef _real_volume(self):
+    cdef _kernel_volume(self):
         """
         Return the (real) volume as a Number.
         """
@@ -673,14 +673,8 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s' % solution_type)
-        if Number._default_precision > 64:
-            # must provide a start value to get the correct precision
-            result = sum(
-                [z.volume() for z in self._get_tetrahedra_shapes('filled')],
-                Number(0))
-        else:
-            result = Number(<double>volume(self.c_triangulation, &acc))
-            result.accuracy = acc
+        result = Real2Number(volume(self.c_triangulation, &acc))
+        result.accuracy = acc
         return result
 
     cdef _cusped_complex_volume(self, Complex *volume, int *accuracy):
@@ -720,7 +714,7 @@ cdef class Manifold(Triangulation):
             result = Complex2Number(volume)
             result.accuracy = accuracy
         else:
-            result = self._real_volume() + (
+            result = self._kernel_volume() + (
                 self._chern_simons() *
                 Real2Number(PI_SQUARED_BY_2) * Number('I'))
         return self._number_(result)
@@ -802,7 +796,7 @@ cdef class Manifold(Triangulation):
         number of digits.
 
         >>> vol, accuracy = M.volume(accuracy = True)
-        >>> accuracy in (10, 63) # Low precision, High precision
+        >>> accuracy in (10, 59) # Low precision, High precision
         True
 
         Inside SageMath, verified computation of the volume of a
@@ -822,7 +816,7 @@ cdef class Manifold(Triangulation):
             return verify.compute_volume(
                 self, verified=verified, bits_prec=bits_prec)
 
-        vol = self._real_volume()
+        vol = self._kernel_volume()
         if accuracy:
             return (self._number_(vol), vol.accuracy)
         else:

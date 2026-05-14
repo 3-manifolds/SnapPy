@@ -2,6 +2,7 @@
 #define _dilog_
 
 #include "kernel.h"
+
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 /* Logarithm of z with the standard branch cut (i.e, negative real axis such
@@ -16,9 +17,6 @@ Complex complex_volume_log(Complex z);
  * from the dilog.  */
 
 Complex complex_volume_dilog(Complex z);
-
-
-Real Lobachevsky_via_dilog(Real t);
 
 SNAPPEA_NAMESPACE_END_SCOPE
 

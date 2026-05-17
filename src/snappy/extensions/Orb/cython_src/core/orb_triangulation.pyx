@@ -1,5 +1,7 @@
 from ..cache import SnapPyCache
 
+from typing import Union, Optional, SupportsIndex
+
 cdef class OrbTriangulation:
     """
 
@@ -120,7 +122,7 @@ cdef class OrbTriangulation:
                 'The orbifold or manifold file %s was not found.' % name)
         if remove_finite_vertices:
             self._remove_finite_vertices()
-            
+
     def _remove_finite_vertices(self):
         if self.c_triangulation == NULL:
             return
@@ -204,3 +206,58 @@ cdef class OrbTriangulation:
         else:
             raise ValueError("Acceptable cusp types are "
                              "['all', 'orientable', 'nonorientable'].")
+
+    def cone_fill(self,
+                  singular_order : Union[float, list[float]],
+                  singular_index : Optional[SupportsIndex] = None) -> None:
+        cdef EdgeClass* edge
+        cdef int i, n, num = self.c_triangulation.num_singular_arcs
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        if singular_index is not None:
+            singular_index = valid_index(
+                singular_index,
+                num,
+                'The specified singular arc (%s) does not exist.')
+
+            edge = self.c_triangulation.edge_list_begin.next
+
+            while edge != &(self.c_triangulation.edge_list_end):
+                if edge.singular_index == singular_index:
+                    edge.singular_order = singular_order
+                    break
+                edge = edge.next
+        else:
+            n = len(singular_order)
+            if n > num:
+                raise IndexError('You provided singular orders for too '
+                                 'many singualr arcs. There are only %d.' % num)
+
+            edge = self.c_triangulation.edge_list_begin.next
+
+            while edge != &(self.c_triangulation.edge_list_end):
+                i = edge.singular_index
+                if i < n:
+                    edge.singular_order = singular_order[i]
+                edge = edge.next
+
+    def singular_orders(self) -> list[float]:
+        cdef EdgeClass* edge
+        cdef int i, num = self.c_triangulation.num_singular_arcs
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        result = num * [ None ]
+
+        edge = self.c_triangulation.edge_list_begin.next
+
+        while edge != &(self.c_triangulation.edge_list_end):
+            i = edge.singular_index
+            if i >= 0:
+                result[edge.singular_index] = edge.singular_order
+            edge = edge.next
+
+        return result

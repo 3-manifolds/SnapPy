@@ -26,8 +26,19 @@ cdef extern from "kernel_prototypes.h":
     extern void remove_finite_vertices(c_Triangulation *manifold)
 
 cdef extern from "triangulation.h":
+    ctypedef struct EdgeClass:
+        EdgeClass* prev
+        EdgeClass* next
+
+        int singular_index
+        double singular_order
+
     ctypedef struct c_Triangulation "Triangulation":
+        EdgeClass edge_list_begin
+        EdgeClass edge_list_end
+
         int num_tetrahedra
+        int num_singular_arcs
         
 
 cdef extern from "unix_file_io.h":

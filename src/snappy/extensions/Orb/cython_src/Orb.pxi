@@ -22,6 +22,16 @@ cdef extern from "SnapPea.h":
     extern int get_num_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_nonor_cusps(c_Triangulation *manifold) except *
 
+cdef extern from "Orb.h":
+    extern void get_singular_orders(
+        c_Triangulation * manifold,
+        int * num_singular_arcs,
+        double ** singular_orders) except *
+    extern void set_singular_order(
+        c_Triangulation * manifold,
+        int singular_index,
+        double singular_order) except *
+
 cdef extern from "kernel_prototypes.h":
     extern void remove_finite_vertices(c_Triangulation *manifold)
 

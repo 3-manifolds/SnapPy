@@ -2594,4 +2594,8 @@ extern void free_triangulation_list( Triangulation **list, int num );
 }
 #endif
 
+#ifdef ORB
+#include "Orb.h"
+#endif
+
 #endif

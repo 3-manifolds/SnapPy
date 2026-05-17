@@ -530,3 +530,4 @@ int get_num_edge_classes(
 
 	return count;
 }
+

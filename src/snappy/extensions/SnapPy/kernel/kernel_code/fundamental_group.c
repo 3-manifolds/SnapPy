@@ -299,6 +299,15 @@ struct GroupPresentation
     CyclicWord  *itsRelations;
 
     /*
+     *	Added to store the parabolic word gotten by going are length-0 edges.
+     */
+
+#ifdef ORB
+    int         itsNumParabolicRelations;
+    CyclicWord	*itsParabolicRelations;
+#endif
+
+    /*
      *  Is this space a manifold or orbifold (e.g. FigureEight(5,1)
      *  or FigureEight(6,3)) as opposed to some other generalized
      *  Dehn filling (e.g. FigureEight(5.01, 1.0))?  We compute
@@ -548,12 +557,19 @@ GroupPresentation *compute_unsimplified_presentation(
 			 && solution_type != no_solution
 			 && solution_type != degenerate_solution);
 
+#ifdef ORB
+    new_choose_generators(manifold, FALSE); /* DJH */
+#else
     choose_generators(manifold, compute_vertices, FALSE);
-
+#endif
+    
     group->itsNumGenerators = manifold->num_generators;
 
     compute_matrix_generators(manifold, group);
 
+#ifdef ORB
+    /* need to set the singular_orders of the manifold to 0 if there  are none zero singular_orders */
+#endif
     compute_relations(manifold, group);
 
     initialize_original_generators(group, group->itsNumGenerators);
@@ -582,6 +598,17 @@ static void compute_matrix_generators(
     group->itsMTs = NEW_ARRAY(manifold->num_generators,
 			      MoebiusTransformation);
 
+#ifdef ORB
+    use_identities =
+        !(get_filled_solution_type(manifold) == nongeometric_solution
+         || get_filled_solution_type(manifold) == geometric_solution);
+    if (!use_identities) {
+        new_matrix_generators(manifold, group->itsMatrices); /* DJH */
+        Moebius_array_to_O31_array( group->itsMTs,
+                                    group->itsMatrices,
+                                    manifold->num_generators);
+    }
+#else
     /* MC 2013-03-20: now checks if matrix_generators fails.*/
     use_identities = ( solution_type == not_attempted
 		       || solution_type == no_solution );
@@ -597,6 +624,7 @@ static void compute_matrix_generators(
 				      manifold->num_generators);
 	}
     }
+#endif
     if ( use_identities )
     {
         int i;
@@ -615,6 +643,10 @@ static void compute_relations(
 {
     group->itsNumRelations  = 0;
     group->itsRelations     = NULL;
+#ifdef ORB
+    group->itsNumParabolicRelations = 0;
+    group->itsParabolicRelations    = NULL;
+#endif
 
     /*
      *  Compute the Dehn relations first, so they appear
@@ -665,7 +697,11 @@ static void compute_one_edge_relation(
      *  has at least two letters.  (They may cancel, but there are
      *  nominally at least two of them.)
      */
+#ifdef ORB
+    if (edge->num_incident_generators < 2 && !edge->is_singular)
+#else
     if (edge->num_incident_generators < 2)
+#endif
         uFatalError("compute_one_edge_relation", "fundamental_group");
 
     /*
@@ -674,9 +710,19 @@ static void compute_one_edge_relation(
     new_word = NEW_STRUCT(CyclicWord);
     new_word->itsLength         = 0;
     new_word->is_Dehn_relation  = FALSE;
-    new_word->next              = group->itsRelations;
-    group->itsRelations         = new_word;
-    group->itsNumRelations++;
+#ifdef ORB
+    if (edge->singular_order == 0) {
+        new_word->next               = group->itsParabolicRelations;
+        group->itsParabolicRelations = new_word;
+        group->itsNumParabolicRelations++;
+    }
+    else
+#endif
+    {
+        new_word->next              = group->itsRelations;
+        group->itsRelations         = new_word;
+        group->itsNumRelations++;
+    }
 
     /*
      *  We'll use a temporary dummy_letter to initialize
@@ -737,6 +783,29 @@ static void compute_one_edge_relation(
     if (new_word->itsLength != edge->num_incident_generators)
         uFatalError("compute_one_edge_relation", "fundamental_group");
 
+#ifdef ORB
+    if (edge->singular_order != 0)
+    {
+        int length = new_word->itsLength;
+        int n = edge->singular_order;
+        
+        for (int i = 1; i < n; i++) {
+            int j;
+            Letter *letter;
+            
+            for (letter = dummy_letter.next, j = 0;
+                 j < length;
+                 letter = letter->next, j++)
+            {
+                Letter * letter_copy = NEW_STRUCT(Letter);
+                letter_copy->itsValue = letter->itsValue;
+                INSERT_BEFORE(letter_copy, &dummy_letter);
+                new_word->itsLength++;
+            }
+        }   
+    }
+#endif
+    
     /*
      *  Give new_word a valid pointer to the circular doubly linked list
      *  of Letters, and then remove the temporary dummy_letter.
@@ -753,7 +822,16 @@ static void compute_Dehn_relations(
     Cusp    *cusp;
     int     i;
 
+#ifdef ORB
+    group->itsNumCusps      = 0;
+    for ( cusp = manifold->cusp_list_begin.next;
+          cusp != &manifold->cusp_list_end;
+          cusp = cusp->next )
+	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp )
+            group->itsNumCusps++;
+#else
     group->itsNumCusps      = manifold->num_cusps;
+#endif
 
     group->itsMeridians     = NULL;
     group->itsLongitudes    = NULL;
@@ -766,6 +844,11 @@ static void compute_Dehn_relations(
     {
         cusp = find_cusp(manifold, i);
 
+#ifdef ORB
+        if ( cusp->topology != torus_cusp && cusp->topology != Klein_cusp )
+            continue;
+#endif
+        
         /*
          *  First compute the meridian and longitude...
          */
@@ -1543,6 +1626,9 @@ static void simplify(
 static void insert_basepoints(
     GroupPresentation   *group)
 {
+#ifdef ORB
+    insert_basepoints_on_list(group->itsParabolicRelations);
+#endif
     insert_basepoints_on_list(group->itsMeridians);
     insert_basepoints_on_list(group->itsLongitudes);
     insert_basepoints_on_list(group->itsOriginalGenerators);
@@ -1582,6 +1668,9 @@ static void insert_basepoint_in_word(
 static void remove_basepoints(
     GroupPresentation   *group)
 {
+#ifdef ORB
+    remove_basepoints_on_list(group->itsParabolicRelations);
+#endif
     remove_basepoints_on_list(group->itsMeridians);
     remove_basepoints_on_list(group->itsLongitudes);
     remove_basepoints_on_list(group->itsOriginalGenerators);
@@ -2668,6 +2757,9 @@ static Boolean insert_word_into_group(
 
     return
     (   insert_word_into_list(group->itsRelations,          word) == TRUE
+#ifdef ORB
+     || insert_word_into_list(group->itsParabolicRelations, word) == TRUE
+#endif
      || insert_word_into_list(group->itsMeridians,          word) == TRUE
      || insert_word_into_list(group->itsLongitudes,         word) == TRUE
      || insert_word_into_list(group->itsOriginalGenerators, word) == TRUE);
@@ -3637,6 +3729,9 @@ static void invert_generator_in_group(
     Moebius_invert(&group->itsMTs[a - 1], &group->itsMTs[a - 1]);
 
     invert_generator_on_list(group->itsRelations,          a);
+#ifdef ORB
+    invert_generator_on_list(group->itsParabolicRelations, a);
+#endif
     invert_generator_on_list(group->itsMeridians,          a);
     invert_generator_on_list(group->itsLongitudes,         a);
     invert_generator_on_list(group->itsOriginalGenerators, a);
@@ -3980,6 +4075,9 @@ static void cancel_inverses(
      *  for the expressions for the original generators.
      */
 
+#ifdef ORB
+    cancel_inverses_word_list(group->itsParabolicRelations);
+#endif
     cancel_inverses_word_list(group->itsMeridians);
     cancel_inverses_word_list(group->itsLongitudes);
     cancel_inverses_word_list(group->itsOriginalGenerators);
@@ -4133,6 +4231,10 @@ static void handle_slide(
      *  diagram, but we want to keep track of them anyhow, and similarly
      *  for the expressions for the original generators.
      */
+
+#ifdef ORB
+    handle_slide_word_list(group->itsParabolicRelations, a, b);
+#endif
     handle_slide_word_list(group->itsMeridians,          a, b);
     handle_slide_word_list(group->itsLongitudes,         a, b);
     handle_slide_word_list(group->itsOriginalGenerators, a, b);
@@ -4407,6 +4509,10 @@ static void remove_generator(
      *  diagram, but we want to keep them up to date.
      */
 
+#ifdef ORB
+    remove_generator_from_list( group->itsParabolicRelations,
+                                dead_generator);
+#endif
     remove_generator_from_list( group->itsMeridians,
                                 dead_generator);
     remove_generator_from_list( group->itsLongitudes,
@@ -4491,6 +4597,9 @@ static void renumber_generator(
      *  diagram, but we want to keep them up to date.
      */
 
+#ifdef ORB
+    renumber_generator_on_word_list(group->itsParabolicRelations, old_index, new_index);
+#endif
     renumber_generator_on_word_list(group->itsMeridians,          old_index, new_index);
     renumber_generator_on_word_list(group->itsLongitudes,         old_index, new_index);
     renumber_generator_on_word_list(group->itsOriginalGenerators, old_index, new_index);
@@ -4645,6 +4754,13 @@ int fg_get_num_relations(
     return group->itsNumRelations;
 }
 
+#ifdef ORB
+int fg_get_num_parabolic_relations(
+        GroupPresentation       *group)
+{
+        return group->itsNumParabolicRelations;
+}
+#endif
 
 int fg_get_num_cusps(
     GroupPresentation   *group)
@@ -4663,6 +4779,17 @@ int *fg_get_relation(
     return fg_get_cyclic_word(group->itsRelations, which_relation);
 }
 
+#ifdef ORB
+int *fg_get_parabolic_relation(
+        GroupPresentation       *group,
+        int                                     which_relation)
+{
+        if (which_relation < 0 || which_relation >= group->itsNumParabolicRelations)
+                uFatalError("fg_get_parabolic_relation", "fundamental_group");
+
+        return fg_get_cyclic_word(group->itsParabolicRelations, which_relation);
+}
+#endif
 
 int *fg_get_meridian(
     GroupPresentation   *group,
@@ -4768,6 +4895,9 @@ void free_group_presentation(
             my_free(group->itsMTs);
 
         free_word_list(group->itsRelations);
+#ifdef ORB
+        free_word_list(group->itsParabolicRelations);
+#endif
         free_word_list(group->itsMeridians);
         free_word_list(group->itsLongitudes);
         free_word_list(group->itsOriginalGenerators);

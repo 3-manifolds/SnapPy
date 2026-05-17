@@ -591,7 +591,8 @@ class OrbExtensionSpec:
         os.path.join(kernel_path, 'headers'),
         os.path.join(kernel_path, 'headers', 'precision', 'double'),
         os.path.join(kernel_path, 'addl_code'),
-        os.path.join(kernel_path, 'unix_kit')
+        os.path.join(kernel_path, 'unix_kit'),
+        os.path.join('src', 'snappy')
     ]
 
     cython_paths = [
@@ -601,8 +602,10 @@ class OrbExtensionSpec:
     ]
 
     snappy_dependencies = compute_dependencies(
-        sources=[os.path.join(SnapPyExtensionSpec.kernel_path, 'addl_code', 'dilog.c'),
-                 os.path.join(SnapPyExtensionSpec.kernel_path, 'unix_kit', 'ostream.c')],
+        sources=(
+            [os.path.join(SnapPyExtensionSpec.kernel_path, 'addl_code', 'dilog.c'),
+             os.path.join(SnapPyExtensionSpec.kernel_path, 'unix_kit', 'ostream.c') ] +
+            glob(os.path.join(SnapPyExtensionSpec.kernel_path, 'kernel_code', '*.c'))),
         src=SnapPyExtensionSpec.base_path,
         dst=base_path)
 

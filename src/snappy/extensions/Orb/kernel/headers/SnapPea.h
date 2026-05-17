@@ -2573,8 +2573,6 @@ extern void two_bridge(	Triangulation *manifold,
 /************************************************************************/
 
 extern double volume(Triangulation *manifold, int *precision);
-extern double my_volume(Triangulation *manifold, Boolean *ok ); /* DJH */
-extern double  tetrahedron_volume(double *angles, Boolean *ok ); /* DJH */
 /*
  *	Computes and returns the volume of the manifold.
  *	If the pointer "precision" is not NULL, estimates the number

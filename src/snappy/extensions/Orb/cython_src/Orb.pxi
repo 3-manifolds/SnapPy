@@ -16,7 +16,6 @@ cdef extern from "SnapPea.h":
     extern void free_triangulation(c_Triangulation *manifold) except *
 
     extern c_SolutionType find_structure(c_Triangulation *manifold, Boolean) except *
-    extern Real my_volume(c_Triangulation *manifold, Boolean * ok) except *
 
     extern int get_num_cusps(c_Triangulation *manifold) except *
     extern int get_num_or_cusps(c_Triangulation *manifold) except *
@@ -31,6 +30,7 @@ cdef extern from "Orb.h":
         c_Triangulation * manifold,
         int singular_index,
         double singular_order) except *
+    extern Real orb_volume(c_Triangulation *manifold, Boolean * ok) except *
 
 cdef extern from "kernel_prototypes.h":
     extern void remove_finite_vertices(c_Triangulation *manifold)

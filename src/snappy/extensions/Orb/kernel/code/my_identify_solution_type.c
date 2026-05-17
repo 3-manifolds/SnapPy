@@ -80,13 +80,13 @@ void my_identify_solution_type(
 		return;
 	}
 
-	if (my_solution_is_geometric(manifold) && my_volume(manifold, &ok) > VOLUME_EPSILON )
+	if (my_solution_is_geometric(manifold) && orb_volume(manifold, &ok) > VOLUME_EPSILON )
 	{
 		manifold->solution_type[filled] = geometric_solution;
 		return;
 	}
 
-	if (my_volume(manifold, &ok) > VOLUME_EPSILON)
+	if (orb_volume(manifold, &ok) > VOLUME_EPSILON)
 	{
 		manifold->solution_type[filled] = nongeometric_solution;
 		return;

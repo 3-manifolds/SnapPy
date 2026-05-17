@@ -43,4 +43,4 @@ cdef class Orbifold(OrbTriangulation):
 
         find_structure(self.c_triangulation, False)
 
-        return self._number_(Real2Number(my_volume(self.c_triangulation, &ok)))
+        return self._number_(Real2Number(orb_volume(self.c_triangulation, &ok)))

@@ -6,7 +6,7 @@ static Complex U( Complex z, double *angles, Boolean *ok );
 
 /* Volume computed using formula in "A volume forumla for generalized hyperbolic tetrahedra" by Ushijima */
 
-extern double my_volume( Triangulation *manifold, Boolean *ok )
+extern double orb_volume( Triangulation *manifold, Boolean *ok )
 {
   Tetrahedron *tet;
   double       volume=0,angles[6], tet_vol=0;
@@ -28,7 +28,7 @@ extern double my_volume( Triangulation *manifold, Boolean *ok )
 		if (!flat_tet(tet))
 		{	
 			*ok = FALSE;
-			uFatalError("my_volume", "my_volume");
+			uFatalError("orb_volume", "orb_volume");
 		}
 	}
 

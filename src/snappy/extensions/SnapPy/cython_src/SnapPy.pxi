@@ -491,8 +491,6 @@ cdef extern from "SnapPea.h":
     extern c_SolutionType remove_Dehn_fillings(c_Triangulation *manifold) except *
     extern Real index_to_hue(int index) except *
     extern Real horoball_hue(int index) except *
-    extern char *get_triangulation_name(c_Triangulation *manifold) except *
-    extern void set_triangulation_name(c_Triangulation *manifold, char *new_name) except *
     extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold) except *
     extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold) except *
     extern int get_num_tetrahedra(c_Triangulation *manifold) except *

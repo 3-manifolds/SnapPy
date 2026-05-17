@@ -261,3 +261,53 @@ cdef class OrbTriangulation:
             edge = edge.next
 
         return result
+
+    def __repr__(self):
+        if self.c_triangulation is NULL:
+            return 'Empty Triangulation'
+        else:
+            result = self.name()
+            orders = self.singular_orders()
+            if len(orders) > 0:
+                result += '('
+                result += ','.join('%g' % o for o in orders)
+                result += ')'
+
+            # Geometrically it makes sense to look the orbifold
+            # resulting from Dehn-filling.
+            #
+            # Orb cannot find incomplete structures.
+            # So when we do OrbTriangulation.with_hyperbolic_structure(),
+            # we should probably throw an error if there are incomplete
+            # cusps.
+
+            return result + '<MISSING CUSP FILLINGS>'
+
+    def name(self) -> str:
+        """
+        Return the name of the triangulation.
+
+        >>> M = Triangulation('4_1')
+        >>> M.name()
+        '4_1'
+        """
+        if self.c_triangulation is NULL:
+            return
+
+        b : bytes = get_triangulation_name(self.c_triangulation)
+        return b.decode()
+
+    def set_name(self, new_name : str) -> None:
+        """
+        Give the triangulation a new name.
+
+        >>> M = Triangulation('4_1')
+        >>> M.set_name('figure-eight-comp')
+        >>> M
+        figure-eight-comp(0,0)
+        """
+        b_new_name = to_bytes(new_name)
+        cdef char* c_new_name = b_new_name
+        if self.c_triangulation is NULL:
+            raise ValueError('The empty triangulation has no name.')
+        set_triangulation_name(self.c_triangulation, c_new_name)

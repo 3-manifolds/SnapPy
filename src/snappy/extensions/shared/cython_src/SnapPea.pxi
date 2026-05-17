@@ -32,6 +32,9 @@ cdef extern from "SnapPea.h":
 
     ctypedef struct c_GroupPresentation "GroupPresentation"
 
+    extern char *get_triangulation_name(c_Triangulation *manifold) except *
+    extern void set_triangulation_name(c_Triangulation *manifold, char *new_name) except *
+
     extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators, Boolean try_hard_to_shorten_relators) except *
 
     extern int fg_get_num_generators(c_GroupPresentation *group) except *

@@ -184,7 +184,6 @@ struct EdgeClass
         double          singular_order; /* DJH */
 	double		old_singular_order; /* DJH */
         double          inner_product[4]; /* DJH */
-        Boolean         is_coordinate;
 	int					order;					/* number of incident edges of tetrahedra	*/
 	Tetrahedron			*incident_tet;			/* one particular incident tetrahedron...	*/
 	EdgeIndex			incident_edge_index;	/* ...and the index of the incident edge	*/

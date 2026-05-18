@@ -330,8 +330,6 @@ extern void orient_edge_classes(Triangulation *manifold);
  *	incident Tetrahedron.
  */
 
-extern void strip_non_singular_edge_classes( Triangulation *manifold ); /* DJH */
-extern void create_edge_classes_where_necessary( Triangulation *manifold ); /* DJH */
 extern void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e); /* DJH */
 
 /************************************************************************/

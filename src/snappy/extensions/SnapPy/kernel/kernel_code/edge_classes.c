@@ -53,7 +53,10 @@
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static void initialize_tet_edge_classes(Triangulation *manifold);
-static void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e);
+#ifndef ORB
+static
+#endif
+void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e);
 
 void create_edge_classes(
     Triangulation   *manifold)
@@ -101,8 +104,10 @@ static void initialize_tet_edge_classes(
             tet->edge_class[e] = NULL;
 }
 
-
-static void create_one_edge_class(
+#ifndef ORB
+static
+#endif
+void create_one_edge_class(
     Triangulation   *manifold,
     Tetrahedron     *tet,
     EdgeIndex       e)
@@ -126,11 +131,17 @@ static void create_one_edge_class(
     /*
      *  Initialize the fields of the EdgeClass.
      */
-
     new_edge_class->order                   = 0;
     new_edge_class->incident_tet            = tet;
     new_edge_class->incident_edge_index     = e;
 
+#ifdef ORB
+    new_edge_class->is_singular             = FALSE;
+    new_edge_class->singular_order          = 1;
+    new_edge_class->old_singular_order      = 1;
+    new_edge_class->singular_index          = -1;
+#endif
+    
     /*
      *  Walk around the edge class, setting the tet->edge_class
      *  field for each edge we encounter.

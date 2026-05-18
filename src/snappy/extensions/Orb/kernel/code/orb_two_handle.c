@@ -16,6 +16,9 @@ static void	free_extras( Triangulation *manifold );
 static void	set_inverse_neighbor_and_gluing(Tetrahedron     *tet,FaceIndex       f);
 static Boolean	has_fillable_cusps( Triangulation *manifold );
 
+static void strip_non_singular_edge_classes( Triangulation *manifold );
+static void create_edge_classes_where_necessary( Triangulation *manifold );
+
 extern FuncResult attach_handle( Triangulation *manifold, Boolean singular_cores )
 {
 	if (	all_Dehn_coefficients_are_integers(manifold)==FALSE ||
@@ -484,5 +487,52 @@ static void set_inverse_neighbor_and_gluing(
 		= tet;
 	tet->neighbor[f]->gluing  [EVALUATE(tet->gluing[f], f)]
 		= inverse_permutation[tet->gluing[f]];
+}
+
+static void strip_non_singular_edge_classes( Triangulation *manifold ) /* DJH */
+{
+	Tetrahedron	*tet;
+	EdgeClass	*edge,
+			*dead_edge_class;
+	int		e;
+
+	for(	tet = manifold->tet_list_begin.next;
+		tet!=&manifold->tet_list_end;
+		tet = tet->next )
+	{
+		for( e = 0; e < 6; e++ )
+		if (tet->edge_class[e]!=NULL && tet->edge_class[e]->is_singular == FALSE )
+			tet->edge_class[e] = NULL;
+	}
+
+        for(	edge = manifold->edge_list_begin.next;
+		edge!=&manifold->edge_list_end; )
+        {
+                dead_edge_class = edge;
+		edge = edge->next;
+
+		if (dead_edge_class->is_singular == FALSE)
+		{
+                	REMOVE_NODE(dead_edge_class);
+                	my_free(dead_edge_class);
+		}
+        }
+}
+
+
+static void create_edge_classes_where_necessary( Triangulation *manifold ) /* DJH */
+{
+	Tetrahedron	*tet;
+	int		e;
+
+	for (	tet = manifold->tet_list_begin.next;
+		tet!=&manifold->tet_list_end;
+		tet = tet->next)
+
+		for (e = 0; e < 6; e++)
+
+			if (tet->edge_class[e] == NULL)
+
+				create_one_edge_class(manifold, tet, e);
 }
 

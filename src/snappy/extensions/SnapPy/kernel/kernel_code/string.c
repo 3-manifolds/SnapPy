@@ -14,6 +14,9 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 char *my_strdup(const char *s1)
 {
+    if (s1 == NULL)
+        return NULL;
+
     char *result = NEW_ARRAY(strlen(s1) + 1, char);
     strcpy(result, s1);
     return result;

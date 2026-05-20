@@ -204,7 +204,7 @@ Cusp * create_one_cusp(
      *
      *      (1) mark_fake_cusps to compute the Euler characteristic.
      *
-     *      (2) compute_cusp_orientability to set the cusp->orientability.
+     *      (2) compute_cusp_orientabilities to set the cusp->orientability.
      *
      *      (3) call peripheral_curves() to set the cusp->orientability if
      *          the cusp's Euler characteristic is zero,
@@ -510,6 +510,14 @@ Boolean mark_fake_cusps(
                 break;
 
             case 2:
+                /*
+                 * ORB-TODO:
+                 * We probably want to treat cusps with
+                 * cone points (num_incident_singular_edge != 0)
+                 * as real cusps.
+                 *
+                 * Note: need to call orb_cusps_fill_incident_singular_edges first.
+                 */
                 cusp->index = --fake_cusp_count;
                 /*
                  *  2026/06/01 MG: used to set Cusp::is_finite = TRUE

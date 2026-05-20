@@ -5,6 +5,7 @@ import snappy.tests.io
 import snappy.tests.signatures
 import snappy.tests.precisions
 import snappy.tests.orb
+import snappy.tests.orb_legacy
 import snappy.tests.misc
 
 modules = [
@@ -12,7 +13,8 @@ modules = [
     snappy.tests.signatures,
     snappy.tests.precisions,
     snappy.tests.misc,
-    snappy.tests.orb
+    snappy.tests.orb,
+    snappy.tests.orb_legacy
 ]
 
 def run_doctests(verbose=False, print_info=True):

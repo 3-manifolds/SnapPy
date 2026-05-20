@@ -11,6 +11,11 @@
  *    of the Triangulation *manifold.  (The Dehn filling coefficients
  *    are irrelevant.)
  *
+ *        void orb_set_use_orb_conventions(Boolean use_orb_conventions)
+ *
+ *    which changes the choice of initial tetrahedron to match that of
+ *    Orb. This is intended only testing against Orb only.
+ *
  *    A function which needs to use the generating set must first call
  *    choose_generators().  [Note that this differs from the previous
  *    SnapPea 2.0- convention, under which all functions which changed the
@@ -107,7 +112,6 @@ static void kill_the_incident_generator(Triangulation *manifold, EdgeClass *edge
 static void    merge_equivalent_generators(Triangulation *manifold);
 static void merge_incident_generators(Triangulation *manifold, EdgeClass *edge);
 static void eliminate_empty_relations(Triangulation *manifold);
-
 
 void choose_generators(
     Triangulation    *manifold,
@@ -380,6 +384,16 @@ static void visit_tetrahedra(
         uFatalError("visit_tetrahedra", "choose_generators.c");
 }
 
+#ifdef ORB
+static Boolean orb_use_orb_conventions = FALSE;
+
+void orb_set_use_orb_conventions(
+    Boolean use_orb_conventions)
+{
+    orb_use_orb_conventions = use_orb_conventions;
+}
+
+#endif
 
 static void initial_tetrahedron(
     Triangulation    *manifold,
@@ -392,6 +406,9 @@ static void initial_tetrahedron(
     *initial_tet = manifold->tet_list_begin.next;
     *best_edge = 0;
 
+    if (orb_use_orb_conventions)
+        return;
+    
     /*
      *    2000/02/11 JRW  Can we choose the initial tetrahedron in such
      *    a way that if we happen to have the canonical triangulation
@@ -737,7 +754,11 @@ static void    eliminate_trivial_generators(
                 edge != &manifold->edge_list_end;
                 edge = edge->next)
 
+#ifdef ORB
+            if (edge->num_incident_generators == 1 && !edge->orb_is_singular)
+#else                
             if (edge->num_incident_generators == 1)
+#endif
             {
                 kill_the_incident_generator(manifold, edge);
                 progress = TRUE;
@@ -827,8 +848,25 @@ static void kill_the_incident_generator(
      */
 
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->num_incident_generators--;
+
+#ifdef ORB
+    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->num_incident_generators==0)
+        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->active_relation = FALSE;
+#endif
+      
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face] ]->num_incident_generators--;
+
+#ifdef ORB
+    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->num_incident_generators==0)
+        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->active_relation = FALSE;
+#endif
+
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]]->num_incident_generators--;
+
+#ifdef ORB
+    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->num_incident_generators==0)
+        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->active_relation = FALSE;
+#endif
 
     /*
      *    Decrement *number_of_generators.
@@ -890,7 +928,12 @@ static void    merge_equivalent_generators(
             edge != &manifold->edge_list_end;
             edge = edge->next)
 
+#ifdef ORB
+        if (edge->num_incident_generators == 2 &&
+            !edge->orb_is_singular)
+#else
         if (edge->num_incident_generators == 2)
+#endif
             merge_incident_generators(manifold, edge);
 }
 

@@ -559,6 +559,9 @@ static FuncResult remove_edge_of_order_one(
                 right_face,
                 bottom_face;
 
+    if (edge->orb_is_singular)
+        return func_failed;
+
     /*
      *  remove_edge_of_order_one() contains no explicit low-level
      *  retriangulation.  Instead, each call to remove_edge_of_order_one()
@@ -680,6 +683,9 @@ static Boolean this_way_works(
     edgeA = tet1->edge_class[edge_between_vertices[bottom1][ left1]];
     edgeB = tet1->edge_class[edge_between_vertices[bottom1][right1]];
 
+    if (edgeA->orb_is_singular && edgeB->orb_is_singular)
+        return FALSE;
+    
     return (edgeA != edgeB);
 }
 
@@ -738,6 +744,9 @@ FuncResult cancel_tetrahedra(
     if (edge->order != 2)
         uFatalError("cancel_tetrahedra", "simplify_triangulation");
 
+    if (edge->orb_is_singular)
+        return func_failed;
+    
     /*
      *  Let tet[0] and tet[1] be the two Tetrahedra incident
      *  to EdgeClass *edge, and v[i][j] be their vertices.
@@ -811,14 +820,18 @@ FuncResult cancel_tetrahedra(
     for (i = 0; i < 2; i++)
         outer_edge[i] = tet[i]->edge_class[edge_between_vertices[v[i][2]][v[i][3]]];
 
+    if (outer_edge[0]->orb_is_singular && outer_edge[1]->orb_is_singular)
+        return func_failed;
+    
     if (outer_edge[0] == outer_edge[1])
     {
         for (i = 0; i < 2; i++)
 
             if (get_cusp_topology(tet[0]->cusp[v[0][i]]) == sphere_cusp
-             && tet[0]->neighbor[v[0][!i]] == tet[1]
-             && tet[0]->neighbor[v[0][ i]] != tet[1]
-             && tet[0]->gluing[v[0][!i]] == tet[0]->gluing[v[0][2]])
+                && tet[0]->cusp[v[0][i]]->orb_num_incident_singular_edges == 0
+                && tet[0]->neighbor[v[0][!i]] == tet[1]
+                && tet[0]->neighbor[v[0][ i]] != tet[1]
+                && tet[0]->gluing[v[0][!i]] == tet[0]->gluing[v[0][2]])
 
                 return cancel_tetrahedra_with_finite_vertex(tet[0], v[0][i], edge, where_to_resume, num_tetrahedra_ptr);
         
@@ -930,6 +943,13 @@ FuncResult cancel_tetrahedra(
 
     outer_edge[0]->order += outer_edge[1]->order;
 
+    if (outer_edge[1]->orb_is_singular)
+    {
+        outer_edge[0]->orb_is_singular = TRUE;
+        outer_edge[0]->orb_singular_index = outer_edge[1]->orb_singular_index;
+        outer_edge[0]->orb_singular_order = outer_edge[1]->orb_singular_order;
+    }
+    
     for (i = 0; i < 2; i++)
         for (j = 0; j < 6; j++)
             tet[i]->edge_class[j]->order--;
@@ -1042,7 +1062,8 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
     nbr     = tet->neighbor[!finite_vertex];
     gluing  = tet->gluing  [!finite_vertex];
 
-    if (get_cusp_topology(tet->cusp[finite_vertex]) != sphere_cusp)
+    if (get_cusp_topology(tet->cusp[finite_vertex]) != sphere_cusp ||
+        tet->cusp[finite_vertex]->orb_num_incident_singular_edges != 0)
         uFatalError("cancel_tetrahedra_with_finite_vertex", "simplify_triangulation");
 
     for (f = 0; f < 4; f++)
@@ -1204,6 +1225,9 @@ FuncResult three_to_two(
     if (edge->order != 3)
         uFatalError("three_to_two", "simplify_triangulation");
 
+    if (edge->orb_is_singular)
+        return func_failed;
+    
     /*
      *  The three Tetrahedra incident to the EdgeClass *edge will be
      *  called tet[0], tet[1] and tet[2].  The vertices of tet[i] will
@@ -1725,6 +1749,11 @@ FuncResult two_to_three(
             return func_failed;
 
     /*
+     * ORB-TODO: Update shape.
+     *
+     */
+    
+    /*
      *  Allocate the three new Tetrahedra.
      */
 
@@ -1917,6 +1946,10 @@ FuncResult two_to_three(
         }
 
     /*
+     * ORB-TODO: keep shapes
+     */
+    
+    /*
      *  Compute the shapes of the new Tetrahedra iff
      *  the old tetrahedra had shapes.
      */
@@ -2026,6 +2059,10 @@ FuncResult two_to_three(
                 new_tet[i]->canonize_info->face_status[j]
                     = tet[j]->canonize_info->face_status[v[j][i]];
 
+        /*
+         * ORB-TODO: inside_cone_face -> special_inside_cone_face???
+         */
+        
         /*
          *  Set each new "interior" face to have face_status inside_cone_face.
          */
@@ -2414,6 +2451,9 @@ static FuncResult edges_of_order_four(
     PositionedTet   ptet0,
                     ptet;
 
+    if (edge->orb_is_singular)
+        return func_failed;
+    
     /*
      *  *edge is an EdgeClass of order 4.  Look for another EdgeClass
      *  of order 4 which shares a triangle with *edge.  If the six
@@ -2432,11 +2472,13 @@ static FuncResult edges_of_order_four(
     ptet = ptet0;
     do
     {
-        if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]]->order == 4)
+        EdgeClass *edge0 = ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]];
+        if (edge0->order == 4 && !edge0->orb_is_singular)
             if (try_adjacent_fours(ptet.tet, ptet.near_face, ptet.bottom_face, where_to_resume, num_tetrahedra_ptr) == func_OK)
                 return func_OK;
 
-        if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]]->order == 4)
+        EdgeClass *edge1 = ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]];
+        if (edge1->order == 4 && !edge1->orb_is_singular)
             if (try_adjacent_fours(ptet.tet, ptet.near_face, ptet.right_face, where_to_resume, num_tetrahedra_ptr) == func_OK)
                 return func_OK;
 
@@ -2506,6 +2548,9 @@ static FuncResult try_adjacent_fours(
     class0 = tet0->edge_class[edge_between_faces[f0][f2]];
     class1 = tet0->edge_class[edge_between_faces[f0][f3]];
 
+    if (class0->orb_is_singular || class1->orb_is_singular)
+        uFatalError("try_adjacent_four", "simplify_triangulation");
+
     /*
      *  The following two-to-three move increases the number of
      *  Tetrahedra by one, but it creates two EdgeClasses of
@@ -2554,7 +2599,7 @@ static FuncResult create_new_order_four(
     PositionedTet   ptet0,
                     ptet;
 
-    if (edge->order != 4)
+    if (edge->order != 4 || edge->orb_is_singular)
         return func_failed;
 
     /*

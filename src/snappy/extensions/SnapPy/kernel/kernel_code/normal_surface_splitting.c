@@ -330,7 +330,8 @@ FuncResult split_along_normal_surface(
              *  Note:  If pieces[i] is a closed manifold,
              *  remove_finite_vertices() will drill out an arbitrary cusp.
              */
-            remove_finite_vertices(pieces[i]);
+            remove_finite_vertices(pieces[i],
+                                   /* create_new_cusp_if_necessary = */ TRUE);
 
             /*
              *  Install peripheral curves only for those cusps which

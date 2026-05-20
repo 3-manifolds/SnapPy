@@ -346,7 +346,8 @@ Triangulation *triangulate_link_complement(
      *  into the cusps.
      */
     if (remove_extra_vertices)
-	remove_finite_vertices(manifold);
+	remove_finite_vertices(manifold,
+                               /* create_new_cusp_if_necessary */ TRUE);
     else{
 	number_the_tetrahedra(manifold);
 	number_the_edge_classes(manifold);

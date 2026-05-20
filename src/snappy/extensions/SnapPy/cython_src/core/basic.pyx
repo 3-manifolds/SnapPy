@@ -13,6 +13,8 @@ import math
 import string
 import time
 import typing
+from typing import Union, Optional, SupportsIndex
+
 python_major_version = sys.version_info.major
 
 cdef extern from "real_type.h":
@@ -186,6 +188,7 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
+# ORB-TODO: We should expose string constants to the user.
 SolutionType = [
     'not attempted',
     'all tetrahedra positively oriented',
@@ -194,7 +197,13 @@ SolutionType = [
     'contains degenerate tetrahedra',
     'unrecognized solution type',
     'no solution found',
-    'tetrahedra shapes were inserted']
+    'tetrahedra shapes were inserted',
+
+# ORB-TODO: figure whether these are good names. Whether we want to group orb_partially_flat_solution and nongeometric.
+    'partially flat tetrahedra', # orb_partially_flat_solution
+    'step failed', # orb_step_failed
+    'invalid solution' # orb_invalid_solution
+]
 
 
 # SnapPea memory usage
@@ -345,15 +354,23 @@ class CuspInfo(Info):
                 return ('Cusp %-2d: complete %s of shape %s' %
                         (self.index, self.topology, self.shape) )
             else:
-                return ('Cusp %-2d: %s, not filled'%
+                return ('Cusp %-2d: %s, not filled' %
                         (self.index, self.topology) )
         else:
-            return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s'%
+            return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s' %
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
                  'holonomy precision' : 'holonomy_accuracy',
                  'shape precision'    : 'shape_accuracy'}
 
+class SingularEdgeInfo(Info):
+    def __repr__(self):
+        if self.singular_order == 0.0:
+            return ('Edge %-2d: Annular cusp (singular order = 0)' %
+                    self.index)
+        else:
+            return ('Edge %-2d: Singular of order = %g' %
+                    (self.index, self.singular_order))
 
 class DualCurveInfo(Info):
     def __repr__(self):
@@ -551,7 +568,9 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
         # hyperbolic structure.
         count_cusps(c_triangulation)
         if get_num_fake_cusps(c_triangulation) > 0:
-            remove_finite_vertices(c_triangulation)
+            create_new_cusp_if_necessary = True
+            remove_finite_vertices(
+                c_triangulation, create_new_cusp_if_necessary)
             count_cusps(c_triangulation)
 
         find_complete_hyperbolic_structure(c_triangulation)

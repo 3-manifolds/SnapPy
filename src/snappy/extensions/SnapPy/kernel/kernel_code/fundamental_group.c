@@ -303,6 +303,19 @@ struct GroupPresentation
      */
 
 #ifdef ORB
+    /*
+     * ORB-TODO:
+     * itsParabolicRelations is a bad name: they are really
+     * words corresponding to parabolic elements.
+     *
+     * Also: we probably want to include these for each
+     * singular edge and order by singular index.
+     * Depending on whether singular_order = 0, this word
+     * corresponds to a parabolic element or torsion element.
+     *
+     * What's a good name?
+     */
+
     int         itsNumParabolicRelations;
     CyclicWord	*itsParabolicRelations;
 #endif
@@ -557,19 +570,18 @@ GroupPresentation *compute_unsimplified_presentation(
 			 && solution_type != no_solution
 			 && solution_type != degenerate_solution);
 
-#ifdef ORB
-    new_choose_generators(manifold, FALSE); /* DJH */
-#else
+    /*
+     * ORB-TODO: Make choose_generators compute the corners
+     * when there Triangulation::orb_solution_Type instead of
+     * Triangulation::solution_type.
+     */
     choose_generators(manifold, compute_vertices, FALSE);
-#endif
-    
+
     group->itsNumGenerators = manifold->num_generators;
 
     compute_matrix_generators(manifold, group);
 
-#ifdef ORB
-    /* need to set the singular_orders of the manifold to 0 if there  are none zero singular_orders */
-#endif
+    /* ORB-TODO: need to set the singular_orders of the manifold to 0 if there  are none zero singular_orders (???) */
     compute_relations(manifold, group);
 
     initialize_original_generators(group, group->itsNumGenerators);
@@ -599,16 +611,28 @@ static void compute_matrix_generators(
 			      MoebiusTransformation);
 
 #ifdef ORB
+    /*
+     *  ORB-TODO:
+     *
+     *  We need to inspect Triangulation::orb_solution_type as well
+     *  and use either shapes or vertex Gram matrices to compute the
+     *  face-pairing matrices.
+
+     *  This is the code that Orb used to determine whether to
+     *  generate the matrices:
+      
     use_identities =
         !(get_filled_solution_type(manifold) == nongeometric_solution
          || get_filled_solution_type(manifold) == geometric_solution);
     if (!use_identities) {
-        new_matrix_generators(manifold, group->itsMatrices); /* DJH */
+        new_matrix_generators(manifold, group->itsMatrices);
         Moebius_array_to_O31_array( group->itsMTs,
                                     group->itsMatrices,
                                     manifold->num_generators);
-    }
-#else
+                                    }
+    */
+#endif
+
     /* MC 2013-03-20: now checks if matrix_generators fails.*/
     use_identities = ( solution_type == not_attempted
 		       || solution_type == no_solution );
@@ -624,7 +648,7 @@ static void compute_matrix_generators(
 				      manifold->num_generators);
 	}
     }
-#endif
+
     if ( use_identities )
     {
         int i;
@@ -698,7 +722,7 @@ static void compute_one_edge_relation(
      *  nominally at least two of them.)
      */
 #ifdef ORB
-    if (edge->num_incident_generators < 2 && !edge->is_singular)
+    if (edge->num_incident_generators < 2 && !edge->orb_is_singular)
 #else
     if (edge->num_incident_generators < 2)
 #endif
@@ -711,7 +735,8 @@ static void compute_one_edge_relation(
     new_word->itsLength         = 0;
     new_word->is_Dehn_relation  = FALSE;
 #ifdef ORB
-    if (edge->is_singular && edge->singular_order == 0) {
+    if (edge->orb_is_singular && edge->orb_singular_order == 0)
+    {
         new_word->next               = group->itsParabolicRelations;
         group->itsParabolicRelations = new_word;
         group->itsNumParabolicRelations++;
@@ -784,10 +809,10 @@ static void compute_one_edge_relation(
         uFatalError("compute_one_edge_relation", "fundamental_group");
 
 #ifdef ORB
-    if (edge->is_singular && edge->singular_order != 0.0)
+    if (edge->orb_is_singular && edge->orb_singular_order != 0.0)
     {
         int length = new_word->itsLength;
-        int n = edge->singular_order;
+        int n = edge->orb_singular_order;
         
         for (int i = 1; i < n; i++) {
             int j;
@@ -827,8 +852,11 @@ static void compute_Dehn_relations(
     for ( cusp = manifold->cusp_list_begin.next;
           cusp != &manifold->cusp_list_end;
           cusp = cusp->next )
-	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp )
+    {
+        CuspTopology topology = get_cusp_topology(cusp);
+	if ( topology == torus_cusp || topology == Klein_cusp )
             group->itsNumCusps++;
+    }
 #else
     group->itsNumCusps      = manifold->num_cusps;
 #endif
@@ -845,7 +873,9 @@ static void compute_Dehn_relations(
         cusp = find_cusp(manifold, i);
 
 #ifdef ORB
-        if ( cusp->topology != torus_cusp && cusp->topology != Klein_cusp )
+        CuspTopology topology = get_cusp_topology(cusp);
+
+        if ( topology != torus_cusp && topology != Klein_cusp )
             continue;
 #endif
         

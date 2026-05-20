@@ -6,7 +6,6 @@
  *      void    create_edge_classes(Triangulation *manifold);
  *      void    replace_edge_classes(Triangulation *manifold);
  *      void    orient_edge_classes(Triangulation *manifold);
- *
  *  which are used within the kernel.
  *
  *  create_edge_classes() adds EdgeClasses to a partially
@@ -135,13 +134,6 @@ void create_one_edge_class(
     new_edge_class->incident_tet            = tet;
     new_edge_class->incident_edge_index     = e;
 
-#ifdef ORB
-    new_edge_class->is_singular             = FALSE;
-    new_edge_class->singular_order          = 1;
-    new_edge_class->old_singular_order      = 1;
-    new_edge_class->singular_index          = -1;
-#endif
-    
     /*
      *  Walk around the edge class, setting the tet->edge_class
      *  field for each edge we encounter.
@@ -192,7 +184,11 @@ void replace_edge_classes(
     {
         dead_edge_class = manifold->edge_list_begin.next;
         REMOVE_NODE(dead_edge_class);
+#ifdef ORB
+        free_edge_class(dead_edge_class);
+#else
         my_free(dead_edge_class);
+#endif
     }
 
     /*
@@ -284,4 +280,5 @@ void orient_edge_classes(
         }
     }
 }
+
 SNAPPEA_NAMESPACE_END_SCOPE

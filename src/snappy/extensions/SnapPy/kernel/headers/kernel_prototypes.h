@@ -14,7 +14,6 @@
 
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
-
 /************************************************************************/
 /*                                                                      */
 /*                              chern_simons.c                          */
@@ -66,6 +65,9 @@ void compute_fourth_corner(
  *  ideal vertices, compute the location of the fourth.
  */
 
+#ifdef ORB
+extern void orb_set_use_orb_conventions(Boolean use_orb_conventions);
+#endif
 
 /************************************************************************/
 /*                                                                      */
@@ -352,7 +354,6 @@ extern void orient_edge_classes(Triangulation *manifold);
  *  incident Tetrahedron.
  */
 
-
 /************************************************************************/
 /*                                                                      */
 /*                      elements_generate_group.c                       */
@@ -385,7 +386,8 @@ extern Cusp *find_cusp(Triangulation *manifold, int cusp_index);
 /*                                                                      */
 /************************************************************************/
 
-extern void remove_finite_vertices(Triangulation *manifold);
+extern void remove_finite_vertices(Triangulation *manifold,
+                                   Boolean create_new_cusp_if_necessary);
 /**<
  *  Removes finite vertices from the manifold.
  */
@@ -531,7 +533,6 @@ extern Boolean tetrahedron_is_geometric(Tetrahedron *tet);
  *  A tetrahedron is geometric iff all dihedral angles lie in the
  *  range [-FLAT_EPSILON, pi + FLAT_EPSILON].
  */
-
 
 /************************************************************************/
 /*                                                                      */
@@ -1140,6 +1141,11 @@ extern void free_tetrahedron(Tetrahedron *tet);
  *  Frees a Tetrahedron and all attached data structures, but does NOT
  *  remove the Tetrahedron from any doubly linked list it may be on.
  */
+
+#ifdef ORB
+extern void free_edge_class(EdgeClass *edge_class);
+extern void free_cusp(Cusp * cusp);
+#endif
 
 /**
  *  What you'd expect.  See triangulation.c for details.

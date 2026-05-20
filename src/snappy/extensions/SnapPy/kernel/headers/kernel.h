@@ -24,9 +24,6 @@ extern "C" {
 
 #include "kernel_typedefs.h"
 #include "triangulation.h"
-#ifdef ORB
-#include "orb_triangulation.h"
-#endif
 #include "positioned_tet.h"
 #include "isometry.h"
 #include "symmetry_group.h"
@@ -35,6 +32,14 @@ extern "C" {
 #include "kernel_prototypes.h"
 #include "tables.h"
 
+#ifdef ORB
+#include "orb_triangulation.h"
+#include "orb_diagram.h"
+#include "orb_graph.h"
+#include "orb_kernel_prototypes.h"
+#endif
+
+    
 #ifdef FORCE_C_LINKAGE
 #ifdef __cplusplus
 }

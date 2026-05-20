@@ -126,7 +126,7 @@ struct ComplexWithLog
  *  The TetShape corresponding to the complete (resp. Dehn filled) hyperbolic
  *  structure is stored in the Tetrahedron data structure as tet->shape[complete]
  *  (resp. tet->shape[filled]).  By convention, TetShapes will be present iff
- *  tet->solution_type[complete] and tet->solution_type[filled] are something
+ *  tri->solution_type[complete] and tri->solution_type[filled] are something
  *  other than not_attempted.
  */
 
@@ -167,7 +167,7 @@ struct Tetrahedron
                         num_triangles[4];   /**< normal_surfaces.h (local)                */
     Boolean             has_correct_orientation; /**< normal_surface_splitting.c (local)  */
 #ifdef ORB
-    OrbTetShape         *orb_tet_shape; /**< Hyperbolic shape */
+    OrbTetShape         *orb_tet_shape;     /**< Encodes hyperbolic structure using vertex Gram matrices */
 #endif
     int                 flag;   /**< general purpose integer for local use as necessary   */
     Extra               *extra; /**< general purpose pointer for local use as necessary   */
@@ -192,11 +192,11 @@ struct EdgeClass
     int                 index;              /**< used locally for saving Triangulations to disk */
     Real              intercusp_distance; /**< cusp_neighborhoods.c (used locally)            */
 #ifdef ORB
-    Boolean             is_singular;
-    int                 singular_index;
-    Real                singular_order;
-    Real                old_singular_order;
-    OrbEdgeShape        *orb_edge_shape;
+    Boolean             orb_is_singular;
+    int                 orb_singular_index;
+    Real                orb_singular_order;
+    Real                orb_old_singular_order;
+    OrbEdgeShape        *orb_edge_shape;    /**< Encodes hyperbolic structure using vertex Gram matrices */
 #endif
     EdgeClass           *prev;              /**< previous EdgeClass on doubly linked list       */
     EdgeClass           *next;              /**<   next   EdgeClass on doubly linked list       */
@@ -206,7 +206,7 @@ struct Cusp
 {
     /*
      * 2026/06/01 MG:
-     * This instead stored "Boolean is_finite" and "CuspTopology topology"
+     * This used to store "Boolean is_finite" and "CuspTopology topology"
      * where "CuspTopology" was Klein/torus/unknown.
      */
 
@@ -236,14 +236,18 @@ struct Cusp
     Real                m,                      /**< Dehn filling coefficient             */
                         l;                      /**< Dehn filling coefficient             */
     Complex             holonomy[2][2];         /**< holonomy.c                           */
-    Complex             target_holonomy;        /**< used by MC -- force_tet_shapes       */    
+    Complex             target_holonomy;        /**< used by MC -- force_tet_shapes       */
     Complex             *complex_cusp_equation; /**< gluing_equations.c (used locally)    */
     Real              *real_cusp_equation_re, /**< gluing_equations.c (used locally)    */
                         *real_cusp_equation_im; /**< gluing_equations.c (used locally)    */
     Complex             cusp_shape[2];          /**< cusp_shapes.c                        */
     int                 shape_precision[2];     /**< cusp_shapes.c                        */
 #ifdef ORB
-    OrbCuspShape        *orb_cusp_shape;
+    OrbCuspShape        *orb_cusp_shape;        /**< Encodes hyperbolic structure using vertex Gram matrices */
+    int                 orb_num_incident_singular_edges; /**< Corresponds to Triangulation::num_cone_points in Orb. */
+    EdgeClass           **orb_incident_singular_edges;   /**< Singular edges incident to this cusp.
+                                                          * Similar to Triangulation::cone_points,
+                                                          * but we store the EdgeClass. */
 #endif
     int                 index;                  /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
@@ -275,12 +279,17 @@ struct Triangulation
     char                *name;                  /**< name of manifold                     */
     int                 num_tetrahedra;         /**< number of tetrahedra                 */
     SolutionType        solution_type[2];       /**< complete and filled                  */
+#ifdef ORB
+    SolutionType        orb_solution_type[2];
+#endif
     Orientability       orientability;          /**< Orientability of manifold            */
     int                 num_cusps,              /**< total number of cusps                */
                         num_or_cusps,           /**< number of orientable cusps           */
                         num_nonor_cusps,        /**< number of nonorientable cusps        */
                         num_fake_cusps;         /**< number of fake cusps                 */
-
+#ifdef ORB
+    int                 orb_num_singular_edges;
+#endif
     int                 num_generators;         /**< choose_generators.c (local)          */
     Boolean             CS_value_is_known,      /**< Chern_Simons.c                       */
                         CS_fudge_is_known;      /**< Chern_Simons.c                       */

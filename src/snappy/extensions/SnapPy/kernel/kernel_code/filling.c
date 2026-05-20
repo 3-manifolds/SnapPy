@@ -143,7 +143,9 @@ Triangulation *fill_cusps(
      *  Retriangulate with no finite vertices.
      */
     if (fill_all_cusps == FALSE)
-        remove_finite_vertices(new_triangulation);  /* includes basic_simplification() */
+        remove_finite_vertices(   /* includes basic_simplification() */
+            new_triangulation,
+            /* create_new_cusp_if_necessary = */ TRUE);
     else
     {
         basic_simplification(new_triangulation);

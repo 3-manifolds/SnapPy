@@ -105,7 +105,8 @@ static void set_real_cusps(Triangulation *manifold, Cusp *special_fake_cusp);
 
 
 void remove_finite_vertices(
-    Triangulation   *manifold)
+    Triangulation   *manifold,
+    Boolean         create_new_cusp_if_necessary)
 {
     Cusp    *special_fake_cusp;
     
@@ -146,7 +147,7 @@ void remove_finite_vertices(
      *  Drill out a tube connecting the special_fake_cusp to itself,
      *  to convert it from a sphere to a torus or Klein bottle.
      */
-    if (special_fake_cusp != NULL)
+    if (special_fake_cusp != NULL && create_new_cusp_if_necessary)
     {
         /*
          *  Simplify the triangulation before drilling,
@@ -183,7 +184,8 @@ static void initialize_matching_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) == sphere_cusp)
+        if ( get_cusp_topology(cusp) == sphere_cusp
+             && cusp->orb_num_incident_singular_edges == 0)
             cusp->matching_cusp = NULL;
         else
         {
@@ -519,7 +521,7 @@ static void drill_tube(
          *  Switch to a basis in which the Dehn filling curve is a meridian.
          */
         unique_cusp->cusp_shape[initial] = Zero;    /* force current_curve_basis() to ignore the cusp shape */
-        current_curve_basis(manifold, 0, basis_change[0]);
+        current_curve_basis(manifold, unique_cusp->index, basis_change[0]);
         if (change_peripheral_curves(manifold, basis_change) != func_OK)
             uFatalError("drill_tube", "finite_vertices");
     }
@@ -556,7 +558,8 @@ static void set_real_cusps(
          cusp = cusp->next)
 
         if (get_cusp_topology(cusp) == sphere_cusp
-         && cusp != special_fake_cusp)
+            && cusp->orb_num_incident_singular_edges == 0
+            && cusp != special_fake_cusp)
         {
             dead_cusp = cusp;
             cusp = cusp->prev;  /* so the loop will proceed correctly */

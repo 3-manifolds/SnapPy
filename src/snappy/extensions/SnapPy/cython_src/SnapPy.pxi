@@ -26,13 +26,7 @@ cdef extern from "SnapPea.h":
 
     ctypedef enum c_SolutionType "SolutionType":
         not_attempted
-        geometric_solution
-        nongeometric_solution
-        flat_solution
-        degenerate_solution
-        other_solution
-        no_solution
-        externally_computed
+        pass # Only the needed values are here.
 
     ctypedef enum c_FillingStatus "FillingStatus":
         complete
@@ -608,10 +602,23 @@ cdef extern from "SnapPea.h":
     extern int** get_symplectic_basis(c_Triangulation *manifold, int *, int *, int) except *
     extern void free_symplectic_basis(int **, int) except *
 
+    IF ORB:
+        extern int orb_get_num_singular_edges(c_Triangulation * manifold) except *
+        extern void orb_get_singular_edge_info(c_Triangulation * manifold, int singular_index, Real * singular_order, Real * inner_product) except *
+        extern void orb_set_singular_edge_info(c_Triangulation * manifold, int singular_index, Real singular_order) except *
+        extern c_SolutionType orb_find_hyperbolic_structure(
+            c_Triangulation * manifold, Boolean manual) except *
+        extern void orb_remove_hyperbolic_structure(c_Triangulation *manifold) except *
+        extern c_SolutionType orb_get_solution_type(
+            c_Triangulation * manifold)
+        extern Real orb_volume(c_Triangulation * manifold) except *
+
 cdef extern from "kernel_prototypes.h":
     extern void choose_generators(c_Triangulation *manifold,
                                   Boolean compute_corners,
                                   Boolean centroid_at_origin)
+    IF ORB:
+        extern void orb_set_use_orb_conventions(Boolean use_orb_conventions) except *
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
     extern c_FuncResult   two_to_three(c_Tetrahedron *tet0,
                                        int f, int *num_tetrahedra_ptr)
@@ -628,7 +635,7 @@ cdef extern from "kernel_prototypes.h":
     extern void free_cross_sections(c_Triangulation *manifold)
     extern void compute_cross_sections(c_Triangulation *manifold)
     extern void compute_tilts(c_Triangulation *manifold)
-    extern void remove_finite_vertices(c_Triangulation *manifold)
+    extern void remove_finite_vertices(c_Triangulation *manifold, Boolean create_new_cusp_if_necessary)
     extern void count_cusps(c_Triangulation *manifold)
     extern c_Triangulation* subdivide(c_Triangulation *manifold, char *new_name) except *
     extern void close_cusps(c_Triangulation *manifold, Boolean fill_cusp[], Boolean fill_by_fold, Boolean mark_solid_tori)
@@ -700,3 +707,13 @@ cdef extern from "ptolemy_equations.h":
     extern void get_ptolemy_equations_boundary_map_3(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
     extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
     extern void get_ptolemy_equations_boundary_map_1(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
+
+IF ORB:
+    cdef extern from "orb_diagram.h":
+        ctypedef struct OrbDiagram
+
+        c_Triangulation * orb_triangulate_diagram_complement(OrbDiagram *, Boolean remove_finite_vertices)
+        void orb_free_diagram(OrbDiagram *diagram)
+
+    cdef extern from "orb_file_io.h":
+        extern void read_orb(const char *file_name, c_Triangulation **manifold, OrbDiagram ** diagram)

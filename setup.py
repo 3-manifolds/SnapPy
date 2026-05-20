@@ -3,6 +3,7 @@ Installation script for the snappy module.
 
 Depends heavily on setuptools.
 """
+
 no_setuptools_message = """
 You need to have setuptools installed to build the snappy module. See:
 
@@ -489,6 +490,7 @@ class SnapPyExtensionSpec:
         os.path.join(SharedExtensionSpec.cython_path, 'precision', 'double') ]
 
     extra_compile_args = SharedExtensionSpec.extra_compile_args
+
     extra_link_args = SharedExtensionSpec.extra_link_args
 
 ext_modules.append(make_extension(SnapPyExtensionSpec))

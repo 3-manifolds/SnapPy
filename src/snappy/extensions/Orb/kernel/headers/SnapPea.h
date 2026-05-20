@@ -1515,10 +1515,6 @@ extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold )
 extern SolutionType find_structure( Triangulation *manifold, Boolean manual ); /* DJH */
 extern void my_tilts(Triangulation *manifold ); /* DJH */
 extern double minor1( GL4RMatrix matrix, int row, int col ); /* DJH */
-extern SolutionType my_find_complete_hyperbolic_structure(
-        Triangulation *manifold,
-         Boolean use_previous_solution,
-	Boolean manual);
 /*
  *	Attempts to find a complete hyperbolic structure for the
  *	Triangulation *manifold.  Sets the solution_type[complete] member of

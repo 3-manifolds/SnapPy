@@ -42,6 +42,7 @@ static double derivative_ij_nn( VertexIndex i, VertexIndex j, VertexIndex n, Tet
 static void copy_penultimate_to_ultimate( Triangulation *manifold );
 static FuncResult newton_step( double **ind_equations, int num_rows, int num_columns, double *delta );
 static FuncResult select_independent_equations( double **equations, int num_rows, int num_columns, double ***ind_equations, int *new_rows );
+static SolutionType my_find_complete_hyperbolic_structure( Triangulation *manifold, Boolean use_previous_solution, Boolean manual );
 
 SolutionType find_structure( Triangulation *manifold, Boolean manual )
 {

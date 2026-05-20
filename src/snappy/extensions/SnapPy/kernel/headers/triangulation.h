@@ -63,7 +63,11 @@ typedef struct TetShape         TetShape;
 typedef struct Tetrahedron      Tetrahedron;
 typedef struct EdgeClass        EdgeClass;
 typedef struct Cusp             Cusp;
-
+#ifdef ORB
+typedef struct OrbTetShape      OrbTetShape;
+typedef struct OrbEdgeShape     OrbEdgeShape;
+typedef struct OrbCuspShape     OrbCuspShape;
+#endif
 
 /**
  *  ComplexWithLog stores a complex edge parameter in both rectangular
@@ -162,6 +166,9 @@ struct Tetrahedron
     int                 num_squares,        /**< normal_surfaces.h (local)                */
                         num_triangles[4];   /**< normal_surfaces.h (local)                */
     Boolean             has_correct_orientation; /**< normal_surface_splitting.c (local)  */
+#ifdef ORB
+    OrbTetShape         *orb_tet_shape; /**< Hyperbolic shape */
+#endif
     int                 flag;   /**< general purpose integer for local use as necessary   */
     Extra               *extra; /**< general purpose pointer for local use as necessary   */
                                 /**<  see Extra typedef in kernel_typedefs.h for details  */
@@ -184,6 +191,13 @@ struct EdgeClass
     Complex             target_angle_sum;   /**< used by MC -- force_tet_shapes                 */
     int                 index;              /**< used locally for saving Triangulations to disk */
     Real              intercusp_distance; /**< cusp_neighborhoods.c (used locally)            */
+#ifdef ORB
+    Boolean             is_singular;
+    int                 singular_index;
+    Real                singular_order;
+    Real                old_singular_order;
+    OrbEdgeShape        *orb_edge_shape;
+#endif
     EdgeClass           *prev;              /**< previous EdgeClass on doubly linked list       */
     EdgeClass           *next;              /**<   next   EdgeClass on doubly linked list       */
 };
@@ -201,6 +215,9 @@ struct Cusp
                         *real_cusp_equation_im; /**< gluing_equations.c (used locally)    */
     Complex             cusp_shape[2];          /**< cusp_shapes.c                        */
     int                 shape_precision[2];     /**< cusp_shapes.c                        */
+#ifdef ORB
+    OrbCuspShape        *orb_cusp_shape;
+#endif
     int                 index;                  /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
     Real              displacement,           /**< cusp_neighborhoods.c (used globally) */

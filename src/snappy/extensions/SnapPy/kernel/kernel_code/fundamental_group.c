@@ -711,7 +711,7 @@ static void compute_one_edge_relation(
     new_word->itsLength         = 0;
     new_word->is_Dehn_relation  = FALSE;
 #ifdef ORB
-    if (edge->singular_order == 0) {
+    if (edge->is_singular && edge->singular_order == 0) {
         new_word->next               = group->itsParabolicRelations;
         group->itsParabolicRelations = new_word;
         group->itsNumParabolicRelations++;
@@ -784,7 +784,7 @@ static void compute_one_edge_relation(
         uFatalError("compute_one_edge_relation", "fundamental_group");
 
 #ifdef ORB
-    if (edge->singular_order != 0)
+    if (edge->is_singular && edge->singular_order != 0.0)
     {
         int length = new_word->itsLength;
         int n = edge->singular_order;

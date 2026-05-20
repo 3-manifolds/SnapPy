@@ -584,12 +584,14 @@ class OrbExtensionSpec:
         remove_files(
             glob(os.path.join(kernel_path, 'code', '*.c')),
             ['unix_UI.c']) +
+        glob(os.path.join(kernel_path, 'orb', '*.c')) +
         glob(os.path.join(kernel_path, 'addl_code', '*.c')) +
         glob(os.path.join(kernel_path, 'unix_kit', '*.c')))
 
     include_dirs = [
         os.path.join(kernel_path, 'headers'),
         os.path.join(kernel_path, 'headers', 'precision', 'double'),
+        os.path.join(kernel_path, 'orb'),
         os.path.join(kernel_path, 'addl_code'),
         os.path.join(kernel_path, 'unix_kit'),
         os.path.join('src', 'snappy')

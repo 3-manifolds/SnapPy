@@ -2,7 +2,7 @@
  * graph.h
  *
  * Data structures to encode a fat graph underlying a planar diagram
- * of a knotted graph, also see diagram.h.
+ * of a knotted graph, also see orb_diagram.h.
  *
  * The main function is triangulate_graph_complement to triangulate
  * the complement of the knotted graph.

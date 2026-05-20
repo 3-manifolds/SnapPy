@@ -58,24 +58,24 @@ cdef extern from "unix_file_io.h":
     extern char *string_triangulation(c_Triangulation *manifold)
 
 cdef extern from "orb_io.h":
-    extern char *write_orb_to_string(c_Triangulation *trig, c_Diagram * diagram)
+    extern char *write_orb_to_string(c_Triangulation *trig, c_OrbDiagram * diagram)
 
 cdef extern from "diagram.h":
-    ctypedef struct c_Diagram "Diagram":
+    ctypedef struct c_OrbDiagram "OrbDiagram":
         int num_vertices
-    c_Triangulation * triangulate_diagram_complement(
-        c_Diagram *,
+    c_Triangulation * orb_triangulate_diagram_complement(
+        c_OrbDiagram *,
         Boolean remove_vertices)
-    void * free_diagram(
-        c_Diagram *)
+    void * orb_free_diagram(
+        c_OrbDiagram *)
 
 cdef extern from "orb_io.h":
     extern void read_orb(
         const char *file_name,
         c_Triangulation ** trig,
-        c_Diagram ** diagram)
+        c_OrbDiagram ** diagram)
     extern void read_orb_from_string(
         char *file_data,
         c_Triangulation ** trig,
-        c_Diagram ** diagram)
+        c_OrbDiagram ** diagram)
     

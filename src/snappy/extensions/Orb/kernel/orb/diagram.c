@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void initialize_diagram(
-    Diagram * diagram)
+void orb_initialize_diagram(
+    OrbDiagram * diagram)
 {
     diagram->num_arcs = 0;
     diagram->num_links = 0;
@@ -21,8 +21,8 @@ void initialize_diagram(
     diagram->crossings = NULL;
 }
 
-void initialize_diagram_vertex(
-    DiagramVertex *vertex)
+void orb_initialize_diagram_vertex(
+    OrbDiagramVertex *vertex)
 {
     vertex->vertex_id = 0;
     vertex->link_id = -1;
@@ -30,8 +30,8 @@ void initialize_diagram_vertex(
     vertex->incident_end_data = NULL;
 }
 
-static void free_diagram_vertex(
-    DiagramVertex *vertex)
+static void orb_free_diagram_vertex(
+    OrbDiagramVertex *vertex)
 {
     int i;
 
@@ -49,8 +49,8 @@ static void free_diagram_vertex(
     my_free(vertex);
 }
 
-void free_diagram(
-    Diagram *diagram)
+void orb_free_diagram(
+    OrbDiagram *diagram)
 {
     int i;
 
@@ -60,7 +60,7 @@ void free_diagram(
 
     if (diagram->vertices) {
 	for (i = 0; i < diagram->num_vertices; ++i) {
-	    free_diagram_vertex(diagram->vertices[i]);
+	    orb_free_diagram_vertex(diagram->vertices[i]);
 	}
 	my_free(diagram->vertices);
     }
@@ -82,8 +82,8 @@ void free_diagram(
     my_free(diagram);
 }
 
-void initialize_diagram_edge(
-    DiagramEdge * edge)
+void orb_initialize_diagram_edge(
+    OrbDiagramEdge * edge)
 {
     edge->vertex[0] = NULL;
     edge->vertex[1] = NULL;
@@ -95,12 +95,12 @@ void initialize_diagram_edge(
     edge->edge_type = diagramSingular;
 }
 
-void add_end_data_to_diagram_vertex(
-    DiagramEndData * data,
-    DiagramVertex * vertex)
+void orb_add_end_data_to_diagram_vertex(
+    OrbDiagramEndData * data,
+    OrbDiagramVertex * vertex)
 {
-    DiagramEndData ** new_incident_end_data =
-	NEW_ARRAY(vertex->num_incident_end_data + 1, DiagramEndData*);
+    OrbDiagramEndData ** new_incident_end_data =
+	NEW_ARRAY(vertex->num_incident_end_data + 1, OrbDiagramEndData*);
 
     for (int i = 0; i < vertex->num_incident_end_data; i++) {
 	new_incident_end_data[i] = vertex->incident_end_data[i];
@@ -110,12 +110,12 @@ void add_end_data_to_diagram_vertex(
     vertex->incident_end_data = new_incident_end_data;
 }
 
-void add_crossing_to_diagram_edge(
-    DiagramCrossing * crossing,
-    DiagramEdge * edge)
+void orb_add_crossing_to_diagram_edge(
+    OrbDiagramCrossing * crossing,
+    OrbDiagramEdge * edge)
 {
-    DiagramCrossing ** new_crossings =
-	NEW_ARRAY(edge->num_crossings + 1, DiagramCrossing*);
+    OrbDiagramCrossing ** new_crossings =
+	NEW_ARRAY(edge->num_crossings + 1, OrbDiagramCrossing*);
 
     for (int i = 0; i < edge->num_crossings; i++) {
         new_crossings[i] = edge->crossings[i];
@@ -125,8 +125,8 @@ void add_crossing_to_diagram_edge(
     edge->crossings = new_crossings;
 }
 
-void assign_diagram_arcs(
-    Diagram * diagram)
+void orb_assign_diagram_arcs(
+    OrbDiagram * diagram)
 {
     diagram->num_arcs = 0;
 
@@ -136,19 +136,19 @@ void assign_diagram_arcs(
     int queue_end = 0;
 
     /* Each edge appears on the queue at most ones */
-    DiagramEdge ** queue = NEW_ARRAY(diagram->num_edges, DiagramEdge *);
+    OrbDiagramEdge ** queue = NEW_ARRAY(diagram->num_edges, OrbDiagramEdge *);
 
     Boolean * visited = NEW_ARRAY(diagram->num_edges, Boolean);
 
     for (int i = 0; i < diagram->num_edges; i++) {
-	DiagramEdge * edge = diagram->edges[i];
+	OrbDiagramEdge * edge = diagram->edges[i];
 	edge->edge_id = i;
 	edge->arc_id = -1;
 	visited[i] = FALSE;
     }
 
     {
-	DiagramEdge * edge = diagram->edges[0];
+	OrbDiagramEdge * edge = diagram->edges[0];
 	queue[queue_end++] = edge;
 	visited[0] = TRUE;
 	drilled_arc = edge->edge_type == diagramDrilled;
@@ -162,15 +162,15 @@ void assign_diagram_arcs(
     {
 	while (queue_begin < queue_end)
 	{
-	    DiagramEdge * e = queue[queue_begin++];
+	    OrbDiagramEdge * e = queue[queue_begin++];
 	    for (int i = 0; i < 2; i++)
 	    {
-		DiagramVertex * v = e->vertex[i];
+		OrbDiagramVertex * v = e->vertex[i];
 
 		if (e->vertex[i]->num_incident_end_data == 2)
 		{
 		    int j = (v->incident_end_data[0]->edge == e) ? 1 : 0;
-		    DiagramEdge *e1 = v->incident_end_data[j]->edge;
+		    OrbDiagramEdge *e1 = v->incident_end_data[j]->edge;
 		    Boolean needsSwitch = v->incident_end_data[j]->type == i;
 		    if (!visited[e1->edge_id])
 		    {
@@ -182,7 +182,7 @@ void assign_diagram_arcs(
 
 			if (needsSwitch)
 			{
-			    DiagramVertex *temp;
+			    OrbDiagramVertex *temp;
 			    temp = e1->vertex[0];
 			    e1->vertex[0] = e1->vertex[1];
 			    e1->vertex[1] = temp;
@@ -215,7 +215,7 @@ void assign_diagram_arcs(
 		continue;
 	    }
 
-	    DiagramEdge * edge = diagram->edges[i];
+	    OrbDiagramEdge * edge = diagram->edges[i];
 
 	    queue[queue_end++] = edge;
 	    visited[edge->edge_id] = TRUE;
@@ -233,8 +233,8 @@ void assign_diagram_arcs(
     my_free(queue);
 }
 
-void assign_diagram_links(
-    Diagram * diagram)
+void orb_assign_diagram_links(
+    OrbDiagram * diagram)
 {
     diagram->num_links = 0;
 
@@ -242,13 +242,13 @@ void assign_diagram_links(
     int queue_end = 0;
 
     /* Each edge appears on the queue at most ones */
-    DiagramEdge ** queue = NEW_ARRAY(diagram->num_edges, DiagramEdge *);
+    OrbDiagramEdge ** queue = NEW_ARRAY(diagram->num_edges, OrbDiagramEdge *);
 
     Boolean * visited = NEW_ARRAY(diagram->num_edges, Boolean);
 
     for (int i = 0; i < diagram->num_edges; i++)
     {
-	DiagramEdge * edge = diagram->edges[i];
+	OrbDiagramEdge * edge = diagram->edges[i];
 	edge->edge_id = i;
 	edge->link_id = -2;
 	visited[i] = edge->edge_type != diagramDrilled;
@@ -265,14 +265,14 @@ void assign_diagram_links(
     {
 	while (queue_begin < queue_end)
 	{
-	    DiagramEdge * e = queue[queue_begin++];
+	    OrbDiagramEdge * e = queue[queue_begin++];
 	    for (int i = 0; i < 2; i++)
 	    {
-		DiagramVertex * v = e->vertex[i];
+		OrbDiagramVertex * v = e->vertex[i];
 
 		for (int j = 0; j < v->num_incident_end_data; j++)
 		{
-		    DiagramEdge *e1 = v->incident_end_data[j]->edge;
+		    OrbDiagramEdge *e1 = v->incident_end_data[j]->edge;
 		    if (!visited[e1->edge_id])
 		    {
 			visited[e1->edge_id] = TRUE;
@@ -290,7 +290,7 @@ void assign_diagram_links(
 	    if (visited[i]) {
 		continue;
 	    }
-	    DiagramEdge * e = diagram->edges[i];
+	    OrbDiagramEdge * e = diagram->edges[i];
 	    queue[queue_end++] = e;
 	    e->link_id = diagram->num_links;
 	}
@@ -298,7 +298,7 @@ void assign_diagram_links(
 
     for (int i = 0; i < diagram->num_vertices; i++)
     {
-	DiagramVertex * v = diagram->vertices[i];
+	OrbDiagramVertex * v = diagram->vertices[i];
 	v->link_id = -1;
 	for (int j = 0; j < v->num_incident_end_data; j++)
 	{
@@ -323,12 +323,12 @@ void assign_diagram_links(
 
 	    for (int j = 0; j < diagram->num_edges; j++)
 	    {
-		DiagramEdge * e = diagram->edges[j];
+		OrbDiagramEdge * e = diagram->edges[j];
 		if (e->arc_id != arc) {
 		    continue;
 		}
 		for (int k = 0; k < 2; k++) {
-		    DiagramVertex * v1 = e->vertex[k];
+		    OrbDiagramVertex * v1 = e->vertex[k];
 		    if (v1->num_incident_end_data != 2 ||
 			v1->link_id > -1 ||
 			v1->incident_end_data[0]->edge->edge_type == diagramDrilled ||
@@ -352,8 +352,8 @@ void assign_diagram_links(
     my_free(queue);
 }
 
-char * dump_diagram(
-    Diagram * diagram)
+char * orb_dump_diagram(
+    OrbDiagram * diagram)
 {
     size_t size = 10000000;
 
@@ -366,12 +366,12 @@ char * dump_diagram(
 
     for (int i = 0; i < diagram->num_vertices; i++)
     {
-	DiagramVertex * v = diagram->vertices[i];
+	OrbDiagramVertex * v = diagram->vertices[i];
 	p += snprintf(p, end - p, "Vertex:\n");
 	p += snprintf(p, end - p, "    %d %d\n", v->x, v->y);
 	p += snprintf(p, end - p, "    %d %d %d\n", v->connected_component, v->vertex_id, v->link_id);
 	for (int j = 0; j < v->num_incident_end_data; j++) {
-	    DiagramEndData * e = v->incident_end_data[j];
+	    OrbDiagramEndData * e = v->incident_end_data[j];
 	    p += snprintf(p, end - p, "    End data:\n");
 	    p += snprintf(p, end - p, "        Edge: %d\n", e->edge->edge_id);
 	    p += snprintf(p, end - p, "        %d %d %lf\n",
@@ -381,19 +381,19 @@ char * dump_diagram(
 
     for (int i = 0; i < diagram->num_edges; i++)
     {
-	DiagramEdge * e = diagram->edges[i];
+	OrbDiagramEdge * e = diagram->edges[i];
 	p += snprintf(p, end - p, "Edge:\n");
 	p += snprintf(p, end - p, "    %d %d\n", e->vertex[0]->vertex_id, e->vertex[1]->vertex_id);
 	p += snprintf(p, end - p, "    %d %d %d %d\n", e->edge_id, e->arc_id, e->link_id, e->edge_type);
 	for (int j = 0; j < e->num_crossings; j++) {
-	    DiagramCrossing * c = e->crossings[j];
+	    OrbDiagramCrossing * c = e->crossings[j];
 	    p += snprintf(p, end - p, "    Crossing %d\n", c->crossing_id);
 	}
     }
 
     for (int i = 0; i < diagram->num_crossings; i++)
     {
-	DiagramCrossing * c = diagram->crossings[i];
+	OrbDiagramCrossing * c = diagram->crossings[i];
 	p += snprintf(p, end - p, "Crossing:\n");
 	p += snprintf(p, end - p, "    %d\n", c->crossing_id);
 	p += snprintf(p, end - p, "    %d %d  %d\n", c->x, c->y, c->crossing_sign);
@@ -406,8 +406,8 @@ char * dump_diagram(
 
 static
 Complex
-point_position_to_complex(
-    DiagramVertex * v)
+orb_point_position_to_complex(
+    OrbDiagramVertex * v)
 {
     Complex r;
     r.real = v->x;
@@ -416,16 +416,16 @@ point_position_to_complex(
 }
 
 void
-assign_diagram_crossing_signs(
-    Diagram * diagram)
+orb_assign_diagram_crossing_signs(
+    OrbDiagram * diagram)
 {
     for (int i = 0; i < diagram->num_crossings; i++)
     {
-        DiagramCrossing *c = diagram->crossings[i];
+        OrbDiagramCrossing *c = diagram->crossings[i];
 
-        Complex z1 = point_position_to_complex(c->over->vertex[diagramBegin]);
-        Complex z2 = point_position_to_complex(c->over->vertex[diagramEnd]);
-        Complex z3 = point_position_to_complex(c->under->vertex[diagramBegin]);
+        Complex z1 = orb_point_position_to_complex(c->over->vertex[diagramBegin]);
+        Complex z2 = orb_point_position_to_complex(c->over->vertex[diagramEnd]);
+        Complex z3 = orb_point_position_to_complex(c->under->vertex[diagramBegin]);
 
         /* w = ( z3 - z1 ) / ( z2 - z1 ); */
 	Complex w = complex_div(complex_minus(z3, z1), complex_minus(z2, z1));
@@ -435,19 +435,19 @@ assign_diagram_crossing_signs(
 }
 
 void
-assign_diagram_end_data_angles(
-    Diagram * diagram)
+orb_assign_diagram_end_data_angles(
+    OrbDiagram * diagram)
 {
     for (int i = 0; i < diagram->num_vertices; i++)
     {
-        DiagramVertex * v = diagram->vertices[i];
+        OrbDiagramVertex * v = diagram->vertices[i];
 	for (int j = 0; j < v->num_incident_end_data; j++)
 	{
-  	    DiagramEndData * e = v->incident_end_data[j];
+  	    OrbDiagramEndData * e = v->incident_end_data[j];
 	    Complex z =
   	        complex_minus(
-		    point_position_to_complex(e->edge->vertex[diagramEnd]),
-		    point_position_to_complex(e->edge->vertex[diagramBegin]));
+		    orb_point_position_to_complex(e->edge->vertex[diagramEnd]),
+		    orb_point_position_to_complex(e->edge->vertex[diagramBegin]));
 	    if (e->type == diagramEnd) {
     	        z = complex_negate(z);
 	    }
@@ -457,20 +457,20 @@ assign_diagram_end_data_angles(
 }
 
 void
-assign_crossings_to_diagram_edges(
-    Diagram * diagram)
+orb_assign_crossings_to_diagram_edges(
+    OrbDiagram * diagram)
 {
     for (int i = 0; i < diagram->num_crossings; i++)
     {
-        DiagramCrossing * c = diagram->crossings[i];
-	add_crossing_to_diagram_edge(c, c->over);
-	add_crossing_to_diagram_edge(c, c->under);
+        OrbDiagramCrossing * c = diagram->crossings[i];
+	orb_add_crossing_to_diagram_edge(c, c->over);
+	orb_add_crossing_to_diagram_edge(c, c->under);
     }
 }
 
 void
-prepare_diagram_components_for_output(
-    Diagram * diagram)
+orb_prepare_diagram_components_for_output(
+    OrbDiagram * diagram)
 {
     {
         int     link_id = -5;
@@ -479,14 +479,14 @@ prepare_diagram_components_for_output(
 	{
     	    for (int j = 0; j < diagram->num_edges; j++)
 	    {
-	        DiagramEdge *e = diagram->edges[j];
+	        OrbDiagramEdge *e = diagram->edges[j];
 		if (e->arc_id == i)
 		{
   		    for(int k = 0; k < 2; k++)
 		    {
 		        if (e->vertex[k]->link_id != -1 )
 		        {
-			    e->vertex[k]->incident_end_data[get_diagram_strand(e,e->vertex[k])]->singular=(k==1);
+			    e->vertex[k]->incident_end_data[orb_get_diagram_strand(e,e->vertex[k])]->singular=(k==1);
 			    if (k == 0) {
 			        link_id = e->vertex[k]->link_id;
 			    }
@@ -496,7 +496,7 @@ prepare_diagram_components_for_output(
 	    }
     	    for (int j = 0; j < diagram->num_edges; j++)
 	    {
-	        DiagramEdge *e = diagram->edges[j];
+	        OrbDiagramEdge *e = diagram->edges[j];
 		if (e->arc_id == i) {
   		    e->link_id = link_id;
 		}
@@ -506,7 +506,7 @@ prepare_diagram_components_for_output(
 
     for(int i = 0; i < diagram->num_vertices; i++)
     {
-        DiagramVertex *v = diagram->vertices[i];
+        OrbDiagramVertex *v = diagram->vertices[i];
         if (v->link_id == -1 )
 	{
   	    for( int j = 0; j < v->num_incident_end_data; j++)
@@ -520,7 +520,7 @@ prepare_diagram_components_for_output(
     }
 }
 
-int get_diagram_strand(DiagramEdge * e, DiagramVertex * v)
+int orb_get_diagram_strand(OrbDiagramEdge * e, OrbDiagramVertex * v)
 {
     for (int i = 0; i < v->num_incident_end_data; i++)
     {
@@ -533,7 +533,7 @@ int get_diagram_strand(DiagramEdge * e, DiagramVertex * v)
     return -1;
 }
 
-DiagramCrossing * get_next_diagram_crossing(DiagramEdge *e, DiagramCrossing *c)
+OrbDiagramCrossing * orb_get_next_diagram_crossing(OrbDiagramEdge *e, OrbDiagramCrossing *c)
 {
     int i;
     for (i = 0; i < e->num_crossings; i++) {
@@ -548,7 +548,7 @@ DiagramCrossing * get_next_diagram_crossing(DiagramEdge *e, DiagramCrossing *c)
     return NULL;
 }
 
-DiagramCrossing * get_prev_diagram_crossing(DiagramEdge *e, DiagramCrossing *c)
+OrbDiagramCrossing * orb_get_prev_diagram_crossing(OrbDiagramEdge *e, OrbDiagramCrossing *c)
 {
     int i;
     for (i = 0; i < e->num_crossings; i++) {
@@ -563,7 +563,7 @@ DiagramCrossing * get_prev_diagram_crossing(DiagramEdge *e, DiagramCrossing *c)
     return NULL;
 }
 
-static int cmp(double d1, double d2)
+static int cmp(const double d1, const double d2)
 {
     if (d1 < d2) {
 	return -1;
@@ -574,20 +574,21 @@ static int cmp(double d1, double d2)
     return 0;
 }
 
-static int ed_more(const void *d1, const void *d2)
+EXTERN_C_BEGIN_SCOPE
+static int orb_ed_more(const void *d1, const void *d2)
 {
     /* return ed1->angle > ed2->angle; */
 
-    DiagramEndData * ed1 = *(DiagramEndData **)d1;
-    DiagramEndData * ed2 = *(DiagramEndData **)d2;
+    OrbDiagramEndData * ed1 = *(OrbDiagramEndData **)d1;
+    OrbDiagramEndData * ed2 = *(OrbDiagramEndData **)d2;
 
     return cmp(ed2->angle, ed1->angle);
 }
 
-static int crossing_less(const void *d1, const void *d2)
+static int orb_crossing_less(const void *d1, const void *d2)
 {
-    DiagramCrossing *c1 = *(DiagramCrossing **)d1;
-    DiagramCrossing *c2 = *(DiagramCrossing **)d2;
+    OrbDiagramCrossing *c1 = *(OrbDiagramCrossing **)d1;
+    OrbDiagramCrossing *c2 = *(OrbDiagramCrossing **)d2;
 
     if (c1->over == c2->over)
     {
@@ -612,7 +613,9 @@ static int crossing_less(const void *d1, const void *d2)
     return 0;
 }
 
-void remove_meeting( Graph *graph, int index )
+EXTERN_C_END_SCOPE
+
+void orb_remove_meeting( Graph *graph, int index )
 {
     if ( index>= graph->num_meetings) {
 	return;
@@ -649,24 +652,24 @@ void remove_meeting( Graph *graph, int index )
     }
 }
 
-/* Ported from DiagramCanvas::outputTriangulation in interface.cpp */
-Graph * diagram_to_graph(
-    Diagram * diagram)
+/* Ported from OrbDiagramCanvas::outputTriangulation in interface.cpp */
+Graph * orb_diagram_to_graph(
+    OrbDiagram * diagram)
 {
     int num_meetings = 0;
 
-    assign_diagram_crossing_signs(diagram);
-    assign_diagram_end_data_angles(diagram);
-    assign_crossings_to_diagram_edges(diagram);
-    prepare_diagram_components_for_output(diagram);
+    orb_assign_diagram_crossing_signs(diagram);
+    orb_assign_diagram_end_data_angles(diagram);
+    orb_assign_crossings_to_diagram_edges(diagram);
+    orb_prepare_diagram_components_for_output(diagram);
 
     for(int i = 0; i < diagram->num_vertices; i++)
     {
         diagram->vertices[i]->vertex_id = num_meetings++;
 	qsort(diagram->vertices[i]->incident_end_data,
 	      diagram->vertices[i]->num_incident_end_data,
-	      sizeof(DiagramEndData*),
-	      &ed_more);
+	      sizeof(OrbDiagramEndData*),
+	      &orb_ed_more);
     }
 
     for(int i = 0; i < diagram->num_crossings; i++) {
@@ -676,8 +679,8 @@ Graph * diagram_to_graph(
     for(int i = 0; i < diagram->num_edges; i++) {
         qsort(diagram->edges[i]->crossings,
 	      diagram->edges[i]->num_crossings,
-	      sizeof(DiagramCrossing*),
-	      &crossing_less);
+	      sizeof(OrbDiagramCrossing*),
+	      &orb_crossing_less);
     }
 
     Graph *graph = NEW_STRUCT(Graph);
@@ -689,7 +692,7 @@ Graph * diagram_to_graph(
     for(int i = 0; i < diagram->num_vertices; i++)
     {
         GraphMeeting *meeting = &graph->meeting[i];
-	DiagramVertex *vertex = diagram->vertices[i];
+	OrbDiagramVertex *vertex = diagram->vertices[i];
 
 	meeting->type = Inter;
 	meeting->num_strands = vertex->num_incident_end_data;
@@ -702,8 +705,8 @@ Graph * diagram_to_graph(
 
 	for(int j = 0; j < meeting->num_strands; j++)
         {
-	    DiagramEndData *ed = vertex->incident_end_data[j];
-	    DiagramEdge *e = ed->edge;
+	    OrbDiagramEndData *ed = vertex->incident_end_data[j];
+	    OrbDiagramEdge *e = ed->edge;
 	    meeting->label[j] = (ed->singular) ? e->arc_id : -1;
 
 	    meeting->component[j] = diagram->vertices[i]->link_id;
@@ -712,12 +715,12 @@ Graph * diagram_to_graph(
 	    {
 	        if (e->num_crossings == 0)
 		{
-		    meeting->strand[j] = get_diagram_strand(e, e->vertex[diagramEnd]);
+		    meeting->strand[j] = orb_get_diagram_strand(e, e->vertex[diagramEnd]);
 		    meeting->neighbor[j] = e->vertex[diagramEnd]->vertex_id;
 		}
 		else
 		{
-  		    DiagramCrossing *c = e->crossings[0];
+  		    OrbDiagramCrossing *c = e->crossings[0];
 		    meeting->neighbor[j] = c->crossing_id;
 
 		    if (c->over == e) {
@@ -731,12 +734,12 @@ Graph * diagram_to_graph(
 	    {
 	        if (e->num_crossings == 0)
 		{
-		    meeting->strand[j] = get_diagram_strand(e, e->vertex[diagramBegin]);
+		    meeting->strand[j] = orb_get_diagram_strand(e, e->vertex[diagramBegin]);
 		    meeting->neighbor[j] = e->vertex[diagramBegin]->vertex_id;
 		}
 		else
 		{
-		    DiagramCrossing *c = e->crossings[e->num_crossings-1];
+		    OrbDiagramCrossing *c = e->crossings[e->num_crossings-1];
 		    meeting->neighbor[j] = c->crossing_id;
 
 		    if (c->over == e) {
@@ -753,7 +756,7 @@ Graph * diagram_to_graph(
     for(int i = 0; i < diagram->num_crossings; i++)
     {
 	GraphMeeting *meeting = &graph->meeting[diagram->num_vertices+i];
-	DiagramCrossing *c = diagram->crossings[i], *other;
+	OrbDiagramCrossing *c = diagram->crossings[i], *other;
 
 	meeting->type = Cross;
 	meeting->num_strands = 4;
@@ -768,14 +771,14 @@ Graph * diagram_to_graph(
 	    meeting->label[j] = -1;
 	}
 
-	DiagramEdge * e = c->over;
+	OrbDiagramEdge * e = c->over;
 
 	meeting->component[0] = e->link_id;
 	meeting->component[2] = e->link_id;
 
-	if ( (other = get_prev_diagram_crossing( e, c)) == NULL)
+	if ( (other = orb_get_prev_diagram_crossing( e, c)) == NULL)
 	{
-	    meeting->strand[0] = get_diagram_strand( e, e->vertex[diagramBegin] );
+	    meeting->strand[0] = orb_get_diagram_strand( e, e->vertex[diagramBegin] );
 	    meeting->neighbor[0] = e->vertex[diagramBegin]->vertex_id;
 	}
 	else
@@ -784,9 +787,9 @@ Graph * diagram_to_graph(
 	    meeting->strand[0] = (other->over==e) ? 2 : 3;
 	}
 
-	if ( (other = get_next_diagram_crossing( e, c)) == NULL)
+	if ( (other = orb_get_next_diagram_crossing( e, c)) == NULL)
 	{
-	    meeting->strand[2] = get_diagram_strand( e, e->vertex[diagramEnd] );
+	    meeting->strand[2] = orb_get_diagram_strand( e, e->vertex[diagramEnd] );
 	    meeting->neighbor[2] = e->vertex[diagramEnd]->vertex_id;
 	}
 	else
@@ -800,9 +803,9 @@ Graph * diagram_to_graph(
 	meeting->component[1] = e->link_id;
 	meeting->component[3] = e->link_id;
 
-	if ( (other = get_prev_diagram_crossing( e, c)) == NULL)
+	if ( (other = orb_get_prev_diagram_crossing( e, c)) == NULL)
 	{
-	    meeting->strand[1] = get_diagram_strand( e, e->vertex[diagramBegin] );
+	    meeting->strand[1] = orb_get_diagram_strand( e, e->vertex[diagramBegin] );
 	    meeting->neighbor[1] = e->vertex[diagramBegin]->vertex_id;
 	}
 	else
@@ -811,9 +814,9 @@ Graph * diagram_to_graph(
 	    meeting->strand[1] = (other->over==e) ? 2 : 3;
 	}
 
-	if ( (other = get_next_diagram_crossing( e, c)) == NULL)
+	if ( (other = orb_get_next_diagram_crossing( e, c)) == NULL)
 	{
-	    meeting->strand[3] = get_diagram_strand( e, e->vertex[diagramEnd] );
+	    meeting->strand[3] = orb_get_diagram_strand( e, e->vertex[diagramEnd] );
 	    meeting->neighbor[3] = e->vertex[diagramEnd]->vertex_id;
 	}
 	else
@@ -907,7 +910,7 @@ Graph * diagram_to_graph(
 		my_free(meeting->neighbor);
 		my_free(meeting->component);
 		my_free(meeting->label);
-		remove_meeting( graph, i);
+		orb_remove_meeting( graph, i);
 	    }
 	}
 	else i++;
@@ -924,13 +927,13 @@ Graph * diagram_to_graph(
 
 /* Ported from DiagramCanvas::outputTriangulation in interface.cpp */
 Triangulation *
-triangulate_diagram_complement(
-    Diagram *diagram,
+orb_triangulate_diagram_complement(
+    OrbDiagram *diagram,
     Boolean remove_vertices)
 {
     Triangulation * t = NULL;
 
-    Graph * g = diagram_to_graph(diagram);
+    Graph * g = orb_diagram_to_graph(diagram);
     if (g != NULL) {
 	t = triangulate_graph_complement(g, remove_vertices);
     }

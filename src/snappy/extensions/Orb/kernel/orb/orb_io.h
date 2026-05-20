@@ -21,16 +21,16 @@
 extern void read_orb_from_string(
     char *file_data,
     Triangulation ** trig,
-    Diagram ** diagram);
+    OrbDiagram ** diagram);
 
 extern void read_orb(
     const char *file_name,
     Triangulation ** trig,
-    Diagram ** diagram);
+    OrbDiagram ** diagram);
 
 /* Corresponds to ManifoldInterface::saveSlot in gui/manifold_interface.cpp */
 char * write_orb_to_string(
     Triangulation *trig,
-    Diagram * diagram);
+    OrbDiagram * diagram);
 
 #endif

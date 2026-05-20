@@ -40,7 +40,7 @@ static Boolean is_eol_char(char c){
 void read_orb_from_string(
     char *str,
     Triangulation ** trig,
-    Diagram ** diagram)
+    OrbDiagram ** diagram)
 {
     char * p = str;
 
@@ -65,7 +65,7 @@ void read_orb_from_string(
     }
     size_t name_length = p - name_start;
 
-    *trig = read_casson_format(&p);
+    *trig = orb_read_casson_format(&p);
 
     if (*trig && name_length > 0)
     {
@@ -85,13 +85,13 @@ void read_orb_from_string(
         return;
     }
 
-    *diagram = read_diagram_from_string(p);
+    *diagram = orb_read_diagram_from_string(p);
 }
 
 void read_orb(
     const char *file_name,
     Triangulation ** trig,
-    Diagram ** diagram)
+    OrbDiagram ** diagram)
 {
     /* Follows unit_kit/unix_file_io.c */
 
@@ -131,7 +131,7 @@ void read_orb(
 static void write_orb_to_stream(
     OStream * stream,
     Triangulation *trig,
-    Diagram * diagram)
+    OrbDiagram * diagram)
 {
     ostream_printf(stream, "%% orb\n");
     if (trig)
@@ -141,7 +141,7 @@ static void write_orb_to_stream(
         } else {
             ostream_printf(stream, "untitled\n");
         }
-        write_casson_format_to_stream(
+        orb_write_casson_format_to_stream(
             stream,
             trig,
             FALSE, TRUE, TRUE);
@@ -153,7 +153,7 @@ static void write_orb_to_stream(
             ostream_printf(stream, "\n");
         }
 
-        write_diagram_to_stream(
+        orb_write_diagram_to_stream(
             stream,
             diagram);
     }
@@ -161,7 +161,7 @@ static void write_orb_to_stream(
 
 char * write_orb_to_string(
     Triangulation *trig,
-    Diagram * diagram)
+    OrbDiagram * diagram)
 {
     OStream stream;
     string_stream_init(&stream);

@@ -482,4 +482,18 @@ typedef struct extra Extra;
 
 #endif
 
+#ifdef __cplusplus
+
+#define EXTERN_C_BEGIN_SCOPE extern "C" {
+#define EXTERN_C_END_SCOPE }
+
+#else
+
+/* We're not using C++, so macros may be empty. */
+
+#define EXTERN_C_BEGIN_SCOPE
+#define EXTERN_C_END_SCOPE
+
+#endif
+
 #endif

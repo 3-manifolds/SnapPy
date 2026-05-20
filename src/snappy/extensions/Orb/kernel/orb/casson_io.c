@@ -597,7 +597,7 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
 }
 
 /* Ported from Organizer::readTriangulation in gui/organizer.cpp. */
-Triangulation * read_casson_format(
+Triangulation * orb_read_casson_format(
     char ** str)
 {
     CassonFormat * cf = read_casson_struct(str);
@@ -615,7 +615,7 @@ Triangulation * read_casson_format(
 #define NL(f)   (f==0) ? 'u' : ((f==1) ? 'v' : ((f==2) ? 'w' : 'x'))
 
 /* Ported from Console::saveTriangulation in console.cpp */
-void write_casson_format_to_stream(
+void orb_write_casson_format_to_stream(
     OStream *stream,
     Triangulation *manifold,
     Boolean include_angular_error,
@@ -819,7 +819,7 @@ void write_casson_format_to_stream(
 }
 
 char *
-write_casson_format_to_string(
+orb_write_casson_format_to_string(
     Triangulation * manifold,
     Boolean include_angular_error,
     Boolean include_geometric_structure_and_cusp_indices,
@@ -828,7 +828,7 @@ write_casson_format_to_string(
     OStream stream;
     string_stream_init(&stream);
 
-    write_casson_format_to_stream(
+    orb_write_casson_format_to_stream(
         &stream,
         manifold,
         include_angular_error,

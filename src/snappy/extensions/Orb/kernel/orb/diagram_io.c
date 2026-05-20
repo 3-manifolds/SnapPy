@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 static Boolean fill_diagram(
-    Diagram * diagram, char *file_data)
+    OrbDiagram * diagram, char *file_data)
 {
     int chars_consumed;
 
@@ -17,14 +17,14 @@ static Boolean fill_diagram(
     }
     file_data += chars_consumed;
 
-    diagram->vertices = NEW_ARRAY( num_vertices, DiagramVertex* );
+    diagram->vertices = NEW_ARRAY( num_vertices, OrbDiagramVertex* );
 
     for (diagram->num_vertices = 0;
 	 diagram->num_vertices < num_vertices;
 	 diagram->num_vertices++) {
-	DiagramVertex * v = NEW_STRUCT( DiagramVertex );
+	OrbDiagramVertex * v = NEW_STRUCT( OrbDiagramVertex );
 	diagram->vertices[diagram->num_vertices] = v;
-	initialize_diagram_vertex(v);
+        orb_initialize_diagram_vertex(v);
 	int index;
 	if (sscanf(
 		file_data,
@@ -42,14 +42,14 @@ static Boolean fill_diagram(
     }
     file_data += chars_consumed;
 
-    diagram->edges = NEW_ARRAY( num_edges, DiagramEdge* );
+    diagram->edges = NEW_ARRAY( num_edges, OrbDiagramEdge* );
 
     for (diagram->num_edges = 0;
 	 diagram->num_edges < num_edges;
 	 diagram->num_edges++) {
-	DiagramEdge * e = NEW_STRUCT( DiagramEdge );
+	OrbDiagramEdge * e = NEW_STRUCT( OrbDiagramEdge );
 	diagram->edges[diagram->num_edges] = e;
-	initialize_diagram_edge(e);
+	orb_initialize_diagram_edge(e);
 
 	int index, vertex_id0, vertex_id1, edge_type;
 	if (sscanf(file_data,
@@ -66,19 +66,19 @@ static Boolean fill_diagram(
 	e->vertex[diagramEnd]   = diagram->vertices[vertex_id1];
 	e->edge_type = edge_type;
 
-	DiagramEndData * begin_data = NEW_STRUCT(DiagramEndData);
+	OrbDiagramEndData * begin_data = NEW_STRUCT(OrbDiagramEndData);
 	begin_data->edge = e;
 	begin_data->type = diagramBegin;
 	begin_data->singular = FALSE;
 	begin_data->angle = 0.0;
-	add_end_data_to_diagram_vertex(begin_data, diagram->vertices[vertex_id0]);
+	orb_add_end_data_to_diagram_vertex(begin_data, diagram->vertices[vertex_id0]);
 
-	DiagramEndData * end_data = NEW_STRUCT(DiagramEndData);
+	OrbDiagramEndData * end_data = NEW_STRUCT(OrbDiagramEndData);
 	end_data->edge = e;
 	end_data->type = diagramEnd;
 	end_data->singular = FALSE;
 	end_data->angle = 0.0;
-	add_end_data_to_diagram_vertex(end_data, diagram->vertices[vertex_id1]);
+	orb_add_end_data_to_diagram_vertex(end_data, diagram->vertices[vertex_id1]);
 
 	file_data += chars_consumed;
     }
@@ -89,12 +89,12 @@ static Boolean fill_diagram(
     }
     file_data += chars_consumed;
 
-    diagram->crossings = NEW_ARRAY( num_crossings, DiagramCrossing* );
+    diagram->crossings = NEW_ARRAY( num_crossings, OrbDiagramCrossing* );
 
     for (diagram->num_crossings = 0;
 	 diagram->num_crossings < num_crossings;
 	 diagram->num_crossings++) {
-	DiagramCrossing * c = NEW_STRUCT( DiagramCrossing );
+	OrbDiagramCrossing * c = NEW_STRUCT( OrbDiagramCrossing );
 	diagram->crossings[diagram->num_crossings] = c;
 
 	int index, edge_id0, edge_id1;
@@ -117,26 +117,26 @@ static Boolean fill_diagram(
     return TRUE;
 }
 
-Diagram *read_diagram_from_string(
+OrbDiagram *orb_read_diagram_from_string(
     char * file_data)
 {
-    Diagram *diagram = NEW_STRUCT(Diagram);
-    initialize_diagram(diagram);
+    OrbDiagram *diagram = NEW_STRUCT(OrbDiagram);
+    orb_initialize_diagram(diagram);
     if (fill_diagram(diagram, file_data)) {
-	assign_diagram_arcs(diagram);
-	assign_diagram_links(diagram);
+	orb_assign_diagram_arcs(diagram);
+	orb_assign_diagram_links(diagram);
 	return diagram;
     }
 
-    free_diagram(diagram);
+    orb_free_diagram(diagram);
     return NULL;
 }
 
 /* Ported from DiagramCanvas::saveDiagram in interface.cpp */
 void
-write_diagram_to_stream(
+orb_write_diagram_to_stream(
     OStream * stream,
-    Diagram * diagram)
+    OrbDiagram * diagram)
 {
     ostream_printf(stream, "%d\n", diagram->num_vertices);
     for (int i = 0; i < diagram->num_vertices; i++)
@@ -178,13 +178,13 @@ write_diagram_to_stream(
 }
 
 char *
-write_diagram_to_string(
-    Diagram * diagram)
+orb_write_diagram_to_string(
+    OrbDiagram * diagram)
 {
     OStream stream;
     string_stream_init(&stream);
 
-    write_diagram_to_stream(&stream, diagram);
+    orb_write_diagram_to_stream(&stream, diagram);
 
     return stream.buffer;
 }

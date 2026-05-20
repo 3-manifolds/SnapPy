@@ -12,12 +12,12 @@ cdef class OrbTriangulation:
     """
 
     cdef c_Triangulation* c_triangulation
-    cdef c_Diagram* c_diagram
+    cdef c_OrbDiagram* c_orb_diagram
     cdef readonly _cache
 
     def __cinit__(self, spec=None, remove_finite_vertices=True):
         self.c_triangulation = NULL
-        self.c_diagram = NULL
+        self.c_orb_diagram = NULL
         self._cache = SnapPyCache()
 
         for attr in [
@@ -46,8 +46,8 @@ cdef class OrbTriangulation:
     def __dealloc__(self):
         if self.c_triangulation != NULL:
             free_triangulation(self.c_triangulation)
-        if self.c_diagram != NULL:
-            free_diagram(self.c_diagram)
+        if self.c_orb_diagram != NULL:
+            orb_free_diagram(self.c_orb_diagram)
 
     cdef get_from_new_plink(self, file_name=None):
         raise NotImplementedError("Orbifold PLink not implemented yet.")
@@ -90,10 +90,10 @@ cdef class OrbTriangulation:
     def _from_orb_string(self, string, remove_finite_vertices=True):
         if self.c_triangulation is not NULL:
             raise ValueError('The Triangulation must be empty.')
-        if self.c_diagram is not NULL:
+        if self.c_orb_diagram is not NULL:
             raise ValueError('The diagram must be empty.')
         read_orb_from_string(
-            to_bytes(string), &self.c_triangulation, &self.c_diagram)
+            to_bytes(string), &self.c_triangulation, &self.c_orb_diagram)
         if remove_finite_vertices:
             self._remove_finite_vertices()
 
@@ -111,7 +111,7 @@ cdef class OrbTriangulation:
                 if first_line.startswith('% orb'):
                     read_orb(
                         to_bytes(path),
-                        &self.c_triangulation, &self.c_diagram)
+                        &self.c_triangulation, &self.c_orb_diagram)
                 elif first_line.startswith('% Triangulation'):
                     self.c_triangulation = read_triangulation(to_bytes(path))
                 else:
@@ -135,7 +135,7 @@ cdef class OrbTriangulation:
             raise ValueError('The Triangulation is empty.')
 
         try:
-            c_string = write_orb_to_string(self.c_triangulation, self.c_diagram)
+            c_string = write_orb_to_string(self.c_triangulation, self.c_orb_diagram)
             result : bytes = c_string
         finally:
             free(c_string)
@@ -159,13 +159,13 @@ cdef class OrbTriangulation:
         Demo
         """
 
-        if self.c_diagram == NULL:
+        if self.c_orb_diagram == NULL:
             return False
 
         # TODO: fix memory leak
 
-        self.c_triangulation = triangulate_diagram_complement(
-            self.c_diagram, True)
+        self.c_triangulation = orb_triangulate_diagram_complement(
+            self.c_orb_diagram, True)
 
         return True
 

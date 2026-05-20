@@ -12,7 +12,7 @@
 #define ITERATION_LIMIT         101
 #define MAX_STEP                0.5 
 
-#define MATRIX_EPSILON		1e-14
+#define ORB_MATRIX_EPSILON     	1e-14
 #define ORIENTATION_EPSILON	1e-2
 #define ORIENTATION_TOLERANCE	0.2
 
@@ -1760,7 +1760,7 @@ static FuncResult select_independent_equations( double **equations, int num_rows
 			transpose[pr][i] = temp;
 		}
 
-		if (ABS(pivot_element) > MATRIX_EPSILON )
+		if (ABS(pivot_element) > ORB_MATRIX_EPSILON )
 		{
 				for(i=0;i<C;i++)
 					transpose[pr][i] /= pivot_element;
@@ -1786,7 +1786,7 @@ static FuncResult select_independent_equations( double **equations, int num_rows
 		(*ind_equations)[i] = NEW_ARRAY( num_columns+1, double );
 
 		for(j=0;j<C;j++)
-		if (ABS(transpose[i][j]) > MATRIX_EPSILON )
+		if (ABS(transpose[i][j]) > ORB_MATRIX_EPSILON )
 			break;
 
 		if (j==C)

@@ -552,7 +552,7 @@ class SnapPyHPExtensionSpec:
             extra_compile_args += ['/arch:SSE2']
         extra_compile_args += ['/MT']
     elif platform.machine() == 'x86_64':
-        x86_64_compile_args = ['-mfpmath=sse', '-msse2', '-mieee-fp']
+        extra_compile_args += x86_64_compile_args
 
     if have_cython:
         if [int(x) for x in cython_version.split('.')[:2]] < [3, 0]:

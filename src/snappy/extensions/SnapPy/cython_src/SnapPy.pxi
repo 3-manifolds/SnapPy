@@ -603,9 +603,6 @@ cdef extern from "SnapPea.h":
 
     extern int** get_symplectic_basis(c_Triangulation *manifold, int *, int *, int) except *
     extern void free_symplectic_basis(int **, int) except *
-    extern void register_callbacks(void (*begin_callback)(),
-                                   void (*middle_callback)(),
-                                   void (*end_callback)())
 
 cdef extern from "kernel_prototypes.h":
     extern void choose_generators(c_Triangulation *manifold,

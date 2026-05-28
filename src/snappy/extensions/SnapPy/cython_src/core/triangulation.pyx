@@ -623,6 +623,18 @@ cdef class Triangulation():
         """
         return Manifold_from_Triangulation(self)
 
+    def without_hyperbolic_structure(self):
+        """
+        Returns a copy of `self`.  For compatibility with :meth:`Manifold.without_hyperbolic_structure`.
+
+        >>> M = Triangulation('9_42')
+        >>> T = M.without_hyperbolic_structure()
+        >>> T == M
+        True
+        """
+        return self.copy()
+
+
     def _polish_hyperbolic_structures(self):
         """
         This function does nothing for Triangulation. It is overloaded in

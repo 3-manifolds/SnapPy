@@ -99,7 +99,8 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static void    initialize_flags(Triangulation *manifold);
 static void visit_tetrahedra(Triangulation *manifold, Boolean compute_corners, Boolean centroid_at_origin);
-static void    initial_tetrahedron(Triangulation *manifold, Tetrahedron **tet, Boolean compute_corners, Boolean centroid_at_origin);
+static void    initial_tetrahedron(Triangulation *manifold, Tetrahedron **tet, EdgeIndex *best_edge);
+static void    compute_tetrahedron_corners(Tetrahedron *tet, EdgeIndex best_edge, Boolean centroid_at_origin);
 static void    count_incident_generators(Triangulation *manifold);
 static void    eliminate_trivial_generators(Triangulation *manifold);
 static void kill_the_incident_generator(Triangulation *manifold, EdgeClass *edge);
@@ -271,7 +272,10 @@ static void visit_tetrahedra(
      *    2000/4/2  The choice of initial tetrahedron is independent
      *    of compute_corners.
      */
-    initial_tetrahedron(manifold, &queue[0], compute_corners, centroid_at_origin);
+    EdgeIndex best_edge;
+    initial_tetrahedron(manifold, &queue[0], &best_edge);
+    if (compute_corners)
+        compute_tetrahedron_corners(queue[0], best_edge, centroid_at_origin);
     
     /*
      *    Mark the initial Tetrahedron as visited.
@@ -379,23 +383,14 @@ static void visit_tetrahedra(
 
 static void initial_tetrahedron(
     Triangulation    *manifold,
-    Tetrahedron        **initial_tet,
-    Boolean            compute_corners,
-    Boolean            centroid_at_origin)
+    Tetrahedron      **initial_tet,
+    EdgeIndex        *best_edge)
 {
-    VertexIndex    v[4];
-    Complex        z,
-                sqrt_z,
-                w[4];
-    Tetrahedron    *tet;
-    EdgeIndex    best_edge,
-                edge;
-
     /*
      *    Set a default choice of tetrahedron and edge.
      */
     *initial_tet = manifold->tet_list_begin.next;
-    best_edge = 0;
+    *best_edge = 0;
 
     /*
      *    2000/02/11 JRW  Can we choose the initial tetrahedron in such
@@ -405,150 +400,154 @@ static void initial_tetrahedron(
      *    that looks like the "top of the tower" in the canonical
      *    triangulation of a 2-bridge knot or link complement?
      */
-    for (tet = manifold->tet_list_begin.next;
+    for (Tetrahedron * tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
          tet = tet->next)
-        for (edge = 0; edge < 6; edge++)
+        for (EdgeIndex edge = 0; edge < 6; edge++)
             if (tet->neighbor[one_face_at_edge  [edge]]
-             == tet->neighbor[other_face_at_edge[edge]])
+                == tet->neighbor[other_face_at_edge[edge]])
             {
                 *initial_tet    = tet;
-                best_edge        = edge;
+                *best_edge      = edge;
             }
-
-    if (compute_corners)
-    {
-        if (centroid_at_origin == TRUE)
-        {
-            /*
-             *    Proposition.  For any value of w, positioning the corners at
-             *
-             *                corner[0] =  w
-             *                corner[1] =  w^-1
-             *                corner[2] = -w^-1
-             *                corner[3] = -w
-             *
-             *    defines a tetrahedron with its centroid at the "origin" and
-             *    the common perpendiculars between pairs of opposite edges
-             *    coincident with the "coordinate axes".  [In the Klein model,
-             *    the tetrahedron is inscribed in a rectangular box whose faces
-             *    are parallel to the coordinate axes.]
-             *
-             *    Proof:  Use the observation that the line from a0 to a1 will
-             *    intersect the line from b0 to b1 iff the cross ratio
-             *
-             *                (b0 - a0) (b1 - a1)
-             *                -------------------
-             *                (b1 - a0) (b0 - a1)
-             *
-             *    of the tetrahedron they span is real, and they will be
-             *    orthogonal iff the cross ratio is -1.
-             *
-             *    [-w, w] is orthogonal to [0, infinity] because
-             *
-             *                (0 - -w) (infinity - w)
-             *                ----------------------- = -1
-             *                (infinity - -w) (0 - w)
-             *
-             *    and similarly for [-w^-1, w^-1] and [0, infinity].
-             *
-             *    [w^-1, w] is orthogonal to [-1, 1] because
-             *
-             *                (-1 - w^-1) (1 - w)
-             *                ------------------- = -1
-             *                (1 - w^-1) (-1 - w)
-             *
-             *    and similarly for [-w^-1, -w] and [-1, 1].
-             *
-             *    [-w^-1, w] is orthogonal to [-i, i] because
-             *
-             *                (-i - -w^-1) (i - w)
-             *                -------------------- = -1
-             *                (i - -w^-1) (-i - w)
-             *
-             *    and similarly for [w^-1, -w] and [-i, i].
-             *
-             *    Q.E.D.
-             *
-             *
-             *    The tetrahedron will have the correct cross ratio z iff
-             *
-             *            (w - -w^-1) (w^-1 -   -w )    (w + w^-1)^2
-             *        z = -------------------------- = --------------
-             *            (w -   -w ) (w^-1 - -w^-1)         4
-             *
-             *    Solving for w in terms of z gives the four possibilities
-             *
-             *        w = +- (sqrt(z) +- sqrt(z - 1))
-             *
-             *    Note that sqrt(z) + sqrt(z - 1) and sqrt(z) - sqrt(z - 1) are
-             *    inverses of one another.  We can choose any of the four solutions
-             *    to be "w", and the other three will automatically become w^-1,
-             *    -w, and -w^-1.
-             *
-             *    Comment:  This position for the initial corners brings out
-             *    nice numerical properties in the O(3,1) matrices for manifolds
-             *    composed of regular ideal tetrahedra (cf. the proofs in the
-             *    directory "Tilings of H^3", which aren't part of SnapPea, but
-             *    I could give you a copy).
-             */
-
-            z = (*initial_tet)->shape[filled]->cwl[ultimate][0].rect;
-
-            w[0] = complex_plus(
-                    complex_sqrt(z),
-                    complex_sqrt(complex_minus(z, One))
-                );
-            w[1] = complex_div(One, w[0]);
-            w[2] = complex_negate(w[1]);
-            w[3] = complex_negate(w[0]);
-
-            (*initial_tet)->corner[0] = w[0];
-            (*initial_tet)->corner[1] = w[1];
-            (*initial_tet)->corner[2] = w[2];
-            (*initial_tet)->corner[3] = w[3];
-        }
-        else
-        {
-            /*
-             *    Originally this code positioned the Tetrahedron's vertices
-             *    at {0, 1, z, infinity}.  As of 2000/02/04 I modified it
-             *    to put the vertices at {0, 1/sqrt(z), sqrt(z), infinity} instead,
-             *    so that the basepoint (0,0,1) falls at the midpoint
-             *    of the edge extending from 0 to infinity, and the
-             *    tetrahedron's symmetry axis lies parallel to the x-axis.
-             *    To convince yourself that the tetrahedron's axis of
-             *    symmetry does indeed pass through that point, note
-             *    that a half turn around the axis of symmetry factors
-             *    as a reflection in the plane |z| = 1 followed by
-             *    a reflection in the vertical plane sitting over x-axis.
-             */
-
-            /*
-             *    Order the vertices so that the tetrahedron is positively
-             *    oriented, and the selected edge is between vertices
-             *    v[0] and v[1].
-             */
-            v[0] = one_vertex_at_edge[best_edge];
-            v[1] = other_vertex_at_edge[best_edge];
-            v[2] = remaining_face[v[1]][v[0]];
-            v[3] = remaining_face[v[0]][v[1]];
-
-            /*
-             *    Set the coordinates of the corners.
-             */
-
-            z = (*initial_tet)->shape[filled]->cwl[ultimate][edge3[best_edge]].rect;
-            sqrt_z = complex_sqrt(z);
-
-            (*initial_tet)->corner[v[0]] = Infinity;
-            (*initial_tet)->corner[v[1]] = Zero;
-            (*initial_tet)->corner[v[2]] = complex_div(One, sqrt_z);
-            (*initial_tet)->corner[v[3]] = sqrt_z;
-        }
-    }
 }
 
+static void    compute_tetrahedron_corners(
+    Tetrahedron *tet,
+    EdgeIndex   best_edge,
+    Boolean     centroid_at_origin)
+{
+    if (centroid_at_origin == TRUE)
+    {
+        /*
+         *    Proposition.  For any value of w, positioning the corners at
+         *
+         *                corner[0] =  w
+         *                corner[1] =  w^-1
+         *                corner[2] = -w^-1
+         *                corner[3] = -w
+         *
+         *    defines a tetrahedron with its centroid at the "origin" and
+         *    the common perpendiculars between pairs of opposite edges
+         *    coincident with the "coordinate axes".  [In the Klein model,
+         *    the tetrahedron is inscribed in a rectangular box whose faces
+         *    are parallel to the coordinate axes.]
+         *
+         *    Proof:  Use the observation that the line from a0 to a1 will
+         *    intersect the line from b0 to b1 iff the cross ratio
+         *
+         *                (b0 - a0) (b1 - a1)
+         *                -------------------
+         *                (b1 - a0) (b0 - a1)
+         *
+         *    of the tetrahedron they span is real, and they will be
+         *    orthogonal iff the cross ratio is -1.
+         *
+         *    [-w, w] is orthogonal to [0, infinity] because
+         *
+         *                (0 - -w) (infinity - w)
+         *                ----------------------- = -1
+         *                (infinity - -w) (0 - w)
+         *
+         *    and similarly for [-w^-1, w^-1] and [0, infinity].
+         *
+         *    [w^-1, w] is orthogonal to [-1, 1] because
+         *
+         *                (-1 - w^-1) (1 - w)
+         *                ------------------- = -1
+         *                (1 - w^-1) (-1 - w)
+         *
+         *    and similarly for [-w^-1, -w] and [-1, 1].
+         *
+         *    [-w^-1, w] is orthogonal to [-i, i] because
+         *
+         *                (-i - -w^-1) (i - w)
+         *                -------------------- = -1
+         *                (i - -w^-1) (-i - w)
+         *
+         *    and similarly for [w^-1, -w] and [-i, i].
+         *
+         *    Q.E.D.
+         *
+         *
+         *    The tetrahedron will have the correct cross ratio z iff
+         *
+         *            (w - -w^-1) (w^-1 -   -w )    (w + w^-1)^2
+         *        z = -------------------------- = --------------
+         *            (w -   -w ) (w^-1 - -w^-1)         4
+         *
+         *    Solving for w in terms of z gives the four possibilities
+         *
+         *        w = +- (sqrt(z) +- sqrt(z - 1))
+         *
+         *    Note that sqrt(z) + sqrt(z - 1) and sqrt(z) - sqrt(z - 1) are
+         *    inverses of one another.  We can choose any of the four solutions
+         *    to be "w", and the other three will automatically become w^-1,
+         *    -w, and -w^-1.
+         *
+         *    Comment:  This position for the initial corners brings out
+         *    nice numerical properties in the O(3,1) matrices for manifolds
+         *    composed of regular ideal tetrahedra (cf. the proofs in the
+         *    directory "Tilings of H^3", which aren't part of SnapPea, but
+         *    I could give you a copy).
+         */
+
+        Complex z = tet->shape[filled]->cwl[ultimate][0].rect;
+
+        Complex w[4];
+        w[0] = complex_plus(
+            complex_sqrt(z),
+            complex_sqrt(complex_minus(z, One))
+                            );
+        w[1] = complex_div(One, w[0]);
+        w[2] = complex_negate(w[1]);
+        w[3] = complex_negate(w[0]);
+
+        tet->corner[0] = w[0];
+        tet->corner[1] = w[1];
+        tet->corner[2] = w[2];
+        tet->corner[3] = w[3];
+    }
+    else
+    {
+        /*
+         *    Originally this code positioned the Tetrahedron's vertices
+         *    at {0, 1, z, infinity}.  As of 2000/02/04 I modified it
+         *    to put the vertices at {0, 1/sqrt(z), sqrt(z), infinity} instead,
+         *    so that the basepoint (0,0,1) falls at the midpoint
+         *    of the edge extending from 0 to infinity, and the
+         *    tetrahedron's symmetry axis lies parallel to the x-axis.
+         *    To convince yourself that the tetrahedron's axis of
+         *    symmetry does indeed pass through that point, note
+         *    that a half turn around the axis of symmetry factors
+         *    as a reflection in the plane |z| = 1 followed by
+         *    a reflection in the vertical plane sitting over x-axis.
+         */
+
+        /*
+         *    Order the vertices so that the tetrahedron is positively
+         *    oriented, and the selected edge is between vertices
+         *    v[0] and v[1].
+         */
+        VertexIndex v[4];
+        v[0] = one_vertex_at_edge[best_edge];
+        v[1] = other_vertex_at_edge[best_edge];
+        v[2] = remaining_face[v[1]][v[0]];
+        v[3] = remaining_face[v[0]][v[1]];
+
+        /*
+         *    Set the coordinates of the corners.
+         */
+
+        Complex z = tet->shape[filled]->cwl[ultimate][edge3[best_edge]].rect;
+        Complex sqrt_z = complex_sqrt(z);
+
+        tet->corner[v[0]] = Infinity;
+        tet->corner[v[1]] = Zero;
+        tet->corner[v[2]] = complex_div(One, sqrt_z);
+        tet->corner[v[3]] = sqrt_z;
+    }
+}
 
 void compute_fourth_corner(
     Complex            corner[4],

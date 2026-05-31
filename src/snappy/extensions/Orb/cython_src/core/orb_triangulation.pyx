@@ -167,6 +167,8 @@ cdef class OrbTriangulation:
         self.c_triangulation = orb_triangulate_diagram_complement(
             self.c_orb_diagram, True)
 
+        self._cache.clear(message='retriangulate')
+
         return True
 
     def fundamental_group(

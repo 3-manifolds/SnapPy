@@ -62,7 +62,7 @@ Python Modules for macOS or Windows
 If you write Python programs on macOS or Windows, you may wish to
 install SnapPy as a Python module into your own copy of Python.  We
 support Python 3.9 and up.  (On macOS, use a Python downloaded from
-`Python.org <http://python.org>`_ and not the one provided by Apple.)
+`Python.org <https://python.org>`_ and not the one provided by Apple.)
 After installing Python, you may install a SnapPy module from your
 Terminal application or Command Prompt with the command::
 
@@ -183,7 +183,7 @@ SageMath
 --------
 
 SnapPy has some special features when used within `SageMath
-<http://sagemath.org>`_, the universal mathematics software based on
+<https://sagemath.org>`_, the universal mathematics software based on
 Python.  This section describes how to install SnapPy into your
 existing copy of SageMath::
 
@@ -192,7 +192,7 @@ existing copy of SageMath::
 Alternatively, SageMath on `CoCalc <https://cocalc.com/>`_ (formerly
 the SageMathCloud) also has SnapPy preinstalled, and the graphics
 features even work via the `X11 interface
-<http://blog.sagemath.com/cocalc/2018/11/05/x11.html>`_, see the
+<https://blog.sagemath.com/cocalc/2018/11/05/x11.html>`_, see the
 bottom of that page for more.
 
 The graphical features may or may not work, depending on how Tkinter
@@ -207,14 +207,14 @@ Sage's "attach" feature.
 Kitchen sink
 ------------
 
-SnapPy gains extra features when used in `SageMath`_ and one can use
+SnapPy gains extra features when used in `SageMath <https://sagemath.org>`_ and one can use
 Sage's Python to interact not just with SnapPy but a range of other
 computational tools in low-dimensional topology including
-`Regina <http://regina-normal.github.io/>`_,
-`snap <http://snap-pari.sourceforge.net>`_,
+`Regina <https://regina-normal.github.io/>`_,
+`snap <https://snap-pari.sourceforge.net>`_,
 `heegaard <https://github.com/3-manifolds/heegaard>`_,
 `gridlink <https://github.com/3-manifolds/gridlink>`_,
-and `flipper <http://flipper.readthedocs.io>`_.
+and `flipper <https://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
 <https://hub.docker.com/r/computop/sage/>`_ with all of the above tools
 and many more; using this is sometimes the easiest way to get a

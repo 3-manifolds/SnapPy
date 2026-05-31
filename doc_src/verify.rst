@@ -199,12 +199,3 @@ interval types for certification. It furthermore makes use of code by
 `Dunfield, Hoffman, Licata <http://arxiv.org/abs/1407.7827/>`_.
 
 This verification code was contributed by Matthias Goerner.  
-
-
-Verified computation topics
----------------------------
-
-.. toctree::
-   :maxdepth: 1
-
-   verify_internals

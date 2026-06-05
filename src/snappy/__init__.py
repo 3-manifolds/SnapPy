@@ -20,6 +20,8 @@ from .extensions.SnapPyHP import (
     CuspNeighborhood as CuspNeighborhoodHP,
     HolonomyGroup as HolonomyGroupHP)
 
+import FXrays # Not needed yet, but flipper assumes it is imported here.
+
 # seed the kernel's random number generator.
 import time
 from .extensions.SnapPy import set_rand_seed

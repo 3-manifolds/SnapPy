@@ -45,6 +45,7 @@ struct OrbTetShape
     Real                eigenvalue[4];
     Real                orientation_parameter[4];
     Boolean             use_orientation_parameter[4][6];
+    int                 column_index;     /* Index when building the system of equations in orb_hyperbolic_structure.c. */
 };
 
 /*
@@ -54,6 +55,7 @@ struct OrbTetShape
 struct OrbEdgeShape
 {
     Real                inner_product[4];
+    int                 column_index;     /* Index when building the system of equations in orb_hyperbolic_structure.c. */
 };
 
 /*

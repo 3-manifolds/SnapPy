@@ -841,16 +841,25 @@ static void kill_the_incident_generator(
      */
 
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->num_incident_generators--;
-    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->num_incident_generators==0)
-        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->active_relation = FALSE;
+
+    /* ORB-TODO: Orb added this code - but it is unclear why? */
+    if (FALSE)
+        if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->num_incident_generators==0)
+            ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.left_face]  ]->active_relation = FALSE;
       
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face] ]->num_incident_generators--;
-    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->num_incident_generators==0)
-        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->active_relation = FALSE;
+
+    /* ORB-TODO: Orb added this code - but it is unclear why? */
+    if (FALSE)
+        if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->num_incident_generators==0)
+            ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.right_face]  ]->active_relation = FALSE;
 
     ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]]->num_incident_generators--;
-    if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->num_incident_generators==0)
-        ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->active_relation = FALSE;
+
+    /* ORB-TODO: Orb added this code - but it is unclear why? */
+    if (FALSE)
+        if (ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->num_incident_generators==0)
+            ptet.tet->edge_class[edge_between_faces[ptet.near_face][ptet.bottom_face]  ]->active_relation = FALSE;
 
     /*
      *    Decrement *number_of_generators.

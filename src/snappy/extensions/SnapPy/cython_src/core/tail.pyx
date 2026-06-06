@@ -800,33 +800,32 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
 
-IF ORB:
-    def _orb_set_use_orb_conventions(use_orb_conventions : bool):
-        orb_set_use_orb_conventions(use_orb_conventions)
+def _orb_set_use_orb_conventions(use_orb_conventions : bool):
+    orb_set_use_orb_conventions(use_orb_conventions)
 
-    def _orb_test_triangulating_diagram(name, remove_finite_vertices = True):
-        cdef c_Triangulation * triangulation
-        cdef OrbDiagram * diagram
+def _orb_test_triangulating_diagram(name, remove_finite_vertices = True):
+    cdef c_Triangulation * triangulation
+    cdef OrbDiagram * diagram
 
-        read_orb(
-            to_byte_str(name),
-            &triangulation,
-            &diagram)
+    read_orb(
+        to_byte_str(name),
+        &triangulation,
+        &diagram)
 
-        if triangulation:
-            free_triangulation(triangulation)
+    if triangulation:
+        free_triangulation(triangulation)
 
-        if diagram:
-            triangulation = orb_triangulate_diagram_complement(
-                diagram, remove_finite_vertices)
+    if diagram:
+        triangulation = orb_triangulate_diagram_complement(
+            diagram, remove_finite_vertices)
 
-        if not triangulation:
-            orb_free_diagram(diagram)
-            return None
-
-        T = Triangulation('empty')
-        T.set_c_triangulation(triangulation)
-
+    if not triangulation:
         orb_free_diagram(diagram)
+        return None
 
-        return T
+    T = Triangulation('empty')
+    T.set_c_triangulation(triangulation)
+
+    orb_free_diagram(diagram)
+
+    return T

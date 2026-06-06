@@ -476,22 +476,14 @@ void free_triangulation(
         {
             dead_edge = manifold->edge_list_begin.next;
             REMOVE_NODE(dead_edge);
-#ifdef ORB
             free_edge_class(dead_edge);
-#else
-            my_free(dead_edge);
-#endif
         }
 
         while (manifold->cusp_list_begin.next != &manifold->cusp_list_end)
         {
             dead_cusp = manifold->cusp_list_begin.next;
             REMOVE_NODE(dead_cusp);
-#ifdef ORB
             free_cusp(dead_cusp);
-#else
-            my_free(dead_cusp);
-#endif
         }
 
         my_free(manifold);
@@ -525,10 +517,8 @@ void free_tetrahedron(
     if (tet->cusp_nbhd_position != NULL)
         my_free(tet->cusp_nbhd_position);
 
-#ifdef ORB
     if (tet->orb_tet_shape != NULL)
         my_free(tet->orb_tet_shape);
-#endif
 
     if (tet->extra != NULL)
         my_free(tet->extra);
@@ -536,7 +526,6 @@ void free_tetrahedron(
     my_free(tet);
 }
 
-#ifdef ORB
 void free_edge_class(
     EdgeClass       *edge_class)
 {
@@ -554,7 +543,6 @@ void free_cusp(Cusp * cusp)
 
     my_free(cusp);
 }
-#endif
 
 void clear_shape_history(
     Tetrahedron *tet)
@@ -734,13 +722,11 @@ void copy_triangulation(
             *new_tet[i]->cusp_nbhd_position = *tet->cusp_nbhd_position;
         }
 
-#ifdef ORB
         if (tet->orb_tet_shape != NULL)
         {
             new_tet[i]->orb_tet_shape = NEW_STRUCT(OrbTetShape);
             *new_tet[i]->orb_tet_shape = *tet->orb_tet_shape;
         }
-#endif
 
         /*
          *  Just to be safe.
@@ -768,13 +754,11 @@ void copy_triangulation(
 
         *new_edge[i] = *edge;
 
-#ifdef ORB
         if (edge->orb_edge_shape != NULL)
         {
             new_edge[i]->orb_edge_shape = NEW_STRUCT(OrbEdgeShape);
             *new_edge[i]->orb_edge_shape = *edge->orb_edge_shape;
         }
-#endif
 
         new_edge[i]->incident_tet = new_tet[edge->incident_tet->index];
 
@@ -797,7 +781,6 @@ void copy_triangulation(
 
         *new_cusp[cusp->index - min_cusp_index] = *cusp;
 
-#ifdef ORB
         new_cusp[cusp->index - min_cusp_index]->orb_num_incident_singular_edges = 0;
         new_cusp[cusp->index - min_cusp_index]->orb_incident_singular_edges = NULL;
         if (cusp->orb_cusp_shape != NULL)
@@ -805,14 +788,11 @@ void copy_triangulation(
             new_cusp[cusp->index - min_cusp_index]->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
             *new_cusp[cusp->index - min_cusp_index]->orb_cusp_shape = *cusp->orb_cusp_shape;
         }
-#endif
 
         INSERT_BEFORE(new_cusp[cusp->index - min_cusp_index], &destination->cusp_list_end);
     }
 
-#ifdef ORB
     orb_cusps_fill_incident_singular_edges(destination);
-#endif
 
     /*
      *  Free the arrays of pointers.
@@ -854,9 +834,7 @@ void initialize_triangulation(
     manifold->num_or_cusps              = 0;
     manifold->num_nonor_cusps           = 0;
     manifold->num_fake_cusps            = 0;
-#ifdef ORB
     manifold->orb_num_singular_edges    = 0;
-#endif
     manifold->num_generators            = 0;
     manifold->CS_value_is_known         = FALSE;
     manifold->CS_fudge_is_known         = FALSE;
@@ -933,9 +911,7 @@ void initialize_tetrahedron(
     tet->cross_section      = NULL;
     tet->canonize_info      = NULL;
     tet->cusp_nbhd_position = NULL;
-#ifdef ORB
     tet->orb_tet_shape      = NULL;
-#endif
     tet->extra              = NULL;
     tet->prev               = NULL;
     tet->next               = NULL;
@@ -968,11 +944,9 @@ void initialize_cusp(
     cusp->cusp_shape[current]       = Zero;
     cusp->shape_precision[initial]  = 0;
     cusp->shape_precision[current]  = 0;
-#ifdef ORB
     cusp->orb_cusp_shape            = NULL;
     cusp->orb_num_incident_singular_edges = 0;
     cusp->orb_incident_singular_edges = NULL;
-#endif
     cusp->index                     = 255;
     cusp->displacement              = 0.0;
     cusp->displacement_exp          = 1.0;
@@ -995,13 +969,11 @@ void initialize_edge_class(
     edge_class->target_angle_sum        = TwoPiI;
     edge_class->prev                    = NULL;
     edge_class->next                    = NULL;
-#ifdef ORB
     edge_class->orb_is_singular         = FALSE;
     edge_class->orb_singular_order      = 1;
     edge_class->orb_old_singular_order  = 1;
     edge_class->orb_singular_index      = -1;
     edge_class->orb_edge_shape          = NULL;
-#endif
 }
 
 FuncResult check_Euler_characteristic_of_boundary(

@@ -60,12 +60,10 @@ typedef enum
     other_solution,              /**<  volume <= 0, but not flat or degenerate                     */
     no_solution,                 /**<  gluing equations could not be solved                        */
     externally_computed          /**<  tetrahedra shapes were inserted into the triangulation      */
-#ifdef ORB
     ,
     orb_partially_flat_solution,
     orb_step_failed,
     orb_invalid_solution
-#endif
 } SolutionType;
 
 /**
@@ -2757,11 +2755,7 @@ extern Real volume(Triangulation *manifold, int *precision);
  *  variable *precision.
  */
 
-#ifdef ORB
-
 #include "Orb.h"
-
-#endif
     
 SNAPPEA_NAMESPACE_END_SCOPE
 

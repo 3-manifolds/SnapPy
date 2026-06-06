@@ -52,9 +52,6 @@
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static void initialize_tet_edge_classes(Triangulation *manifold);
-#ifndef ORB
-static
-#endif
 void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e);
 
 void create_edge_classes(
@@ -103,9 +100,6 @@ static void initialize_tet_edge_classes(
             tet->edge_class[e] = NULL;
 }
 
-#ifndef ORB
-static
-#endif
 void create_one_edge_class(
     Triangulation   *manifold,
     Tetrahedron     *tet,
@@ -184,11 +178,7 @@ void replace_edge_classes(
     {
         dead_edge_class = manifold->edge_list_begin.next;
         REMOVE_NODE(dead_edge_class);
-#ifdef ORB
         free_edge_class(dead_edge_class);
-#else
-        my_free(dead_edge_class);
-#endif
     }
 
     /*

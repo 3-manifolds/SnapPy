@@ -1235,7 +1235,7 @@ cdef class Manifold(Triangulation):
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_accuracy, current_shape_accuracy,
         cdef Complex initial_modulus, current_modulus
-        cdef int meridian_accuracy, longitude_accuracy, singularity_index, accuracy
+        cdef int meridian_accuracy, longitude_accuracy, singular_order, accuracy
         cdef Complex c_meridian, c_longitude, c_core_length
 
         if self.c_triangulation is NULL:
@@ -1288,14 +1288,14 @@ cdef class Manifold(Triangulation):
         }
 
         core_geodesic(self.c_triangulation, cusp_index,
-                      &singularity_index, &c_core_length, &accuracy)
+                      &singular_order, &c_core_length, &accuracy)
 
-        if singularity_index != 0:
+        if singular_order != 0:
             core_length = Complex2Number(c_core_length)
             core_length.accuracy = accuracy
             info.update({
                 'core_length': self._number_(core_length),
-                'singularity_index': singularity_index
+                'singular_order': singular_order
             })
 
         return CuspInfo(**info)

@@ -361,7 +361,8 @@ class CuspInfo(Info):
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
                  'holonomy precision' : 'holonomy_accuracy',
-                 'shape precision'    : 'shape_accuracy'}
+                 'shape precision'    : 'shape_accuracy',
+                 'singularity_index'  : 'singular_order'}
 
 class SingularEdgeInfo(Info):
     def __repr__(self):

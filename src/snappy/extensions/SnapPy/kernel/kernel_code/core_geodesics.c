@@ -108,16 +108,20 @@ void core_geodesic(
     Complex         *core_length,
     int             *precision)
 {
-    Cusp    *cusp;
-    Complex length[2];
-
-    cusp = find_cusp(manifold, cusp_index);
+    Cusp * cusp = find_cusp(manifold, cusp_index);
 
     /*
      *  Compute the complex length relative to the ultimate
      *  and penultimate hyperbolic structures.
      */
 
+    if (core_length == NULL)
+    {
+        compute_core_geodesic(cusp, singularity_index, NULL);
+        return;
+    }
+
+    Complex length[2];
     compute_core_geodesic(cusp, singularity_index, length);
 
     /*
@@ -162,8 +166,11 @@ void compute_core_geodesic(
      || Dehn_coefficients_are_integers(cusp) == FALSE)
     {
         *singularity_index  = 0;
-        length[ultimate]    = Zero;
-        length[penultimate] = Zero;
+        if (length)
+        {
+            length[ultimate]    = Zero;
+            length[penultimate] = Zero;
+        }
 
         return;
     }
@@ -179,6 +186,11 @@ void compute_core_geodesic(
                             (long int) cusp->l,
                             &positive_d,
                             &negative_c);
+
+    if (length == NULL)
+    {
+        return;
+    }
 
     for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
     {

@@ -1303,7 +1303,7 @@ cdef class Triangulation():
         >>> c.is_complete
         False
         >>> sorted(c.keys())
-        ['filling', 'index', 'is_complete', 'topology']
+        ['filling', 'index', 'is_complete', 'singular_order', 'topology']
 
         You can get information about multiple cusps at once:
 
@@ -1318,9 +1318,7 @@ cdef class Triangulation():
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
         cdef Real m, l
-        cdef Complex initial_shape, current_shape
-        cdef int initial_shape_accuracy, current_shape_accuracy,
-        cdef Complex initial_modulus, current_modulus
+        cdef int singular_order
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -1335,15 +1333,18 @@ cdef class Triangulation():
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
-                      &initial_shape, &current_shape,
-                      &initial_shape_accuracy, &current_shape_accuracy,
-                      &initial_modulus, &current_modulus)
+                      NULL, NULL, NULL, NULL, NULL, NULL)
+        core_geodesic(self.c_triangulation, cusp_index,
+                      &singular_order, NULL, NULL)
+
         info = {
            'index' : cusp_index,
            'topology' : CuspTopology[topology],
            'is_complete' : B2B(is_complete),
            'filling' : (Real2float(m), Real2float(l))
            }
+        if singular_order != 0:
+            info['singular_order'] = singular_order
 
         return CuspInfo(**info)
 

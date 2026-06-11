@@ -403,12 +403,6 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
     initialize_triangulation(manifold);
 
     manifold->num_tetrahedra = cf->num_tet;
-    manifold->orb_solution_type[complete] = not_attempted;
-    manifold->orb_solution_type[filled] = not_attempted;
-    manifold->orb_num_singular_edges = 0;
-    manifold->num_or_cusps = 0;
-    manifold->num_nonor_cusps = 0;
-    manifold->num_cusps = 0;
 
     Tetrahedron ** tet_array = NEW_ARRAY(manifold->num_tetrahedra, Tetrahedron *);
     for (int i = 0; i < manifold->num_tetrahedra; i++) {

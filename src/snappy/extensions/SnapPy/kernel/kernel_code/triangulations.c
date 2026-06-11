@@ -825,23 +825,25 @@ void copy_shape_history(
 void initialize_triangulation(
     Triangulation *manifold)
 {
-    manifold->name                      = NULL;
-    manifold->num_tetrahedra            = 0;
-    manifold->solution_type[complete]   = not_attempted;
-    manifold->solution_type[filled]     = not_attempted;
-    manifold->orientability             = unknown_orientability;
-    manifold->num_cusps                 = 0;
-    manifold->num_or_cusps              = 0;
-    manifold->num_nonor_cusps           = 0;
-    manifold->num_fake_cusps            = 0;
-    manifold->orb_num_singular_edges    = 0;
-    manifold->num_generators            = 0;
-    manifold->CS_value_is_known         = FALSE;
-    manifold->CS_fudge_is_known         = FALSE;
-    manifold->CS_value[ultimate]        = 0.0;
-    manifold->CS_value[penultimate]     = 0.0;
-    manifold->CS_fudge[ultimate]        = 0.0;
-    manifold->CS_fudge[penultimate]     = 0.0;
+    manifold->name                        = NULL;
+    manifold->num_tetrahedra              = 0;
+    manifold->solution_type[complete]     = not_attempted;
+    manifold->solution_type[filled]       = not_attempted;
+    manifold->orb_solution_type[complete] = not_attempted;
+    manifold->orb_solution_type[filled]   = not_attempted;
+    manifold->orientability               = unknown_orientability;
+    manifold->num_cusps                   = 0;
+    manifold->num_or_cusps                = 0;
+    manifold->num_nonor_cusps             = 0;
+    manifold->num_fake_cusps              = 0;
+    manifold->orb_num_singular_edges      = 0;
+    manifold->num_generators              = 0;
+    manifold->CS_value_is_known           = FALSE;
+    manifold->CS_fudge_is_known           = FALSE;
+    manifold->CS_value[ultimate]          = 0.0;
+    manifold->CS_value[penultimate]       = 0.0;
+    manifold->CS_fudge[ultimate]          = 0.0;
+    manifold->CS_fudge[penultimate]       = 0.0;
 
     initialize_tetrahedron(&manifold->tet_list_begin);
     initialize_tetrahedron(&manifold->tet_list_end);

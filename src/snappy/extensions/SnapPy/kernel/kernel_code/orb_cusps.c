@@ -10,13 +10,16 @@
  *
  */
 
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "kernel.h"
 
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static void add_singular_edge_to_cusp(EdgeClass * edge, Cusp * cusp);
+EXTERN_C_BEGIN_SCOPE
+static int compare_incident_singular_edges(const void *ptr1, const void *ptr2);
+EXTERN_C_END_SCOPE
 
 static void add_singular_edge_to_cusp(
     EdgeClass * edge,
@@ -35,6 +38,20 @@ static void add_singular_edge_to_cusp(
 
     cusp->orb_incident_singular_edges[n] = edge;
     cusp->orb_num_incident_singular_edges = n + 1;
+}
+
+static int compare_incident_singular_edges(
+    const void  *ptr1,
+    const void  *ptr2)
+{
+    int i = ((EdgeClass *)ptr1)->orb_singular_index;
+    int j = ((EdgeClass *)ptr2)->orb_singular_index;
+
+    if (i < j)
+        return -1;
+    if (i > j)
+        return +1;
+    return 0;
 }
 
 void orb_cusps_fill_incident_singular_edges(
@@ -73,7 +90,17 @@ void orb_cusps_fill_incident_singular_edges(
                 edge,
                 edge->incident_tet->cusp[
                     other_vertex_at_edge[edge->incident_edge_index]]);
-        }    
+        }
+
+    for (Cusp * cusp = manifold->cusp_list_begin.next;
+         cusp != &manifold->cusp_list_end;
+         cusp = cusp->next)
+        if (cusp->orb_num_incident_singular_edges > 0)
+            qsort(
+                cusp->orb_incident_singular_edges,
+                cusp->orb_num_incident_singular_edges,
+                sizeof(EdgeClass*),
+                compare_incident_singular_edges);
 }
 
 /*

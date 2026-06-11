@@ -240,7 +240,8 @@ struct Cusp
     int                 orb_num_incident_singular_edges; /**< Corresponds to Triangulation::num_cone_points in Orb. */
     EdgeClass           **orb_incident_singular_edges;   /**< Singular edges incident to this cusp.
                                                           * Similar to Triangulation::cone_points,
-                                                          * but we store the EdgeClass. */
+                                                          * but we store the EdgeClass.
+                                                          * Sorted by EdgeClass:orb_singular_index. */
     int                 index;                  /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
                                                 /**   Non-negative indices for "real"

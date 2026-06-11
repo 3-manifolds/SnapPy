@@ -63,13 +63,14 @@ extern Triangulation *orb_triangulate_graph_complement(
     /* note: all although identify_cusp reindex everything, it does it in a way
      * consistent with the previous indices */
     /* identify_cusps(manifold); */
+
+    orb_cusps_fill_incident_singular_edges(manifold);
     mark_fake_cusps(manifold);
+    compute_cusp_orientabilities(manifold);
     count_cusps(manifold);
     peripheral_curves_as_needed(manifold);
 
     add_peripheral_curves(gamma);
-
-    orb_cusps_fill_incident_singular_edges(manifold);
 
     if (do_remove_finite_vertices)
         remove_finite_vertices(manifold,

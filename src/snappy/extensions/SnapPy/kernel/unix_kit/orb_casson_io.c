@@ -455,26 +455,23 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
 
     create_edge_classes(manifold);
     orient_edge_classes(manifold);
+    create_cusps(manifold);
+
+    /*
+     * ORB-TODO: Only allocate if solution type is not not_attempted.
+     */
 
     for (EdgeClass * edge = manifold->edge_list_begin.next;
          edge != &manifold->edge_list_end;
          edge = edge->next)
         edge->orb_edge_shape = NEW_STRUCT(OrbEdgeShape);
 
-    create_cusps(manifold);
-    mark_fake_cusps(manifold);
-    count_cusps(manifold);
-
     for (Cusp * cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
-    {
         cusp->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
-        cusp->orb_cusp_shape->column_index = -1;
-    }
 
     ei = cf->head;
-
     while (ei != NULL) {
         TetEdgeInfo * tei1 = ei->head;
         int t1 = tei1->tet_index;
@@ -522,8 +519,13 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
     }
 
     if (cf->type != not_attempted)
+    {
+        manifold->orb_solution_type[complete] = cf->type;
+        manifold->orb_solution_type[filled] = cf->type;
+
         for (Tetrahedron * tet = manifold->tet_list_begin.next;
-             tet != &manifold->tet_list_end; tet = tet->next) {
+             tet != &manifold->tet_list_end;
+             tet = tet->next) {
             Boolean neg = FALSE;
 
             for (int i = 0; i < 4; i++)
@@ -567,16 +569,12 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
                     for (int j = 0; j < 2; j++)
                         tet->orb_tet_shape->use_orientation_parameter[j][i] = TRUE;
         }
-
-    orb_cusps_fill_incident_singular_edges(manifold);
-
-    peripheral_curves_as_needed(manifold);
-
-    /* identify_cusps(manifold); */
-
-    ei = cf->head;
+    }
 
     if (cf->vertices_known)
+    {
+        ei = cf->head;
+
         while (ei != NULL) {
             TetEdgeInfo * tei1 = ei->head;
             int t1 = tei1->tet_index;
@@ -608,17 +606,24 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
 
             ei = ei->next;
         }
+    }
+
+    orb_cusps_fill_incident_singular_edges(manifold);
+    mark_fake_cusps(manifold);
+    compute_cusp_orientabilities(manifold);
+    count_cusps(manifold);
+
+    peripheral_curves_as_needed(manifold);
 
     orient(manifold);
     my_free(tet_array);
 
-    manifold->orb_solution_type[complete] = cf->type;
-    manifold->orb_solution_type[filled] = cf->type;
+    /*
+     * ORB-TODO: Tilts should be computed when we compute canonical cell decomposition.
+     */
 
     if (manifold->orb_solution_type[complete] == geometric_solution)
         orb_compute_tilts(manifold);
-
-    /* peripheral_curves_as_needed(manifold); */
 
     return manifold;
 }

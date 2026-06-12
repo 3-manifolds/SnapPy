@@ -118,7 +118,7 @@ struct extra {
  * Path endpoints can have different states of initialisation. As a convention 
  * if the pointers tri and region are NULL then endpoint is not initialised. 
  * If tri is not NULL and region is NULL then the endpoint is initialised but 
- * the region is not known either because it has not been choosen or we have 
+ * the region is not known either because it has not been chosen or we have 
  * split along the curve. In either of the previous cases the tri pointer is 
  * still valid. If tri is not NULL and region is not NULL then the region 
  * pointer is valid and tri = region->tri.
@@ -130,7 +130,7 @@ struct extra {
  */
 
 typedef struct PathEndPoint {
-    FaceIndex                   face;                   /** face containg the short rectangle carrying the curve */
+    FaceIndex                   face;                   /** face containing the short rectangle carrying the curve */
     VertexIndex                 vertex;                 /** vertex we dive through the manifold along */
     int                         region_index;           /** index of the region the endpoint lies in */
     int                         num_adj_curves;         /** where the curve dives into the manifold */
@@ -944,7 +944,7 @@ void init_cusp_triangulation(Triangulation *manifold, CuspStructure *cusp) {
 }
 
 /*
- * Initialise the cusp region doubly linked list to cotain the regions bounded 
+ * Initialise the cusp region doubly linked list to contain the regions bounded 
  * by the meridian and longitude curves.
  */
 
@@ -1973,7 +1973,7 @@ void do_one_oscillating_curve(CuspStructure **cusps, OscillatingCurves *curves, 
 }
 
 /*
- * Initalise the first curve component of an oscillating curve.
+ * Initialise the first curve component of an oscillating curve.
  * Set edge classes and find path endpoints.
  */
 
@@ -1990,7 +1990,7 @@ CurveComponent *setup_first_curve_component(CuspStructure *cusp, EndMultiGraph *
 }
 
 /*
- * Initalise the last curve component of an oscillating curve.
+ * Initialise the last curve component of an oscillating curve.
  * Set edge classes and find path endpoints.
  */
 

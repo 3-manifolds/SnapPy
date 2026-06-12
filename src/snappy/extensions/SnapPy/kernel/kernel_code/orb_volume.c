@@ -40,7 +40,7 @@ Real orb_volume(
     return volume;
 }
 
-/*  Volume computed using formula in "A volume forumla for generalized hyperbolic tetrahedra" by Ushijima
+/*  Volume computed using formula in "A volume formula for generalized hyperbolic tetrahedra" by Ushijima
  *
  *  Ported from tetrahedron_volume in snappea/code/my_volume.c
  *  https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/snappea/code/my_volume.c#L43-L119

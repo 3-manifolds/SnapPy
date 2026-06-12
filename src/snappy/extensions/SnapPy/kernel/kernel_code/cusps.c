@@ -413,7 +413,7 @@ void compute_cusp_orientabilities(
                             expected_nbr_orientation = TRUE;
 
                         /*
-                         *  ... check whether its orientation is constent.
+                         *  ... check whether its orientation is consistent.
                          */
                         if (nbr_orientation != expected_nbr_orientation)
                             cusp->orientability = nonorientable_cusp;
@@ -441,7 +441,7 @@ void compute_cusp_orientabilities(
             }
             /*
              *  Keeping going until we either discover the cusp is nonorientable
-             *  or the queue is exhaused.
+             *  or the queue is exhausted.
              */
             while (cusp->orientability == orientable_cusp &&
                    queue_first <= queue_last);

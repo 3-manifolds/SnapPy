@@ -29,7 +29,7 @@ typedef struct Tetrahedron Tetrahedron;
 struct OrbGraph
 {
     int             num_meetings;   /* Number of GraphMeetings in the projection */
-    int             num_free_loops; /* Almost alway zero */
+    int             num_free_loops; /* Almost always zero */
     int             num_components; /* corresponds to the number of cusps */
     OrbGraphMeeting *meeting;       /* contains all the meetings in the OrbGraph */
 };

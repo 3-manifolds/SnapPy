@@ -727,7 +727,7 @@ class DirichletDomain(CDirichletDomain):
     Or from matrices:
 
     >>> G = Manifold('m004').fundamental_group(False)
-    >>> matrices = [ G.O31('a'), G.O31('b'), G.O31('c') ] # Note: some of the matrices contain (near) 0 entries and thus this tests that Object2Real converts small numbers fromatted by pari as "1.0 E-10" (note the pace before "E") correctly when not in SageMath.
+    >>> matrices = [ G.O31('a'), G.O31('b'), G.O31('c') ] # Note: some of the matrices contain (near) 0 entries and thus this tests that Object2Real converts small numbers formatted by pari as "1.0 E-10" (note the pace before "E") correctly when not in SageMath.
     >>> DirichletDomain(O31_generators = matrices,
     ...                 maximize_injectivity_radius = False)
     8 finite vertices, 2 ideal vertices; 20 edges; 12 faces

@@ -212,7 +212,7 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 
 /* The number of tries for finding an ideal vertex in the 1-4 move
- * which does not resut in degenerate tetrahedra */
+ * which does not result in degenerate tetrahedra */
 
 #define NO_TRIES_SUBDIVIDE_1_4 40
 

@@ -535,7 +535,7 @@ cdef class Triangulation():
           single edge of valence 5.
 
         It also does random 4 -> 4 moves in hopes of setting up a
-        simplfication.  The argument passes_at_fours is the number of
+        simplification.  The argument passes_at_fours is the number of
         times it goes through the valence-4 edges without progress
         before giving up.
 
@@ -2578,7 +2578,7 @@ cdef class Triangulation():
 
         # The next call has the effect of initializing aspects of
         # self.c_triangulation that are needed to build the cover.  It is *not*
-        # redundant with the preceeding call to self.fundamental_group()
+        # redundant with the preceding call to self.fundamental_group()
         # because the resulting FundamentalGroup object calls the kernel
         # function "fundamental_group" on a copy of self.c_triangulation.
         free_group_presentation(compute_unsimplified_presentation(self.c_triangulation))
@@ -3076,7 +3076,7 @@ cdef class Triangulation():
 
         It was introduced in
         `Burton '11 <http://arxiv.org/abs/1110.6080>`_. It canonizes and
-        generalizes the ealier dehydration string by
+        generalizes the earlier dehydration string by
         `Callahan, Hildebrand and Weeks '99
         <https://doi.org/10.1090/S0025-5718-99-01036-4>`_.
         The undecorated isomorphism signature can also be given to

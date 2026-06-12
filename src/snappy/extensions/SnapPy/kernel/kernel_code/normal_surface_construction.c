@@ -93,7 +93,7 @@
  *  neighborhood of each cusp.  That is, we want the infinite stacks
  *  for triangles to piece together to form infinite stacks of
  *  boundary-parallel tori and Klein bottles, not infinite surfaces
- *  wrappping around the cusp.  The picture to keep in mind is similar
+ *  wrapping around the cusp.  The picture to keep in mind is similar
  *  to the picture for the edge neighborhoods.  As you trace a meridian
  *  or longitude around the cusp, squares will "come up from below" or
  *  "drop down out of sight".  If the total number coming up equals the

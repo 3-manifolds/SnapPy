@@ -67,6 +67,9 @@ void read_orb_from_string(
 
     *trig = orb_read_casson_format(&p);
 
+    if (name_length > 255)
+        name_length = 255;
+
     if (*trig && name_length > 0)
     {
         (*trig)->name = (char*) my_malloc(name_length + 1);

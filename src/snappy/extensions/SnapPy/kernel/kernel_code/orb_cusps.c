@@ -44,8 +44,8 @@ static int compare_incident_singular_edges(
     const void  *ptr1,
     const void  *ptr2)
 {
-    int i = ((EdgeClass *)ptr1)->orb_singular_index;
-    int j = ((EdgeClass *)ptr2)->orb_singular_index;
+    int i = (*(EdgeClass * const *)ptr1)->orb_singular_index;
+    int j = (*(EdgeClass * const *)ptr2)->orb_singular_index;
 
     if (i < j)
         return -1;

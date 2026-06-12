@@ -20,7 +20,7 @@ cdef class Orbifold(Triangulation):
         # ORB-TODO
         #
         # Consider making this manual = True
-        # Would that mimick the manual work-flow in the Orb app?
+        # Would that mimic the manual work-flow in the Orb app?
         #
         # Are we setting the correct Edge::old_singular_order to make this work?
         #

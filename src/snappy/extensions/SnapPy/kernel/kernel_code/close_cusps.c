@@ -75,7 +75,7 @@
  *  Proof.  There are two ways a triangle may be glued
  *  to itself (orientation preserving and orientation
  *  reversing).  It's trivial to check each case, and see
- *  that the vertices opposite the identifed edge are
+ *  that the vertices opposite the identified edge are
  *  themselves identified.  [In the figure below, I
  *  attempted to draw arrows showing the edge identifications.]
  *

@@ -123,7 +123,7 @@
  *  (Warning:  Somehow I ended up using right-to-left composition
  *  in the multiplication table, even though I use left-to-right
  *  composition in the free group.  So the map F -> G is an antihomeomorphsim.
- *  To further comfuse matters, the Mac UI now displays the transposed
+ *  To further confuse matters, the Mac UI now displays the transposed
  *  multiplication table, so the user sees left-to-right composition
  *  even though right-to-left composition is still used internally.
  *  Sorry about that.)  The relations correspond to the entries in G's

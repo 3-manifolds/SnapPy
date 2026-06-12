@@ -578,7 +578,7 @@ static Complex Li2(
 
     static const int    n = 2;
 
-    /* Coefficents for (double and) quad-double precision. */
+    /* Coefficients for (double and) quad-double precision. */
     static const Real a[] = {
         Real_literal(0.0), /* Unused - here to offset index */
         Real_literal(0.065822344474704406078735861107670864869824983534466406289259704895001245),

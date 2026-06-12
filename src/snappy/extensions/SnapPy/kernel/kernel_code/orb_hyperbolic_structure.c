@@ -136,7 +136,7 @@ SolutionType orb_find_hyperbolic_structure(
         {
             /* if we didn't find a solution there are two cases:
              *      1) we can take a step back along the ray and try again.
-             *      2) we tried to step back with out sucess.  in this case we
+             *      2) we tried to step back with out success.  in this case we
              *         are no longer making progress so we should give up.
              */
 
@@ -1005,7 +1005,7 @@ static FuncResult orientation_check(
     Triangulation *manifold)
 {
     /*
-     * if the orienation parameter changes sign then each of the dihedral
+     * if the orientation parameter changes sign then each of the dihedral
      * angles must be calculated with sin rather than cos
      */
     Tetrahedron *tet;

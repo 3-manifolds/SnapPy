@@ -318,34 +318,47 @@ cdef B2B(Boolean B):
 # override __repr__ to appropriately display the information they
 # contain.
 
-
 class Info(dict):
     """
     Immutable dictionary whose data can be accessed either as
-    attributes or by mapping.
-    Initialize with keyword arguments, or **dict.
+    attributes or by mapping - including by their obsolete
+    names.
     """
-    def __init__(self, **kwargs):
-        # Hack to support obsolete keys
-        content = dict(kwargs)
-        for old, new in self._obsolete.items():
-            try:
-                content[old] = content[new]
-            except KeyError:
-                pass
-        super(Info, self).__init__(content)
-        self.__dict__.update(kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Make each key foo in the dictionary available as attribute
+        # self.foo as well. This also lists the keys in dir(self) and
+        # self.keys(). Note that we do not include the keys in _obsolete
+        # here.
+        self.__dict__.update(self)
+
+    def _translate_key(self, key):
+        """
+        Translate key if it is obsolete.
+        """
+        return self._obsolete.get(key, key)
+
+    def __getitem__(self, key):
+        """
+        Override so that self["obsolete_key"] returns the same as
+        self["key"].
+        """
+        return super().__getitem__(self._translate_key(key))
+
+    def __getattr__(self, name):
+        """
+        Override so that self.obsolete_key returns the same as
+        self.key.
+        """
+        return super().__getattr__(self._translate_key(name))
 
     def _immutable(self, *args):
         raise AttributeError('Info objects are immutable.')
 
-    def keys(self):
-        return self.__dict__.keys()
-
     __setattr__ = __delattr__ = __setitem__ = __delitem__ = _immutable
     pop = popitem = clear = update = _immutable
     _obsolete = {}
-
 
 class CuspInfo(Info):
     def __repr__(self):

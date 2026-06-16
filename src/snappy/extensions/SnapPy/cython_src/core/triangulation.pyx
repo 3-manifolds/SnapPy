@@ -556,6 +556,12 @@ cdef class Triangulation():
 
         If the face is not adjacent to two distinct tetrahedra, this
         function does nothing and returns a non-zero value.
+
+        >>> M = Manifold("m007(3,1)")
+        >>> M._two_to_three(0,0) # Should succeed and return 0
+        0
+        >>> list(M.gluing_equations()[4]) # Test tidy_peripheral_curves is called
+        [3, -1, -3, -1, -3, 0, 0, -2, -3, 0, -1, 0]
         """
 
         cdef c_FuncResult result
@@ -575,6 +581,7 @@ cdef class Triangulation():
         result = two_to_three(tet, f, &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
+            tidy_peripheral_curves(self.c_triangulation)
             self._cache.clear(message = '2-3 move')
             self._polish_hyperbolic_structures()
 
@@ -602,12 +609,19 @@ cdef class Triangulation():
                \ | /
                 \|/
                  0
+
+        >>> M = Manifold("eLPkbcddddgors_Bbba(3,1)")
+        >>> M._three_to_two(0,0) # Should succeed and return 0
+        0
+        >>> list(M.gluing_equations()[3]) # Test tidy_peripheral_curves is called
+        [4, 0, 4, -1, -3, -3, -1, 1, 3]
         """
+
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        _ = valid_index(
+        n = valid_index(
             tet_num, self.num_tetrahedra(),
             "The specified tetrahedron (%s) does not exist.")
 
@@ -616,7 +630,7 @@ cdef class Triangulation():
             "The specified edge index (%s) is invalid.")
 
         tet = self.c_triangulation.tet_list_begin.next
-        for i in range(tet_num):
+        for i in range(n):
             tet = tet.next
 
         if tet.edge_class[e].order != 3:
@@ -626,6 +640,7 @@ cdef class Triangulation():
                               &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
+            tidy_peripheral_curves(self.c_triangulation)
             self._cache.clear(message = '3-2 move')
             self._polish_hyperbolic_structures()
 

@@ -622,6 +622,7 @@ cdef extern from "kernel_prototypes.h":
                                        int f, int *num_tetrahedra_ptr)
     extern c_FuncResult   three_to_two(EdgeClass *edge,
                                        EdgeClass **where_to_resume, int *num_tetrahedra_ptr)
+    extern void tidy_peripheral_curves(c_Triangulation *manifold)
     extern void polish_hyperbolic_structures(c_Triangulation *manifold)
     extern void compute_holonomies(c_Triangulation *manifold)
     extern void compute_edge_angle_sums(c_Triangulation *manifold)

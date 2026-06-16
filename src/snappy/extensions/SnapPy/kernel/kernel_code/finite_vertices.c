@@ -98,6 +98,7 @@
 #include "kernel.h"
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
+static Boolean is_cusp_finite_vertex(Cusp *cusp);
 static void initialize_matching_cusps(Triangulation *manifold, Cusp **special_fake_cusp);
 static void merge_cusps(Triangulation *manifold);
 static void drill_tube(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e, Boolean creating_new_cusp);
@@ -170,22 +171,28 @@ void remove_finite_vertices(
     basic_simplification(manifold);
 }
 
+static Boolean is_cusp_finite_vertex(
+    Cusp *cusp)
+{
+    if (cusp->euler_characteristic > 2)
+        uFatalError("is_cusp_finite_vertex", "finite_vertices.c");
+
+    return
+        cusp->euler_characteristic == 2 &&
+        cusp->orb_num_incident_singular_edges == 0;
+}
 
 static void initialize_matching_cusps(
     Triangulation   *manifold,
     Cusp            **special_fake_cusp)
 {
-    Boolean has_real_cusp;
-    Cusp    *cusp;
-
-    has_real_cusp = FALSE;
+    Boolean has_real_cusp = FALSE;
     
-    for (cusp = manifold->cusp_list_begin.next;
+    for (Cusp * cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if ( get_cusp_topology(cusp) == sphere_cusp
-             && cusp->orb_num_incident_singular_edges == 0)
+        if ( is_cusp_finite_vertex(cusp) )
             cusp->matching_cusp = NULL;
         else
         {
@@ -557,8 +564,7 @@ static void set_real_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) == sphere_cusp
-            && cusp->orb_num_incident_singular_edges == 0
+        if (is_cusp_finite_vertex(cusp)
             && cusp != special_fake_cusp)
         {
             dead_cusp = cusp;

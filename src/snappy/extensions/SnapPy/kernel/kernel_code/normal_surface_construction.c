@@ -611,7 +611,7 @@ static void create_equations(
 
                 for (c = 0; c < 2; c++)     /* c = M, L                      */
                     for (h = 0; h < 2; h++) /* h = right_handed, left_handed */
-                        (*equations)[manifold->num_tetrahedra + 2*tet->cusp[v]->index + c][i]
+                        (*equations)[manifold->num_tetrahedra + 2*tet->cusp[v]->cusp_index + c][i]
                             += value * FLOW(tet->curve[c][h][v][initial_side], tet->curve[c][h][v][terminal_side]);
             }
     }

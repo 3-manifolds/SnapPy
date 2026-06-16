@@ -2504,7 +2504,7 @@ cdef class Triangulation():
                     if tet.generator_status[side] != inbound_generator:
                         continue
                     for orientation in (right_handed, left_handed):
-                        row = num_edges + tet.cusp[vertex].index
+                        row = num_edges + tet.cusp[vertex].cusp_index
                         column = tet.generator_index[side]
                         m = <int>tet.cusp[vertex].m
                         l = <int>tet.cusp[vertex].l

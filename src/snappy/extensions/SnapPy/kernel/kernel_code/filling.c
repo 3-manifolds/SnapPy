@@ -210,7 +210,7 @@ Triangulation *fill_reasonable_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        fill_cusp[cusp->index] = cusp_is_fillable_x(cusp);
+        fill_cusp[cusp->cusp_index] = cusp_is_fillable_x(cusp);
 
     /*
      *  If all the cusps are fillable, leave cusp 0 unfilled.
@@ -258,7 +258,7 @@ static Boolean check_fill_cusp_array(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (fill_cusp[cusp->index])
+        if (fill_cusp[cusp->cusp_index])
         {
             if (cusp_is_fillable_x(cusp) == FALSE)
                 uFatalError("check_fill_cusp_array", "filling");

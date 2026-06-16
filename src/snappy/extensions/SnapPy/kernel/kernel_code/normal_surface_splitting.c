@@ -461,7 +461,7 @@ static Triangulation *subdivide_manifold(
             new_cusps[0] = NEW_STRUCT(Cusp);
             initialize_cusp(new_cusps[0]);
             INSERT_BEFORE(new_cusps[0], &subdivision->cusp_list_end);
-            new_cusps[0]->index = subdivision->num_cusps++;
+            new_cusps[0]->cusp_index = subdivision->num_cusps++;
             new_cusps[0]->euler_characteristic = 0;
 
             if (is_two_sided == TRUE)
@@ -469,7 +469,7 @@ static Triangulation *subdivide_manifold(
                 new_cusps[1] = NEW_STRUCT(Cusp);
                 initialize_cusp(new_cusps[1]);
                 INSERT_BEFORE(new_cusps[1], &subdivision->cusp_list_end);
-                new_cusps[1]->index = subdivision->num_cusps++;
+                new_cusps[1]->cusp_index = subdivision->num_cusps++;
                 new_cusps[1]->euler_characteristic = 0;
             }
             break;
@@ -658,7 +658,7 @@ static void copy_cusps(
         cusp->matching_cusp->is_complete    = TRUE;
         cusp->matching_cusp->m              = (double)0.0;
         cusp->matching_cusp->l              = (double)0.0;
-        cusp->matching_cusp->index          = cusp->index;
+        cusp->matching_cusp->cusp_index          = cusp->cusp_index;
         
         INSERT_BEFORE(cusp->matching_cusp, &subdivision->cusp_list_end);
         subdivision->num_cusps++;
@@ -1663,7 +1663,7 @@ static void separate_connected_components(
                     if (tet->cusp[v] == NULL)   /* skip finite vertices */
                         continue;
                     
-                    cusp_index = tet->cusp[v]->index;
+                    cusp_index = tet->cusp[v]->cusp_index;
 
                     if (cusp_index < 0 || cusp_index >= subdivision->num_cusps)
                         uFatalError("separate_connected_components", "normal_surface_splitting");
@@ -1707,8 +1707,8 @@ static void separate_connected_components(
         {
             cusp = subdivision->cusp_list_begin.next;
             REMOVE_NODE(cusp);
-            INSERT_BEFORE(cusp, &pieces[which_piece[cusp->index]]->cusp_list_end);
-            cusp->index = old_to_new_index[cusp->index];
+            INSERT_BEFORE(cusp, &pieces[which_piece[cusp->cusp_index]]->cusp_list_end);
+            cusp->cusp_index = old_to_new_index[cusp->cusp_index];
         }
         subdivision->num_cusps = 0;
         

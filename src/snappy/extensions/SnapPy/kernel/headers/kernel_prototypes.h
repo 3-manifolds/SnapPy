@@ -81,7 +81,7 @@ extern void close_cusps(Triangulation *manifold,
 			Boolean fill_by_fold,
 			Boolean mark_solid_tori);
 /**<
- *  Permanently closes the cusps of *manifold for which fill_cusp[cusp->index]
+ *  Permanently closes the cusps of *manifold for which fill_cusp[cusp->cusp_index]
  *  is TRUE.  Assumes *manifold is triangulated as in subdivide().  The default
  *  for fill_by_fold is TRUE.
  */

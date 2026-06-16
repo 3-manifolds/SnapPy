@@ -293,9 +293,9 @@ static void record_cusp_status(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-        is_complete_array[cusp->index]  = cusp->is_complete;
-        m_array[cusp->index]            = cusp->m;
-        l_array[cusp->index]            = cusp->l;
+        is_complete_array[cusp->cusp_index]  = cusp->is_complete;
+        m_array[cusp->cusp_index]            = cusp->m;
+        l_array[cusp->cusp_index]            = cusp->l;
     }
 }
 
@@ -312,9 +312,9 @@ static void restore_cusp_status(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-        cusp->is_complete   = is_complete_array[cusp->index];
-        cusp->m             = m_array[cusp->index];
-        cusp->l             = l_array[cusp->index];
+        cusp->is_complete   = is_complete_array[cusp->cusp_index];
+        cusp->m             = m_array[cusp->cusp_index];
+        cusp->l             = l_array[cusp->cusp_index];
     }
 }
 

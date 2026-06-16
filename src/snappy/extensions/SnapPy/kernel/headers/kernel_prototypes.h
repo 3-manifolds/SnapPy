@@ -161,7 +161,7 @@ extern void count_cusps(Triangulation *manifold);
  *  manifold->num_fake_cusps.
  */
 
-extern Boolean mark_fake_cusps(Triangulation *manifold);
+extern void mark_fake_cusps(Triangulation *manifold);
 /**<
  *  Distinguishes real cusps from fake cusps ( = finite vertices) by
  *  computing the Euler characteristic.  Sets Euler characteristic and

@@ -6,7 +6,7 @@
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_fake_cusps(Triangulation *manifold);
  *      void    count_cusps(Triangulation *manifold);
- *      Boolean mark_fake_cusps(Triangulation *manifold);
+ *      void    mark_fake_cusps(Triangulation *manifold);
  *      void compute_cusp_Euler_characteristics(Triangulation *manifold)
  *      CuspTopology get_cusp_topology(const Cusp * cusp);
  *      void set_cusp_topology(Cusp * cusp, CuspTopology topology);
@@ -38,7 +38,6 @@
  *  renumbers all cusps so that real cusps have consecutive nonnegative
  *  indices beginning at 0 and fake cusps have consecutive negative indices
  *  beginning at -1.
- *  Returns TRUE if fake cusps are present, FALSE otherwise.
  */
 
 #include "kernel.h"
@@ -487,7 +486,7 @@ void count_cusps(
 }
 
 
-Boolean mark_fake_cusps(
+void mark_fake_cusps(
     Triangulation   *manifold)
 {
     int     real_cusp_count,
@@ -529,7 +528,6 @@ Boolean mark_fake_cusps(
                 uFatalError("mark_fake_cusps", "cusps");
         }
 
-    return (fake_cusp_count < 0);
 }
 
 

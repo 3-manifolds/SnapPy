@@ -82,7 +82,6 @@ void data_to_triangulation(
                     k,
                     l,
                     m;
-    Boolean finite_vertices_are_present;
 
     /*
      *  Initialize *manifold_ptr to NULL.
@@ -162,7 +161,7 @@ void data_to_triangulation(
      *  Set up the Tetrahedra.
      */
 
-    finite_vertices_are_present     = FALSE;
+    Boolean finite_vertices_are_present = FALSE;
 
     for (i = 0; i < manifold->num_tetrahedra; i++)
     {
@@ -245,7 +244,7 @@ void data_to_triangulation(
     else
     {
         create_cusps(manifold);
-        finite_vertices_are_present = mark_fake_cusps(manifold);
+        mark_fake_cusps(manifold);
     }
 
     /*

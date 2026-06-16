@@ -220,7 +220,7 @@ Triangulation *construct_cover(
                  * Need to revisit for Orb.
                  */
                 new_cusp->euler_characteristic = 0;
-                new_cusp->index = covering_cusp_index++;
+                new_cusp->cusp_index = covering_cusp_index++;
                 new_cusp->matching_cusp = base_cusp;
             }
     }
@@ -413,7 +413,7 @@ Triangulation *construct_cover(
              *  to the index before it returns to its original value?
              *  This answers question (2).
              */
-            primitive_permutation = representation->primitive_Dehn_image[base_cusp->index];
+            primitive_permutation = representation->primitive_Dehn_image[base_cusp->cusp_index];
             index0 = index;
             count = 0;
             do

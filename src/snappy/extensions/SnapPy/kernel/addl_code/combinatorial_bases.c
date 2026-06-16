@@ -59,7 +59,7 @@ void install_combinatorial_bases( Triangulation *manifold,
     for (i = 0; i < 2; i++)     /* i = M, L */
       for (j = 0; j < 2; j++)   /* j = M, L */
           intersections[i][j] = cusp->intersection_number[i][j];
-    n = cusp->index;
+    n = cusp->cusp_index;
     matrices[n][0][0] = -intersections[0][1];
     matrices[n][0][1] = intersections[0][0];
     matrices[n][1][0] = -intersections[1][1];
@@ -75,7 +75,7 @@ void reindex_cusps(Triangulation   *manifold,
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-      cusp->index = indices[cusp->index];
+      cusp->cusp_index = indices[cusp->cusp_index];
     }
 }
 
@@ -98,13 +98,13 @@ void install_shortest_with_matrices(
         if ( get_cusp_topology(cusp) == torus_cusp && cusp->is_complete )
 
             shortest_cusp_basis(    cusp->cusp_shape[current],
-                                    change_matrices[cusp->index]);
+                                    change_matrices[cusp->cusp_index]);
 
         else
 
             for (i = 0; i < 2; i++)
                 for (j = 0; j < 2; j++)
-                    change_matrices[cusp->index][i][j] = (i == j);
+                    change_matrices[cusp->cusp_index][i][j] = (i == j);
 
     /*
      *  Install the change of basis matrices.

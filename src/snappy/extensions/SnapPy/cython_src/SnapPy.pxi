@@ -221,7 +221,7 @@ cdef extern from "triangulation.h":
         Boolean is_complete
         Real m
         Real l
-        int index
+        int cusp_index
     ctypedef struct c_Tetrahedron "Tetrahedron":
         Real_struct tilt[4]
         Cusp* cusp[4]

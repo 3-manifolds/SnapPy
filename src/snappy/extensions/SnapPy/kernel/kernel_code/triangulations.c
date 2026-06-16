@@ -231,7 +231,7 @@ void data_to_triangulation(
             cusp_array[i]->l             = data->cusp_data[i].l;
             cusp_array[i]->is_complete   = (data->cusp_data[i].m == 0.0
                                          && data->cusp_data[i].l == 0.0);
-            cusp_array[i]->index         = i;
+            cusp_array[i]->cusp_index         = i;
         }
         
         /*
@@ -412,7 +412,7 @@ void triangulation_to_data(
          */
         for (j = 0; j < 4; j++)
             data->tetrahedron_data[i].cusp_index[j] =
-                ((tet->cusp[j]->index >= 0) ? tet->cusp[j]->index : -1);
+                ((tet->cusp[j]->cusp_index >= 0) ? tet->cusp[j]->cusp_index : -1);
 
         for (j = 0; j < 2; j++)
             for (k = 0; k < 2; k++)
@@ -645,16 +645,16 @@ void copy_triangulation(
     /*
      *  Find the largest and smallest Cusp indices.
      */
-    min_cusp_index = source->cusp_list_begin.next->index;
-    max_cusp_index = source->cusp_list_begin.next->index;
+    min_cusp_index = source->cusp_list_begin.next->cusp_index;
+    max_cusp_index = source->cusp_list_begin.next->cusp_index;
     for (   cusp = source->cusp_list_begin.next;
             cusp != &source->cusp_list_end;
             cusp = cusp->next)
     {
-        if (cusp->index < min_cusp_index)
-            min_cusp_index = cusp->index;
-        if (cusp->index > max_cusp_index)
-            max_cusp_index = cusp->index;
+        if (cusp->cusp_index < min_cusp_index)
+            min_cusp_index = cusp->cusp_index;
+        if (cusp->cusp_index > max_cusp_index)
+            max_cusp_index = cusp->cusp_index;
     }
     num_potential_cusps = max_cusp_index - min_cusp_index + 1;
 
@@ -678,7 +678,7 @@ void copy_triangulation(
     for (cusp = source->cusp_list_begin.next;
          cusp != &source->cusp_list_end;
          cusp = cusp->next)
-        new_cusp[cusp->index - min_cusp_index] = NEW_STRUCT(Cusp);
+        new_cusp[cusp->cusp_index - min_cusp_index] = NEW_STRUCT(Cusp);
 
     /*
      *  Copy the fields of each Tetrahedron in source
@@ -700,7 +700,7 @@ void copy_triangulation(
         {
             new_tet[i]->neighbor[j] = new_tet[tet->neighbor[j]->index];
             new_tet[i]->gluing[j]   = tet->gluing[j];
-            new_tet[i]->cusp[j]     = new_cusp[tet->cusp[j]->index - min_cusp_index];
+            new_tet[i]->cusp[j]     = new_cusp[tet->cusp[j]->cusp_index - min_cusp_index];
         }
 
         for (j = 0; j < 6; j++)
@@ -779,17 +779,17 @@ void copy_triangulation(
          *  then overwrite the ones involving pointers.
          */
 
-        *new_cusp[cusp->index - min_cusp_index] = *cusp;
+        *new_cusp[cusp->cusp_index - min_cusp_index] = *cusp;
 
-        new_cusp[cusp->index - min_cusp_index]->orb_num_incident_singular_edges = 0;
-        new_cusp[cusp->index - min_cusp_index]->orb_incident_singular_edges = NULL;
+        new_cusp[cusp->cusp_index - min_cusp_index]->orb_num_incident_singular_edges = 0;
+        new_cusp[cusp->cusp_index - min_cusp_index]->orb_incident_singular_edges = NULL;
         if (cusp->orb_cusp_shape != NULL)
         {
-            new_cusp[cusp->index - min_cusp_index]->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
-            *new_cusp[cusp->index - min_cusp_index]->orb_cusp_shape = *cusp->orb_cusp_shape;
+            new_cusp[cusp->cusp_index - min_cusp_index]->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
+            *new_cusp[cusp->cusp_index - min_cusp_index]->orb_cusp_shape = *cusp->orb_cusp_shape;
         }
 
-        INSERT_BEFORE(new_cusp[cusp->index - min_cusp_index], &destination->cusp_list_end);
+        INSERT_BEFORE(new_cusp[cusp->cusp_index - min_cusp_index], &destination->cusp_list_end);
     }
 
     orb_cusps_fill_incident_singular_edges(destination);
@@ -949,7 +949,7 @@ void initialize_cusp(
     cusp->orb_cusp_shape            = NULL;
     cusp->orb_num_incident_singular_edges = 0;
     cusp->orb_incident_singular_edges = NULL;
-    cusp->index                     = 255;
+    cusp->cusp_index                     = 255;
     cusp->displacement              = 0.0;
     cusp->displacement_exp          = 1.0;
     cusp->matching_cusp             = NULL;

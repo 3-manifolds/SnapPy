@@ -241,7 +241,7 @@ struct Cusp
                                                           * Similar to Triangulation::cone_points,
                                                           * but we store the EdgeClass.
                                                           * Sorted by EdgeClass:orb_singular_index. */
-    int                 index;                  /**< cusp number, as perceived by user    */
+    int                 cusp_index;             /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
                                                 /**   Non-negative indices for "real"
                                                  *    cusps; negative indices for "fake"

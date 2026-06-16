@@ -475,7 +475,7 @@ static void drill_tube(
          */
         unique_cusp = tet->cusp[v0]->matching_cusp;
         unique_cusp->is_complete    = TRUE; /* to be filled below */
-        unique_cusp->index          = 0;
+        unique_cusp->cusp_index          = 0;
         /*
          * unique_cusp->orientability will be computed immediately
          * below in peripheral_curves.
@@ -527,7 +527,7 @@ static void drill_tube(
          *  Switch to a basis in which the Dehn filling curve is a meridian.
          */
         unique_cusp->cusp_shape[initial] = Zero;    /* force current_curve_basis() to ignore the cusp shape */
-        current_curve_basis(manifold, unique_cusp->index, basis_change[0]);
+        current_curve_basis(manifold, unique_cusp->cusp_index, basis_change[0]);
         if (change_peripheral_curves(manifold, basis_change) != func_OK)
             uFatalError("drill_tube", "finite_vertices");
     }

@@ -2276,7 +2276,7 @@ void one_to_four(
     new_cusp = NEW_STRUCT(Cusp);
     initialize_cusp(new_cusp);
     set_cusp_topology(new_cusp, sphere_cusp);
-    new_cusp->index     = new_cusp_index;
+    new_cusp->cusp_index     = new_cusp_index;
     INSERT_BEFORE(new_cusp, tet->cusp[0]);
 
     /*

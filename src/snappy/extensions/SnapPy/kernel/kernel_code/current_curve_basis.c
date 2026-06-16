@@ -170,11 +170,11 @@ void install_current_curve_bases(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-        if (cusp->index < 0
-         || cusp->index >= manifold->num_cusps)
+        if (cusp->cusp_index < 0
+         || cusp->cusp_index >= manifold->num_cusps)
             uFatalError("install_current_curve_bases", "current_curve_basis");
 
-        current_curve_basis_on_cusp(cusp, change_matrices[cusp->index]);
+        current_curve_basis_on_cusp(cusp, change_matrices[cusp->cusp_index]);
     }
 
     /*

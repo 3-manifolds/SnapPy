@@ -609,10 +609,10 @@ static void compute_cusp_image(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->index >= 0)
+            if (tet->cusp[v]->cusp_index >= 0)
 
-                isometry->cusp_image[tet->cusp[v]->index]
-                    = tet->image->cusp[EVALUATE(tet->map, v)]->index;
+                isometry->cusp_image[tet->cusp[v]->cusp_index]
+                    = tet->image->cusp[EVALUATE(tet->map, v)]->cusp_index;
 }
 
 
@@ -666,14 +666,14 @@ static void compute_cusp_map(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->index >= 0)
+            if (tet->cusp[v]->cusp_index >= 0)
 
                 for (i = 0; i < 2; i++)     /* i = M, L */
                 {
-                    isometry->cusp_map[tet->cusp[v]->index][M][i]
+                    isometry->cusp_map[tet->cusp[v]->cusp_index][M][i]
                         = + tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[L][i];
 
-                    isometry->cusp_map[tet->cusp[v]->index][L][i]
+                    isometry->cusp_map[tet->cusp[v]->cusp_index][L][i]
                         = - tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[M][i];
                 }
 }

@@ -1134,7 +1134,7 @@ static void create_real_cusps(
         theCusps[i] = NEW_STRUCT(Cusp);
         initialize_cusp(theCusps[i]);
         set_cusp_topology(theCusps[i], torus_cusp);
-        theCusps[i]->index      = i;
+        theCusps[i]->cusp_index      = i;
         INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
@@ -1189,7 +1189,7 @@ static void create_finite_vertices(
         thePoles[i] = NEW_STRUCT(Cusp);
         initialize_cusp(thePoles[i]);
         set_cusp_topology(thePoles[i], sphere_cusp);
-        thePoles[i]->index      = i - 2;    /* indices are -1 and -2 */
+        thePoles[i]->cusp_index      = i - 2;    /* indices are -1 and -2 */
         INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
     }
 

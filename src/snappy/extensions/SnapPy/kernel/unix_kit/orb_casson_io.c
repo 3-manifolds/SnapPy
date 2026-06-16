@@ -581,8 +581,8 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
             int a1 = tei1->f1;
             int a2 = tei1->f2;
 
-            tet_array[t1]->cusp[remaining_face[a1][a2]]->index = ei->one_vertex;
-            tet_array[t1]->cusp[remaining_face[a2][a1]]->index =
+            tet_array[t1]->cusp[remaining_face[a1][a2]]->cusp_index = ei->one_vertex;
+            tet_array[t1]->cusp[remaining_face[a2][a1]]->cusp_index =
                 ei->other_vertex;
 
             while (tei1 != NULL) {
@@ -751,32 +751,32 @@ void orb_write_casson_format_to_stream(
         if (include_geometric_structure_and_cusp_indices)
 	{
             if (ptet.tet->cusp[remaining_face[ptet.left_face][ptet.near_face]]
-                    ->index > -1)
+                    ->cusp_index > -1)
                 ostream_printf(stream, " %2d",
                                (double)ptet.tet->cusp[remaining_face[ptet.left_face]
                                                             [ptet.near_face]]
-                                       ->index +
+                                       ->cusp_index +
                                    1);
             else
                 ostream_printf(
                     stream, " %2d",
                     (double)ptet.tet
                         ->cusp[remaining_face[ptet.left_face][ptet.near_face]]
-                        ->index);
+                        ->cusp_index);
 
             if (ptet.tet->cusp[remaining_face[ptet.near_face][ptet.left_face]]
-                    ->index > -1)
+                    ->cusp_index > -1)
                 ostream_printf(stream, " %2d",
                                (double)ptet.tet->cusp[remaining_face[ptet.near_face]
                                                             [ptet.left_face]]
-                                       ->index +
+                                       ->cusp_index +
                                    1);
             else
                 ostream_printf(
                     stream, " %2d",
                     (double)ptet.tet
                         ->cusp[remaining_face[ptet.near_face][ptet.left_face]]
-                        ->index);
+                        ->cusp_index);
         }
 
         do

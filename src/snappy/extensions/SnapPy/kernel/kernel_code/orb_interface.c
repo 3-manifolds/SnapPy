@@ -96,7 +96,7 @@ void orb_get_vertex_info(
     Cusp * cusp = orb_find_vertex(manifold, vertex_index);
 
     if (cusp_index != NULL)
-        *cusp_index = cusp->index;
+        *cusp_index = cusp->cusp_index;
 
     if (is_finite_vertex != NULL)
         *is_finite_vertex = is_cusp_finite_vertex(cusp);

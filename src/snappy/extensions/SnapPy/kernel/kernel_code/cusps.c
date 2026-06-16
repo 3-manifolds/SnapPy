@@ -102,7 +102,7 @@ void create_cusps(
             if (tet->cusp[v] == NULL)
             {
                 Cusp * cusp = create_one_cusp(manifold, tet, v);
-                cusp->index = count++;
+                cusp->cusp_index = count++;
             }
 }
 
@@ -163,7 +163,7 @@ void create_cusps_and_mark_finite_as_needed(
             if (tet->cusp[v] == NULL)
             {
                 Cusp * cusp = create_one_cusp(manifold, tet, v);
-                cusp->index = --count;
+                cusp->cusp_index = --count;
                 set_cusp_topology(cusp, sphere_cusp);
             }
 }
@@ -501,9 +501,9 @@ void index_real_and_fake_cusps(
          cusp = cusp->next)
 
         if (is_cusp_real(cusp))
-            cusp->index = real_cusp_count++;
+            cusp->cusp_index = real_cusp_count++;
         else
-            cusp->index = --fake_cusp_count;
+            cusp->cusp_index = --fake_cusp_count;
 }
 
 void compute_cusp_Euler_characteristics(

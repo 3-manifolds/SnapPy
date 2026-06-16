@@ -757,7 +757,7 @@ static void create_real_cusps(
         theCusps[i] = NEW_STRUCT(Cusp);
         initialize_cusp(theCusps[i]);
         set_cusp_topology(theCusps[i], torus_cusp);
-        theCusps[i]->index = i;
+        theCusps[i]->cusp_index = i;
         INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
@@ -828,7 +828,7 @@ static void create_finite_vertices(
 
         initialize_cusp(thePoles[i]);
         set_cusp_topology(thePoles[i], sphere_cusp);
-        thePoles[i]->index = i - 2;
+        thePoles[i]->cusp_index = i - 2;
         INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
     }
 
@@ -947,7 +947,7 @@ extern void dump_triangulation(
         printf("\n");
 
         printf("\tcusps:\t");
-        for (i = 0; i < 4; i++) printf("%6d", tet->cusp[i]->index);
+        for (i = 0; i < 4; i++) printf("%6d", tet->cusp[i]->cusp_index);
 
         printf("\n");
 
@@ -974,7 +974,7 @@ extern void dump_triangulation(
     printf(" Cusps:\n");
     for (cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end; cusp = cusp->next) {
-        printf("\t%d:\t", cusp->index);
+        printf("\t%d:\t", cusp->cusp_index);
 
         printf("  (");
 

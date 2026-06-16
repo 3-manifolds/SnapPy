@@ -164,7 +164,7 @@ FuncResult read_the_file(
 	{
 		cal[count] = NEW_STRUCT(Cusp);
 		initialize_cusp(cal[count]);
-		cal[count]->index = count;
+		cal[count]->cusp_index = count;
 		INSERT_BEFORE(cal[count], &manifold->cusp_list_end);
 		set_cusp_topology(
 		    cal[count],

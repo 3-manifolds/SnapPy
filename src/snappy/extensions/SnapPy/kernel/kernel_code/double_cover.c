@@ -365,8 +365,8 @@ static void set_cusp_data(
 
             for (j = 0; j < 2; j++)
             {
-                new_tet[i][j]->cusp[v]->index = old_to_new
-                    [old_tet->cusp[v]->index] [j];
+                new_tet[i][j]->cusp[v]->cusp_index = old_to_new
+                    [old_tet->cusp[v]->cusp_index] [j];
 
                 set_cusp_topology(new_tet[i][j]->cusp[v], torus_cusp);
             }

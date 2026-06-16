@@ -6,7 +6,7 @@
  *      void close_cusps(Triangulation *manifold, Boolean fill_cusp[]);
  *
  *  which is used by the function fill_cusps() to permanently
- *  close the indicated cusps (those for which fill_cusp[cusp->index]
+ *  close the indicated cusps (those for which fill_cusp[cusp->cusp_index]
  *  is TRUE).  The Triangulation *manifold must be a manifold with
  *  finite vertices, prepared as in subdivide().  Specifically, we
  *  assume that the Tetrahedra incident to the cusps form disjoint
@@ -380,7 +380,7 @@ static Boolean incident_to_filled_cusp(
     for (i = 0; i < 4; i++)
 
         if (get_cusp_topology(tet->cusp[i]) != sphere_cusp
-         && fill_cusp[tet->cusp[i]->index] == TRUE)
+         && fill_cusp[tet->cusp[i]->cusp_index] == TRUE)
         {
             /*
              *  Make sure no other routine is using the "extra"
@@ -1739,6 +1739,6 @@ static void renumber_real_cusps(
 
         if (get_cusp_topology(cusp) != sphere_cusp)
 
-            cusp->index = cusp_count++;
+            cusp->cusp_index = cusp_count++;
 }
 SNAPPEA_NAMESPACE_END_SCOPE

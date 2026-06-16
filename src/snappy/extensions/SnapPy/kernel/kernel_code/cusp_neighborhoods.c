@@ -602,7 +602,7 @@ static void compute_one_reach(
      *  Make a copy of the triangulation, so we don't disturb the original.
      */
     copy_triangulation(cusp_neighborhoods->its_triangulation, &triangulation_copy);
-    cusp_copy = find_cusp(triangulation_copy, cusp->index);
+    cusp_copy = find_cusp(triangulation_copy, cusp->cusp_index);
 
     /*
      *  Carry out the algorithm described above.
@@ -1166,7 +1166,7 @@ int get_cusp_neighborhood_stopper_cusp_index(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
-    return find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->stopper_cusp->index;
+    return find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->stopper_cusp->cusp_index;
 }
 
 
@@ -2314,7 +2314,7 @@ static void get_quick_edge_horoballs(
             /*
              *  What is the index of the other cusp?
              */
-            other_index = tet->cusp[v[!i]]->index;
+            other_index = tet->cusp[v[!i]]->cusp_index;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */
             {
@@ -2551,7 +2551,7 @@ static void get_quick_face_horoballs(
                 /*
                  *  Note the cusp index of the new horoball.
                  */
-                (*next_horoball)->cusp_index = tet->neighbor[v]->cusp[missing_corner]->index;
+                (*next_horoball)->cusp_index = tet->neighbor[v]->cusp[missing_corner]->cusp_index;
 
                 /*
                  *  Move on.
@@ -3086,7 +3086,7 @@ static void add_tiling_horoball_to_list(
 
     tiling_horoball->data.center        = tiling_tet->corner[v];
     tiling_horoball->data.radius        = 0.5 * tiling_tet->horoball_height[v];
-    tiling_horoball->data.cusp_index    = tiling_tet->underlying_tet->cusp[v]->index;
+    tiling_horoball->data.cusp_index    = tiling_tet->underlying_tet->cusp[v]->cusp_index;
 
     tiling_horoball->next = *horoball_linked_list;
     *horoball_linked_list = tiling_horoball;

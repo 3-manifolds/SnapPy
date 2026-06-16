@@ -25,7 +25,7 @@ Cusp *find_cusp(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->index == cusp_index)
+        if (cusp->cusp_index == cusp_index)
 
             return cusp;
 

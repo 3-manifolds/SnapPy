@@ -765,7 +765,7 @@ void oscillating_curves(Triangulation *manifold, Boolean *edge_classes) {
     OscillatingCurves *curves   = init_oscillating_curves(manifold, edge_classes);
 
     for (i = 0; i < manifold->num_cusps; i++) {
-        for (cusp = manifold->cusp_list_begin.next; cusp != &manifold->cusp_list_end && cusp->index != i; cusp = cusp->next);
+        for (cusp = manifold->cusp_list_begin.next; cusp != &manifold->cusp_list_end && cusp->cusp_index != i; cusp = cusp->next);
 
         if (cusp == &manifold->cusp_list_end)
             uFatalError("oscillating_curves", "symplectic_basis");
@@ -1855,7 +1855,7 @@ void log_structs(Triangulation *manifold, CuspStructure **cusps,
             j = 0;
             // which component
             for (path = curves->curve_begin[i].next; path != &curves->curve_end[i]; path = path->next) {
-                printf("    Part %d Cusp %d\n", j, path->endpoints[0].tri->tet->cusp[path->endpoints[0].tri->tet_vertex]->index);
+                printf("    Part %d Cusp %d\n", j, path->endpoints[0].tri->tet->cusp[path->endpoints[0].tri->tet_vertex]->cusp_index);
                 for (k = 0; k < 2; k++) {
                     if (k == 0)
                         printf("        Start: ");
@@ -2760,7 +2760,7 @@ void cusp_graph(Triangulation *manifold, Graph *g) {
                 if (vertex1 == vertex2)
                     continue;
 
-                insert_edge(g, tet->cusp[vertex1]->index, tet->cusp[vertex2]->index, g->directed);
+                insert_edge(g, tet->cusp[vertex1]->cusp_index, tet->cusp[vertex2]->cusp_index, g->directed);
             }
         }
     }
@@ -2840,7 +2840,7 @@ int find_edge_class(Triangulation *manifold, int cusp1, int cusp2) {
                 if (v1 == v2)
                     continue;
 
-                if (tet->cusp[v1]->index != cusp1 || tet->cusp[v2]->index != cusp2)
+                if (tet->cusp[v1]->cusp_index != cusp1 || tet->cusp[v2]->cusp_index != cusp2)
                     continue;
 
                 edge = tet->edge_class[edge_between_vertices[v1][v2]];
@@ -3027,8 +3027,8 @@ void find_edge_ends(Graph *g, Triangulation *manifold, int edge_class, int *star
                 if (edge->index != edge_class)
                     continue;
 
-                *start = tet->cusp[v1]->index;
-                *end   = tet->cusp[v2]->index;
+                *start = tet->cusp[v1]->cusp_index;
+                *end   = tet->cusp[v2]->cusp_index;
                 return;
             }
         }

@@ -337,13 +337,13 @@ void install_shortest_bases(
         if (get_cusp_topology(cusp) == torus_cusp && cusp->is_complete )
 
             shortest_cusp_basis(    cusp->cusp_shape[current],
-                                    change_matrices[cusp->index]);
+                                    change_matrices[cusp->cusp_index]);
 
         else
 
             for (i = 0; i < 2; i++)
                 for (j = 0; j < 2; j++)
-                    change_matrices[cusp->index][i][j] = (i == j);
+                    change_matrices[cusp->cusp_index][i][j] = (i == j);
 
     /*
      *  Install the change of basis matrices.

@@ -1705,23 +1705,27 @@ extern Orientability get_orientability(Triangulation *manifold);
 
 extern int  get_num_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of cusps in *manifold.
+ *  Returns the number of real cusps in *manifold. A cusp is real the
+ *  vertex link is a torus or Klein bottle without cone points.
  */
 
 extern int  get_num_or_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of orientable cusps in *manifold.
+ *  Returns the number of orientable real cusps (torus cusps without
+ *  cone points) in *manifold.
  */
 
 extern int  get_num_nonor_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of nonorientable cusps in *manifold.
+ *  Returns the number of nonorientable real cusps (Klein cusps without
+ *  cone points) in *manifold.
  */
 
 extern int  get_num_fake_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of "fake" cusps in *manifold, which is
- *  typically the number of finite vertices.
+ *  Returns the number of "fake" cusps in *manifold. A cusp is fake
+ *  if the vertex link is anything but a torus or Klein bottle without
+ *  cone points.
  */
 
 extern int  get_max_singularity(Triangulation *manifold);

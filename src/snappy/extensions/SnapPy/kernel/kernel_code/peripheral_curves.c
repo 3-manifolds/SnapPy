@@ -6,7 +6,7 @@
  *
  *      void peripheral_curves(Triangulation *manifold);
  *
- *  which puts a meridian and longitude on each cusp.  If the
+ *  which puts a meridian and longitude on each real cusp. If the
  *  manifold is oriented, the meridian and longitude adhere to
  *  the usual orientation convention;  this is, if you place your
  *  right hand on the torus with your fingers pointing in the
@@ -21,7 +21,7 @@
  *  the orientation of each Cusp's orientation double cover (more
  *  on this below).
  *
- *  peripheral_curves() does not need to know the CuspTopology
+ *  peripheral_curves() does not need to know the cusp orientability
  *  ahead of time.  It figures it out for itself and records the
  *  result in the field cusp->orientability.
  *

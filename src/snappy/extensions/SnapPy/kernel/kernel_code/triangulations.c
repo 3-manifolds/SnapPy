@@ -239,7 +239,7 @@ void data_to_triangulation(
          *  Assign Cusp structures.
          */
         if (finite_vertices_are_present == TRUE)
-            create_fake_cusps(manifold);
+            create_cusps_and_mark_finite_as_needed(manifold);
     }
     else
     {

@@ -636,7 +636,7 @@ cdef extern from "kernel_prototypes.h":
     extern void count_cusps(c_Triangulation *manifold)
     extern c_Triangulation* subdivide(c_Triangulation *manifold, char *new_name) except *
     extern void close_cusps(c_Triangulation *manifold, Boolean fill_cusp[], Boolean fill_by_fold, Boolean mark_solid_tori)
-    extern void create_fake_cusps(c_Triangulation *manifold)
+    extern void create_cusps_and_mark_finite_as_needed(c_Triangulation *manifold)
     extern void number_the_tetrahedra(c_Triangulation *manifold)
     extern void number_the_edge_classes(c_Triangulation *manifold)
 

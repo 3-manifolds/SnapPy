@@ -148,7 +148,7 @@ extern Cusp * create_one_cusp(Triangulation *manifold,
  *  been assigned to Cusps have tetrahedron->cusp[vertex] == NULL.
  */
 
-extern void create_fake_cusps(Triangulation *manifold);
+extern void create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
 /**<
  *  Creates Cusp data structures for the "fake cusps" corresponding to
  *  finite vertices.

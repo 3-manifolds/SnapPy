@@ -644,7 +644,7 @@ static void create_new_cusps(
      */
 
     create_real_cusps(new_triangulation, old_triangulation);
-    create_fake_cusps(new_triangulation);
+    create_cusps_and_mark_finite_as_needed(new_triangulation);
 }
 
 

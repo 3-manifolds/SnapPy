@@ -299,7 +299,7 @@ FuncResult split_along_normal_surface(
             /*
              *  Install "fake cusps" for the finite vertices.
              */
-            create_fake_cusps(pieces[i]);
+            create_cusps_and_mark_finite_as_needed(pieces[i]);
             
             /*
              *  Install and orient the EdgeClasses.

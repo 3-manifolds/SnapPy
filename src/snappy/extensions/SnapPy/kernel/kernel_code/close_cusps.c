@@ -1721,7 +1721,7 @@ static void replace_fake_cusps(
      *  Assign new fake Cusps.
      */
 
-    create_fake_cusps(manifold);
+    create_cusps_and_mark_finite_as_needed(manifold);
 }
 
 

@@ -4,7 +4,7 @@
  *  This file contains the functions
  *
  *      void    create_cusps(Triangulation *manifold);
- *      void    create_fake_cusps(Triangulation *manifold);
+ *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
  *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
@@ -20,13 +20,13 @@
  *  the CuspTopologies, then call count_cusps() to set num_cusps,
  *  num_or_cusps and num_nonor_cusps.
  *
- *  create_fake_cusps() is used within the kernel to assign Cusp data
+ *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Cusp data
  *  structures to the "fake cusps" corresponding to finite vertices.
  *  It assumes fake cusps are indicated by tet->cusp[v] fields of NULL.
  *  The fake cusps are numbered -1, -2, etc.  As explained in the
  *  documentation at the top of finite_vertices.c, finite vertices use
  *  only the orientability, Euler characteristic, index, prev and next
- *  fields of the Cusp data structure.  create_fake_cusps() does not
+ *  fields of the Cusp data structure.  create_cusps_and_mark_finite_as_needed() does not
  *  disturb the real cusps or the non-NULL tet->cusp[v] fields.
  *
  *  count_cusps() counts the Cusps of each CuspTopology, and sets
@@ -132,7 +132,7 @@ void error_check_for_create_cusps(
 }
 
 
-void create_fake_cusps(
+void create_cusps_and_mark_finite_as_needed(
     Triangulation   *manifold)
 {
     int         count;
@@ -215,7 +215,7 @@ Cusp * create_one_cusp(
      *  Alternatively, the calling routine may set these fields in other
      *  ways, as it sees fit.
      *
-     *  If we were called by create_fake_cusps(), then the above fields
+     *  If we were called by create_cusps_and_mark_finite_as_needed(), then the above fields
      *  are all irrelevant and ignored.
      */
 

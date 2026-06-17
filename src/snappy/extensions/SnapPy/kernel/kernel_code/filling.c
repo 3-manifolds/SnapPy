@@ -151,7 +151,7 @@ Triangulation *fill_cusps(
         basic_simplification(new_triangulation);
 	number_the_tetrahedra(new_triangulation);
 	number_the_edge_classes(new_triangulation);
-	create_fake_cusps(new_triangulation);
+	create_cusps_and_mark_finite_as_needed(new_triangulation);
 	count_cusps(new_triangulation);
     }
     /*

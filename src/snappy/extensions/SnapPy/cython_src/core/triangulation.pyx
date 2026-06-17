@@ -1535,7 +1535,7 @@ cdef class Triangulation():
         close_cusps(c_new_tri, fill_cusp_spec, fill_by_fold, mark_solid_tori)
         number_the_tetrahedra(c_new_tri)
         number_the_edge_classes(c_new_tri)
-        create_fake_cusps(c_new_tri)
+        create_cusps_and_mark_finite_as_needed(c_new_tri)
         count_cusps(c_new_tri)
         filled_tri = _triangulation_class('empty')
         filled_tri.set_c_triangulation(c_new_tri)

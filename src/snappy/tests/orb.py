@@ -9,6 +9,13 @@
 'partially flat tetrahedra'
 >>> O.volume() # doctest: +NUMERIC9
 0.117838420347115
+>>> O
+6_5^2.7(2)(2)(2)
+>>> O.cusp_info()
+[]
+>>> O._orb_vertex_info()
+[Vertex 0 : spherical link with cone points of order [2.0, 2.0, 2.0] and orbifold Euler char 0.5,
+ Vertex 1 : spherical link with cone points of order [2.0, 2.0, 2.0] and orbifold Euler char 0.5]
 
 >>> O = Triangulation(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices = False)
 >>> O.fundamental_group(False)
@@ -36,6 +43,15 @@ Relators:
    acac
    aaaabAAAcaaaabAAAc
 >>> O._orb_cone_fill([5.0, 6.0])
+>>> O
+1_1^4.84(5)(6)(2)(3)(3)(2)
+>>> O.cusp_info()
+[]
+>>> O._orb_vertex_info()
+[Vertex 0 : spherical link with cone points of order [5.0, 6.0, 2.0] and orbifold Euler char -0.133333,
+ Vertex 1 : spherical link with cone points of order [6.0, 2.0, 3.0] and orbifold Euler char -5.55112e-17,
+ Vertex 2 : spherical link with cone points of order [2.0, 3.0, 2.0] and orbifold Euler char 0.333333,
+ Vertex 3 : spherical link with cone points of order [5.0, 3.0, 3.0] and orbifold Euler char -0.133333]
 >>> O._orb_singular_edge_info('singular_order')
 [5.0, 6.0, 2.0, 3.0, 3.0, 2.0]
 >>> O.fundamental_group()
@@ -81,6 +97,15 @@ Relators:
 >>> O._orb_cone_fill(2.1, 0)
 >>> O._orb_singular_edge_info('singular_order')
 [2.1, 3.0, 4.0, 5.0, 6.0, 2.0]
+>>> O
+1_1^4.84(2.1)(3)(4)(5)(6)(2)
+>>> O.cusp_info()
+[]
+>>> O._orb_vertex_info()
+[Vertex 0 : spherical link with cone points of order [2.1, 3.0, 2.0] and orbifold Euler char 0.309524,
+ Vertex 1 : spherical link with cone points of order [3.0, 4.0, 6.0] and orbifold Euler char -0.25,
+ Vertex 2 : spherical link with cone points of order [4.0, 5.0, 2.0] and orbifold Euler char -0.05,
+ Vertex 3 : spherical link with cone points of order [2.1, 5.0, 6.0] and orbifold Euler char -0.157143]
 >>> O._orb_singular_edge_info()
 [Edge 0 : Singular of order = 2.1,
  Edge 1 : Singular of order = 3,

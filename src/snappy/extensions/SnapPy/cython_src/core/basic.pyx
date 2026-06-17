@@ -177,12 +177,12 @@ def smith_form(M):
 
 # Enum conversions
 CuspTopology = [
-    'sphere cusp',
-    'projective cusp',
+    'spherical link',
+    'projective plane link',
     'torus cusp',
     'Klein bottle cusp',
-    'higher genus orientable cusp',
-    'higher genus nonorientable cusp',
+    'orientable link of higher genus', # ORB-TODO: Wording should match.
+    'nonorientable link of higher genus',
     'unknown']
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
@@ -333,25 +333,21 @@ class Info(dict):
         # here.
         self.__dict__.update(self)
 
-    def _translate_key(self, key):
-        """
-        Translate key if it is obsolete.
-        """
-        return self._obsolete.get(key, key)
-
     def __getitem__(self, key):
         """
         Override so that self["obsolete_key"] returns the same as
         self["key"].
         """
-        return super().__getitem__(self._translate_key(key))
+        return super().__getitem__(self._obsolete.get(key, key))
 
     def __getattr__(self, name):
         """
         Override so that self.obsolete_key returns the same as
         self.key.
         """
-        return super().__getattr__(self._translate_key(name))
+        if name in self._obsolete:
+            return super().__getitem__(self._obsolete[name])
+        raise AttributeError("No attribute '%s'" % name)
 
     def _immutable(self, *args):
         raise AttributeError('Info objects are immutable.')
@@ -360,19 +356,45 @@ class Info(dict):
     pop = popitem = clear = update = _immutable
     _obsolete = {}
 
-class CuspInfo(Info):
+class VertexInfo(Info):
+    def _topology_repr(self):
+        if self.euler_characteristic >= 0:
+            return self.topology
+
+        if self.orientable:
+            genus = 1 - self.euler_characteristic // 2
+            # ORB-TODO: Wording?
+            return 'orientable link of genus %d' % genus
+        else:
+            genus = 2 - self.euler_characteristic
+            # ORB-TODO: Wording?
+            return 'nonorientable link of genus %d' % genus
+
+    def _cone_points_repr(self):
+        if len(self.cone_point_orders) == 0:
+            return ''
+
+        return (' with cone points of order %s and orbifold Euler char %g' % (
+            self.cone_point_orders, self.orbifold_euler_characteristic))
+
+    def __repr__(self):
+        return 'Vertex %-2d: %s%s' % (
+            self.vertex_index, self._topology_repr(), self._cone_points_repr())
+
+class CuspInfo(VertexInfo):
     def __repr__(self):
         if self.is_complete:
             if 'shape' in self:
                 return ('Cusp %-2d: complete %s of shape %s' %
-                        (self.index, self.topology, self.shape) )
+                        (self.cusp_index, self.topology, self.shape) )
             else:
                 return ('Cusp %-2d: %s, not filled' %
-                        (self.index, self.topology) )
+                        (self.cusp_index, self.topology) )
         else:
             return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s' %
-                    (self.index, self.topology, self.filling) )
-    _obsolete = {'complete?'          : 'is_complete',
+                    (self.cusp_index, self.topology, self.filling) )
+    _obsolete = {'index'              : 'cusp_index',
+                 'complete?'          : 'is_complete',
                  'holonomy precision' : 'holonomy_accuracy',
                  'shape precision'    : 'shape_accuracy',
                  'singularity_index'  : 'singular_order'}

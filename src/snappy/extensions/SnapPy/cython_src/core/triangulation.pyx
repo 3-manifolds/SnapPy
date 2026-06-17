@@ -1308,6 +1308,78 @@ cdef class Triangulation():
                     singular_index,
                     Object2Real(singular_order))
 
+    def _orb_vertex_info(self, data_spec=None):
+        cdef int num_vertices
+        cdef int vertex_index
+        cdef Boolean orientable
+        cdef int euler_characteristic, num_cone_points
+        cdef int cusp_index
+        cdef Real *cone_point_orders = NULL
+        cdef int *cone_point_singular_edge_indices = NULL
+        cdef c_CuspTopology topology
+        cdef Boolean is_finite_vertex
+        cdef Real orbifold_euler_characteristic
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        num_vertices = self.num_cusps() + self._num_fake_cusps()
+
+        if data_spec is None:
+            return ListOnePerLine([self._orb_vertex_info(i)
+                                   for i in range(num_vertices)])
+        if isinstance(data_spec, str):
+            return [v[data_spec] for v in self._orb_vertex_info()]
+
+        vertex_index = valid_index(
+            data_spec, num_vertices,
+            'The specified vertex (%s) does not exist.')
+
+        orb_get_vertex_info(self.c_triangulation,
+                            vertex_index,
+                            &orientable,
+                            &euler_characteristic,
+                            &num_cone_points,
+                            &cone_point_orders,
+                            &cone_point_singular_edge_indices,
+                            &cusp_index,
+                            &topology,
+                            &is_finite_vertex,
+                            &orbifold_euler_characteristic)
+
+        if cusp_index >= 0:
+            return self.cusp_info(cusp_index)
+
+        info = {
+            'vertex_index' : vertex_index,
+
+            # Minimal description of topology
+            'orientable' : B2B(orientable),
+            'euler_characteristic' : euler_characteristic,
+            'cone_point_orders' :
+                [ Real2float(cone_point_orders[i])
+                  for i in range(num_cone_points)],
+            'cone_point_singular_edge_indices' :
+                [
+                    cone_point_singular_edge_indices[i]
+                    for i in range(num_cone_points)],
+
+            # Derived from the minimal description
+            'is_cusp' : False,
+            'topology' : CuspTopology[topology],
+            'is_finite' : B2B(is_finite_vertex),
+            'orbifold_euler_characteristic' :
+                Real2float(orbifold_euler_characteristic)
+        }
+
+        if cone_point_orders != NULL:
+            my_free(cone_point_orders)
+        if cone_point_singular_edge_indices != NULL:
+            my_free(cone_point_singular_edge_indices)
+
+        return VertexInfo(**info)
+
+        
     # When doctesting, the M,L coefficients acquire an accuracy of 8.
     # So we have to include the zeros in the doctest string.
     def cusp_info(self, data_spec=None):
@@ -1321,8 +1393,6 @@ cdef class Triangulation():
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
-        >>> sorted(c.keys())
-        ['filling', 'index', 'is_complete', 'singular_order', 'topology']
 
         You can get information about multiple cusps at once:
 
@@ -1333,10 +1403,14 @@ cdef class Triangulation():
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
+
+        # get_cusp_info
         cdef int cusp_index
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
         cdef Real m, l
+
+        # core_geodesic
         cdef int singular_order
 
         if self.c_triangulation is NULL:
@@ -1353,15 +1427,35 @@ cdef class Triangulation():
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
                       NULL, NULL, NULL, NULL, NULL, NULL)
-        core_geodesic(self.c_triangulation, cusp_index,
-                      &singular_order, NULL, NULL)
+        cusp_topology = CuspTopology[topology]
+        if cusp_topology == 'torus cusp':
+            orientable = True
+        elif cusp_topology == 'Klein bottle cusp':
+            orientable = False
+        else:
+            raise ValueError("Unhandled cusp topology")
 
         info = {
-           'index' : cusp_index,
-           'topology' : CuspTopology[topology],
-           'is_complete' : B2B(is_complete),
-           'filling' : (Real2float(m), Real2float(l))
+            # Minimal description of topology
+            'orientable' : orientable,
+            'euler_characteristic' : 0,
+            'cone_point_orders' : [],
+            'cone_point_singular_edge_indices' : [],
+
+            # Derived from the minimal description
+            'is_cusp' : True,
+            'topology' : cusp_topology,
+            'is_finite' : False,
+            'orbifold_euler_characteristic' : 0.0,
+
+            # Specific to cusps
+            'cusp_index' : cusp_index,
+            'is_complete' : B2B(is_complete),
+            'filling' : (Real2float(m), Real2float(l))
            }
+
+        core_geodesic(self.c_triangulation, cusp_index,
+                      &singular_order, NULL, NULL)
         if singular_order != 0:
             info['singular_order'] = singular_order
 

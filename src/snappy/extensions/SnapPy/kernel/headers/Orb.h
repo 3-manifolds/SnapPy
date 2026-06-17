@@ -61,6 +61,36 @@ extern void orb_set_singular_edge_info( Triangulation *manifold,
                                         int           singular_index,
                                         Real          singular_order);
 
+extern void orb_get_vertex_info(
+    Triangulation   *manifold,
+    int             vertex_index,
+    Boolean         *orientable,
+    int             *euler_characteristic,
+    int             *num_incident_singular_edges,
+    Real            **incident_singular_edge_orders,
+    int             **incident_singular_edge_indices,
+    int             *cusp_index,
+    CuspTopology    *topology,
+    Boolean         *is_finite_vertex,
+    Real            *orbifold_euler_characteristic);
+/**<
+ *  Retrieve info for each vertex/cusp by index into the linked
+ *  list.
+ *
+ *  It may report the corresponding Cusp::index, whether the vertex
+ *  is a finite vertex, its CuspTopology, whether the cusp is
+ *  orientable, its Euler characteristic, its orbifold Euler
+ *  characteristic, the number of incident singular edges, the
+ *  singular orders of those incident edges and their singular edge
+ *  indices.
+ *
+ *  If incident_singular_edge_indices and/or
+ *  incident_singular_edge_orders
+ *  is nonNULL, orb_get_vertex_info() allocates an array of length
+ *  *num_incident_singular_edges for each nonNULL output and stores it
+ *  there; the caller is responsible for freeing those arrays.
+ */
+
 /************************************************************************/
 /*                                                                      */
 /*                           orb_volume.c                               */

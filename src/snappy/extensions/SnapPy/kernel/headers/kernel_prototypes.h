@@ -161,6 +161,12 @@ extern void count_cusps(Triangulation *manifold);
  *  manifold->num_fake_cusps.
  */
 
+extern Boolean is_cusp_finite_vertex(const Cusp *cusp);
+/**<
+ *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  to determine whether the vertex link is a sphere without cone points.
+ */
+
 extern Boolean is_cusp_real(const Cusp *cusp);
 /**<
  *  Uses the stored Euler characteristic and num_incidient_singular_edges

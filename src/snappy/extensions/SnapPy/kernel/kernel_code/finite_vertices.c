@@ -98,7 +98,6 @@
 #include "kernel.h"
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
-static Boolean is_cusp_finite_vertex(Cusp *cusp);
 static void initialize_matching_cusps(Triangulation *manifold, Cusp **special_fake_cusp);
 static void merge_cusps(Triangulation *manifold);
 static void drill_tube(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e, Boolean creating_new_cusp);
@@ -171,8 +170,8 @@ void remove_finite_vertices(
     basic_simplification(manifold);
 }
 
-static Boolean is_cusp_finite_vertex(
-    Cusp *cusp)
+Boolean is_cusp_finite_vertex(
+    const Cusp *cusp)
 {
     if (cusp->euler_characteristic > 2)
         uFatalError("is_cusp_finite_vertex", "finite_vertices.c");

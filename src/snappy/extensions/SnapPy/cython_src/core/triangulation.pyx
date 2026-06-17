@@ -394,8 +394,10 @@ cdef class Triangulation():
 
     def num_cusps(self, cusp_type='all') -> int:
         """
-        Return the total number of cusps.  By giving the optional argument
-        'orientable' or 'nonorientable' it will only count cusps of that type.
+        Return the total number of cusps (that is vertices with link being
+        a torus or Klein bottle without cone points). By giving the optional
+        argument 'orientable' or 'nonorientable' it will only count cusps of
+        that type.
 
         >>> M = Triangulation('m125')
         >>> M.num_cusps()
@@ -415,9 +417,11 @@ cdef class Triangulation():
                              "['all', 'orientable', 'nonorientable'].")
 
     def _num_fake_cusps(self):
+        # ORB-TODO: Rename to num_non_cusp_vertices()?
+        # Add num_vertices()?
         """
-        Returns the number of "fake" cusps, which is typically the number
-        of finite vertices.
+        Returns the number of "fake" cusps which is any vertex with link
+        not being a torus or Klein bottle without cone points.
 
         >>> M = Triangulation('m004(1,2)')
         >>> F = M.filled_triangulation()

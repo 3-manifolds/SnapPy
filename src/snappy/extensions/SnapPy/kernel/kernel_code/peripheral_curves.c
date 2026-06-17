@@ -341,33 +341,20 @@ static void             restore_scratch_curves(Triangulation *manifold);
 void peripheral_curves(
     Triangulation *manifold)
 {
-    Cusp    *cusp;
-
     zero_peripheral_curves(manifold);
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (cusp = manifold->cusp_list_begin.next;
+    for (Cusp * cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
-    {
-        if (cusp->euler_characteristic == 0)   /* 2026/06/01 MG Changed to euler_characteristic
-                                                  97/2/4 Added to accommodate finite vertices. */
-
+        if (is_cusp_real(cusp))
             do_one_cusp(manifold, cusp);
-        else if (cusp->euler_characteristic > 2)
-            /* Expected Euler characteristic to be computed before
-             * calling peripheral_curves since peripheral_curves
-             * needs to know which cusps are torus and Klein bottle
-             * cusps. */
-            uFatalError("peripheral_curves", "peripheral_curves");
-    }
 
     adjust_Klein_cusp_orientations(manifold);
 
     free_extra(manifold);
 }
-
 
 void peripheral_curves_as_needed(
     Triangulation *manifold)
@@ -377,17 +364,15 @@ void peripheral_curves_as_needed(
      *  tet->curve[][][][] fields are zero.
      */
 
-    Cusp    *cusp;
-
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (cusp = manifold->cusp_list_begin.next;
+    for (Cusp * cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->euler_characteristic == 0
-         && cusp_has_curves(manifold, cusp) == FALSE)
+        if (is_cusp_real(cusp)
+            && cusp_has_curves(manifold, cusp) == FALSE)
 
             do_one_cusp(manifold, cusp);
 

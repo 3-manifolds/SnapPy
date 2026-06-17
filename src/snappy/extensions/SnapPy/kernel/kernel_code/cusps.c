@@ -6,8 +6,8 @@
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_fake_cusps(Triangulation *manifold);
  *      void    count_cusps(Triangulation *manifold);
- *      void    mark_fake_cusps(Triangulation *manifold);
- *      void compute_cusp_Euler_characteristics(Triangulation *manifold)
+ *      void    index_real_and_fake_cusps(Triangulation *manifold);
+ *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
  *      CuspTopology get_cusp_topology(const Cusp * cusp);
  *      void set_cusp_topology(Cusp * cusp, CuspTopology topology);
  *
@@ -32,7 +32,7 @@
  *  count_cusps() counts the Cusps of each CuspTopology, and sets
  *  manifold->num_cusps, manifold->num_or_cusps and manifold->num_nonor_cusps.
  *
- *  mark_fake_cusps() distinguishes real cusps from fake cusps
+ *  index_real_and_fake_cusps() distinguishes real cusps from fake cusps
  *  ( = finite vertices) by computing the Euler characteristic.
  *  Sets Euler characteristic and orientability for fake cusps, and
  *  renumbers all cusps so that real cusps have consecutive nonnegative
@@ -63,7 +63,6 @@ typedef struct
     Boolean orientation;
 } CuspTriangle;
 
-static void compute_cusp_Euler_characteristics(Triangulation *manifold);
 static int visited_bit(VertexIndex v);
 static int orientation_bit(VertexIndex v);
 
@@ -201,9 +200,10 @@ Cusp * create_one_cusp(
      *
      *  For "real" cusps the calling routine may
      *
-     *      (1) mark_fake_cusps to compute the Euler characteristic.
+     *      (1) call compute_cusp_Euler_characteristic to set the Euler
+     *          characteristic.
      *
-     *      (2) compute_cusp_orientabilities to set the cusp->orientability.
+     *      (2) call compute_cusp_orientabilities to set the cusp->orientability.
      *
      *      (3) call peripheral_curves() to set the cusp->orientability if
      *          the cusp's Euler characteristic is zero,
@@ -485,15 +485,12 @@ void count_cusps(
     }
 }
 
-
-void mark_fake_cusps(
+void index_real_and_fake_cusps(
     Triangulation   *manifold)
 {
     int     real_cusp_count,
             fake_cusp_count;
     Cusp    *cusp;
-
-    compute_cusp_Euler_characteristics(manifold);
 
     real_cusp_count = 0;
     fake_cusp_count = 0;
@@ -518,20 +515,16 @@ void mark_fake_cusps(
                  * Note: need to call orb_cusps_fill_incident_singular_edges first.
                  */
                 cusp->index = --fake_cusp_count;
-                /*
-                 *  2026/06/01 MG: used to set Cusp::is_finite = TRUE
-                 */
-                cusp->orientability = orientable_cusp;
                 break;
 
             default:
-                uFatalError("mark_fake_cusps", "cusps");
+                uFatalError("index_real_and_fake_cusps", "cusps");
         }
 
 }
 
 
-static void compute_cusp_Euler_characteristics(
+void compute_cusp_Euler_characteristics(
     Triangulation   *manifold)
 {
     Cusp        *cusp;
@@ -618,13 +611,6 @@ CuspTopology get_cusp_topology(
 {
     switch(cusp->euler_characteristic) {
     case 2:
-        if (cusp->orientability != orientable_cusp) {
-            /*
-             * Inconsistency.
-             */
-            uFatalError("get_cusp_topology 1", "cusps");
-            return unknown_topology;
-        }
         return sphere_cusp;
     case 1:
         if (cusp->orientability != nonorientable_cusp) {

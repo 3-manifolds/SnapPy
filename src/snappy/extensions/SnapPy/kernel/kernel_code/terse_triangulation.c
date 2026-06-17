@@ -603,6 +603,7 @@ Triangulation *terse_to_tri(
      *  2026/06/01 MG Added when removing Cusps::is_finite.
      */
 
+    compute_cusp_Euler_characteristics(manifold);
     mark_fake_cusps(manifold);
 
     /*

@@ -609,6 +609,7 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
     }
 
     orb_cusps_fill_incident_singular_edges(manifold);
+    compute_cusp_Euler_characteristics(manifold);
     mark_fake_cusps(manifold);
     compute_cusp_orientabilities(manifold);
     count_cusps(manifold);

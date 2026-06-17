@@ -221,7 +221,7 @@ struct Cusp
     int                 euler_characteristic;   /**< Initialized to a value larger 2 to
                                                  *   indicate that it has not been computed
                                                  *   yet.
-                                                 *   Computed by mark_fake_cusps calling
+                                                 *   Computed by calling
                                                  *   compute_cusp_Euler_characteristics.
                                                  *   Similar remarks to the ones about
                                                  *   orientability apply to code building

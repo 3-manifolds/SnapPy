@@ -164,10 +164,15 @@ extern void count_cusps(Triangulation *manifold);
 extern void mark_fake_cusps(Triangulation *manifold);
 /**<
  *  Distinguishes real cusps from fake cusps ( = finite vertices) by
- *  computing the Euler characteristic.  Sets Euler characteristic and
- *  orientability for fake cusps, and renumbers all cusps so that real
- *  cusps have consecutive nonnegative indices beginning at 0 and fake cusps
- *  have consecutive negative indices beginning at -1.
+ *  examining the Euler characteristic already stored on each cusp.
+ *  Sets orientability for fake cusps, and renumbers all cusps so that
+ *  real cusps have consecutive nonnegative indices beginning at 0 and
+ *  fake cusps have consecutive negative indices beginning at -1.
+ */
+
+extern void compute_cusp_Euler_characteristics(Triangulation *manifold);
+/**<
+ *  Computes and stores the Euler characteristic of each cusp.
  */
 
 extern void compute_cusp_orientabilities(Triangulation   *manifold);

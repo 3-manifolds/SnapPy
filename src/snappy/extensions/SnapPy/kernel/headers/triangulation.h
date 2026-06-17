@@ -208,10 +208,9 @@ struct Cusp
                                                  *   Initialized to unknown_cusp_orientability
                                                  *   to indicate that it has not been computed
                                                  *   yet.
-                                                 *   Computed by create_cusps calling
-                                                 *   create_one_cusp which traverses the gluings
-                                                 *   to build the Cusp and link it to the
-                                                 *   tetrahedra.
+                                                 *   Computed by compute_cusp_orientabilities
+                                                 *   or peripheral_curves (if Euler
+                                                 *   characteristic is zero).
                                                  *   Code that builds a Cusp itself rather
                                                  *   than calling create_cusps/create_one_cusp
                                                  *   has to also set this field itself.

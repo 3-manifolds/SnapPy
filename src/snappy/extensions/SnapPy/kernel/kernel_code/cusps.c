@@ -32,9 +32,7 @@
  *  count_cusps() counts the Cusps of each CuspTopology, and sets
  *  manifold->num_cusps, manifold->num_or_cusps and manifold->num_nonor_cusps.
  *
- *  index_real_and_fake_cusps() distinguishes real cusps from fake cusps
- *  ( = finite vertices) by computing the Euler characteristic.
- *  Sets Euler characteristic and orientability for fake cusps, and
+ *  Using the stored cusp Euler characteristic, index_real_and_fake_cusps() 
  *  renumbers all cusps so that real cusps have consecutive nonnegative
  *  indices beginning at 0 and fake cusps have consecutive negative indices
  *  beginning at -1.
@@ -200,7 +198,7 @@ Cusp * create_one_cusp(
      *
      *  For "real" cusps the calling routine may
      *
-     *      (1) call compute_cusp_Euler_characteristic to set the Euler
+     *      (1) call compute_cusp_Euler_characteristics to set the Euler
      *          characteristic.
      *
      *      (2) call compute_cusp_orientabilities to set the cusp->orientability.

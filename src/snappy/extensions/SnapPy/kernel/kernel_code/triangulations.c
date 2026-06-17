@@ -245,7 +245,7 @@ void data_to_triangulation(
     {
         create_cusps(manifold);
         compute_cusp_Euler_characteristics(manifold);
-        mark_fake_cusps(manifold);
+        index_real_and_fake_cusps(manifold);
     }
 
     /*

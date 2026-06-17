@@ -604,7 +604,7 @@ Triangulation *terse_to_tri(
      */
 
     compute_cusp_Euler_characteristics(manifold);
-    mark_fake_cusps(manifold);
+    index_real_and_fake_cusps(manifold);
 
     /*
      *  Install an arbitrary set of peripheral curves.

@@ -86,6 +86,9 @@ SolutionType orb_find_hyperbolic_structure(
     Real         step_size;
     Real         approach_value;
 
+    if (manifold->solution_type[filled] != not_attempted)
+        uFatalError("orb_find_hyperbolic_structure", "orb_hyperbolic_structure");
+
     initialize_shapes(manifold);
 
     /*

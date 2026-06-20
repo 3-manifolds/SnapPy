@@ -180,6 +180,9 @@ static void         suppress_imaginary_parts(Triangulation *manifold);
 SolutionType find_complete_hyperbolic_structure(
     Triangulation *manifold)
 {
+    if (manifold->orb_solution_type[filled] != not_attempted)
+        uFatalError("find_complete_hyperbolic_structure", "hyperbolic_structure");
+
     Boolean *is_complete_array;
     Real    *m_array,
             *l_array;

@@ -95,6 +95,17 @@ Triangulation *orb_triangulate_graph_complement(OrbGraph *gamma, Boolean remove_
 
 /************************************************************************/
 /*                                                                      */
+/*                      orb_matrix_generators.c                         */
+/*                                                                      */
+/************************************************************************/
+
+extern void orb_matrix_generators(Triangulation *manifold, GL4RMatrix generators[]);
+/**<
+ *  Compute O(3,1) matrix generators using the vertex Gram matrices.
+ */
+
+/************************************************************************/
+/*                                                                      */
 /*                      orb_hyperbolic_structure.c                      */
 /*                                                                      */
 /************************************************************************/
@@ -102,6 +113,26 @@ Triangulation *orb_triangulate_graph_complement(OrbGraph *gamma, Boolean remove_
 extern Real orb_minor1(GL4RMatrix matrix, int row, int col);
 /**<
  *  Matrix minor.
+ */
+
+/************************************************************************/
+/*                                                                      */
+/*                 orb_tetrahedron_development.c                        */
+/*                                                                      */
+/************************************************************************/
+
+extern Boolean orb_realize_tetrahedron_from_Gram_matrix(Tetrahedron *tet);
+/**<
+ *  Realize a tetrahedron from the vertex Gram matrix data stored in
+ *  Tetrahedron::orb_tet_shape, EdgeClass::orb_edge_shape and
+ *  Cusp::orb_cusp_shape.
+ */
+
+extern void orb_compute_corners_of_neighbor(Tetrahedron *tet, FaceIndex face);
+/**<
+ *  Given a tetrahedron whose orb basis and dual basis are already
+ *  assigned, realize the neighboring tetrahedron across the given face
+ *  and transport its basis data into the same frame.
  */
 
 /************************************************************************/

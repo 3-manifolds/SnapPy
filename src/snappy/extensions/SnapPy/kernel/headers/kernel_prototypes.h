@@ -47,11 +47,14 @@ extern void choose_generators(  Triangulation   *manifold,
  *  call choose_generators(), so they are sure to be using the same
  *  generator set, and their results are directly comparable.
  *  If compute_corners is TRUE, choose_generators() computes the location
- *  on the sphere at infinity of each ideal vertex of each Tetrahedron,
- *  using the hyperbolic structure of the Dehn filled manifold.
- *  If centroid_at_origin is TRUE, the initial tetrahedron is positioned
- *  with its centroid at the origin;  otherwise the initial tetrahedron
- *  is positioned with its vertices at {0, 1, infinity, z}.
+ *  of each vertex of each Tetrahedron using the cross-ratios or vertex
+ *  Gram matrices. In the former case, the vertices are ideal and on the
+ *  sphere at infinity.
+ *
+ *  If centroid_at_origin is TRUE (only supported for cross ratios),
+ *  the initial tetrahedron is positioned with its centroid at the origin;
+ *  otherwise the initial tetrahedron is positioned with its vertices at
+ *  {0, 1, infinity, z}.
  *  If compute_corners is FALSE, centroid_at_origin is ignored.
  */
 

@@ -86,14 +86,17 @@
  *    fundamental domain (cf. the recursive algorithm described above).  The
  *    central Tetrahedron used to begin the recursion has tet->generator_path = -1.
  *
- *    If compute_corners is TRUE,
- *    choose_generators() also computes the location on the sphere at infinity
- *    of each ideal vertex of each Tetrahedron in the fundamental domain, and
- *    stores it in the field tet->corner[vertex].  That is, tet->corner[vertex]
- *    contains the complex number representing the location of the vertex in
- *    the boundary of the upper half space model.  The (relative) locations of
- *    the corners are computed using the hyperbolic structure of the Dehn filled
- *    manifold.  If centroid_at_origin is TRUE, the initial tetrahedron is
+ *    If compute_corners is TRUE, choose_generators() also compute the vertex
+ *    positions using the cross ratios or Vertex Gram matrices and storing them
+ *    as corners or basis.
+ *    For the former, choose_generators() computes the location on the sphere at
+ *    infinity of each ideal vertex of each Tetrahedron in the fundamental
+ *    domain, and stores it in the field tet->corner[vertex].  That is,
+ *    tet->corner[vertex] contains the complex number representing the location
+ *    of the vertex in the boundary of the upper half space model.  The
+ *    (relative) locations of the corners are computed using the hyperbolic
+ *    structure of the Dehn filled manifold.
+ *    If centroid_at_origin is TRUE, the initial tetrahedron is
  *    positioned with its centroid at the origin;  otherwise the initial tetrahedron
  *    is positioned with its vertices at {0, 1/sqrt(z), sqrt(z), infinity}.
  */
@@ -103,7 +106,7 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 
 static void    initialize_flags(Triangulation *manifold);
-static void visit_tetrahedra(Triangulation *manifold, Boolean compute_corners, Boolean centroid_at_origin);
+static void visit_tetrahedra(Triangulation *manifold, Boolean compute_crossratio_corners, Boolean compute_orb_corners, Boolean centroid_at_origin);
 static void    initial_tetrahedron(Triangulation *manifold, Tetrahedron **tet, EdgeIndex *best_edge);
 static void    compute_tetrahedron_corners(Tetrahedron *tet, EdgeIndex best_edge, Boolean centroid_at_origin);
 static void    count_incident_generators(Triangulation *manifold);
@@ -115,15 +118,26 @@ static void eliminate_empty_relations(Triangulation *manifold);
 
 void choose_generators(
     Triangulation    *manifold,
-    Boolean            compute_corners,
-    Boolean            centroid_at_origin)
+    Boolean          compute_corners,
+    Boolean          centroid_at_origin)
 {
-    /*
-     *    To compute the corners we need some sort of geometric structure.
-     */
-    if (compute_corners == TRUE
-     && manifold->solution_type[filled] == not_attempted)
-        uFatalError("choose_generators", "choose_generators.c");
+    Boolean compute_crossratio_corners = FALSE;
+    Boolean compute_orb_corners = FALSE;
+
+    if (compute_corners)
+    {
+        /*
+         *    To compute the corners we need some sort of geometric structure.
+         */
+        compute_crossratio_corners =
+            manifold->solution_type[filled] != not_attempted;
+
+        compute_orb_corners =
+            manifold->orb_solution_type[filled] != not_attempted;
+
+        if (!(compute_crossratio_corners || compute_orb_corners))
+            uFatalError("choose_generators", "choose_generators.c");
+    }
 
     /*
      *    For each Tetrahedron tet, set tet->flag to unknown_orientation
@@ -138,7 +152,10 @@ void choose_generators(
      *    generators to its faces, and recursively visits any unvisited
      *    neighbors.
      */
-    visit_tetrahedra(manifold, compute_corners, centroid_at_origin);
+    visit_tetrahedra(manifold,
+                     compute_crossratio_corners,
+                     compute_orb_corners,
+                     centroid_at_origin);
 
     /*
      *    The number_of_generators should be one plus the number of tetrahedra.
@@ -234,7 +251,8 @@ static void initialize_flags(
 
 static void visit_tetrahedra(
     Triangulation    *manifold,
-    Boolean            compute_corners,
+    Boolean            compute_crossratio_corners,
+    Boolean            compute_orb_corners,
     Boolean            centroid_at_origin)
 {
     Tetrahedron    **queue,
@@ -272,15 +290,27 @@ static void visit_tetrahedra(
     
     /*
      *    Choose the initial Tetrahedron according to some criterion.
-     *    If compute_corners is TRUE, position its corners.
+     *    If requested, compute the vertex positions and store them
+     *    as corners (if using cross-ratios) or basis (if using Vertex
+     *    Gram matrices).
+     *
      *    2000/4/2  The choice of initial tetrahedron is independent
      *    of compute_corners.
      */
     EdgeIndex best_edge;
     initial_tetrahedron(manifold, &queue[0], &best_edge);
-    if (compute_corners)
+    if (compute_crossratio_corners)
         compute_tetrahedron_corners(queue[0], best_edge, centroid_at_origin);
-    
+    if (compute_orb_corners)
+    {
+        if (centroid_at_origin)
+            /* Orb does does not support this. */
+            uFatalError("visit_tetrahedra 0", "choose_generators.c");
+
+        if (!orb_realize_tetrahedron_from_Gram_matrix(queue[0]))
+            uFatalError("visit_tetrahedra 1", "choose_generators.c");
+    }
+
     /*
      *    Mark the initial Tetrahedron as visited.
      */
@@ -329,7 +359,7 @@ static void visit_tetrahedra(
                                  tet->flag :
                                ! tet->flag;
 
-                if (compute_corners)
+                if (compute_crossratio_corners)
                 {
                     for (i = 0; i < 4; i++)
                     {
@@ -344,6 +374,9 @@ static void visit_tetrahedra(
                         ORIENTATION(nbr_tet->flag),
                         nbr_tet->shape[filled]->cwl[ultimate]);    /* shapes        */
                 }
+
+                if (compute_orb_corners)
+                    orb_compute_corners_of_neighbor(tet, face);
 
                 queue[++queue_last] = nbr_tet;
             }
@@ -381,7 +414,7 @@ static void visit_tetrahedra(
      */
     if (    queue_first != manifold->num_tetrahedra
          || queue_last  != manifold->num_tetrahedra - 1)
-        uFatalError("visit_tetrahedra", "choose_generators.c");
+        uFatalError("visit_tetrahedra 2", "choose_generators.c");
 }
 
 static Boolean orb_use_orb_conventions = FALSE;

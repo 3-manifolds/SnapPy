@@ -405,6 +405,8 @@ struct GroupPresentation
 
 
 GroupPresentation           *compute_unsimplified_presentation(Triangulation *manifold);
+static Boolean              use_solution(Triangulation *manifold);
+static Boolean              use_orb_solution(Triangulation *manifold);
 static void                 compute_matrix_generators(Triangulation *manifold, GroupPresentation *group);
 static void                 compute_relations(Triangulation *manifold, GroupPresentation *group);
 static void                 compute_edge_relations(Triangulation *manifold, GroupPresentation *group);
@@ -548,35 +550,44 @@ GroupPresentation *fundamental_group(
     return group;
 }
 
+static Boolean use_solution(
+    Triangulation *manifold)
+{
+    SolutionType solution_type = manifold->solution_type[filled];
+    return
+        solution_type != not_attempted &&
+        solution_type != no_solution &&
+        solution_type != degenerate_solution;
+}
+
+/* ORB-TODO: Orb seems to be unnecessarily conservative about what
+ * solutions it considers.*/
+static Boolean use_orb_solution(
+    Triangulation *manifold)
+{
+    SolutionType orb_solution_type = manifold->orb_solution_type[filled];
+
+    return
+        orb_solution_type == geometric_solution ||
+        orb_solution_type == orb_partially_flat_solution ||
+        orb_solution_type == nongeometric_solution;
+}
 
 GroupPresentation *compute_unsimplified_presentation(
     Triangulation   *manifold)
 {
-    GroupPresentation   *group;
-    Boolean  compute_vertices;
-    SolutionType solution_type = get_filled_solution_type(manifold);
-
-    group = NEW_STRUCT(GroupPresentation);
-
     /*
      *  MC 2012-03-20 added the test for degenerate solutions to avoid
      *  division by zero errors when computing the fundamental groups
      *  of certain MorwenLinks on platforms with accurate arithmetic.
      */
 
-    compute_vertices =  (solution_type != not_attempted
-			 && solution_type != no_solution
-			 && solution_type != degenerate_solution);
-
-    /*
-     * ORB-TODO: Make choose_generators compute the corners
-     * when there Triangulation::orb_solution_Type instead of
-     * Triangulation::solution_type.
-     */
+    Boolean compute_vertices =
+        use_solution(manifold) || use_orb_solution(manifold);
     choose_generators(manifold, compute_vertices, FALSE);
 
+    GroupPresentation   *group = NEW_STRUCT(GroupPresentation);
     group->itsNumGenerators = manifold->num_generators;
-
     compute_matrix_generators(manifold, group);
 
     /* ORB-TODO: need to set the singular_orders of the manifold to 0 if there  are none zero singular_orders (???) */
@@ -594,8 +605,6 @@ static void compute_matrix_generators(
     Triangulation       *manifold,
     GroupPresentation   *group)
 {
-    SolutionType solution_type = get_filled_solution_type(manifold);
-    Boolean use_identities;
     /*
      *  Pass centroid_at_origin = FALSE to matrix_generators()
      *  so the initial Tetrahedron will be positioned with vertices
@@ -608,54 +617,44 @@ static void compute_matrix_generators(
     group->itsMTs = NEW_ARRAY(manifold->num_generators,
 			      MoebiusTransformation);
 
-    /*
-     *  ORB-TODO:
-     *
-     *  We need to inspect Triangulation::orb_solution_type as well
-     *  and use either shapes or vertex Gram matrices to compute the
-     *  face-pairing matrices.
-
-     *  This is the code that Orb used to determine whether to
-     *  generate the matrices:
-      
-    use_identities =
-        !(get_filled_solution_type(manifold) == nongeometric_solution
-         || get_filled_solution_type(manifold) == geometric_solution);
-    if (!use_identities) {
-        new_matrix_generators(manifold, group->itsMatrices);
-        Moebius_array_to_O31_array( group->itsMTs,
-                                    group->itsMatrices,
-                                    manifold->num_generators);
-                                    }
-    */
-
-    /* MC 2013-03-20: now checks if matrix_generators fails.*/
-    use_identities = ( solution_type == not_attempted
-		       || solution_type == no_solution );
-    if ( !use_identities )
+    if (manifold->solution_type[filled] != not_attempted &&
+        manifold->orb_solution_type[filled] != not_attempted)
+        /* Can't return both at the same time. */
+        uFatalError("compute_matrix_generators", "fundamental_group.c");
+    
+    if (use_solution(manifold))
     {
-        if ( matrix_generators(manifold, group->itsMTs) == func_failed ){
+        if ( matrix_generators(manifold, group->itsMTs) == func_OK )
+        {
+            Moebius_array_to_O31_array( group->itsMTs,
+                                        group->itsMatrices,
+                                        manifold->num_generators);
+            return;
+        }
+        else
 	    uAcknowledge("Failed to find matrix generators.");
-	    use_identities = TRUE;
-	}
-	else {
-	  Moebius_array_to_O31_array( group->itsMTs,
-				      group->itsMatrices,
-				      manifold->num_generators);
-	}
     }
+    else
+        if (use_orb_solution(manifold))
+        {
+            orb_matrix_generators(manifold, group->itsMatrices);
+            O31_array_to_Moebius_array( group->itsMatrices,
+                                        group->itsMTs,
+                                        manifold->num_generators);
+            return;
+        }
 
-    if ( use_identities )
+    /*
+     * If we do not have either solution type or the above computations
+     * failed, use the identity matrices for everything.
+     */
+
+    for (int i = 0; i < manifold->num_generators; i++)
     {
-        int i;
-
-        for (i = 0; i < manifold->num_generators; i++){
-            o31_copy(group->itsMatrices[i], O31_identity);
-	    Moebius_copy(&group->itsMTs[i], &Moebius_identity);
-	}
+        o31_copy(group->itsMatrices[i], O31_identity);
+        Moebius_copy(&group->itsMTs[i], &Moebius_identity);
     }
 }
-
 
 static void compute_relations(
     Triangulation       *manifold,

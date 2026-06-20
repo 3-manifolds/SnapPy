@@ -28,6 +28,30 @@ cdef class Orbifold(Triangulation):
         orb_find_hyperbolic_structure(self.c_triangulation, manual)
         self._cache.clear(message='Manifold._orb_cone_fill')
 
+    def fundamental_group(
+            self,
+            simplify_presentation : bool = True,
+            fillings_may_affect_generators : bool = True,
+            minimize_number_of_generators : bool = True,
+            try_hard_to_shorten_relators : bool = True
+        ) -> HolonomyGroup:
+        """
+        Return a :class:`HolonomyGroup` representing the fundamental group of
+        the orbifold, together with its holonomy representation.
+        """
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        args = (simplify_presentation, fillings_may_affect_generators,
+                minimize_number_of_generators, try_hard_to_shorten_relators)
+        try:
+            return self._cache.lookup('fundamental_group', *args)
+        except KeyError:
+            pass
+
+        result = HolonomyGroup(self, *args)
+        return self._cache.save(result, 'fundamental_group', *args)
+
     def solution_type(self, enum=False):
         cdef c_SolutionType solution_type
 

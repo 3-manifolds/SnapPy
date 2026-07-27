@@ -28,8 +28,6 @@ typedef struct OrbDiagramVertex OrbDiagramVertex;
 typedef struct OrbDiagramCrossing OrbDiagramCrossing;
 typedef struct OrbDiagram OrbDiagram;
 
-typedef struct OrbGraph OrbGraph;
-
 /*
  * Corresponds to EndType in gui/diagram_canvas.h:
  * https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/gui/diagram_canvas.h#L27

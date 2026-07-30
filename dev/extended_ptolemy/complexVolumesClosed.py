@@ -43,7 +43,18 @@ def compute_representative_ptolemys_and_full_var_dict(M, precision = 53):
     I, full_var_dict = extended.ptolemy_ideal_for_filled(
         M, return_full_var_dict = 'data', notation = 'full')
 
-    rur = giac_rur.rational_univariate_representation(I)
+    try:
+        rur = giac_rur.rational_univariate_representation(I)
+    except giac_rur.GiacRURTooManyVariablesError as error:
+        raise ValueError(
+            "The extended Ptolemy ideal for this %d-tetrahedron "
+            "triangulation has %d variables. Giac %s's RUR "
+            "implementation crashes for more than %d variables, so this "
+            "Giac version limits this computation to triangulations with at "
+            "most 5 tetrahedra."
+            % (M.num_tetrahedra(), error.number_of_variables,
+               error.version_string,
+               giac_rur.GIAC_PRE_2_RUR_MAX_VARIABLES)) from None
 
     return [
         evaluate_at_roots(numberField, exact_values, precision)

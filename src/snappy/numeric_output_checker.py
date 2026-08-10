@@ -70,7 +70,7 @@ def init_precisions(precisions):
 
 
 # The precisions NUMERIC0, ... we support are hard-coded here:
-init_precisions(range(0,33,3))
+init_precisions(range(0,33,1))
 
 
 def get_precision(optionflags):

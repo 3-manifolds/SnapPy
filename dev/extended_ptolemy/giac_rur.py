@@ -3,8 +3,36 @@ Sage convenience wrapper for Giac's rational univariate representation
 functionality.
 """
 
+import re
+
 from sage.all import QQ, PolynomialRing, NumberField
 from .giac_helper import giac
+
+# Giac before 2.0 corrupts memory in its RUR code above this variable count.
+GIAC_PRE_2_RUR_MAX_VARIABLES = 15
+
+
+class GiacRURTooManyVariablesError(ValueError):
+    def __init__(self, number_of_variables, version):
+        self.number_of_variables = number_of_variables
+        self.version = version
+        self.version_string = '.'.join(str(part) for part in version)
+        super().__init__(
+            "Giac %s's RUR implementation crashes for more than %d "
+            "variables, and this ideal has %d variables."
+            % (self.version_string, GIAC_PRE_2_RUR_MAX_VARIABLES,
+               number_of_variables))
+
+
+def _giac_version():
+    description = repr(giac('version()'))
+    match = re.search(
+        r'\bgiac\s+(\d+(?:\.\d+)+)', description, re.IGNORECASE)
+    if match is None:
+        raise RuntimeError('Could not determine Giac version from %s.'
+                           % description)
+    return tuple(int(part) for part in match.group(1).split('.'))
+
 
 # The main function of this file is:
 
@@ -60,6 +88,13 @@ def rational_univariate_representation(ideal):
 
     """
     R = ideal.ring()
+
+    number_of_variables = len(R.gens())
+    if number_of_variables > GIAC_PRE_2_RUR_MAX_VARIABLES:
+        version = _giac_version()
+        if version < (2, 0):
+            raise GiacRURTooManyVariablesError(
+                number_of_variables, version)
 
     # A "feature" introduced in Sage-9.4 is that
     # ideal.gens() vs R.gens()

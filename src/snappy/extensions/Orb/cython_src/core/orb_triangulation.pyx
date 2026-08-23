@@ -130,7 +130,6 @@ cdef class OrbTriangulation:
 
     def _to_orb_string(self) -> str:
         cdef char *c_string
-        cdef result
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 

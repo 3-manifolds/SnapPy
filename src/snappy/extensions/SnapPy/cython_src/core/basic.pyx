@@ -594,6 +594,14 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
+    if T._orb_num_singular_edges() > 0:
+        raise ValueError(
+            "Cannot construct a Manifold from a Triangulation with singular "
+            "edges: hyperbolic structures described by cross-ratios are not "
+            "supported for such triangulations. "
+            "Use _orb_with_orb_hyperbolic_structure() instead."
+        )
+
     M = _manifold_class('empty') if manifold_class is None else manifold_class('empty')
     if T.c_triangulation is NULL:
         return M

@@ -83,6 +83,10 @@ Relators:
    aaaabAAAcaaaabAAAcaaaabAAAc
 
 >>> O = _OrbOrbifold(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices = False)
+>>> O.with_hyperbolic_structure()
+Traceback (most recent call last):
+...
+ValueError: Cannot construct a Manifold from a Triangulation with singular edges: hyperbolic structures described by cross-ratios are not supported for such triangulations. Use _orb_with_orb_hyperbolic_structure() instead.
 >>> O._orb_cone_fill(2.0, 0)
 >>> O._orb_cone_fill(3.0, 1)
 >>> O._orb_cone_fill(4.0, 2)

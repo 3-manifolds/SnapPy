@@ -142,7 +142,6 @@ cdef class OrbTriangulation:
 
     def _to_snappea_string(self):
         cdef char *c_string
-        cdef result
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 

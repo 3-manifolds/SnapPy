@@ -1,10 +1,9 @@
 """
 
 >>> from snappy.extensions import SnapPy
->>> from snappy.extensions.SnapPy import Triangulation
->>> from snappy.extensions.SnapPy import Orbifold
 >>> SnapPy._orb_set_use_orb_conventions(True)
->>> O = Orbifold(os.path.join(test_files_paths[0], '6_5^2.7.orb'), remove_finite_vertices = False)
+
+>>> O = _OrbOrbifold(os.path.join(test_files_paths[0], '6_5^2.7.orb'), remove_finite_vertices = False)
 >>> O.solution_type()
 'partially flat tetrahedra'
 >>> O.volume() # doctest: +NUMERIC9
@@ -82,7 +81,8 @@ Relators:
    abab
    acacacac
    aaaabAAAcaaaabAAAcaaaabAAAc
->>> O = Orbifold(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices = False)
+
+>>> O = _OrbOrbifold(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices = False)
 >>> O._orb_cone_fill(2.0, 0)
 >>> O._orb_cone_fill(3.0, 1)
 >>> O._orb_cone_fill(4.0, 2)
@@ -147,7 +147,7 @@ Relators:
    CC
    AAA
 
->>> O = Orbifold(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices=False)
+>>> O = _OrbOrbifold(os.path.join(test_files_paths[0], '1_1^4.84.orb'), remove_finite_vertices=False)
 >>> O._orb_cone_fill([3,3,4,5,6,2])
 >>> G=O.fundamental_group()
 >>> G.O31('a') # doctest: +NUMERIC9
@@ -174,5 +174,5 @@ if not __doc__:
     raise Exception("doc string with tests was not recognized.")
 
 import os
-from ..extensions.Orb import Orbifold
+from snappy import Triangulation, _OrbOrbifold
 from .files import __path__ as test_files_paths

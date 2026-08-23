@@ -65,6 +65,9 @@ class ManifoldBase(TriangulationBase):
                                   hyperbolic_adjoint_torsion,
                                   hyperbolic_SLN_torsion)
 
+class OrbifoldBase:
+    pass
+
 class Triangulation(extensions.SnapPy.Triangulation, TriangulationBase):
     __doc__ = extensions.SnapPy.Triangulation.__doc__
 
@@ -189,10 +192,18 @@ class ManifoldHP(extensions.SnapPyHP.Manifold, TriangulationHP, ManifoldBase):
         """
         return self.low_precision()._identify(extends_to_link)
 
+class _OrbOrbifold(extensions.SnapPy.Orbifold, Triangulation, OrbifoldBase):
+    __doc__ = extensions.SnapPy.Orbifold.__doc__
+
+class _OrbOrbifoldHP(extensions.SnapPyHP.Orbifold, TriangulationHP, OrbifoldBase):
+    __doc__ = extensions.SnapPyHP.Orbifold.__doc__
+
 extensions.SnapPy._manifold_class = Manifold
 extensions.SnapPy._triangulation_class = Triangulation
+extensions.SnapPy._orbifold_class = _OrbOrbifold
 extensions.SnapPyHP._triangulation_class = TriangulationHP
 extensions.SnapPyHP._manifold_class = ManifoldHP
+extensions.SnapPyHP._orbifold_class = _OrbOrbifoldHP
 Triangulation._triangulation_class = Triangulation
 TriangulationHP._triangulation_class = TriangulationHP
 

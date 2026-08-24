@@ -64,7 +64,7 @@ def exterior_to_link(manifold,
     fillings on the input which give the 3-sphere.  Example usage:
 
     >>> M = Manifold('m016')
-    >>> L = exterior_to_link(M)
+    >>> L = M.exterior_to_link()
     >>> L.exterior().is_isometric_to(M)
     True
 

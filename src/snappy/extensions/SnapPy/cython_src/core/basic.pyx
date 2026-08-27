@@ -589,8 +589,9 @@ def _plink_callback(LE):
 
 # Conversion functions Manifold <-> Triangulation
 
-def Manifold_from_Triangulation(Triangulation T, recompute=True,
-                                manifold_class=None):
+def Manifold_from_Triangulation(Triangulation T,
+                                manifold_class,
+                                recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
@@ -602,7 +603,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
             "Use _orb_with_orb_hyperbolic_structure() instead."
         )
 
-    M = _manifold_class('empty') if manifold_class is None else manifold_class('empty')
+    M = manifold_class('empty')
     if T.c_triangulation is NULL:
         return M
     copy_triangulation(T.c_triangulation, &c_triangulation)

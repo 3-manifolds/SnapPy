@@ -660,7 +660,7 @@ cdef class Triangulation():
         >>> N.volume() # doctest: +NUMERIC6
         2.02988321
         """
-        return Manifold_from_Triangulation(self)
+        return Manifold_from_Triangulation(self, manifold_class=_manifold_class)
 
     def without_hyperbolic_structure(self):
         """

@@ -312,9 +312,6 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> N = M.copy()
         """
-        empty = self.__class__('empty')
-        if self.c_triangulation is NULL:
-            return empty
         return Manifold_from_Triangulation(self, manifold_class=self.__class__)
 
     def cusp_neighborhood(self) -> CuspNeighborhood:
@@ -612,8 +609,9 @@ cdef class Manifold(Triangulation):
           True
         """
         cover = Triangulation.cover(self, permutation_rep)
-        return Manifold_from_Triangulation(cover, recompute=False,
-                                           manifold_class=self.__class__)
+        return Manifold_from_Triangulation(cover,
+                                           manifold_class=self.__class__,
+                                           recompute=False)
 
     def covers(
             self,
@@ -658,8 +656,8 @@ cdef class Manifold(Triangulation):
         """
         covers = Triangulation.covers(self, degree, method,cover_type)
         return [Manifold_from_Triangulation(cover,
-                                            recompute=False,
-                                            manifold_class=self.__class__)
+                                            manifold_class=self.__class__,
+                                            recompute=False)
                 for cover in covers]
 
     cdef _kernel_volume(self):

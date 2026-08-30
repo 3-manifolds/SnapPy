@@ -7,13 +7,13 @@
  *                                Boolean       compute_corners,
  *                                Boolean       centroid_at_origin)
  *
- *        void orb_set_use_orb_conventions(Boolean use_orb_conventions)
+ *        void orb_set_use_orb_initial_tet(Boolean use_orb_initial_tet)
  *
  *    The function choose_generators chooses a set of generators for
  *    the fundamental group of the Triangulation *manifold.  (The Dehn
  *    filling coefficients do not affect this choice.)
  *
- *    The function orb_set_use_orb_conventions causes the initial
+ *    The function orb_set_use_orb_initial_tet causes the initial
  *    tetrahedron to be chosen the same way that it is chosen by
  *    Orb. This is intended only for testing against Orb.
  *
@@ -431,12 +431,12 @@ static void visit_tetrahedra(
         uFatalError("visit_tetrahedra 2", "choose_generators.c");
 }
 
-static Boolean orb_use_orb_conventions = FALSE;
+static Boolean orb_use_orb_initial_tet = FALSE;
 
-void orb_set_use_orb_conventions(
-    Boolean use_orb_conventions)
+void orb_set_use_orb_initial_tet(
+    Boolean use_orb_initial_tet)
 {
-    orb_use_orb_conventions = use_orb_conventions;
+    orb_use_orb_initial_tet = use_orb_initial_tet;
 }
 
 static void initial_tetrahedron(
@@ -450,7 +450,7 @@ static void initial_tetrahedron(
     *initial_tet = manifold->tet_list_begin.next;
     *best_edge = 0;
 
-    if (orb_use_orb_conventions)
+    if (orb_use_orb_initial_tet)
         return;
     
     /*

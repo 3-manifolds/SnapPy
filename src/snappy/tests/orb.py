@@ -1,7 +1,7 @@
 """
 
 >>> from snappy.extensions import SnapPy
->>> SnapPy._orb_set_use_orb_conventions(True)
+>>> SnapPy._orb_set_use_orb_initial_tet(True)
 
 >>> O = _OrbOrbifold(os.path.join(test_files_paths[0], '6_5^2.7.orb'), remove_finite_vertices = False)
 >>> O.solution_type()
@@ -170,7 +170,7 @@ Relators:
 [  0.218110680891066   0.522822563612607   0.824646115636699  -0.306900016716857]
 [ 12.067362397305738  -1.530278923445284  -0.306900015667353 -12.007718103074513]
 
->>> SnapPy._orb_set_use_orb_conventions(False)
+>>> SnapPy._orb_set_use_orb_initial_tet(False)
 
 """
 

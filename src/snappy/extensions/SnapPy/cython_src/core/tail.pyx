@@ -800,8 +800,8 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
 
-def _orb_set_use_orb_conventions(use_orb_conventions : bool):
-    orb_set_use_orb_conventions(use_orb_conventions)
+def _orb_set_use_orb_initial_tet(use_orb_initial_tet : bool):
+    orb_set_use_orb_initial_tet(use_orb_initial_tet)
 
 def _orb_test_triangulating_diagram(name, remove_finite_vertices = True):
     cdef c_Triangulation * triangulation

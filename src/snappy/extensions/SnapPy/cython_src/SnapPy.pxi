@@ -625,7 +625,7 @@ cdef extern from "kernel_prototypes.h":
     extern void choose_generators(c_Triangulation *manifold,
                                   Boolean compute_corners,
                                   Boolean centroid_at_origin)
-    extern void orb_set_use_orb_conventions(Boolean use_orb_conventions) except *
+    extern void orb_set_use_orb_initial_tet(Boolean use_orb_initial_tet) except *
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
     extern c_FuncResult   two_to_three(c_Tetrahedron *tet0,
                                        int f, int *num_tetrahedra_ptr)

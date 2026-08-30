@@ -68,7 +68,7 @@ void compute_fourth_corner(
  *  ideal vertices, compute the location of the fourth.
  */
 
-extern void orb_set_use_orb_conventions(Boolean use_orb_conventions);
+extern void orb_set_use_orb_initial_tet(Boolean use_orb_initial_tet);
 
 /************************************************************************/
 /*                                                                      */

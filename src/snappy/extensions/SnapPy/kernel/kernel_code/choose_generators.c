@@ -1,27 +1,28 @@
 /*
  *    choose_generators.c
  *
- *    This file contains the function
+ *    This file contains the two functions:
  *
- *        void choose_generators(    Triangulation    *manifold,
- *                                Boolean            compute_corners,
- *                                Boolean            centroid_at_origin)
- *
- *    which chooses a set of generators for the fundamental group
- *    of the Triangulation *manifold.  (The Dehn filling coefficients
- *    are irrelevant.)
+ *        void choose_generators( Triangulation *manifold,
+ *                                Boolean       compute_corners,
+ *                                Boolean       centroid_at_origin)
  *
  *        void orb_set_use_orb_conventions(Boolean use_orb_conventions)
  *
- *    which changes the choice of initial tetrahedron to match that of
- *    Orb. This is intended only testing against Orb only.
+ *    The function choose_generators chooses a set of generators for
+ *    the fundamental group of the Triangulation *manifold.  (The Dehn
+ *    filling coefficients do not affect this choice.)
+ *
+ *    The function orb_set_use_orb_conventions causes the initial
+ *    tetrahedron to be chosen the same way that it is chosen by
+ *    Orb. This is intended only for testing against Orb.
  *
  *    A function which needs to use the generating set must first call
- *    choose_generators().  [Note that this differs from the previous
- *    SnapPea 2.0- convention, under which all functions which changed the
- *    triangulation were responsible for calling choose_generators().
+ *    choose_generators().  (Note that this differs from the convention
+ *    used in SnapPea 2.0-, which was that any function which changes the
+ *    triangulation is responsible for calling choose_generators().
  *    The old convention was more efficient at runtime, but the new one
- *    makes programming easier.]
+ *    makes programming easier.)
  *
  *    The algorithm begins with an arbitrary Tetrahedron, and recursively
  *    attaches neighboring Tetrahedra to create a fundamental domain for
@@ -35,13 +36,13 @@
  *
  *    The algorithm simplifies the generating set in two ways:
  *
- *    (1)    When it finds an EdgeClass with only one incident 2-cell which
+ *    (1) When it finds an EdgeClass with only one incident 2-cell which
  *        is dual to an active generator, it does a "handle cancellation"
  *        to eliminate that generator, and also sets the EdgeClass's
  *        active_relation field to FALSE.  The algorithm continues doing
  *        this type of simplification until it can make no further progress.
  *
- *    (2)    At this point the boundary of the fundamental domain is likely
+ *    (2) At this point the boundary of the fundamental domain is likely
  *        to contain groups of faces which are essentially n-gons (n > 3)
  *        arbitrarily divided into triangles.  The generators for such
  *        triangular faces are all equivalent, and get merged. The
@@ -62,42 +63,44 @@
  *    The generator dual to a given face of a given Tetrahedron is
  *    described by three variables:
  *
- *        tet->generator_status[face]    takes the value
+ *        tet->generator_status[face] takes the value:
  *
- *            outbound_generator        if the generator is directed from
- *                                    tet towards its neighbor,
- *            inbound_generator        if the generator is directed from
- *                                    the neighbor towards tet,
- *            not_a_generator            if no generator corresponds to this
- *                                    face (more on this in a minute), and
- *            unassigned_generator    if the algorithm hasn't gotten around
- *                                    to considering this face yet.
+ *            outbound_generator    if the generator is directed from
+ *                                     tet towards its neighbor,
+ *            inbound_generator     if the generator is directed from
+ *                                     the neighbor towards tet,
+ *            not_a_generator       if no generator corresponds to this
+ *                                     face (more on this in a minute), and
+ *            unassigned_generator  if the algorithm hasn't gotten around
+ *                                     to considering this face yet.
  *
  *        tet->generator_index[face] tells the index of the generator.
  *            The numbering runs from 0 to (number-of-generators - 1).
- *            tet->generator_index[face] is defined iff tet->generator_status[face]
- *            is outbound_generator or inbound_generator.
+ *            tet->generator_index[face] is defined iff
+ *            tet->generator_status[face] is outbound_generator or
+ *            inbound_generator.
  *
  *        tet->generator_parity[face] tells whether the generator is
  *            orientation_preserving or orientation_reversing.
  *
- *    The field tet->generator_path lets you reconstruct the complete path of
- *    a generator:  it says by which face the given Tetrahedron was added to the
- *    fundamental domain (cf. the recursive algorithm described above).  The
- *    central Tetrahedron used to begin the recursion has tet->generator_path = -1.
+ *    The field tet->generator_path lets you reconstruct the complete
+ *    path of a generator: it says by which face the given Tetrahedron
+ *    was added to the fundamental domain (cf. the recursive algorithm
+ *    described above).  The central Tetrahedron used to begin the
+ *    recursion has tet->generator_path = -1.
  *
  *    If compute_corners is TRUE, choose_generators() also compute the vertex
  *    positions using the cross ratios or Vertex Gram matrices and storing them
  *    as corners or basis.
- *    For the former, choose_generators() computes the location on the sphere at
- *    infinity of each ideal vertex of each Tetrahedron in the fundamental
+ *    For the former, choose_generators() computes the location on the sphere
+ *    at infinity of each ideal vertex of each Tetrahedron in the fundamental
  *    domain, and stores it in the field tet->corner[vertex].  That is,
  *    tet->corner[vertex] contains the complex number representing the location
  *    of the vertex in the boundary of the upper half space model.  The
  *    (relative) locations of the corners are computed using the hyperbolic
  *    structure of the Dehn filled manifold.
- *    If centroid_at_origin is TRUE, the initial tetrahedron is
- *    positioned with its centroid at the origin;  otherwise the initial tetrahedron
+ *    If centroid_at_origin is TRUE, the initial tetrahedron is positioned
+ *    with its centroid at the origin;  otherwise the initial tetrahedron
  *    is positioned with its vertices at {0, 1/sqrt(z), sqrt(z), infinity}.
  */
 
@@ -105,15 +108,24 @@
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 
-static void    initialize_flags(Triangulation *manifold);
-static void visit_tetrahedra(Triangulation *manifold, Boolean compute_crossratio_corners, Boolean compute_orb_corners, Boolean centroid_at_origin);
-static void    initial_tetrahedron(Triangulation *manifold, Tetrahedron **tet, EdgeIndex *best_edge);
-static void    compute_tetrahedron_corners(Tetrahedron *tet, EdgeIndex best_edge, Boolean centroid_at_origin);
-static void    count_incident_generators(Triangulation *manifold);
-static void    eliminate_trivial_generators(Triangulation *manifold);
-static void kill_the_incident_generator(Triangulation *manifold, EdgeClass *edge);
-static void    merge_equivalent_generators(Triangulation *manifold);
-static void merge_incident_generators(Triangulation *manifold, EdgeClass *edge);
+static void initialize_flags(Triangulation *manifold);
+static void visit_tetrahedra(Triangulation *manifold,
+			     Boolean compute_crossratio_corners,
+			     Boolean compute_orb_corners,
+			     Boolean centroid_at_origin);
+static void initial_tetrahedron(Triangulation *manifold,
+				Tetrahedron **tet,
+				EdgeIndex *best_edge);
+static void compute_tetrahedron_corners(Tetrahedron *tet,
+					EdgeIndex best_edge,
+					Boolean centroid_at_origin);
+static void count_incident_generators(Triangulation *manifold);
+static void eliminate_trivial_generators(Triangulation *manifold);
+static void kill_the_incident_generator(Triangulation *manifold,
+					EdgeClass *edge);
+static void merge_equivalent_generators(Triangulation *manifold);
+static void merge_incident_generators(Triangulation *manifold,
+				      EdgeClass *edge);
 static void eliminate_empty_relations(Triangulation *manifold);
 
 void choose_generators(
@@ -202,27 +214,29 @@ void choose_generators(
      *
      *    How can such relations arise?
      *
-     *    Under normal operation, eliminate_trivial_generators() finds an active generator
-     *    whose dual 2-cell is incident to an EdgeClass whose other incident 2-cells are
-     *    all dual to inactive generators (i.e. they lie in the interior
-     *    of the fundamental domain).  The EdgeClass's relation (of length 1) cancels
-     *    the generator and all is well.  One may visualize this operation as taking
-     *    two adjacent triangles on the boundary of the fundamental domain, which share
-     *    a common edge, and gluing them together via a "close-the-book move".
+     *    Under normal operation, eliminate_trivial_generators() finds an
+     *    active generator whose dual 2-cell is incident to an EdgeClass whose
+     *    other incident 2-cells are all dual to inactive generators
+     *    (i.e. they lie in the interior of the fundamental domain).  The
+     *    EdgeClass's relation (of length 1) cancels the generator and all is
+     *    well.  One may visualize this operation as taking two adjacent
+     *    triangles on the boundary of the fundamental domain, which share a
+     *    common edge, and gluing them together via a "close-the-book move".
      *
-     *    Now consider two adjacent triangles (still on the boundary of the fundamental
-     *    domain) that share two common edges -- in effect a sort of triangular "pita pocket"
-     *    with two closed edges and one open edge.  When eliminate_trivial_generators()
-     *    cancels the generator (dual to the triangular face) against one of the
-     *    incident EdgeClasses, the other EdgeClass is left with zero generators,
-     *    and may be eliminated.
+     *    Now consider two adjacent triangles (still on the boundary of the
+     *    fundamental domain) that share two common edges -- in effect a sort
+     *    of triangular "pita pocket" with two closed edges and one open edge.
+     *    When eliminate_trivial_generators() cancels the generator (dual to
+     *    the triangular face) against one of the incident EdgeClasses, the
+     *    other EdgeClass is left with zero generators, and may be eliminated.
      *
-     *    Note:  Thinking in term of truncated tetrahedra, the above description seems
-     *    to imply that the boundary component at the tip of the pita pocket
-     *    between the two "closed edges" becomes a spherical boundary component
-     *    of the manifold.  This suggests that this case would arise for finite
-     *    triangulations (as opposed to ideal triangulations), or for highly degenerate
-     *    ideal triangulations, but I confess that I haven't thought this through carefully.
+     *    Note: Thinking in term of truncated tetrahedra, the above
+     *    description seems to imply that the boundary component at the tip of
+     *    the pita pocket between the two "closed edges" becomes a spherical
+     *    boundary component of the manifold.  This suggests that this case
+     *    would arise for finite triangulations (as opposed to ideal
+     *    triangulations), or for highly degenerate ideal triangulations, but
+     *    I confess that I haven't thought this through carefully.
      */
     eliminate_empty_relations(manifold);
 }
@@ -347,11 +361,11 @@ static void visit_tetrahedra(
              */
             if (nbr_tet->flag == unknown_orientation)
             {
-                tet    ->generator_status[face]        = not_a_generator;
-                nbr_tet->generator_status[nbr_face]    = not_a_generator;
+                tet    ->generator_status[face]      = not_a_generator;
+                nbr_tet->generator_status[nbr_face]  = not_a_generator;
 
-                tet    ->generator_index[face]        = -1;    /* garbage value */
-                nbr_tet->generator_index[nbr_face]    = -1;
+                tet    ->generator_index[face]       = -1; /* garbage value */
+                nbr_tet->generator_index[nbr_face]   = -1;
 
                 nbr_tet->generator_path = nbr_face;
 
@@ -369,10 +383,10 @@ static void visit_tetrahedra(
                         nbr_tet->corner[nbr_i] = tet->corner[i];
                     }
                     compute_fourth_corner(
-                        nbr_tet->corner,     /* array of corner coordinates        */
-                        nbr_face,            /* the corner to be computed          */
+                        nbr_tet->corner,   /* array of corner coordinates  */
+                        nbr_face,          /* the corner to be computed    */
                         ORIENTATION(nbr_tet->flag),
-                        nbr_tet->shape[filled]->cwl[ultimate]);    /* shapes        */
+                        nbr_tet->shape[filled]->cwl[ultimate]);  /* shapes */
                 }
 
                 if (compute_orb_corners)
@@ -386,17 +400,17 @@ static void visit_tetrahedra(
              */
             else if (tet->generator_status[face] == unassigned_generator)
             {
-                tet    ->generator_status[face]        = outbound_generator;
-                nbr_tet->generator_status[nbr_face]    = inbound_generator;
+                tet->generator_status[face]         = outbound_generator;
+                nbr_tet->generator_status[nbr_face] = inbound_generator;
 
-                tet    ->generator_index[face]        = manifold->num_generators;
-                nbr_tet->generator_index[nbr_face]    = manifold->num_generators;
+                tet->generator_index[face]         = manifold->num_generators;
+                nbr_tet->generator_index[nbr_face] = manifold->num_generators;
 
-                tet    ->generator_parity[face]        =
-                nbr_tet->generator_parity[nbr_face]    = ((parity[gluing] == orientation_preserving)
-                                                    == (tet->flag == nbr_tet->flag)) ?
-                                                    orientation_preserving :
-                                                    orientation_reversing;
+                tet->generator_parity[face]        =
+                nbr_tet->generator_parity[nbr_face] = (
+		    (parity[gluing] == orientation_preserving)
+                        == (tet->flag == nbr_tet->flag)) ?
+		    orientation_preserving : orientation_reversing;
 
                 manifold->num_generators++;
             }
@@ -558,17 +572,16 @@ static void    compute_tetrahedron_corners(
     else
     {
         /*
-         *    Originally this code positioned the Tetrahedron's vertices
-         *    at {0, 1, z, infinity}.  As of 2000/02/04 I modified it
-         *    to put the vertices at {0, 1/sqrt(z), sqrt(z), infinity} instead,
-         *    so that the basepoint (0,0,1) falls at the midpoint
-         *    of the edge extending from 0 to infinity, and the
-         *    tetrahedron's symmetry axis lies parallel to the x-axis.
-         *    To convince yourself that the tetrahedron's axis of
-         *    symmetry does indeed pass through that point, note
-         *    that a half turn around the axis of symmetry factors
-         *    as a reflection in the plane |z| = 1 followed by
-         *    a reflection in the vertical plane sitting over x-axis.
+         *    Originally this code positioned the Tetrahedron's vertices at
+         *    {0, 1, z, infinity}.  As of 2000/02/04 I modified it to put the
+         *    vertices at {0, 1/sqrt(z), sqrt(z), infinity} instead, so that
+         *    the basepoint (0,0,1) falls at the midpoint of the edge
+         *    extending from 0 to infinity, and the tetrahedron's symmetry
+         *    axis lies parallel to the x-axis.  To convince yourself that the
+         *    tetrahedron's axis of symmetry does indeed pass through that
+         *    point, note that a half turn around the axis of symmetry factors
+         *    as a reflection in the plane |z| = 1 followed by a reflection in
+         *    the vertical plane sitting over x-axis.
          */
 
         /*
@@ -717,8 +730,8 @@ void compute_fourth_corner(
                             diff20,
                             complex_mult(cross_ratio, diff21)
                         );
-
-        z[3] = complex_div(numerator, denominator);   /* will handle division by Zero correctly */
+	/* This will handle division by Zero correctly: */
+        z[3] = complex_div(numerator, denominator);
     }
 
     corner[missing_corner] = z[3];
@@ -799,13 +812,13 @@ static void kill_the_incident_generator(
     EdgeClass        *edge)
 {
     PositionedTet    ptet,
-                    ptet0;
-    int                dead_index;
-    Tetrahedron        *tet,
+                     ptet0;
+    int              dead_index;
+    Tetrahedron     *tet,
                     *nbr_tet;
-    Permutation        gluing;
+    Permutation      gluing;
     FaceIndex        face,
-                    nbr_face;
+                     nbr_face;
 
     /*
      *    The EdgeClass edge is incident to a unique generator.
@@ -902,8 +915,8 @@ static void kill_the_incident_generator(
 
     /*
      *    If dead_index was not the highest numbered generator, then removing
-     *    it will have left a gap in the numbering scheme.  Renumber the highest
-     *    numbered generator to keep the numbering contiguous.
+     *    it will have left a gap in the numbering scheme.  Renumber the
+     *    highest numbered generator to keep the numbering contiguous.
      */
 
     if (dead_index != manifold->num_generators)
@@ -917,7 +930,8 @@ static void kill_the_incident_generator(
                 if (tet->generator_index[face] == manifold->num_generators)
                 {
                     if (tet->generator_status[face] == not_a_generator)
-                        uFatalError("kill_the_incident_generator", "choose_generators.c");
+                        uFatalError("kill_the_incident_generator",
+				    "choose_generators.c");
 
                     nbr_tet        = tet->neighbor[face];
                     gluing        = tet->gluing[face];
@@ -1087,7 +1101,8 @@ static void merge_incident_generators(
                     else if (tet->generator_status[face] == inbound_generator)
                         tet->generator_status[face] = outbound_generator;
                     else
-                        uFatalError("merge_incident_generators", "choose_generators.c");
+                        uFatalError("merge_incident_generators",
+				    "choose_generators.c");
                 }
                 tet->generator_index[face] = indexB;
             }
@@ -1108,9 +1123,9 @@ static void eliminate_empty_relations(Triangulation *manifold)
 {
     EdgeClass    *edge;
 
-    for (    edge = manifold->edge_list_begin.next;
-            edge != &manifold->edge_list_end;
-            edge = edge->next)
+    for (edge = manifold->edge_list_begin.next;
+	 edge != &manifold->edge_list_end;
+	 edge = edge->next)
 
         if (edge->num_incident_generators == 0)
             edge->active_relation = FALSE;

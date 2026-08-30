@@ -261,7 +261,7 @@ class SourceAndObjectFiles():
         """
         Call before anything else.
         If set_headers is called, an object file older than any header is forced to
-        be rebuild.
+        be rebuilt.
         """
         if files:
             self.mod_time_dependencies = max(modtime(file) for file in files)
@@ -784,7 +784,6 @@ long_description = long_description.split('Downloads')[0]
 setup( name = 'snappy',
        version = version,
        zip_safe = False,
-       force = True,
        python_requires = '>=3.8',
        install_requires = install_requires,
        packages = ['snappy',
@@ -863,14 +862,13 @@ setup( name = 'snappy',
        description= 'Studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures.',
        long_description = long_description,
        long_description_content_type = 'text/x-rst',
-       author = 'Marc Culler and Nathan M. Dunfield',
-       author_email = 'culler@uic.edu, nathan@dunfield.info',
+       author = 'Marc Culler and Nathan M. Dunfield and Matthias Goerner',
+       author_email = 'culler@uic.edu, nathan@dunfield.info, enischte@gmail.com',
        license='GPLv2+',
        url = 'http://snappy.computop.org',
        classifiers = [
            'Development Status :: 5 - Production/Stable',
            'Intended Audience :: Science/Research',
-           'License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)',
            'Operating System :: OS Independent',
            'Programming Language :: C',
            'Programming Language :: C++',

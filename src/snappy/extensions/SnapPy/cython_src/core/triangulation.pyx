@@ -673,6 +673,28 @@ cdef class Triangulation():
         """
         return self.copy()
 
+    def _orb_with_orb_hyperbolic_structure(self):
+        """
+        Adds a (possibly non-geometric) hyperbolic structure using vertex Gram
+        matrices, turning :class:`Triangulation` into a :class:`_OrbOrbifold`.
+
+        >>> M = Triangulation('m004')
+        >>> N = M._orb_with_orb_hyperbolic_structure()
+        >>> N.volume() # doctest: +NUMERIC6
+        2.02988321
+
+        Vol3 has a finite geometric triangulation:
+
+        >>> M = Triangulation('m007(3,1)')
+        >>> T = M.filled_triangulation()
+        >>> N = T._orb_with_orb_hyperbolic_structure()
+        >>> N.volume() # doctest: +NUMERIC6
+        1.01494160640965
+        >>> N.solution_type()
+        'all tetrahedra positively oriented'
+        """
+
+        return Orbifold_from_Triangulation(self, orbifold_class=_orbifold_class)
 
     def _polish_hyperbolic_structures(self):
         """

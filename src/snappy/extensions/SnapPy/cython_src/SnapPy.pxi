@@ -618,6 +618,8 @@ cdef extern from "SnapPea.h":
     extern int** get_symplectic_basis(c_Triangulation *manifold, int *, int *, int) except *
     extern void free_symplectic_basis(int **, int) except *
 
+    extern Boolean all_cusps_are_complete(c_Triangulation * manifold) except *
+
     extern int orb_get_num_singular_edges(c_Triangulation * manifold) except *
     extern void orb_get_singular_edge_info(c_Triangulation * manifold, int singular_index, Real * singular_order, Real * inner_product) except *
     extern void orb_set_singular_edge_info(c_Triangulation * manifold, int singular_index, Real singular_order) except *

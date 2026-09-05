@@ -625,6 +625,32 @@ def Manifold_from_Triangulation(Triangulation T,
     M._cover_info = T._cover_info
     return M
 
+def Orbifold_from_Triangulation(Triangulation T,
+                                orbifold_class,
+                                recompute=True):
+    cdef c_Triangulation *c_triangulation
+    cdef Orbifold M
+
+    if not all_cusps_are_complete(T.c_triangulation):
+        raise ValueError(
+            "Cannot construct a Orbifold from a Triangulation with "
+            "Dehn-fillings: incomplete hyperbolic structures cannot "
+            "be described by vertex Gram matrices. Use "
+            "Triangulation.filled_triangultion() first.")
+
+    M = orbifold_class('empty')
+    if T.c_triangulation is NULL:
+        return M
+
+    copy_triangulation(T.c_triangulation, &c_triangulation)
+    M.set_c_triangulation(c_triangulation)
+    if recompute:
+        manual = False
+        orb_find_hyperbolic_structure(M.c_triangulation, manual)
+
+    M.set_name(T.name())
+    M._cover_info = T._cover_info
+    return M
 
 def Triangulation_from_Manifold(Manifold M):
     cdef c_Triangulation *c_triangulation

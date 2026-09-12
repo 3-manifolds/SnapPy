@@ -142,10 +142,10 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
                 if simplex.is_subset(total_subsimplex, new_face):
                     GeodesicPiece.replace_by(
                         old_piece, old_piece,
-                        [ GeodesicPiece.create_and_attach(
-                            old_piece.index,
-                            new_tet,
-                            old_piece.endpoints) ])
+                        [ GeodesicPiece(
+                            index=old_piece.index,
+                            tet=new_tet,
+                            endpoints=old_piece.endpoints) ])
                     break
             else:
                 raise Exception("Unhandled edge case")
@@ -170,18 +170,18 @@ def one_four_move(given_pieces : Sequence[GeodesicPiece],
     start_point : Endpoint = given_pieces[0].endpoints[0]
     end_point : Endpoint = given_pieces[-1].endpoints[1]
     new_pieces : Sequence[GeodesicPiece] = [
-        GeodesicPiece.create_face_to_vertex_and_attach(
+        GeodesicPiece.create_face_to_vertex(
             given_pieces[0].index,
             new_tets[start_point.subsimplex],
             start_point,
             direction=+1),
-        GeodesicPiece.create_face_to_vertex_and_attach(
+        GeodesicPiece.create_face_to_vertex(
             given_pieces[0].index,
             new_tets[end_point.subsimplex],
             end_point,
             direction=-1) ]
 
-    GeodesicPiece.replace_by(
+    new_pieces = GeodesicPiece.replace_by(
         given_pieces[0], given_pieces[-1], new_pieces)
 
     return new_pieces
@@ -366,11 +366,13 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                         GeodesicPiece.replace_by(
                             old_pieces[0], old_pieces[-1],
                             [
-                            GeodesicPiece.create_and_attach(
-                                old_piece.index,
-                                new_tet,
-                                [ Endpoint(new_tet.R13_vertices[v], v)
-                                  for v in [ new_start_subsimplex, new_end_subsimplex ] ])])
+                            GeodesicPiece(
+                                index=old_piece.index,
+                                tet=new_tet,
+                                endpoints=[
+                                    Endpoint(new_tet.R13_vertices[v], v)
+                                    for v in [ new_start_subsimplex,
+                                               new_end_subsimplex ] ])])
                         break
                 else:
                     raise Exception("Unhandled edge case.")
@@ -406,12 +408,12 @@ def two_three_move(given_pieces : Sequence[GeodesicPiece],
                         verified=verified))
 
     # Given pieces are converted to one V-V piece.
-    new_piece = GeodesicPiece.create_and_attach(
-        given_pieces[0].index,
-        new_tets[0],
-        [ Endpoint(tip_points[0], simplex.V0),
-          Endpoint(tip_points[1], simplex.V1) ])
-    GeodesicPiece.replace_by(
+    new_piece = GeodesicPiece(
+        index=given_pieces[0].index,
+        tet=new_tets[0],
+        endpoints=[ Endpoint(tip_points[0], simplex.V0),
+                    Endpoint(tip_points[1], simplex.V1) ])
+    new_piece, = GeodesicPiece.replace_by(
         given_pieces[0], given_pieces[1],
         [new_piece])
 
@@ -602,7 +604,7 @@ def _retrace_geodesic_piece(
                       Endpoint(point, hit_subsimplex) ][::trace_direction]
 
         pieces.append(
-            GeodesicPiece.create_and_attach(index, tet, endpoints))
+            GeodesicPiece(index=index, tet=tet, endpoints=endpoints))
 
         if hit_end:
             break

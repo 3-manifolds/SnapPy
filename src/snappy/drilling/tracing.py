@@ -107,14 +107,14 @@ class GeodesicPiece:
             a.next_ = b
             b.prev = a
 
-    def is_face_to_vertex(self) -> bool:
+    def is_face_to_face(self) -> bool:
         """
-        True if line segment starts on a face and goes to a vertex.
+        True if line segment starts and ends on a face.
         """
 
         return (
             (self.endpoints[0].subsimplex in simplex.TwoSubsimplices) and
-            (self.endpoints[1].subsimplex in simplex.ZeroSubsimplices))
+            (self.endpoints[1].subsimplex in simplex.TwoSubsimplices))
 
     @staticmethod
     def replace_by(start_piece, end_piece, pieces) -> None:

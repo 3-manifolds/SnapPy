@@ -15,6 +15,7 @@ from .extensions.SnapPy import (
     DirichletDomain,
     CuspNeighborhood,
     HolonomyGroup)
+
 from .extensions.SnapPyHP import (
     DirichletDomain as DirichletDomainHP,
     CuspNeighborhood as CuspNeighborhoodHP,
@@ -70,9 +71,11 @@ class OrbifoldBase:
 
 class Triangulation(extensions.SnapPy.Triangulation, TriangulationBase):
     __doc__ = extensions.SnapPy.Triangulation.__doc__
+    from .extensions.SnapPy import save_snappy_object as save_as_toml
 
 class TriangulationHP(extensions.SnapPyHP.Triangulation, TriangulationBase):
     __doc__ = extensions.SnapPyHP.Triangulation.__doc__
+    from .extensions.SnapPyHP import save_snappy_object as save_as_toml
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.

@@ -26,7 +26,17 @@ cdef extern from "SnapPea.h":
 
     ctypedef enum c_SolutionType "SolutionType":
         not_attempted
-        pass # Only the needed values are here.
+        not_attempted
+        geometric_solution
+        nongeometric_solution
+        flat_solution
+        degenerate_solution
+        other_solution
+        no_solution
+        externally_computed
+        orb_partially_flat_solution
+        orb_step_failed
+        orb_invalid_solution
 
     ctypedef enum c_FillingStatus "FillingStatus":
         complete

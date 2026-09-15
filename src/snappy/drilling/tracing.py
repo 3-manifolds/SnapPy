@@ -56,38 +56,25 @@ class GeodesicPiece:
         self.endpoints : Sequence[Endpoint] = endpoints
         self.prev = None
         self.next_ = None
-        self.tracker = None
 
     @staticmethod
-    def create_and_attach(index : int,
-                          tet : Tetrahedron,
-                          endpoints : Sequence[Endpoint]):
-        """
-        Creates a line segment and appends it to tet.geodesic_pieces.
-        """
-        g = GeodesicPiece(index, tet, endpoints)
-        tet.geodesic_pieces.append(g)
-        return g
-
-    @staticmethod
-    def create_face_to_vertex_and_attach(index : int,
-                                         tet : Tetrahedron,
-                                         point : Endpoint,
-                                         direction : int):
+    def create_face_to_vertex(index : int,
+                              tet : Tetrahedron,
+                              point : Endpoint,
+                              direction : int):
         """
         Creates a line segment between the given endpoint on
         a face and the opposite vertex. If direction is +1,
         the pieces goes from the endpoint to the vertex.
         If direction is -1, it goes the opposite way.
 
-        Also appends the new geodesic piece to tet.geodesic_pieces.
         """
         if point.subsimplex not in simplex.TwoSubsimplices:
             raise ValueError(
                 "Expected point to be on a face, but its "
                 "subsimplex is %d" % point.subsimplex)
         v = simplex.comp(point.subsimplex)
-        return GeodesicPiece.create_and_attach(
+        return GeodesicPiece(
             index,
             tet,
             [ point,
@@ -107,47 +94,47 @@ class GeodesicPiece:
             a.next_ = b
             b.prev = a
 
-    def is_face_to_vertex(self) -> bool:
+    def is_face_to_face(self) -> bool:
         """
-        True if line segment starts on a face and goes to a vertex.
+        True if line segment starts and ends on a face.
         """
 
         return (
             (self.endpoints[0].subsimplex in simplex.TwoSubsimplices) and
-            (self.endpoints[1].subsimplex in simplex.ZeroSubsimplices))
+            (self.endpoints[1].subsimplex in simplex.TwoSubsimplices))
 
     @staticmethod
-    def replace_by(start_piece, end_piece, pieces) -> None:
+    def replace_by(start_piece, end_piece, pieces):
         """
         Replaces the pieces between start_piece and end_piece (inclusive)
         by the given (not linked) list of pieces in the linked list that
-        start_piece and end_piece participate in.
+        start_piece and end_piece participate in. Also attaches pieces
+        to tetrahedra.
+
+        Note that the start_piece is not replaced but overriden by
+        pieces[0].
         """
-        if start_piece.prev is end_piece:
-            items = pieces + [ pieces[0] ]
-        else:
-            items = [ start_piece.prev ] + pieces + [ end_piece.next_ ]
+
+        start_piece.index = pieces[0].index
+        start_piece.tet = pieces[0].tet
+        start_piece.endpoints = pieces[0].endpoints
+
+        pieces[0] = start_piece
+
+        items = pieces + [ end_piece.next_ ]
         for i in range(len(items) - 1):
             a = items[i]
             b = items[i + 1]
             a.next_ = b
             b.prev = a
-        for piece in [ start_piece, end_piece ]:
-            if piece.tracker:
-                piece.tracker.set_geodesic_piece(pieces[0])
-                break
+
+        for piece in pieces:
+            piece.tet.geodesic_pieces.append(piece)
+
+        return pieces
 
     def __repr__(self):
         return "GeodesicPiece(%d, %r, %r)" % (self.index, self.tet, self.endpoints)
-
-
-class GeodesicPieceTracker:
-    def __init__(self, geodesic_piece):
-        self.set_geodesic_piece(geodesic_piece)
-
-    def set_geodesic_piece(self, geodesic_piece):
-        self.geodesic_piece = geodesic_piece
-        geodesic_piece.tracker = self
 
 
 def compute_plane_intersection_param(

@@ -1,5 +1,5 @@
 from .moves import one_four_move, two_three_move
-from .tracing import GeodesicPiece, GeodesicPieceTracker
+from .tracing import GeodesicPiece
 
 from . import debug
 
@@ -86,19 +86,12 @@ def traverse_geodesics_to_subdivide(
         for piece in pieces:
             piece.tet.geodesic_pieces.append(piece)
 
-    # Store all start pieces.
-    trackers = [ GeodesicPieceTracker(pieces[0]) for pieces in all_pieces ]
-
-    for tracker in trackers:
-        debug.check_consistency_segments(
-            debug.flatten_link_list(tracker.geodesic_piece))
-
     # Iterate through start pieces.
-    for tracker in trackers:
+    for pieces in all_pieces:
         # Make 1-skeleton contain the simple closed curve starting with
         # the start piece.
         last_piece : GeodesicPiece = _traverse_geodesic_to_subdivide(
-            tracker.geodesic_piece, mcomplex.verified)
+            pieces[0], mcomplex.verified)
 
     # At this point, all start pieces have been processed and all elements
     # of start_pieces are invalid. Luckily, _traverse_geodesic_to_subdivide
@@ -159,51 +152,17 @@ def _traverse_geodesic_to_subdivide(
 
     debug.check_consistency_2(piece)
 
-    while True:
-        # When entering the curve, we have
-        #
-        #
-        #       V-...-V-F-...-F-
-        #              ^
-        # Note that there is only a single V if the curve
-        # runs for the first time. And there might be only
-        # a single F if we are about to finish.
+    # Proceed to the next piece.
+    piece = piece.next_
 
-        # Proceed to the next piece.
-        piece = piece.next_
+    # We are at
+    #
+    #        F-F-V-F-F-...-F-
+    #               ^
+    #             piece
 
-        # We now have a different picture depending on whether
-        # there was only a single F.
-
-        if piece.is_face_to_vertex():
-
-            # We have
-            #
-            #       prev.piece
-            #            v
-            #     V-...-V-F-V-...-V-
-            #              ^
-            #
-            # We can now achieve the goal by a single 2-3 move:
-            # prev.piece and piece will turn into a single new piece
-            # that is the edge created by the 2-3 move - the face
-            # common to the tetrahedra containing prev.piece and piece
-            # has disappeared.
-
-            piece = two_three_move([piece.prev, piece], verified)
-            debug.check_consistency_2(piece)
-
-            # The entire simple closed curve consists of edges of
-            # tetrahedra.
-            #
-            #      V-...-V-V-...-V-
-            #             ^
-            #
-            # We are done.
-
-            return piece
-
-        # We have
+    while piece.is_face_to_face():
+        # We are entering the loop with
         #
         #      V-...-V-F-F-...-F-
         #               ^
@@ -221,12 +180,12 @@ def _traverse_geodesic_to_subdivide(
         #             v   v
         #      V-...-V-F-V-F-...-F-
         #               ^
+        #             piece
         #
         # Remark: The current piece might not be the only geodesic
         # piece (of this simple closed curve) going through the tetrahedron.
         # The 1-4 move will split these other pieces into several piece.
-        # But the pieces will be again F-F. And the process still finishes
-        # in finite time. Similar for the 2-3 move.
+        # But the pieces will be again F-F. Similar for the 2-3 move.
         #
         # We perform a 2-3 move, see also above description.
 
@@ -235,20 +194,45 @@ def _traverse_geodesic_to_subdivide(
 
         # We have
         #
-        #      V-...-V-V-F-...-F-
+        #      V-...-V-V-F-...-
         #             ^
         #
-        # Move to the next piece.
+        # Move to two pieces over:
 
-        piece = piece.next_
+        piece = piece.next_.next_
 
         # We have
         #
-        #      V-...-V-V-F-...-F-
-        #               ^
+        #      V-...-V-V-F-...-
+        #                 ^
         #
         # Start next iteration.
 
+    # We have
+    #
+    #       prev.piece
+    #            v
+    #     V-...-V-F-V-...-V-
+    #              ^
+    #
+    # We can now achieve the goal by a single 2-3 move:
+    # prev.piece and piece will turn into a single new piece
+    # that is the edge created by the 2-3 move - the face
+    # common to the tetrahedra containing prev.piece and piece
+    # has disappeared.
+
+    piece = two_three_move([piece.prev, piece], verified)
+    debug.check_consistency_2(piece)
+
+    # The entire simple closed curve consists of edges of
+    # tetrahedra.
+    #
+    #      V-...-V-V-...-V-
+    #             ^
+    #
+    # We are done.
+
+    return piece
 
 def _find_and_index_all_tetrahedra(tet : Tetrahedron):
     """

@@ -44,6 +44,8 @@ class TriangulationBase:
     from .snap.slice_obs_HKL import slice_obstruction_HKL
     from .snap.fox_milnor import fox_milnor_test
 
+    from .extensions.SnapPy import save_snappy_object as save_as_toml
+
 class ManifoldBase(TriangulationBase):
     from .verify import verify_hyperbolicity
     from .margulis import margulis
@@ -71,11 +73,9 @@ class OrbifoldBase:
 
 class Triangulation(extensions.SnapPy.Triangulation, TriangulationBase):
     __doc__ = extensions.SnapPy.Triangulation.__doc__
-    from .extensions.SnapPy import save_snappy_object as save_as_toml
 
 class TriangulationHP(extensions.SnapPyHP.Triangulation, TriangulationBase):
     __doc__ = extensions.SnapPyHP.Triangulation.__doc__
-    from .extensions.SnapPyHP import save_snappy_object as save_as_toml
 
 # We want Manifold to be a subclass of Triangulation.
 # Unfortunately, that introduces a diamond pattern here.

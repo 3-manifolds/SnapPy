@@ -44,6 +44,8 @@ class TriangulationBase:
     from .snap.slice_obs_HKL import slice_obstruction_HKL
     from .snap.fox_milnor import fox_milnor_test
 
+    from .extensions.SnapPy import save_triangulation as save_as_toml
+
 class ManifoldBase(TriangulationBase):
     from .verify import verify_hyperbolicity
     from .margulis import margulis

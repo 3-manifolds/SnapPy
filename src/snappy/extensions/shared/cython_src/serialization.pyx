@@ -48,31 +48,31 @@ toml_tetrahedron = """
 [[tetrahedron]]
 neighbors = {neighbors}
 gluings = {gluings}
-cusps = {cusps}
+vertices = {vertices}
 {curves}"""
 
 cdef get_tetrahedron(c_TetrahedronData *tet):
     cdef c_TetrahedronData data = tet[0]
     neighbors = [data.neighbor_index[i] for i in range(4)]
     gluings = [[data.gluing[i][j] for j in range(4)] for i in range(4)]
-    cusps = [data.cusp_index[i] for i in range(4)]
+    vertices = [data.cusp_index[i] for i in range(4)]
     meridian_right = [[data.curve[0][0][i][j] for i in range(4)] for j in range(4)]
     meridian_left = [[data.curve[0][1][i][j] for i in range(4)] for j in range(4)]
     longitude_right = [[data.curve[1][0][i][j] for i in range(4)] for j in range(4)]
     longitude_left = [[data.curve[1][1][i][j] for i in range(4)] for j in range(4)]
     curves = ''
     if any(sum(meridian_right, [])):
-        curves += 'curves.meridian.right = ' + str(meridian_right) + '\n'
+        curves += 'meridian.right = ' + str(meridian_right) + '\n'
     if any(sum(meridian_left, [])):
-        curves += 'curves.meridian.left = ' + str(meridian_left) + '\n'
+        curves += 'meridian.left = ' + str(meridian_left) + '\n'
     if any(sum(longitude_right, [])):
-        curves += 'curves.longitude.right = ' + str(longitude_right) + '\n'
+        curves += 'longitude.right = ' + str(longitude_right) + '\n'
     if any(sum(longitude_left, [])):
-        curves += 'curves.longitude.left = ' + str(longitude_left) + '\n'
+        curves += 'longitude.left = ' + str(longitude_left) + '\n'
     return toml_tetrahedron.format(
         neighbors=str(neighbors),
         gluings=str(gluings),
-        cusps=str(cusps),
+        vertices=str(vertices),
         curves=curves)
 
 toml_shape = """\
@@ -81,9 +81,8 @@ real = {real}
 imag = {imag}
 """
 
-cdef snappy_object_to_string(Triangulation obj):
-    """Serialize a SnapPy object in Toml format.
-    The class of the object must inherit from Triangulation
+cdef triangulation_to_string(Triangulation obj):
+    """Serialize an object which inherits from Triangulantion in Toml format.
     """
     cdef c_Triangulation *c_triangulation = obj.c_triangulation
     cdef TriangulationData *data
@@ -115,9 +114,8 @@ cdef snappy_object_to_string(Triangulation obj):
         result += get_tetrahedron(&data.tetrahedron_data[i])
     return result
 
-def save_snappy_object(Triangulation obj, str filename):
-    """Write a Serialized SnapPy object to a Toml file.
-    The class of the object must inherit from Triangulation
+def save_triangulation(Triangulation obj, str filename):
+    """Write a Serialized object which inherits from Triangulation to a Toml file.
     """
     with open(filename, 'w') as toml_file:
-        toml_file.write(snappy_object_to_string(obj))
+        toml_file.write(triangulation_to_string(obj))

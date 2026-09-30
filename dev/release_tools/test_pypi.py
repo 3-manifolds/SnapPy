@@ -76,7 +76,14 @@ if __name__ == '__main__':
         install_cmd += ['--no-binary=' + ','.join(args.modules)]
     else:
         if sys.platform=='darwin' and args.universal2:
-            install_cmd += ['--platform=macosx_10_9_universal2',
+            if sys.version_info < (3, 12):
+                min_macos = '10_9'
+            elif sys.version_info >= (3, 14):
+                min_macos = '10_15'
+            else:
+                min_macos = '10_13'
+
+            install_cmd += ['--platform=macosx_' + min_macos + '_universal2',
                             '--only-binary=:all:',
                             '--target=' + sandbox.site_packages]
 

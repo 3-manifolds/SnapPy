@@ -1,3 +1,10 @@
+global-include *.h
+global-include *.c
+global-include *.cc
+global-include *.pyx
+global-include *.pxd
+global-include *.pxi
+               
 include cython/*.h
 include cython/*.c
 include cython/*.cpp

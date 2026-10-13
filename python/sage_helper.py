@@ -58,6 +58,7 @@ if _within_sage:
         from sage.functions.trig import sin
         from sage.groups.abelian_gps.abelian_group import AbelianGroup
         from sage.homology.chain_complex import ChainComplex
+        from sage.interfaces.gap import gap
         from sage.matrix.constructor import Matrix as matrix
         from sage.matrix.matrix_space import MatrixSpace
         from sage.matrix.special import block_matrix, identity_matrix

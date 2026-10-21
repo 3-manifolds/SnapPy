@@ -24,7 +24,7 @@ is_decorated_isosig = decorated_isosig.isosig_pattern
 
 _triangulation_class = Triangulation
 _manifold_class = Manifold
-
+_orbifold_class = Orbifold
 
 def bundle_from_string(desc):
     desc = desc.replace(' ', '')

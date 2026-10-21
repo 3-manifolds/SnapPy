@@ -631,16 +631,16 @@ def Orbifold_from_Triangulation(Triangulation T,
     cdef c_Triangulation *c_triangulation
     cdef Orbifold M
 
+    M = orbifold_class('empty')
+    if T.c_triangulation is NULL:
+        return M
+
     if not all_cusps_are_complete(T.c_triangulation):
         raise ValueError(
             "Cannot construct a Orbifold from a Triangulation with "
             "Dehn-fillings: incomplete hyperbolic structures cannot "
             "be described by vertex Gram matrices. Use "
             "Triangulation.filled_triangultion() first.")
-
-    M = orbifold_class('empty')
-    if T.c_triangulation is NULL:
-        return M
 
     copy_triangulation(T.c_triangulation, &c_triangulation)
     M.set_c_triangulation(c_triangulation)

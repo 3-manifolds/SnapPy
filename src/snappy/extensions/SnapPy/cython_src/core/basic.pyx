@@ -590,12 +590,11 @@ def _plink_callback(LE):
 # Conversion functions Manifold <-> Triangulation
 
 def Manifold_from_Triangulation(Triangulation T,
-                                manifold_class,
                                 recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
-    M = manifold_class('empty')
+    M = _manifold_class('empty')
     if T.c_triangulation is NULL:
         return M
 
@@ -627,12 +626,11 @@ def Manifold_from_Triangulation(Triangulation T,
     return M
 
 def Orbifold_from_Triangulation(Triangulation T,
-                                orbifold_class,
                                 recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Orbifold M
 
-    M = orbifold_class('empty')
+    M = _orbifold_class('empty')
     if T.c_triangulation is NULL:
         return M
 

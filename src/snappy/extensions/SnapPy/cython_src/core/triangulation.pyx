@@ -660,7 +660,7 @@ cdef class Triangulation():
         >>> N.volume() # doctest: +NUMERIC6
         2.02988321
         """
-        return Manifold_from_Triangulation(self, manifold_class=_manifold_class)
+        return Manifold_from_Triangulation(self)
 
     def without_hyperbolic_structure(self) -> 'snappy.Triangulation':
         """
@@ -701,7 +701,7 @@ cdef class Triangulation():
         'all tetrahedra positively oriented'
         """
 
-        return Orbifold_from_Triangulation(self, orbifold_class=_orbifold_class)
+        return Orbifold_from_Triangulation(self)
 
     def _polish_hyperbolic_structures(self):
         """

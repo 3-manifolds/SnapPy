@@ -312,7 +312,7 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> N = M.copy()
         """
-        return Manifold_from_Triangulation(self, manifold_class=self.__class__)
+        return Manifold_from_Triangulation(self)
 
     def cusp_neighborhood(self) -> CuspNeighborhood:
         """
@@ -609,9 +609,7 @@ cdef class Manifold(Triangulation):
           True
         """
         cover = Triangulation.cover(self, permutation_rep)
-        return Manifold_from_Triangulation(cover,
-                                           manifold_class=self.__class__,
-                                           recompute=False)
+        return Manifold_from_Triangulation(cover, recompute=False)
 
     def covers(
             self,
@@ -654,9 +652,8 @@ cdef class Manifold(Triangulation):
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method='magma'.
         """
-        covers = Triangulation.covers(self, degree, method,cover_type)
+        covers = Triangulation.covers(self, degree, method, cover_type)
         return [Manifold_from_Triangulation(cover,
-                                            manifold_class=self.__class__,
                                             recompute=False)
                 for cover in covers]
 

@@ -650,7 +650,7 @@ cdef class Triangulation():
 
         return result
 
-    def with_hyperbolic_structure(self):
+    def with_hyperbolic_structure(self) -> 'snappy.Manifold':
         """
         Add a (possibly degenerate) hyperbolic structure, turning the
         :class:`Triangulation` into a :class:`Manifold`.
@@ -662,7 +662,7 @@ cdef class Triangulation():
         """
         return Manifold_from_Triangulation(self, manifold_class=_manifold_class)
 
-    def without_hyperbolic_structure(self):
+    def without_hyperbolic_structure(self) -> 'snappy.Triangulation':
         """
         Returns a copy of `self`.  For compatibility with :meth:`Manifold.without_hyperbolic_structure`.
 
@@ -673,7 +673,7 @@ cdef class Triangulation():
         """
         return self.copy()
 
-    def _orb_with_orb_hyperbolic_structure(self):
+    def _orb_with_orb_hyperbolic_structure(self) -> 'snappy._OrbOrbifold':
         """
         Adds a (possibly non-geometric) hyperbolic structure using vertex Gram
         matrices, turning :class:`Triangulation` into a :class:`_OrbOrbifold`.

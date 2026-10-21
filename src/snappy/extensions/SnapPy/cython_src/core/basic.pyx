@@ -595,6 +595,10 @@ def Manifold_from_Triangulation(Triangulation T,
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
+    M = manifold_class('empty')
+    if T.c_triangulation is NULL:
+        return M
+
     if T._orb_num_singular_edges() > 0:
         raise ValueError(
             "Cannot construct a Manifold from a Triangulation with singular "
@@ -603,9 +607,6 @@ def Manifold_from_Triangulation(Triangulation T,
             "Use _orb_with_orb_hyperbolic_structure() instead."
         )
 
-    M = manifold_class('empty')
-    if T.c_triangulation is NULL:
-        return M
     copy_triangulation(T.c_triangulation, &c_triangulation)
     M.set_c_triangulation(c_triangulation)
     if recompute:
@@ -656,17 +657,16 @@ def Triangulation_from_Manifold(Manifold M):
     cdef c_Triangulation *c_triangulation
     cdef Triangulation T
 
+    T = _triangulation_class('empty')
     if M.c_triangulation is NULL:
-        return _triangulation_class('empty')
+        return T
 
     copy_triangulation(M.c_triangulation, &c_triangulation)
     remove_hyperbolic_structures(c_triangulation)
-    T = _triangulation_class('empty')
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     T._cover_info = M._cover_info
     return T
-
 
 cdef class DualOneSkeletonCurve():
     cdef c_DualOneSkeletonCurve *c_dual_curve

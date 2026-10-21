@@ -397,7 +397,7 @@ cdef class Manifold(Triangulation):
         return Browser(self)
 
     def filled_triangulation(
-            self, cusps_to_fill='all') -> 'snappy.Manifold':
+            self, cusps_to_fill='all') -> Union['snappy.Manifold', 'snappy.Triangulation']:
         """
         Return a new Manifold where the specified cusps have been
         permanently filled in.

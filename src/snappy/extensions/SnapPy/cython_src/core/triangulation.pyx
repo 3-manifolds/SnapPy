@@ -664,14 +664,21 @@ cdef class Triangulation():
 
     def without_hyperbolic_structure(self) -> 'snappy.Triangulation':
         """
-        Returns a copy of `self`.  For compatibility with :meth:`Manifold.without_hyperbolic_structure`.
+        Returns self as a :class:`Triangulation`, possibly forgetting the
+        hyperbolic structure in the process.
 
         >>> M = Triangulation('9_42')
         >>> T = M.without_hyperbolic_structure()
         >>> T == M
         True
+
+        >>> M = Manifold('9_42')
+        >>> T = M.without_hyperbolic_structure()
+        >>> hasattr(T, 'volume')
+        False
         """
-        return self.copy()
+
+        return Triangulation_from_Triangulation(self)
 
     def _orb_with_orb_hyperbolic_structure(self) -> 'snappy._OrbOrbifold':
         """

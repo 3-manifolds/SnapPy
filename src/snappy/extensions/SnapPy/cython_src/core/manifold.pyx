@@ -421,7 +421,7 @@ cdef class Manifold(Triangulation):
         """
         filled = _triangulation_class.filled_triangulation(self, cusps_to_fill)
         if filled.num_cusps() == 0:
-            return Triangulation_from_Manifold(filled)
+            return Triangulation_from_Triangulation(filled)
         return filled
 
     def fundamental_group(
@@ -909,18 +909,6 @@ cdef class Manifold(Triangulation):
             return (self._number_(cs), cs.accuracy)
         else:
             return self._number_(cs)
-
-    def without_hyperbolic_structure(self):
-        """
-        Returns self as a :class:`Triangulation`, forgetting the hyperbolic
-        structure in the process.
-
-        >>> M = Manifold('9_42')
-        >>> T = M.without_hyperbolic_structure()
-        >>> hasattr(T, 'volume')
-        False
-        """
-        return Triangulation_from_Manifold(self)
 
     def _polish_hyperbolic_structures(self):
         polish_hyperbolic_structures(self.c_triangulation)

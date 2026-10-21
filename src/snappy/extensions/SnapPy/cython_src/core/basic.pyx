@@ -653,7 +653,7 @@ def Orbifold_from_Triangulation(Triangulation T,
     M._cover_info = T._cover_info
     return M
 
-def Triangulation_from_Manifold(Manifold M):
+def Triangulation_from_Triangulation(Triangulation M):
     cdef c_Triangulation *c_triangulation
     cdef Triangulation T
 

@@ -79,7 +79,7 @@ static Cusp * orb_find_vertex(
         cusp = cusp->next;
     return cusp;
 }
-    
+
 void orb_get_vertex_info(
     Triangulation   *manifold,
     int             vertex_index,
@@ -158,6 +158,36 @@ void orb_get_vertex_info(
                     cusp->orb_incident_singular_edges[i]->orb_singular_order;
         }
     }
+}
+
+Boolean orb_all_cusps_are_real_or_finite(Triangulation *manifold)
+{
+    if (manifold->orb_num_singular_edges > 0)
+    {
+        return FALSE;
+    }
+
+    for (Cusp *cusp = manifold->cusp_list_begin.next;
+         cusp != &manifold->cusp_list_end;
+         cusp = cusp->next)
+    {
+
+        int e = cusp->euler_characteristic;
+
+        if (e > 2)
+        {
+            uFatalError(
+                "orb_is_suitable_for_gluing_equations", "orb_interface");
+            return FALSE;
+        }
+
+        if (e != 0 && e != 2)
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }
 
 SNAPPEA_NAMESPACE_END_SCOPE

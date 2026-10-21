@@ -599,10 +599,11 @@ def Manifold_from_Triangulation(Triangulation T,
     if T.c_triangulation is NULL:
         return M
 
-    if T._orb_num_singular_edges() > 0:
+    if not orb_all_cusps_are_real_or_finite(T.c_triangulation):
         raise ValueError(
             "Cannot construct a Manifold from a Triangulation with singular "
-            "edges: hyperbolic structures described by cross-ratios are not "
+            "edges or vertex links that are not spheres, tori or Klein "
+            "bottles: hyperbolic structures described by cross-ratios are not "
             "supported for such triangulations. "
             "Use _orb_with_orb_hyperbolic_structure() instead."
         )

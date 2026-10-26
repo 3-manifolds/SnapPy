@@ -91,6 +91,12 @@ extern void orb_get_vertex_info(
  *  there; the caller is responsible for freeing those arrays.
  */
 
+extern Boolean orb_all_cusps_are_real_or_finite(Triangulation *manifold);
+/**<
+ *  Returns true if the link about each vertex is a sphere, torus or
+ *  Klein bottle (without singular locus).
+ */
+
 /************************************************************************/
 /*                                                                      */
 /*                           orb_volume.c                               */

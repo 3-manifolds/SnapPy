@@ -244,10 +244,10 @@ void close_cusps(
 
     /*
      *  Simplify the cusps to be filled until each is triangulated
-     *  by at most two triangles.  Ignore (1) fake "Cusps" at finite
-     *  vertices and (2) EdgeClasses not incident to a real Vertex;
-     *  we'll fix them up at the end.  We maintain the tet->edge_class()
-     *  fields for edges incident to real Cusps so that we can tell
+     *  by at most two triangles.  Ignore (1) finite vertices and
+     *  (2) EdgeClasses not incident to a cusp; we'll fix them up at
+     *  the end.  We maintain the tet->edge_class[] fields for edges
+     *  incident to cusps so that we can tell
      *  whether two EdgeClasses are distinct.  The fields within an
      *  EdgeClass are not maintained.
      */
@@ -302,13 +302,13 @@ void close_cusps(
     replace_edge_classes(manifold);
 
     /*
-     *  Get rid of the old fake Cusps and install new ones.
+     *  Replace the Vertex structures representing finite vertices.
      */
 
     replace_finite_vertices(manifold);
 
     /*
-     *  Renumber the remaining real Cusps, so the indices
+     *  Renumber the remaining cusps, so the indices
      *  are contiguous.
      */
 
@@ -1684,7 +1684,7 @@ static void replace_finite_vertices(
     Triangulation   *manifold)
 {
     /*
-     *  Set to NULL all tet->vertex pointers which point to fake Cusps.
+     *  Set to NULL all tet->vertex[] entries which point to finite vertices.
      */
 
     for (Tetrahedron * tet = manifold->tet_list_begin.next;
@@ -1698,7 +1698,7 @@ static void replace_finite_vertices(
                 tet->vertex[i] = NULL;
 
     /*
-     *  Free the fake Cusps.
+     *  Free the Vertex structures representing finite vertices.
      */
 
     for (Vertex * vertex = manifold->vertex_list_begin.next;
@@ -1714,7 +1714,7 @@ static void replace_finite_vertices(
         }
 
     /*
-     *  Assign new fake Cusps.
+     *  Create new Vertex structures for the finite vertices.
      */
 
     create_cusps_and_mark_finite_as_needed(manifold);

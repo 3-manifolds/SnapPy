@@ -8,10 +8,10 @@
  *
  *  The Triangulation data structure consists of some global information
  *  about the manifold (number of tetrahedra, number of cusps, etc.)
- *  following by doubly linked lists of Tetrahedra, EdgeClasses, and Cusps.
+ *  following by doubly linked lists of Tetrahedra, EdgeClasses, and Vertices.
  *  As the triangulation varies dynamically (for example, during the
  *  triangulation simplification algorithm) Tetrahedra, EdgeClasses and
- *  Cusps may be easily inserted and deleted using the INSERT_BEFORE()
+ *  Vertices may be easily inserted and deleted using the INSERT_BEFORE()
  *  and REMOVE_NODE() macros found in kernel_typedefs.h.  The Triangulation
  *  data structure contains header and tailer nodes for each doubly linked
  *  list, to avoid having to consider special cases while inserting and

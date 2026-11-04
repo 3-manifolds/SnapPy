@@ -209,7 +209,7 @@ static Boolean orb_solution_is_invalid(
         Real orbifold_euler_characteristic =
             orb_compute_orbifold_cusp_euler_characteristic(cusp);
         Real inner_product =
-            cusp->orb_cusp_shape->inner_product[ultimate];
+            cusp->orb_vertex_shape->inner_product[ultimate];
 
         if (fabs(orbifold_euler_characteristic) < ORB_IDEAL_EPSILON)
         {

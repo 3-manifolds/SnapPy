@@ -469,7 +469,7 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
     for (Vertex * cusp = manifold->vertex_list_begin.next;
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        cusp->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
+        cusp->orb_vertex_shape = NEW_STRUCT(OrbVertexShape);
 
     ei = cf->head;
     while (ei != NULL) {
@@ -486,20 +486,20 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
 
         tet_array[t1]
             ->cusp[remaining_face[a1][a2]]
-            ->orb_cusp_shape
+            ->orb_vertex_shape
             ->inner_product[ultimate] = ei->v_inner_product1;
         tet_array[t1]
             ->cusp[remaining_face[a1][a2]]
-            ->orb_cusp_shape
+            ->orb_vertex_shape
             ->inner_product[penultimate] = ei->v_inner_product1;
 
         tet_array[t1]
             ->cusp[remaining_face[a2][a1]]
-            ->orb_cusp_shape
+            ->orb_vertex_shape
             ->inner_product[ultimate] = ei->v_inner_product2;
         tet_array[t1]
             ->cusp[remaining_face[a2][a1]]
-            ->orb_cusp_shape
+            ->orb_vertex_shape
             ->inner_product[penultimate] = ei->v_inner_product2;
 
         if (ei->singular_index < 0) {
@@ -547,7 +547,7 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
                     } else {
                         Vertex *cusp = tet->cusp[i];
                         tet->orb_tet_shape->Gram_matrix[i][i] =
-                            cusp->orb_cusp_shape->inner_product[ultimate];
+                            cusp->orb_vertex_shape->inner_product[ultimate];
                     }
 
             for (int i = 0; i < 4; i++)
@@ -814,11 +814,11 @@ void orb_write_casson_format_to_stream(
 
             int top = remaining_face[ptet.left_face][ptet.near_face];
             ostream_printf(stream, " %21.16f",
-                           (double)ptet.tet->cusp[top]->orb_cusp_shape->inner_product[ultimate]);
+                           (double)ptet.tet->cusp[top]->orb_vertex_shape->inner_product[ultimate]);
 
             int bottom = remaining_face[ptet.near_face][ptet.left_face];
             ostream_printf(stream, " %21.16f",
-                           (double)ptet.tet->cusp[bottom]->orb_cusp_shape->inner_product[ultimate]);
+                           (double)ptet.tet->cusp[bottom]->orb_vertex_shape->inner_product[ultimate]);
 
             do {
                 ostream_printf(

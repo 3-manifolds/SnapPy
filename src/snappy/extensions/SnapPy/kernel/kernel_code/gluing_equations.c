@@ -280,15 +280,15 @@ static void compute_derivative(
              *  If the cusp is complete, use m = 1.0 and l = 0.0.
              */
 
-            if (tet->cusp[v]->is_complete)
+            if (tet->vertex[v]->is_complete)
             {
                 m = 1.0;
                 l = 0.0;
             }
             else
             {
-                m = tet->cusp[v]->m;
-                l = tet->cusp[v]->l;
+                m = tet->vertex[v]->m;
+                l = tet->vertex[v]->l;
             }
 
             /*
@@ -300,13 +300,13 @@ static void compute_derivative(
              */
 
             if (manifold->orientability == oriented_manifold)
-                eqn_coef = &tet->cusp[v]->complex_cusp_equation[tet->index];
+                eqn_coef = &tet->vertex[v]->complex_cusp_equation[tet->index];
             else
             {
-                eqn_coef_00 = &tet->cusp[v]->real_cusp_equation_re[2 * tet->index];
-                eqn_coef_01 = &tet->cusp[v]->real_cusp_equation_re[2 * tet->index + 1];
-                eqn_coef_10 = &tet->cusp[v]->real_cusp_equation_im[2 * tet->index];
-                eqn_coef_11 = &tet->cusp[v]->real_cusp_equation_im[2 * tet->index + 1];
+                eqn_coef_00 = &tet->vertex[v]->real_cusp_equation_re[2 * tet->index];
+                eqn_coef_01 = &tet->vertex[v]->real_cusp_equation_re[2 * tet->index + 1];
+                eqn_coef_10 = &tet->vertex[v]->real_cusp_equation_im[2 * tet->index];
+                eqn_coef_11 = &tet->vertex[v]->real_cusp_equation_im[2 * tet->index + 1];
             }
 
             /*

@@ -703,7 +703,7 @@ static void set_cusps(
     brand_new_cusp->cusp_index = old_manifold->num_cusps;
 
     /*
-     *  Set the new_tet->cusp[] fields.
+     *  Set the new_tet->vertex[] fields.
      */
 
     for (old_tet = old_manifold->tet_list_begin.next;
@@ -712,17 +712,17 @@ static void set_cusps(
 
         if (old_tet->extra->drilling_curve_intersects_tet == FALSE)
             for (i = 0; i < 4; i++)
-                old_tet->extra->big_tet->cusp[i]
-                    = new_cusp_addresses[old_tet->cusp[i]->cusp_index];
+                old_tet->extra->big_tet->vertex[i]
+                    = new_cusp_addresses[old_tet->vertex[i]->cusp_index];
         else
             for (i = 0; i < 2; i++)
             {
                 f = old_tet->extra->index[i];
                 for (j = 0; j < 4; j++)
-                    old_tet->extra->small_tet[f]->cusp[j]
+                    old_tet->extra->small_tet[f]->vertex[j]
                         = (j == f) ?
                           brand_new_cusp :
-                          new_cusp_addresses[old_tet->cusp[j]->cusp_index];
+                          new_cusp_addresses[old_tet->vertex[j]->cusp_index];
             }
 
     /*
@@ -823,8 +823,8 @@ static void copy_old_peripheral_curves(
         new_tet = new_edge->incident_tet;
         v0 =   one_vertex_at_edge[new_edge->incident_edge_index];
         v1 = other_vertex_at_edge[new_edge->incident_edge_index];
-        if ((new_tet->cusp[v0]->cusp_index < old_manifold->num_cusps)
-         == (new_tet->cusp[v1]->cusp_index < old_manifold->num_cusps))
+        if ((new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps)
+         == (new_tet->vertex[v1]->cusp_index < old_manifold->num_cusps))
             continue;
 
         /*
@@ -833,8 +833,8 @@ static void copy_old_peripheral_curves(
          */
 
         ptet0.tet           = new_tet;
-        ptet0.right_face    = (new_tet->cusp[v0]->cusp_index < old_manifold->num_cusps) ? v1 : v0;
-        ptet0.bottom_face   = (new_tet->cusp[v0]->cusp_index < old_manifold->num_cusps) ? v0 : v1;
+        ptet0.right_face    = (new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps) ? v1 : v0;
+        ptet0.bottom_face   = (new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps) ? v0 : v1;
         ptet0.near_face     = remaining_face[ptet0.bottom_face][ptet0.right_face];
         ptet0.left_face     = remaining_face[ptet0.right_face][ptet0.bottom_face];
         ptet0.orientation   = right_handed;
@@ -965,7 +965,7 @@ static void create_new_peripheral_curves(
 
             set_cusp_topology(
                 old_tet->extra->small_tet[old_tet->extra->index[0]]
-                       ->cusp[old_tet->extra->index[0]],
+                       ->vertex[old_tet->extra->index[0]],
                 cusp_topology);
             if (cusp_topology == torus_cusp)
                 new_manifold->num_or_cusps++;

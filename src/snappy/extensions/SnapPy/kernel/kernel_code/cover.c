@@ -206,7 +206,7 @@ Triangulation *construct_cover(
          */
         lifts = covering_tetrahedra[base_cusp->basepoint_tet->index];
         for (sheet = 0; sheet < n; sheet++)
-            if (lifts[sheet]->cusp[base_cusp->basepoint_vertex] == NULL)
+            if (lifts[sheet]->vertex[base_cusp->basepoint_vertex] == NULL)
             {
                 Vertex * new_cusp = create_one_cusp(
                     covering_manifold,
@@ -291,12 +291,12 @@ Triangulation *construct_cover(
                     for (f = 0; f < 4; f++)
                     {
                         lifts[sheet]->scratch_curve[1][M][handedness][v][f] =
-                            base_tetrahedron->cusp[v]->is_complete ?
+                            base_tetrahedron->vertex[v]->is_complete ?
                             0 :
                             /* representations.c has already checked that  */
                             /* all Dehn filling coefficients are integers. */
-                            (   (int)base_tetrahedron->cusp[v]->m * base_tetrahedron->curve[M][handedness][v][f]
-                              + (int)base_tetrahedron->cusp[v]->l * base_tetrahedron->curve[L][handedness][v][f] );
+                            (   (int)base_tetrahedron->vertex[v]->m * base_tetrahedron->curve[M][handedness][v][f]
+                              + (int)base_tetrahedron->vertex[v]->l * base_tetrahedron->curve[L][handedness][v][f] );
 
                         lifts[sheet]->scratch_curve[1][L][handedness][v][f] = 0;
                     }
@@ -403,7 +403,7 @@ Triangulation *construct_cover(
             lifts   = covering_tetrahedra[base_cusp->basepoint_tet->index];
             v       = base_cusp->basepoint_vertex;
             for (index = 0; index < n; index++)
-                if (lifts[index]->cusp[v] == covering_cusp)
+                if (lifts[index]->vertex[v] == covering_cusp)
                     break;
             if (index == n)
                 uFatalError("construct_cover", "cover");

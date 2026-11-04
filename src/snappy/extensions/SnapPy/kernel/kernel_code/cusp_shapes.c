@@ -408,7 +408,7 @@ static PositionedTet find_start(
 
         for (vertex = 0; vertex < 4; vertex++)
         {
-            if (tet->cusp[vertex] != cusp)
+            if (tet->vertex[vertex] != cusp)
                 continue;
 
             for (i = 0; i < 2; i++) {

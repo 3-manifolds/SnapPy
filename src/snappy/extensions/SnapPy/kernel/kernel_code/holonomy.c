@@ -172,8 +172,8 @@ The stupid Symantec C compiler is choking on the following expression.
 So I am breaking it into two parts to make its work easier.
 
 original version:
-                    tet->cusp[v]->holonomy[which_iteration][i] = complex_plus(
-                        tet->cusp[v]->holonomy[which_iteration][i],
+                    tet->vertex[v]->holonomy[which_iteration][i] = complex_plus(
+                        tet->vertex[v]->holonomy[which_iteration][i],
                         complex_plus(
                             complex_real_mult(
                                 FLOW(init[i][right_handed], term[i][right_handed]),
@@ -191,7 +191,7 @@ modified version:
                     Complex temp;
 
                     temp = complex_plus(
-                        tet->cusp[v]->holonomy[which_iteration][i],
+                        tet->vertex[v]->holonomy[which_iteration][i],
                         complex_plus(
                             complex_real_mult(
                                 FLOW(init[i][right_handed], term[i][right_handed]),
@@ -204,7 +204,7 @@ modified version:
                         )
                     );
 
-                    tet->cusp[v]->holonomy[which_iteration][i] = temp;
+                    tet->vertex[v]->holonomy[which_iteration][i] = temp;
                 }
 #endif
             }

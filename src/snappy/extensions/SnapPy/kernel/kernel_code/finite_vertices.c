@@ -136,7 +136,7 @@ void remove_finite_vertices(
     
     /*
      *  Ideal vertices which used to be incident to fake cusps are
-     *  now all incident to real cusps.  Update the tet->cusp[] fields,
+     *  now all incident to real cusps.  Update the tet->vertex[] fields,
      *  and free the fake cusps (except for the special_fake_cusp, if any).
      */
     set_real_cusps(manifold, special_fake_cusp);
@@ -229,8 +229,8 @@ static void merge_cusps(
         {
             tet         = edge->incident_tet;
             e           = edge->incident_edge_index;
-            one_cusp    = tet->cusp[one_vertex_at_edge[e]];
-            other_cusp  = tet->cusp[other_vertex_at_edge[e]];
+            one_cusp    = tet->vertex[one_vertex_at_edge[e]];
+            other_cusp  = tet->vertex[other_vertex_at_edge[e]];
 
             if (one_cusp->matching_cusp == NULL
              && other_cusp->matching_cusp != NULL)
@@ -398,15 +398,15 @@ static void drill_tube(
     new_tet1->edge_orientation[4] = edge_orientation0;
     new_tet1->edge_orientation[5] = edge_orientation0;
     
-    new_tet0->cusp[0] = tet->cusp[v0];
-    new_tet0->cusp[1] = tet->cusp[v0];
-    new_tet0->cusp[2] = tet->cusp[v0];
-    new_tet0->cusp[3] = tet->cusp[v2];
+    new_tet0->vertex[0] = tet->vertex[v0];
+    new_tet0->vertex[1] = tet->vertex[v0];
+    new_tet0->vertex[2] = tet->vertex[v0];
+    new_tet0->vertex[3] = tet->vertex[v2];
     
-    new_tet1->cusp[0] = tet->cusp[v0];
-    new_tet1->cusp[1] = tet->cusp[v0];
-    new_tet1->cusp[2] = tet->cusp[v0];
-    new_tet1->cusp[3] = tet->cusp[v2];
+    new_tet1->vertex[0] = tet->vertex[v0];
+    new_tet1->vertex[1] = tet->vertex[v0];
+    new_tet1->vertex[2] = tet->vertex[v0];
+    new_tet1->vertex[3] = tet->vertex[v2];
     
     /*
      *  Install the triangular-pillow-with-tunnel.
@@ -473,7 +473,7 @@ static void drill_tube(
          *  spherical "cusp" to itself, to convert it to a torus or
          *  Klein bottle.
          */
-        unique_cusp = tet->cusp[v0]->matching_cusp;
+        unique_cusp = tet->vertex[v0]->matching_cusp;
         unique_cusp->is_complete    = TRUE; /* to be filled below */
         unique_cusp->cusp_index          = 0;
         /*
@@ -553,7 +553,7 @@ static void set_real_cusps(
 
         for (i = 0; i < 4; i++)
 
-            tet->cusp[i] = tet->cusp[i]->matching_cusp;
+            tet->vertex[i] = tet->vertex[i]->matching_cusp;
 
     /*
      *  Free the Vertex structures which had been used for finite vertices.

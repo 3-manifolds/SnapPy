@@ -88,11 +88,11 @@ FuncResult change_peripheral_curves(
                     old_l = tet->curve[L][i][v][f];
 
                     tet->curve[M][i][v][f]
-                        = change_matrices[tet->cusp[v]->cusp_index][0][0] * old_m
-                        + change_matrices[tet->cusp[v]->cusp_index][0][1] * old_l;
+                        = change_matrices[tet->vertex[v]->cusp_index][0][0] * old_m
+                        + change_matrices[tet->vertex[v]->cusp_index][0][1] * old_l;
                     tet->curve[L][i][v][f]
-                        = change_matrices[tet->cusp[v]->cusp_index][1][0] * old_m
-                        + change_matrices[tet->cusp[v]->cusp_index][1][1] * old_l;
+                        = change_matrices[tet->vertex[v]->cusp_index][1][0] * old_m
+                        + change_matrices[tet->vertex[v]->cusp_index][1][1] * old_l;
                 }
 
     /*

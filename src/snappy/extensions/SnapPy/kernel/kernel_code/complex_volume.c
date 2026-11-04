@@ -1121,7 +1121,7 @@ void reorder_tetrahedron(
         neighbors[i] = tet->neighbor[i];
         n_faces[i] = neighboring_face(tet,i);
         gluing[i] = neighbors[i]->gluing[n_faces[i]];
-        cusp[i] = tet->cusp[i];
+        cusp[i] = tet->vertex[i];
         for (j = 0; j < 4; j++)
             for (k = 0; k < 2; k++)
                 for (l = 0; l < 2; l++)
@@ -1142,7 +1142,7 @@ void reorder_tetrahedron(
         tet->neighbor[EVALUATE(p,i)] = neighbors[i];
         tet->gluing[EVALUATE(p,i)] =
             inverse_permutation[neighbors[i]->gluing[n_faces[i]]];
-        tet->cusp[EVALUATE(p,i)] = cusp[i];
+        tet->vertex[EVALUATE(p,i)] = cusp[i];
     }
 
     /* Permute the peripheral curve information */

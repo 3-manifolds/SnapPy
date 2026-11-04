@@ -827,8 +827,8 @@ FuncResult cancel_tetrahedra(
     {
         for (i = 0; i < 2; i++)
 
-            if (get_cusp_topology(tet[0]->cusp[v[0][i]]) == sphere_cusp
-                && tet[0]->cusp[v[0][i]]->orb_num_incident_singular_edges == 0
+            if (get_cusp_topology(tet[0]->vertex[v[0][i]]) == sphere_cusp
+                && tet[0]->vertex[v[0][i]]->orb_num_incident_singular_edges == 0
                 && tet[0]->neighbor[v[0][!i]] == tet[1]
                 && tet[0]->neighbor[v[0][ i]] != tet[1]
                 && tet[0]->gluing[v[0][!i]] == tet[0]->gluing[v[0][2]])
@@ -1062,8 +1062,8 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
     nbr     = tet->neighbor[!finite_vertex];
     gluing  = tet->gluing  [!finite_vertex];
 
-    if (get_cusp_topology(tet->cusp[finite_vertex]) != sphere_cusp ||
-        tet->cusp[finite_vertex]->orb_num_incident_singular_edges != 0)
+    if (get_cusp_topology(tet->vertex[finite_vertex]) != sphere_cusp ||
+        tet->vertex[finite_vertex]->orb_num_incident_singular_edges != 0)
         uFatalError("cancel_tetrahedra_with_finite_vertex", "simplify_triangulation");
 
     for (f = 0; f < 4; f++)
@@ -1092,7 +1092,7 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
      *  this Vertex we may leave a gap in the (negative) indexing of
      *  finite vertex Cusps, but that's OK.
      */
-    dead_cusp = tet->cusp[finite_vertex];
+    dead_cusp = tet->vertex[finite_vertex];
     REMOVE_NODE(dead_cusp);
     my_free(dead_cusp);
     
@@ -1349,8 +1349,8 @@ FuncResult three_to_two(
     for (i = 0; i < 2; i++)
     {
         for (j = 0; j < 3; j++)
-            new_tet[i]->cusp[w[i][j]] = tet[(j+1)%3]->cusp[v[(j+1)%3][3]];
-        new_tet[i]->cusp[w[i][3]] = tet[0]->cusp[v[0][!i]];
+            new_tet[i]->vertex[w[i][j]] = tet[(j+1)%3]->vertex[v[(j+1)%3][3]];
+        new_tet[i]->vertex[w[i][3]] = tet[0]->vertex[v[0][!i]];
     }
 
     /*
@@ -1811,10 +1811,10 @@ FuncResult two_to_three(
 
     for (i = 0; i < 3; i++)
     {
-        new_tet[i]->cusp[0] = tet[1]->cusp[v[1][3]];
-        new_tet[i]->cusp[1] = tet[0]->cusp[v[0][3]];
-        new_tet[i]->cusp[2] = tet[0]->cusp[v[0][(i+1)%3]];
-        new_tet[i]->cusp[3] = tet[0]->cusp[v[0][(i+2)%3]];
+        new_tet[i]->vertex[0] = tet[1]->vertex[v[1][3]];
+        new_tet[i]->vertex[1] = tet[0]->vertex[v[0][3]];
+        new_tet[i]->vertex[2] = tet[0]->vertex[v[0][(i+1)%3]];
+        new_tet[i]->vertex[3] = tet[0]->vertex[v[0][(i+2)%3]];
     }
 
     /*
@@ -2277,7 +2277,7 @@ void one_to_four(
     initialize_cusp(new_cusp);
     set_cusp_topology(new_cusp, sphere_cusp);
     new_cusp->cusp_index     = new_cusp_index;
-    INSERT_BEFORE(new_cusp, tet->cusp[0]);
+    INSERT_BEFORE(new_cusp, tet->vertex[0]);
 
     /*
      *  Set the new Tetrahedra's cusp fields.
@@ -2285,10 +2285,10 @@ void one_to_four(
 
     for (i = 0; i < 4; i++)
         for (j = 0; j < 4; j++)
-            new_tet[i]->cusp[j] =
+            new_tet[i]->vertex[j] =
                 j == i ?
                 new_cusp :      /*  finite vertex  */
-                tet->cusp[j];   /*  ideal  vertex  */
+                tet->vertex[j];   /*  ideal  vertex  */
 
     /*
      *  Set the peripheral curves.

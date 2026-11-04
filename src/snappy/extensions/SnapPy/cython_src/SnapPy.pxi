@@ -683,7 +683,7 @@ cdef extern from "addl_code.h":
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
 cdef extern from "testing.h":
-    extern void testing_compute_cusp_orientabilities(c_Triangulation *manifold)
+    extern void testing_compute_vertex_link_orientabilities(c_Triangulation *manifold)
 
 cdef extern from "isomorphism_signature.h":
     extern char* get_isomorphism_signature(c_Triangulation *triangulation, Boolean ignore_orientation)

@@ -202,7 +202,7 @@ Vertex * create_one_cusp(
      *      (1) call compute_cusp_Euler_characteristics to set the Euler
      *          characteristic.
      *
-     *      (2) call compute_cusp_orientabilities to set the cusp->orientability.
+     *      (2) call compute_vertex_link_orientabilities to set the cusp->orientability.
      *
      *      (3) call peripheral_curves() to set the cusp->orientability if
      *          the cusp's Euler characteristic is zero,
@@ -313,7 +313,7 @@ static int orientation_bit(VertexIndex v)
     return 1 << (2 * v + 1);
 }
 
-void compute_cusp_orientabilities(
+void compute_vertex_link_orientabilities(
     Triangulation   *manifold)
 {
     /*

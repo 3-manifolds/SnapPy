@@ -310,7 +310,7 @@ FuncResult split_along_normal_surface(
             /*
              *  remove_finite_vertices calls get_cusp_topology which
              *  requires the Vertex::orientability to be set. Thus,
-             *  calling compute_cusp_orientabilities here (even though
+             *  calling compute_vertex_link_orientabilities here (even though
              *  they are also computed by peripheral_curves_as_needed
              *  later).
              *
@@ -318,7 +318,7 @@ FuncResult split_along_normal_surface(
              *  remove_finite_vertices simply checked Vertex::is_finite.
              */
 
-            compute_cusp_orientabilities(pieces[i]);
+            compute_vertex_link_orientabilities(pieces[i]);
 
             /*
              *  Retriangulate with no finite vertices.

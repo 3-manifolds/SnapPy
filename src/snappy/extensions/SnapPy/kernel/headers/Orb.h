@@ -20,7 +20,7 @@ extern SolutionType orb_find_hyperbolic_structure(
  *   Requires that cusps have been created, their Euler characteristics
  *   computed and orientabilities (e.g., through
  *   compute_cusp_Euler_characteristics and
- *   compute_cusp_orientabilities or peripheral_curves, respectively)
+ *   compute_vertex_link_orientabilities or peripheral_curves, respectively)
  *   and Vertex::[num_]incident_singular_edges populated (if there
  *   any singular edges, e.g., through
  *   orb_cusps_fill_incident_singular_edges.

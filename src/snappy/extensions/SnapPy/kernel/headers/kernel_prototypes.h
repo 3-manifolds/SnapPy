@@ -189,7 +189,7 @@ extern void compute_cusp_Euler_characteristics(Triangulation *manifold);
  *  Computes and stores the Euler characteristic of each cusp.
  */
 
-extern void compute_cusp_orientabilities(Triangulation   *manifold);
+extern void compute_vertex_link_orientabilities(Triangulation   *manifold);
 /**<
  *  Computes and sets the Vertex::orientability for each cusp where
  *  the orientability was unknown. This function has no requirement

@@ -208,7 +208,7 @@ struct Vertex
                                                  *   Initialized to unknown_cusp_orientability
                                                  *   to indicate that it has not been computed
                                                  *   yet.
-                                                 *   Computed by compute_cusp_orientabilities
+                                                 *   Computed by compute_vertex_link_orientabilities
                                                  *   or peripheral_curves (if Euler
                                                  *   characteristic is zero).
                                                  *   Code that builds a Vertex itself rather

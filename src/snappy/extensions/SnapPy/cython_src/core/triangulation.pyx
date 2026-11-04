@@ -1490,9 +1490,9 @@ cdef class Triangulation():
 
         return CuspInfo(**info)
 
-    def _testing_compute_cusp_orientabilities(self):
-        testing_compute_cusp_orientabilities(self.c_triangulation)
-        self._cache.clear(message='compute_cusp_orientabilities')
+    def _testing_compute_vertex_link_orientabilities(self):
+        testing_compute_vertex_link_orientabilities(self.c_triangulation)
+        self._cache.clear(message='compute_vertex_link_orientabilities')
 
     def _orb_singular_edge_info(self, data_spec=None):
         """

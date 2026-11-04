@@ -3,26 +3,26 @@
  *
  *  This function provides the following utility for use within the kernel.
  *
- *      Cusp *find_cusp(Triangulation *manifold, int cusp_index);
+ *      Vertex *find_cusp(Triangulation *manifold, int cusp_index);
  *
  *  The UI refers to cusps by their indices, because it doesn't know about
- *  the Cusp data structure.  When a kernel function receives a cusp_index,
+ *  the Vertex data structure.  When a kernel function receives a cusp_index,
  *  it may call the function find_cusp() to convert the index to an actual
- *  pointer to the corresponding Cusp data structure.  If find_cusp() cannot
- *  find a Cusp with the given cusp_index, it calls uFatalError().
+ *  pointer to the corresponding Vertex data structure.  If find_cusp() cannot
+ *  find a Vertex with the given cusp_index, it calls uFatalError().
  */
 
 #include "kernel.h"
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
-Cusp *find_cusp(
+Vertex *find_cusp(
     Triangulation   *manifold,
     int             cusp_index)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->cusp_index == cusp_index)
@@ -30,7 +30,7 @@ Cusp *find_cusp(
             return cusp;
 
     /*
-     *  No Cusp with the given index was found.
+     *  No Vertex with the given index was found.
      */
     uFatalError("find_cusp", "find_cusp");
 

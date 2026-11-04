@@ -33,8 +33,8 @@ void orb_normalize_cusp_areas(
 {
     compute_cusp_areas(manifold);
 
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         CuspTopology topology = get_cusp_topology(cusp);
@@ -68,8 +68,8 @@ void orb_normalize_cusp_areas(
             {
                 int index = edge->incident_edge_index;
                 Tetrahedron *tet = edge->incident_tet;
-                Cusp *top_cusp = tet->cusp[one_vertex_at_edge[index]];
-                Cusp *bottom_cusp = tet->cusp[other_vertex_at_edge[index]];
+                Vertex *top_cusp = tet->cusp[one_vertex_at_edge[index]];
+                Vertex *bottom_cusp = tet->cusp[other_vertex_at_edge[index]];
 
                 if (cusp == top_cusp)
                     edge->orb_edge_shape->inner_product[ultimate] *= scalar;
@@ -117,8 +117,8 @@ void orb_normalize_cusp_areas(
 static void compute_cusp_areas(
     Triangulation *manifold)
 {
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orb_cusp_shape->area = 0.0;
 

@@ -8,7 +8,7 @@
  *  construct_cover() assumes the base_manifold's generators are present,
  *  and correspond to the generators in the representation.  The
  *  representation is assumed to be transitive, so the cover is connected.
- *  construct_cover() also assumes that each Cusp's basepoint_tet,
+ *  construct_cover() also assumes that each Vertex's basepoint_tet,
  *  basepoint_vertex and basepoint_orientation are those which were
  *  recorded when the fundamental group was computed.  All these assumptions
  *  will be true if the Triangulation has not been changed since the
@@ -51,7 +51,7 @@ Triangulation *construct_cover(
     FaceIndex       f;
     MatrixInt22     *change_matrices;
     int             handedness;
-    Cusp            *base_cusp,
+    Vertex          *base_cusp,
                     *covering_cusp;
     SolutionType    base_solution_type;
 
@@ -183,22 +183,22 @@ Triangulation *construct_cover(
 
     /*
      *  Create the covering_manifold's Cusps in the "natural" order.  That is,
-     *  Cusps which project to the base_manifold's Cusp 0 should come first,
-     *  then Cusps which project to the base_manifold's Cusp 1, etc.
+     *  Cusps which project to the base_manifold's Vertex 0 should come first,
+     *  then Cusps which project to the base_manifold's Vertex 1, etc.
      */
     error_check_for_create_cusps(covering_manifold);    /* unnecessary   */
     covering_cusp_index = 0;                            /* running count */
-    for (base_cusp = base_manifold->cusp_list_begin.next;
-         base_cusp != &base_manifold->cusp_list_end;
+    for (base_cusp = base_manifold->vertex_list_begin.next;
+         base_cusp != &base_manifold->vertex_list_end;
          base_cusp = base_cusp->next)
     {
         /*
          *  We don't know a priori how many Cusps in the covering_manifold
-         *  will project down to the given Cusp in the base_manifold.
+         *  will project down to the given Vertex in the base_manifold.
          *  So we examine each of the n lifts of the given ideal vertex,
          *  and assign Cusps to those which haven't already been assigned
-         *  a Cusp at an earlier iteration of the loop.  Let each new
-         *  Cusp's matching_cusp field store a pointer to the corresponding
+         *  a Vertex at an earlier iteration of the loop.  Let each new
+         *  Vertex's matching_cusp field store a pointer to the corresponding
          *  cusp in the base_manifold.  Note that we are working with
          *  the basepoint_tets and basepoint_vertices relative to which
          *  the fundamental_group() computed the meridians and longitudes;
@@ -208,7 +208,7 @@ Triangulation *construct_cover(
         for (sheet = 0; sheet < n; sheet++)
             if (lifts[sheet]->cusp[base_cusp->basepoint_vertex] == NULL)
             {
-                Cusp * new_cusp = create_one_cusp(
+                Vertex * new_cusp = create_one_cusp(
                     covering_manifold,
                     lifts[sheet],
                     base_cusp->basepoint_vertex);
@@ -236,7 +236,7 @@ Triangulation *construct_cover(
      *      longitude} pair adhere to the right hand rule.
      *
      *  (2) peripheral_curves() will determine the orientability of
-     *      each Cusp, and write it into the cusp->orientability field.
+     *      each Vertex, and write it into the cusp->orientability field.
      */
     peripheral_curves(covering_manifold);
 
@@ -318,8 +318,8 @@ Triangulation *construct_cover(
      *  Dehn filling curve.  The paragraph after this one will figure out
      *  what multiple of the primitive curve is correct.
      */
-    for (covering_cusp = covering_manifold->cusp_list_begin.next;
-         covering_cusp != &covering_manifold->cusp_list_end;
+    for (covering_cusp = covering_manifold->vertex_list_begin.next;
+         covering_cusp != &covering_manifold->vertex_list_end;
          covering_cusp = covering_cusp->next)
     {
         covering_cusp->is_complete = covering_cusp->matching_cusp->is_complete;
@@ -377,8 +377,8 @@ Triangulation *construct_cover(
      *  The answer to question (1) divided by the answer to question (2)
      *  will tell us the order of the singularity in the covering_manifold.
      */
-    for (covering_cusp = covering_manifold->cusp_list_begin.next;
-         covering_cusp != &covering_manifold->cusp_list_end;
+    for (covering_cusp = covering_manifold->vertex_list_begin.next;
+         covering_cusp != &covering_manifold->vertex_list_end;
          covering_cusp = covering_cusp->next)
     {
         if (covering_cusp->is_complete == FALSE)

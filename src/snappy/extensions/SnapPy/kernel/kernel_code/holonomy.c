@@ -69,11 +69,11 @@ static void copy_holonomies_ultimate_to_penultimate(
      *  Copy holonomy[ultimate][] into holonomy[penultimate][].
      */
 
-    Cusp    *cusp;
+    Vertex  *cusp;
     int     i;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = M, L */
@@ -86,7 +86,7 @@ void compute_the_holonomies(
     Triangulation   *manifold,
     Ultimateness    which_iteration)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     Complex     log_z[2];
     VertexIndex v;
@@ -101,8 +101,8 @@ void compute_the_holonomies(
      *  Initialize holonomy[which_iteration][] to zero.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = M, L */

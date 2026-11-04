@@ -1048,7 +1048,7 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
     VertexIndex v,
                 nbr_finite;
     EdgeIndex   e;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
     EdgeClass   *dead_edge;
     
     
@@ -1086,10 +1086,10 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
      */
 
     /*
-     *  Remove the Cusp structure representing the finite vertex
+     *  Remove the Vertex structure representing the finite vertex
      *  in the triangular pillow's interior.  Finite vertices aren't
      *  counted in a Triangulation's num_cusps field.  By removing
-     *  this Cusp we may leave a gap in the (negative) indexing of
+     *  this Vertex we may leave a gap in the (negative) indexing of
      *  finite vertex Cusps, but that's OK.
      */
     dead_cusp = tet->cusp[finite_vertex];
@@ -2203,7 +2203,7 @@ void one_to_four(
                 j,
                 k;
     Tetrahedron *new_tet[4];
-    Cusp        *new_cusp;
+    Vertex      *new_cusp;
     EdgeClass   *new_class[4];
 
     /*
@@ -2270,10 +2270,10 @@ void one_to_four(
             }
 
     /*
-     *  Create a Cusp structure for the finite vertex.
+     *  Create a Vertex structure for the finite vertex.
      */
 
-    new_cusp = NEW_STRUCT(Cusp);
+    new_cusp = NEW_STRUCT(Vertex);
     initialize_cusp(new_cusp);
     set_cusp_topology(new_cusp, sphere_cusp);
     new_cusp->cusp_index     = new_cusp_index;

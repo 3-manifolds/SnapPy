@@ -22,7 +22,7 @@
  *  a triangulation, it is arbitrarily subdivided into tetrahedra.
  *
  *  Note:  This file uses the fields "displacement" and "displacement_exp"
- *  in the Cusp data structure to keep track of where the cusp cross
+ *  in the Vertex data structure to keep track of where the cusp cross
  *  sections are (details appear below).  Manifolds not under the care
  *  of a CuspNeighborhoods structure should keep the "displacement" set
  *  to 0 and the "displacement_exp" set to 1 at all times, so that
@@ -105,7 +105,7 @@
  *  By Proposition 2 above, when all the cusps are at their home positions,
  *  their interiors are disjoint.
  *
- *  The displacement field in the Cusp data structure measures how far
+ *  The displacement field in the Vertex data structure measures how far
  *  a cusp cross section is from its home position.  The displacement is
  *  measured towards the fat part of the manifold, so a positive displacement
  *  means the cusp cross section is larger, and a negative displacement
@@ -116,7 +116,7 @@
  *  at some height h < 1.  Set d equal to the integral of dz/z from z = h
  *  to z = 1 to obtain d = - log h, or h = exp(-d).  It follows that a cusp's
  *  linear dimensions vary as exp(d), while its area (and therefore its
- *  enclosed volume) vary as exp(2d).  The Cusp data structure stores the
+ *  enclosed volume) vary as exp(2d).  The Vertex data structure stores the
  *  quantity exp(d) in its displacement_exp field, to avoid excessive
  *  recomputation.
  *
@@ -141,7 +141,7 @@
  *
  *
  *  Sometimes the user may wish to change two or more cusp displacements
- *  in unison.  The Cusp's is_tied field supports this.  The displacements
+ *  in unison.  The Vertex's is_tied field supports this.  The displacements
  *  of "tied" cusps always stay the same -- when one changes they all do.
  *  The tie_group_reach keeps track of the reach of the tied cusps:
  *  it tells the displacement at which some cusp in the group first
@@ -324,26 +324,26 @@ typedef struct
 
 static void                 initialize_cusp_displacements(CuspNeighborhoods *cusp_neighborhoods);
 static void                 compute_cusp_reaches(CuspNeighborhoods *cusp_neighborhoods);
-static void                 compute_one_reach(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp);
+static void                 compute_one_reach(CuspNeighborhoods *cusp_neighborhoods, Vertex *cusp);
 static void                 compute_tie_group_reach(CuspNeighborhoods *cusp_neighborhoods);
-static Cusp                 *some_tied_cusp(CuspNeighborhoods *cusp_neighborhoods);
+static Vertex               *some_tied_cusp(CuspNeighborhoods *cusp_neighborhoods);
 static void                 compute_cusp_stoppers(CuspNeighborhoods *cusp_neighborhoods);
 static void                 compute_intercusp_distances(Triangulation *manifold);
 static void                 compute_one_intercusp_distance(EdgeClass *edge);
-static Real               compute_min_dist(Triangulation *manifold, Cusp *cusp, MinDistanceType min_distance_type);
+static Real               compute_min_dist(Triangulation *manifold, Vertex *cusp, MinDistanceType min_distance_type);
 static void                 initialize_cusp_ties(CuspNeighborhoods *cusp_neighborhoods);
 static void                 initialize_cusp_nbhd_positions(CuspNeighborhoods *cusp_neighborhoods);
 static void                 allocate_cusp_nbhd_positions(CuspNeighborhoods *cusp_neighborhoods);
 static void                 compute_cusp_nbhd_positions(CuspNeighborhoods *cusp_neighborhoods);
 static Boolean              contains_meridian(Tetrahedron *tet, Orientation h, VertexIndex v);
 static void                 set_one_component(Tetrahedron *tet, Orientation h, VertexIndex v, int max_triangles);
-static CuspNbhdHoroballList *get_quick_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp);
-static void                 get_quick_edge_horoballs(Triangulation *manifold, Cusp *cusp, CuspNbhdHoroball **next_horoball);
-static void                 get_quick_face_horoballs(Triangulation *manifold, Cusp *cusp, CuspNbhdHoroball **next_horoball);
-static CuspNbhdHoroballList *get_full_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp, Real cutoff_height);
+static CuspNbhdHoroballList *get_quick_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Vertex *cusp);
+static void                 get_quick_edge_horoballs(Triangulation *manifold, Vertex *cusp, CuspNbhdHoroball **next_horoball);
+static void                 get_quick_face_horoballs(Triangulation *manifold, Vertex *cusp, CuspNbhdHoroball **next_horoball);
+static CuspNbhdHoroballList *get_full_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Vertex *cusp, Real cutoff_height);
 static void                 compute_exp_min_d(Triangulation *manifold);
 static void                 compute_parallelogram_to_square(Complex meridian, Complex longitude, Real parallelogram_to_square[2][2]);
-static void                 read_initial_tetrahedra(Triangulation *manifold, Cusp *cusp, TilingQueue *tiling_queue, TilingTet **tiling_tree_root, TilingHoroball **horoball_linked_list, Real cutoff_height);
+static void                 read_initial_tetrahedra(Triangulation *manifold, Vertex *cusp, TilingQueue *tiling_queue, TilingTet **tiling_tree_root, TilingHoroball **horoball_linked_list, Real cutoff_height);
 static TilingTet            *get_tiling_tet_from_queue(TilingQueue *tiling_queue);
 static void                 add_tiling_tet_to_queue(TilingTet *tiling_tet, TilingQueue *tiling_queue);
 static void                 add_tiling_horoball_to_list(TilingTet *tiling_tet, VertexIndex v, TilingHoroball **horoball_linked_list);
@@ -360,14 +360,14 @@ static CuspNbhdHoroballList *transfer_horoballs(TilingHoroball **horoball_linked
 EXTERN_C_BEGIN_SCOPE
 static int                  compare_horoballs(const void *horoball0, const void *horoball1);
 EXTERN_C_END_SCOPE
-static void                 cull_duplicate_horoballs(Cusp *cusp, CuspNbhdHoroballList *aHoroballList);
+static void                 cull_duplicate_horoballs(Vertex *cusp, CuspNbhdHoroballList *aHoroballList);
 
 /*
  *  Conceptually, the CuspNeighborhoods structure stores cross sections
  *  of a manifold's cusps, and also keeps a Triangulation dual to the
  *  corresponding Ford complex.  In the present implementation, the
  *  information about the cross sections is stored entirely within the
- *  copy of the triangulation (specifically, in the Cusp's displacement,
+ *  copy of the triangulation (specifically, in the Vertex's displacement,
  *  displacement_exp and reach fields, the EdgeClass's intercusp_distance
  *  field, and the Triangulation's max_reach field).
  *
@@ -538,10 +538,10 @@ void free_cusp_neighborhoods(
 static void initialize_cusp_displacements(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->displacement      = 0.0;
@@ -553,12 +553,12 @@ static void initialize_cusp_displacements(
 static void compute_cusp_reaches(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp_neighborhoods->its_triangulation->max_reach = 0.0;
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
     {
         compute_one_reach(cusp_neighborhoods, cusp);
@@ -571,7 +571,7 @@ static void compute_cusp_reaches(
 
 static void compute_one_reach(
     CuspNeighborhoods   *cusp_neighborhoods,
-    Cusp                *cusp)
+    Vertex              *cusp)
 {
     /*
      *  The key observation is the following.  Think of a horoball
@@ -593,7 +593,7 @@ static void compute_one_reach(
      */
 
     Triangulation   *triangulation_copy;
-    Cusp            *cusp_copy,
+    Vertex          *cusp_copy,
                     *other_cusp;
     Real          dist_any,
                     dist_self;
@@ -644,8 +644,8 @@ static void compute_one_reach(
          *  not fail.
          */
 
-        for (other_cusp = triangulation_copy->cusp_list_begin.next;
-             other_cusp != &triangulation_copy->cusp_list_end;
+        for (other_cusp = triangulation_copy->vertex_list_begin.next;
+             other_cusp != &triangulation_copy->vertex_list_end;
              other_cusp = other_cusp->next)
 
             if (other_cusp != cusp_copy)
@@ -682,7 +682,7 @@ static void compute_tie_group_reach(
     Triangulation   *triangulation_copy;
     Real          dist_any,
                     dist_self;
-    Cusp            *cusp;
+    Vertex          *cusp;
 
     /*
      *  If no cusps are tied, there is nothing to be done.
@@ -719,8 +719,8 @@ static void compute_tie_group_reach(
             break;
         }
 
-        for (cusp = triangulation_copy->cusp_list_begin.next;
-             cusp != &triangulation_copy->cusp_list_end;
+        for (cusp = triangulation_copy->vertex_list_begin.next;
+             cusp != &triangulation_copy->vertex_list_end;
              cusp = cusp->next)
 
             if (cusp->is_tied == FALSE)
@@ -740,13 +740,13 @@ static void compute_tie_group_reach(
 }
 
 
-static Cusp *some_tied_cusp(
+static Vertex *some_tied_cusp(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_tied)
@@ -789,7 +789,7 @@ static void compute_cusp_stoppers(
      *      then the cusp is its own stopper, as in case 1.
      */
 
-    Cusp        *cusp,
+    Vertex      *cusp,
                 *c[2];
     EdgeClass   *edge;
     int         i;
@@ -800,8 +800,8 @@ static void compute_cusp_stoppers(
      *  displacement to be its reach.
      */
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->stopper_cusp          = cusp;
@@ -1003,7 +1003,7 @@ static void compute_one_intercusp_distance(
 
 static Real compute_min_dist(
     Triangulation   *manifold,
-    Cusp            *cusp,  /* ignored for tie group distances  */
+    Vertex          *cusp,  /* ignored for tie group distances  */
     MinDistanceType min_distance_type)
 {
     /*
@@ -1013,7 +1013,7 @@ static Real compute_min_dist(
 
     Real      min_dist;
     EdgeClass   *edge;
-    Cusp        *cusp1,
+    Vertex      *cusp1,
                 *cusp2;
 
     min_dist = REAL_MAX;
@@ -1115,7 +1115,7 @@ Triangulation *get_cusp_neighborhood_manifold(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
     Triangulation   *manifold_copy;
-    Cusp            *cusp;
+    Vertex          *cusp;
 
     /*
      *  Make a copy of its_triangulation.
@@ -1127,8 +1127,8 @@ Triangulation *get_cusp_neighborhood_manifold(
      *  is needed later it will be computed relative to cusp cross sections
      *  of equal volume.
      */
-    for (cusp = manifold_copy->cusp_list_begin.next;
-         cusp != &manifold_copy->cusp_list_end;
+    for (cusp = manifold_copy->vertex_list_begin.next;
+         cusp != &manifold_copy->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->displacement      = 0.0;
@@ -1175,7 +1175,7 @@ void set_cusp_neighborhood_displacement(
     int                 cusp_index,
     Real              new_displacement)
 {
-    Cusp    *cusp,
+    Vertex  *cusp,
             *other_cusp;
 
     /*
@@ -1223,8 +1223,8 @@ void set_cusp_neighborhood_displacement(
          *  Don't overlap untied stoppers either.
          */
 
-        for (other_cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-             other_cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+        for (other_cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+             other_cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
              other_cusp = other_cusp->next)
 
             if (other_cusp->is_tied
@@ -1244,8 +1244,8 @@ void set_cusp_neighborhood_displacement(
     }
     else    /*  cusp->is_tied == TRUE   */
     {
-        for (other_cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-             other_cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+        for (other_cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+             other_cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
              other_cusp = other_cusp->next)
 
             if (other_cusp->is_tied)
@@ -1276,7 +1276,7 @@ void set_cusp_neighborhood_tie(
     int                 cusp_index,
     Boolean             new_tie)
 {
-    Cusp    *cusp,
+    Vertex  *cusp,
             *other_cusp;
     Real  min_displacement;
 
@@ -1302,8 +1302,8 @@ void set_cusp_neighborhood_tie(
 
         min_displacement = REAL_MAX;
 
-        for (other_cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-             other_cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+        for (other_cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+             other_cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
              other_cusp = other_cusp->next)
 
             if (other_cusp->is_tied && other_cusp->displacement < min_displacement)
@@ -1314,8 +1314,8 @@ void set_cusp_neighborhood_tie(
          *  . . . and set all tied cusps to that minimum value.
          */
 
-        for (other_cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-             other_cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+        for (other_cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+             other_cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
              other_cusp = other_cusp->next)
 
             if (other_cusp->is_tied)
@@ -1348,13 +1348,13 @@ void set_cusp_neighborhood_tie(
 static void initialize_cusp_ties(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  Initially no cusps are tied . . .
      */
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
 
         cusp->is_tied = FALSE;
@@ -1427,7 +1427,7 @@ static void compute_cusp_nbhd_positions(
     int             c, h;
     VertexIndex     v;
     int             max_triangles;
-    Cusp            *cusp;
+    Vertex          *cusp;
     Complex         (*x)[4][4],
                     *translation;
     Boolean         (*in_use)[4];
@@ -1501,7 +1501,7 @@ static void compute_cusp_nbhd_positions(
      *  Compute the meridional and longitudinal translation on each
      *  cusp cross section.  For Klein bottle cusps, the longitude
      *  will actually be that of the double cover.  The translations
-     *  are stored in the Cusp data structure as translation[M] and
+     *  are stored in the Vertex data structure as translation[M] and
      *  translation[L].
      */
 
@@ -1536,8 +1536,8 @@ static void compute_cusp_nbhd_positions(
      *  Initialize all translations to (0.0, 0.0), and then . . .
      */
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
 
         for (c = 0; c < 2; c++)
@@ -1622,8 +1622,8 @@ static void compute_cusp_nbhd_positions(
      *  and use it to rotate the meridian and longitude.
      */
 
-    for (cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
-         cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
+    for (cusp = cusp_neighborhoods->its_triangulation->vertex_list_begin.next;
+         cusp != &cusp_neighborhoods->its_triangulation->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->scratch = cusp->translation[L];
@@ -1947,7 +1947,7 @@ void get_cusp_neighborhood_translations(
     Complex             *meridian,
     Complex             *longitude)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 
@@ -1960,7 +1960,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
-    Cusp                *cusp;
+    Vertex              *cusp;
     CuspNbhdSegmentList *theSegmentList;
     CuspNbhdSegment     *next_segment;
     Tetrahedron         *tet,
@@ -1978,7 +1978,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
     number_the_edge_classes(cusp_neighborhoods->its_triangulation);
     
     /*
-     *  Find the requested Cusp.
+     *  Find the requested Vertex.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 
@@ -2119,11 +2119,11 @@ CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
     Boolean             full_list,
     Real              cutoff_height)
 {
-    Cusp                    *cusp;
+    Vertex                  *cusp;
     CuspNbhdHoroballList    *theHoroballList;
 
     /*
-     *  Find the requested Cusp.
+     *  Find the requested Vertex.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 
@@ -2163,7 +2163,7 @@ CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
 
 static CuspNbhdHoroballList *get_quick_horoball_list(
     CuspNeighborhoods   *cusp_neighborhoods,
-    Cusp                *cusp)
+    Vertex              *cusp)
 {
     CuspNbhdHoroballList    *theHoroballList;
     CuspNbhdHoroball        *next_horoball;
@@ -2255,7 +2255,7 @@ static CuspNbhdHoroballList *get_quick_horoball_list(
 
 static void get_quick_edge_horoballs(
     Triangulation       *manifold,
-    Cusp                *cusp,
+    Vertex              *cusp,
     CuspNbhdHoroball    **next_horoball)
 {
     EdgeClass               *edge;
@@ -2334,7 +2334,7 @@ static void get_quick_edge_horoballs(
 
 static void get_quick_face_horoballs(
     Triangulation       *manifold,
-    Cusp                *cusp,
+    Vertex              *cusp,
     CuspNbhdHoroball    **next_horoball)
 {
     /*
@@ -2565,7 +2565,7 @@ static void get_quick_face_horoballs(
 
 static CuspNbhdHoroballList *get_full_horoball_list(
     CuspNeighborhoods   *cusp_neighborhoods,
-    Cusp                *cusp,
+    Vertex              *cusp,
     Real              cutoff_height)
 {
     /*
@@ -2877,7 +2877,7 @@ static void compute_exp_min_d(
      *  in Lemma 4 of get_full_horoball_list().
      */
 
-    Cusp        *cusp;
+    Vertex      *cusp;
     EdgeClass   *edge;
     Real      exp_d;
     VertexIndex v[2];
@@ -2887,8 +2887,8 @@ static void compute_exp_min_d(
      *  Initialize all exp_min_d's to infinity.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cusp->exp_min_d = REAL_MAX;
@@ -2954,7 +2954,7 @@ static void compute_parallelogram_to_square(
 
 static void read_initial_tetrahedra(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     TilingQueue     *tiling_queue,
     TilingTet       **tiling_tree_root,
     TilingHoroball  **horoball_linked_list,
@@ -3792,7 +3792,7 @@ static int compare_horoballs(
 }
 
 static void cull_duplicate_horoballs(
-    Cusp                    *cusp,
+    Vertex                  *cusp,
     CuspNbhdHoroballList    *aHoroballList)
 {
     int     original_num_horoballs,
@@ -3901,7 +3901,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
-    Cusp                *cusp;
+    Vertex              *cusp;
     CuspNbhdSegmentList *theSegmentList;
     CuspNbhdSegment     *next_segment;
     Tetrahedron         *tet,
@@ -3932,7 +3932,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
                         det;
 
     /*
-     *  Find the requested Cusp.
+     *  Find the requested Vertex.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 

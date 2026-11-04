@@ -16,12 +16,12 @@ extern SolutionType orb_find_hyperbolic_structure(
     Boolean        manual);
 /**< Try to find Vertex Gram matrices yielding a geometric structure on
  *   the orbifold. Stores associated data in Tetrahedron::orb_tet_shape,
- *   EdgeClass::orb_edge_shape and Cusp::orb_cusp_shape.
+ *   EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape.
  *   Requires that cusps have been created, their Euler characteristics
  *   computed and orientabilities (e.g., through
  *   compute_cusp_Euler_characteristics and
  *   compute_cusp_orientabilities or peripheral_curves, respectively)
- *   and Cusp::[num_]incident_singular_edges populated (if there
+ *   and Vertex::[num_]incident_singular_edges populated (if there
  *   any singular edges, e.g., through
  *   orb_cusps_fill_incident_singular_edges.
  *   Records solution type in Triangulation::orb_solution_type[filled].
@@ -30,7 +30,7 @@ extern SolutionType orb_find_hyperbolic_structure(
 extern void orb_remove_hyperbolic_structure(
     Triangulation *manifold);
 /**< Frees and resets pointers Tetrahedron::orb_tet_shape,
- *   EdgeClass::orb_edge_shape and Cusp::orb_cusp_shape and resets
+ *   EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape and resets
  *   Triangulation::orb_solution_type to not_attempted.
  */
 
@@ -77,7 +77,7 @@ extern void orb_get_vertex_info(
  *  Retrieve info for each vertex/cusp by index into the linked
  *  list.
  *
- *  It may report the corresponding Cusp::index, whether the vertex
+ *  It may report the corresponding Vertex::index, whether the vertex
  *  is a finite vertex, its CuspTopology, whether the cusp is
  *  orientable, its Euler characteristic, its orbifold Euler
  *  characteristic, the number of incident singular edges, the

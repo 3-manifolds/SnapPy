@@ -62,7 +62,7 @@ typedef struct ComplexWithLog   ComplexWithLog;
 typedef struct TetShape         TetShape;
 typedef struct Tetrahedron      Tetrahedron;
 typedef struct EdgeClass        EdgeClass;
-typedef struct Cusp             Cusp;
+typedef struct Vertex           Vertex;
 typedef struct OrbTetShape      OrbTetShape;
 typedef struct OrbEdgeShape     OrbEdgeShape;
 typedef struct OrbCuspShape     OrbCuspShape;
@@ -138,7 +138,7 @@ struct Tetrahedron
 {
     Tetrahedron         *neighbor[4];       /**< kernel_typedefs.h                        */
     Permutation         gluing[4];          /**< kernel_typedefs.h                        */
-    Cusp                *cusp[4];           /**< the cusp containing each vertex          */
+    Vertex              *cusp[4];           /**< the cusp containing each vertex          */
     int                 curve[2][2][4][4];  /**< peripheral_curves.c                      */
     int                 scratch_curve[2][2][2][4][4]; /**< intersection_numbers.c (local) */
     EdgeClass           *edge_class[6];     /**< edge_classes.c                           */
@@ -196,7 +196,7 @@ struct EdgeClass
     EdgeClass           *next;              /**<   next   EdgeClass on doubly linked list       */
 };
 
-struct Cusp
+struct Vertex
 {
     /*
      * 2026/06/01 MG:
@@ -211,7 +211,7 @@ struct Cusp
                                                  *   Computed by compute_cusp_orientabilities
                                                  *   or peripheral_curves (if Euler
                                                  *   characteristic is zero).
-                                                 *   Code that builds a Cusp itself rather
+                                                 *   Code that builds a Vertex itself rather
                                                  *   than calling create_cusps/create_one_cusp
                                                  *   has to also set this field itself.
                                                  *   For example, data_to_triangulation
@@ -224,7 +224,7 @@ struct Cusp
                                                  *   compute_cusp_Euler_characteristics.
                                                  *   Similar remarks to the ones about
                                                  *   orientability apply to code building
-                                                 *   a Cusp itself.                       */
+                                                 *   a Vertex itself.                       */
     Boolean             is_complete;            /**< is the cusp currently unfilled?      */
     Real                m,                      /**< Dehn filling coefficient             */
                         l;                      /**< Dehn filling coefficient             */
@@ -250,7 +250,7 @@ struct Cusp
                         displacement_exp,       /**< cusp_neighborhoods.c (used globally) */
                         reach,                  /**< cusp_neighborhoods.c (local)         */
                         stopping_displacement;  /**< cusp_neighborhoods.c (local)         */
-    Cusp                *stopper_cusp;          /**< cusp_neighborhoods.c (local)         */
+    Vertex              *stopper_cusp;          /**< cusp_neighborhoods.c (local)         */
     Boolean             is_tied;                /**< cusp_neighborhoods.c (local)         */
     Complex             translation[2],         /**< cusp_neighborhoods.c (local)         */
                         scratch;                /**< cusp_neighborhoods.c (local)         */
@@ -259,11 +259,11 @@ struct Cusp
     VertexIndex         basepoint_vertex;       /**< fundamental_group.c (semi-local)     */
     Orientation         basepoint_orientation;  /**< fundamental_group.c (semi-local)     */
     int                 intersection_number[2][2]; /**< intersection_numbers.c (local)    */
-    Cusp                *matching_cusp;         /**< subdivide.c, finite_vertices.c,      */
+    Vertex              *matching_cusp;         /**< subdivide.c, finite_vertices.c,      */
                                                 /**<  cover.c, normal_surface_splitting.c */
                                                 /**<  (used locally)                      */
-    Cusp                *prev;                  /**< previous Cusp on doubly linked list  */
-    Cusp                *next;                  /**<   next   Cusp on doubly linked list  */
+    Vertex              *prev;                  /**< previous Vertex on doubly linked list  */
+    Vertex              *next;                  /**<   next   Vertex on doubly linked list  */
 };
 
 struct Triangulation
@@ -290,8 +290,8 @@ struct Triangulation
                         tet_list_end;   /**< tailer node for doubly linked list of Tetrahedra */
     EdgeClass           edge_list_begin,/**< header node for doubly linked list of Edges      */
                         edge_list_end;  /**< tailer node for doubly linked list of Edges      */
-    Cusp                cusp_list_begin,/**< header node for doubly linked list of Cusps      */
-                        cusp_list_end;  /**< tailer node for doubly linked list of Cusps      */
+    Vertex              vertex_list_begin,/**< header node for doubly linked list of Vertices   */
+                        vertex_list_end;  /**< tailer node for doubly linked list of Vertices   */
 };
 
 SNAPPEA_NAMESPACE_END_SCOPE

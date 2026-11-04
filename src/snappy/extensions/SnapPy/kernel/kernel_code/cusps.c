@@ -5,14 +5,14 @@
  *
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
- *      Boolean is_cusp_real(const Cusp * cusp);
+ *      Boolean is_cusp_real(const Vertex * cusp);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
  *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
- *      CuspTopology get_cusp_topology(const Cusp * cusp);
- *      void    set_cusp_topology(Cusp * cusp, CuspTopology topology);
+ *      CuspTopology get_cusp_topology(const Vertex * cusp);
+ *      void    set_cusp_topology(Vertex * cusp, CuspTopology topology);
  *
- *  create_cusps() is used within the kernel to assign Cusp data
+ *  create_cusps() is used within the kernel to assign Vertex data
  *  structures to Triangulations.  It assumes the neighbor and gluing
  *  fields have been set (all other fields are optional).  It assigns
  *  cusp indices, but does not install peripheral curves, determine
@@ -21,13 +21,13 @@
  *  the CuspTopologies, then call count_cusps() to set num_cusps,
  *  num_or_cusps and num_nonor_cusps.
  *
- *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Cusp data
+ *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Vertex data
  *  structures to the "fake cusps" corresponding to finite vertices.
  *  It assumes fake cusps are indicated by tet->cusp[v] fields of NULL.
  *  The fake cusps are numbered -1, -2, etc.  As explained in the
  *  documentation at the top of finite_vertices.c, finite vertices use
  *  only the orientability, Euler characteristic, index, prev and next
- *  fields of the Cusp data structure.  create_cusps_and_mark_finite_as_needed() does not
+ *  fields of the Vertex data structure.  create_cusps_and_mark_finite_as_needed() does not
  *  disturb the real cusps or the non-NULL tet->cusp[v] fields.
  *
  *  count_cusps() counts the Cusps of each CuspTopology, and sets
@@ -81,7 +81,7 @@ void create_cusps(
 
     /*
      *  The variable "count" will keep track of the next index
-     *  to be assigned.  The first Cusp we create will have
+     *  to be assigned.  The first Vertex we create will have
      *  index 0, the next will have 1, and so on.
      */
 
@@ -89,7 +89,7 @@ void create_cusps(
 
     /*
      *  We look at each vertex of each Tetrahedron, and whenever we
-     *  encounter a vertex with no assigned Cusp, we create a Cusp
+     *  encounter a vertex with no assigned Vertex, we create a Vertex
      *  for it and recursively assign it to neighboring ideal vertices.
      */
 
@@ -101,7 +101,7 @@ void create_cusps(
 
             if (tet->cusp[v] == NULL)
             {
-                Cusp * cusp = create_one_cusp(manifold, tet, v);
+                Vertex * cusp = create_one_cusp(manifold, tet, v);
                 cusp->cusp_index = count++;
             }
 }
@@ -116,7 +116,7 @@ void error_check_for_create_cusps(
     if (manifold->num_cusps         != 0
      || manifold->num_or_cusps      != 0
      || manifold->num_nonor_cusps   != 0
-     || manifold->cusp_list_begin.next != &manifold->cusp_list_end)
+     || manifold->vertex_list_begin.next != &manifold->vertex_list_end)
 
         uFatalError("error_check_for_create_cusps", "cusps");
 
@@ -150,7 +150,7 @@ void create_cusps_and_mark_finite_as_needed(
 
     /*
      *  We look at each vertex of each Tetrahedron, and whenever we
-     *  encounter an ideal vertex with no assigned Cusp, we create a Cusp
+     *  encounter an ideal vertex with no assigned Vertex, we create a Vertex
      *  for it and assign it recursively to neighboring ideal vertices.
      */
 
@@ -162,19 +162,19 @@ void create_cusps_and_mark_finite_as_needed(
 
             if (tet->cusp[v] == NULL)
             {
-                Cusp * cusp = create_one_cusp(manifold, tet, v);
+                Vertex * cusp = create_one_cusp(manifold, tet, v);
                 cusp->cusp_index = --count;
                 set_cusp_topology(cusp, sphere_cusp);
             }
 }
 
 
-Cusp * create_one_cusp(
+Vertex * create_one_cusp(
     Triangulation   *manifold,
     Tetrahedron     *tet,
     VertexIndex     v)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     IdealVertex *queue;
     int         queue_first,
                 queue_last;
@@ -189,9 +189,9 @@ Cusp * create_one_cusp(
      *  the is_finite and index fields.
      */
 
-    cusp = NEW_STRUCT(Cusp);
+    cusp = NEW_STRUCT(Vertex);
     initialize_cusp(cusp);
-    INSERT_BEFORE(cusp, &manifold->cusp_list_end);
+    INSERT_BEFORE(cusp, &manifold->vertex_list_end);
 
     /*
      *  We don't set the euler_characteristic, orientability,
@@ -333,7 +333,7 @@ void compute_cusp_orientabilities(
     CuspTriangle * queue = NEW_ARRAY(4 * manifold->num_tetrahedra, CuspTriangle);
 
     /*
-     *  For each CuspTriangle corresponding to a Cusp with unknown
+     *  For each CuspTriangle corresponding to a Vertex with unknown
      *  orientability...
      */
 
@@ -342,7 +342,7 @@ void compute_cusp_orientabilities(
          initial_tet = initial_tet->next)
         for (VertexIndex initial_v = 0; initial_v < 4; initial_v++)
         {
-            Cusp * cusp = initial_tet->cusp[initial_v];
+            Vertex * cusp = initial_tet->cusp[initial_v];
             if (cusp->orientability != unknown_cusp_orientability)
                 continue;
 
@@ -452,7 +452,7 @@ void compute_cusp_orientabilities(
 }
 
 Boolean is_cusp_real(
-    const Cusp      *cusp)
+    const Vertex    *cusp)
 {
     if (cusp->euler_characteristic > 2)
         uFatalError("is_cusp_real", "cusps.c");
@@ -470,8 +470,8 @@ void count_cusps(
     manifold->num_nonor_cusps   = 0;
     manifold->num_fake_cusps    = 0;
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         if (is_cusp_real(cusp)) {
             manifold->num_cusps++;
@@ -496,8 +496,8 @@ void index_real_and_fake_cusps(
     int real_cusp_count = 0;
     int fake_cusp_count = 0;
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (is_cusp_real(cusp))
@@ -509,7 +509,7 @@ void index_real_and_fake_cusps(
 void compute_cusp_Euler_characteristics(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     EdgeClass   *edge;
     Tetrahedron *tet;
     VertexIndex v,
@@ -520,8 +520,8 @@ void compute_cusp_Euler_characteristics(
      *  Initialize all Euler characteristics to zero.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cusp->euler_characteristic = 0;
@@ -578,8 +578,8 @@ void compute_cusp_Euler_characteristics(
      *  Divide by two (cf. above).
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         if (cusp->euler_characteristic % 2 != 0)
@@ -589,7 +589,7 @@ void compute_cusp_Euler_characteristics(
 }
 
 CuspTopology get_cusp_topology(
-    const Cusp * cusp)
+    const Vertex * cusp)
 {
     switch(cusp->euler_characteristic) {
     case 2:
@@ -640,7 +640,7 @@ CuspTopology get_cusp_topology(
     }
 }
 
-void set_cusp_topology(Cusp * cusp, CuspTopology topology)
+void set_cusp_topology(Vertex * cusp, CuspTopology topology)
 {
     switch (topology) {
     case sphere_cusp:

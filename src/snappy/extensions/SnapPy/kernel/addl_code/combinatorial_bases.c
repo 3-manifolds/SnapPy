@@ -41,7 +41,7 @@ void install_combinatorial_bases( Triangulation *manifold,
                                   MatrixInt22   *matrices )
 {
   int i, j, n;
-  Cusp *cusp;
+  Vertex *cusp;
   MatrixInt22 intersections;
 
   /* Hopefully this will do the right thing if the cusp is a Klein bottle. */
@@ -52,8 +52,8 @@ void install_combinatorial_bases( Triangulation *manifold,
   /* Compute the intersection numbers for the two scratch curves. */
   compute_intersection_numbers(manifold);
   /* Save the intersection numbers in the array of matrices. */
-  for (cusp = manifold->cusp_list_begin.next;
-       cusp != &manifold->cusp_list_end;
+  for (cusp = manifold->vertex_list_begin.next;
+       cusp != &manifold->vertex_list_end;
        cusp = cusp->next)
     {
     for (i = 0; i < 2; i++)     /* i = M, L */
@@ -70,9 +70,9 @@ void install_combinatorial_bases( Triangulation *manifold,
 void reindex_cusps(Triangulation   *manifold,
 		   int *indices)
 {
-    Cusp    *cusp;
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    Vertex  *cusp;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
       cusp->cusp_index = indices[cusp->cusp_index];
@@ -83,7 +83,7 @@ void install_shortest_with_matrices(
      Triangulation   *manifold,
      MatrixInt22     *change_matrices)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i,
                 j;
 
@@ -91,8 +91,8 @@ void install_shortest_with_matrices(
      *  Compute the change of basis matrices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if ( get_cusp_topology(cusp) == torus_cusp && cusp->is_complete )

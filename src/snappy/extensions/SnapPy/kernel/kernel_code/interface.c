@@ -155,7 +155,7 @@ int get_num_fake_cusps(
 int get_max_singularity(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
     int     m,
             l,
             singularity,
@@ -163,8 +163,8 @@ int get_max_singularity(
 
     max_singularity = 1;
 
-    for (   cusp = manifold->cusp_list_begin.next;
-            cusp != &manifold->cusp_list_end;
+    for (   cusp = manifold->vertex_list_begin.next;
+            cusp != &manifold->vertex_list_end;
             cusp = cusp->next)
     {
         if (cusp->is_complete == FALSE)
@@ -208,7 +208,7 @@ void get_cusp_info(
     Complex         *initial_modulus,
     Complex         *current_modulus)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
 
@@ -269,7 +269,7 @@ FuncResult set_cusp_info(
     Real            m,
     Real            l)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
     /* MC 2008-09-30 */
@@ -329,7 +329,7 @@ void get_holonomy(
     int             *meridional_precision,
     int             *longitudinal_precision)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
 

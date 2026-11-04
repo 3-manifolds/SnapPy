@@ -18,7 +18,7 @@
  *
  *  Even if the manifold isn't oriented, the peripheral curves
  *  adhere to the standard orientation convention relative to
- *  the orientation of each Cusp's orientation double cover (more
+ *  the orientation of each Vertex's orientation double cover (more
  *  on this below).
  *
  *  peripheral_curves() does not need to know the cusp orientability
@@ -317,9 +317,9 @@ static void             zero_peripheral_curves(Triangulation *manifold);
 static void             attach_extra(Triangulation *manifold);
 static void             free_extra(Triangulation *manifold);
 static void             initialize_flags(Triangulation *manifold);
-static Boolean          cusp_has_curves(Triangulation *manifold, Cusp *cusp);
-static void             do_one_cusp(Triangulation *manifold, Cusp *cusp);
-static void             pick_base_tet(Triangulation *manifold, Cusp *cusp, Tetrahedron **base_tet, VertexIndex *base_vertex);
+static Boolean          cusp_has_curves(Triangulation *manifold, Vertex *cusp);
+static void             do_one_cusp(Triangulation *manifold, Vertex *cusp);
+static void             pick_base_tet(Triangulation *manifold, Vertex *cusp, Tetrahedron **base_tet, VertexIndex *base_vertex);
 static void             set_up_perimeter(Tetrahedron *base_tet, VertexIndex base_vertex, PerimeterPiece **perimeter_anchor);
 static void             expand_perimeter(PerimeterPiece *perimeter_anchor);
 static void             find_mates(PerimeterPiece *perimeter_anchor);
@@ -345,8 +345,8 @@ void peripheral_curves(
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         if (is_cusp_real(cusp))
             do_one_cusp(manifold, cusp);
@@ -367,8 +367,8 @@ void peripheral_curves_as_needed(
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (is_cusp_real(cusp)
@@ -465,7 +465,7 @@ static void initialize_flags(
 
 static Boolean cusp_has_curves(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Tetrahedron     *tet;
     int             c, h;
@@ -498,7 +498,7 @@ static Boolean cusp_has_curves(
 
 static void do_one_cusp(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Tetrahedron     *base_tet = NULL;
     VertexIndex     base_vertex = 0;
@@ -518,7 +518,7 @@ static void do_one_cusp(
 
 static void pick_base_tet(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Tetrahedron     **base_tet,
     VertexIndex     *base_vertex)
 {
@@ -1279,15 +1279,15 @@ static void adjust_Klein_cusp_orientations(
     Triangulation   *manifold)
 {
     /*
-     *  As explained at the top of this file, a Cusp's peripheral curves
+     *  As explained at the top of this file, a Vertex's peripheral curves
      *  live in the its orientation double cover.  When I first wrote this
      *  file, I didn't worry about the orientation of peripheral curves
      *  in nonorientable manifolds.  Subsequently it became clear that
-     *  they should have the standard orientation relative to the Cusp's
+     *  they should have the standard orientation relative to the Vertex's
      *  (oriented, not just orientable) orientation double cover.  In
-     *  the case of a torus Cusp, the peripheral curves live in one
+     *  the case of a torus Vertex, the peripheral curves live in one
      *  (arbitrarily chosen) component of the orientation double cover;
-     *  in the case of a Klein bottle Cusp, the orientation double cover
+     *  in the case of a Klein bottle Vertex, the orientation double cover
      *  is connected.
      *
      *  Fortunately, it's very easy to check whether the peripheral curves
@@ -1307,7 +1307,7 @@ static void adjust_Klein_cusp_orientations(
     /*
      *  If the manifold is oriented, then the peripheral curves will
      *  already have the correct orientation.  In fact, they will lie
-     *  on the right handed sheet of the Cusp's orientation double
+     *  on the right handed sheet of the Vertex's orientation double
      *  cover, relative to the orientation of the manifold.
      */
     if (manifold->orientability == oriented_manifold)

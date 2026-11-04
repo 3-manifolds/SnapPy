@@ -52,7 +52,7 @@ FuncResult change_peripheral_curves_nonorientable(
 
     Boolean     *change_orientation;
     MatrixInt22 *new_change_matrices;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         det, r;
     int         i, j, k;
@@ -72,8 +72,8 @@ FuncResult change_peripheral_curves_nonorientable(
      * change_orientation whether the determinant is -1.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next) {
         
         det = DET2(change_matrices[cusp->cusp_index]);
@@ -118,8 +118,8 @@ FuncResult change_peripheral_curves_nonorientable(
             for (k = 0; k < 2; k++)
                 new_change_matrices[i][j][k] = change_matrices[i][j][k];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         /*

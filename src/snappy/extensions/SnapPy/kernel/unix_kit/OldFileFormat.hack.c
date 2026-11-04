@@ -117,7 +117,7 @@ FuncResult read_the_file(
 	Tetrahedron		**tal,	/* tetrahedron address list */
 	                         *tet;
 	EdgeClass		**eal;	/* edge class address list	*/
-	Cusp			**cal;	/* cusp address list		*/
+	Vertex			**cal;	/* cusp address list		*/
 
 	*manifold_ptr = NULL;	/* just in case anything goes wrong . . . */
 
@@ -159,13 +159,13 @@ FuncResult read_the_file(
 	if (manifold->num_cusps > 2 * manifold->num_tetrahedra)
 		goto bail;
 
-	cal = NEW_ARRAY(manifold->num_cusps, Cusp *);
+	cal = NEW_ARRAY(manifold->num_cusps, Vertex *);
 	for (count = 0; count < manifold->num_cusps; count++)
 	{
-		cal[count] = NEW_STRUCT(Cusp);
+		cal[count] = NEW_STRUCT(Vertex);
 		initialize_cusp(cal[count]);
 		cal[count]->cusp_index = count;
-		INSERT_BEFORE(cal[count], &manifold->cusp_list_end);
+		INSERT_BEFORE(cal[count], &manifold->vertex_list_end);
 		set_cusp_topology(
 		    cal[count],
 		    (count < manifold->num_nonor_cusps) ? Klein_cusp : torus_cusp);
@@ -264,7 +264,7 @@ static void fix_orientation(
 	Triangulation *manifold)
 {
 	int			standard;
-	Cusp		*cusp;
+	Vertex		*cusp;
 	Tetrahedron	*tet;
 	int			i, j, k;
 
@@ -275,9 +275,9 @@ static void fix_orientation(
 	/*
 	 *	All the intersection numbers ought to be the same.
 	 */
-	standard = manifold->cusp_list_begin.next->intersection_number[L][M];
-	for (cusp = manifold->cusp_list_begin.next;
-		 cusp != &manifold->cusp_list_end;
+	standard = manifold->vertex_list_begin.next->intersection_number[L][M];
+	for (cusp = manifold->vertex_list_begin.next;
+		 cusp != &manifold->vertex_list_end;
 		 cusp = cusp->next)
 		if (cusp->intersection_number[L][M] != standard)
 			uFatalError("fix_orientation", "OldFileFormat.hack");

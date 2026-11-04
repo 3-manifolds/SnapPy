@@ -54,7 +54,7 @@ Triangulation *double_cover(
     /*
      *  Lift the peripheral curves to the double cover.
      *  The lifted {meridian, longitude} will adhere to the right hand
-     *  rule relative to the local orientation on each Cusp's double
+     *  rule relative to the local orientation on each Vertex's double
      *  cover (cf. peripheral_curves.c).  The manifold does not yet
      *  have a global orientation.
      */
@@ -354,7 +354,7 @@ static void set_cusp_data(
      *  cusp in the original manifold) may swap indices many times during
      *  this redundant procedure, as their indices get overwritten.
      *
-     *  While we're here, let's set the topology of each Cusp to torus_cusp.
+     *  While we're here, let's set the topology of each Vertex to torus_cusp.
      */
 
     for (old_tet = manifold->tet_list_begin.next, i = 0;

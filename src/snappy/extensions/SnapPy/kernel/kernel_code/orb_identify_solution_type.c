@@ -202,8 +202,8 @@ static Boolean orb_solution_is_geometric(
 static Boolean orb_solution_is_invalid(
     Triangulation *manifold)
 {
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         Real orbifold_euler_characteristic =

@@ -7,15 +7,15 @@
  *                Triangulation *manifold,
  *          CONST MatrixInt22   change_matrices[]);
  *
- *  If all the change_matrices (there should be one for each Cusp) have
- *  determinant +1, then on each Cusp change_peripheral_curves() replaces
+ *  If all the change_matrices (there should be one for each Vertex) have
+ *  determinant +1, then on each Vertex change_peripheral_curves() replaces
  *
  *  the meridian with   change_matrices[i][0][0] meridians plus
  *                      change_matrices[i][0][1] longitudes, and
  *  the longitude with  change_matrices[i][1][0] meridians plus
  *                      change_matrices[i][1][1] longitudes,
  *
- *  where i is the index of the Cusp.  It returns func_OK.
+ *  where i is the index of the Vertex.  It returns func_OK.
  *
  *  If some change_matrix has determinant != +1, change_peripheral_curves()
  *  returns func_bad_input.
@@ -36,7 +36,7 @@ FuncResult change_peripheral_curves(
     Real      old_m_coef, /* changed from int to Real, JRW 2000/01/18 */
                 old_l_coef;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Complex     old_Hm,
                 old_Hl;
 
@@ -53,8 +53,8 @@ FuncResult change_peripheral_curves(
      *  off-diagonal entries.  (Nothing else makes sense topologically.)
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (get_cusp_topology(cusp) == Klein_cusp)
@@ -152,8 +152,8 @@ FuncResult change_peripheral_curves(
      *                   + old_l_coef * change_matrices[i][0][0]
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_complete == FALSE)
@@ -180,8 +180,8 @@ FuncResult change_peripheral_curves(
      *  For complete Cusps the holonomies should be zero, but that's OK.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
@@ -216,8 +216,8 @@ FuncResult change_peripheral_curves(
      *  Update the cusp_shapes.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->cusp_shape[initial] = transformed_cusp_shape(

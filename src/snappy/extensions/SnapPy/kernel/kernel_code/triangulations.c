@@ -19,7 +19,7 @@
  *
  *      void    initialize_triangulation(Triangulation *manifold);
  *      void    initialize_tetrahedron(Tetrahedron *tet);
- *      void    initialize_cusp(Cusp *cusp);
+ *      void    initialize_cusp(Vertex *cusp);
  *      void    initialize_edge_class(EdgeClass *edge_class);
  *
  *  which kernel functions use to do generic initializations.  Much of
@@ -44,7 +44,7 @@
  *
  *      void free_tetrahedron(Tetrahedron *tet);
  *      void free_edge_class(EdgeClass *edge_class);
- *      void free_cusp(Cusp * cusp);
+ *      void free_cusp(Vertex * cusp);
  *
  *
  *  which frees a Tetrahedron and all attached data structures, but does NOT
@@ -75,7 +75,7 @@ void data_to_triangulation(
 
     Triangulation   *manifold;
     Tetrahedron     **tet_array;
-    Cusp            **cusp_array;
+    Vertex          **cusp_array;
     Boolean         cusps_are_given;
     int             i,
                     j,
@@ -146,12 +146,12 @@ void data_to_triangulation(
     cusps_are_given = (data->num_or_cusps != 0) || (data->num_nonor_cusps != 0);
     if (cusps_are_given == TRUE)
     {
-        cusp_array = NEW_ARRAY(manifold->num_cusps, Cusp *);
+        cusp_array = NEW_ARRAY(manifold->num_cusps, Vertex *);
         for (i = 0; i < manifold->num_cusps; i++)
         {
-            cusp_array[i] = NEW_STRUCT(Cusp);
+            cusp_array[i] = NEW_STRUCT(Vertex);
             initialize_cusp(cusp_array[i]);
-            INSERT_BEFORE(cusp_array[i], &manifold->cusp_list_end);
+            INSERT_BEFORE(cusp_array[i], &manifold->vertex_list_end);
         }
     }
     else
@@ -236,7 +236,7 @@ void data_to_triangulation(
         
         /*
          *  If finite vertices are present they will be marked with NULL.
-         *  Assign Cusp structures.
+         *  Assign Vertex structures.
          */
         if (finite_vertices_are_present == TRUE)
             create_cusps_and_mark_finite_as_needed(manifold);
@@ -353,7 +353,7 @@ void triangulation_to_data(
      */
 
     TriangulationData   *data;
-    Cusp                *cusp;
+    Vertex              *cusp;
     Tetrahedron         *tet;
     int                 i,
                         j,
@@ -458,7 +458,7 @@ void free_triangulation(
 {
     Tetrahedron *dead_tet;
     EdgeClass   *dead_edge;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
 
     if (manifold != NULL)
     {
@@ -479,9 +479,9 @@ void free_triangulation(
             free_edge_class(dead_edge);
         }
 
-        while (manifold->cusp_list_begin.next != &manifold->cusp_list_end)
+        while (manifold->vertex_list_begin.next != &manifold->vertex_list_end)
         {
-            dead_cusp = manifold->cusp_list_begin.next;
+            dead_cusp = manifold->vertex_list_begin.next;
             REMOVE_NODE(dead_cusp);
             free_cusp(dead_cusp);
         }
@@ -534,7 +534,7 @@ void free_edge_class(
     my_free(edge_class);
 }
 
-void free_cusp(Cusp * cusp)
+void free_cusp(Vertex * cusp)
 {
     if (cusp->orb_cusp_shape != NULL)
         my_free(cusp->orb_cusp_shape);
@@ -574,10 +574,10 @@ void copy_triangulation(
     Triangulation   *destination;
     Tetrahedron     **new_tet;
     EdgeClass       **new_edge;
-    Cusp            **new_cusp;
+    Vertex          **new_cusp;
     Tetrahedron     *tet;
     EdgeClass       *edge;
-    Cusp            *cusp;
+    Vertex          *cusp;
     int             num_edge_classes,
                     min_cusp_index,
                     max_cusp_index,
@@ -624,10 +624,10 @@ void copy_triangulation(
     destination->edge_list_end.prev     = &destination->edge_list_begin;
     destination->edge_list_end.next     = NULL;
 
-    destination->cusp_list_begin.prev   = NULL;
-    destination->cusp_list_begin.next   = &destination->cusp_list_end;
-    destination->cusp_list_end.prev     = &destination->cusp_list_begin;
-    destination->cusp_list_end.next     = NULL;
+    destination->vertex_list_begin.prev   = NULL;
+    destination->vertex_list_begin.next   = &destination->vertex_list_end;
+    destination->vertex_list_end.prev     = &destination->vertex_list_begin;
+    destination->vertex_list_end.next     = NULL;
 
     /*
      *  Assign consecutive indices to source's Tetrahedra and EdgeClasses.
@@ -643,12 +643,12 @@ void copy_triangulation(
     num_edge_classes = count_the_edge_classes(source);
 
     /*
-     *  Find the largest and smallest Cusp indices.
+     *  Find the largest and smallest Vertex indices.
      */
-    min_cusp_index = source->cusp_list_begin.next->cusp_index;
-    max_cusp_index = source->cusp_list_begin.next->cusp_index;
-    for (   cusp = source->cusp_list_begin.next;
-            cusp != &source->cusp_list_end;
+    min_cusp_index = source->vertex_list_begin.next->cusp_index;
+    max_cusp_index = source->vertex_list_begin.next->cusp_index;
+    for (   cusp = source->vertex_list_begin.next;
+            cusp != &source->vertex_list_end;
             cusp = cusp->next)
     {
         if (cusp->cusp_index < min_cusp_index)
@@ -672,13 +672,13 @@ void copy_triangulation(
     for (i = 0; i < num_edge_classes; i++)
         new_edge[i] = NEW_STRUCT(EdgeClass);
 
-    new_cusp = NEW_ARRAY(num_potential_cusps, Cusp *);
+    new_cusp = NEW_ARRAY(num_potential_cusps, Vertex *);
     for (i = 0; i < num_potential_cusps; i++)
         new_cusp[i] = NULL;
-    for (cusp = source->cusp_list_begin.next;
-         cusp != &source->cusp_list_end;
+    for (cusp = source->vertex_list_begin.next;
+         cusp != &source->vertex_list_end;
          cusp = cusp->next)
-        new_cusp[cusp->cusp_index - min_cusp_index] = NEW_STRUCT(Cusp);
+        new_cusp[cusp->cusp_index - min_cusp_index] = NEW_STRUCT(Vertex);
 
     /*
      *  Copy the fields of each Tetrahedron in source
@@ -766,12 +766,12 @@ void copy_triangulation(
     }
 
     /*
-     *  Copy the fields of each Cusp in source
+     *  Copy the fields of each Vertex in source
      *  to the corresponding fields in new_cusp[i].
      */
 
-    for (cusp = source->cusp_list_begin.next;
-         cusp != &source->cusp_list_end;
+    for (cusp = source->vertex_list_begin.next;
+         cusp != &source->vertex_list_end;
          cusp = cusp->next)
     {
         /*
@@ -789,7 +789,7 @@ void copy_triangulation(
             *new_cusp[cusp->cusp_index - min_cusp_index]->orb_cusp_shape = *cusp->orb_cusp_shape;
         }
 
-        INSERT_BEFORE(new_cusp[cusp->cusp_index - min_cusp_index], &destination->cusp_list_end);
+        INSERT_BEFORE(new_cusp[cusp->cusp_index - min_cusp_index], &destination->vertex_list_end);
     }
 
     orb_cusps_fill_incident_singular_edges(destination);
@@ -861,13 +861,13 @@ void initialize_triangulation(
     manifold->edge_list_end.prev    = &manifold->edge_list_begin;
     manifold->edge_list_end.next    = NULL;
 
-    initialize_cusp(&manifold->cusp_list_begin);
-    initialize_cusp(&manifold->cusp_list_end);
+    initialize_cusp(&manifold->vertex_list_begin);
+    initialize_cusp(&manifold->vertex_list_end);
 
-    manifold->cusp_list_begin.prev  = NULL;
-    manifold->cusp_list_begin.next  = &manifold->cusp_list_end;
-    manifold->cusp_list_end.prev    = &manifold->cusp_list_begin;
-    manifold->cusp_list_end.next    = NULL;
+    manifold->vertex_list_begin.prev  = NULL;
+    manifold->vertex_list_begin.next  = &manifold->vertex_list_end;
+    manifold->vertex_list_end.prev    = &manifold->vertex_list_begin;
+    manifold->vertex_list_end.next    = NULL;
 }
 
 
@@ -922,7 +922,7 @@ void initialize_tetrahedron(
 
 
 void initialize_cusp(
-    Cusp    *cusp)
+    Vertex  *cusp)
 {
     /*
      * Pick values for orientability and euler_characteristic to indicate

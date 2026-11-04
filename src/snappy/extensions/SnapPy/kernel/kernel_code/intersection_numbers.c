@@ -108,7 +108,7 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 void compute_intersection_numbers(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         f,
                 g,
@@ -122,8 +122,8 @@ void compute_intersection_numbers(
      *  Initialize all the intersection numbers to zero.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = M, L */
@@ -247,7 +247,7 @@ void copy_curves_to_scratch(
     /*
      *  When computing intersection numbers on orientable cusps
      *  (especially in nonorientable manifolds) there is a danger that
-     *  scratch_curves[0] will lie on one sheet of the Cusp's orientation
+     *  scratch_curves[0] will lie on one sheet of the Vertex's orientation
      *  double cover while scratch_curves[1] lies on the other sheet.
      *  To avoid this danger, copy_curves_to_scratch() offers the
      *  option to copy the peripheral curves on orientable cusps to

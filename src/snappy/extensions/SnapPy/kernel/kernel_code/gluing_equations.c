@@ -47,7 +47,7 @@ static void initialize_gluing_equations(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i;
 
     /*
@@ -74,8 +74,8 @@ static void initialize_gluing_equations(
      *  Initialize cusp equations.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < manifold->num_tetrahedra; i++)
@@ -441,7 +441,7 @@ static void compute_rhs(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Complex     desired_holonomy,
                 current_holonomy,
                 rhs;
@@ -487,8 +487,8 @@ static void compute_rhs(
      *  Set the right hand side (rhs) of each cusp equation.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         /*

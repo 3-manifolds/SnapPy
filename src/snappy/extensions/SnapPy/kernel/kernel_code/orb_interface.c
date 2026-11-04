@@ -8,7 +8,7 @@
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static EdgeClass * orb_find_singular_edge(Triangulation *manifold, int singular_index);
-static Cusp * orb_find_vertex(Triangulation *manifold, int vertex_index);
+static Vertex * orb_find_vertex(Triangulation *manifold, int vertex_index);
 
 SolutionType orb_get_solution_type(
     Triangulation *manifold)
@@ -70,11 +70,11 @@ void orb_set_singular_edge_info(
     edge->orb_singular_order = singular_order;
 }
 
-static Cusp * orb_find_vertex(
+static Vertex * orb_find_vertex(
     Triangulation *manifold,
     int            vertex_index)
 {
-    Cusp * cusp = manifold->cusp_list_begin.next;
+    Vertex * cusp = manifold->vertex_list_begin.next;
     for (int i = 0; i < vertex_index; i++)
         cusp = cusp->next;
     return cusp;
@@ -93,7 +93,7 @@ void orb_get_vertex_info(
     Boolean         *is_finite_vertex,
     Real            *orbifold_euler_characteristic)
 {
-    Cusp * cusp = orb_find_vertex(manifold, vertex_index);
+    Vertex * cusp = orb_find_vertex(manifold, vertex_index);
 
     if (cusp_index != NULL)
         *cusp_index = cusp->cusp_index;

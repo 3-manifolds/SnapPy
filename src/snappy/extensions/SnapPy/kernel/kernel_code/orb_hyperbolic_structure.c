@@ -68,8 +68,8 @@ static void initialize_shapes(
         if (edge->orb_edge_shape == NULL)
             edge->orb_edge_shape = NEW_STRUCT(OrbEdgeShape);
 
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         if (cusp->orb_cusp_shape == NULL)
         {
@@ -236,7 +236,7 @@ static void my_copy_solution(
 {
     EdgeClass   *edge;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         to, from, i;
 
     /*
@@ -277,8 +277,8 @@ static void my_copy_solution(
         }
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->orb_cusp_shape->inner_product[to] = cusp->orb_cusp_shape->inner_product[from];
@@ -317,11 +317,11 @@ static FuncResult initialize_settings(
 {
     EdgeClass   *edge;
     Tetrahedron *tet;
-    Cusp        *cusp, *top, *bottom;
+    Vertex      *cusp, *top, *bottom;
     int         i, j;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         for (i = 0; i < 2 && !use_previous_solution; i++)
             cusp->orb_cusp_shape->inner_product[i] = 0.5;
@@ -375,8 +375,8 @@ static FuncResult initialize_settings(
          tet = tet->next)
         tet->orb_tet_shape->column_index = index++;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orb_cusp_shape->column_index = index++;
 
@@ -561,7 +561,7 @@ static void copy_penultimate_to_ultimate(
     Triangulation *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         i, j;
 
@@ -570,8 +570,8 @@ static void copy_penultimate_to_ultimate(
          edge = edge->next)
         edge->orb_edge_shape->inner_product[ultimate] = edge->orb_edge_shape->inner_product[penultimate];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orb_cusp_shape->inner_product[ultimate] = cusp->orb_cusp_shape->inner_product[penultimate];
 
@@ -619,7 +619,7 @@ static void allocate_equations(
     Tetrahedron *tet;
     EdgeClass   *edge;
     int         i;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     *num_rows = 0;
     *num_columns = 0;
@@ -643,8 +643,8 @@ static void allocate_equations(
 
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         *num_columns += 1;
 
@@ -748,7 +748,7 @@ static FuncResult update_inner_products(
     int           num_columns)
 {
     EdgeClass   *edge;
-    Cusp        *cusp, *top, *bottom;
+    Vertex      *cusp, *top, *bottom;
     Real        max, step_size;
     int         i;
     Tetrahedron *tet;
@@ -759,8 +759,8 @@ static FuncResult update_inner_products(
          edge = edge->next)
         edge->orb_edge_shape->inner_product[penultimate] = edge->orb_edge_shape->inner_product[ultimate];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orb_cusp_shape->inner_product[penultimate] = cusp->orb_cusp_shape->inner_product[ultimate];
 
@@ -798,8 +798,8 @@ static FuncResult update_inner_products(
         tet->orb_tet_shape->orientation_parameter[ultimate] += delta[tet->orb_tet_shape->column_index];
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next) {
         if (max > MAX_STEP)
             delta[cusp->orb_cusp_shape->column_index] *= MAX_STEP / max;
@@ -853,8 +853,8 @@ static FuncResult update_inner_products(
                 tet->orb_tet_shape->use_orientation_parameter[ultimate][i] = tet->orb_tet_shape->use_orientation_parameter[penultimate][i];
         }
 
-        for (cusp = manifold->cusp_list_begin.next;
-             cusp != &manifold->cusp_list_end;
+        for (cusp = manifold->vertex_list_begin.next;
+             cusp != &manifold->vertex_list_end;
              cusp = cusp->next)
             cusp->orb_cusp_shape->inner_product[ultimate] =
                 cusp->orb_cusp_shape->inner_product[penultimate]
@@ -892,7 +892,7 @@ static FuncResult update_Gram_matrices(
     Tetrahedron *tet;
     int         i, j;
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Real        v, v1, v2, w, w1, w2, t, det;
     Boolean     used_t, failed;
 
@@ -1794,8 +1794,8 @@ void orb_remove_hyperbolic_structure(
             edge->orb_edge_shape = NULL;
         }
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         if ( cusp->orb_cusp_shape != NULL) {
             my_free(cusp->orb_cusp_shape);

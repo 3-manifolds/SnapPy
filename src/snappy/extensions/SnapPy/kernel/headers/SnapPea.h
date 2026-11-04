@@ -163,7 +163,7 @@ typedef Real O31Vector[4];
 /**
  *  MatrixInt22 is a 2 x 2 integer matrix.  A MatrixInt22
  *  may, for example, describe how the peripheral curves of
- *  one Cusp map to those of another.
+ *  one Vertex map to those of another.
  */
 
 typedef int MatrixInt22[2][2];
@@ -901,17 +901,17 @@ extern void core_geodesic(  Triangulation   *manifold,
                             Complex         *core_length,
                             int             *precision);
 /**<
- *  Examines the Cusp of index cusp_index in *manifold.
+ *  Examines the Vertex of index cusp_index in *manifold.
  *
- *  If the Cusp is unfilled or the Dehn filling coefficients are not
+ *  If the Vertex is unfilled or the Dehn filling coefficients are not
  *  integers, sets *singularity_index to zero and leaves *core_length
  *  undefined.
  *
- *  If the Cusp has relatively prime integer Dehn filling coefficients,
+ *  If the Vertex has relatively prime integer Dehn filling coefficients,
  *  sets *singularity_index to 1 and *core_length to the complex length
  *  of the central geodesic.
  *
- *  If the Cusp has non relatively prime integer Dehn filling coefficients,
+ *  If the Vertex has non relatively prime integer Dehn filling coefficients,
  *  sets *singularity_index to the index of the singular locus, and
  *  *core_length to the complex length of the central geodesic in the
  *  smallest manifold cover of a neighborhood of the singular set.
@@ -956,7 +956,7 @@ extern void current_curve_basis(        Triangulation   *manifold,
  *  and computes a 2 x 2 integer matrix basis_change with the property
  *  that
  *
- *      if the Cusp of index cusp_index is filled, and has
+ *      if the Vertex of index cusp_index is filled, and has
  *          relatively prime integer Dehn filling coefficients,
  *
  *          the first row of basis_change is set to the current
@@ -1613,7 +1613,7 @@ extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold);
  *  the *shape[complete] field of each Tetrahedron in the Triangulation.  The
  *  solution is also stored as the initial filled solution, by setting the
  *  solution_type[filled] member of *manifold and the *shape[filled] fields
- *  of the Tetrahedra; the is_complete flag of each Cusp is set to TRUE.
+ *  of the Tetrahedra; the is_complete flag of each Vertex is set to TRUE.
  *
  *  The hyperbolic structure is computed using Newton's method, beginning
  *  with all tetrahedra regular.
@@ -1906,7 +1906,7 @@ extern void isometry_list_cusp_action(  IsometryList    *isometry_list,
                                         int             cusp_map[2][2]);
 /**<
  *  Fills in the cusp_image and cusp_map[2][2] to describe the action
- *  of the given Isometry on the given Cusp.
+ *  of the given Isometry on the given Vertex.
  */
 
 extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i);
@@ -2373,7 +2373,7 @@ extern Complex transformed_cusp_shape(    Complex       cusp_shape,
 
 extern void install_shortest_bases( Triangulation   *manifold);
 /**<
- *  Installs the (shortest, second shortest) basis on each torus Cusp
+ *  Installs the (shortest, second shortest) basis on each torus Vertex
  *  of manifold, but does not change the bases on Klein bottle cusps.
  */
 
@@ -2516,7 +2516,7 @@ extern Boolean symmetry_group_is_amphicheiral(SymmetryGroup *symmetry_group);
 extern Boolean symmetry_group_invertible_knot(SymmetryGroup *symmetry_group);
 /**<
  *  Assumes the underlying manifold is oriented and has exactly
- *  one Cusp.  Returns TRUE if some Symmetry acts on the Cusp
+ *  one Vertex.  Returns TRUE if some Symmetry acts on the Vertex
  *  via the matrix (-1, 0; 0, -1);  returns FALSE otherwise.
  */
 

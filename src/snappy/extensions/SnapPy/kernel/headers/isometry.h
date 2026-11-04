@@ -109,29 +109,29 @@ struct Isometry
     Permutation     *tet_map;
 
     /**
-     *  The Isometry sends Cusp k of the domain manifold
-     *  to Cusp cusp_image[k] in the image manifold.
+     *  The Isometry sends Vertex k of the domain manifold
+     *  to Vertex cusp_image[k] in the image manifold.
      */
 
     int             *cusp_image;
 
     /**
      *  The matrix cusp_map[k][][] takes the peripheral curves
-     *  of Cusp k in the domain manifold to the peripheral curves
-     *  of Cusp cusp_image[k] in the image manifold.  That is,
-     *  the image of a meridian of Cusp k in the domain is
+     *  of Vertex k in the domain manifold to the peripheral curves
+     *  of Vertex cusp_image[k] in the image manifold.  That is,
+     *  the image of a meridian of Vertex k in the domain is
      *  cusp_matrix[k][M][M] meridians plus cusp_matrix[k][L][M]
      *  longitudes in the image, and similarly for the image of
      *  a longitude.
      *
      *  Note that the cusp_map matrix is defined even for
      *  nonorientable Cusps, since the peripheral curves are stored
-     *  in the Cusp's orientation double cover.  For nonorientable
+     *  in the Vertex's orientation double cover.  For nonorientable
      *  cusps, cusp_matrix[k][L][M] will be a diagonal matrix.
      *  The entry cusp_matrix[k][L][L] tells whether the direction
      *  of the cusp is reversed.  Det(cusp_matrix[k]) tells whether
      *  the Isometry acts in an orientation-preserving or orientation-
-     *  reversing way on the Cusp's orientation double cover (Question:
+     *  reversing way on the Vertex's orientation double cover (Question:
      *  what is the significance of this information, if any?).
      *
      *  This scheme applies only to the real cusps -- finite vertices

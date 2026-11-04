@@ -718,7 +718,7 @@ static void copy_images_to_scratch(
                 {
                     ll = EVALUATE(tet->map, l);
 
-                    if (get_cusp_topology(tet->vertex[k]) == torus_cusp
+                    if (vertex_is_torus_cusp(tet->vertex[k])
                         && double_copy_on_tori == TRUE)
 
                         tet->image->scratch_curve[which_set][i][right_handed][kk][ll] =

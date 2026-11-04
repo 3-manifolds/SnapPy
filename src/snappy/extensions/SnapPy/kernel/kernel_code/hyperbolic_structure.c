@@ -603,16 +603,14 @@ SolutionType do_Dehn_filling(
 static void verify_coefficients(
     Triangulation *manifold)
 {
-    Vertex  *cusp;
-
-    for (cusp = manifold->vertex_list_begin.next;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (
             cusp->is_complete ?
             cusp->m != 0.0 || cusp->l != 0.0 :
-            (cusp->m == 0.0 && cusp->l == 0.0) || (get_cusp_topology(cusp) == Klein_cusp && cusp->l != 0.0)
+            (cusp->m == 0.0 && cusp->l == 0.0) || (!vertex_has_orientable_link(cusp) && cusp->l != 0.0)
            )
 
             uFatalError("verify_coefficients", "hyperbolic_structure");

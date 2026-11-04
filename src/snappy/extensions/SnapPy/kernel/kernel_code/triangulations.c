@@ -536,8 +536,8 @@ void free_edge_class(
 
 void free_cusp(Vertex * cusp)
 {
-    if (cusp->orb_cusp_shape != NULL)
-        my_free(cusp->orb_cusp_shape);
+    if (cusp->orb_vertex_shape != NULL)
+        my_free(cusp->orb_vertex_shape);
     if (cusp->orb_incident_singular_edges != NULL)
         my_free(cusp->orb_incident_singular_edges);
 
@@ -783,10 +783,10 @@ void copy_triangulation(
 
         new_cusp[cusp->cusp_index - min_cusp_index]->orb_num_incident_singular_edges = 0;
         new_cusp[cusp->cusp_index - min_cusp_index]->orb_incident_singular_edges = NULL;
-        if (cusp->orb_cusp_shape != NULL)
+        if (cusp->orb_vertex_shape != NULL)
         {
-            new_cusp[cusp->cusp_index - min_cusp_index]->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
-            *new_cusp[cusp->cusp_index - min_cusp_index]->orb_cusp_shape = *cusp->orb_cusp_shape;
+            new_cusp[cusp->cusp_index - min_cusp_index]->orb_vertex_shape = NEW_STRUCT(OrbVertexShape);
+            *new_cusp[cusp->cusp_index - min_cusp_index]->orb_vertex_shape = *cusp->orb_vertex_shape;
         }
 
         INSERT_BEFORE(new_cusp[cusp->cusp_index - min_cusp_index], &destination->vertex_list_end);
@@ -946,7 +946,7 @@ void initialize_cusp(
     cusp->cusp_shape[current]       = Zero;
     cusp->shape_precision[initial]  = 0;
     cusp->shape_precision[current]  = 0;
-    cusp->orb_cusp_shape            = NULL;
+    cusp->orb_vertex_shape            = NULL;
     cusp->orb_num_incident_singular_edges = 0;
     cusp->orb_incident_singular_edges = NULL;
     cusp->cusp_index                     = 255;

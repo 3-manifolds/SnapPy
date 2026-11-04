@@ -16,7 +16,7 @@ extern SolutionType orb_find_hyperbolic_structure(
     Boolean        manual);
 /**< Try to find Vertex Gram matrices yielding a geometric structure on
  *   the orbifold. Stores associated data in Tetrahedron::orb_tet_shape,
- *   EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape.
+ *   EdgeClass::orb_edge_shape and Vertex::orb_vertex_shape.
  *   Requires that cusps have been created, their Euler characteristics
  *   computed and orientabilities (e.g., through
  *   compute_cusp_Euler_characteristics and
@@ -30,7 +30,7 @@ extern SolutionType orb_find_hyperbolic_structure(
 extern void orb_remove_hyperbolic_structure(
     Triangulation *manifold);
 /**< Frees and resets pointers Tetrahedron::orb_tet_shape,
- *   EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape and resets
+ *   EdgeClass::orb_edge_shape and Vertex::orb_vertex_shape and resets
  *   Triangulation::orb_solution_type to not_attempted.
  */
 

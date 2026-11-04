@@ -267,8 +267,8 @@ void copy_curves_to_scratch(
 
                 for (l = 0; l < 4; l++)
 
-                    if (get_cusp_topology(tet->vertex[k]) == torus_cusp
-                        && double_copy_on_tori == TRUE)
+                    if (vertex_is_torus_cusp(tet->vertex[k]) &&
+                        double_copy_on_tori == TRUE)
 
                         tet->scratch_curve[which_set][i][right_handed][k][l] =
                         tet->scratch_curve[which_set][i][ left_handed][k][l] =
@@ -284,6 +284,6 @@ void copy_curves_to_scratch(
                         for (j = 0; j < 2; j++)
 
                             tet->scratch_curve[which_set][i][j][k][l]
-                                   = tet->curve[i][j][k][l];
+                                = tet->curve[i][j][k][l];
 }
 SNAPPEA_NAMESPACE_END_SCOPE

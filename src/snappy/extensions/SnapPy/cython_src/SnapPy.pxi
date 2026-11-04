@@ -224,7 +224,7 @@ cdef extern from "triangulation.h":
         int cusp_index
     ctypedef struct c_Tetrahedron "Tetrahedron":
         Real_struct tilt[4]
-        Vertex* cusp[4]
+        Vertex* vertex[4]
         int curve[2][2][4][4]
         int index
         GeneratorStatus generator_status[4]

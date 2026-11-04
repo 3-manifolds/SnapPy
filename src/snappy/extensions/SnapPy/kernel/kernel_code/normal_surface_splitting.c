@@ -487,7 +487,7 @@ static Triangulation *subdivide_manifold(
     /*
      *  Create the new Tetrahedra which subdivide each old Tetrahedron.
      *  Set their internal neighbor and gluing fields, which specify
-     *  how they glue to each other.  Set tet->cusp fields to NULL for
+     *  how they glue to each other.  Set tet->vertex fields to NULL for
      *  finite vertices, to the correct copy of an old cusp for ideal
      *  vertices which are incident to an old cusp, and to new_cusps[0]
      *  for ideal vertices which are incident to the normal surface.
@@ -510,7 +510,7 @@ static Triangulation *subdivide_manifold(
     /*
      *  For a 2-sided torus or Klein bottle, we have to change some
      *  references from new_cusps[0] to new_cusps[1].
-     *  Change an arbitrary tet->cusp[v] from new_cusps[0] to new_cusps[1],
+     *  Change an arbitrary tet->vertex[v] from new_cusps[0] to new_cusps[1],
      *  and then recursively change its neighbors.
      */
     if (Euler_characteristic == 0 && is_two_sided == TRUE)
@@ -747,7 +747,7 @@ static void subdivide_triangular_prism(
          */
         if (index == 0 && i == 0)
         {
-            tet[i]->cusp[old_v] = old_tet->cusp[old_v]->matching_cusp;
+            tet[i]->vertex[old_v] = old_tet->vertex[old_v]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -755,11 +755,11 @@ static void subdivide_triangular_prism(
                       tet[i]->curve[c][h][old_v][f] = old_tet->curve[c][h][old_v][f];
         }
         else
-            tet[i]->cusp[old_v] = cusp_at_split;
+            tet[i]->vertex[old_v] = cusp_at_split;
 
         for (v = 0; v < 4; v++)
             if (v != old_v)
-                tet[i]->cusp[v] = NULL;
+                tet[i]->vertex[v] = NULL;
 
         INSERT_BEFORE(tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -864,9 +864,9 @@ static void subdivide_central_tetrahedron(
         for (v = 0; v < 4; v++)
         {
             if (v != i)
-                vertex_tet[i]->cusp[v] = NULL;
-            middle_tet[i]->cusp[v] = NULL;
-            face_tet[i]->cusp[v]   = NULL;
+                vertex_tet[i]->vertex[v] = NULL;
+            middle_tet[i]->vertex[v] = NULL;
+            face_tet[i]->vertex[v]   = NULL;
         }
 
         /*
@@ -874,7 +874,7 @@ static void subdivide_central_tetrahedron(
          */
         if (old_tet->num_triangles[i] == 0)
         {
-            vertex_tet[i]->cusp[i] = old_tet->cusp[i]->matching_cusp;
+            vertex_tet[i]->vertex[i] = old_tet->vertex[i]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -882,7 +882,7 @@ static void subdivide_central_tetrahedron(
                       vertex_tet[i]->curve[c][h][i][f] = old_tet->curve[c][h][i][f];
         }
         else
-            vertex_tet[i]->cusp[i] = cusp_at_split;
+            vertex_tet[i]->vertex[i] = cusp_at_split;
 
         INSERT_BEFORE(vertex_tet[i], &subdivision->tet_list_end);
         INSERT_BEFORE(middle_tet[i], &subdivision->tet_list_end);
@@ -1028,7 +1028,7 @@ static void subdivide_pillow(
 
         for (vv = 0; vv < 4; vv++)
             if (vv != v[i])
-                vertex_tet[i]->cusp[vv] = NULL;
+                vertex_tet[i]->vertex[vv] = NULL;
 
         /*
          *  Is vertex v[i] of vertex_tet[i] at a cusp
@@ -1036,7 +1036,7 @@ static void subdivide_pillow(
          */
         if (old_tet->num_triangles[v[i]] == 0)
         {
-            vertex_tet[i]->cusp[v[i]] = old_tet->cusp[v[i]]->matching_cusp;
+            vertex_tet[i]->vertex[v[i]] = old_tet->vertex[v[i]]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -1044,7 +1044,7 @@ static void subdivide_pillow(
                         vertex_tet[i]->curve[c][h][v[i]][f] = old_tet->curve[c][h][v[i]][f];
         }
         else
-            vertex_tet[i]->cusp[v[i]] = cusp_at_split;
+            vertex_tet[i]->vertex[v[i]] = cusp_at_split;
 
         INSERT_BEFORE(vertex_tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -1063,9 +1063,9 @@ static void subdivide_pillow(
         for (vv = 0; vv < 4; vv++)
         {
             if (vv == 1)
-                octa_tet[i]->cusp[vv] = cusp_at_split;
+                octa_tet[i]->vertex[vv] = cusp_at_split;
             else
-                octa_tet[i]->cusp[vv] = NULL;
+                octa_tet[i]->vertex[vv] = NULL;
         }
 
         INSERT_BEFORE(octa_tet[i], &subdivision->tet_list_end);
@@ -1199,10 +1199,10 @@ static void subdivide_square_prism(
         tet[i] = NEW_STRUCT(Tetrahedron);
         initialize_tetrahedron(tet[i]);
 
-        tet[i]->cusp[0] = cusp_at_split;
-        tet[i]->cusp[1] = cusp_at_split;
-        tet[i]->cusp[2] = NULL;
-        tet[i]->cusp[3] = NULL;
+        tet[i]->vertex[0] = cusp_at_split;
+        tet[i]->vertex[1] = cusp_at_split;
+        tet[i]->vertex[2] = NULL;
+        tet[i]->vertex[3] = NULL;
 
         INSERT_BEFORE(tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -1414,7 +1414,7 @@ static void distinguish_cusps(
 
     /*
      *  The calling program has split along a 2-sided torus or Klein bottle.
-     *  By default it has set all the pointers tet->cusp[v] to point to
+     *  By default it has set all the pointers tet->vertex[v] to point to
      *  new_cusps[0].  The purpose of the present function is to leave
      *  those belonging to one cusp set to new_cusps[0], while changing
      *  those belong to the other cusp to new_cusps[1].
@@ -1422,7 +1422,7 @@ static void distinguish_cusps(
     
     /*
      *  Allocate space for a stack of IdealVertexReferences for which
-     *  tet->cusp[v] has been changed from new_cusps[0] to new_cusps[1],
+     *  tet->vertex[v] has been changed from new_cusps[0] to new_cusps[1],
      *  but whose neighbors have not yet been examined.
      */
     ivr_stack = NEW_ARRAY(4 * subdivision->num_tetrahedra, IdealVertexReference);
@@ -1436,9 +1436,9 @@ static void distinguish_cusps(
          tet != &subdivision->tet_list_end && ivr_stack_size == 0;
          tet = tet->next)
         for (v = 0; v < 4; v++)
-            if (tet->cusp[v] == new_cusps[0])
+            if (tet->vertex[v] == new_cusps[0])
             {
-                tet->cusp[v]        = new_cusps[1];
+                tet->vertex[v]        = new_cusps[1];
                 ivr_stack[0].tet    = tet;
                 ivr_stack[0].v      = v;
                 ivr_stack_size      = 1;
@@ -1472,9 +1472,9 @@ static void distinguish_cusps(
                  *  If the neighbor hasn't already been switched
                  *  to new_cusps[1], switch it and put it on the ivr_stack.
                  */
-                if (nbr->cusp[nbr_v] != new_cusps[1])
+                if (nbr->vertex[nbr_v] != new_cusps[1])
                 {
-                    nbr->cusp[nbr_v]                = new_cusps[1];
+                    nbr->vertex[nbr_v]                = new_cusps[1];
                     ivr_stack[ivr_stack_size].tet   = nbr;
                     ivr_stack[ivr_stack_size].v     = nbr_v;
                     ivr_stack_size++;
@@ -1652,7 +1652,7 @@ static void separate_connected_components(
             which_piece[i] = -1;
         
         /*
-         *  Use the tet->cusp[] fields to deduce which Vertex goes where.
+         *  Use the tet->vertex[] fields to deduce which Vertex goes where.
          */
         for (i = 0; i < 2; i++)
             for (tet = pieces[i]->tet_list_begin.next;
@@ -1660,10 +1660,10 @@ static void separate_connected_components(
                  tet = tet->next)
                 for (v = 0; v < 4; v++)
                 {
-                    if (tet->cusp[v] == NULL)   /* skip finite vertices */
+                    if (tet->vertex[v] == NULL)   /* skip finite vertices */
                         continue;
                     
-                    cusp_index = tet->cusp[v]->cusp_index;
+                    cusp_index = tet->vertex[v]->cusp_index;
 
                     if (cusp_index < 0 || cusp_index >= subdivision->num_cusps)
                         uFatalError("separate_connected_components", "normal_surface_splitting");

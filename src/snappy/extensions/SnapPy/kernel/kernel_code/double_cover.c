@@ -254,7 +254,7 @@ static void lift_peripheral_curves(
 
                 for (f = 0; f < 4; f++)
                     
-                    if (get_cusp_topology(old_tet->cusp[v]) == torus_cusp)
+                    if (get_cusp_topology(old_tet->vertex[v]) == torus_cusp)
                     {
                         new_tet[i][0]->curve[c][right_handed][v][f] =
                         new_tet[i][1]->curve[c][right_handed][v][f] =
@@ -365,10 +365,10 @@ static void set_cusp_data(
 
             for (j = 0; j < 2; j++)
             {
-                new_tet[i][j]->cusp[v]->cusp_index = old_to_new
-                    [old_tet->cusp[v]->cusp_index] [j];
+                new_tet[i][j]->vertex[v]->cusp_index = old_to_new
+                    [old_tet->vertex[v]->cusp_index] [j];
 
-                set_cusp_topology(new_tet[i][j]->cusp[v], torus_cusp);
+                set_cusp_topology(new_tet[i][j]->vertex[v], torus_cusp);
             }
 
     /*

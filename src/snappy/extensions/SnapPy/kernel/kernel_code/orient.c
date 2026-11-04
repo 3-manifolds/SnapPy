@@ -416,9 +416,9 @@ static void renumber_cusps(
 {
     Vertex      *temp_cusp;
 
-    temp_cusp       = tet->cusp[2];
-    tet->cusp[2]    = tet->cusp[3];
-    tet->cusp[3]    = temp_cusp;
+    temp_cusp       = tet->vertex[2];
+    tet->vertex[2]    = tet->vertex[3];
+    tet->vertex[3]    = temp_cusp;
 }
 
 
@@ -821,7 +821,7 @@ void fix_peripheral_orientations(
         /* which ideal vertex */
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->intersection_number[L][M] == -1)
+            if (tet->vertex[v]->intersection_number[L][M] == -1)
 
                 /* which side of the vertex */
                 for (f = 0; f < 4; f++)

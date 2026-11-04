@@ -23,12 +23,12 @@
  *
  *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Vertex data
  *  structures to the "fake cusps" corresponding to finite vertices.
- *  It assumes fake cusps are indicated by tet->cusp[v] fields of NULL.
+ *  It assumes fake cusps are indicated by tet->vertex[v] fields of NULL.
  *  The fake cusps are numbered -1, -2, etc.  As explained in the
  *  documentation at the top of finite_vertices.c, finite vertices use
  *  only the orientability, Euler characteristic, index, prev and next
  *  fields of the Vertex data structure.  create_cusps_and_mark_finite_as_needed() does not
- *  disturb the real cusps or the non-NULL tet->cusp[v] fields.
+ *  disturb the real cusps or the non-NULL tet->vertex[v] fields.
  *
  *  count_cusps() counts the Cusps of each CuspTopology, and sets
  *  manifold->num_cusps, manifold->num_or_cusps and manifold->num_nonor_cusps.
@@ -99,7 +99,7 @@ void create_cusps(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == NULL)
+            if (tet->vertex[v] == NULL)
             {
                 Vertex * cusp = create_one_cusp(manifold, tet, v);
                 cusp->cusp_index = count++;
@@ -127,7 +127,7 @@ void error_check_for_create_cusps(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] != NULL)
+            if (tet->vertex[v] != NULL)
 
                 uFatalError("error_check_for_create_cusps", "cusps");
 }
@@ -160,7 +160,7 @@ void create_cusps_and_mark_finite_as_needed(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == NULL)
+            if (tet->vertex[v] == NULL)
             {
                 Vertex * cusp = create_one_cusp(manifold, tet, v);
                 cusp->cusp_index = --count;
@@ -221,7 +221,7 @@ Vertex * create_one_cusp(
      */
 
     /*
-     *  Set the tet->cusp field at all vertices incident to the new cusp.
+     *  Set the tet->vertex field at all vertices incident to the new cusp.
      */
 
     /*
@@ -234,7 +234,7 @@ Vertex * create_one_cusp(
     /*
      *  Set the cusp of the given IdealVertex...
      */
-    tet->cusp[v] = cusp;
+    tet->vertex[v] = cusp;
 
     /*
      *  ...and put it on the queue.
@@ -270,12 +270,12 @@ Vertex * create_one_cusp(
             /*
              *  If the neighbor's cusp hasn't been set...
              */
-            if (nbr->cusp[nbr_v] == NULL)
+            if (nbr->vertex[nbr_v] == NULL)
             {
                 /*
                  *  ...set it...
                  */
-                nbr->cusp[nbr_v] = cusp;
+                nbr->vertex[nbr_v] = cusp;
 
                 /*
                  *  ...and add it to the end of the queue.
@@ -342,7 +342,7 @@ void compute_vertex_link_orientabilities(
          initial_tet = initial_tet->next)
         for (VertexIndex initial_v = 0; initial_v < 4; initial_v++)
         {
-            Vertex * cusp = initial_tet->cusp[initial_v];
+            Vertex * cusp = initial_tet->vertex[initial_v];
             if (cusp->orientability != unknown_cusp_orientability)
                 continue;
 
@@ -544,8 +544,8 @@ void compute_cusp_Euler_characteristics(
         tet = edge->incident_tet;
         v0  =   one_vertex_at_edge[edge->incident_edge_index];
         v1  = other_vertex_at_edge[edge->incident_edge_index];
-        tet->cusp[v0]->euler_characteristic += 2;
-        tet->cusp[v1]->euler_characteristic += 2;
+        tet->vertex[v0]->euler_characteristic += 2;
+        tet->vertex[v1]->euler_characteristic += 2;
     }
 
     /*
@@ -559,7 +559,7 @@ void compute_cusp_Euler_characteristics(
 
         for (v = 0; v < 4; v++)
 
-            tet->cusp[v]->euler_characteristic -= 3;
+            tet->vertex[v]->euler_characteristic -= 3;
 
     /*
      *  Count the faces in the triangulation of the boundary,
@@ -572,7 +572,7 @@ void compute_cusp_Euler_characteristics(
 
         for (v = 0; v < 4; v++)
 
-            tet->cusp[v]->euler_characteristic += 2;
+            tet->vertex[v]->euler_characteristic += 2;
 
     /*
      *  Divide by two (cf. above).

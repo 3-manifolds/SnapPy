@@ -116,7 +116,7 @@ int* get_cusp_equation(Triangulation* manifold, int cusp_num, int m, int l, int*
 	 tet != &manifold->tet_list_end;
 	 tet = tet->next){
       for (v = 0; v < 4; v++){
-	if (tet->cusp[v] != cusp)
+	if (tet->vertex[v] != cusp)
 	  continue;
 
 	for (f = 0; f < 4; f++){

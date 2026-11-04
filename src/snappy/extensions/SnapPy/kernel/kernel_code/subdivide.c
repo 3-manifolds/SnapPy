@@ -219,7 +219,7 @@ Triangulation *subdivide(
      *  Create the new Tetrahedra.
      *  Set fields such as tet->neighbor and tet->gluing,
      *  which can be determined immediately.
-     *  Postpone determination of fields such as tet->cusp
+     *  Postpone determination of fields such as tet->vertex
      *  and tet->edge_class.
      */
 
@@ -229,7 +229,7 @@ Triangulation *subdivide(
      *  Copy the Cusps from the old_triangulation to
      *  the new_triangulation.  (Technical note:  functions
      *  called by create_new_cusps() rely on the fact that
-     *  create_new_tetrahedra() initializes all tet->cusp
+     *  create_new_tetrahedra() initializes all tet->vertex
      *  fields to NULL.)
      */
 
@@ -690,6 +690,6 @@ static void create_real_cusps(
 
         for (i = 0; i < 4; i++)
 
-            old_tet->extra->outer_vertex_tet[i]->cusp[i] = old_tet->cusp[i]->matching_cusp; 
+            old_tet->extra->outer_vertex_tet[i]->vertex[i] = old_tet->vertex[i]->matching_cusp;
 }
 SNAPPEA_NAMESPACE_END_SCOPE

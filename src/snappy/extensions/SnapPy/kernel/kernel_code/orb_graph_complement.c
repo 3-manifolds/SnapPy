@@ -772,17 +772,17 @@ static void create_real_cusps(
             thebottomCusp = theCusps[theMeeting->component[1]];
             thetopCusp = theCusps[theMeeting->component[0]];
 
-            theMeeting->tet[0]->cusp[2] = thebottomCusp;
-            theMeeting->tet[0]->cusp[3] = thetopCusp;
+            theMeeting->tet[0]->vertex[2] = thebottomCusp;
+            theMeeting->tet[0]->vertex[3] = thetopCusp;
 
-            theMeeting->tet[1]->cusp[2] = thetopCusp;
-            theMeeting->tet[1]->cusp[3] = thebottomCusp;
+            theMeeting->tet[1]->vertex[2] = thetopCusp;
+            theMeeting->tet[1]->vertex[3] = thebottomCusp;
 
-            theMeeting->tet[2]->cusp[2] = thebottomCusp;
-            theMeeting->tet[2]->cusp[3] = thetopCusp;
+            theMeeting->tet[2]->vertex[2] = thebottomCusp;
+            theMeeting->tet[2]->vertex[3] = thetopCusp;
 
-            theMeeting->tet[3]->cusp[2] = thetopCusp;
-            theMeeting->tet[3]->cusp[3] = thebottomCusp;
+            theMeeting->tet[3]->vertex[2] = thetopCusp;
+            theMeeting->tet[3]->vertex[3] = thebottomCusp;
         }
 	else
 	{
@@ -796,16 +796,16 @@ static void create_real_cusps(
 
                     utet = under_tet(j, theMeeting->num_strands);
 
-                    theMeeting->tet[j]->cusp[3] =
+                    theMeeting->tet[j]->vertex[3] =
                         theCusps[theNeighbor->component[nhb_strand]];
 
-                    theMeeting->tet[j]->cusp[2] =
+                    theMeeting->tet[j]->vertex[2] =
                         theCusps[theMeeting->component[j]];
 
-                    theMeeting->tet[utet]->cusp[2] =
+                    theMeeting->tet[utet]->vertex[2] =
                         theCusps[theNeighbor->component[nhb_strand]];
 
-                    theMeeting->tet[utet]->cusp[3] =
+                    theMeeting->tet[utet]->vertex[3] =
                         theCusps[theMeeting->component[j]];
                 }
 	    }
@@ -840,7 +840,7 @@ static void create_finite_vertices(
 
         for (j = 0; j < n; j++)
             for (k = 0; k < 2; k++)
-                gamma->meeting[i].tet[j]->cusp[k] = thePoles[k];
+                gamma->meeting[i].tet[j]->vertex[k] = thePoles[k];
     }
 }
 
@@ -947,7 +947,7 @@ extern void dump_triangulation(
         printf("\n");
 
         printf("\tcusps:\t");
-        for (i = 0; i < 4; i++) printf("%6d", tet->cusp[i]->cusp_index);
+        for (i = 0; i < 4; i++) printf("%6d", tet->vertex[i]->cusp_index);
 
         printf("\n");
 
@@ -1068,10 +1068,10 @@ static void add_longitudes_and_meridians(
         theMeeting = &gamma->meeting[i];
 
         if (theMeeting->type == Cross) {
-            if (get_cusp_topology(theMeeting->tet[0]->cusp[3]) == torus_cusp)
+            if (get_cusp_topology(theMeeting->tet[0]->vertex[3]) == torus_cusp)
                 needsCurves[theMeeting->component[0]] = TRUE;
 
-            if (get_cusp_topology(theMeeting->tet[0]->cusp[2]) == torus_cusp)
+            if (get_cusp_topology(theMeeting->tet[0]->vertex[2]) == torus_cusp)
                 needsCurves[theMeeting->component[1]] = TRUE;
 
             if (theMeeting->component[0] == theMeeting->component[1])

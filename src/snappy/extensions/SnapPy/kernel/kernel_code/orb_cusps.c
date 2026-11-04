@@ -84,11 +84,11 @@ void orb_cusps_fill_incident_singular_edges(
         {
             add_singular_edge_to_cusp(
                 edge,
-                edge->incident_tet->cusp[
+                edge->incident_tet->vertex[
                     one_vertex_at_edge[edge->incident_edge_index]]);
             add_singular_edge_to_cusp(
                 edge,
-                edge->incident_tet->cusp[
+                edge->incident_tet->vertex[
                     other_vertex_at_edge[edge->incident_edge_index]]);
         }
 

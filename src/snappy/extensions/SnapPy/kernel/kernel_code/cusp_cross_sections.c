@@ -359,7 +359,7 @@ static void find_starting_point(
 
         for (*v0 = 0; *v0 < 4; (*v0)++)
 
-            if ((*tet0)->cusp[*v0] == cusp)
+            if ((*tet0)->vertex[*v0] == cusp)
 
                 return;
 
@@ -497,7 +497,7 @@ static void normalize_cusp(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
 
                 for (f = 0; f < 4; f++)
 
@@ -582,7 +582,7 @@ void compute_tilts_for_one_tet(
      *  dimensions vary as the exponential of the displacement.
      */
     for (i = 0; i < 4; i++)
-        R[i] *= tet->cusp[i]->displacement_exp;
+        R[i] *= tet->vertex[i]->displacement_exp;
 
     /*
      *  Apply the Tilt Theorem to compute the tilts in terms

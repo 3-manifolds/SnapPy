@@ -184,7 +184,7 @@ FuncResult change_peripheral_curves_nonorientable(
              * of negative determinant.
              */
      
-            if (change_orientation[tet->cusp[i]->cusp_index])
+            if (change_orientation[tet->vertex[i]->cusp_index])
                 
                 for (j = 0; j < 4; j++) {
                

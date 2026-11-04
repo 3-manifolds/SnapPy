@@ -478,7 +478,7 @@ static Boolean cusp_has_curves(
 
         for (v = 0; v < 4; v++)
         
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
             
                 for (f = 0; f < 4; f++)
                 
@@ -529,7 +529,7 @@ static void pick_base_tet(
          tet != &manifold->tet_list_end;
          tet = tet->next)
         for (v = 0; v < 4; v++)
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
             {
                 *base_tet       = tet;
                 *base_vertex    = v;
@@ -1359,7 +1359,7 @@ static void reverse_meridians_where_necessary(
         /* which ideal vertex */
         for (i = 0; i < 4; i++)
 
-            if (tet->cusp[i]->intersection_number[L][M] == -1)
+            if (tet->vertex[i]->intersection_number[L][M] == -1)
 
                 /* which side of the vertex */
                 for (j = 0; j < 4; j++)

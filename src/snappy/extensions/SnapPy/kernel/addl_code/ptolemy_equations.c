@@ -474,7 +474,7 @@ void get_ptolemy_equations_action_by_decoration_change(
 			 diag_entry < ptolemy_index[vertex];
 			 diag_entry++) {
 
-		        cusp_index = tet->cusp[vertex]->cusp_index;
+		        cusp_index = tet->vertex[vertex]->cusp_index;
  		        column_index = cusp_index * (N-1) + diag_entry;
 
 			m->entries[row_index][column_index]++;
@@ -770,12 +770,12 @@ void get_ptolemy_equations_boundary_map_1(
 
 	/* Count one as positive */
 
-	row_index = ptet.tet->cusp[ptet.bottom_face]->cusp_index;
+	row_index = ptet.tet->vertex[ptet.bottom_face]->cusp_index;
 	m->entries[row_index][column_index]++;
 
 	/* And the other as negative */
 
-	row_index = ptet.tet->cusp[ptet.right_face]->cusp_index;
+	row_index = ptet.tet->vertex[ptet.right_face]->cusp_index;
 	m->entries[row_index][column_index]--;
 
 	/* Next column */

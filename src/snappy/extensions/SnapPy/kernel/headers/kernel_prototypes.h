@@ -138,7 +138,7 @@ extern void create_cusps(Triangulation *manifold);
 
 extern void error_check_for_create_cusps(Triangulation *manifold);
 /**<
- *  Checks that no Cusps are present, and that all tet->cusp[]
+ *  Checks that no Cusps are present, and that all tet->vertex[]
  *  fields are NULL.
  */
 
@@ -148,7 +148,7 @@ extern Vertex * create_one_cusp(Triangulation *manifold,
 /**<
  *  Creates a single Vertex, incident to the given Tetrahedron at
  *  the given ideal vertex.  Assumes ideal vertices which haven't
- *  been assigned to Cusps have tetrahedron->cusp[vertex] == NULL.
+ *  been assigned to Cusps have tetrahedron->vertex[vertex] == NULL.
  */
 
 extern void create_cusps_and_mark_finite_as_needed(Triangulation *manifold);

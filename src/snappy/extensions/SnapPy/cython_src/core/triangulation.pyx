@@ -2496,7 +2496,7 @@ cdef class Triangulation():
         tet = self.c_triangulation.tet_list_begin.next
         while tet != &(self.c_triangulation.tet_list_end):
             for vertex in range(4):
-                if tet.cusp[vertex].is_complete:
+                if tet.vertex[vertex].is_complete:
                     continue
                 for side in range(4):
                     if side == vertex:
@@ -2504,10 +2504,10 @@ cdef class Triangulation():
                     if tet.generator_status[side] != inbound_generator:
                         continue
                     for orientation in (right_handed, left_handed):
-                        row = num_edges + tet.cusp[vertex].cusp_index
+                        row = num_edges + tet.vertex[vertex].cusp_index
                         column = tet.generator_index[side]
-                        m = <int>tet.cusp[vertex].m
-                        l = <int>tet.cusp[vertex].l
+                        m = <int>tet.vertex[vertex].m
+                        l = <int>tet.vertex[vertex].l
                         relation_matrix[row, column] += (
                             m * tet.curve[0][orientation][vertex][side]
                             + l * tet.curve[1][orientation][vertex][side])

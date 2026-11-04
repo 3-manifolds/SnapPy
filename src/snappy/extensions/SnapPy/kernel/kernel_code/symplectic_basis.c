@@ -897,7 +897,7 @@ void init_cusp_triangulation(Triangulation *manifold, CuspStructure *cusp) {
         // while vertex are we on
         for (vertex = 0; vertex < 4; vertex++) {
             // is this vertex on the right cusp
-            if (tet->cusp[vertex] != cusp->cusp) {
+            if (tet->vertex[vertex] != cusp->cusp) {
                 continue;
             }
 
@@ -906,7 +906,7 @@ void init_cusp_triangulation(Triangulation *manifold, CuspStructure *cusp) {
             index++;
 
             tri->tet = tet;
-            tri->cusp = tet->cusp[vertex];
+            tri->cusp = tet->vertex[vertex];
             tri->tet_index = tri->tet->index;
             tri->tet_vertex = vertex;
 
@@ -1334,7 +1334,7 @@ void find_intersection_triangle(Triangulation *manifold, CuspStructure *boundary
              cusp->basepoint_vertex < 4;
              cusp->basepoint_vertex++)
         {
-            if (cusp->basepoint_tet->cusp[cusp->basepoint_vertex] != cusp)
+            if (cusp->basepoint_tet->vertex[cusp->basepoint_vertex] != cusp)
                 continue;
 
             for (face = 0; face < 4; face++)
@@ -1855,7 +1855,7 @@ void log_structs(Triangulation *manifold, CuspStructure **cusps,
             j = 0;
             // which component
             for (path = curves->curve_begin[i].next; path != &curves->curve_end[i]; path = path->next) {
-                printf("    Part %d Cusp %d\n", j, path->endpoints[0].tri->tet->cusp[path->endpoints[0].tri->tet_vertex]->cusp_index);
+                printf("    Part %d Cusp %d\n", j, path->endpoints[0].tri->tet->vertex[path->endpoints[0].tri->tet_vertex]->cusp_index);
                 for (k = 0; k < 2; k++) {
                     if (k == 0)
                         printf("        Start: ");
@@ -2760,7 +2760,7 @@ void cusp_graph(Triangulation *manifold, Graph *g) {
                 if (vertex1 == vertex2)
                     continue;
 
-                insert_edge(g, tet->cusp[vertex1]->cusp_index, tet->cusp[vertex2]->cusp_index, g->directed);
+                insert_edge(g, tet->vertex[vertex1]->cusp_index, tet->vertex[vertex2]->cusp_index, g->directed);
             }
         }
     }
@@ -2840,7 +2840,7 @@ int find_edge_class(Triangulation *manifold, int cusp1, int cusp2) {
                 if (v1 == v2)
                     continue;
 
-                if (tet->cusp[v1]->cusp_index != cusp1 || tet->cusp[v2]->cusp_index != cusp2)
+                if (tet->vertex[v1]->cusp_index != cusp1 || tet->vertex[v2]->cusp_index != cusp2)
                     continue;
 
                 edge = tet->edge_class[edge_between_vertices[v1][v2]];
@@ -3027,8 +3027,8 @@ void find_edge_ends(Graph *g, Triangulation *manifold, int edge_class, int *star
                 if (edge->index != edge_class)
                     continue;
 
-                *start = tet->cusp[v1]->cusp_index;
-                *end   = tet->cusp[v2]->cusp_index;
+                *start = tet->vertex[v1]->cusp_index;
+                *end   = tet->vertex[v2]->cusp_index;
                 return;
             }
         }

@@ -379,8 +379,8 @@ static Boolean incident_to_filled_cusp(
 
     for (i = 0; i < 4; i++)
 
-        if (get_cusp_topology(tet->cusp[i]) != sphere_cusp
-         && fill_cusp[tet->cusp[i]->cusp_index] == TRUE)
+        if (get_cusp_topology(tet->vertex[i]) != sphere_cusp
+         && fill_cusp[tet->vertex[i]->cusp_index] == TRUE)
         {
             /*
              *  Make sure no other routine is using the "extra"
@@ -959,10 +959,10 @@ static Boolean two_to_two(
     initialize_tetrahedron(tetA);
     initialize_tetrahedron(tetB);
 
-    new_tet->cusp[0] =     tet->cusp[    f[0]];
-    new_tet->cusp[1] = nbr_tet->cusp[nbr_f[0]];
-    new_tet->cusp[2] =     tet->cusp[    f[3]];
-    new_tet->cusp[3] =     tet->cusp[    f[2]];
+    new_tet->vertex[0] =     tet->vertex[    f[0]];
+    new_tet->vertex[1] = nbr_tet->vertex[nbr_f[0]];
+    new_tet->vertex[2] =     tet->vertex[    f[3]];
+    new_tet->vertex[3] =     tet->vertex[    f[2]];
 
     new_tet->neighbor[0] = NBR_T(1);
     new_tet->neighbor[1] = TET_T(1);
@@ -1044,15 +1044,15 @@ static Boolean two_to_two(
     tetB->edge_class[edge_between_faces[2][3]] = e_class[1];
     tetB->edge_class[edge_between_faces[3][0]] = e_class[3];
 
-    tetA->cusp[1] = tet->cusp[f[1]];
-    tetB->cusp[1] = tet->cusp[f[1]];
+    tetA->vertex[1] = tet->vertex[f[1]];
+    tetB->vertex[1] = tet->vertex[f[1]];
 
-    tetA->cusp[0] = new_tet->cusp[0];
-    tetA->cusp[2] = new_tet->cusp[1];
-    tetA->cusp[3] = new_tet->cusp[2];
-    tetB->cusp[0] = new_tet->cusp[1];
-    tetB->cusp[2] = new_tet->cusp[3];
-    tetB->cusp[3] = new_tet->cusp[0];
+    tetA->vertex[0] = new_tet->vertex[0];
+    tetA->vertex[2] = new_tet->vertex[1];
+    tetA->vertex[3] = new_tet->vertex[2];
+    tetB->vertex[0] = new_tet->vertex[1];
+    tetB->vertex[2] = new_tet->vertex[3];
+    tetB->vertex[3] = new_tet->vertex[0];
 
     tetA->extra = NEW_STRUCT(Extra);
     tetB->extra = NEW_STRUCT(Extra);
@@ -1150,7 +1150,7 @@ static void transfer_curves(
          tet = tet->next)
     {
         v = tet->extra->ideal_vertex_index;
-        cusp = tet->cusp[v];
+        cusp = tet->vertex[v];
 
         for (i = 0; i < 4; i++)
         {
@@ -1184,7 +1184,7 @@ static void standard_form(
          tet != short_list_end;
          tet = tet->next)
 
-        if (get_cusp_topology(tet->cusp[tet->extra->ideal_vertex_index]) == torus_cusp)
+        if (get_cusp_topology(tet->vertex[tet->extra->ideal_vertex_index]) == torus_cusp)
             standard_torus_form(manifold, tet);
         else
             standard_Klein_bottle_form(manifold, tet);
@@ -1479,7 +1479,7 @@ static void fold_one_cusp(
      *  Discard tet[0] and tet[1].
      */
 
-    dead_cusp = tet[0]->cusp[f[0][0]];
+    dead_cusp = tet[0]->vertex[f[0][0]];
     if (get_cusp_topology(dead_cusp) == torus_cusp)
         manifold->num_or_cusps--;
     else
@@ -1577,7 +1577,7 @@ static void fill_cusp_with_solid_torus(
     f[0][0] = tet[0]->extra->ideal_vertex_index;
 
     /* We only support torus cusps for now. */
-    if (get_cusp_topology(tet0->cusp[f[0][0]]) != torus_cusp){
+    if (get_cusp_topology(tet0->vertex[f[0][0]]) != torus_cusp){
 	uFatalError("fill_cusp_with_solid_torus_1", "close_cusps");
     }
 
@@ -1627,7 +1627,7 @@ static void fill_cusp_with_solid_torus(
     new_tet->unchangeable = mark;
 
     for (i = 0; i < 4; i++){
-	new_tet->cusp[i] = tet[0]->cusp[f[0][1]];
+	new_tet->vertex[i] = tet[0]->vertex[f[0][1]];
     }
 
     /* glue first pair of faces */
@@ -1654,7 +1654,7 @@ static void fill_cusp_with_solid_torus(
      *  Discard tet[0] and tet[1].
      */
 
-    dead_cusp = tet[0]->cusp[f[0][0]];
+    dead_cusp = tet[0]->vertex[f[0][0]];
     if (get_cusp_topology(dead_cusp) == torus_cusp)
         manifold->num_or_cusps--;
     else
@@ -1688,7 +1688,7 @@ static void replace_fake_cusps(
                 *dead_cusp;
 
     /*
-     *  Set to NULL all tet->cusp pointers which point to fake Cusps.
+     *  Set to NULL all tet->vertex pointers which point to fake Cusps.
      */
 
     for (tet = manifold->tet_list_begin.next;
@@ -1697,9 +1697,9 @@ static void replace_fake_cusps(
 
         for (i = 0; i < 4; i++)
 
-            if (get_cusp_topology(tet->cusp[i]) == sphere_cusp)
+            if (get_cusp_topology(tet->vertex[i]) == sphere_cusp)
 
-                tet->cusp[i] = NULL;
+                tet->vertex[i] = NULL;
 
     /*
      *  Free the fake Cusps.

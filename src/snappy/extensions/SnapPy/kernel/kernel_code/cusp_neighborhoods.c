@@ -823,8 +823,8 @@ static void compute_cusp_stoppers(
          edge != &cusp_neighborhoods->its_triangulation->edge_list_end;
          edge = edge->next)
     {
-        c[0] = edge->incident_tet->cusp[  one_vertex_at_edge[edge->incident_edge_index]];
-        c[1] = edge->incident_tet->cusp[other_vertex_at_edge[edge->incident_edge_index]];
+        c[0] = edge->incident_tet->vertex[  one_vertex_at_edge[edge->incident_edge_index]];
+        c[1] = edge->incident_tet->vertex[other_vertex_at_edge[edge->incident_edge_index]];
 
         for (i = 0; i < 2; i++)
         {
@@ -907,7 +907,7 @@ static void compute_one_intercusp_distance(
      */
     for (i = 0; i < 2; i++)
         for (j = 0; j < 2; j++)
-            length[i][j] = tet->cusp[v[i]]->displacement_exp
+            length[i][j] = tet->vertex[v[i]]->displacement_exp
                             * tet->cross_section->edge_length[v[i]][f[j]];
 
     /*
@@ -1022,8 +1022,8 @@ static Real compute_min_dist(
          edge != &manifold->edge_list_end;
          edge = edge->next)
     {
-        cusp1 = edge->incident_tet->cusp[  one_vertex_at_edge[edge->incident_edge_index]];
-        cusp2 = edge->incident_tet->cusp[other_vertex_at_edge[edge->incident_edge_index]];
+        cusp1 = edge->incident_tet->vertex[  one_vertex_at_edge[edge->incident_edge_index]];
+        cusp2 = edge->incident_tet->vertex[other_vertex_at_edge[edge->incident_edge_index]];
 
         if (edge->intercusp_distance < min_dist)
 
@@ -1557,7 +1557,7 @@ static void compute_cusp_nbhd_positions(
 
         for (v = 0; v < 4; v++)
         {
-            cusp = tet->cusp[v];
+            cusp = tet->vertex[v];
 
             for (c = 0; c < 2; c++)  /* c = M, L */
             {
@@ -1658,7 +1658,7 @@ static void compute_cusp_nbhd_positions(
                 if (in_use[h][v] == FALSE)
                     continue;
 
-                factor = tet->cusp[v]->scratch;
+                factor = tet->vertex[v]->scratch;
 
                 for (f = 0; f < 4; f++)
                 {
@@ -2022,7 +2022,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
             /*
              *  If this isn't the cusp the user wants, ignore it.
              */
-            if (tet->cusp[v] != cusp)
+            if (tet->vertex[v] != cusp)
                 continue;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */
@@ -2308,13 +2308,13 @@ static void get_quick_edge_horoballs(
             /*
              *  Are we at the right cusp?
              */
-            if (tet->cusp[v[i]] != cusp)
+            if (tet->vertex[v[i]] != cusp)
                 continue;
 
             /*
              *  What is the index of the other cusp?
              */
-            other_index = tet->cusp[v[!i]]->cusp_index;
+            other_index = tet->vertex[v[!i]]->cusp_index;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */
             {
@@ -2473,7 +2473,7 @@ static void get_quick_face_horoballs(
             /*
              *  Are we at the right cusp?
              */
-            if (tet->cusp[v] != cusp)
+            if (tet->vertex[v] != cusp)
                 continue;
 
             gluing = tet->gluing[v];
@@ -2551,7 +2551,7 @@ static void get_quick_face_horoballs(
                 /*
                  *  Note the cusp index of the new horoball.
                  */
-                (*next_horoball)->cusp_index = tet->neighbor[v]->cusp[missing_corner]->cusp_index;
+                (*next_horoball)->cusp_index = tet->neighbor[v]->vertex[missing_corner]->cusp_index;
 
                 /*
                  *  Move on.
@@ -2915,7 +2915,7 @@ static void compute_exp_min_d(
 
         for (i = 0; i < 2; i++)
         {
-            cusp = edge->incident_tet->cusp[v[i]];
+            cusp = edge->incident_tet->vertex[v[i]];
 
             if (cusp->exp_min_d > exp_d)
                 cusp->exp_min_d = exp_d;
@@ -2979,7 +2979,7 @@ static void read_initial_tetrahedra(
 
         for (v = 0; v < 4; v++)
         {
-            if (tet->cusp[v] != cusp)
+            if (tet->vertex[v] != cusp)
                 continue;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */
@@ -3086,7 +3086,7 @@ static void add_tiling_horoball_to_list(
 
     tiling_horoball->data.center        = tiling_tet->corner[v];
     tiling_horoball->data.radius        = 0.5 * tiling_tet->horoball_height[v];
-    tiling_horoball->data.cusp_index    = tiling_tet->underlying_tet->cusp[v]->cusp_index;
+    tiling_horoball->data.cusp_index    = tiling_tet->underlying_tet->vertex[v]->cusp_index;
 
     tiling_horoball->next = *horoball_linked_list;
     *horoball_linked_list = tiling_horoball;
@@ -3154,7 +3154,7 @@ static Boolean face_contains_useful_edge(
 
     min_separation_sq = tiling_tet->horoball_height[big_vertex]
                       * cutoff_height
-                      * tiling_tet->underlying_tet->cusp[big_vertex]->exp_min_d;
+                      * tiling_tet->underlying_tet->vertex[big_vertex]->exp_min_d;
 
     for (v = 0; v < 4; v++)
     {
@@ -3979,7 +3979,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
             /*
              *  If this isn't the cusp the user wants, ignore it.
              */
-            if (tet->cusp[v] != cusp)
+            if (tet->vertex[v] != cusp)
                 continue;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */
@@ -4133,7 +4133,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
             /*
              *  If this isn't the cusp the user wants, ignore it.
              */
-            if (tet->cusp[v] != cusp)
+            if (tet->vertex[v] != cusp)
                 continue;
 
             for (h = 0; h < 2; h++)     /* h = right_handed, left_handed */

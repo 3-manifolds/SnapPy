@@ -211,7 +211,7 @@ FuncResult read_the_file(
 			if (fscanf(fp, "%d", &cusp_index) != 1
 			 || cusp_index < 0 || cusp_index >= manifold->num_cusps)
 				goto bail;
-			tet->cusp[vertex] = cal[cusp_index];
+			tet->vertex[vertex] = cal[cusp_index];
 		}
 		for (c = 0; c < 2; c++)
 			for (vertex = 0; vertex < 4; vertex++)

@@ -609,10 +609,10 @@ static void compute_cusp_image(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->cusp_index >= 0)
+            if (tet->vertex[v]->cusp_index >= 0)
 
-                isometry->cusp_image[tet->cusp[v]->cusp_index]
-                    = tet->image->cusp[EVALUATE(tet->map, v)]->cusp_index;
+                isometry->cusp_image[tet->vertex[v]->cusp_index]
+                    = tet->image->vertex[EVALUATE(tet->map, v)]->cusp_index;
 }
 
 
@@ -666,15 +666,15 @@ static void compute_cusp_map(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->cusp_index >= 0)
+            if (tet->vertex[v]->cusp_index >= 0)
 
                 for (i = 0; i < 2; i++)     /* i = M, L */
                 {
-                    isometry->cusp_map[tet->cusp[v]->cusp_index][M][i]
-                        = + tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[L][i];
+                    isometry->cusp_map[tet->vertex[v]->cusp_index][M][i]
+                        = + tet->image->vertex[EVALUATE(tet->map, v)]->intersection_number[L][i];
 
-                    isometry->cusp_map[tet->cusp[v]->cusp_index][L][i]
-                        = - tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[M][i];
+                    isometry->cusp_map[tet->vertex[v]->cusp_index][L][i]
+                        = - tet->image->vertex[EVALUATE(tet->map, v)]->intersection_number[M][i];
                 }
 }
 
@@ -718,8 +718,8 @@ static void copy_images_to_scratch(
                 {
                     ll = EVALUATE(tet->map, l);
 
-                    if (get_cusp_topology(tet->cusp[k]) == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                    if (get_cusp_topology(tet->vertex[k]) == torus_cusp
+                        && double_copy_on_tori == TRUE)
 
                         tet->image->scratch_curve[which_set][i][right_handed][kk][ll] =
                         tet->image->scratch_curve[which_set][i][ left_handed][kk][ll] =
@@ -728,7 +728,7 @@ static void copy_images_to_scratch(
 
                     else
                         /*
-                         *      tet->cusp[k]->topology == Klein_cusp
+                         *      tet->vertex[k]->topology == Klein_cusp
                          *   || double_copy_on_tori == FALSE
                          */
 

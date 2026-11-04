@@ -168,7 +168,7 @@ void compute_intersection_numbers(
                              */
                             if (tet->scratch_curve[0][g][f][i][j] > 0)
 
-                                tet->cusp[i]->intersection_number[g][h]
+                                tet->vertex[i]->intersection_number[g][h]
                                  += tet->scratch_curve[0][g][f][i][j]
                                   * tet->scratch_curve[1][h][f][i][j];
             }
@@ -219,12 +219,12 @@ void compute_intersection_numbers(
                          *  Got that?
                          */
 
-                        tet->cusp[i]->intersection_number[g][h]
+                        tet->vertex[i]->intersection_number[g][h]
                          += FLOW(tet->scratch_curve[0][g][right_handed][i][j],
                                  tet->scratch_curve[0][g][right_handed][i][face_on_the_right])
                           * tet->scratch_curve[1][h][right_handed][i][face_on_the_right];
 
-                        tet->cusp[i]->intersection_number[g][h]
+                        tet->vertex[i]->intersection_number[g][h]
                          += FLOW(tet->scratch_curve[0][g][left_handed][i][j],
                                  tet->scratch_curve[0][g][left_handed][i][face_on_the_left])
                           * tet->scratch_curve[1][h][left_handed][i][face_on_the_left];
@@ -267,8 +267,8 @@ void copy_curves_to_scratch(
 
                 for (l = 0; l < 4; l++)
 
-                    if (get_cusp_topology(tet->cusp[k]) == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                    if (get_cusp_topology(tet->vertex[k]) == torus_cusp
+                        && double_copy_on_tori == TRUE)
 
                         tet->scratch_curve[which_set][i][right_handed][k][l] =
                         tet->scratch_curve[which_set][i][ left_handed][k][l] =
@@ -277,7 +277,7 @@ void copy_curves_to_scratch(
 
                     else
                         /*
-                         *      tet->cusp[k]->topology == Klein_cusp
+                         *      tet->vertex[k]->topology == Klein_cusp
                          *   || double_copy_on_tori == FALSE
                          */
 

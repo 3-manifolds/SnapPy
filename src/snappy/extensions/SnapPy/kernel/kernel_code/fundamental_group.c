@@ -1087,7 +1087,7 @@ static void find_standard_basepoint(
              cusp->basepoint_vertex < 4;
              cusp->basepoint_vertex++)
         {
-            if (cusp->basepoint_tet->cusp[cusp->basepoint_vertex] != cusp)
+            if (cusp->basepoint_tet->vertex[cusp->basepoint_vertex] != cusp)
                 continue;
 
             for (face = 0; face < 4; face++)

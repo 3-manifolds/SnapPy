@@ -519,7 +519,7 @@ void get_cusp_equations_pgl(
    	    /* for each vertex of the tet */
 	    for (v = 0; v < 4; v++) {
 		
-		if (tet->cusp[v] != cusp) {
+		if (tet->vertex[v] != cusp) {
 		    continue;
 		}
 

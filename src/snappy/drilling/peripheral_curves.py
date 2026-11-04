@@ -205,6 +205,6 @@ def _install_longitude(start_tet : Tetrahedron):
 # and exercise Manifold.drill_word. The two if-branches where the kernel is
 # flipping the meridian and that should not be executed are:
 #
-#   "if (tet->cusp[v]->intersection_number[L][M] == -1)" in orient.c and
-#   "if (tet->cusp[i]->intersection_number[L][M] == -1)" in peripheral_curves.c
+#   "if (tet->vertex[v]->intersection_number[L][M] == -1)" in orient.c and
+#   "if (tet->vertex[i]->intersection_number[L][M] == -1)" in peripheral_curves.c
 #

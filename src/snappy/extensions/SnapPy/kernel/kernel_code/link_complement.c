@@ -1152,17 +1152,17 @@ static void create_real_cusps(
         theXCusp = theCusps[theCrossing->component[KLPStrandX]];
         theYCusp = theCusps[theCrossing->component[KLPStrandY]];
 
-        theCrossing->tet[0]->cusp[2] = theXCusp;
-        theCrossing->tet[0]->cusp[3] = theYCusp;
+        theCrossing->tet[0]->vertex[2] = theXCusp;
+        theCrossing->tet[0]->vertex[3] = theYCusp;
 
-        theCrossing->tet[1]->cusp[2] = theYCusp;
-        theCrossing->tet[1]->cusp[3] = theXCusp;
+        theCrossing->tet[1]->vertex[2] = theYCusp;
+        theCrossing->tet[1]->vertex[3] = theXCusp;
 
-        theCrossing->tet[2]->cusp[2] = theXCusp;
-        theCrossing->tet[2]->cusp[3] = theYCusp;
+        theCrossing->tet[2]->vertex[2] = theXCusp;
+        theCrossing->tet[2]->vertex[3] = theYCusp;
 
-        theCrossing->tet[3]->cusp[2] = theYCusp;
-        theCrossing->tet[3]->cusp[3] = theXCusp;
+        theCrossing->tet[3]->vertex[2] = theYCusp;
+        theCrossing->tet[3]->vertex[3] = theXCusp;
     }
 
     /*
@@ -1199,7 +1199,7 @@ static void create_finite_vertices(
     for (i = 0; i < internal_link_projection->num_crossings; i++)
         for (j = 0; j < 4; j++)
             for (k = 0; k < 2; k++)
-                internal_link_projection->crossings[i].tet[j]->cusp[k] = thePoles[k];
+                internal_link_projection->crossings[i].tet[j]->vertex[k] = thePoles[k];
 }
 
 

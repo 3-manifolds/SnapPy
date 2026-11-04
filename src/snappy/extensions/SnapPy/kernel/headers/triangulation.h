@@ -138,7 +138,7 @@ struct Tetrahedron
 {
     Tetrahedron         *neighbor[4];       /**< kernel_typedefs.h                        */
     Permutation         gluing[4];          /**< kernel_typedefs.h                        */
-    Vertex              *cusp[4];           /**< the cusp containing each vertex          */
+    Vertex              *vertex[4];         /**< the cusp containing each vertex          */
     int                 curve[2][2][4][4];  /**< peripheral_curves.c                      */
     int                 scratch_curve[2][2][2][4][4]; /**< intersection_numbers.c (local) */
     EdgeClass           *edge_class[6];     /**< edge_classes.c                           */

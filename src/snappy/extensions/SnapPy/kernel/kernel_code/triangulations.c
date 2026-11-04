@@ -181,11 +181,11 @@ void data_to_triangulation(
             {
                 if (data->tetrahedron_data[i].cusp_index[j] >= 0)
                     /* assign a real cusp */
-                    tet_array[i]->cusp[j] = cusp_array[data->tetrahedron_data[i].cusp_index[j]];
+                    tet_array[i]->vertex[j] = cusp_array[data->tetrahedron_data[i].cusp_index[j]];
                 else
                 {
                     /* mark a finite vertex with NULL */
-                    tet_array[i]->cusp[j] = NULL;
+                    tet_array[i]->vertex[j] = NULL;
                     finite_vertices_are_present = TRUE;
                 }
             }
@@ -412,7 +412,7 @@ void triangulation_to_data(
          */
         for (j = 0; j < 4; j++)
             data->tetrahedron_data[i].cusp_index[j] =
-                ((tet->cusp[j]->cusp_index >= 0) ? tet->cusp[j]->cusp_index : -1);
+                ((tet->vertex[j]->cusp_index >= 0) ? tet->vertex[j]->cusp_index : -1);
 
         for (j = 0; j < 2; j++)
             for (k = 0; k < 2; k++)
@@ -700,7 +700,7 @@ void copy_triangulation(
         {
             new_tet[i]->neighbor[j] = new_tet[tet->neighbor[j]->index];
             new_tet[i]->gluing[j]   = tet->gluing[j];
-            new_tet[i]->cusp[j]     = new_cusp[tet->cusp[j]->cusp_index - min_cusp_index];
+            new_tet[i]->vertex[j]     = new_cusp[tet->vertex[j]->cusp_index - min_cusp_index];
         }
 
         for (j = 0; j < 6; j++)
@@ -883,7 +883,7 @@ void initialize_tetrahedron(
     {
         tet->neighbor[i]            = NULL;
         tet->gluing[i]              = 0;
-        tet->cusp[i]                = NULL;
+        tet->vertex[i]                = NULL;
         tet->generator_status[i]    = unassigned_generator;
         tet->generator_index[i]     = -1;
         tet->generator_parity[i]    = unknown_parity;

@@ -103,9 +103,9 @@ static void compute_new_curves(
                         tet->curve[h][i][j][k] =
                             (j == k) ?
                             0 :
-                            - tet->cusp[j]->intersection_number[h][L]
+                            - tet->vertex[j]->intersection_number[h][L]
                                 * tet->scratch_curve[nice_curves][M][i][j][k]
-                            + tet->cusp[j]->intersection_number[h][M]
+                            + tet->vertex[j]->intersection_number[h][M]
                                 * tet->scratch_curve[nice_curves][L][i][j][k];
 }
 SNAPPEA_NAMESPACE_END_SCOPE

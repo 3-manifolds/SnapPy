@@ -55,7 +55,7 @@ static Boolean realize_tetrahedron_from_angles(
     for (i = 0; i < 4; i++)
     {
         Real orbifold_euler_characteristic =
-            orb_compute_orbifold_cusp_euler_characteristic(tet->cusp[i]);
+            orb_compute_orbifold_cusp_euler_characteristic(tet->vertex[i]);
 
         if (ABS(orbifold_euler_characteristic) < EULER_EPSILON)
         {
@@ -146,7 +146,7 @@ Boolean orb_realize_tetrahedron_from_Gram_matrix(
             }
             else
             {
-                cusp = tet->cusp[i];
+                cusp = tet->vertex[i];
                 g[i][i] = cusp->orb_vertex_shape->inner_product[ultimate];
             }
 

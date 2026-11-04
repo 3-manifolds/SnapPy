@@ -1142,7 +1142,7 @@ extern void initialize_tetrahedron(Tetrahedron *tet);
  *  Initialize the fields of a Tetrahedron to the most benign values
  *  possible.
  */
-extern void initialize_cusp(Vertex *cusp);
+extern void initialize_vertex(Vertex *cusp);
 /**<
  *  Initialize the fields of a Vertex to the most benign values
  *  possible.

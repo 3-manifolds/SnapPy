@@ -459,7 +459,7 @@ static Triangulation *subdivide_manifold(
              */
 
             new_cusps[0] = NEW_STRUCT(Vertex);
-            initialize_cusp(new_cusps[0]);
+            initialize_vertex(new_cusps[0]);
             INSERT_BEFORE(new_cusps[0], &subdivision->vertex_list_end);
             new_cusps[0]->cusp_index = subdivision->num_cusps++;
             new_cusps[0]->euler_characteristic = 0;
@@ -467,7 +467,7 @@ static Triangulation *subdivide_manifold(
             if (is_two_sided == TRUE)
             {
                 new_cusps[1] = NEW_STRUCT(Vertex);
-                initialize_cusp(new_cusps[1]);
+                initialize_vertex(new_cusps[1]);
                 INSERT_BEFORE(new_cusps[1], &subdivision->vertex_list_end);
                 new_cusps[1]->cusp_index = subdivision->num_cusps++;
                 new_cusps[1]->euler_characteristic = 0;
@@ -648,7 +648,7 @@ static void copy_cusps(
          cusp = cusp->next)
     {
         cusp->matching_cusp = NEW_STRUCT(Vertex);
-        initialize_cusp(cusp->matching_cusp);
+        initialize_vertex(cusp->matching_cusp);
         
         if (cusp->is_complete != TRUE)
             uFatalError("copy_cusps", "normal_surface_splitting");

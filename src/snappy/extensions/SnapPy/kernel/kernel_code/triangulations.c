@@ -44,7 +44,7 @@
  *
  *      void free_tetrahedron(Tetrahedron *tet);
  *      void free_edge_class(EdgeClass *edge_class);
- *      void free_cusp(Vertex * cusp);
+ *      void free_vertex(Vertex * cusp);
  *
  *
  *  which frees a Tetrahedron and all attached data structures, but does NOT
@@ -483,7 +483,7 @@ void free_triangulation(
         {
             dead_cusp = manifold->vertex_list_begin.next;
             REMOVE_NODE(dead_cusp);
-            free_cusp(dead_cusp);
+            free_vertex(dead_cusp);
         }
 
         my_free(manifold);
@@ -534,7 +534,7 @@ void free_edge_class(
     my_free(edge_class);
 }
 
-void free_cusp(Vertex * cusp)
+void free_vertex(Vertex * cusp)
 {
     if (cusp->orb_vertex_shape != NULL)
         my_free(cusp->orb_vertex_shape);

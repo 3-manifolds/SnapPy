@@ -1160,7 +1160,7 @@ extern void free_tetrahedron(Tetrahedron *tet);
  */
 
 extern void free_edge_class(EdgeClass *edge_class);
-extern void free_cusp(Vertex * cusp);
+extern void free_vertex(Vertex * cusp);
 
 /**
  *  What you'd expect.  See triangulation.c for details.

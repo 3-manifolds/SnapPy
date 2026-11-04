@@ -242,7 +242,7 @@ static Triangulation *try_Dirichlet_to_triangulation(
      *  and count them.
      */
     create_cusps(triangulation);
-    compute_cusp_Euler_characteristics(triangulation);
+    compute_vertex_link_Euler_characteristics(triangulation);
     index_real_and_fake_cusps(triangulation);
     peripheral_curves(triangulation);
     remove_finite_vertices(triangulation,

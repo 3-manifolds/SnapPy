@@ -375,36 +375,39 @@ static Boolean incident_to_filled_cusp(
     Tetrahedron *tet,
     Boolean     fill_cusp[])
 {
-    int i;
-
-    for (i = 0; i < 4; i++)
-
-        if (get_cusp_topology(tet->vertex[i]) != sphere_cusp
-         && fill_cusp[tet->vertex[i]->cusp_index] == TRUE)
+    for (int i = 0; i < 4; i++)
+        if (vertex_is_cusp(tet->vertex[i]))
         {
-            /*
-             *  Make sure no other routine is using the "extra"
-             *  field in the Tetrahedron data structure.
-             */
-            if (tet->extra != NULL)
-                uFatalError("incident_to_filled_cusp", "close_cusps");
 
-            /*
-             *  Attach the locally defined struct extra.
-             */
-            tet->extra = NEW_STRUCT(Extra);
+            int cusp_index = tet->vertex[i]->cusp_index;
+            if (cusp_index < 0)
+                uFatalError("incident_to_filled_cusp (0)", "close_cusps");
 
-            /*
-             *  Record for posterity the index of the ideal vertex.
-             */
-            tet->extra->ideal_vertex_index = i;
+            if (fill_cusp[cusp_index] == TRUE)
+            {
+                /*
+                 *  Make sure no other routine is using the "extra"
+                 *  field in the Tetrahedron data structure.
+                 */
+                if (tet->extra != NULL)
+                    uFatalError("incident_to_filled_cusp", "close_cusps");
 
-            return TRUE;
+                /*
+                 *  Attach the locally defined struct extra.
+                 */
+                tet->extra = NEW_STRUCT(Extra);
+
+                /*
+                 *  Record for posterity the index of the ideal vertex.
+                 */
+                tet->extra->ideal_vertex_index = i;
+
+                return TRUE;
+            }
         }
 
     return FALSE;
 }
-
 
 static void simplify_cusps(
     Triangulation   *manifold,
@@ -1173,23 +1176,21 @@ static void standard_form(
     Tetrahedron     *short_list_begin,
     Tetrahedron     *short_list_end)
 {
-    Tetrahedron *tet;
-
     /*
      *  See the documentation in close_cusps() for an illustration of
      *  the standard forms.
      */
 
-    for (tet = short_list_begin->next;
+    for (Tetrahedron * tet = short_list_begin->next;
          tet != short_list_end;
          tet = tet->next)
 
-        if (get_cusp_topology(tet->vertex[tet->extra->ideal_vertex_index]) == torus_cusp)
+        if (vertex_has_orientable_link(
+                tet->vertex[tet->extra->ideal_vertex_index]))
             standard_torus_form(manifold, tet);
         else
             standard_Klein_bottle_form(manifold, tet);
 }
-
 
 static void standard_torus_form(
     Triangulation   *manifold,
@@ -1480,7 +1481,7 @@ static void fold_one_cusp(
      */
 
     dead_cusp = tet[0]->vertex[f[0][0]];
-    if (get_cusp_topology(dead_cusp) == torus_cusp)
+    if (vertex_has_orientable_link(dead_cusp))
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1577,7 +1578,7 @@ static void fill_cusp_with_solid_torus(
     f[0][0] = tet[0]->extra->ideal_vertex_index;
 
     /* We only support torus cusps for now. */
-    if (get_cusp_topology(tet0->vertex[f[0][0]]) != torus_cusp){
+    if (!vertex_is_torus_cusp(tet0->vertex[f[0][0]])) {
 	uFatalError("fill_cusp_with_solid_torus_1", "close_cusps");
     }
 
@@ -1655,7 +1656,7 @@ static void fill_cusp_with_solid_torus(
      */
 
     dead_cusp = tet[0]->vertex[f[0][0]];
-    if (get_cusp_topology(dead_cusp) == torus_cusp)
+    if (vertex_has_orientable_link(dead_cusp))
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1697,7 +1698,7 @@ static void replace_fake_cusps(
 
         for (i = 0; i < 4; i++)
 
-            if (get_cusp_topology(tet->vertex[i]) == sphere_cusp)
+            if (vertex_is_finite(tet->vertex[i]))
 
                 tet->vertex[i] = NULL;
 
@@ -1709,7 +1710,7 @@ static void replace_fake_cusps(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) == sphere_cusp)
+        if (vertex_is_finite(cusp))
         {
             dead_cusp = cusp;
             cusp = cusp->prev;  /* so the loop will proceed correctly */
@@ -1737,7 +1738,7 @@ static void renumber_real_cusps(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) != sphere_cusp)
+        if (vertex_is_cusp(cusp))
 
             cusp->cusp_index = cusp_count++;
 }

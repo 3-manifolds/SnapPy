@@ -163,7 +163,7 @@ FuncResult read_the_file(
 	for (count = 0; count < manifold->num_cusps; count++)
 	{
 		cal[count] = NEW_STRUCT(Vertex);
-		initialize_cusp(cal[count]);
+		initialize_vertex(cal[count]);
 		cal[count]->cusp_index = count;
 		INSERT_BEFORE(cal[count], &manifold->vertex_list_end);
 		set_cusp_topology(

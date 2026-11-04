@@ -698,7 +698,7 @@ static void set_cusps(
      */
 
     brand_new_cusp = NEW_STRUCT(Vertex);
-    initialize_cusp(brand_new_cusp);
+    initialize_vertex(brand_new_cusp);
     INSERT_BEFORE(brand_new_cusp, &new_manifold->vertex_list_end);
     brand_new_cusp->cusp_index = old_manifold->num_cusps;
 

@@ -62,7 +62,7 @@ struct OrbEdgeShape
  * Corresponds to fields added to Vertex in snappea/headers/triangulation.
  * https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/snappea/headers/triangulation.h#L206-207
  */
-struct OrbCuspShape
+struct OrbVertexShape
 {
     Real                inner_product[4];
     Real                area;

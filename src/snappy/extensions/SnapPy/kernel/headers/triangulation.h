@@ -65,7 +65,7 @@ typedef struct EdgeClass        EdgeClass;
 typedef struct Vertex           Vertex;
 typedef struct OrbTetShape      OrbTetShape;
 typedef struct OrbEdgeShape     OrbEdgeShape;
-typedef struct OrbCuspShape     OrbCuspShape;
+typedef struct OrbVertexShape   OrbVertexShape;
 
 /**
  *  ComplexWithLog stores a complex edge parameter in both rectangular
@@ -235,7 +235,7 @@ struct Vertex
                         *real_cusp_equation_im; /**< gluing_equations.c (used locally)    */
     Complex             cusp_shape[2];          /**< cusp_shapes.c                        */
     int                 shape_precision[2];     /**< cusp_shapes.c                        */
-    OrbCuspShape        *orb_cusp_shape;        /**< Encodes hyperbolic structure using vertex Gram matrices */
+    OrbVertexShape      *orb_vertex_shape;        /**< Encodes hyperbolic structure using vertex Gram matrices */
     int                 orb_num_incident_singular_edges; /**< Corresponds to Triangulation::num_cone_points in Orb. */
     EdgeClass           **orb_incident_singular_edges;   /**< Singular edges incident to this cusp.
                                                           * Similar to Triangulation::cone_points,

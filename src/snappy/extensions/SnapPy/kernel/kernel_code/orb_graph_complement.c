@@ -983,8 +983,8 @@ extern void dump_triangulation(
         printf("|)\t\t");
 
  #if 0
-        for (i = 0; i < cusp->orb_cusp_shape->num_cone_points; i++)
-            printf("%d\t", cusp->orb_cusp_shape->cone_points[i]);
+        for (i = 0; i < cusp->orb_vertex_shape->num_cone_points; i++)
+            printf("%d\t", cusp->orb_vertex_shape->cone_points[i]);
         printf("\n");
  #endif
     }

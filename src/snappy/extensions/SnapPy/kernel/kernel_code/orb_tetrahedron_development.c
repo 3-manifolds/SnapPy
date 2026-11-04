@@ -8,7 +8,7 @@
  *  https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/snappea/code/new_choose_generators.c
  *
  *  The geometric data lives in Tetrahedron::orb_tet_shape,
- *  EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape.
+ *  EdgeClass::orb_edge_shape and Vertex::orb_vertex_shape.
  */
 
 #include "kernel.h"
@@ -147,7 +147,7 @@ Boolean orb_realize_tetrahedron_from_Gram_matrix(
             else
             {
                 cusp = tet->cusp[i];
-                g[i][i] = cusp->orb_cusp_shape->inner_product[ultimate];
+                g[i][i] = cusp->orb_vertex_shape->inner_product[ultimate];
             }
 
     tred2(g, 4, d, e);

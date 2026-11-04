@@ -1132,7 +1132,7 @@ static void create_real_cusps(
     for (i = 0; i < internal_link_projection->num_components; i++)
     {
         theCusps[i] = NEW_STRUCT(Vertex);
-        initialize_cusp(theCusps[i]);
+        initialize_vertex(theCusps[i]);
         set_cusp_topology(theCusps[i], torus_cusp);
         theCusps[i]->cusp_index      = i;
         INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
@@ -1187,7 +1187,7 @@ static void create_finite_vertices(
     for (i = 0; i < 2; i++)
     {
         thePoles[i] = NEW_STRUCT(Vertex);
-        initialize_cusp(thePoles[i]);
+        initialize_vertex(thePoles[i]);
         set_cusp_topology(thePoles[i], sphere_cusp);
         thePoles[i]->cusp_index      = i - 2;    /* indices are -1 and -2 */
         INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);

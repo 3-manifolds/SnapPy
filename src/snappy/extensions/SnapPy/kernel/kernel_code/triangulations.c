@@ -19,7 +19,7 @@
  *
  *      void    initialize_triangulation(Triangulation *manifold);
  *      void    initialize_tetrahedron(Tetrahedron *tet);
- *      void    initialize_cusp(Vertex *cusp);
+ *      void    initialize_vertex(Vertex *cusp);
  *      void    initialize_edge_class(EdgeClass *edge_class);
  *
  *  which kernel functions use to do generic initializations.  Much of
@@ -150,7 +150,7 @@ void data_to_triangulation(
         for (i = 0; i < manifold->num_cusps; i++)
         {
             cusp_array[i] = NEW_STRUCT(Vertex);
-            initialize_cusp(cusp_array[i]);
+            initialize_vertex(cusp_array[i]);
             INSERT_BEFORE(cusp_array[i], &manifold->vertex_list_end);
         }
     }
@@ -861,8 +861,8 @@ void initialize_triangulation(
     manifold->edge_list_end.prev    = &manifold->edge_list_begin;
     manifold->edge_list_end.next    = NULL;
 
-    initialize_cusp(&manifold->vertex_list_begin);
-    initialize_cusp(&manifold->vertex_list_end);
+    initialize_vertex(&manifold->vertex_list_begin);
+    initialize_vertex(&manifold->vertex_list_end);
 
     manifold->vertex_list_begin.prev  = NULL;
     manifold->vertex_list_begin.next  = &manifold->vertex_list_end;
@@ -921,7 +921,7 @@ void initialize_tetrahedron(
 }
 
 
-void initialize_cusp(
+void initialize_vertex(
     Vertex  *cusp)
 {
     /*

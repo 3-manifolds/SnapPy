@@ -190,7 +190,7 @@ Vertex * create_one_cusp(
      */
 
     cusp = NEW_STRUCT(Vertex);
-    initialize_cusp(cusp);
+    initialize_vertex(cusp);
     INSERT_BEFORE(cusp, &manifold->vertex_list_end);
 
     /*
@@ -208,7 +208,7 @@ Vertex * create_one_cusp(
      *          the cusp's Euler characteristic is zero,
      *
      *      (4) keep the default values of cusp->is_complete,
-     *          cusp->m and cusp->l as set by initialize_cusp(), and
+     *          cusp->m and cusp->l as set by initialize_vertex(), and
      *
      *      (5) let the holonomy and cusp_shape be computed automatically
      *          when hyperbolic structure is computed.

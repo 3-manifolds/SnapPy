@@ -238,9 +238,8 @@ void compute_core_geodesic(
          *  double cover of the true longitude, so we have to
          *  divide the core_length by two to compensate.
          */
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (!vertex_has_orientable_link(cusp))
             length[i].real /= 2.0;
-
     }
 }
 SNAPPEA_NAMESPACE_END_SCOPE

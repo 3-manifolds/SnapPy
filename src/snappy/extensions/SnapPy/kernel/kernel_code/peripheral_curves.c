@@ -348,7 +348,7 @@ void peripheral_curves(
     for (Vertex * cusp = manifold->vertex_list_begin.next;
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if (is_cusp_real(cusp))
+        if (vertex_is_cusp(cusp))
             do_one_cusp(manifold, cusp);
 
     adjust_Klein_cusp_orientations(manifold);
@@ -371,7 +371,7 @@ void peripheral_curves_as_needed(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_real(cusp)
+        if (vertex_is_cusp(cusp)
             && cusp_has_curves(manifold, cusp) == FALSE)
 
             do_one_cusp(manifold, cusp);

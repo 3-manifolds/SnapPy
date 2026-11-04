@@ -221,8 +221,8 @@ static void      fold_one_cusp(Triangulation *manifold, Tetrahedron *tet0);
 static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target);
 static void      fill_cusps_with_solid_tori(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end, Boolean mark_solid_tori);
 static void      fill_cusp_with_solid_torus(Triangulation *manifold, Tetrahedron *tet0, int mark);
-static void      replace_fake_cusps(Triangulation *manifold);
-static void      renumber_real_cusps(Triangulation *manifold);
+static void      replace_finite_vertices(Triangulation *manifold);
+static void      renumber_cusps(Triangulation *manifold);
 
 void close_cusps(
     Triangulation   *manifold,
@@ -305,14 +305,14 @@ void close_cusps(
      *  Get rid of the old fake Cusps and install new ones.
      */
 
-    replace_fake_cusps(manifold);
+    replace_finite_vertices(manifold);
 
     /*
      *  Renumber the remaining real Cusps, so the indices
      *  are contiguous.
      */
 
-    renumber_real_cusps(manifold);
+    renumber_cusps(manifold);
 
     /*
      *  96/9/28  I haven't actually observed any incorrect behavior
@@ -1680,23 +1680,18 @@ static void fill_cusp_with_solid_torus(
 
 
 
-static void replace_fake_cusps(
+static void replace_finite_vertices(
     Triangulation   *manifold)
 {
-    Tetrahedron *tet;
-    int         i;
-    Vertex      *cusp,
-                *dead_cusp;
-
     /*
      *  Set to NULL all tet->vertex pointers which point to fake Cusps.
      */
 
-    for (tet = manifold->tet_list_begin.next;
+    for (Tetrahedron * tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
          tet = tet->next)
 
-        for (i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
 
             if (vertex_is_finite(tet->vertex[i]))
 
@@ -1706,14 +1701,14 @@ static void replace_fake_cusps(
      *  Free the fake Cusps.
      */
 
-    for (cusp = manifold->vertex_list_begin.next;
-         cusp != &manifold->vertex_list_end;
-         cusp = cusp->next)
+    for (Vertex * vertex = manifold->vertex_list_begin.next;
+         vertex != &manifold->vertex_list_end;
+         vertex = vertex->next)
 
-        if (vertex_is_finite(cusp))
+        if (vertex_is_finite(vertex))
         {
-            dead_cusp = cusp;
-            cusp = cusp->prev;  /* so the loop will proceed correctly */
+            Vertex * dead_cusp = vertex;
+            vertex = vertex->prev;  /* so the loop will proceed correctly */
             REMOVE_NODE(dead_cusp);
             my_free(dead_cusp);
         }
@@ -1726,20 +1721,17 @@ static void replace_fake_cusps(
 }
 
 
-static void renumber_real_cusps(
+static void renumber_cusps(
     Triangulation   *manifold)
 {
-    Vertex  *cusp;
-    int     cusp_count;
+    int cusp_count = 0;
 
-    cusp_count = 0;
+    for (Vertex * vertex = manifold->vertex_list_begin.next;
+         vertex != &manifold->vertex_list_end;
+         vertex = vertex->next)
 
-    for (cusp = manifold->vertex_list_begin.next;
-         cusp != &manifold->vertex_list_end;
-         cusp = cusp->next)
+        if (vertex_is_cusp(vertex))
 
-        if (vertex_is_cusp(cusp))
-
-            cusp->cusp_index = cusp_count++;
+            vertex->cusp_index = cusp_count++;
 }
 SNAPPEA_NAMESPACE_END_SCOPE

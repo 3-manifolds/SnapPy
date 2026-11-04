@@ -184,9 +184,9 @@ extern void index_real_and_fake_cusps(Triangulation *manifold);
  *  indices beginning at -1.
  */
 
-extern void compute_cusp_Euler_characteristics(Triangulation *manifold);
+extern void compute_vertex_link_Euler_characteristics(Triangulation *manifold);
 /**<
- *  Computes and stores the Euler characteristic of each cusp.
+ *  Computes and stores the Euler characteristic of each vertex link.
  */
 
 extern void compute_vertex_link_orientabilities(Triangulation   *manifold);

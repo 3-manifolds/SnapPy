@@ -8,7 +8,7 @@
  *      Boolean vertex_is_cusp(const Vertex * cusp);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
- *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
+ *      void    compute_vertex_link_Euler_characteristics(Triangulation *manifold);
  *      CuspTopology get_cusp_topology(const Vertex * cusp);
  *      void    set_cusp_topology(Vertex * cusp, CuspTopology topology);
  *
@@ -199,7 +199,7 @@ Vertex * create_one_cusp(
      *
      *  For "real" cusps the calling routine may
      *
-     *      (1) call compute_cusp_Euler_characteristics to set the Euler
+     *      (1) call compute_vertex_link_Euler_characteristics to set the Euler
      *          characteristic.
      *
      *      (2) call compute_vertex_link_orientabilities to set the cusp->orientability.
@@ -506,7 +506,7 @@ void index_real_and_fake_cusps(
             cusp->cusp_index = --fake_cusp_count;
 }
 
-void compute_cusp_Euler_characteristics(
+void compute_vertex_link_Euler_characteristics(
     Triangulation   *manifold)
 {
     Vertex      *cusp;
@@ -583,7 +583,7 @@ void compute_cusp_Euler_characteristics(
          cusp = cusp->next)
     {
         if (cusp->euler_characteristic % 2 != 0)
-            uFatalError("compute_cusp_Euler_characteristics", "cusps");
+            uFatalError("compute_vertex_link_Euler_characteristics", "cusps");
         cusp->euler_characteristic /= 2;
     }
 }

@@ -411,7 +411,7 @@ static void allocate_relation_matrix(
 
     /*
      *  There will be, at most, one relation for each EdgeClass and one
-     *  relation for each Cusp.  We'll worry about the exact number of
+     *  relation for each Vertex.  We'll worry about the exact number of
      *  relations later.  By an Euler characteristic argument,
      *  the number of EdgeClasses equals the number of Tetrahedra.
      *

@@ -245,7 +245,7 @@ void close_cusps(
     /*
      *  Simplify the cusps to be filled until each is triangulated
      *  by at most two triangles.  Ignore (1) fake "Cusps" at finite
-     *  vertices and (2) EdgeClasses not incident to a real Cusp;
+     *  vertices and (2) EdgeClasses not incident to a real Vertex;
      *  we'll fix them up at the end.  We maintain the tet->edge_class()
      *  fields for edges incident to real Cusps so that we can tell
      *  whether two EdgeClasses are distinct.  The fields within an
@@ -1137,7 +1137,7 @@ static void transfer_curves(
 {
     Tetrahedron *tet;
     VertexIndex v;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i,
                 j;
 
@@ -1399,7 +1399,7 @@ static void fold_one_cusp(
     int         i,
                 j;
     int         abs_int_num;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
 
     /*
      *  The illustrations in close_cusps() show the standard forms
@@ -1553,7 +1553,7 @@ static void fill_cusp_with_solid_torus(
 	        wt_two_face;
     int         i,
                 j;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
 
     /*
      * First add on more tet so have {1, 2, 3} as absolute values of
@@ -1684,7 +1684,7 @@ static void replace_fake_cusps(
 {
     Tetrahedron *tet;
     int         i;
-    Cusp        *cusp,
+    Vertex      *cusp,
                 *dead_cusp;
 
     /*
@@ -1705,8 +1705,8 @@ static void replace_fake_cusps(
      *  Free the fake Cusps.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (get_cusp_topology(cusp) == sphere_cusp)
@@ -1728,13 +1728,13 @@ static void replace_fake_cusps(
 static void renumber_real_cusps(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
     int     cusp_count;
 
     cusp_count = 0;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (get_cusp_topology(cusp) != sphere_cusp)

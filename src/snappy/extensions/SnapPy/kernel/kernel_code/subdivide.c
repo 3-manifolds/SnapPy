@@ -638,8 +638,8 @@ static void create_new_cusps(
     Triangulation   *old_triangulation)
 {
     /*
-     *  The Cusp data structures for the real cusps are
-     *  handled separately from the Cusp data structures
+     *  The Vertex data structures for the real cusps are
+     *  handled separately from the Vertex data structures
      *  for the finite vertices.
      */
 
@@ -652,13 +652,13 @@ static void create_real_cusps(
     Triangulation   *new_triangulation,
     Triangulation   *old_triangulation)
 {
-    Cusp        *old_cusp,
+    Vertex      *old_cusp,
                 *new_cusp;
     Tetrahedron *old_tet;
     int         i;
 
     /*
-     *  The Cusp data structures for the ideal vertices
+     *  The Vertex data structures for the ideal vertices
      *  in the new_triangulation are essentially just
      *  copied from those in the old_triangulation.
      */
@@ -669,13 +669,13 @@ static void create_real_cusps(
      *  queue.
      */
 
-    for (old_cusp = old_triangulation->cusp_list_begin.next;
-         old_cusp != &old_triangulation->cusp_list_end;
+    for (old_cusp = old_triangulation->vertex_list_begin.next;
+         old_cusp != &old_triangulation->vertex_list_end;
          old_cusp = old_cusp->next)
     {
-        new_cusp = NEW_STRUCT(Cusp);
+        new_cusp = NEW_STRUCT(Vertex);
         *new_cusp = *old_cusp;
-        INSERT_BEFORE(new_cusp, &new_triangulation->cusp_list_end);
+        INSERT_BEFORE(new_cusp, &new_triangulation->vertex_list_end);
         old_cusp->matching_cusp = new_cusp;
     }
 

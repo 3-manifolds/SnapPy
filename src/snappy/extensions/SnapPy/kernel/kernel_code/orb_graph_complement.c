@@ -742,11 +742,11 @@ static void create_real_cusps(
     OrbGraph *gamma,
     Triangulation *manifold)
 {
-    Cusp **theCusps, *thebottomCusp, *thetopCusp;
+    Vertex **theCusps, *thebottomCusp, *thetopCusp;
     OrbGraphMeeting *theMeeting, *theNeighbor;
     int i, j, utet, nhb, nhb_strand;
 
-    theCusps = NEW_ARRAY(gamma->num_components, Cusp *);
+    theCusps = NEW_ARRAY(gamma->num_components, Vertex *);
 
     manifold->num_cusps = 0;
     manifold->num_or_cusps = 0;
@@ -754,11 +754,11 @@ static void create_real_cusps(
 
     for (i = 0; i < gamma->num_components; i++)
     {
-        theCusps[i] = NEW_STRUCT(Cusp);
+        theCusps[i] = NEW_STRUCT(Vertex);
         initialize_cusp(theCusps[i]);
         set_cusp_topology(theCusps[i], torus_cusp);
         theCusps[i]->cusp_index = i;
-        INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
+        INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
     }
@@ -819,17 +819,17 @@ static void create_finite_vertices(
     OrbGraph *gamma,
     Triangulation *manifold)
 {
-    Cusp *thePoles[2];
+    Vertex *thePoles[2];
     int i, j, k, n;
 
     for (i = 0; i < 2; i++)
     {
-        thePoles[i] = NEW_STRUCT(Cusp);
+        thePoles[i] = NEW_STRUCT(Vertex);
 
         initialize_cusp(thePoles[i]);
         set_cusp_topology(thePoles[i], sphere_cusp);
         thePoles[i]->cusp_index = i - 2;
-        INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
+        INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }
 
     for (i = 0; i < gamma->num_meetings; i++)
@@ -931,7 +931,7 @@ extern void dump_triangulation(
 {
     int i;
     Tetrahedron *tet;
-    Cusp *cusp;
+    Vertex *cusp;
 
     number_the_tetrahedra(manifold);
 
@@ -972,8 +972,8 @@ extern void dump_triangulation(
     }
 
     printf(" Cusps:\n");
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end; cusp = cusp->next) {
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end; cusp = cusp->next) {
         printf("\t%d:\t", cusp->cusp_index);
 
         printf("  (");

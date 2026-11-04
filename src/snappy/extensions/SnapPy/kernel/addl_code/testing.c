@@ -7,8 +7,8 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 void testing_compute_cusp_orientabilities(
     Triangulation * manifold)
 {
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orientability = unknown_cusp_orientability;
     compute_cusp_orientabilities(manifold);

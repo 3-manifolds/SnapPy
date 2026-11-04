@@ -76,7 +76,7 @@ static void initialize_rhs(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     /*
      *  Initialize target angle sums for the edges.
@@ -93,8 +93,8 @@ static void initialize_rhs(
      *  Initialize target holonomy for the cusps.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
       cusp->target_holonomy.imag = TWO_PI;
@@ -148,7 +148,7 @@ void set_target_holonomy(Triangulation* manifold,
                          Complex        theTarget,
                          int            theRecomputeFlag)
 {
-    Cusp     *cusp = find_cusp(manifold, theCuspIndex);
+    Vertex   *cusp = find_cusp(manifold, theCuspIndex);
 
     cusp->target_holonomy.real = theTarget.real;
     cusp->target_holonomy.imag = theTarget.imag;

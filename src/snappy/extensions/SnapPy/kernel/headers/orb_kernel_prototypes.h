@@ -16,7 +16,7 @@ extern void orb_normalize_cusp_areas(Triangulation *manifold);
  *  Note that the vertex Gram matrices also encode a choice of cusp
  *  neighborhood for ideal vertices. This function changes the geometric
  *  structure stored in Tetrahedron::orb_tet_shape,
- *  EdgeClass::orb_edge_shape and Cusp::orb_cusp_shape so that all cusp
+ *  EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape so that all cusp
  *  neighborhoods have the same fixed area.
  */
 
@@ -28,15 +28,15 @@ extern void orb_normalize_cusp_areas(Triangulation *manifold);
 
 extern void orb_cusps_fill_incident_singular_edges(Triangulation * manifold);
 /**<
- *  Populates Cusp::num_incident_singular_edges and
- *  Cusp::incident_singular_edges. If the triangulation has any singular
+ *  Populates Vertex::num_incident_singular_edges and
+ *  Vertex::incident_singular_edges. If the triangulation has any singular
  *  edges, call this method before many other methods such as
  *  remove_finite_vertices (which, otherwise, would remove vertices
  *  adjacent to singular edges) or
  *  orb_compute_orbifold_cusp_euler_characteristic.
  */
 
-extern Real orb_compute_orbifold_cusp_euler_characteristic(Cusp * cusp);
+extern Real orb_compute_orbifold_cusp_euler_characteristic(Vertex * cusp);
 /**<
  *  Computes the orbifold cusp Euler characteristic. Requires that
  *  orb_cusps_fill_incident_singular_edges is called in advance.
@@ -125,7 +125,7 @@ extern Boolean orb_realize_tetrahedron_from_Gram_matrix(Tetrahedron *tet);
 /**<
  *  Realize a tetrahedron from the vertex Gram matrix data stored in
  *  Tetrahedron::orb_tet_shape, EdgeClass::orb_edge_shape and
- *  Cusp::orb_cusp_shape.
+ *  Vertex::orb_cusp_shape.
  */
 
 extern void orb_compute_corners_of_neighbor(Tetrahedron *tet, FaceIndex face);
@@ -144,7 +144,7 @@ extern void orb_compute_corners_of_neighbor(Tetrahedron *tet, FaceIndex face);
 extern void orb_identify_solution_type(Triangulation *manifold);
 /**< Identify type of solution computed by orb_find_hyperbolic_structure
  *   and stored in Tetrahedron::orb_tet_shape, EdgeClass::orb_edge_shape
- *   and Cusp::orb_cusp_shape. Write the solution type to
+ *   and Vertex::orb_cusp_shape. Write the solution type to
  *   Triangulation::orb_solution_type[filled].
  */
 
@@ -157,7 +157,7 @@ extern void orb_identify_solution_type(Triangulation *manifold);
 extern void orb_compute_tilts(Triangulation *manifold);
 /**< Compute tilts from solution computed by orb_find_hyperbolic_structure
  *   and stored in Tetrahedron::orb_tet_shape, EdgeClass::orb_edge_shape
- *   and Cusp::orb_cusp_shape
+ *   and Vertex::orb_cusp_shape
  */
 
 SNAPPEA_NAMESPACE_END_SCOPE

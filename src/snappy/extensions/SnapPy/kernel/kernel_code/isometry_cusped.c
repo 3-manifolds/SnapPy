@@ -633,7 +633,7 @@ static void compute_cusp_map(
      *  When the manifold is orientable and the Isometry is
      *  orientation-reversing, and sometimes when the manifold
      *  is nonorientable, the images of the peripheral curves
-     *  of a torus will lie on the "wrong" sheet of the Cusp's
+     *  of a torus will lie on the "wrong" sheet of the Vertex's
      *  orientation double cover.  (See peripheral_curves.c for
      *  background material.)  Therefore we copy the images of
      *  the peripheral curves of torus cusps to both sheets of

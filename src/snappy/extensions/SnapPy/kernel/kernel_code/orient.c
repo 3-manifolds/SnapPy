@@ -414,7 +414,7 @@ static void renumber_neighbors_and_gluings(
 static void renumber_cusps(
     Tetrahedron *tet)
 {
-    Cusp        *temp_cusp;
+    Vertex      *temp_cusp;
 
     temp_cusp       = tet->cusp[2];
     tet->cusp[2]    = tet->cusp[3];
@@ -709,7 +709,7 @@ static void reverse_all_meridians(
     Triangulation   *manifold)
 {
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i,
                 j,
                 k;
@@ -745,19 +745,19 @@ static void reverse_all_meridians(
      *  necessary, and could be eliminated if it's ever causes problems.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cusp->l = - cusp->l;
 
     /*
      *  Adjust all cusp_shapes.
-     *  (The current cusp_shape of a filled Cusp will be Zero, but that's OK.)
+     *  (The current cusp_shape of a filled Vertex will be Zero, but that's OK.)
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = initial, current */
@@ -775,8 +775,8 @@ static void reverse_all_meridians(
      *  the net effect on log(H(m)) is that its real part is negated.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
@@ -793,7 +793,7 @@ void fix_peripheral_orientations(
     Tetrahedron *tet;
     VertexIndex v;
     FaceIndex   f;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Boolean reversed_meridian = FALSE;
 
     /*
@@ -852,8 +852,8 @@ void fix_peripheral_orientations(
      *  necessary, and could be eliminated if it's ever causes problems.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->intersection_number[L][M] == -1)

@@ -90,7 +90,7 @@ int* get_cusp_equation(Triangulation* manifold, int cusp_num, int m, int l, int*
   int             *eqn,  i, coef[2], T;
     Tetrahedron     *tet;
     VertexIndex     v;
-    Cusp *cusp;
+    Vertex *cusp;
     FaceIndex       f, ff;
     int             c;
 
@@ -106,7 +106,7 @@ int* get_cusp_equation(Triangulation* manifold, int cusp_num, int m, int l, int*
 
     /* find right cusp */
 
-    cusp = manifold->cusp_list_begin.next;
+    cusp = manifold->vertex_list_begin.next;
     for (i = 0; i < cusp_num; i++ )
       cusp = cusp->next;
       

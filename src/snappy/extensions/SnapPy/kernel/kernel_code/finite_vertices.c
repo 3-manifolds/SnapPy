@@ -7,7 +7,7 @@
  *  splitting along a normal surface.  SnapPea represents a finite vertex
  *  as a cusp with the respective Euler characteristic and orientability.
  *  Except for the euler_characteristic, orientability, index, prev and
- *  next fields, all other fields of the Cusp data structure are ignored.
+ *  next fields, all other fields of the Vertex data structure are ignored.
  *  The indices are negative integers.
  *  Functions which do not use finite vertices may safely ignore the
  *  is_finite field, and assume no finite vertices are present.
@@ -98,17 +98,17 @@
 #include "kernel.h"
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
-static void initialize_matching_cusps(Triangulation *manifold, Cusp **special_fake_cusp);
+static void initialize_matching_cusps(Triangulation *manifold, Vertex **special_fake_cusp);
 static void merge_cusps(Triangulation *manifold);
 static void drill_tube(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e, Boolean creating_new_cusp);
-static void set_real_cusps(Triangulation *manifold, Cusp *special_fake_cusp);
+static void set_real_cusps(Triangulation *manifold, Vertex *special_fake_cusp);
 
 
 void remove_finite_vertices(
     Triangulation   *manifold,
     Boolean         create_new_cusp_if_necessary)
 {
-    Cusp    *special_fake_cusp;
+    Vertex  *special_fake_cusp;
     
     /*
      *  Simplify the triangulation before we begin.
@@ -171,7 +171,7 @@ void remove_finite_vertices(
 }
 
 Boolean is_cusp_finite_vertex(
-    const Cusp *cusp)
+    const Vertex *cusp)
 {
     if (cusp->euler_characteristic > 2)
         uFatalError("is_cusp_finite_vertex", "finite_vertices.c");
@@ -183,12 +183,12 @@ Boolean is_cusp_finite_vertex(
 
 static void initialize_matching_cusps(
     Triangulation   *manifold,
-    Cusp            **special_fake_cusp)
+    Vertex          **special_fake_cusp)
 {
     Boolean has_real_cusp = FALSE;
     
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if ( is_cusp_finite_vertex(cusp) )
@@ -201,7 +201,7 @@ static void initialize_matching_cusps(
 
     if (has_real_cusp == FALSE)
     {
-        *special_fake_cusp = manifold->cusp_list_begin.next;
+        *special_fake_cusp = manifold->vertex_list_begin.next;
         (*special_fake_cusp)->matching_cusp = *special_fake_cusp;
     }
     else
@@ -216,7 +216,7 @@ static void merge_cusps(
     EdgeClass   *edge;
     Tetrahedron *tet;
     EdgeIndex   e;
-    Cusp        *one_cusp,
+    Vertex      *one_cusp,
                 *other_cusp;
 
     do
@@ -292,7 +292,7 @@ static void drill_tube(
     int             num_strands,
                     intersection_number[2],
                     the_gcd;
-    Cusp            *unique_cusp;
+    Vertex          *unique_cusp;
     MatrixInt22     basis_change[1];
     
     /*
@@ -536,11 +536,11 @@ static void drill_tube(
 
 static void set_real_cusps(
     Triangulation   *manifold,
-    Cusp            *special_fake_cusp)
+    Vertex          *special_fake_cusp)
 {
     Tetrahedron *tet;
     int         i;
-    Cusp        *cusp,
+    Vertex      *cusp,
                 *dead_cusp;
 
     /*
@@ -556,11 +556,11 @@ static void set_real_cusps(
             tet->cusp[i] = tet->cusp[i]->matching_cusp;
 
     /*
-     *  Free the Cusp structures which had been used for finite vertices.
+     *  Free the Vertex structures which had been used for finite vertices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (is_cusp_finite_vertex(cusp)

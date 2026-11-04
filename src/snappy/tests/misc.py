@@ -105,5 +105,5 @@ from .. import (
     OrientableCuspedCensus, NonorientableCuspedCensus)
 
 def my_cusp_orientabilities(T):
-    T._testing_compute_cusp_orientabilities()
+    T._testing_compute_vertex_link_orientabilities()
     return ''.join(topology[0] for topology in T.cusp_info('topology'))

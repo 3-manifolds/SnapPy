@@ -1110,7 +1110,7 @@ static void create_real_cusps(
     LCProjection    *internal_link_projection,
     Triangulation   *manifold)
 {
-    Cusp        **theCusps,
+    Vertex      **theCusps,
                 *theXCusp,
                 *theYCusp;
     LCCrossing  *theCrossing;
@@ -1119,7 +1119,7 @@ static void create_real_cusps(
     /*
      *  Use a temporary array to keep the freshly created Cusps organized.
      */
-    theCusps = NEW_ARRAY(internal_link_projection->num_components, Cusp *);
+    theCusps = NEW_ARRAY(internal_link_projection->num_components, Vertex *);
 
     /*
      *  Create and initialize the Cusps.
@@ -1131,11 +1131,11 @@ static void create_real_cusps(
 
     for (i = 0; i < internal_link_projection->num_components; i++)
     {
-        theCusps[i] = NEW_STRUCT(Cusp);
+        theCusps[i] = NEW_STRUCT(Vertex);
         initialize_cusp(theCusps[i]);
         set_cusp_topology(theCusps[i], torus_cusp);
         theCusps[i]->cusp_index      = i;
-        INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
+        INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
     }
@@ -1176,7 +1176,7 @@ static void create_finite_vertices(
     LCProjection    *internal_link_projection,
     Triangulation   *manifold)
 {
-    Cusp    *thePoles[2];
+    Vertex  *thePoles[2];
     int     i,
             j,
             k;
@@ -1186,11 +1186,11 @@ static void create_finite_vertices(
      */
     for (i = 0; i < 2; i++)
     {
-        thePoles[i] = NEW_STRUCT(Cusp);
+        thePoles[i] = NEW_STRUCT(Vertex);
         initialize_cusp(thePoles[i]);
         set_cusp_topology(thePoles[i], sphere_cusp);
         thePoles[i]->cusp_index      = i - 2;    /* indices are -1 and -2 */
-        INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
+        INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }
 
     /*

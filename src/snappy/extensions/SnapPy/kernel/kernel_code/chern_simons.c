@@ -225,7 +225,7 @@ static FuncResult compute_CS(
     Real            value[2]
 )
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  We can handle only orientable manifolds.
@@ -239,8 +239,8 @@ static FuncResult compute_CS(
      *  coefficients which are relatively prime integers.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (Dehn_coefficients_are_relatively_prime_integers(cusp) == FALSE)
@@ -266,7 +266,7 @@ static FuncResult algorithm_one(
             complex_volume[2],
             length[2];
     int     singularity_index;
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  This algorithm is taken directly from Craig Hodgson's
@@ -329,8 +329,8 @@ static FuncResult algorithm_one(
     for (i = 0; i < 2; i++) /* i = ultimate, penultimate */
         core_length_sum[i] = Zero;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         compute_core_geodesic(cusp, &singularity_index, length);

@@ -94,10 +94,10 @@ typedef struct ideal_vertex
 
 
 static void     initialize_flags(Triangulation *manifold);
-static void     cross_section(Triangulation *manifold, Cusp *cusp);
-static void     find_starting_point(Triangulation *manifold, Cusp *cusp, Tetrahedron **tet0, VertexIndex *v0);
+static void     cross_section(Triangulation *manifold, Vertex *cusp);
+static void     find_starting_point(Triangulation *manifold, Vertex *cusp, Tetrahedron **tet0, VertexIndex *v0);
 static Real   vertex_area(IdealVertex *ideal_vertex);
-static void     normalize_cusp(Triangulation *manifold, Cusp *cusp, Real cusp_area);
+static void     normalize_cusp(Triangulation *manifold, Vertex *cusp, Real cusp_area);
 
 
 void allocate_cross_sections(
@@ -153,7 +153,7 @@ void free_cross_sections(
 void compute_cross_sections(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  Initialize cross_section->has_been_set flags to FALSE.
@@ -165,8 +165,8 @@ void compute_cross_sections(
      *  Compute a cross section of area (3/8)sqrt(3) for each cusp.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cross_section(manifold, cusp);
@@ -191,7 +191,7 @@ static void initialize_flags(
 
 static void cross_section(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Real          cusp_area;
     Tetrahedron     *tet0,
@@ -349,7 +349,7 @@ static void cross_section(
 
 static void find_starting_point(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Tetrahedron     **tet0,
     VertexIndex     *v0)
 {
@@ -475,7 +475,7 @@ static Real vertex_area(
 
 static void normalize_cusp(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Real          cusp_area)
 {
     Real      factor;

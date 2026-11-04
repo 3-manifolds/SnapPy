@@ -466,8 +466,8 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
          edge = edge->next)
         edge->orb_edge_shape = NEW_STRUCT(OrbEdgeShape);
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         cusp->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
 
@@ -545,7 +545,7 @@ static Triangulation *casson_to_triangulation(CassonFormat *cf) {
                                 PI + 0.0001)
                             neg = TRUE;
                     } else {
-                        Cusp *cusp = tet->cusp[i];
+                        Vertex *cusp = tet->cusp[i];
                         tet->orb_tet_shape->Gram_matrix[i][i] =
                             cusp->orb_cusp_shape->inner_product[ultimate];
                     }

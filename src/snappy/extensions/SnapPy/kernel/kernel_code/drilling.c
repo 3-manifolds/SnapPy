@@ -138,7 +138,7 @@ struct extra
 
 /*
  *  The functions which find the meridian and longitude on the new
- *  Cusp use a MeridionalAnnulus data structure.
+ *  Vertex use a MeridionalAnnulus data structure.
  *
  *  Recall from above that the each old Tetrahedron intersecting
  *  the drilling curve contributes two small new Tetrahedra to
@@ -165,11 +165,11 @@ struct extra
  *  the left_ and right_faces, while new small Tetrahedra are located
  *  at the near_ and bottom_faces.  (The reason for the nonstandard
  *  positioning described in the previous paragraph is that it gives
- *  a good view of the truncated vertices of the new Cusp.)
- *  On the new Cusp, "northward" is from the vertex on the bottom_face
+ *  a good view of the truncated vertices of the new Vertex.)
+ *  On the new Vertex, "northward" is from the vertex on the bottom_face
  *  towards the vertex on the near_face (i.e. "up"), while "eastward"
  *  is from the side near the right_face towards the side near
- *  left_face (i.e. to the right).  The meridian on the new Cusp will
+ *  left_face (i.e. to the right).  The meridian on the new Vertex will
  *  run north, while the longitude runs east (this corresponds to the
  *  usual convention).
  *
@@ -669,7 +669,7 @@ static void set_cusps(
     int         i,
                 j;
     FaceIndex   f;
-    Cusp        **new_cusp_addresses,
+    Vertex      **new_cusp_addresses,
                 *old_cusp,
                 *new_cusp,
                 *brand_new_cusp;
@@ -681,25 +681,25 @@ static void set_cusps(
      *  later convenience.
      */
 
-    new_cusp_addresses = NEW_ARRAY(old_manifold->num_cusps, Cusp *);
+    new_cusp_addresses = NEW_ARRAY(old_manifold->num_cusps, Vertex *);
 
-    for (old_cusp = old_manifold->cusp_list_begin.next;
-         old_cusp != &old_manifold->cusp_list_end;
+    for (old_cusp = old_manifold->vertex_list_begin.next;
+         old_cusp != &old_manifold->vertex_list_end;
          old_cusp = old_cusp->next)
     {
-        new_cusp = NEW_STRUCT(Cusp);
+        new_cusp = NEW_STRUCT(Vertex);
         *new_cusp = *old_cusp;
         new_cusp_addresses[new_cusp->cusp_index] = new_cusp;
-        INSERT_BEFORE(new_cusp, &new_manifold->cusp_list_end);
+        INSERT_BEFORE(new_cusp, &new_manifold->vertex_list_end);
     }
 
     /*
-     *  Create a brand new Cusp for the drilling curve.
+     *  Create a brand new Vertex for the drilling curve.
      */
 
-    brand_new_cusp = NEW_STRUCT(Cusp);
+    brand_new_cusp = NEW_STRUCT(Vertex);
     initialize_cusp(brand_new_cusp);
-    INSERT_BEFORE(brand_new_cusp, &new_manifold->cusp_list_end);
+    INSERT_BEFORE(brand_new_cusp, &new_manifold->vertex_list_end);
     brand_new_cusp->cusp_index = old_manifold->num_cusps;
 
     /*
@@ -726,7 +726,7 @@ static void set_cusps(
             }
 
     /*
-     *  Free the array used to hold the new Cusp addresses.
+     *  Free the array used to hold the new Vertex addresses.
      */
 
     my_free(new_cusp_addresses);
@@ -1117,7 +1117,7 @@ static void create_new_longitude(
      */
 
     /*
-     *  We assume the Cusp is orientable unless we discover otherwise.
+     *  We assume the Vertex is orientable unless we discover otherwise.
      */
     *cusp_topology = torus_cusp;
 

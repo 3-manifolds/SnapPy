@@ -46,7 +46,7 @@
  *  Boolean symmetry_group_invertible_knot(SymmetryGroup *symmetry_group);
  *
  *      Assumes the underlying manifold is oriented and has exactly
- *      one Cusp.  Returns TRUE if some Symmetry acts on the Cusp
+ *      one Vertex.  Returns TRUE if some Symmetry acts on the Vertex
  *      via the matrix (-1, 0; 0, -1);  returns FALSE otherwise.
  *
  *  int symmetry_group_order(SymmetryGroup *symmetry_group);
@@ -422,7 +422,7 @@ Boolean symmetry_group_invertible_knot(
 {
     /*
      *  We assume the underlying manifold is oriented and has
-     *  exactly one Cusp.
+     *  exactly one Vertex.
      */
 
     int i;

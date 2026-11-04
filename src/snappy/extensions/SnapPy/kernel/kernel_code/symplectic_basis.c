@@ -167,7 +167,7 @@ typedef struct OscillatingCurves {
 } OscillatingCurves;
 
 /**
- * Cusp Triangulation
+ * Vertex Triangulation
  *
  * CuspTriangle stores information about a triangle in the cusp triangulation. 
  * The homology curves bound a fundamental domain, and cusp regions store the 
@@ -185,7 +185,7 @@ typedef struct CuspVertex {
 
 typedef struct CuspTriangle {
     Tetrahedron                 *tet;                   /** tetrahedron the triangle comes from */
-    Cusp                        *cusp;                  /** cusp the triangle lies in */
+    Vertex                      *cusp;                  /** cusp the triangle lies in */
     int                         tet_index;              /** tet->index */
     VertexIndex                 tet_vertex;             /** vertex the triangle comes from */
     int                         num_curves;             /** number of curves on the triangle */
@@ -217,7 +217,7 @@ typedef struct CuspStructure {
     int                         num_cusp_triangles;     /** number of cusp triangle in the cusp */
     int                         num_cusp_regions;       /** number of cusp regions in the cusp */
     Triangulation               *manifold;              /** manifold */
-    Cusp                        *cusp;                  /** which manifold cusp does the struct lie in */
+    Vertex                      *cusp;                  /** which manifold cusp does the struct lie in */
     Graph                       *cusp_region_graph;     /** dual graph of the cusp region */
     CuspRegion                  **regions;              /** regions in the cusp region graph */
     CuspTriangle                cusp_triangle_begin;    /** header node of doubly linked list of cusp triangles */
@@ -273,7 +273,7 @@ void                    oscillating_curves(Triangulation *, Boolean *);
  * Initialisation Functions
  */
 
-CuspStructure           *init_cusp_structure(Triangulation *, Cusp *);
+CuspStructure           *init_cusp_structure(Triangulation *, Vertex *);
 void                    free_cusp_structure(CuspStructure **, int, int);
 void                    init_cusp_triangulation(Triangulation *, CuspStructure *);
 void                    init_cusp_region(CuspStructure *);
@@ -290,7 +290,7 @@ void                    free_oscillating_curves(OscillatingCurves *);
 void                    find_intersection_triangle(Triangulation *, CuspStructure *);
 
 /**
- * Cusp Functions
+ * Vertex Functions
  */
 
 int                     net_flow_around_vertex(CuspTriangle *, int);
@@ -755,7 +755,7 @@ void oscillating_curves(Triangulation *manifold, Boolean *edge_classes) {
 
     CuspStructure **cusps         = NEW_ARRAY(manifold->num_cusps, CuspStructure *);
     EndMultiGraph *multi_graph    = init_end_multi_graph(manifold);
-    Cusp *cusp;
+    Vertex *cusp;
 
     for (i = 0; i < multi_graph->num_edge_classes; i++)
         edge_classes[i] = multi_graph->edge_classes[i] == TRUE ? FALSE : TRUE;
@@ -765,9 +765,9 @@ void oscillating_curves(Triangulation *manifold, Boolean *edge_classes) {
     OscillatingCurves *curves   = init_oscillating_curves(manifold, edge_classes);
 
     for (i = 0; i < manifold->num_cusps; i++) {
-        for (cusp = manifold->cusp_list_begin.next; cusp != &manifold->cusp_list_end && cusp->cusp_index != i; cusp = cusp->next);
+        for (cusp = manifold->vertex_list_begin.next; cusp != &manifold->vertex_list_end && cusp->cusp_index != i; cusp = cusp->next);
 
-        if (cusp == &manifold->cusp_list_end)
+        if (cusp == &manifold->vertex_list_end)
             uFatalError("oscillating_curves", "symplectic_basis");
 
         cusps[i] = init_cusp_structure(manifold, cusp);
@@ -813,7 +813,7 @@ void free_symplectic_basis(int **eqns, int num_rows) {
  * Initialisation Functions
  */
 
-CuspStructure *init_cusp_structure(Triangulation *manifold, Cusp *cusp) {
+CuspStructure *init_cusp_structure(Triangulation *manifold, Vertex *cusp) {
     CuspStructure *boundary = NEW_STRUCT(CuspStructure);
 
     // Invalid cusp topology
@@ -886,7 +886,7 @@ void init_cusp_triangulation(Triangulation *manifold, CuspStructure *cusp) {
     Tetrahedron *tet;
     CuspTriangle *tri;
 
-    // Allocate Cusp Triangulation Header and Tail Null nodes
+    // Allocate Vertex Triangulation Header and Tail Null nodes
     cusp->cusp_triangle_begin.next      = &cusp->cusp_triangle_end;
     cusp->cusp_triangle_begin.prev      = NULL;
     cusp->cusp_triangle_end.next        = NULL;
@@ -1306,7 +1306,7 @@ void free_oscillating_curves(OscillatingCurves *curves) {
 // ----------------------------------------------------
 
 /*
- * Cusp Functions
+ * Vertex Functions
  */
 
 /*
@@ -1323,7 +1323,7 @@ void free_oscillating_curves(OscillatingCurves *curves) {
 
 void find_intersection_triangle(Triangulation *manifold, CuspStructure *boundary) {
     FaceIndex   face;
-    Cusp *cusp = boundary->cusp;
+    Vertex *cusp = boundary->cusp;
     int n;
 
     for (cusp->basepoint_tet = manifold->tet_list_begin.next;
@@ -1679,10 +1679,10 @@ void log_structs(Triangulation *manifold, CuspStructure **cusps,
                            "(Tet Index: %d, Tet Vertex: %d) Cusp Edge %d. (%d -> %d, %d -> %d)\n",
                            tri->tet_index,               // Tet Index
                            tri->tet_vertex,                // Tet Vertex
-                           j,      // Cusp Edge
+                           j,      // Vertex Edge
                            tri->tet->neighbor[j]->index,                              // Tet Index
                            EVALUATE(tri->tet->gluing[j], tri->tet_vertex),             // Tet Vertex
-                           EVALUATE(tri->tet->gluing[j], j),   // Cusp Edge
+                           EVALUATE(tri->tet->gluing[j], j),   // Vertex Edge
                            x_vertex1, y_vertex1,
                            x_vertex2, y_vertex2
                     );

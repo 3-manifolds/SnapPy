@@ -217,14 +217,14 @@ cdef extern from "triangulation.h":
         Complex log
     ctypedef struct c_TetShape "TetShape":
         c_ComplexWithLog cwl[2][3]
-    ctypedef struct Cusp:
+    ctypedef struct Vertex:
         Boolean is_complete
         Real m
         Real l
         int cusp_index
     ctypedef struct c_Tetrahedron "Tetrahedron":
         Real_struct tilt[4]
-        Cusp* cusp[4]
+        Vertex* cusp[4]
         int curve[2][2][4][4]
         int index
         GeneratorStatus generator_status[4]

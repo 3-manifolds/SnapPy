@@ -8,7 +8,7 @@
  *  https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/snappea/code/new_choose_generators.c
  *
  *  The geometric data lives in Tetrahedron::orb_tet_shape,
- *  EdgeClass::orb_edge_shape and Cusp::orb_cusp_shape.
+ *  EdgeClass::orb_edge_shape and Vertex::orb_cusp_shape.
  */
 
 #include "kernel.h"
@@ -135,7 +135,7 @@ Boolean orb_realize_tetrahedron_from_Gram_matrix(
                 sqrt_d[4],
                 e[4];
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     for (i = 0; i < 4; i++)
         for (j = 0; j < 4; j++)

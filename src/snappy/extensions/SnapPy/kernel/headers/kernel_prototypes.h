@@ -113,12 +113,12 @@ extern Complex  Zero,
 /*                                                                      */
 /************************************************************************/
 
-extern void compute_core_geodesic(  Cusp    *cusp,
+extern void compute_core_geodesic(  Vertex  *cusp,
                                     int     *singularity_index,
                                     Complex length[2]);
 /**<
  *  This function is similar to the function core_geodesic() defined in
- *  SnapPea.h, only it accepts a Cusp pointer as input and returns
+ *  SnapPea.h, only it accepts a Vertex pointer as input and returns
  *  the complex length relative to the ultimate and penultimate
  *  hyperbolic structures (rather than reporting a precision).
  */
@@ -132,7 +132,7 @@ extern void compute_core_geodesic(  Cusp    *cusp,
 
 extern void create_cusps(Triangulation *manifold);
 /**<
- *  Creates Cusp data structures for a Triangulation with valid
+ *  Creates Vertex data structures for a Triangulation with valid
  *  neighbor and gluing fields (and perhaps nothing else).
  */
 
@@ -142,18 +142,18 @@ extern void error_check_for_create_cusps(Triangulation *manifold);
  *  fields are NULL.
  */
 
-extern Cusp * create_one_cusp(Triangulation *manifold,
+extern Vertex * create_one_cusp(Triangulation *manifold,
                               Tetrahedron *tet,
                               VertexIndex v);
 /**<
- *  Creates a single Cusp, incident to the given Tetrahedron at
+ *  Creates a single Vertex, incident to the given Tetrahedron at
  *  the given ideal vertex.  Assumes ideal vertices which haven't
  *  been assigned to Cusps have tetrahedron->cusp[vertex] == NULL.
  */
 
 extern void create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
 /**<
- *  Creates Cusp data structures for the "fake cusps" corresponding to
+ *  Creates Vertex data structures for the "fake cusps" corresponding to
  *  finite vertices.
  */
 
@@ -164,13 +164,13 @@ extern void count_cusps(Triangulation *manifold);
  *  manifold->num_fake_cusps.
  */
 
-extern Boolean is_cusp_finite_vertex(const Cusp *cusp);
+extern Boolean is_cusp_finite_vertex(const Vertex *cusp);
 /**<
  *  Uses the stored Euler characteristic and num_incidient_singular_edges
  *  to determine whether the vertex link is a sphere without cone points.
  */
 
-extern Boolean is_cusp_real(const Cusp *cusp);
+extern Boolean is_cusp_real(const Vertex *cusp);
 /**<
  *  Uses the stored Euler characteristic and num_incidient_singular_edges
  *  to determine whether the vertex link is Klein bottle or torus
@@ -191,20 +191,20 @@ extern void compute_cusp_Euler_characteristics(Triangulation *manifold);
 
 extern void compute_cusp_orientabilities(Triangulation   *manifold);
 /**<
- *  Computes and sets the Cusp::orientability for each cusp where
+ *  Computes and sets the Vertex::orientability for each cusp where
  *  the orientability was unknown. This function has no requirement
  *  on the cusp's Euler characteristics (unlike peripheral_curves
  *  which can only determine the orientability for cusps with
  *  Euler characteristic zero).
  */
 
-extern CuspTopology get_cusp_topology(const Cusp * cusp);
+extern CuspTopology get_cusp_topology(const Vertex * cusp);
 /**<
  *  Determine the topology of the cusp from orientability and Euler
  *  characteristic.
  */
 
-extern void set_cusp_topology(Cusp * cusp, CuspTopology topology);
+extern void set_cusp_topology(Vertex * cusp, CuspTopology topology);
 /**<
  *  Set orientability and Euler characteristic from cusp topology.
  */
@@ -308,7 +308,7 @@ extern Boolean all_Dehn_coefficients_are_integers(Triangulation *manifold);
  *      Dehn filling coefficients.
  */
 
-extern Boolean Dehn_coefficients_are_integers(Cusp *cusp);
+extern Boolean Dehn_coefficients_are_integers(Vertex *cusp);
 /**<
  *  Returns FALSE if the Dehn filling coefficients of *cusp are
  *      nonintegers.
@@ -318,7 +318,7 @@ extern Boolean Dehn_coefficients_are_integers(Cusp *cusp);
 
 extern Boolean all_Dehn_coefficients_are_relatively_prime_integers(
                                                 Triangulation *manifold);
-extern Boolean Dehn_coefficients_are_relatively_prime_integers(Cusp *cusp);
+extern Boolean Dehn_coefficients_are_relatively_prime_integers(Vertex *cusp);
 /**<
  *  Same as above, but integer coefficients must be relatively prime.
  */
@@ -391,9 +391,9 @@ extern Boolean elements_generate_group(SymmetryGroup *the_group,
 /*                                                                      */
 /************************************************************************/
 
-extern Cusp *find_cusp(Triangulation *manifold, int cusp_index);
+extern Vertex *find_cusp(Triangulation *manifold, int cusp_index);
 /**<
- *  Converts a cusp_index to a Cusp pointer.
+ *  Converts a cusp_index to a Vertex pointer.
  */
 
 
@@ -463,7 +463,7 @@ extern void compute_holonomies(Triangulation *manifold);
 /**<
  *  Computes the log of the holonomy of each cusp based on the current
  *  shapes of the tetrahedra, and stores the results into the
- *  holonomy[ultimate][] field of the Cusp data structure.  The previous
+ *  holonomy[ultimate][] field of the Vertex data structure.  The previous
  *  contents of that field are transferred to holonomy[penultimate][].
  *
  *  compute_holonomies() is called whenever a hyperbolic structure is
@@ -779,7 +779,7 @@ extern void fix_peripheral_orientations(Triangulation *manifold);
 extern void peripheral_curves(Triangulation *manifold);
 /**<
  *  Puts a meridian and longitude on each cusp with Euler characteristic
- *  zero, and records each cusp's orientability in Cusp::orientability.
+ *  zero, and records each cusp's orientability in Vertex::orientability.
  *  If the manifold is
  *  oriented, the meridian and longitude adhere to the usual
  *  orientation convention (see peripheral_curves.c for details).
@@ -1142,9 +1142,9 @@ extern void initialize_tetrahedron(Tetrahedron *tet);
  *  Initialize the fields of a Tetrahedron to the most benign values
  *  possible.
  */
-extern void initialize_cusp(Cusp *cusp);
+extern void initialize_cusp(Vertex *cusp);
 /**<
- *  Initialize the fields of a Cusp to the most benign values
+ *  Initialize the fields of a Vertex to the most benign values
  *  possible.
  */
 extern void initialize_edge_class(EdgeClass *edge_class);
@@ -1160,7 +1160,7 @@ extern void free_tetrahedron(Tetrahedron *tet);
  */
 
 extern void free_edge_class(EdgeClass *edge_class);
-extern void free_cusp(Cusp * cusp);
+extern void free_cusp(Vertex * cusp);
 
 /**
  *  What you'd expect.  See triangulation.c for details.

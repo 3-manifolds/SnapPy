@@ -56,7 +56,7 @@
  *      (u', v') need not be the (shortest, second shortest) basis.
  *
  *  install_shortest_bases() installs the (shortest, second shortest)
- *      basis on each torus Cusp of manifold.  It does not change the bases
+ *      basis on each torus Vertex of manifold.  It does not change the bases
  *      on Klein bottle cusps.  As explained for shortest_cusp_basis()
  *      above, the (shortest, second shortest) is not well defined for a
  *      hexagonal lattice, and the results may be machine dependent.
@@ -305,7 +305,7 @@ Complex transformed_cusp_shape(
 void install_shortest_bases(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     MatrixInt22 *change_matrices;
     int         i,
                 j;
@@ -320,8 +320,8 @@ void install_shortest_bases(
      *  Compute the change of basis matrices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
       /* 

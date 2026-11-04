@@ -1,7 +1,7 @@
 /**
  *  @file orb_triangulation.h
  *
- *  Data structures attached to Tetrahedron, EdgeClass and Cusp to encode
+ *  Data structures attached to Tetrahedron, EdgeClass and Vertex to encode
  *  geometric structure encoded by Vertex Gram matrices.
  */
 
@@ -59,7 +59,7 @@ struct OrbEdgeShape
 };
 
 /*
- * Corresponds to fields added to Cusp in snappea/headers/triangulation.
+ * Corresponds to fields added to Vertex in snappea/headers/triangulation.
  * https://github.com/DamianHeard/orb/blob/f1bbe9a2170b172278c6fa43bd8039dfd6a66276/snappea/headers/triangulation.h#L206-207
  */
 struct OrbCuspShape

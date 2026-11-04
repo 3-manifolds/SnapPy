@@ -619,7 +619,7 @@ Triangulation *terse_to_tri(
      *      will respect the standard orientation convention.
      *
      *  (3) peripheral_curves() will determine the orientability of
-     *      each Cusp, and write it into the cusp->orientability field.
+     *      each Vertex, and write it into the cusp->orientability field.
      */
     peripheral_curves(manifold);
 

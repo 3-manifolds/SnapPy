@@ -1108,7 +1108,7 @@ void reorder_tetrahedron(
     int n_faces[4];
     Permutation gluing[4];
     TetShape shape[2];
-    Cusp* cusp[4];
+    Vertex* cusp[4];
     int curve[2][2][4][4];
     EdgeClass* edge_class[6];
 

@@ -5,7 +5,11 @@
  *
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
- *      Boolean vertex_is_cusp(const Vertex * cusp);
+ *      Boolean vertex_is_cusp(const Vertex * vertex);
+ *      Boolean vertex_has_orienable_link(const Vertex * vertex);
+ *      Boolean vertex_is_torus_cusp(const Vertex * vertex);
+ *      Boolean vertex_is_Klein_cusp(const Vertex * vertex);
+ *      Boolean vertex_is_finite_or_cusp(const Vertex * vertex);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
  *      void    compute_vertex_link_Euler_characteristics(Triangulation *manifold);
@@ -462,6 +466,43 @@ Boolean vertex_is_cusp(
         cusp->orb_num_incident_singular_edges == 0;
 }
 
+Boolean vertex_has_orientable_link(
+    const Vertex    *vertex)
+{
+    switch(vertex->orientability) {
+    case orientable_cusp:
+        return TRUE;
+    default:
+        uFatalError("vertex_has_orientable_link", "cusps.c");
+    case nonorientable_cusp:
+        return FALSE;
+    }
+}
+
+Boolean vertex_is_torus_cusp(
+    const Vertex    *vertex)
+{
+    return vertex_is_cusp(vertex) && vertex_has_orientable_link(vertex);
+}
+
+Boolean vertex_is_Klein_cusp(
+    const Vertex    *vertex)
+{
+    return vertex_is_cusp(vertex) && !vertex_has_orientable_link(vertex);
+}
+
+Boolean vertex_is_finite_or_cusp(
+    const Vertex    *vertex)
+{
+    if (vertex->euler_characteristic > 2)
+        uFatalError("vertex_is_finite_or_cusp", "cusps.c");
+
+    return
+        (vertex->euler_characteristic == 2 ||
+         vertex->euler_characteristic == 0) &&
+        vertex->orb_num_incident_singular_edges == 0;
+}
+
 void count_cusps(
     Triangulation   *manifold)
 {
@@ -475,16 +516,10 @@ void count_cusps(
          cusp = cusp->next)
         if (vertex_is_cusp(cusp)) {
             manifold->num_cusps++;
-            switch(cusp->orientability) {
-            case orientable_cusp:
+            if (vertex_has_orientable_link(cusp))
                 manifold->num_or_cusps++;
-                break;
-            case nonorientable_cusp:
+            else
                 manifold->num_nonor_cusps++;
-                break;
-            default:
-                uFatalError("count_cusps", "cusps.c");
-            }
         }
         else
             manifold->num_fake_cusps++;

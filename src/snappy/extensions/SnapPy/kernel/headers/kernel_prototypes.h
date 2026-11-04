@@ -177,6 +177,35 @@ extern Boolean vertex_is_cusp(const Vertex *cusp);
  *  (without cone points).
  */
 
+extern Boolean vertex_has_orientable_link(const Vertex *vertex);
+/**<
+ *  Uses stored orientability to determine whether vertex has orientable
+ *  link (throwing an error if the orientability has not been determined
+ *  before with, for example, compute_vertex_link_orientabilities or
+ *  peripheral_curves).
+ */
+
+extern Boolean vertex_is_torus_cusp(const Vertex *vertex);
+/**<
+ *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  and orientability to determine whether the vertex link is a torus
+ *  (without cone points).
+ */
+
+extern Boolean vertex_is_Klein_cusp(const Vertex *vertex);
+/**<
+ *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  and orientability to determine whether the vertex link is a Klein bottle
+ *  (without cone points).
+ */
+
+extern Boolean vertex_is_finite_or_cusp(const Vertex *vertex);
+/**<
+ *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  and orientability to determine whether the vertex link is a sphere,
+ *  a torus or a Klein bottle (without cone points).
+ */
+
 extern void index_real_and_fake_cusps(Triangulation *manifold);
 /**<
  *  Uses vertex_is_cusp to renumber all cusps so that real cusps have consecutive

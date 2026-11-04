@@ -221,7 +221,7 @@ struct Vertex
                                                  *   indicate that it has not been computed
                                                  *   yet.
                                                  *   Computed by calling
-                                                 *   compute_cusp_Euler_characteristics.
+                                                 *   compute_vertex_link_Euler_characteristics.
                                                  *   Similar remarks to the ones about
                                                  *   orientability apply to code building
                                                  *   a Vertex itself.                       */

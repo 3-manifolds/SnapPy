@@ -57,7 +57,7 @@ FuncResult change_peripheral_curves(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (vertex_is_Klein_cusp(cusp))
 
             for (i = 0; i < 2; i++)
 

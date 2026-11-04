@@ -567,7 +567,7 @@ extern void compute_intersection_numbers(Triangulation *manifold);
 
 extern void copy_curves_to_scratch( Triangulation   *manifold,
                                     int             which_set,
-                                    Boolean         Real_copy_on_tori);
+                                    Boolean         double_copy_on_tori);
 /**<
  *  Copies the current peripheral curves to the scratch_curves[which_set]
  *  fields of the manifold's Tetrahedra.  If double_copy_on_tori is TRUE,

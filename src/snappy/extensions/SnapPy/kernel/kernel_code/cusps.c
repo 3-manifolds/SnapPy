@@ -5,7 +5,7 @@
  *
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
- *      Boolean is_cusp_real(const Vertex * cusp);
+ *      Boolean vertex_is_cusp(const Vertex * cusp);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
  *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
@@ -451,11 +451,11 @@ void compute_cusp_orientabilities(
     my_free(queue);
 }
 
-Boolean is_cusp_real(
+Boolean vertex_is_cusp(
     const Vertex    *cusp)
 {
     if (cusp->euler_characteristic > 2)
-        uFatalError("is_cusp_real", "cusps.c");
+        uFatalError("vertex_is_cusp", "cusps.c");
 
     return
         cusp->euler_characteristic == 0 &&
@@ -473,7 +473,7 @@ void count_cusps(
     for (Vertex * cusp = manifold->vertex_list_begin.next;
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if (is_cusp_real(cusp)) {
+        if (vertex_is_cusp(cusp)) {
             manifold->num_cusps++;
             switch(cusp->orientability) {
             case orientable_cusp:
@@ -500,7 +500,7 @@ void index_real_and_fake_cusps(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_real(cusp))
+        if (vertex_is_cusp(cusp))
             cusp->cusp_index = real_cusp_count++;
         else
             cusp->cusp_index = --fake_cusp_count;

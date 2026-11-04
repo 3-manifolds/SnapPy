@@ -170,11 +170,11 @@ void remove_finite_vertices(
     basic_simplification(manifold);
 }
 
-Boolean is_cusp_finite_vertex(
+Boolean vertex_is_finite(
     const Vertex *cusp)
 {
     if (cusp->euler_characteristic > 2)
-        uFatalError("is_cusp_finite_vertex", "finite_vertices.c");
+        uFatalError("vertex_is_finite", "finite_vertices.c");
 
     return
         cusp->euler_characteristic == 2 &&
@@ -191,7 +191,7 @@ static void initialize_matching_cusps(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if ( is_cusp_finite_vertex(cusp) )
+        if ( vertex_is_finite(cusp) )
             cusp->matching_cusp = NULL;
         else
         {
@@ -563,7 +563,7 @@ static void set_real_cusps(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_finite_vertex(cusp)
+        if (vertex_is_finite(cusp)
             && cusp != special_fake_cusp)
         {
             dead_cusp = cusp;

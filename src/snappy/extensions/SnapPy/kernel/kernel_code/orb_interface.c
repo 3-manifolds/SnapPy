@@ -99,7 +99,7 @@ void orb_get_vertex_info(
         *cusp_index = cusp->cusp_index;
 
     if (is_finite_vertex != NULL)
-        *is_finite_vertex = is_cusp_finite_vertex(cusp);
+        *is_finite_vertex = vertex_is_finite(cusp);
 
     if (topology != NULL)
         *topology = get_cusp_topology(cusp);

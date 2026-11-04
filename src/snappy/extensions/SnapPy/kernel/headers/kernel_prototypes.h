@@ -164,13 +164,13 @@ extern void count_cusps(Triangulation *manifold);
  *  manifold->num_fake_cusps.
  */
 
-extern Boolean is_cusp_finite_vertex(const Vertex *cusp);
+extern Boolean vertex_is_finite(const Vertex *cusp);
 /**<
  *  Uses the stored Euler characteristic and num_incidient_singular_edges
  *  to determine whether the vertex link is a sphere without cone points.
  */
 
-extern Boolean is_cusp_real(const Vertex *cusp);
+extern Boolean vertex_is_cusp(const Vertex *cusp);
 /**<
  *  Uses the stored Euler characteristic and num_incidient_singular_edges
  *  to determine whether the vertex link is Klein bottle or torus
@@ -179,7 +179,7 @@ extern Boolean is_cusp_real(const Vertex *cusp);
 
 extern void index_real_and_fake_cusps(Triangulation *manifold);
 /**<
- *  Uses is_cusp_real to renumber all cusps so that real cusps have consecutive
+ *  Uses vertex_is_cusp to renumber all cusps so that real cusps have consecutive
  *  nonnegative indices beginning at 0 and fake cusps have consecutive negative
  *  indices beginning at -1.
  */

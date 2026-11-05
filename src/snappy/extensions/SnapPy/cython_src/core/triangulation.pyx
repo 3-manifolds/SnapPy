@@ -1340,13 +1340,11 @@ cdef class Triangulation():
     def _orb_vertex_info(self, data_spec=None):
         cdef int num_vertices
         cdef int vertex_index
-        cdef Boolean orientable
+        cdef Boolean is_orientable
         cdef int euler_characteristic, num_cone_points
         cdef int cusp_index
         cdef Real *cone_point_orders = NULL
         cdef int *cone_point_singular_edge_indices = NULL
-        cdef c_CuspTopology topology
-        cdef Boolean is_finite_vertex
         cdef Real orbifold_euler_characteristic
 
         if self.c_triangulation is NULL:
@@ -1366,24 +1364,24 @@ cdef class Triangulation():
 
         orb_get_vertex_info(self.c_triangulation,
                             vertex_index,
-                            &orientable,
+                            &is_orientable,
                             &euler_characteristic,
                             &num_cone_points,
                             &cone_point_orders,
                             &cone_point_singular_edge_indices,
                             &cusp_index,
-                            &topology,
-                            &is_finite_vertex,
                             &orbifold_euler_characteristic)
 
         if cusp_index >= 0:
             return self.cusp_info(cusp_index)
 
+        orientable = B2B(is_orientable)
+
         info = {
             'vertex_index' : vertex_index,
 
-            # Minimal description of topology
-            'orientable' : B2B(orientable),
+            # Minimal description of vertex link (orbifold) topology
+            'orientable' : orientable,
             'euler_characteristic' : euler_characteristic,
             'cone_point_orders' :
                 [ Real2float(cone_point_orders[i])
@@ -1395,8 +1393,10 @@ cdef class Triangulation():
 
             # Derived from the minimal description
             'is_cusp' : False,
-            'topology' : CuspTopology[topology],
-            'is_finite' : B2B(is_finite_vertex),
+            'topology' : VertexLinkTopologyName(
+                euler_characteristic, orientable),
+            'is_finite' : (
+                euler_characteristic == 2 and num_cone_points == 0),
             'orbifold_euler_characteristic' :
                 Real2float(orbifold_euler_characteristic)
         }

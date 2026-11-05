@@ -6,7 +6,7 @@
  *      void recognize_embedded_surface(
  *                              Triangulation   *manifold,
  *                              Boolean         *connected,
- *                              Boolean         *orientable,
+ *                              Boolean         *is_orientable,
  *                              Boolean         *two_sided,
  *                              int             *Euler_characteristic);
  *
@@ -109,14 +109,14 @@ typedef struct ListNode
 } ListNode;
 
 
-static void connected_orientable_twosided(Triangulation *manifold, Boolean *connected, Boolean *orientable, Boolean *two_sided);
+static void connected_orientable_twosided(Triangulation *manifold, Boolean *connected, Boolean *is_orientable, Boolean *two_sided);
 static int  Euler_characteristic_of_embedded_surface(Triangulation *manifold);
 
 
 void recognize_embedded_surface(
     Triangulation   *manifold,
     Boolean         *connected,
-    Boolean         *orientable,
+    Boolean         *is_orientable,
     Boolean         *two_sided,
     int             *Euler_characteristic)
 {
@@ -130,14 +130,14 @@ void recognize_embedded_surface(
      *  Compute the connectedness, orientability, two-sidedness and
      *  Euler characteristic.
      */
-    connected_orientable_twosided(manifold, connected, orientable, two_sided);
+    connected_orientable_twosided(manifold, connected, is_orientable, two_sided);
     *Euler_characteristic = Euler_characteristic_of_embedded_surface(manifold);
 
     /*
      *  In an orientable 3-manifold, a surface is orientable iff it's 2-sided.
      */
     if (manifold->orientability == oriented_manifold
-     && *orientable != *two_sided)
+     && *is_orientable != *two_sided)
         uFatalError("recognize_embedded_surface", "normal_surface_recognition");
 
     /*
@@ -151,7 +151,7 @@ void recognize_embedded_surface(
     /*
      *  Orientable surfaces have even Euler characteristic.
      */
-    if (*orientable == TRUE
+    if (*is_orientable == TRUE
      && (*Euler_characteristic)%2 != 0)
         uFatalError("recognize_embedded_surface", "normal_surface_recognition");
 }
@@ -160,7 +160,7 @@ void recognize_embedded_surface(
 static void connected_orientable_twosided(
     Triangulation   *manifold,
     Boolean         *connected,
-    Boolean         *orientable,
+    Boolean         *is_orientable,
     Boolean         *two_sided)
 {
     PolygonsInTetrahedron   *model;
@@ -250,8 +250,8 @@ static void connected_orientable_twosided(
      *  assign an orientation or normal vector, it will set the
      *  corresponding variable to FALSE.
      */
-    *orientable = TRUE;
-    *two_sided  = TRUE;
+    *is_orientable = TRUE;
+    *two_sided     = TRUE;
 
     /*
      *  As stated above, the linked list holds squares and triangles which
@@ -400,7 +400,7 @@ static void connected_orientable_twosided(
                 if (nbr_data->positive_normal != positive_normal)
                     *two_sided = FALSE;
                 if (nbr_data->positive_orientation != positive_orientation)
-                    *orientable = FALSE;
+                    *is_orientable = FALSE;
             }
             else
             {

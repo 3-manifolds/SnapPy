@@ -176,17 +176,17 @@ def smith_form(M):
 
 def VertexLinkTopologyName(
         euler_characteristic : int,
-        orientable : bool):
+        is_orientable : bool):
     if euler_characteristic == 2:
         return 'spherical link'
     if euler_characteristic == 1:
         return 'projective plane link'
     if euler_characteristic == 0:
-        if orientable:
+        if is_orientable:
             return 'torus cusp'
         else:
             return 'Klein bottle cusp'
-    if orientable:
+    if is_orientable:
         return 'orientable link of higher genus' # ORB-TODO: Wording should match.
     else:
         return 'nonorientable link of higher genus'

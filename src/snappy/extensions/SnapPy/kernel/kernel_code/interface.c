@@ -301,7 +301,7 @@ FuncResult set_cusp_info(
             uAcknowledge("Can't do (0,0) Dehn filling.");
             return func_bad_input;
         }
-        if (get_cusp_topology(cusp) == Klein_cusp &&  l != 0.0)
+        if (!vertex_has_orientable_link(cusp) &&  l != 0.0)
         {
             uAcknowledge("Only (p,0) Dehn fillings are possible on a nonorientable cusp.");
             return func_bad_input;
@@ -351,7 +351,7 @@ void get_holonomy(
          *  in this case must be real, so we clear any roundoff
          *  error in the imaginary part.
          */
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (!vertex_has_orientable_link(cusp))
         {
             longitudinal_holonomy->real /= 2.0;
             longitudinal_holonomy->imag = 0.0;

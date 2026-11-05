@@ -90,7 +90,7 @@ struct TriangulationData
 
 struct CuspData
 {
-    CuspTopology    topology;
+    Boolean         is_orientable;
     Real            m,
                     l;
 };

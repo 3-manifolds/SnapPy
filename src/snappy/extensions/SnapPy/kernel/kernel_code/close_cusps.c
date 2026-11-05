@@ -3,7 +3,11 @@
  *
  *  This file contains the function
  *
- *      void close_cusps(Triangulation *manifold, Boolean fill_cusp[]);
+ *      void close_cusps(
+ *          Triangulation *manifold,
+ *          Boolean       fill_cusp[],
+ *          Boolean       fill_by_fold,
+ *          Boolean       mark_solid_tori);
  *
  *  which is used by the function fill_cusps() to permanently
  *  close the indicated cusps (those for which fill_cusp[cusp->cusp_index]

@@ -10,23 +10,23 @@
  *                          int             *precision);
  *
  *  which computes the core_length and singularity_index for the
- *  Vertex of index cusp_index in Triangulation *manifold.  The
+ *  cusp of index cusp_index in Triangulation *manifold.  The
  *  singularity_index describes the nature of the cusp:
  *
- *      If the Vertex is unfilled or the Dehn filling coefficients are
+ *      If the cusp is unfilled or the Dehn filling coefficients are
  *      not integers, then
  *
  *          *singularity_index  is set to zero,
  *          *core_length        is undefined.
  *
- *      If the Vertex is filled and the Dehn filling coefficients are
+ *      If the cusp is filled and the Dehn filling coefficients are
  *      relatively prime integers (so we have a manifold locally), then
  *
  *          *singularity_index  is set to one,
  *          *core_length        is set to the complex length
  *                              of the central geodesic,
  *
- *      If the Vertex is filled and the Dehn filling coefficients are
+ *      If the cusp is filled and the Dehn filling coefficients are
  *      non relatively prime integers (so we have an orbifold locally), then
  *
  *          *singularity_index  is set to the index of the singular locus,
@@ -54,7 +54,7 @@
  *
  *  The Algorithm.
  *
- *  Say we're doing (p, q) Dehn filling on some Vertex.  The (closed) core
+ *  Say we're doing (p, q) Dehn filling on some cusp.  The (closed) core
  *  geodesic lifts to a set of (infinite) geodesics in the universal cover.
  *  Let L be one such (infinite) geodesic in the universal cover, and
  *  consider the group G of covering transformations fixing L (setwise).
@@ -157,7 +157,7 @@ void compute_core_geodesic(
     Real      pi_over_n;
 
     /*
-     *  If the Vertex is unfilled or the Dehn filling coefficients aren't
+     *  If the cusp is unfilled or the Dehn filling coefficients aren't
      *  integers, then just write in some zeros (as explained at the top
      *  of this file) and return.
      */

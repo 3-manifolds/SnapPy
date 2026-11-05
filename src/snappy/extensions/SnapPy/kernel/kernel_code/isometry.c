@@ -60,7 +60,7 @@
  *                                      int             cusp_map[2][2]);
  *
  *          Fills in the cusp_image and cusp_map[2][2] to describe the
- *          action of the given Isometry on the given Vertex.
+ *          action of the given Isometry on the given cusp.
  *
  *      Boolean isometry_extends_to_link(   IsometryList    *isometry_list,
  *                                          int             i);

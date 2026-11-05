@@ -1008,11 +1008,11 @@ extern int get_num_cusp_neighborhoods(
  *  number of cusps.
  */
 
-extern CuspTopology get_cusp_neighborhood_topology(
+extern Boolean get_cusp_neighborhood_is_orientable(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 /**<
- *  Returns the CuspTopology of the given cusp.
+ *  Returns whether the given cusp is orientable.
  */
 
 extern Real get_cusp_neighborhood_displacement(

@@ -455,7 +455,7 @@ cdef extern from "SnapPea.h":
     extern c_CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold) except *
     extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
     extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
-    extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Boolean get_cusp_neighborhood_is_orientable(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Real get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Real get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *

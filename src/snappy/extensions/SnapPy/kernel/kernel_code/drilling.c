@@ -206,7 +206,7 @@ static void set_cusps(Triangulation *old_manifold, Triangulation *new_manifold);
 static void copy_old_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_meridian(PositionedTet ptet);
-static void create_new_longitude(PositionedTet ptet, CuspOrientability *orientability);
+static void create_new_longitude(PositionedTet ptet, Orientability *orientability);
 static void move_sideways(MeridionalAnnulus *ma, DirectionToTravel direction);
 static void transfer_CS(Triangulation *old_manifold, Triangulation *new_manifold);
 
@@ -920,7 +920,7 @@ static void create_new_peripheral_curves(
 {
     Tetrahedron        *old_tet;
     PositionedTet      ptet;
-    CuspOrientability  orientability;
+    Orientability      orientability;
     Vertex             *vertex;
 
     /*
@@ -972,7 +972,7 @@ static void create_new_peripheral_curves(
                 ->vertex[old_tet->extra->index[0]];
             vertex->orientability        = orientability;
             vertex->euler_characteristic = 0;
-            if (orientability == orientable_cusp)
+            if (orientability == orientable)
                 new_manifold->num_or_cusps++;
             else
                 new_manifold->num_nonor_cusps++;
@@ -1100,7 +1100,7 @@ static void create_new_meridian(
 
 static void create_new_longitude(
     PositionedTet       ptet,
-    CuspOrientability   *orientability)
+    Orientability       *orientability)
 {
     MeridionalAnnulus   ma0,
                         ma;
@@ -1124,7 +1124,7 @@ static void create_new_longitude(
     /*
      *  We assume the new cusp is orientable unless we discover otherwise.
      */
-    *orientability = orientable_cusp;
+    *orientability = orientable;
 
     ma0.ptet                = ptet;
     ma0.current_position    = 0;    /* will be ignored */
@@ -1207,7 +1207,7 @@ static void create_new_longitude(
 
         if (        ma.ptet.tet == ma0.ptet.tet
          && ma.ptet.orientation != ma0.ptet.orientation)
-            *orientability = nonorientable_cusp;
+            *orientability = nonorientable;
 
     } while ( ! same_positioned_tet(&ma.ptet, &ma0.ptet));
 }

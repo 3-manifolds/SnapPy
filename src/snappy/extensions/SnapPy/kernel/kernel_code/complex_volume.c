@@ -367,7 +367,7 @@ Complex complex_volume(
         return Zero;
     }
 
-    if (filled_manifold->orientability != oriented_manifold)
+    if (filled_manifold->orientability != orientable)
     {
         /* filled manifold is not orientable */
         if (err_msg != NULL)

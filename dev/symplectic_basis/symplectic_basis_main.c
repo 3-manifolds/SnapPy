@@ -35,12 +35,12 @@ int main(void) {
             printf("Triangulation: %s\n", error[i]);
             theTriangulation = read_triangulation(error[i]);
         } else {
-            theTriangulation = GetCuspedCensusManifold("", numTet[i], oriented_manifold, index[i]);
+            theTriangulation = GetCuspedCensusManifold("", numTet[i], orientable, index[i]);
             printf("Num Tet: %d Index: %d\n", numTet[i], index[i]);
         }
 
         if (theTriangulation != NULL) {
-            if (get_orientability(theTriangulation) == nonorientable_manifold)
+            if (get_orientability(theTriangulation) == nonorientable)
                 continue;
 
             eqns = get_symplectic_basis(theTriangulation, &num_rows, &num_cols, 1);

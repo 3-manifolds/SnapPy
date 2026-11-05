@@ -55,8 +55,8 @@ cdef extern from "SnapPea.h":
         orbifold_22n
 
     ctypedef enum c_Orientability "Orientability":
-        oriented_manifold
-        nonorientable_manifold
+        orientable
+        nonorientable
         unknown_orientability
 
     ctypedef enum DirichletInteractivity:

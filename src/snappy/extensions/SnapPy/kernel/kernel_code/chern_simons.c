@@ -231,7 +231,7 @@ static FuncResult compute_CS(
      *  We can handle only orientable manifolds.
      */
 
-    if (manifold->orientability != oriented_manifold)
+    if (manifold->orientability != orientable)
         return func_failed;
 
     /*

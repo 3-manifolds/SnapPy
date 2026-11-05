@@ -62,7 +62,7 @@ FuncResult change_peripheral_curves_nonorientable(
      * for those which checks that the determinant is +1.
      */
 
-    if (manifold->orientability != nonorientable_manifold)
+    if (manifold->orientability != nonorientable)
         return func_bad_input;
 
     change_orientation = NEW_ARRAY(manifold->num_cusps, Boolean);

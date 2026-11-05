@@ -30,7 +30,7 @@ Triangulation *double_cover(
     /*
      *  Make sure the manifold is nonorientable.
      */
-    if (manifold->orientability != nonorientable_manifold)
+    if (manifold->orientability != nonorientable)
         uFatalError("double_cover", "double_cover");
 
     /*
@@ -92,7 +92,7 @@ Triangulation *double_cover(
      *  Orient the_cover.
      */
     orient(the_cover);
-    if (the_cover->orientability != oriented_manifold)
+    if (the_cover->orientability != orientable)
         uFatalError("double_cover", "double_cover");
 
     /*
@@ -376,7 +376,7 @@ static void set_cusp_data(
                     [old_tet->vertex[v]->cusp_index] [j];
 
                 new_tet[i][j]->vertex[v]->euler_characteristic = 0;
-                new_tet[i][j]->vertex[v]->orientability        = orientable_cusp;
+                new_tet[i][j]->vertex[v]->orientability        = orientable;
             }
 
     /*

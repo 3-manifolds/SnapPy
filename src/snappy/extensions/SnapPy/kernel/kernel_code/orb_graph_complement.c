@@ -52,7 +52,7 @@ extern Triangulation *orb_triangulate_graph_complement(
     prepare_graph_for_triangulation(gamma);
     manifold = create_basic_triangulation(gamma);
 
-    manifold->orientability = oriented_manifold;
+    manifold->orientability = orientable;
 
     create_real_cusps(gamma, manifold);
     create_finite_vertices(gamma, manifold);
@@ -757,7 +757,7 @@ static void create_real_cusps(
         theCusps[i] = NEW_STRUCT(Vertex);
         initialize_vertex(theCusps[i]);
         theCusps[i]->euler_characteristic = 0;
-        theCusps[i]->orientability        = orientable_cusp;
+        theCusps[i]->orientability        = orientable;
         theCusps[i]->cusp_index           = i;
         INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
@@ -829,7 +829,7 @@ static void create_finite_vertices(
 
         initialize_vertex(thePoles[i]);
         thePoles[i]->euler_characteristic = 2;
-        thePoles[i]->orientability        = orientable_cusp;
+        thePoles[i]->orientability        = orientable;
         thePoles[i]->cusp_index           = i - 2;
         INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }

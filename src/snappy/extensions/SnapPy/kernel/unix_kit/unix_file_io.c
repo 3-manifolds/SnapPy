@@ -323,9 +323,9 @@ static TriangulationData *ReadNewFileFormat(
     sscanf(buffer, SBFORMAT "%n", theScratchString, &count);
     buffer += count;
     if (strcmp(theScratchString, "oriented_manifold") == 0)
-        theTriangulationData->orientability = oriented_manifold;
+        theTriangulationData->orientability = orientable;
     else if (strcmp(theScratchString, "nonorientable_manifold") == 0)
-        theTriangulationData->orientability = nonorientable_manifold;
+        theTriangulationData->orientability = nonorientable;
     else if (strcmp(theScratchString, "unknown_orientability") == 0)
         theTriangulationData->orientability = unknown_orientability;
     else
@@ -628,11 +628,11 @@ static void WriteNewFileFormat(
 
     switch (data->orientability)
     {
-        case oriented_manifold:
+        case orientable:
             ostream_printf(stream, "oriented_manifold\n");
             break;
 
-        case nonorientable_manifold:
+        case nonorientable:
             ostream_printf(stream, "nonorientable_manifold\n");
             break;
         case unknown_orientability:

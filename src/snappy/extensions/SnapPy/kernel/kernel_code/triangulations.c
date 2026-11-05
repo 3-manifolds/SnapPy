@@ -226,7 +226,9 @@ void data_to_triangulation(
     {
         for (i = 0; i < manifold->num_cusps; i++)
         {
-            set_cusp_topology(cusp_array[i], data->cusp_data[i].topology);
+            set_cusp_topology(
+                cusp_array[i],
+                data->cusp_data[i].is_orientable ? torus_cusp : Klein_cusp);
             cusp_array[i]->m             = data->cusp_data[i].m;
             cusp_array[i]->l             = data->cusp_data[i].l;
             cusp_array[i]->is_complete   = (data->cusp_data[i].m == 0.0
@@ -387,9 +389,9 @@ void triangulation_to_data(
     {
         cusp = find_cusp(manifold, i);
 
-        data->cusp_data[i].topology = get_cusp_topology(cusp);
-        data->cusp_data[i].m        = cusp->m;
-        data->cusp_data[i].l        = cusp->l;
+        data->cusp_data[i].is_orientable = vertex_has_orientable_link(cusp);
+        data->cusp_data[i].m             = cusp->m;
+        data->cusp_data[i].l             = cusp->l;
     }
 
     number_the_tetrahedra(manifold);

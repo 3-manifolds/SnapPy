@@ -728,9 +728,9 @@ Triangulation *triangulate_punctured_torus_bundle(
      *  Set up the cusp.
      */
     data->cusp_data = NEW_ARRAY(1, CuspData);
-    data->cusp_data->topology   = (anLRFactorization->negative_determinant == TRUE) ? Klein_cusp : torus_cusp;
-    data->cusp_data->m          = 0.0;
-    data->cusp_data->l          = 0.0;
+    data->cusp_data->is_orientable = (anLRFactorization->negative_determinant == FALSE);
+    data->cusp_data->m             = 0.0;
+    data->cusp_data->l             = 0.0;
 
     /*
      *  Set up the tetrahedra.

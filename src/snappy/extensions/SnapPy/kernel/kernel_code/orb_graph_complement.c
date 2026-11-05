@@ -1068,10 +1068,10 @@ static void add_longitudes_and_meridians(
         theMeeting = &gamma->meeting[i];
 
         if (theMeeting->type == Cross) {
-            if (get_cusp_topology(theMeeting->tet[0]->vertex[3]) == torus_cusp)
+            if (vertex_is_torus_cusp(theMeeting->tet[0]->vertex[3]))
                 needsCurves[theMeeting->component[0]] = TRUE;
 
-            if (get_cusp_topology(theMeeting->tet[0]->vertex[2]) == torus_cusp)
+            if (vertex_is_torus_cusp(theMeeting->tet[0]->vertex[2]))
                 needsCurves[theMeeting->component[1]] = TRUE;
 
             if (theMeeting->component[0] == theMeeting->component[1])

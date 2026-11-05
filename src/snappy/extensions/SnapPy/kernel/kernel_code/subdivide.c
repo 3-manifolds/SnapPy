@@ -638,7 +638,7 @@ static void create_new_cusps(
     Triangulation   *old_triangulation)
 {
     /*
-     *  The Vertex data structures for the real cusps are
+     *  The Vertex data structures for the cusps are
      *  handled separately from the Vertex data structures
      *  for the finite vertices.
      */

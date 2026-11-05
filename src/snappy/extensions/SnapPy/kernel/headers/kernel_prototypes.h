@@ -138,7 +138,7 @@ extern void create_cusps(Triangulation *manifold);
 
 extern void error_check_for_create_cusps(Triangulation *manifold);
 /**<
- *  Checks that no Cusps are present, and that all tet->vertex[]
+ *  Checks that no Vertex structures are present, and that all tet->vertex[]
  *  fields are NULL.
  */
 
@@ -148,33 +148,33 @@ extern Vertex * create_one_cusp(Triangulation *manifold,
 /**<
  *  Creates a single Vertex, incident to the given Tetrahedron at
  *  the given ideal vertex.  Assumes ideal vertices which haven't
- *  been assigned to Cusps have tetrahedron->vertex[vertex] == NULL.
+ *  been assigned a Vertex have tetrahedron->vertex[vertex] == NULL.
  */
 
 extern void create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
 /**<
- *  Creates Vertex data structures for the "fake cusps" corresponding to
- *  finite vertices.
+ *  Creates Vertex data structures for finite vertices.
  */
 
 extern void count_cusps(Triangulation *manifold);
 /**<
- *  counts the Klein bottle and torus cusps, and sets manifold->num_cusps,
+ *  Counts the cusps, categorizes them by link orientability, and sets
+ *  manifold->num_cusps,
  *  manifold->num_or_cusps, manifold->num_nonor_cusps and
  *  manifold->num_fake_cusps.
  */
 
 extern Boolean vertex_is_finite(const Vertex *cusp);
 /**<
- *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  Uses the stored Euler characteristic and num_incident_singular_edges
  *  to determine whether the vertex link is a sphere without cone points.
  */
 
 extern Boolean vertex_is_cusp(const Vertex *cusp);
 /**<
- *  Uses the stored Euler characteristic and num_incidient_singular_edges
- *  to determine whether the vertex link is Klein bottle or torus
- *  (without cone points).
+ *  Uses the stored Euler characteristic and num_incident_singular_edges
+ *  to determine whether the vertex is a cusp (that is, the vertex link has
+ *  Euler characteristic zero and no cone points).
  */
 
 extern Boolean vertex_has_orientable_link(const Vertex *vertex);
@@ -187,30 +187,29 @@ extern Boolean vertex_has_orientable_link(const Vertex *vertex);
 
 extern Boolean vertex_is_torus_cusp(const Vertex *vertex);
 /**<
- *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  Uses the stored Euler characteristic and num_incident_singular_edges
  *  and orientability to determine whether the vertex link is a torus
  *  (without cone points).
  */
 
 extern Boolean vertex_is_Klein_cusp(const Vertex *vertex);
 /**<
- *  Uses the stored Euler characteristic and num_incidient_singular_edges
+ *  Uses the stored Euler characteristic and num_incident_singular_edges
  *  and orientability to determine whether the vertex link is a Klein bottle
  *  (without cone points).
  */
 
 extern Boolean vertex_is_finite_or_cusp(const Vertex *vertex);
 /**<
- *  Uses the stored Euler characteristic and num_incidient_singular_edges
- *  and orientability to determine whether the vertex link is a sphere,
- *  a torus or a Klein bottle (without cone points).
+ *  Uses the stored Euler characteristic and num_incident_singular_edges
+ *  to determine whether the vertex is finite or a cusp.
  */
 
 extern void index_real_and_fake_cusps(Triangulation *manifold);
 /**<
- *  Uses vertex_is_cusp to renumber all cusps so that real cusps have consecutive
- *  nonnegative indices beginning at 0 and fake cusps have consecutive negative
- *  indices beginning at -1.
+ *  Uses vertex_is_cusp() to give cusps consecutive nonnegative indices
+ *  beginning at 0 and all other vertices consecutive negative indices
+ *  beginning at -1.
  */
 
 extern void compute_vertex_link_Euler_characteristics(Triangulation *manifold);
@@ -220,9 +219,9 @@ extern void compute_vertex_link_Euler_characteristics(Triangulation *manifold);
 
 extern void compute_vertex_link_orientabilities(Triangulation   *manifold);
 /**<
- *  Computes and sets the Vertex::orientability for each cusp where
+ *  Computes and sets Vertex::orientability for each vertex where
  *  the orientability was unknown. This function has no requirement
- *  on the cusp's Euler characteristics (unlike peripheral_curves
+ *  on the vertex link Euler characteristics (unlike peripheral_curves,
  *  which can only determine the orientability for cusps with
  *  Euler characteristic zero).
  */

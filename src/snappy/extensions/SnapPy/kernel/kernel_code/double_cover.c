@@ -54,7 +54,7 @@ Triangulation *double_cover(
     /*
      *  Lift the peripheral curves to the double cover.
      *  The lifted {meridian, longitude} will adhere to the right hand
-     *  rule relative to the local orientation on each Vertex's double
+     *  rule relative to the local orientation on each cusp's double
      *  cover (cf. peripheral_curves.c).  The manifold does not yet
      *  have a global orientation.
      */
@@ -75,9 +75,10 @@ Triangulation *double_cover(
     the_cover->solution_type[filled]    = manifold->solution_type[filled];
 
     /*
-     *  Create Cusps for the_cover, make sure they're in the same order
+     *  Create vertices for the_cover, make sure they're in the same order
      *  as their images in the manifold, copy in the Dehn filling
-     *  coefficients, and set the CuspTopology to torus_cusp.
+     *  coefficients, and record that each lifted cusp has an orientable
+     *  torus link.
      *  We must do this before orienting the_cover, or else the
      *  vertex indices on the_cover will no longer coincide with
      *  those on the manifold.

@@ -111,8 +111,8 @@
  * equal to "word" in terms of the current generators.
  *
  *
- *  96/9/29  fundamental_group() nows records the basepoint of each Vertex
- *  in the Vertex's basepoint_tet, basepoint_vertex and basepoint_orientation
+ *  96/9/29  fundamental_group() now records the basepoint of each cusp
+ *  in the cusp's basepoint_tet, basepoint_vertex and basepoint_orientation
  *  fields.  The basepoint is the point where the meridian and longitude
  *  meet;  the meridional and longitudinal words are computed relative to
  *  this point to guarantee that they compute.

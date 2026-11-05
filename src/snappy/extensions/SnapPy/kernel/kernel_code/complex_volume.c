@@ -66,9 +66,8 @@
  *     the one of the neighboring tetrahedron.
  *     
  *
- * 3. The cusps (which can have the topology of a torus or of S^2
- *    squeezed flat onto a horosphere) are given complex
- *    coordinates.
+ * 3. Each vertex links (either a torus or a sphere squeezed flat onto a
+ *    horosphere) is given complex coordinates.
  *
  * 4. The lifted Ptolemy coordinates are computed.
  *    For an edge e, pick a tetrahedron t and a face f. At each end of

@@ -1977,7 +1977,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
     number_the_edge_classes(cusp_neighborhoods->its_triangulation);
     
     /*
-     *  Find the requested Vertex.
+     *  Find the requested cusp.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 
@@ -2122,7 +2122,7 @@ CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
     CuspNbhdHoroballList    *theHoroballList;
 
     /*
-     *  Find the requested Vertex.
+     *  Find the requested cusp.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 
@@ -3931,7 +3931,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
                         det;
 
     /*
-     *  Find the requested Vertex.
+     *  Find the requested cusp.
      */
     cusp = find_cusp(cusp_neighborhoods->its_triangulation, cusp_index);
 

@@ -837,8 +837,7 @@ static void compute_Dehn_relations(
           cusp != &manifold->vertex_list_end;
           cusp = cusp->next )
     {
-        CuspTopology topology = get_cusp_topology(cusp);
-	if ( topology == torus_cusp || topology == Klein_cusp )
+        if (vertex_is_cusp(cusp))
             group->itsNumCusps++;
     }
 
@@ -853,10 +852,8 @@ static void compute_Dehn_relations(
     {
         cusp = find_cusp(manifold, i);
 
-        CuspTopology topology = get_cusp_topology(cusp);
-
-        if ( topology != torus_cusp && topology != Klein_cusp )
-            continue;
+        if (!vertex_is_cusp(cusp))
+            uFatalError("compute_Dehn_relation", "fundamental_group");
         
         /*
          *  First compute the meridian and longitude...

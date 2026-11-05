@@ -37,8 +37,6 @@ void orb_normalize_cusp_areas(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        CuspTopology topology = get_cusp_topology(cusp);
-
         /*
          * ORB-TODO:
          *
@@ -56,7 +54,7 @@ void orb_normalize_cusp_areas(
          * Need some epsilon?
          */
 
-        if (topology == torus_cusp || topology == Klein_cusp)
+        if (vertex_is_cusp(cusp))
         {
             Real scalar = safe_sqrt(cusp->orb_vertex_shape->area / ORB_CUSP_AREA);
 

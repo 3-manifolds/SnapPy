@@ -502,6 +502,7 @@ cdef extern from "SnapPea.h":
     extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold) except *
     extern int get_num_tetrahedra(c_Triangulation *manifold) except *
     extern c_Orientability get_orientability(c_Triangulation *manifold) except *
+    extern Boolean all_vertices_are_finite_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_cusps(c_Triangulation *manifold) except *
     extern int get_num_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_nonor_cusps(c_Triangulation *manifold) except *

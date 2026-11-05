@@ -1684,6 +1684,12 @@ extern Orientability get_orientability(Triangulation *manifold);
  *  Returns the orientability of *manifold.
  */
 
+extern Boolean all_vertices_are_finite_or_cusps(Triangulation *manifold);
+/**<
+ *  Returns TRUE if every vertex is finite or a cusp, that is, if every
+ *  vertex link has no cone points and Euler characteristic either two or zero.
+ */
+
 extern int  get_num_cusps(Triangulation *manifold);
 /**<
  *  Returns the number of cusps (vertices with vertex link having Euler

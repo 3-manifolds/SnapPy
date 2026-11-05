@@ -1435,8 +1435,7 @@ cdef class Triangulation():
 
         # get_cusp_info
         cdef int cusp_index
-        cdef c_CuspTopology topology
-        cdef Boolean is_complete,
+        cdef Boolean is_orientable, is_complete
         cdef Real m, l
 
         # core_geodesic
@@ -1454,18 +1453,13 @@ cdef class Triangulation():
             'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
-                      &topology, &is_complete, &m, &l,
+                      &is_orientable, &is_complete, &m, &l,
                       NULL, NULL, NULL, NULL, NULL, NULL)
-        cusp_topology = CuspTopology[topology]
-        if cusp_topology == 'torus cusp':
-            orientable = True
-        elif cusp_topology == 'Klein bottle cusp':
-            orientable = False
-        else:
-            raise ValueError("Unhandled cusp topology")
+
+        orientable = B2B(is_orientable)
 
         info = {
-            # Minimal description of topology
+            # Minimal description of vertex link (orbifold) topology
             'orientable' : orientable,
             'euler_characteristic' : 0,
             'cone_point_orders' : [],
@@ -1473,7 +1467,7 @@ cdef class Triangulation():
 
             # Derived from the minimal description
             'is_cusp' : True,
-            'topology' : cusp_topology,
+            'topology' : VertexLinkTopologyName(0, orientable),
             'is_finite' : False,
             'orbifold_euler_characteristic' : 0.0,
 

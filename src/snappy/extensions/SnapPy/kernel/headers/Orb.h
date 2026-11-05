@@ -64,14 +64,12 @@ extern void orb_set_singular_edge_info( Triangulation *manifold,
 extern void orb_get_vertex_info(
     Triangulation   *manifold,
     int             vertex_index,
-    Boolean         *orientable,
+    Boolean         *is_orientable,
     int             *euler_characteristic,
     int             *num_incident_singular_edges,
     Real            **incident_singular_edge_orders,
     int             **incident_singular_edge_indices,
     int             *cusp_index,
-    CuspTopology    *topology,
-    Boolean         *is_finite_vertex,
     Real            *orbifold_euler_characteristic);
 /**<
  *  Retrieve info for each vertex/cusp by index into the linked

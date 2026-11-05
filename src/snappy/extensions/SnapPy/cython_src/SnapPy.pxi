@@ -623,7 +623,7 @@ cdef extern from "SnapPea.h":
     extern int orb_get_num_singular_edges(c_Triangulation * manifold) except *
     extern void orb_get_singular_edge_info(c_Triangulation * manifold, int singular_index, Real * singular_order, Real * inner_product) except *
     extern void orb_set_singular_edge_info(c_Triangulation * manifold, int singular_index, Real singular_order) except *
-    extern void orb_get_vertex_info(c_Triangulation * manifold, int vertex_index, Boolean * orientable, int * euler_characteristic, int * num_incident_singular_edges, Real ** incident_singular_edge_orders, int ** incident_singular_edge_indices, int * cusp_index, c_CuspTopology * topology, Boolean * is_finite_vertex, Real * orbifold_euler_characteristic) except *
+    extern void orb_get_vertex_info(c_Triangulation * manifold, int vertex_index, Boolean * is_orientable, int * euler_characteristic, int * num_incident_singular_edges, Real ** incident_singular_edge_orders, int ** incident_singular_edge_indices, int * cusp_index, Real * orbifold_euler_characteristic) except *
 
     extern c_SolutionType orb_find_hyperbolic_structure(
         c_Triangulation * manifold, Boolean manual) except *

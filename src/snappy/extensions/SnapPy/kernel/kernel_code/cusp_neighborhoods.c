@@ -1064,12 +1064,11 @@ int get_num_cusp_neighborhoods(
         return get_num_cusps(cusp_neighborhoods->its_triangulation);
 }
 
-
-CuspTopology get_cusp_neighborhood_topology(
+Boolean get_cusp_neighborhood_is_orientable(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
-    return get_cusp_topology(
+    return vertex_has_orientable_link(
         find_cusp(cusp_neighborhoods->its_triangulation, cusp_index));
 }
 

@@ -95,16 +95,17 @@ void install_shortest_with_matrices(
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if ( get_cusp_topology(cusp) == torus_cusp && cusp->is_complete )
+        if (vertex_is_cusp(cusp))
+            if (vertex_has_orientable_link(cusp) && cusp->is_complete )
 
-            shortest_cusp_basis(    cusp->cusp_shape[current],
-                                    change_matrices[cusp->cusp_index]);
+                shortest_cusp_basis(    cusp->cusp_shape[current],
+                                        change_matrices[cusp->cusp_index]);
 
-        else
+            else
 
-            for (i = 0; i < 2; i++)
-                for (j = 0; j < 2; j++)
-                    change_matrices[cusp->cusp_index][i][j] = (i == j);
+                for (i = 0; i < 2; i++)
+                    for (j = 0; j < 2; j++)
+                        change_matrices[cusp->cusp_index][i][j] = (i == j);
 
     /*
      *  Install the change of basis matrices.

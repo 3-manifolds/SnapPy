@@ -79,7 +79,7 @@ static Vertex * orb_find_vertex(
         cusp = cusp->next;
     return cusp;
 }
-    
+
 void orb_get_vertex_info(
     Triangulation   *manifold,
     int             vertex_index,

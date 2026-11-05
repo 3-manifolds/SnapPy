@@ -59,15 +59,6 @@ cdef extern from "SnapPea.h":
         nonorientable_manifold
         unknown_orientability
 
-    ctypedef enum c_CuspTopology "CuspTopology":
-        sphere_cusp
-        projective_cusp
-        torus_cusp
-        Klein_cusp
-        higher_genus_orientable_cusp
-        higher_genus_nonorientable_cusp
-        unknown_topology
-
     ctypedef enum DirichletInteractivity:
         Dirichlet_interactive
         Dirichlet_stop_here

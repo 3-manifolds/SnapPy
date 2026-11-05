@@ -227,17 +227,6 @@ extern void compute_vertex_link_orientabilities(Triangulation   *manifold);
  *  Euler characteristic zero).
  */
 
-extern CuspTopology get_cusp_topology(const Vertex * cusp);
-/**<
- *  Determine the topology of the cusp from orientability and Euler
- *  characteristic.
- */
-
-extern void set_cusp_topology(Vertex * cusp, CuspTopology topology);
-/**<
- *  Set orientability and Euler characteristic from cusp topology.
- */
-
 /************************************************************************/
 /*                                                                      */
 /*                      cusp_cross_sections.c                           */

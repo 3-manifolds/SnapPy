@@ -360,7 +360,7 @@ static void set_cusp_data(
      *  cusp in the original manifold) may swap indices many times during
      *  this redundant procedure, as their indices get overwritten.
      *
-     *  While we're here, let's set the topology of each Vertex to torus_cusp.
+     *  While we're here, record that each vertex link is a torus.
      */
 
     for (old_tet = manifold->tet_list_begin.next, i = 0;
@@ -374,7 +374,8 @@ static void set_cusp_data(
                 new_tet[i][j]->vertex[v]->cusp_index = old_to_new
                     [old_tet->vertex[v]->cusp_index] [j];
 
-                set_cusp_topology(new_tet[i][j]->vertex[v], torus_cusp);
+                new_tet[i][j]->vertex[v]->euler_characteristic = 0;
+                new_tet[i][j]->vertex[v]->orientability        = orientable_cusp;
             }
 
     /*

@@ -23,15 +23,6 @@ cdef solution_type_values = {
     orb_invalid_solution: 'orb_invalid_solution',
 }
     
-cusp_topology_values = [
-    'sphere',
-    'projective plane',
-    'torus',
-    'Klein bottle',
-    'orientable higher genus',
-    'nonorientable higher  genus',
-    'unknown']
-
 toml_cusp = """
 [[cusp]]
 topology = \"{topology}\"
@@ -40,7 +31,7 @@ filling = {filling}
 
 cdef get_cusp(c_CuspData *data):
     return toml_cusp.format(
-        topology=cusp_topology_values[<int>data.topology],
+        topology='torus' if data.is_orientable else 'Klein bottle',
         # The Cython compiler crashes without these casts to double.
         filling=str([<double>data.m, <double>data.l]))
 

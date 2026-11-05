@@ -158,9 +158,9 @@ cdef extern from "SnapPea.h":
     ctypedef struct Shingle
     ctypedef struct Shingling
     ctypedef struct c_CuspData "CuspData":
-        c_CuspTopology topology
-        Real           m
-        Real           l
+        Boolean is_orientable
+        Real    m
+        Real    l
     ctypedef struct c_TetrahedronData "TetrahedronData":
         int               neighbor_index[4]
         int               gluing[4][4]

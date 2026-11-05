@@ -396,12 +396,12 @@ static TriangulationData *ReadNewFileFormat(
         {
             case 't':
             case 'T':
-                theTriangulationData->cusp_data[i].topology = torus_cusp;
+                theTriangulationData->cusp_data[i].is_orientable = TRUE;
                 break;
 
             case 'k':
             case 'K':
-                theTriangulationData->cusp_data[i].topology = Klein_cusp;
+                theTriangulationData->cusp_data[i].is_orientable = FALSE;
                 break;
 
             default:
@@ -649,7 +649,7 @@ static void WriteNewFileFormat(
     ostream_printf(stream, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
     for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
         ostream_printf(stream, "    %s %16.12f %16.12f\n",
-            (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
+            data->cusp_data[i].is_orientable ? "torus" : "Klein",
 		     (double)data->cusp_data[i].m,
 		     (double)data->cusp_data[i].l);
     ostream_printf(stream, "\n");

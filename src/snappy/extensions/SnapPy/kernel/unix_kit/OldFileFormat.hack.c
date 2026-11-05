@@ -164,11 +164,13 @@ FuncResult read_the_file(
 	{
 		cal[count] = NEW_STRUCT(Vertex);
 		initialize_vertex(cal[count]);
-		cal[count]->cusp_index = count;
+		cal[count]->cusp_index           = count;
+		cal[count]->euler_characteristic = 0;
+		cal[count]->orientability        =
+		    (count < manifold->num_nonor_cusps)
+		        ? nonorientable_cusp
+		        : orientable_cusp;
 		INSERT_BEFORE(cal[count], &manifold->vertex_list_end);
-		set_cusp_topology(
-		    cal[count],
-		    (count < manifold->num_nonor_cusps) ? Klein_cusp : torus_cusp);
 	}
 
 	tal = NEW_ARRAY(manifold->num_tetrahedra, Tetrahedron *);

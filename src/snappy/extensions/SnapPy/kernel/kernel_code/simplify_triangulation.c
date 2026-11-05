@@ -2274,8 +2274,9 @@ void one_to_four(
 
     new_cusp = NEW_STRUCT(Vertex);
     initialize_vertex(new_cusp);
-    set_cusp_topology(new_cusp, sphere_cusp);
-    new_cusp->cusp_index     = new_cusp_index;
+    new_cusp->euler_characteristic = 2;
+    new_cusp->orientability        = orientable_cusp;
+    new_cusp->cusp_index           = new_cusp_index;
     INSERT_BEFORE(new_cusp, tet->vertex[0]);
 
     /*

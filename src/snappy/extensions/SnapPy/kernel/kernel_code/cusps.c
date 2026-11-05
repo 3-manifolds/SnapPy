@@ -167,8 +167,9 @@ void create_cusps_and_mark_finite_as_needed(
             if (tet->vertex[v] == NULL)
             {
                 Vertex * cusp = create_one_cusp(manifold, tet, v);
-                cusp->cusp_index = --count;
-                set_cusp_topology(cusp, sphere_cusp);
+                cusp->cusp_index            = --count;
+                cusp->euler_characteristic = 2;
+                cusp->orientability        = orientable_cusp;
             }
 }
 

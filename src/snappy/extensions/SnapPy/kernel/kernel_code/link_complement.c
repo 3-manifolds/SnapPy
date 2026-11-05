@@ -1133,8 +1133,9 @@ static void create_real_cusps(
     {
         theCusps[i] = NEW_STRUCT(Vertex);
         initialize_vertex(theCusps[i]);
-        set_cusp_topology(theCusps[i], torus_cusp);
-        theCusps[i]->cusp_index      = i;
+        theCusps[i]->euler_characteristic = 0;
+        theCusps[i]->orientability        = orientable_cusp;
+        theCusps[i]->cusp_index           = i;
         INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
@@ -1188,8 +1189,9 @@ static void create_finite_vertices(
     {
         thePoles[i] = NEW_STRUCT(Vertex);
         initialize_vertex(thePoles[i]);
-        set_cusp_topology(thePoles[i], sphere_cusp);
-        thePoles[i]->cusp_index      = i - 2;    /* indices are -1 and -2 */
+        thePoles[i]->euler_characteristic = 2;
+        thePoles[i]->orientability        = orientable_cusp;
+        thePoles[i]->cusp_index           = i - 2; /* indices are -1 and -2 */
         INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }
 

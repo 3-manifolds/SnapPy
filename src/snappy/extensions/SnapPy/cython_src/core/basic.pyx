@@ -192,14 +192,6 @@ def VertexLinkTopologyName(
         return 'nonorientable link of higher genus'
 
 # Enum conversions
-CuspTopology = [
-    'spherical link',
-    'projective plane link',
-    'torus cusp',
-    'Klein bottle cusp',
-    'orientable link of higher genus', # ORB-TODO: Wording should match.
-    'nonorientable link of higher genus',
-    'unknown']
 
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']

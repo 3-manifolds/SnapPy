@@ -448,7 +448,7 @@ char* get_isomorphism_signature(
                in tables.c */
 
             if (ignore_orientation ||
-                tri->orientability == nonorientable_manifold ||
+                tri->orientability == nonorientable ||
                 parity[perm] == orientation_reversing) {
 
                 /* Get candidate isomorphism signature */

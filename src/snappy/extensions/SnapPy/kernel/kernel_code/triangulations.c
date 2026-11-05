@@ -229,8 +229,8 @@ void data_to_triangulation(
             cusp_array[i]->euler_characteristic = 0;
             cusp_array[i]->orientability        =
                 data->cusp_data[i].is_orientable
-                    ? orientable_cusp
-                    : nonorientable_cusp;
+                    ? orientable
+                    : nonorientable;
             cusp_array[i]->m                     = data->cusp_data[i].m;
             cusp_array[i]->l                     = data->cusp_data[i].l;
             cusp_array[i]->is_complete           =
@@ -266,7 +266,7 @@ void data_to_triangulation(
     if (manifold->orientability == unknown_orientability)
     {
         orient(manifold);
-        if (manifold->orientability == oriented_manifold)
+        if (manifold->orientability == orientable)
         {
             fix_peripheral_orientations(manifold);
         }
@@ -934,7 +934,7 @@ void initialize_vertex(
      * Pick values for orientability and euler_characteristic to indicate
      * that they have not been computed yet.
      */
-    cusp->orientability             = unknown_cusp_orientability;
+    cusp->orientability             = unknown_orientability;
     cusp->euler_characteristic      = 3;
 
     cusp->is_complete               = TRUE;

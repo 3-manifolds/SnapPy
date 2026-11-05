@@ -324,7 +324,7 @@ static void             set_up_perimeter(Tetrahedron *base_tet, VertexIndex base
 static void             expand_perimeter(PerimeterPiece *perimeter_anchor);
 static void             find_mates(PerimeterPiece *perimeter_anchor);
 static void             simplify_perimeter(PerimeterPiece **perimeter_anchor);
-static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, CuspOrientability *cusp_orientability);
+static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, Orientability *cusp_orientability);
 static void             advance_to_next_side(PerimeterPiece **pp);
 static GluingPattern    determine_gluing_pattern(PerimeterPiece *side[6], int num_sides);
 static void             do_torus(PerimeterPiece *side[6]);
@@ -851,7 +851,7 @@ static void simplify_perimeter(
 
 static void find_meridian_and_longitude(
     PerimeterPiece    *perimeter_anchor,
-    CuspOrientability *cusp_orientability)
+    Orientability     *cusp_orientability)
 {
     PerimeterPiece  *pp,
                     *side[6];
@@ -891,19 +891,19 @@ static void find_meridian_and_longitude(
         case abAB:
         case abcABC:
             do_torus(side);
-            *cusp_orientability = orientable_cusp;
+            *cusp_orientability = orientable;
             break;
 
         case abAb:
         case abcAcb:
             do_standard_Klein_bottle(side, num_sides);
-            *cusp_orientability = nonorientable_cusp;
+            *cusp_orientability = nonorientable;
             break;
 
         case aabb:
         case aabccB:
             do_P2P2_Klein_bottle(side, num_sides);
-            *cusp_orientability = nonorientable_cusp;
+            *cusp_orientability = nonorientable;
             break;
     }
 }
@@ -1310,7 +1310,7 @@ static void adjust_Klein_cusp_orientations(
      *  on the right handed sheet of the cusp's orientation double
      *  cover, relative to the orientation of the manifold.
      */
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
         return;
 
     /*

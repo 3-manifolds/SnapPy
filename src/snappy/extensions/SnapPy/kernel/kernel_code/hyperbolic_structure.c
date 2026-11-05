@@ -629,7 +629,7 @@ static void allocate_equations(
     int             *num_rows,
     int             *num_columns)
 {
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
     {
         real_equations = NULL;
         allocate_complex_equations(manifold, complex_equations, num_rows, num_columns);
@@ -650,7 +650,7 @@ static void free_equations(
     Real            **real_equations,
     int             num_rows)
 {
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
         free_complex_equations(complex_equations, num_rows);
     else
         free_real_equations(real_equations, num_rows);
@@ -1045,7 +1045,7 @@ static Boolean check_convergence(
 
     old_distance = *distance_to_solution;
 
-    *distance_to_solution = orientability == oriented_manifold ?
+    *distance_to_solution = orientability == orientable ?
         compute_distance_complex(complex_equations, num_rows, num_columns) :
         compute_distance_real(real_equations, num_rows, num_columns);
 
@@ -1118,7 +1118,7 @@ static FuncResult solve_equations(
     Real        *real_solution;
     FuncResult  result;
 
-    if (orientability == oriented_manifold)
+    if (orientability == orientable)
         result = solve_complex_equations(complex_equations, num_rows, num_columns, solution);
     else
     {

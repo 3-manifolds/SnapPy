@@ -770,7 +770,7 @@ extern void orient(Triangulation *manifold);
 /**<
  *  Attempts to consistently orient the Tetrahedra of the
  *  Triangulation *manifold.  Sets manifold->orientability to
- *  oriented_manifold or nonorientable_manifold, as appropriate.
+ *  orientable or nonorientable, as appropriate.
  */
 
 extern void extend_orientation( Triangulation   *manifold,

@@ -2275,7 +2275,7 @@ void one_to_four(
     new_cusp = NEW_STRUCT(Vertex);
     initialize_vertex(new_cusp);
     new_cusp->euler_characteristic = 2;
-    new_cusp->orientability        = orientable_cusp;
+    new_cusp->orientability        = orientable;
     new_cusp->cusp_index           = new_cusp_index;
     INSERT_BEFORE(new_cusp, tet->vertex[0]);
 

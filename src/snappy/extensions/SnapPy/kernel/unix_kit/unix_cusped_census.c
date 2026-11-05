@@ -16,11 +16,11 @@
  *  parameter anOrientability is ignored.  If it's 6 (resp. 7) you're
  *  asking for the census of cusped manifolds of exactly 6 (resp. 7)
  *  tetrahedra, and the orientability must be given by anOrientability
- *  (either oriented_manifold or nonorientable_manifold).
+ *  (either orientable or nonorientable).
  *  anIndex specifies a manifold within a census.  For example,
  *  GetCuspedCensusManifold(5, [ignored], 0) would return m000, which
  *  happens to be the Gieseking manifold, while
- *  GetCuspedCensusManifold(7, oriented_manifold, 3551) would
+ *  GetCuspedCensusManifold(7, orientable, 3551) would
  *  return the manifold SnapPea usually calls v3551.
  *
  *  For a sample main(), please see unix_cusped_census_main.c.
@@ -105,8 +105,8 @@ Triangulation *GetCuspedCensusManifold(
     
     switch (anOrientability)
     {
-        case oriented_manifold:         theNumCensusManifolds = gNumOrientableCuspedCensusMflds   [aNumTetrahedra]; break;
-        case nonorientable_manifold:    theNumCensusManifolds = gNumNonorientableCuspedCensusMflds[aNumTetrahedra]; break;
+        case orientable:       theNumCensusManifolds = gNumOrientableCuspedCensusMflds   [aNumTetrahedra]; break;
+        case nonorientable:    theNumCensusManifolds = gNumNonorientableCuspedCensusMflds[aNumTetrahedra]; break;
         default:  return NULL;
     };
     
@@ -128,7 +128,7 @@ Triangulation *GetCuspedCensusManifold(
 
             switch (anOrientability)
             {
-                case oriented_manifold:
+                case orientable:
                     if (theData6o == NULL)
                         theData6o = ReadCensusBuffer(basePathName, FILE6o, theNumCensusManifolds);
                     theData = theData6o;
@@ -136,7 +136,7 @@ Triangulation *GetCuspedCensusManifold(
                     theCensus = 6;
                     break;
                 
-                case nonorientable_manifold:
+                case nonorientable:
                     if (theData6n == NULL)
                         theData6n = ReadCensusBuffer(basePathName, FILE6n, theNumCensusManifolds);
                     theData = theData6n;
@@ -153,7 +153,7 @@ Triangulation *GetCuspedCensusManifold(
 
             switch (anOrientability)
             {
-                case oriented_manifold:
+                case orientable:
                     if (theData7o == NULL)
                         theData7o = ReadCensusBuffer(basePathName, FILE7o, theNumCensusManifolds);
                     theData = theData7o;
@@ -161,7 +161,7 @@ Triangulation *GetCuspedCensusManifold(
                     theCensus = 7;
                     break;
                 
-                case nonorientable_manifold:
+                case nonorientable:
                     if (theData7n == NULL)
                         theData7n = ReadCensusBuffer(basePathName, FILE7n, theNumCensusManifolds);
                     theData = theData7n;

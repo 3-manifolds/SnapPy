@@ -10,7 +10,7 @@ void testing_compute_vertex_link_orientabilities(
     for (Vertex * cusp = manifold->vertex_list_begin.next;
          cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        cusp->orientability = unknown_cusp_orientability;
+        cusp->orientability = unknown_orientability;
     compute_vertex_link_orientabilities(manifold);
 }
 

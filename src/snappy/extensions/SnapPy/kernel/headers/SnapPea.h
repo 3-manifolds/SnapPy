@@ -312,17 +312,10 @@ typedef struct
 
 typedef enum
 {
-    oriented_manifold,
-    nonorientable_manifold,
+    orientable,
+    nonorientable,
     unknown_orientability
 } Orientability;
-
-typedef enum
-{
-    orientable_cusp,
-    nonorientable_cusp,
-    unknown_cusp_orientability
-} CuspOrientability;
 
 typedef enum
 {

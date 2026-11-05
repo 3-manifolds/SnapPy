@@ -204,8 +204,8 @@ struct Vertex
      * where "CuspTopology" was Klein/torus/unknown.
      */
 
-    CuspOrientability   orientability;          /**< Is the vertex link orientable?
-                                                 *   Initialized to unknown_cusp_orientability
+    Orientability       orientability;          /**< Is the vertex link orientable?
+                                                 *   Initialized to unknown_orientability
                                                  *   to indicate that it has not been computed
                                                  *   yet.
                                                  *   Computed by compute_vertex_link_orientabilities

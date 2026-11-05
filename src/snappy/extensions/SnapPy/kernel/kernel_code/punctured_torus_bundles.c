@@ -698,7 +698,7 @@ Triangulation *triangulate_punctured_torus_bundle(
     data->num_tetrahedra    = n;
     data->solution_type     = not_attempted;
     data->volume            = 0.0;
-    data->orientability     = (anLRFactorization->negative_determinant == TRUE) ? nonorientable_manifold : oriented_manifold;
+    data->orientability     = (anLRFactorization->negative_determinant == TRUE) ? nonorientable : orientable;
     data->CS_value_is_known = FALSE;
     data->CS_value          = -1.0;
     data->num_or_cusps      = (anLRFactorization->negative_determinant == TRUE) ? 0 : 1;

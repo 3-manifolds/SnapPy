@@ -169,7 +169,7 @@ void create_cusps_and_mark_finite_as_needed(
                 Vertex * cusp = create_one_cusp(manifold, tet, v);
                 cusp->cusp_index            = --count;
                 cusp->euler_characteristic = 2;
-                cusp->orientability        = orientable_cusp;
+                cusp->orientability        = orientable;
             }
 }
 
@@ -350,7 +350,7 @@ void compute_vertex_link_orientabilities(
         for (VertexIndex initial_v = 0; initial_v < 4; initial_v++)
         {
             Vertex * cusp = initial_tet->vertex[initial_v];
-            if (cusp->orientability != unknown_cusp_orientability)
+            if (cusp->orientability != unknown_orientability)
                 continue;
 
             /*
@@ -358,7 +358,7 @@ void compute_vertex_link_orientabilities(
              *  a contradiction.
              */
 
-            cusp->orientability = orientable_cusp;
+            cusp->orientability = orientable;
 
             /*
              *  Put the cusp triangle on the queue,
@@ -421,7 +421,7 @@ void compute_vertex_link_orientabilities(
                          *  ... check whether its orientation is consistent.
                          */
                         if (nbr_orientation != expected_nbr_orientation)
-                            cusp->orientability = nonorientable_cusp;
+                            cusp->orientability = nonorientable;
                     }
                     else
                     {
@@ -448,7 +448,7 @@ void compute_vertex_link_orientabilities(
              *  Keeping going until we either discover the cusp is nonorientable
              *  or the queue is exhausted.
              */
-            while (cusp->orientability == orientable_cusp &&
+            while (cusp->orientability == orientable &&
                    queue_first <= queue_last);
         }
 
@@ -473,11 +473,11 @@ Boolean vertex_has_orientable_link(
     const Vertex    *vertex)
 {
     switch(vertex->orientability) {
-    case orientable_cusp:
+    case orientable:
         return TRUE;
     default:
         uFatalError("vertex_has_orientable_link", "cusps.c");
-    case nonorientable_cusp:
+    case nonorientable:
         return FALSE;
     }
 }

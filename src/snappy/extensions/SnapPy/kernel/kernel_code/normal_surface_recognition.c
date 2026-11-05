@@ -136,7 +136,7 @@ void recognize_embedded_surface(
     /*
      *  In an orientable 3-manifold, a surface is orientable iff it's 2-sided.
      */
-    if (manifold->orientability == oriented_manifold
+    if (manifold->orientability == orientable
      && *is_orientable != *two_sided)
         uFatalError("recognize_embedded_surface", "normal_surface_recognition");
 

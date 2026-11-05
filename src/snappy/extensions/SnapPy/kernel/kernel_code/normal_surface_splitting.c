@@ -345,7 +345,7 @@ FuncResult split_along_normal_surface(
              *  some of the original {meridian, longitude} pairs might
              *  fail to obey the right-hand rule.
              */
-            if (pieces[i]->orientability == oriented_manifold)
+            if (pieces[i]->orientability == orientable)
                 fix_peripheral_orientations(pieces[i]);
 
             /*

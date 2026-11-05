@@ -68,7 +68,7 @@ FuncResult read_old_manifold(
 	orient(*manifold_ptr);
 	orient_edge_classes(*manifold_ptr);
 
-	if ((*manifold_ptr)->orientability == nonorientable_manifold)
+	if ((*manifold_ptr)->orientability == nonorientable)
 		peripheral_curves(*manifold_ptr);
 	else
 		fix_orientation(*manifold_ptr);
@@ -79,7 +79,7 @@ FuncResult read_old_manifold(
 	 *	peripheral_curves() will have trashed the original curves,
 	 *	even on the orientable cusps.  Repair the damage as best we can.
 	 */
-	if ((*manifold_ptr)->orientability == nonorientable_manifold)
+	if ((*manifold_ptr)->orientability == nonorientable)
 		install_shortest_bases(*manifold_ptr);
 
 	(*manifold_ptr)->CS_value_is_known =
@@ -168,8 +168,8 @@ FuncResult read_the_file(
 		cal[count]->euler_characteristic = 0;
 		cal[count]->orientability        =
 		    (count < manifold->num_nonor_cusps)
-		        ? nonorientable_cusp
-		        : orientable_cusp;
+		        ? nonorientable
+		        : orientable;
 		INSERT_BEFORE(cal[count], &manifold->vertex_list_end);
 	}
 

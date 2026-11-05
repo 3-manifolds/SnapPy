@@ -15,7 +15,7 @@
  *  an orientable Triangulation will match the initial Orientation of
  *  manifold->tet_list_begin.next, which is important in subdivide.c and
  *  terse_triangulation.c.)  orient() sets the manifold->orientability
- *  field to oriented_manifold or nonorientable_manifold, as appropriate.
+ *  field to orientable or nonorientable, as appropriate.
  *  Its method for reorienting a tetrahedron is to swap the indices
  *  of vertices 2 and 3, and adjust the relevant fields accordingly
  *  (including the gluing fields of neighboring tetrahedra).
@@ -136,7 +136,7 @@ void extend_orientation(
     /*
      *  Tentatively assume the manifold is orientable.
      */
-    manifold->orientability = oriented_manifold;
+    manifold->orientability = orientable;
 
     /*
      *  Allocate space for a queue of pointers to the Tetrahedra.
@@ -199,7 +199,7 @@ void extend_orientation(
                  *  ...check whether its orientation is consistent.
                  */
                 if (parity[tet->gluing[f]] == orientation_reversing)
-                    manifold->orientability = nonorientable_manifold;
+                    manifold->orientability = nonorientable;
             }
         }
     }
@@ -207,7 +207,7 @@ void extend_orientation(
      *  Keep going until either we discover the manifold is nonorientable,
      *  or the queue is exhausted.
      */
-    while (manifold->orientability == oriented_manifold
+    while (manifold->orientability == orientable
         && queue_first <= queue_last);
 
     /*
@@ -218,7 +218,7 @@ void extend_orientation(
     /*
      *  An "unnecessary" (but quick) error check.
      */
-    if (manifold->orientability == oriented_manifold
+    if (manifold->orientability == orientable
      && (   queue_first != manifold->num_tetrahedra
          || queue_last  != manifold->num_tetrahedra - 1))
         uFatalError("orient", "orient");
@@ -235,7 +235,7 @@ void extend_orientation(
      *  Respect the conventions for peripheral curves and
      *  edge orientations in oriented manifolds.
      */
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
     {
         transfer_peripheral_curves(manifold);
         make_all_edge_orientations_right_handed(manifold);
@@ -662,7 +662,7 @@ void reorient(
         reverse_orientation(tet);
 
 
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
     {
         /*
          *  The peripheral curves haven't gone anywhere,
@@ -799,7 +799,7 @@ void fix_peripheral_orientations(
     /*
      *  This function should get called only for orientable manifolds.
      */
-    if (manifold->orientability != oriented_manifold)
+    if (manifold->orientability != orientable)
         uFatalError("fix_peripheral_orientations", "orient");
 
     /*

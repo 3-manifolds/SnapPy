@@ -103,7 +103,7 @@ TerseTriangulation *tri_to_canonical_terse(
         {
             p = permutation_by_index[i];
             
-            if (manifold->orientability == oriented_manifold
+            if (manifold->orientability == orientable
              && respect_orientation == TRUE
              && parity[p] == 1 /* odd permutation */)
                 continue;

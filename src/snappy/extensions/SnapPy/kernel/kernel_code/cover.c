@@ -461,7 +461,7 @@ Triangulation *construct_cover(
      *  right-hand rule.  Correct them, and adjust the Dehn filling
      *  coefficients accordingly.
      */
-    if (covering_manifold->orientability == oriented_manifold)
+    if (covering_manifold->orientability == orientable)
         fix_peripheral_orientations(covering_manifold);
 
     /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */

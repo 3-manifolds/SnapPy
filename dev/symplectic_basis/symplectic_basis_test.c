@@ -39,9 +39,9 @@ void testDual(void) {
 
     for (i = 0; i < 3; i++) {
         for (j = index[i][1]; j < index[i][2]; j++) {
-            theTriangulation = GetCuspedCensusManifold("", index[i][0], oriented_manifold, j);
+            theTriangulation = GetCuspedCensusManifold("", index[i][0], orientable, j);
 
-            if (get_orientability(theTriangulation) == nonorientable_manifold || get_num_cusps(theTriangulation) > 1) {
+            if (get_orientability(theTriangulation) == nonorientable || get_num_cusps(theTriangulation) > 1) {
                 free_triangulation(theTriangulation);
                 continue;
             }

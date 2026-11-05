@@ -253,25 +253,31 @@ static void lift_peripheral_curves(
             for (v = 0; v < 4; v++)
 
                 for (f = 0; f < 4; f++)
-                    
-                    if (get_cusp_topology(old_tet->vertex[v]) == torus_cusp)
-                    {
-                        new_tet[i][0]->curve[c][right_handed][v][f] =
-                        new_tet[i][1]->curve[c][right_handed][v][f] =
-                            old_tet->curve[c][right_handed][v][f];
 
-                        new_tet[i][0]->curve[c][ left_handed][v][f] =
-                        new_tet[i][1]->curve[c][ left_handed][v][f] =
-                            old_tet->curve[c][ left_handed][v][f];
-                    }
-                    else
-                    {
-                        new_tet[i][0]->curve[c][right_handed][v][f] =
-                            old_tet->curve[c][right_handed][v][f];
+                    if (vertex_is_cusp(old_tet->vertex[v]))
 
-                        new_tet[i][1]->curve[c][ left_handed][v][f] =
-                            old_tet->curve[c][ left_handed][v][f];
-                    }
+                        if (vertex_has_orientable_link(old_tet->vertex[v]))
+                        {
+                            /* Torus cusp */
+
+                            new_tet[i][0]->curve[c][right_handed][v][f] =
+                            new_tet[i][1]->curve[c][right_handed][v][f] =
+                                old_tet->curve[c][right_handed][v][f];
+
+                            new_tet[i][0]->curve[c][ left_handed][v][f] =
+                            new_tet[i][1]->curve[c][ left_handed][v][f] =
+                                old_tet->curve[c][ left_handed][v][f];
+                        }
+                        else
+                        {
+                            /* Klein bottle cusp */
+
+                            new_tet[i][0]->curve[c][right_handed][v][f] =
+                                old_tet->curve[c][right_handed][v][f];
+
+                            new_tet[i][1]->curve[c][ left_handed][v][f] =
+                                old_tet->curve[c][ left_handed][v][f];
+                        }
 }
 
 

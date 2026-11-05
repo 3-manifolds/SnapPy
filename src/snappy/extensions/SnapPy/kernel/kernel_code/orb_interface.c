@@ -83,14 +83,12 @@ static Vertex * orb_find_vertex(
 void orb_get_vertex_info(
     Triangulation   *manifold,
     int             vertex_index,
-    Boolean         *orientable,
+    Boolean         *is_orientable,
     int             *euler_characteristic,
     int             *num_incident_singular_edges,
     Real            **incident_singular_edge_orders,
     int             **incident_singular_edge_indices,
     int             *cusp_index,
-    CuspTopology    *topology,
-    Boolean         *is_finite_vertex,
     Real            *orbifold_euler_characteristic)
 {
     Vertex * cusp = orb_find_vertex(manifold, vertex_index);
@@ -98,27 +96,8 @@ void orb_get_vertex_info(
     if (cusp_index != NULL)
         *cusp_index = cusp->cusp_index;
 
-    if (is_finite_vertex != NULL)
-        *is_finite_vertex = vertex_is_finite(cusp);
-
-    if (topology != NULL)
-        *topology = get_cusp_topology(cusp);
-
-    if (orientable != NULL)
-        if (cusp->euler_characteristic == 2)
-            *orientable = TRUE;
-        else
-            switch (cusp->orientability)
-            {
-            case orientable_cusp:
-                *orientable = TRUE;
-                break;
-            case nonorientable_cusp:
-                *orientable = FALSE;
-                break;
-            default:
-                uFatalError("orb_get_vertex_info", "orb_interface");
-            }
+    if (is_orientable != NULL)
+        *is_orientable = vertex_has_orientable_link(cusp);
 
     if (cusp->euler_characteristic > 2)
         uFatalError("orb_get_vertex_info", "orb_interface");

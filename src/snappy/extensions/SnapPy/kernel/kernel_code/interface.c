@@ -11,6 +11,7 @@
  *  SolutionType    get_filled_solution_type(Triangulation *manifold);
  *  int             get_num_tetrahedra(Triangulation *manifold);
  *  Orientability   get_orientability(Triangulation *manifold);
+ *  Boolean         all_vertices_are_finite_or_cusps(Triangulation *manifold);
  *  int             get_num_cusps(Triangulation *manifold);
  *  int             get_num_or_cusps(Triangulation *manifold);
  *  int             get_num_nonor_cusps(Triangulation *manifold);
@@ -121,6 +122,19 @@ Orientability get_orientability(
     Triangulation   *manifold)
 {
     return manifold->orientability;
+}
+
+
+Boolean all_vertices_are_finite_or_cusps(
+    Triangulation   *manifold)
+{
+    for (Vertex *vertex = manifold->vertex_list_begin.next;
+                 vertex != &manifold->vertex_list_end;
+                 vertex = vertex->next)
+        if (vertex_is_finite_or_cusp(vertex) == FALSE)
+            return FALSE;
+
+    return TRUE;
 }
 
 

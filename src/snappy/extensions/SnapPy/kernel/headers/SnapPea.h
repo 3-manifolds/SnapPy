@@ -326,18 +326,6 @@ typedef enum
 
 typedef enum
 {
-    sphere_cusp,
-    projective_cusp, /* Projective plane */
-    torus_cusp,
-    Klein_cusp, /* Klein bottle */
-    higher_genus_orientable_cusp,
-    higher_genus_nonorientable_cusp,
-    unknown_topology
-} CuspTopology;
-
-
-typedef enum
-{
     Dirichlet_interactive,
     Dirichlet_stop_here,
     Dirichlet_keep_going

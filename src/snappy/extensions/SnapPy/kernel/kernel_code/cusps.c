@@ -13,8 +13,6 @@
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
  *      void    compute_vertex_link_Euler_characteristics(Triangulation *manifold);
- *      CuspTopology get_cusp_topology(const Vertex * cusp);
- *      void    set_cusp_topology(Vertex * cusp, CuspTopology topology);
  *
  *  create_cusps() is used within the kernel to assign Vertex data
  *  structures to Triangulations.  It assumes the neighbor and gluing
@@ -621,84 +619,6 @@ void compute_vertex_link_Euler_characteristics(
         if (cusp->euler_characteristic % 2 != 0)
             uFatalError("compute_vertex_link_Euler_characteristics", "cusps");
         cusp->euler_characteristic /= 2;
-    }
-}
-
-CuspTopology get_cusp_topology(
-    const Vertex * cusp)
-{
-    switch(cusp->euler_characteristic) {
-    case 2:
-        return sphere_cusp;
-    case 1:
-        if (cusp->orientability != nonorientable_cusp) {
-            /*
-             * Inconsistency.
-             */
-            uFatalError("get_cusp_topology 2", "cusps");
-            return unknown_topology;
-        }
-        return projective_cusp;
-    case 0:
-        switch(cusp->orientability) {
-        case orientable_cusp:
-            return torus_cusp;
-        case nonorientable_cusp:
-            return Klein_cusp;
-        default:
-            /*
-             * Unknown orientability.
-             */
-            uFatalError("get_cusp_topology 3", "cusps");
-            return unknown_topology;
-        }
-    default:
-        if (cusp->euler_characteristic > 2) {
-            /*
-             * Euler characteristic was not computed and still
-             * has value from initialization.
-             */
-            uFatalError("get_cusp_topology 4", "cusps");
-            return unknown_topology;
-        }
-        switch(cusp->orientability) {
-        case orientable_cusp:
-            return higher_genus_orientable_cusp;
-        case nonorientable_cusp:
-            return higher_genus_nonorientable_cusp;
-        default:
-            /*
-             * Unknown orientability.
-             */
-            uFatalError("get_cusp_topology 5", "cusps");
-            return torus_cusp;
-        }
-    }
-}
-
-void set_cusp_topology(Vertex * cusp, CuspTopology topology)
-{
-    switch (topology) {
-    case sphere_cusp:
-        cusp->euler_characteristic = 2;
-        cusp->orientability = orientable_cusp;
-        break;
-    case torus_cusp:
-        cusp->euler_characteristic = 0;
-        cusp->orientability = orientable_cusp;
-        break;
-    case Klein_cusp:
-        cusp->euler_characteristic = 0;
-        cusp->orientability = nonorientable_cusp;
-        break;
-    default:
-        /*
-         * We do not support for the case projective_cusp here but can add
-         * it if needed.
-         * The case higher_genus_[...]_cusp does not have enough information to
-         * set euler_characteristic or orientability.
-         */
-        uFatalError("set_cusp_topology", "cusps");
     }
 }
 

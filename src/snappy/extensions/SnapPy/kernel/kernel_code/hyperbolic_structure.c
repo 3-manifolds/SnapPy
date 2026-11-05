@@ -287,15 +287,15 @@ static void record_cusp_status(
     Real            m_array[],
     Real            l_array[])
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        is_complete_array[cusp->index]  = cusp->is_complete;
-        m_array[cusp->index]            = cusp->m;
-        l_array[cusp->index]            = cusp->l;
+        is_complete_array[cusp->cusp_index]  = cusp->is_complete;
+        m_array[cusp->cusp_index]            = cusp->m;
+        l_array[cusp->cusp_index]            = cusp->l;
     }
 }
 
@@ -306,15 +306,15 @@ static void restore_cusp_status(
     Real            m_array[],
     Real            l_array[])
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        cusp->is_complete   = is_complete_array[cusp->index];
-        cusp->m             = m_array[cusp->index];
-        cusp->l             = l_array[cusp->index];
+        cusp->is_complete   = is_complete_array[cusp->cusp_index];
+        cusp->m             = m_array[cusp->cusp_index];
+        cusp->l             = l_array[cusp->cusp_index];
     }
 }
 
@@ -322,10 +322,10 @@ static void restore_cusp_status(
 void complete_all_cusps(
     Triangulation *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->is_complete = TRUE;
@@ -370,10 +370,10 @@ static void copy_cusp_shapes(
     FillingStatus   source,     /*  complete/initial or filled/current  */
     FillingStatus   dest)       /*  filled/current or complete/initial  */
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->cusp_shape[dest]      = cusp->cusp_shape[source];
@@ -603,16 +603,14 @@ SolutionType do_Dehn_filling(
 static void verify_coefficients(
     Triangulation *manifold)
 {
-    Cusp    *cusp;
-
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (
             cusp->is_complete ?
             cusp->m != 0.0 || cusp->l != 0.0 :
-            (cusp->m == 0.0 && cusp->l == 0.0) || (get_cusp_topology(cusp) == Klein_cusp && cusp->l != 0.0)
+            (cusp->m == 0.0 && cusp->l == 0.0) || (!vertex_has_orientable_link(cusp) && cusp->l != 0.0)
            )
 
             uFatalError("verify_coefficients", "hyperbolic_structure");
@@ -631,7 +629,7 @@ static void allocate_equations(
     int             *num_rows,
     int             *num_columns)
 {
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
     {
         real_equations = NULL;
         allocate_complex_equations(manifold, complex_equations, num_rows, num_columns);
@@ -652,7 +650,7 @@ static void free_equations(
     Real            **real_equations,
     int             num_rows)
 {
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
         free_complex_equations(complex_equations, num_rows);
     else
         free_real_equations(real_equations, num_rows);
@@ -778,7 +776,7 @@ static void associate_complex_eqns_to_edges_and_cusps(
     Complex         **complex_equations)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     for (   edge = manifold->edge_list_begin.next;
             edge != &manifold->edge_list_end;
@@ -789,8 +787,8 @@ static void associate_complex_eqns_to_edges_and_cusps(
         edge->real_edge_equation_im = NULL;
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->complex_cusp_equation = *complex_equations++;
@@ -811,7 +809,7 @@ static void associate_real_eqns_to_edges_and_cusps(
     Real            **real_equations)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     for (   edge = manifold->edge_list_begin.next;
             edge != &manifold->edge_list_end;
@@ -822,8 +820,8 @@ static void associate_real_eqns_to_edges_and_cusps(
         edge->real_edge_equation_im = *real_equations++;
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->complex_cusp_equation = NULL;
@@ -843,7 +841,7 @@ static void dissociate_eqns_from_edges_and_cusps(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     for (   edge = manifold->edge_list_begin.next;
             edge != &manifold->edge_list_end;
@@ -854,8 +852,8 @@ static void dissociate_eqns_from_edges_and_cusps(
         edge->real_edge_equation_im = NULL;
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->complex_cusp_equation = NULL;
@@ -1047,7 +1045,7 @@ static Boolean check_convergence(
 
     old_distance = *distance_to_solution;
 
-    *distance_to_solution = orientability == oriented_manifold ?
+    *distance_to_solution = orientability == orientable ?
         compute_distance_complex(complex_equations, num_rows, num_columns) :
         compute_distance_real(real_equations, num_rows, num_columns);
 
@@ -1120,7 +1118,7 @@ static FuncResult solve_equations(
     Real        *real_solution;
     FuncResult  result;
 
-    if (orientability == oriented_manifold)
+    if (orientability == orientable)
         result = solve_complex_equations(complex_equations, num_rows, num_columns, solution);
     else
     {
@@ -1294,7 +1292,7 @@ static void save_filled_solution(
 {
     int         i;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     /*
      *  Save the Tetrahedron shapes.
@@ -1307,11 +1305,11 @@ static void save_filled_solution(
         save_shapes[i] = *tet->shape[filled];
 
     /*
-     *  Save the Cusp information.
+     *  Save the Vertex information.
      */
 
-    for (i = 0, cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (i = 0, cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          i++, cusp = cusp->next)
     {
         save_cusp_info[i].is_complete   = cusp->is_complete;
@@ -1328,7 +1326,7 @@ static void restore_filled_solution(
 {
     int         i;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     /*
      *  Restore the Tetrahedron shapes.
@@ -1341,11 +1339,11 @@ static void restore_filled_solution(
         *tet->shape[filled] = save_shapes[i];
 
     /*
-     *  Restore the Cusp information.
+     *  Restore the Vertex information.
      */
 
-    for (i = 0, cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (i = 0, cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          i++, cusp = cusp->next)
     {
         cusp->is_complete   = save_cusp_info[i].is_complete;

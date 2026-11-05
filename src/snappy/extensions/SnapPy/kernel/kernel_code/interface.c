@@ -11,6 +11,7 @@
  *  SolutionType    get_filled_solution_type(Triangulation *manifold);
  *  int             get_num_tetrahedra(Triangulation *manifold);
  *  Orientability   get_orientability(Triangulation *manifold);
+ *  Boolean         all_vertices_are_finite_or_cusps(Triangulation *manifold);
  *  int             get_num_cusps(Triangulation *manifold);
  *  int             get_num_or_cusps(Triangulation *manifold);
  *  int             get_num_nonor_cusps(Triangulation *manifold);
@@ -19,10 +20,10 @@
  *  int             get_num_generators(Triangulation *manifold);
  *  void            get_cusp_info(  Triangulation   *manifold,
  *                                  int             cusp_index,
- *                                  CuspTopology    *topology,
+ *                                  Boolean         *is_orientable,
  *                                  Boolean         *is_complete,
- *                                  double          *m,
- *                                  double          *l,
+ *                                  Real            *m,
+ *                                  Real            *l,
  *                                  Complex         *initial_shape,
  *                                  Complex         *current_shape,
  *                                  int             *initial_shape_precision,
@@ -124,6 +125,19 @@ Orientability get_orientability(
 }
 
 
+Boolean all_vertices_are_finite_or_cusps(
+    Triangulation   *manifold)
+{
+    for (Vertex *vertex = manifold->vertex_list_begin.next;
+                 vertex != &manifold->vertex_list_end;
+                 vertex = vertex->next)
+        if (vertex_is_finite_or_cusp(vertex) == FALSE)
+            return FALSE;
+
+    return TRUE;
+}
+
+
 int get_num_cusps(
     Triangulation   *manifold)
 {
@@ -155,7 +169,7 @@ int get_num_fake_cusps(
 int get_max_singularity(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
     int     m,
             l,
             singularity,
@@ -163,8 +177,8 @@ int get_max_singularity(
 
     max_singularity = 1;
 
-    for (   cusp = manifold->cusp_list_begin.next;
-            cusp != &manifold->cusp_list_end;
+    for (   cusp = manifold->vertex_list_begin.next;
+            cusp != &manifold->vertex_list_end;
             cusp = cusp->next)
     {
         if (cusp->is_complete == FALSE)
@@ -197,7 +211,7 @@ int get_num_generators(
 void get_cusp_info(
     Triangulation   *manifold,
     int             cusp_index,
-    CuspTopology    *topology,
+    Boolean         *is_orientable,
     Boolean         *is_complete,
     Real            *m,
     Real            *l,
@@ -208,7 +222,7 @@ void get_cusp_info(
     Complex         *initial_modulus,
     Complex         *current_modulus)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
 
@@ -216,8 +230,8 @@ void get_cusp_info(
      *  Write information corresponding to nonNULL pointers.
      */
 
-    if (topology != NULL)
-        *topology = get_cusp_topology(cusp);
+    if (is_orientable != NULL)
+        *is_orientable = vertex_has_orientable_link(cusp);
 
     if (is_complete != NULL)
         *is_complete = cusp->is_complete;
@@ -269,7 +283,7 @@ FuncResult set_cusp_info(
     Real            m,
     Real            l)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
     /* MC 2008-09-30 */
@@ -301,7 +315,7 @@ FuncResult set_cusp_info(
             uAcknowledge("Can't do (0,0) Dehn filling.");
             return func_bad_input;
         }
-        if (get_cusp_topology(cusp) == Klein_cusp &&  l != 0.0)
+        if (!vertex_has_orientable_link(cusp) &&  l != 0.0)
         {
             uAcknowledge("Only (p,0) Dehn fillings are possible on a nonorientable cusp.");
             return func_bad_input;
@@ -329,7 +343,7 @@ void get_holonomy(
     int             *meridional_precision,
     int             *longitudinal_precision)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
 
@@ -351,7 +365,7 @@ void get_holonomy(
          *  in this case must be real, so we clear any roundoff
          *  error in the imaginary part.
          */
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (!vertex_has_orientable_link(cusp))
         {
             longitudinal_holonomy->real /= 2.0;
             longitudinal_holonomy->imag = 0.0;

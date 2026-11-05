@@ -7,15 +7,15 @@
  *                Triangulation *manifold,
  *          CONST MatrixInt22   change_matrices[]);
  *
- *  If all the change_matrices (there should be one for each Cusp) have
- *  determinant +1, then on each Cusp change_peripheral_curves() replaces
+ *  If all the change_matrices (there should be one for each cusp) have
+ *  determinant +1, then on each cusp change_peripheral_curves() replaces
  *
  *  the meridian with   change_matrices[i][0][0] meridians plus
  *                      change_matrices[i][0][1] longitudes, and
  *  the longitude with  change_matrices[i][1][0] meridians plus
  *                      change_matrices[i][1][1] longitudes,
  *
- *  where i is the index of the Cusp.  It returns func_OK.
+ *  where i is the index of the cusp.  It returns func_OK.
  *
  *  If some change_matrix has determinant != +1, change_peripheral_curves()
  *  returns func_bad_input.
@@ -36,7 +36,7 @@ FuncResult change_peripheral_curves(
     Real      old_m_coef, /* changed from int to Real, JRW 2000/01/18 */
                 old_l_coef;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Complex     old_Hm,
                 old_Hl;
 
@@ -53,15 +53,15 @@ FuncResult change_peripheral_curves(
      *  off-diagonal entries.  (Nothing else makes sense topologically.)
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (vertex_is_Klein_cusp(cusp))
 
             for (i = 0; i < 2; i++)
 
-                if (change_matrices[cusp->index][i][!i] != 0)
+                if (change_matrices[cusp->cusp_index][i][!i] != 0)
 
                     uFatalError("change_peripheral_curves", "change_peripheral_curves");
 
@@ -88,11 +88,11 @@ FuncResult change_peripheral_curves(
                     old_l = tet->curve[L][i][v][f];
 
                     tet->curve[M][i][v][f]
-                        = change_matrices[tet->cusp[v]->index][0][0] * old_m
-                        + change_matrices[tet->cusp[v]->index][0][1] * old_l;
+                        = change_matrices[tet->vertex[v]->cusp_index][0][0] * old_m
+                        + change_matrices[tet->vertex[v]->cusp_index][0][1] * old_l;
                     tet->curve[L][i][v][f]
-                        = change_matrices[tet->cusp[v]->index][1][0] * old_m
-                        + change_matrices[tet->cusp[v]->index][1][1] * old_l;
+                        = change_matrices[tet->vertex[v]->cusp_index][1][0] * old_m
+                        + change_matrices[tet->vertex[v]->cusp_index][1][1] * old_l;
                 }
 
     /*
@@ -152,8 +152,8 @@ FuncResult change_peripheral_curves(
      *                   + old_l_coef * change_matrices[i][0][0]
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_complete == FALSE)
@@ -161,10 +161,10 @@ FuncResult change_peripheral_curves(
             old_m_coef = cusp->m;
             old_l_coef = cusp->l;
 
-            cusp->m =   old_m_coef * change_matrices[cusp->index][1][1]
-                      - old_l_coef * change_matrices[cusp->index][1][0];
-            cusp->l = - old_m_coef * change_matrices[cusp->index][0][1]
-                      + old_l_coef * change_matrices[cusp->index][0][0];
+            cusp->m =   old_m_coef * change_matrices[cusp->cusp_index][1][1]
+                      - old_l_coef * change_matrices[cusp->cusp_index][1][0];
+            cusp->l = - old_m_coef * change_matrices[cusp->cusp_index][0][1]
+                      + old_l_coef * change_matrices[cusp->cusp_index][0][0];
         }
 
     /*
@@ -180,8 +180,8 @@ FuncResult change_peripheral_curves(
      *  For complete Cusps the holonomies should be zero, but that's OK.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
@@ -191,22 +191,22 @@ FuncResult change_peripheral_curves(
 
             cusp->holonomy[i][M] = complex_plus(
                 complex_real_mult(
-                    change_matrices[cusp->index][0][0],
+                    change_matrices[cusp->cusp_index][0][0],
                     old_Hm
                 ),
                 complex_real_mult(
-                    change_matrices[cusp->index][0][1],
+                    change_matrices[cusp->cusp_index][0][1],
                     old_Hl
                 )
             );
 
             cusp->holonomy[i][L] = complex_plus(
                 complex_real_mult(
-                    change_matrices[cusp->index][1][0],
+                    change_matrices[cusp->cusp_index][1][0],
                     old_Hm
                 ),
                 complex_real_mult(
-                    change_matrices[cusp->index][1][1],
+                    change_matrices[cusp->cusp_index][1][1],
                     old_Hl
                 )
             );
@@ -216,18 +216,18 @@ FuncResult change_peripheral_curves(
      *  Update the cusp_shapes.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->cusp_shape[initial] = transformed_cusp_shape(
                                     cusp->cusp_shape[initial],
-                                    change_matrices[cusp->index]);
+                                    change_matrices[cusp->cusp_index]);
 
         if (cusp->is_complete == TRUE)
             cusp->cusp_shape[current] = transformed_cusp_shape(
                                     cusp->cusp_shape[current],
-                                    change_matrices[cusp->index]);
+                                    change_matrices[cusp->cusp_index]);
         /*
          *  else cusp->cusp_shape[current] == Zero, and needn't be changed.
          */

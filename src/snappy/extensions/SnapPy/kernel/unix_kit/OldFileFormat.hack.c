@@ -68,7 +68,7 @@ FuncResult read_old_manifold(
 	orient(*manifold_ptr);
 	orient_edge_classes(*manifold_ptr);
 
-	if ((*manifold_ptr)->orientability == nonorientable_manifold)
+	if ((*manifold_ptr)->orientability == nonorientable)
 		peripheral_curves(*manifold_ptr);
 	else
 		fix_orientation(*manifold_ptr);
@@ -79,7 +79,7 @@ FuncResult read_old_manifold(
 	 *	peripheral_curves() will have trashed the original curves,
 	 *	even on the orientable cusps.  Repair the damage as best we can.
 	 */
-	if ((*manifold_ptr)->orientability == nonorientable_manifold)
+	if ((*manifold_ptr)->orientability == nonorientable)
 		install_shortest_bases(*manifold_ptr);
 
 	(*manifold_ptr)->CS_value_is_known =
@@ -117,7 +117,7 @@ FuncResult read_the_file(
 	Tetrahedron		**tal,	/* tetrahedron address list */
 	                         *tet;
 	EdgeClass		**eal;	/* edge class address list	*/
-	Cusp			**cal;	/* cusp address list		*/
+	Vertex			**cal;	/* cusp address list		*/
 
 	*manifold_ptr = NULL;	/* just in case anything goes wrong . . . */
 
@@ -159,16 +159,18 @@ FuncResult read_the_file(
 	if (manifold->num_cusps > 2 * manifold->num_tetrahedra)
 		goto bail;
 
-	cal = NEW_ARRAY(manifold->num_cusps, Cusp *);
+	cal = NEW_ARRAY(manifold->num_cusps, Vertex *);
 	for (count = 0; count < manifold->num_cusps; count++)
 	{
-		cal[count] = NEW_STRUCT(Cusp);
-		initialize_cusp(cal[count]);
-		cal[count]->index = count;
-		INSERT_BEFORE(cal[count], &manifold->cusp_list_end);
-		set_cusp_topology(
-		    cal[count],
-		    (count < manifold->num_nonor_cusps) ? Klein_cusp : torus_cusp);
+		cal[count] = NEW_STRUCT(Vertex);
+		initialize_vertex(cal[count]);
+		cal[count]->cusp_index           = count;
+		cal[count]->euler_characteristic = 0;
+		cal[count]->orientability        =
+		    (count < manifold->num_nonor_cusps)
+		        ? nonorientable
+		        : orientable;
+		INSERT_BEFORE(cal[count], &manifold->vertex_list_end);
 	}
 
 	tal = NEW_ARRAY(manifold->num_tetrahedra, Tetrahedron *);
@@ -211,7 +213,7 @@ FuncResult read_the_file(
 			if (fscanf(fp, "%d", &cusp_index) != 1
 			 || cusp_index < 0 || cusp_index >= manifold->num_cusps)
 				goto bail;
-			tet->cusp[vertex] = cal[cusp_index];
+			tet->vertex[vertex] = cal[cusp_index];
 		}
 		for (c = 0; c < 2; c++)
 			for (vertex = 0; vertex < 4; vertex++)
@@ -264,7 +266,7 @@ static void fix_orientation(
 	Triangulation *manifold)
 {
 	int			standard;
-	Cusp		*cusp;
+	Vertex		*cusp;
 	Tetrahedron	*tet;
 	int			i, j, k;
 
@@ -275,9 +277,9 @@ static void fix_orientation(
 	/*
 	 *	All the intersection numbers ought to be the same.
 	 */
-	standard = manifold->cusp_list_begin.next->intersection_number[L][M];
-	for (cusp = manifold->cusp_list_begin.next;
-		 cusp != &manifold->cusp_list_end;
+	standard = manifold->vertex_list_begin.next->intersection_number[L][M];
+	for (cusp = manifold->vertex_list_begin.next;
+		 cusp != &manifold->vertex_list_end;
 		 cusp = cusp->next)
 		if (cusp->intersection_number[L][M] != standard)
 			uFatalError("fix_orientation", "OldFileFormat.hack");

@@ -13,7 +13,7 @@
  *  current_curve_basis() accepts a Triangulation and a cusp index,
  *  and computes a 2 x 2 integer matrix basis_change with the property that
  *
- *      if the Cusp of index cusp_index is filled, and has
+ *      if the cusp of index cusp_index is filled, and has
  *          integer Dehn filling coefficients,
  *
  *          the first row of basis_change is set to the current
@@ -30,7 +30,7 @@
  *  shortest curve which completes the basis.
  *
  *  install_current_curve_bases() installs the current curve basis 
- *      on each Cusp of manifold.
+ *      on each cusp of manifold.
  *
  *  96/9/28 Modified to accept non relatively prime integer coefficients.
  *  For example, (15, 20) is treated the same as (3,4).  Thus in
@@ -46,7 +46,7 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 #define EPSILON     1e-5
 #define BIG_MODULUS 1e+5
 
-static void current_curve_basis_on_cusp(Cusp *cusp, MatrixInt22 basis_change);
+static void current_curve_basis_on_cusp(Vertex *cusp, MatrixInt22 basis_change);
 
 
 void current_curve_basis(
@@ -60,7 +60,7 @@ void current_curve_basis(
 
 
 static void current_curve_basis_on_cusp(
-    Cusp            *cusp,
+    Vertex          *cusp,
     MatrixInt22     basis_change)
 {
     int     m_int,
@@ -153,7 +153,7 @@ static void current_curve_basis_on_cusp(
 void install_current_curve_bases(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     MatrixInt22 *change_matrices;
 
     /*
@@ -166,15 +166,15 @@ void install_current_curve_bases(
      *  Compute the change of basis matrices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        if (cusp->index < 0
-         || cusp->index >= manifold->num_cusps)
+        if (cusp->cusp_index < 0
+         || cusp->cusp_index >= manifold->num_cusps)
             uFatalError("install_current_curve_bases", "current_curve_basis");
 
-        current_curve_basis_on_cusp(cusp, change_matrices[cusp->index]);
+        current_curve_basis_on_cusp(cusp, change_matrices[cusp->cusp_index]);
     }
 
     /*

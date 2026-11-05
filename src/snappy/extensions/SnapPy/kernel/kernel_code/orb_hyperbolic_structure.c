@@ -68,13 +68,13 @@ static void initialize_shapes(
         if (edge->orb_edge_shape == NULL)
             edge->orb_edge_shape = NEW_STRUCT(OrbEdgeShape);
 
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if (cusp->orb_cusp_shape == NULL)
+        if (cusp->orb_vertex_shape == NULL)
         {
-            cusp->orb_cusp_shape = NEW_STRUCT(OrbCuspShape);
-            cusp->orb_cusp_shape->area = 0.0;
+            cusp->orb_vertex_shape = NEW_STRUCT(OrbVertexShape);
+            cusp->orb_vertex_shape->area = 0.0;
         }
 }
 
@@ -236,7 +236,7 @@ static void my_copy_solution(
 {
     EdgeClass   *edge;
     Tetrahedron *tet;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         to, from, i;
 
     /*
@@ -277,12 +277,12 @@ static void my_copy_solution(
         }
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        cusp->orb_cusp_shape->inner_product[to] = cusp->orb_cusp_shape->inner_product[from];
-        cusp->orb_cusp_shape->inner_product[to + 1] = cusp->orb_cusp_shape->inner_product[from + 1];
+        cusp->orb_vertex_shape->inner_product[to] = cusp->orb_vertex_shape->inner_product[from];
+        cusp->orb_vertex_shape->inner_product[to + 1] = cusp->orb_vertex_shape->inner_product[from + 1];
     }
 
     if (!save)
@@ -317,14 +317,14 @@ static FuncResult initialize_settings(
 {
     EdgeClass   *edge;
     Tetrahedron *tet;
-    Cusp        *cusp, *top, *bottom;
+    Vertex      *cusp, *top, *bottom;
     int         i, j;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         for (i = 0; i < 2 && !use_previous_solution; i++)
-            cusp->orb_cusp_shape->inner_product[i] = 0.5;
+            cusp->orb_vertex_shape->inner_product[i] = 0.5;
 
     for (edge = manifold->edge_list_begin.next;
          edge != &manifold->edge_list_end;
@@ -337,14 +337,14 @@ static FuncResult initialize_settings(
             tet = edge->incident_tet;
             EdgeIndex index = edge->incident_edge_index;
 
-            top = tet->cusp[one_vertex_at_edge[index]];
-            bottom = tet->cusp[other_vertex_at_edge[index]];
+            top = tet->vertex[one_vertex_at_edge[index]];
+            bottom = tet->vertex[other_vertex_at_edge[index]];
 
-            if (top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate] < 0)
+            if (top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate] < 0)
                 return func_failed;
 
             edge->orb_edge_shape->inner_product[ultimate] =
-                -safe_sqrt(top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate]);
+                -safe_sqrt(top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate]);
         }
 
     
@@ -375,10 +375,10 @@ static FuncResult initialize_settings(
          tet = tet->next)
         tet->orb_tet_shape->column_index = index++;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        cusp->orb_cusp_shape->column_index = index++;
+        cusp->orb_vertex_shape->column_index = index++;
 
     return update_Gram_matrices(manifold);
 
@@ -561,7 +561,7 @@ static void copy_penultimate_to_ultimate(
     Triangulation *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         i, j;
 
@@ -570,10 +570,10 @@ static void copy_penultimate_to_ultimate(
          edge = edge->next)
         edge->orb_edge_shape->inner_product[ultimate] = edge->orb_edge_shape->inner_product[penultimate];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        cusp->orb_cusp_shape->inner_product[ultimate] = cusp->orb_cusp_shape->inner_product[penultimate];
+        cusp->orb_vertex_shape->inner_product[ultimate] = cusp->orb_vertex_shape->inner_product[penultimate];
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -594,7 +594,7 @@ static void copy_penultimate_to_ultimate(
                 if (i != j)
                     tet->orb_tet_shape->Gram_matrix[i][j] = tet->edge_class[edge_between_vertices[i][j]]->orb_edge_shape->inner_product[ultimate];
                 else
-                    tet->orb_tet_shape->Gram_matrix[i][i] = tet->cusp[i]->orb_cusp_shape->inner_product[ultimate];
+                    tet->orb_tet_shape->Gram_matrix[i][i] = tet->vertex[i]->orb_vertex_shape->inner_product[ultimate];
 
         for (i = 0; i < 4; i++)
             for (j = 0; j < 4; j++)
@@ -619,7 +619,7 @@ static void allocate_equations(
     Tetrahedron *tet;
     EdgeClass   *edge;
     int         i;
-    Cusp        *cusp;
+    Vertex      *cusp;
 
     *num_rows = 0;
     *num_columns = 0;
@@ -643,8 +643,8 @@ static void allocate_equations(
 
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
         *num_columns += 1;
 
@@ -748,7 +748,7 @@ static FuncResult update_inner_products(
     int           num_columns)
 {
     EdgeClass   *edge;
-    Cusp        *cusp, *top, *bottom;
+    Vertex      *cusp, *top, *bottom;
     Real        max, step_size;
     int         i;
     Tetrahedron *tet;
@@ -759,10 +759,10 @@ static FuncResult update_inner_products(
          edge = edge->next)
         edge->orb_edge_shape->inner_product[penultimate] = edge->orb_edge_shape->inner_product[ultimate];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        cusp->orb_cusp_shape->inner_product[penultimate] = cusp->orb_cusp_shape->inner_product[ultimate];
+        cusp->orb_vertex_shape->inner_product[penultimate] = cusp->orb_vertex_shape->inner_product[ultimate];
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -798,12 +798,12 @@ static FuncResult update_inner_products(
         tet->orb_tet_shape->orientation_parameter[ultimate] += delta[tet->orb_tet_shape->column_index];
     }
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next) {
         if (max > MAX_STEP)
-            delta[cusp->orb_cusp_shape->column_index] *= MAX_STEP / max;
-        cusp->orb_cusp_shape->inner_product[ultimate] += delta[cusp->orb_cusp_shape->column_index];
+            delta[cusp->orb_vertex_shape->column_index] *= MAX_STEP / max;
+        cusp->orb_vertex_shape->inner_product[ultimate] += delta[cusp->orb_vertex_shape->column_index];
     }
 
     failed = FALSE;
@@ -816,16 +816,16 @@ static FuncResult update_inner_products(
             tet = edge->incident_tet;
             EdgeIndex index = edge->incident_edge_index;
 
-            top = tet->cusp[one_vertex_at_edge[index]];
-            bottom = tet->cusp[other_vertex_at_edge[index]];
+            top = tet->vertex[one_vertex_at_edge[index]];
+            bottom = tet->vertex[other_vertex_at_edge[index]];
 
-            if (top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate] < 0)
+            if (top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate] < 0)
             {
                 failed = TRUE;
                 break;
             }
 
-            edge->orb_edge_shape->inner_product[ultimate] = -safe_sqrt(top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate]);
+            edge->orb_edge_shape->inner_product[ultimate] = -safe_sqrt(top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate]);
         }
 
     step_size = 1;
@@ -853,12 +853,12 @@ static FuncResult update_inner_products(
                 tet->orb_tet_shape->use_orientation_parameter[ultimate][i] = tet->orb_tet_shape->use_orientation_parameter[penultimate][i];
         }
 
-        for (cusp = manifold->cusp_list_begin.next;
-             cusp != &manifold->cusp_list_end;
+        for (cusp = manifold->vertex_list_begin.next;
+             cusp != &manifold->vertex_list_end;
              cusp = cusp->next)
-            cusp->orb_cusp_shape->inner_product[ultimate] =
-                cusp->orb_cusp_shape->inner_product[penultimate]
-                + step_size / 2.0 * delta[cusp->orb_cusp_shape->column_index];
+            cusp->orb_vertex_shape->inner_product[ultimate] =
+                cusp->orb_vertex_shape->inner_product[penultimate]
+                + step_size / 2.0 * delta[cusp->orb_vertex_shape->column_index];
 
         for (edge = manifold->edge_list_begin.next;
              edge != &manifold->edge_list_end;
@@ -868,16 +868,16 @@ static FuncResult update_inner_products(
                 tet = edge->incident_tet;
                 EdgeIndex index = edge->incident_edge_index;
 
-                top = tet->cusp[one_vertex_at_edge[index]];
-                bottom = tet->cusp[other_vertex_at_edge[index]];
+                top = tet->vertex[one_vertex_at_edge[index]];
+                bottom = tet->vertex[other_vertex_at_edge[index]];
 
-                if (top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate] < 0)
+                if (top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate] < 0)
                 {
                     failed = TRUE;
                     break;
                 }
 
-                edge->orb_edge_shape->inner_product[ultimate] = -safe_sqrt(top->orb_cusp_shape->inner_product[ultimate] * bottom->orb_cusp_shape->inner_product[ultimate]);
+                edge->orb_edge_shape->inner_product[ultimate] = -safe_sqrt(top->orb_vertex_shape->inner_product[ultimate] * bottom->orb_vertex_shape->inner_product[ultimate]);
             }
 
         step_size /= 2.0;
@@ -892,7 +892,7 @@ static FuncResult update_Gram_matrices(
     Tetrahedron *tet;
     int         i, j;
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Real        v, v1, v2, w, w1, w2, t, det;
     Boolean     used_t, failed;
 
@@ -908,8 +908,8 @@ static FuncResult update_Gram_matrices(
                 }
                 else
                 {
-                    cusp = tet->cusp[i];
-                    tet->orb_tet_shape->Gram_matrix[i][i] = cusp->orb_cusp_shape->inner_product[ultimate];
+                    cusp = tet->vertex[i];
+                    tet->orb_tet_shape->Gram_matrix[i][i] = cusp->orb_vertex_shape->inner_product[ultimate];
                 }
 
         for (i = 0; i < 4; i++)
@@ -1096,13 +1096,13 @@ static void compute_equations(
                     += derivative_ij_t(i, j, ptet.tet, m, n);
                 /* LHS: the four vertices */
 
-                equations[index][ptet.tet->cusp[i]->orb_cusp_shape->column_index]
+                equations[index][ptet.tet->vertex[i]->orb_vertex_shape->column_index]
                     += derivative_ij_ii(i, j, ptet.tet, m, n);
-                equations[index][ptet.tet->cusp[j]->orb_cusp_shape->column_index]
+                equations[index][ptet.tet->vertex[j]->orb_vertex_shape->column_index]
                     += derivative_ij_ii(j, i, ptet.tet, m, n);
-                equations[index][ptet.tet->cusp[m]->orb_cusp_shape->column_index]
+                equations[index][ptet.tet->vertex[m]->orb_vertex_shape->column_index]
                     += derivative_ij_nn(i, j, m, ptet.tet, n);
-                equations[index][ptet.tet->cusp[n]->orb_cusp_shape->column_index]
+                equations[index][ptet.tet->vertex[n]->orb_vertex_shape->column_index]
                     += derivative_ij_nn(i, j, n, ptet.tet, m);
                 /* LHS: this edge */
 
@@ -1117,14 +1117,14 @@ static void compute_equations(
                         += derivative_ij_ij(i, j, ptet.tet, m, n);
                 else
                 {
-                    equations[index][ptet.tet->cusp[i]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[i]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[i]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[i]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_ij(i, j, ptet.tet, m, n);
 
-                    equations[index][ptet.tet->cusp[j]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[j]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[j]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[j]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_ij(i, j, ptet.tet, m, n);
                 }
                 /* LHS: other four edges */
@@ -1136,14 +1136,14 @@ static void compute_equations(
                         += derivative_ij_in(i, j, m, ptet.tet, n);
                 else
                 {
-                    equations[index][ptet.tet->cusp[i]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[i]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[i]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[i]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(i, j, m, ptet.tet, n);
 
-                    equations[index][ptet.tet->cusp[m]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[m]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[m]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[m]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(i, j, m, ptet.tet, n);
                 }
                 other = ptet.tet->edge_class[edge_between_vertices[i][n]];
@@ -1153,14 +1153,14 @@ static void compute_equations(
                         += derivative_ij_in(i, j, n, ptet.tet, m);
                 else
                 {
-                    equations[index][ptet.tet->cusp[i]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[i]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[i]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[i]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(i, j, n, ptet.tet, m);
 
-                    equations[index][ptet.tet->cusp[n]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[n]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[n]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[n]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(i, j, n, ptet.tet, m);
                 }
                 other = ptet.tet->edge_class[edge_between_vertices[j][m]];
@@ -1170,14 +1170,14 @@ static void compute_equations(
                         += derivative_ij_in(j, i, m, ptet.tet, n);
                 else
                 {
-                    equations[index][ptet.tet->cusp[j]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[j]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[j]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[j]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(j, i, m, ptet.tet, n);
 
-                    equations[index][ptet.tet->cusp[m]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[m]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[m]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[m]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(j, i, m, ptet.tet, n);
                 }
                 other = ptet.tet->edge_class[edge_between_vertices[j][n]];
@@ -1187,14 +1187,14 @@ static void compute_equations(
                         += derivative_ij_in(j, i, n, ptet.tet, m);
                 else
                 {
-                    equations[index][ptet.tet->cusp[j]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[j]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[j]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[j]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(j, i, n, ptet.tet, m);
 
-                    equations[index][ptet.tet->cusp[n]->orb_cusp_shape->column_index]
+                    equations[index][ptet.tet->vertex[n]->orb_vertex_shape->column_index]
                         += other->orb_edge_shape->inner_product[ultimate]
-                        / (2.0 * ptet.tet->cusp[n]->orb_cusp_shape->inner_product[ultimate])
+                        / (2.0 * ptet.tet->vertex[n]->orb_vertex_shape->inner_product[ultimate])
                         * derivative_ij_in(j, i, n, ptet.tet, m);
                 }
                 veer_left(&ptet);
@@ -1221,18 +1221,18 @@ static void compute_equations(
                         += 2.0 * tet->orb_tet_shape->inverse_Gram_matrix[i][j];
                 else
                 {
-                    equations[tet->orb_tet_shape->column_index][tet->cusp[i]->orb_cusp_shape->column_index]
+                    equations[tet->orb_tet_shape->column_index][tet->vertex[i]->orb_vertex_shape->column_index]
                         += tet->edge_class[edge_between_vertices[i][j]]->orb_edge_shape->inner_product[ultimate]
-                        / tet->cusp[i]->orb_cusp_shape->inner_product[ultimate]
+                        / tet->vertex[i]->orb_vertex_shape->inner_product[ultimate]
                         * tet->orb_tet_shape->inverse_Gram_matrix[i][j];
 
-                    equations[tet->orb_tet_shape->column_index][tet->cusp[j]->orb_cusp_shape->column_index]
+                    equations[tet->orb_tet_shape->column_index][tet->vertex[j]->orb_vertex_shape->column_index]
                         += tet->edge_class[edge_between_vertices[i][j]]->orb_edge_shape->inner_product[ultimate]
-                        / tet->cusp[j]->orb_cusp_shape->inner_product[ultimate]
+                        / tet->vertex[j]->orb_vertex_shape->inner_product[ultimate]
                         * tet->orb_tet_shape->inverse_Gram_matrix[i][j];
                 }
 
-            equations[tet->orb_tet_shape->column_index][tet->cusp[i]->orb_cusp_shape->column_index]
+            equations[tet->orb_tet_shape->column_index][tet->vertex[i]->orb_vertex_shape->column_index]
                 += tet->orb_tet_shape->inverse_Gram_matrix[i][i];
         }
     }
@@ -1794,12 +1794,12 @@ void orb_remove_hyperbolic_structure(
             edge->orb_edge_shape = NULL;
         }
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if ( cusp->orb_cusp_shape != NULL) {
-            my_free(cusp->orb_cusp_shape);
-            cusp->orb_cusp_shape = NULL;
+        if ( cusp->orb_vertex_shape != NULL) {
+            my_free(cusp->orb_vertex_shape);
+            cusp->orb_vertex_shape = NULL;
         }
 
     for (int i = 0; i < 2; i++) /* i = complete, filled    */

@@ -239,7 +239,7 @@ static RepresentationIntoSn *convert_candidateZn_to_original_generators(int  *ca
 static void                 word_to_Sn(int **candidateSn, int *word, int *permutation, int n);
 static int                  word_to_Zn(int  *candidateZn, int *word, int n);
 static Boolean              satisfies_relation(int **candidateSn, int **inversesSn, int *word, int n);
-static void                 compute_primitive_Dehn_coefficients(Cusp *cusp, int *primitive_m, int *primitive_l);
+static void                 compute_primitive_Dehn_coefficients(Vertex *cusp, int *primitive_m, int *primitive_l);
 static void                 compose_with_power(int *product, int *factor, int power, int n);
 static void                 Zn_to_Sn(int element_of_Zn, int *element_of_Sn, int n);
 static void                 compute_covering_type(RepresentationIntoSn *representation, int num_generators, int n);
@@ -1665,7 +1665,7 @@ static int word_to_Zn(
 
 
 static void compute_primitive_Dehn_coefficients(
-    Cusp    *cusp,
+    Vertex  *cusp,
     int     *primitive_m,
     int     *primitive_l)
 {

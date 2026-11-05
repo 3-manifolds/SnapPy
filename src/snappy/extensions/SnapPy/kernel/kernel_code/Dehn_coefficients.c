@@ -2,10 +2,10 @@
  *  This file contains the functions
  *
  *      Boolean all_Dehn_coefficients_are_integers(Triangulation *manifold);
- *      Boolean     Dehn_coefficients_are_integers(Cusp *cusp);
+ *      Boolean     Dehn_coefficients_are_integers(Vertex *cusp);
  *
  *      Boolean all_Dehn_coefficients_are_relatively_prime_integers(Triangulation *manifold);
- *      Boolean     Dehn_coefficients_are_relatively_prime_integers(Cusp *cusp);
+ *      Boolean     Dehn_coefficients_are_relatively_prime_integers(Vertex *cusp);
  *
  *      Boolean all_cusps_are_complete(Triangulation *manifold);
  *      Boolean all_cusps_are_filled(Triangulation *manifold);
@@ -21,10 +21,10 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 Boolean all_Dehn_coefficients_are_integers(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (Dehn_coefficients_are_integers(cusp) == FALSE)
@@ -38,10 +38,10 @@ Boolean all_Dehn_coefficients_are_integers(
 Boolean all_Dehn_coefficients_are_relatively_prime_integers(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (Dehn_coefficients_are_relatively_prime_integers(cusp) == FALSE)
@@ -53,7 +53,7 @@ Boolean all_Dehn_coefficients_are_relatively_prime_integers(
 
 
 Boolean Dehn_coefficients_are_integers(
-    Cusp    *cusp)
+    Vertex  *cusp)
 {
     return
     (
@@ -68,7 +68,7 @@ Boolean Dehn_coefficients_are_integers(
 
 
 Boolean Dehn_coefficients_are_relatively_prime_integers(
-    Cusp    *cusp)
+    Vertex  *cusp)
 {
     return
     (
@@ -86,10 +86,10 @@ Boolean Dehn_coefficients_are_relatively_prime_integers(
 Boolean all_cusps_are_complete(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_complete == FALSE)
@@ -103,10 +103,10 @@ Boolean all_cusps_are_complete(
 Boolean all_cusps_are_filled(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_complete == TRUE)

@@ -60,7 +60,7 @@
  *                                      int             cusp_map[2][2]);
  *
  *          Fills in the cusp_image and cusp_map[2][2] to describe the
- *          action of the given Isometry on the given Cusp.
+ *          action of the given Isometry on the given cusp.
  *
  *      Boolean isometry_extends_to_link(   IsometryList    *isometry_list,
  *                                          int             i);
@@ -211,12 +211,12 @@ static int count_unfilled_cusps(
     Triangulation   *manifold)
 {
     int     num_unfilled_cusps;
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     num_unfilled_cusps = 0;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if (cusp->is_complete == TRUE)

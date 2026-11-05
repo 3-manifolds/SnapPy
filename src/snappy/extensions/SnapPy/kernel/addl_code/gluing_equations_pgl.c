@@ -475,7 +475,7 @@ void get_cusp_equations_pgl(
     int             num_rows, num_cols;
     Tetrahedron     *tet;
     VertexIndex     v;
-    Cusp            *cusp;
+    Vertex          *cusp;
     FaceIndex       f, ff, fff;
     int             c;
     Ptolemy_index   ptolemy_index;
@@ -497,7 +497,7 @@ void get_cusp_equations_pgl(
 
     /* find right cusp */
 
-    cusp = manifold->cusp_list_begin.next;
+    cusp = manifold->vertex_list_begin.next;
     for (i = 0; i < cusp_num; i++ ) {
 	cusp = cusp->next;
     }
@@ -519,7 +519,7 @@ void get_cusp_equations_pgl(
    	    /* for each vertex of the tet */
 	    for (v = 0; v < 4; v++) {
 		
-		if (tet->cusp[v] != cusp) {
+		if (tet->vertex[v] != cusp) {
 		    continue;
 		}
 

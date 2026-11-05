@@ -571,8 +571,8 @@ static void copy_isometry(
 /*
  *  Given a Triangulation *manifold0 whose "image" and "map" fields
  *  describe an isometry to some (not necessarily distinct) manifold,
- *  compute_cusp_action() computes the action on the Cusps.  Only real
- *  cusps are considered -- finite vertices are ignored.
+ *  compute_cusp_action() computes the action on the cusps.  Finite vertices
+ *  are ignored.
  */
 
 static void compute_cusp_action(
@@ -600,7 +600,7 @@ static void compute_cusp_image(
      *  There's a tremendous amount of redundancy here -- each
      *  cusp image is set over and over -- but it hardly matters.
      *
-     *  Ignore negatively indexed Cusps -- they're finite vertices.
+     *  Ignore negatively indexed non-cusp vertices.
      */
 
     for (tet = manifold0->tet_list_begin.next;
@@ -609,10 +609,10 @@ static void compute_cusp_image(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->index >= 0)
+            if (tet->vertex[v]->cusp_index >= 0)
 
-                isometry->cusp_image[tet->cusp[v]->index]
-                    = tet->image->cusp[EVALUATE(tet->map, v)]->index;
+                isometry->cusp_image[tet->vertex[v]->cusp_index]
+                    = tet->image->vertex[EVALUATE(tet->map, v)]->cusp_index;
 }
 
 
@@ -633,7 +633,7 @@ static void compute_cusp_map(
      *  When the manifold is orientable and the Isometry is
      *  orientation-reversing, and sometimes when the manifold
      *  is nonorientable, the images of the peripheral curves
-     *  of a torus will lie on the "wrong" sheet of the Cusp's
+     *  of a torus will lie on the "wrong" sheet of the Vertex's
      *  orientation double cover.  (See peripheral_curves.c for
      *  background material.)  Therefore we copy the images of
      *  the peripheral curves of torus cusps to both sheets of
@@ -657,7 +657,7 @@ static void compute_cusp_map(
      *  There's a lot of redundancy in this loop, but a trivial
      *  computation so the redundancy hardly matters.
      *
-     *  Ignore negatively indexed Cusps -- they're finite vertices.
+     *  Ignore negatively indexed non-cusp vertices.
      */
 
     for (tet = manifold0->tet_list_begin.next;
@@ -666,15 +666,15 @@ static void compute_cusp_map(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v]->index >= 0)
+            if (tet->vertex[v]->cusp_index >= 0)
 
                 for (i = 0; i < 2; i++)     /* i = M, L */
                 {
-                    isometry->cusp_map[tet->cusp[v]->index][M][i]
-                        = + tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[L][i];
+                    isometry->cusp_map[tet->vertex[v]->cusp_index][M][i]
+                        = + tet->image->vertex[EVALUATE(tet->map, v)]->intersection_number[L][i];
 
-                    isometry->cusp_map[tet->cusp[v]->index][L][i]
-                        = - tet->image->cusp[EVALUATE(tet->map, v)]->intersection_number[M][i];
+                    isometry->cusp_map[tet->vertex[v]->cusp_index][L][i]
+                        = - tet->image->vertex[EVALUATE(tet->map, v)]->intersection_number[M][i];
                 }
 }
 
@@ -718,8 +718,8 @@ static void copy_images_to_scratch(
                 {
                     ll = EVALUATE(tet->map, l);
 
-                    if (get_cusp_topology(tet->cusp[k]) == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                    if (vertex_is_torus_cusp(tet->vertex[k])
+                        && double_copy_on_tori == TRUE)
 
                         tet->image->scratch_curve[which_set][i][right_handed][kk][ll] =
                         tet->image->scratch_curve[which_set][i][ left_handed][kk][ll] =
@@ -728,7 +728,7 @@ static void copy_images_to_scratch(
 
                     else
                         /*
-                         *      tet->cusp[k]->topology == Klein_cusp
+                         *      vertex_is_Klein_cusp(tet->vertex[k])
                          *   || double_copy_on_tori == FALSE
                          */
 

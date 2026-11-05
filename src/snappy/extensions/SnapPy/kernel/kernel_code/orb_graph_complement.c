@@ -52,7 +52,7 @@ extern Triangulation *orb_triangulate_graph_complement(
     prepare_graph_for_triangulation(gamma);
     manifold = create_basic_triangulation(gamma);
 
-    manifold->orientability = oriented_manifold;
+    manifold->orientability = orientable;
 
     create_real_cusps(gamma, manifold);
     create_finite_vertices(gamma, manifold);
@@ -65,9 +65,9 @@ extern Triangulation *orb_triangulate_graph_complement(
     /* identify_cusps(manifold); */
 
     orb_cusps_fill_incident_singular_edges(manifold);
-    compute_cusp_Euler_characteristics(manifold);
+    compute_vertex_link_Euler_characteristics(manifold);
     index_real_and_fake_cusps(manifold);
-    compute_cusp_orientabilities(manifold);
+    compute_vertex_link_orientabilities(manifold);
     count_cusps(manifold);
     peripheral_curves_as_needed(manifold);
 
@@ -742,11 +742,11 @@ static void create_real_cusps(
     OrbGraph *gamma,
     Triangulation *manifold)
 {
-    Cusp **theCusps, *thebottomCusp, *thetopCusp;
+    Vertex **theCusps, *thebottomCusp, *thetopCusp;
     OrbGraphMeeting *theMeeting, *theNeighbor;
     int i, j, utet, nhb, nhb_strand;
 
-    theCusps = NEW_ARRAY(gamma->num_components, Cusp *);
+    theCusps = NEW_ARRAY(gamma->num_components, Vertex *);
 
     manifold->num_cusps = 0;
     manifold->num_or_cusps = 0;
@@ -754,11 +754,12 @@ static void create_real_cusps(
 
     for (i = 0; i < gamma->num_components; i++)
     {
-        theCusps[i] = NEW_STRUCT(Cusp);
-        initialize_cusp(theCusps[i]);
-        set_cusp_topology(theCusps[i], torus_cusp);
-        theCusps[i]->index = i;
-        INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
+        theCusps[i] = NEW_STRUCT(Vertex);
+        initialize_vertex(theCusps[i]);
+        theCusps[i]->euler_characteristic = 0;
+        theCusps[i]->orientability        = orientable;
+        theCusps[i]->cusp_index           = i;
+        INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
     }
@@ -772,17 +773,17 @@ static void create_real_cusps(
             thebottomCusp = theCusps[theMeeting->component[1]];
             thetopCusp = theCusps[theMeeting->component[0]];
 
-            theMeeting->tet[0]->cusp[2] = thebottomCusp;
-            theMeeting->tet[0]->cusp[3] = thetopCusp;
+            theMeeting->tet[0]->vertex[2] = thebottomCusp;
+            theMeeting->tet[0]->vertex[3] = thetopCusp;
 
-            theMeeting->tet[1]->cusp[2] = thetopCusp;
-            theMeeting->tet[1]->cusp[3] = thebottomCusp;
+            theMeeting->tet[1]->vertex[2] = thetopCusp;
+            theMeeting->tet[1]->vertex[3] = thebottomCusp;
 
-            theMeeting->tet[2]->cusp[2] = thebottomCusp;
-            theMeeting->tet[2]->cusp[3] = thetopCusp;
+            theMeeting->tet[2]->vertex[2] = thebottomCusp;
+            theMeeting->tet[2]->vertex[3] = thetopCusp;
 
-            theMeeting->tet[3]->cusp[2] = thetopCusp;
-            theMeeting->tet[3]->cusp[3] = thebottomCusp;
+            theMeeting->tet[3]->vertex[2] = thetopCusp;
+            theMeeting->tet[3]->vertex[3] = thebottomCusp;
         }
 	else
 	{
@@ -796,16 +797,16 @@ static void create_real_cusps(
 
                     utet = under_tet(j, theMeeting->num_strands);
 
-                    theMeeting->tet[j]->cusp[3] =
+                    theMeeting->tet[j]->vertex[3] =
                         theCusps[theNeighbor->component[nhb_strand]];
 
-                    theMeeting->tet[j]->cusp[2] =
+                    theMeeting->tet[j]->vertex[2] =
                         theCusps[theMeeting->component[j]];
 
-                    theMeeting->tet[utet]->cusp[2] =
+                    theMeeting->tet[utet]->vertex[2] =
                         theCusps[theNeighbor->component[nhb_strand]];
 
-                    theMeeting->tet[utet]->cusp[3] =
+                    theMeeting->tet[utet]->vertex[3] =
                         theCusps[theMeeting->component[j]];
                 }
 	    }
@@ -819,17 +820,18 @@ static void create_finite_vertices(
     OrbGraph *gamma,
     Triangulation *manifold)
 {
-    Cusp *thePoles[2];
+    Vertex *thePoles[2];
     int i, j, k, n;
 
     for (i = 0; i < 2; i++)
     {
-        thePoles[i] = NEW_STRUCT(Cusp);
+        thePoles[i] = NEW_STRUCT(Vertex);
 
-        initialize_cusp(thePoles[i]);
-        set_cusp_topology(thePoles[i], sphere_cusp);
-        thePoles[i]->index = i - 2;
-        INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
+        initialize_vertex(thePoles[i]);
+        thePoles[i]->euler_characteristic = 2;
+        thePoles[i]->orientability        = orientable;
+        thePoles[i]->cusp_index           = i - 2;
+        INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }
 
     for (i = 0; i < gamma->num_meetings; i++)
@@ -840,7 +842,7 @@ static void create_finite_vertices(
 
         for (j = 0; j < n; j++)
             for (k = 0; k < 2; k++)
-                gamma->meeting[i].tet[j]->cusp[k] = thePoles[k];
+                gamma->meeting[i].tet[j]->vertex[k] = thePoles[k];
     }
 }
 
@@ -931,7 +933,7 @@ extern void dump_triangulation(
 {
     int i;
     Tetrahedron *tet;
-    Cusp *cusp;
+    Vertex *cusp;
 
     number_the_tetrahedra(manifold);
 
@@ -947,7 +949,7 @@ extern void dump_triangulation(
         printf("\n");
 
         printf("\tcusps:\t");
-        for (i = 0; i < 4; i++) printf("%6d", tet->cusp[i]->index);
+        for (i = 0; i < 4; i++) printf("%6d", tet->vertex[i]->cusp_index);
 
         printf("\n");
 
@@ -972,9 +974,9 @@ extern void dump_triangulation(
     }
 
     printf(" Cusps:\n");
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end; cusp = cusp->next) {
-        printf("\t%d:\t", cusp->index);
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end; cusp = cusp->next) {
+        printf("\t%d:\t", cusp->cusp_index);
 
         printf("  (");
 
@@ -983,8 +985,8 @@ extern void dump_triangulation(
         printf("|)\t\t");
 
  #if 0
-        for (i = 0; i < cusp->orb_cusp_shape->num_cone_points; i++)
-            printf("%d\t", cusp->orb_cusp_shape->cone_points[i]);
+        for (i = 0; i < cusp->orb_vertex_shape->num_cone_points; i++)
+            printf("%d\t", cusp->orb_vertex_shape->cone_points[i]);
         printf("\n");
  #endif
     }
@@ -1068,10 +1070,10 @@ static void add_longitudes_and_meridians(
         theMeeting = &gamma->meeting[i];
 
         if (theMeeting->type == Cross) {
-            if (get_cusp_topology(theMeeting->tet[0]->cusp[3]) == torus_cusp)
+            if (vertex_is_torus_cusp(theMeeting->tet[0]->vertex[3]))
                 needsCurves[theMeeting->component[0]] = TRUE;
 
-            if (get_cusp_topology(theMeeting->tet[0]->cusp[2]) == torus_cusp)
+            if (vertex_is_torus_cusp(theMeeting->tet[0]->vertex[2]))
                 needsCurves[theMeeting->component[1]] = TRUE;
 
             if (theMeeting->component[0] == theMeeting->component[1])

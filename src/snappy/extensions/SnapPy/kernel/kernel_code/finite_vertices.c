@@ -1,16 +1,15 @@
 /*
  *  finite_vertices.c
  *
- *  Certain routines make temporary use of finite (as opposed to ideal)
- *  vertices;  e.g. they are used in triangulating a link complement,
+ *  Certain routines make temporary use of finite vertices (whose link
+ *  is a sphere rather than a torus or Klein bottle);
+ *  e.g. they are used in triangulating a link complement,
  *  in retriangulating a partially filled multicusp manifold, and in
- *  splitting along a normal surface.  SnapPea represents a finite vertex
- *  as a cusp with the respective Euler characteristic and orientability.
- *  Except for the euler_characteristic, orientability, index, prev and
- *  next fields, all other fields of the Cusp data structure are ignored.
+ *  splitting along a normal surface.
+ *  Except for the euler_characteristic, orientability, cusp_index, prev and
+ *  next fields, all other fields of the Vertex data structure are ignored.
  *  The indices are negative integers.
- *  Functions which do not use finite vertices may safely ignore the
- *  is_finite field, and assume no finite vertices are present.
+ *  Functions which do not use finite vertices may assume none are present.
  *  Finite vertices are never counted in the num_cusps, num_or_cusps,
  *  or num_nonor_cusps fields of a Triangulation.
  *
@@ -19,12 +18,12 @@
  *      void remove_finite_vertices(Triangulation *manifold);
  *
  *  which is used within the kernel to retriangulate the manifold
- *  to remove the finite vertices.  If manifold has no real cusps,
- *  a single real cusp is created (it may be either a torus or
+ *  to remove the finite vertices.  If manifold has no cusps,
+ *  a single cusp is created (it may be either a torus or
  *  Klein bottle cusp).
  *
  *  Technical note:  It's OK to pass a manifold with some or all
- *  of the peripheral curves missing, the cusp topologies unknown,
+ *  of the peripheral curves missing, the vertex link orientabilities unknown,
  *  and num_or_cusps and/or num_nonor_cusps not set.  (For example,
  *  normal_surface_splitting.c does exactly that.)  Of course any
  *  peripheral curves which are known will be preserved.
@@ -35,12 +34,11 @@
  *
  *  Overview
  *
- *  A finite vertex is represented by a "cusp" whose cross section is
- *  topologically a sphere (in contrast to real cusps, whose cross sections
- *  are always tori or Klein bottles).  Throughout this documentation,
- *  please imagine all tetrahedra to have truncated vertices, so that
- *  a finite vertex appears as a spherical boundary component, and a
- *  real cusp appears as a torus or Klein bottle boundary component.
+ *  A finite vertex has a spherical vertex link, in contrast to a cusp,
+ *  whose vertex link is a torus or Klein bottle.  Throughout this
+ *  documentation, please imagine all tetrahedra to have truncated vertices,
+ *  so that a finite vertex appears as a spherical boundary component, and a
+ *  cusp appears as a torus or Klein bottle boundary component.
  *  To "remove a finite vertex", we'll modify the triangulation so as
  *  to drill out a tube connecting a spherical boundary component to
  *  a nearby torus or Klein bottle boundary component.  We'll repeat
@@ -80,7 +78,7 @@
  *
  *  Closed Manifolds
  *
- *  If the triangulation has no real cusps, then an arbitrary spherical
+ *  If the triangulation has no cusps, then an arbitrary spherical
  *  boundary component is selected, and all other spherical boundary
  *  components are connected to it as above.  This yields a manifold
  *  with a single spherical boundary component.  An additional
@@ -98,17 +96,17 @@
 #include "kernel.h"
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
-static void initialize_matching_cusps(Triangulation *manifold, Cusp **special_fake_cusp);
+static void initialize_matching_cusps(Triangulation *manifold, Vertex **special_fake_cusp);
 static void merge_cusps(Triangulation *manifold);
 static void drill_tube(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e, Boolean creating_new_cusp);
-static void set_real_cusps(Triangulation *manifold, Cusp *special_fake_cusp);
+static void set_real_cusps(Triangulation *manifold, Vertex *special_fake_cusp);
 
 
 void remove_finite_vertices(
     Triangulation   *manifold,
     Boolean         create_new_cusp_if_necessary)
 {
-    Cusp    *special_fake_cusp;
+    Vertex  *special_fake_cusp;
     
     /*
      *  Simplify the triangulation before we begin.
@@ -117,33 +115,33 @@ void remove_finite_vertices(
     basic_simplification(manifold);
     
     /*
-     *  The matching_cusp field of each fake cusp records the real cusp
-     *  to which the fake cusp has been connected.  It's initialized to
-     *  NULL to indicate that the fake cusp has not yet been connected
-     *  to anything.  For real cusps, it's convenient to have the
+     *  The matching_cusp field of each finite vertex records the cusp
+     *  to which the finite vertex has been connected.  It's initialized
+     *  to NULL to indicate that the finite vertex has not yet been connected
+     *  to anything.  For cusps, it's convenient to have the
      *  matching_cusp field always point to the cusp itself.  If the
-     *  manifold has no real cusps, then choose a "special fake cusp"
-     *  to which all other fake cusps will be connected, and set its
+     *  manifold has no cusps, then choose a "special finite vertex"
+     *  to which all other finite vertices will be connected, and set its
      *  matching_cusp field to point to itself.
      */
     initialize_matching_cusps(manifold, &special_fake_cusp);
 
     /*
-     *  Keep merging fake cusps with real cusps until no further progress
+     *  Keep merging finite vertices with cusps until no further progress
      *  is possible.
      */
     merge_cusps(manifold);
     
     /*
-     *  Ideal vertices which used to be incident to fake cusps are
-     *  now all incident to real cusps.  Update the tet->cusp[] fields,
-     *  and free the fake cusps (except for the special_fake_cusp, if any).
+     *  Ideal vertices which used to be incident to finite vertices are
+     *  now all incident to cusps.  Update the tet->vertex[] fields,
+     *  and free the finite vertices (except for the special_fake_cusp, if any).
      */
     set_real_cusps(manifold, special_fake_cusp);
 
     /*
-     *  If the manifold is closed (no real cusps) it will, at this point,
-     *  have one spherical "cusp", namely the special_fake_cusp.
+     *  If the manifold is closed (no cusps) it will, at this point,
+     *  have one finite vertex, namely the special_fake_cusp.
      *  Drill out a tube connecting the special_fake_cusp to itself,
      *  to convert it from a sphere to a torus or Klein bottle.
      */
@@ -170,11 +168,11 @@ void remove_finite_vertices(
     basic_simplification(manifold);
 }
 
-Boolean is_cusp_finite_vertex(
-    const Cusp *cusp)
+Boolean vertex_is_finite(
+    const Vertex *cusp)
 {
     if (cusp->euler_characteristic > 2)
-        uFatalError("is_cusp_finite_vertex", "finite_vertices.c");
+        uFatalError("vertex_is_finite", "finite_vertices.c");
 
     return
         cusp->euler_characteristic == 2 &&
@@ -183,15 +181,15 @@ Boolean is_cusp_finite_vertex(
 
 static void initialize_matching_cusps(
     Triangulation   *manifold,
-    Cusp            **special_fake_cusp)
+    Vertex          **special_fake_cusp)
 {
     Boolean has_real_cusp = FALSE;
     
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if ( is_cusp_finite_vertex(cusp) )
+        if ( vertex_is_finite(cusp) )
             cusp->matching_cusp = NULL;
         else
         {
@@ -201,7 +199,7 @@ static void initialize_matching_cusps(
 
     if (has_real_cusp == FALSE)
     {
-        *special_fake_cusp = manifold->cusp_list_begin.next;
+        *special_fake_cusp = manifold->vertex_list_begin.next;
         (*special_fake_cusp)->matching_cusp = *special_fake_cusp;
     }
     else
@@ -216,7 +214,7 @@ static void merge_cusps(
     EdgeClass   *edge;
     Tetrahedron *tet;
     EdgeIndex   e;
-    Cusp        *one_cusp,
+    Vertex      *one_cusp,
                 *other_cusp;
 
     do
@@ -229,8 +227,8 @@ static void merge_cusps(
         {
             tet         = edge->incident_tet;
             e           = edge->incident_edge_index;
-            one_cusp    = tet->cusp[one_vertex_at_edge[e]];
-            other_cusp  = tet->cusp[other_vertex_at_edge[e]];
+            one_cusp    = tet->vertex[one_vertex_at_edge[e]];
+            other_cusp  = tet->vertex[other_vertex_at_edge[e]];
 
             if (one_cusp->matching_cusp == NULL
              && other_cusp->matching_cusp != NULL)
@@ -292,7 +290,7 @@ static void drill_tube(
     int             num_strands,
                     intersection_number[2],
                     the_gcd;
-    Cusp            *unique_cusp;
+    Vertex          *unique_cusp;
     MatrixInt22     basis_change[1];
     
     /*
@@ -398,15 +396,15 @@ static void drill_tube(
     new_tet1->edge_orientation[4] = edge_orientation0;
     new_tet1->edge_orientation[5] = edge_orientation0;
     
-    new_tet0->cusp[0] = tet->cusp[v0];
-    new_tet0->cusp[1] = tet->cusp[v0];
-    new_tet0->cusp[2] = tet->cusp[v0];
-    new_tet0->cusp[3] = tet->cusp[v2];
+    new_tet0->vertex[0] = tet->vertex[v0];
+    new_tet0->vertex[1] = tet->vertex[v0];
+    new_tet0->vertex[2] = tet->vertex[v0];
+    new_tet0->vertex[3] = tet->vertex[v2];
     
-    new_tet1->cusp[0] = tet->cusp[v0];
-    new_tet1->cusp[1] = tet->cusp[v0];
-    new_tet1->cusp[2] = tet->cusp[v0];
-    new_tet1->cusp[3] = tet->cusp[v2];
+    new_tet1->vertex[0] = tet->vertex[v0];
+    new_tet1->vertex[1] = tet->vertex[v0];
+    new_tet1->vertex[2] = tet->vertex[v0];
+    new_tet1->vertex[3] = tet->vertex[v2];
     
     /*
      *  Install the triangular-pillow-with-tunnel.
@@ -429,7 +427,7 @@ static void drill_tube(
      *  existing peripheral curves across the new tetrahedra.
      *
      *  In the exceptional case that creating_new_cusp is TRUE,
-     *  meaning that the manifold has no real cusps and we are
+     *  meaning that the manifold has no cusps and we are
      *  connecting the "special fake cusp" to itself, we must
      *  install a meridian and longitude, and set up the Dehn filling.
      */
@@ -473,9 +471,9 @@ static void drill_tube(
          *  spherical "cusp" to itself, to convert it to a torus or
          *  Klein bottle.
          */
-        unique_cusp = tet->cusp[v0]->matching_cusp;
+        unique_cusp = tet->vertex[v0]->matching_cusp;
         unique_cusp->is_complete    = TRUE; /* to be filled below */
-        unique_cusp->index          = 0;
+        unique_cusp->cusp_index          = 0;
         /*
          * unique_cusp->orientability will be computed immediately
          * below in peripheral_curves.
@@ -527,7 +525,7 @@ static void drill_tube(
          *  Switch to a basis in which the Dehn filling curve is a meridian.
          */
         unique_cusp->cusp_shape[initial] = Zero;    /* force current_curve_basis() to ignore the cusp shape */
-        current_curve_basis(manifold, unique_cusp->index, basis_change[0]);
+        current_curve_basis(manifold, unique_cusp->cusp_index, basis_change[0]);
         if (change_peripheral_curves(manifold, basis_change) != func_OK)
             uFatalError("drill_tube", "finite_vertices");
     }
@@ -536,11 +534,11 @@ static void drill_tube(
 
 static void set_real_cusps(
     Triangulation   *manifold,
-    Cusp            *special_fake_cusp)
+    Vertex          *special_fake_cusp)
 {
     Tetrahedron *tet;
     int         i;
-    Cusp        *cusp,
+    Vertex      *cusp,
                 *dead_cusp;
 
     /*
@@ -553,17 +551,17 @@ static void set_real_cusps(
 
         for (i = 0; i < 4; i++)
 
-            tet->cusp[i] = tet->cusp[i]->matching_cusp;
+            tet->vertex[i] = tet->vertex[i]->matching_cusp;
 
     /*
-     *  Free the Cusp structures which had been used for finite vertices.
+     *  Free the Vertex structures which had been used for finite vertices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_finite_vertex(cusp)
+        if (vertex_is_finite(cusp)
             && cusp != special_fake_cusp)
         {
             dead_cusp = cusp;

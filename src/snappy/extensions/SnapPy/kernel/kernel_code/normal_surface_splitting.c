@@ -218,14 +218,14 @@ static Triangulation    *subdivide_manifold(Triangulation *manifold, Boolean is_
 static SubdivisionData  *allocate_subdivision_data(Triangulation *manifold);
 static void             free_subdivision_data(SubdivisionData *data, int num_old_tetrahedra);
 static void             copy_cusps(Triangulation *manifold, Triangulation *subdivision);
-static void             subdivide_old_tetrahedron(Tetrahedron *old_tet, Triangulation *subdivision, SubdivisionData *tet_data, Cusp *cusp_at_split);
-static void             subdivide_triangular_prism(Tetrahedron *old_tet, VertexIndex old_v, int index, Triangulation *subdivision, SubdivisionData *tet_data, Cusp *cusp_at_split);
-static void             subdivide_central_tetrahedron(Tetrahedron *old_tet, Triangulation *subdivision, SubdivisionData *tet_data, Cusp *cusp_at_split);
-static void             subdivide_pillow(Tetrahedron *old_tet, EdgeIndex defining_edge, Triangulation *subdivision, SubdivisionData *tet_data, Cusp *cusp_at_split);
-static void             subdivide_square_prism(Tetrahedron *old_tet, int index, Triangulation *subdivision, SubdivisionData *tet_data, Cusp *cusp_at_split);
+static void             subdivide_old_tetrahedron(Tetrahedron *old_tet, Triangulation *subdivision, SubdivisionData *tet_data, Vertex *cusp_at_split);
+static void             subdivide_triangular_prism(Tetrahedron *old_tet, VertexIndex old_v, int index, Triangulation *subdivision, SubdivisionData *tet_data, Vertex *cusp_at_split);
+static void             subdivide_central_tetrahedron(Tetrahedron *old_tet, Triangulation *subdivision, SubdivisionData *tet_data, Vertex *cusp_at_split);
+static void             subdivide_pillow(Tetrahedron *old_tet, EdgeIndex defining_edge, Triangulation *subdivision, SubdivisionData *tet_data, Vertex *cusp_at_split);
+static void             subdivide_square_prism(Tetrahedron *old_tet, int index, Triangulation *subdivision, SubdivisionData *tet_data, Vertex *cusp_at_split);
 static void             glue_external_faces(Triangulation *manifold, SubdivisionData *data);
 static Permutation      compute_external_gluing(Permutation perm0_inverse, Permutation perm1, Permutation perm2);
-static void             distinguish_cusps(Triangulation *subdivision, Cusp *new_cusps[2]);
+static void             distinguish_cusps(Triangulation *subdivision, Vertex *new_cusps[2]);
 static void             separate_connected_components(Triangulation *subdivision, Triangulation *pieces[2]);
 static Tetrahedron      *find_correctly_oriented_tet(Triangulation *manifold);
 
@@ -268,9 +268,8 @@ FuncResult split_along_normal_surface(
     
     /*
      *  Subdivide the manifold.  The result may or may not be connected.
-     *  subdivide_manifold() creates Tetrahedra and real Cusps,
-     *  but not EdgeClasses or fake Cusps ("fake Cusps" are Cusp structures
-     *  for finite vertices).
+     *  subdivide_manifold() creates Tetrahedra and Vertex structures for
+     *  cusps, but not EdgeClasses or Vertex structures for finite vertices.
      */
     subdivision = subdivide_manifold(
             surface_list->triangulation,
@@ -297,7 +296,7 @@ FuncResult split_along_normal_surface(
             extend_orientation(pieces[i], find_correctly_oriented_tet(pieces[i]));
             
             /*
-             *  Install "fake cusps" for the finite vertices.
+             *  Install Vertex structures for the finite vertices.
              */
             create_cusps_and_mark_finite_as_needed(pieces[i]);
             
@@ -308,17 +307,16 @@ FuncResult split_along_normal_surface(
             orient_edge_classes(pieces[i]);
 
             /*
-             *  remove_finite_vertices calls get_cusp_topology which
-             *  requires the Cusp::orientability to be set. Thus,
-             *  calling compute_cusp_orientabilities here (even though
-             *  they are also computed by peripheral_curves_as_needed
-             *  later).
+             *  Record the vertex link orientabilities before
+             *  retriangulating.
              *
-             *  2026/06/01 MG This was not needed before when
-             *  remove_finite_vertices simply checked Cusp::is_finite.
+             *  2026/06/01 MG Added when reworking how the vertex
+             *  link topology is recorded. It might not be necessary
+             *  since we call peripheral_curves_as_needed later.
+             *
              */
 
-            compute_cusp_orientabilities(pieces[i]);
+            compute_vertex_link_orientabilities(pieces[i]);
 
             /*
              *  Retriangulate with no finite vertices.
@@ -347,7 +345,7 @@ FuncResult split_along_normal_surface(
              *  some of the original {meridian, longitude} pairs might
              *  fail to obey the right-hand rule.
              */
-            if (pieces[i]->orientability == oriented_manifold)
+            if (pieces[i]->orientability == orientable)
                 fix_peripheral_orientations(pieces[i]);
 
             /*
@@ -406,7 +404,7 @@ static Triangulation *subdivide_manifold(
     int             Euler_characteristic)
 {
     Triangulation   *subdivision;
-    Cusp            *new_cusps[2];
+    Vertex          *new_cusps[2];
     SubdivisionData *data;
     Tetrahedron     *old_tet;
     
@@ -418,8 +416,8 @@ static Triangulation *subdivide_manifold(
     
     /*
      *  Create copies of the old Cusps, for use in the subdivision.
-     *  Each old Cusp's matching_cusp field is set to point to its
-     *  corresponding new Cusp in the subdivision.
+     *  Each old Vertex's matching_cusp field is set to point to its
+     *  corresponding new Vertex in the subdivision.
      */
     copy_cusps(manifold, subdivision);
 
@@ -458,18 +456,18 @@ static Triangulation *subdivide_manifold(
              *  Allocate one or two cusps as necessary.
              */
 
-            new_cusps[0] = NEW_STRUCT(Cusp);
-            initialize_cusp(new_cusps[0]);
-            INSERT_BEFORE(new_cusps[0], &subdivision->cusp_list_end);
-            new_cusps[0]->index = subdivision->num_cusps++;
+            new_cusps[0] = NEW_STRUCT(Vertex);
+            initialize_vertex(new_cusps[0]);
+            INSERT_BEFORE(new_cusps[0], &subdivision->vertex_list_end);
+            new_cusps[0]->cusp_index = subdivision->num_cusps++;
             new_cusps[0]->euler_characteristic = 0;
 
             if (is_two_sided == TRUE)
             {
-                new_cusps[1] = NEW_STRUCT(Cusp);
-                initialize_cusp(new_cusps[1]);
-                INSERT_BEFORE(new_cusps[1], &subdivision->cusp_list_end);
-                new_cusps[1]->index = subdivision->num_cusps++;
+                new_cusps[1] = NEW_STRUCT(Vertex);
+                initialize_vertex(new_cusps[1]);
+                INSERT_BEFORE(new_cusps[1], &subdivision->vertex_list_end);
+                new_cusps[1]->cusp_index = subdivision->num_cusps++;
                 new_cusps[1]->euler_characteristic = 0;
             }
             break;
@@ -487,7 +485,7 @@ static Triangulation *subdivide_manifold(
     /*
      *  Create the new Tetrahedra which subdivide each old Tetrahedron.
      *  Set their internal neighbor and gluing fields, which specify
-     *  how they glue to each other.  Set tet->cusp fields to NULL for
+     *  how they glue to each other.  Set tet->vertex fields to NULL for
      *  finite vertices, to the correct copy of an old cusp for ideal
      *  vertices which are incident to an old cusp, and to new_cusps[0]
      *  for ideal vertices which are incident to the normal surface.
@@ -510,7 +508,7 @@ static Triangulation *subdivide_manifold(
     /*
      *  For a 2-sided torus or Klein bottle, we have to change some
      *  references from new_cusps[0] to new_cusps[1].
-     *  Change an arbitrary tet->cusp[v] from new_cusps[0] to new_cusps[1],
+     *  Change an arbitrary tet->vertex[v] from new_cusps[0] to new_cusps[1],
      *  and then recursively change its neighbors.
      */
     if (Euler_characteristic == 0 && is_two_sided == TRUE)
@@ -637,18 +635,18 @@ static void copy_cusps(
     Triangulation   *manifold,
     Triangulation   *subdivision)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
     
     if (subdivision->num_cusps != (double)0.0
-     || subdivision->cusp_list_begin.next != &subdivision->cusp_list_end)
+     || subdivision->vertex_list_begin.next != &subdivision->vertex_list_end)
             uFatalError("copy_cusps", "normal_surface_splitting");
     
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
-        cusp->matching_cusp = NEW_STRUCT(Cusp);
-        initialize_cusp(cusp->matching_cusp);
+        cusp->matching_cusp = NEW_STRUCT(Vertex);
+        initialize_vertex(cusp->matching_cusp);
         
         if (cusp->is_complete != TRUE)
             uFatalError("copy_cusps", "normal_surface_splitting");
@@ -658,9 +656,9 @@ static void copy_cusps(
         cusp->matching_cusp->is_complete    = TRUE;
         cusp->matching_cusp->m              = (double)0.0;
         cusp->matching_cusp->l              = (double)0.0;
-        cusp->matching_cusp->index          = cusp->index;
+        cusp->matching_cusp->cusp_index          = cusp->cusp_index;
         
-        INSERT_BEFORE(cusp->matching_cusp, &subdivision->cusp_list_end);
+        INSERT_BEFORE(cusp->matching_cusp, &subdivision->vertex_list_end);
         subdivision->num_cusps++;
     }
     
@@ -673,7 +671,7 @@ static void subdivide_old_tetrahedron(
     Tetrahedron     *old_tet,
     Triangulation   *subdivision,
     SubdivisionData *tet_data,
-    Cusp            *cusp_at_split)
+    Vertex          *cusp_at_split)
 {
     VertexIndex v;
     int         i;
@@ -717,7 +715,7 @@ static void subdivide_triangular_prism(
     int             index,
     Triangulation   *subdivision,
     SubdivisionData *tet_data,
-    Cusp            *cusp_at_split)
+    Vertex          *cusp_at_split)
 {
     Tetrahedron     *tet[2];
     int             i, c, h;
@@ -747,7 +745,7 @@ static void subdivide_triangular_prism(
          */
         if (index == 0 && i == 0)
         {
-            tet[i]->cusp[old_v] = old_tet->cusp[old_v]->matching_cusp;
+            tet[i]->vertex[old_v] = old_tet->vertex[old_v]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -755,11 +753,11 @@ static void subdivide_triangular_prism(
                       tet[i]->curve[c][h][old_v][f] = old_tet->curve[c][h][old_v][f];
         }
         else
-            tet[i]->cusp[old_v] = cusp_at_split;
+            tet[i]->vertex[old_v] = cusp_at_split;
 
         for (v = 0; v < 4; v++)
             if (v != old_v)
-                tet[i]->cusp[v] = NULL;
+                tet[i]->vertex[v] = NULL;
 
         INSERT_BEFORE(tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -804,7 +802,7 @@ static void subdivide_central_tetrahedron(
     Tetrahedron     *old_tet,
     Triangulation   *subdivision,
     SubdivisionData *tet_data,
-    Cusp            *cusp_at_split)
+    Vertex          *cusp_at_split)
 {
     Tetrahedron     *vertex_tet[4],
                     *middle_tet[4],
@@ -864,9 +862,9 @@ static void subdivide_central_tetrahedron(
         for (v = 0; v < 4; v++)
         {
             if (v != i)
-                vertex_tet[i]->cusp[v] = NULL;
-            middle_tet[i]->cusp[v] = NULL;
-            face_tet[i]->cusp[v]   = NULL;
+                vertex_tet[i]->vertex[v] = NULL;
+            middle_tet[i]->vertex[v] = NULL;
+            face_tet[i]->vertex[v]   = NULL;
         }
 
         /*
@@ -874,7 +872,7 @@ static void subdivide_central_tetrahedron(
          */
         if (old_tet->num_triangles[i] == 0)
         {
-            vertex_tet[i]->cusp[i] = old_tet->cusp[i]->matching_cusp;
+            vertex_tet[i]->vertex[i] = old_tet->vertex[i]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -882,7 +880,7 @@ static void subdivide_central_tetrahedron(
                       vertex_tet[i]->curve[c][h][i][f] = old_tet->curve[c][h][i][f];
         }
         else
-            vertex_tet[i]->cusp[i] = cusp_at_split;
+            vertex_tet[i]->vertex[i] = cusp_at_split;
 
         INSERT_BEFORE(vertex_tet[i], &subdivision->tet_list_end);
         INSERT_BEFORE(middle_tet[i], &subdivision->tet_list_end);
@@ -959,7 +957,7 @@ static void subdivide_pillow(
     EdgeIndex       defining_edge,
     Triangulation   *subdivision,
     SubdivisionData *tet_data,
-    Cusp            *cusp_at_split)
+    Vertex          *cusp_at_split)
 {
     Tetrahedron     *vertex_tet[2],
                     *octa_tet[4];
@@ -1028,7 +1026,7 @@ static void subdivide_pillow(
 
         for (vv = 0; vv < 4; vv++)
             if (vv != v[i])
-                vertex_tet[i]->cusp[vv] = NULL;
+                vertex_tet[i]->vertex[vv] = NULL;
 
         /*
          *  Is vertex v[i] of vertex_tet[i] at a cusp
@@ -1036,7 +1034,7 @@ static void subdivide_pillow(
          */
         if (old_tet->num_triangles[v[i]] == 0)
         {
-            vertex_tet[i]->cusp[v[i]] = old_tet->cusp[v[i]]->matching_cusp;
+            vertex_tet[i]->vertex[v[i]] = old_tet->vertex[v[i]]->matching_cusp;
 
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
@@ -1044,7 +1042,7 @@ static void subdivide_pillow(
                         vertex_tet[i]->curve[c][h][v[i]][f] = old_tet->curve[c][h][v[i]][f];
         }
         else
-            vertex_tet[i]->cusp[v[i]] = cusp_at_split;
+            vertex_tet[i]->vertex[v[i]] = cusp_at_split;
 
         INSERT_BEFORE(vertex_tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -1063,9 +1061,9 @@ static void subdivide_pillow(
         for (vv = 0; vv < 4; vv++)
         {
             if (vv == 1)
-                octa_tet[i]->cusp[vv] = cusp_at_split;
+                octa_tet[i]->vertex[vv] = cusp_at_split;
             else
-                octa_tet[i]->cusp[vv] = NULL;
+                octa_tet[i]->vertex[vv] = NULL;
         }
 
         INSERT_BEFORE(octa_tet[i], &subdivision->tet_list_end);
@@ -1174,7 +1172,7 @@ static void subdivide_square_prism(
     int             index,
     Triangulation   *subdivision,
     SubdivisionData *tet_data,
-    Cusp            *cusp_at_split)
+    Vertex          *cusp_at_split)
 {
     Tetrahedron     *tet[4];
     int             i;
@@ -1199,10 +1197,10 @@ static void subdivide_square_prism(
         tet[i] = NEW_STRUCT(Tetrahedron);
         initialize_tetrahedron(tet[i]);
 
-        tet[i]->cusp[0] = cusp_at_split;
-        tet[i]->cusp[1] = cusp_at_split;
-        tet[i]->cusp[2] = NULL;
-        tet[i]->cusp[3] = NULL;
+        tet[i]->vertex[0] = cusp_at_split;
+        tet[i]->vertex[1] = cusp_at_split;
+        tet[i]->vertex[2] = NULL;
+        tet[i]->vertex[3] = NULL;
 
         INSERT_BEFORE(tet[i], &subdivision->tet_list_end);
         subdivision->num_tetrahedra++;
@@ -1402,7 +1400,7 @@ static Permutation compute_external_gluing(
 
 static void distinguish_cusps(
     Triangulation   *subdivision,
-    Cusp            *new_cusps[2])
+    Vertex          *new_cusps[2])
 {
     IdealVertexReference    *ivr_stack;
     int                     ivr_stack_size;
@@ -1414,7 +1412,7 @@ static void distinguish_cusps(
 
     /*
      *  The calling program has split along a 2-sided torus or Klein bottle.
-     *  By default it has set all the pointers tet->cusp[v] to point to
+     *  By default it has set all the pointers tet->vertex[v] to point to
      *  new_cusps[0].  The purpose of the present function is to leave
      *  those belonging to one cusp set to new_cusps[0], while changing
      *  those belong to the other cusp to new_cusps[1].
@@ -1422,7 +1420,7 @@ static void distinguish_cusps(
     
     /*
      *  Allocate space for a stack of IdealVertexReferences for which
-     *  tet->cusp[v] has been changed from new_cusps[0] to new_cusps[1],
+     *  tet->vertex[v] has been changed from new_cusps[0] to new_cusps[1],
      *  but whose neighbors have not yet been examined.
      */
     ivr_stack = NEW_ARRAY(4 * subdivision->num_tetrahedra, IdealVertexReference);
@@ -1436,9 +1434,9 @@ static void distinguish_cusps(
          tet != &subdivision->tet_list_end && ivr_stack_size == 0;
          tet = tet->next)
         for (v = 0; v < 4; v++)
-            if (tet->cusp[v] == new_cusps[0])
+            if (tet->vertex[v] == new_cusps[0])
             {
-                tet->cusp[v]        = new_cusps[1];
+                tet->vertex[v]        = new_cusps[1];
                 ivr_stack[0].tet    = tet;
                 ivr_stack[0].v      = v;
                 ivr_stack_size      = 1;
@@ -1472,9 +1470,9 @@ static void distinguish_cusps(
                  *  If the neighbor hasn't already been switched
                  *  to new_cusps[1], switch it and put it on the ivr_stack.
                  */
-                if (nbr->cusp[nbr_v] != new_cusps[1])
+                if (nbr->vertex[nbr_v] != new_cusps[1])
                 {
-                    nbr->cusp[nbr_v]                = new_cusps[1];
+                    nbr->vertex[nbr_v]                = new_cusps[1];
                     ivr_stack[ivr_stack_size].tet   = nbr;
                     ivr_stack[ivr_stack_size].v     = nbr_v;
                     ivr_stack_size++;
@@ -1503,7 +1501,7 @@ static void separate_connected_components(
                 i;
     FaceIndex   f;
     VertexIndex v;
-    Cusp        *cusp;
+    Vertex      *cusp;
     
     /*
      *  Initialize pieces[0].
@@ -1614,22 +1612,22 @@ static void separate_connected_components(
     /*
      *  Another quick error check.
      */
-    if (subdivision->cusp_list_begin.next == &subdivision->cusp_list_end)
+    if (subdivision->vertex_list_begin.next == &subdivision->vertex_list_end)
         uFatalError("separate_connected_components", "normal_surface_splitting");
     
     /*
-     *  If there's only one piece, transfer all the Cusps to it.
+     *  If there's only one piece, transfer all the cusps to it.
      *  If there are two pieces we have to be a little more careful,
-     *  and transfer each Cusp to the correct piece.
+     *  and transfer each cusp to the correct piece.
      */
     if (pieces[1] == NULL)
     {
-        pieces[0]->cusp_list_begin.next         = subdivision->cusp_list_begin.next;
-        pieces[0]->cusp_list_begin.next->prev   = &pieces[0]->cusp_list_begin;
-        pieces[0]->cusp_list_end.prev           = subdivision->cusp_list_end.prev;
-        pieces[0]->cusp_list_end.prev->next     = &pieces[0]->cusp_list_end;
-        subdivision->cusp_list_begin.next       = &subdivision->cusp_list_end;
-        subdivision->cusp_list_end.prev         = &subdivision->cusp_list_begin;
+        pieces[0]->vertex_list_begin.next         = subdivision->vertex_list_begin.next;
+        pieces[0]->vertex_list_begin.next->prev   = &pieces[0]->vertex_list_begin;
+        pieces[0]->vertex_list_end.prev           = subdivision->vertex_list_end.prev;
+        pieces[0]->vertex_list_end.prev->next     = &pieces[0]->vertex_list_end;
+        subdivision->vertex_list_begin.next       = &subdivision->vertex_list_end;
+        subdivision->vertex_list_end.prev         = &subdivision->vertex_list_begin;
         
         pieces[0]->num_cusps    = subdivision->num_cusps;
         subdivision->num_cusps  = 0;
@@ -1637,9 +1635,9 @@ static void separate_connected_components(
     else
     {
         /*
-         *  We need to figure out which Cusp goes with which piece.
+         *  We need to figure out which cusp goes with which piece.
          *  Set up an array to record this information:  which_piece[i]
-         *  will equal 0 (resp. 1) when the Cusp of index i belongs to
+         *  will equal 0 (resp. 1) when the cusp of index i belongs to
          *  pieces[0] (resp. pieces[1]).
          */
         which_piece = NEW_ARRAY(subdivision->num_cusps, int);
@@ -1652,7 +1650,7 @@ static void separate_connected_components(
             which_piece[i] = -1;
         
         /*
-         *  Use the tet->cusp[] fields to deduce which Cusp goes where.
+         *  Use the tet->vertex[] fields to deduce which cusp goes where.
          */
         for (i = 0; i < 2; i++)
             for (tet = pieces[i]->tet_list_begin.next;
@@ -1660,10 +1658,10 @@ static void separate_connected_components(
                  tet = tet->next)
                 for (v = 0; v < 4; v++)
                 {
-                    if (tet->cusp[v] == NULL)   /* skip finite vertices */
+                    if (tet->vertex[v] == NULL)   /* skip finite vertices */
                         continue;
                     
-                    cusp_index = tet->cusp[v]->index;
+                    cusp_index = tet->vertex[v]->cusp_index;
 
                     if (cusp_index < 0 || cusp_index >= subdivision->num_cusps)
                         uFatalError("separate_connected_components", "normal_surface_splitting");
@@ -1688,10 +1686,10 @@ static void separate_connected_components(
                 uFatalError("separate_connected_components", "normal_surface_splitting");
 
         /*
-         *  The Cusps should be numbered consecutively within each piece,
+         *  The cusps should be numbered consecutively within each piece,
          *  yet retain the same relative order as they had in subdivision.
-         *  The array old_to_new_index[] translates an old Cusp index
-         *  (in subdivision) to a new Cusp index (in pieces[which_piece[i]]).
+         *  The array old_to_new_index[] translates an old cusp index
+         *  (in subdivision) to a new cusp index (in pieces[which_piece[i]]).
          *  As a side effect, this code sets pieces[]->num_cusps.
          */
         old_to_new_index = NEW_ARRAY(subdivision->num_cusps, int);
@@ -1701,14 +1699,14 @@ static void separate_connected_components(
             old_to_new_index[i] = pieces[which_piece[i]]->num_cusps++;
         
         /*
-         *  Transfer the Cusps from subdivision to pieces[0] and pieces[1].
+         *  Transfer the cusps from subdivision to pieces[0] and pieces[1].
          */
-        while (subdivision->cusp_list_begin.next != &subdivision->cusp_list_end)
+        while (subdivision->vertex_list_begin.next != &subdivision->vertex_list_end)
         {
-            cusp = subdivision->cusp_list_begin.next;
+            cusp = subdivision->vertex_list_begin.next;
             REMOVE_NODE(cusp);
-            INSERT_BEFORE(cusp, &pieces[which_piece[cusp->index]]->cusp_list_end);
-            cusp->index = old_to_new_index[cusp->index];
+            INSERT_BEFORE(cusp, &pieces[which_piece[cusp->cusp_index]]->vertex_list_end);
+            cusp->cusp_index = old_to_new_index[cusp->cusp_index];
         }
         subdivision->num_cusps = 0;
         

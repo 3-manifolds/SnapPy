@@ -103,7 +103,7 @@ TerseTriangulation *tri_to_canonical_terse(
         {
             p = permutation_by_index[i];
             
-            if (manifold->orientability == oriented_manifold
+            if (manifold->orientability == orientable
              && respect_orientation == TRUE
              && parity[p] == 1 /* odd permutation */)
                 continue;
@@ -600,10 +600,10 @@ Triangulation *terse_to_tri(
     /*
      *  Compute Euler characteristic since peripheral_curves checks it.
      *
-     *  2026/06/01 MG Added when removing Cusps::is_finite.
+     *  2026/06/01 MG Added when removing the is_finite field.
      */
 
-    compute_cusp_Euler_characteristics(manifold);
+    compute_vertex_link_Euler_characteristics(manifold);
     index_real_and_fake_cusps(manifold);
 
     /*
@@ -619,13 +619,13 @@ Triangulation *terse_to_tri(
      *      will respect the standard orientation convention.
      *
      *  (3) peripheral_curves() will determine the orientability of
-     *      each Cusp, and write it into the cusp->orientability field.
+     *      each cusp link, and write it into the cusp->orientability field.
      */
     peripheral_curves(manifold);
 
     /*
-     *  Count the total number of Cusps, and also the number
-     *  with torus and Klein bottle CuspTopology.
+     *  Count the total number of cusps, and also the numbers with
+     *  orientable and nonorientable links.
      */
     count_cusps(manifold);
 

@@ -55,18 +55,9 @@ cdef extern from "SnapPea.h":
         orbifold_22n
 
     ctypedef enum c_Orientability "Orientability":
-        oriented_manifold
-        nonorientable_manifold
+        orientable
+        nonorientable
         unknown_orientability
-
-    ctypedef enum c_CuspTopology "CuspTopology":
-        sphere_cusp
-        projective_cusp
-        torus_cusp
-        Klein_cusp
-        higher_genus_orientable_cusp
-        higher_genus_nonorientable_cusp
-        unknown_topology
 
     ctypedef enum DirichletInteractivity:
         Dirichlet_interactive
@@ -158,9 +149,9 @@ cdef extern from "SnapPea.h":
     ctypedef struct Shingle
     ctypedef struct Shingling
     ctypedef struct c_CuspData "CuspData":
-        c_CuspTopology topology
-        Real           m
-        Real           l
+        Boolean is_orientable
+        Real    m
+        Real    l
     ctypedef struct c_TetrahedronData "TetrahedronData":
         int               neighbor_index[4]
         int               gluing[4][4]
@@ -217,14 +208,14 @@ cdef extern from "triangulation.h":
         Complex log
     ctypedef struct c_TetShape "TetShape":
         c_ComplexWithLog cwl[2][3]
-    ctypedef struct Cusp:
+    ctypedef struct Vertex:
         Boolean is_complete
         Real m
         Real l
-        int index
+        int cusp_index
     ctypedef struct c_Tetrahedron "Tetrahedron":
         Real_struct tilt[4]
-        Cusp* cusp[4]
+        Vertex* vertex[4]
         int curve[2][2][4][4]
         int index
         GeneratorStatus generator_status[4]
@@ -455,7 +446,7 @@ cdef extern from "SnapPea.h":
     extern c_CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold) except *
     extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
     extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
-    extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Boolean get_cusp_neighborhood_is_orientable(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Real get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Real get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
@@ -511,13 +502,14 @@ cdef extern from "SnapPea.h":
     extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold) except *
     extern int get_num_tetrahedra(c_Triangulation *manifold) except *
     extern c_Orientability get_orientability(c_Triangulation *manifold) except *
+    extern Boolean all_vertices_are_finite_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_cusps(c_Triangulation *manifold) except *
     extern int get_num_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_nonor_cusps(c_Triangulation *manifold) except *
     extern int get_num_fake_cusps(c_Triangulation *manifold) except *
     extern int get_max_singularity(c_Triangulation *manifold) except *
     extern int get_num_generators(c_Triangulation *manifold) except *
-    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
+    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean *is_orientable, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
     extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, Real m, Real l) except *
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision) except *
     extern void get_tet_shape(c_Triangulation *manifold, int which_tet, c_FillingStatus which_solution, Boolean fixed_alignment, Real *shape_rect_real, Real *shape_rect_imag, Real *shape_log_real, Real *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
@@ -623,7 +615,7 @@ cdef extern from "SnapPea.h":
     extern int orb_get_num_singular_edges(c_Triangulation * manifold) except *
     extern void orb_get_singular_edge_info(c_Triangulation * manifold, int singular_index, Real * singular_order, Real * inner_product) except *
     extern void orb_set_singular_edge_info(c_Triangulation * manifold, int singular_index, Real singular_order) except *
-    extern void orb_get_vertex_info(c_Triangulation * manifold, int vertex_index, Boolean * orientable, int * euler_characteristic, int * num_incident_singular_edges, Real ** incident_singular_edge_orders, int ** incident_singular_edge_indices, int * cusp_index, c_CuspTopology * topology, Boolean * is_finite_vertex, Real * orbifold_euler_characteristic) except *
+    extern void orb_get_vertex_info(c_Triangulation * manifold, int vertex_index, Boolean * is_orientable, int * euler_characteristic, int * num_incident_singular_edges, Real ** incident_singular_edge_orders, int ** incident_singular_edge_indices, int * cusp_index, Real * orbifold_euler_characteristic) except *
 
     extern c_SolutionType orb_find_hyperbolic_structure(
         c_Triangulation * manifold, Boolean manual) except *
@@ -683,7 +675,7 @@ cdef extern from "addl_code.h":
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
 cdef extern from "testing.h":
-    extern void testing_compute_cusp_orientabilities(c_Triangulation *manifold)
+    extern void testing_compute_vertex_link_orientabilities(c_Triangulation *manifold)
 
 cdef extern from "isomorphism_signature.h":
     extern char* get_isomorphism_signature(c_Triangulation *triangulation, Boolean ignore_orientation)

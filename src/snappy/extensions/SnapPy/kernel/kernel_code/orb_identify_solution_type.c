@@ -29,8 +29,8 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 #define ORB_DIHEDRAL_EPSILON    1e-2
 
 /*
- *  ORB_IDEAL_EPSILON defines when a cusp orbifold Euler characteristic
- *  or cusp inner product should count as zero.
+ *  ORB_IDEAL_EPSILON defines when a vertex link orbifold Euler
+ *  characteristic or cusp inner product should count as zero.
  */
 #define ORB_IDEAL_EPSILON       1e-4
 
@@ -202,14 +202,14 @@ static Boolean orb_solution_is_geometric(
 static Boolean orb_solution_is_invalid(
     Triangulation *manifold)
 {
-    for (Cusp *cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex *cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         Real orbifold_euler_characteristic =
             orb_compute_orbifold_cusp_euler_characteristic(cusp);
         Real inner_product =
-            cusp->orb_cusp_shape->inner_product[ultimate];
+            cusp->orb_vertex_shape->inner_product[ultimate];
 
         if (fabs(orbifold_euler_characteristic) < ORB_IDEAL_EPSILON)
         {

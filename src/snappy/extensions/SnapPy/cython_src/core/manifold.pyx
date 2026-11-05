@@ -1213,8 +1213,7 @@ cdef class Manifold(Triangulation):
         """
         # get_cusp_info
         cdef int cusp_index
-        cdef c_CuspTopology topology
-        cdef Boolean is_complete,
+        cdef Boolean c_is_orientable, c_is_complete
         cdef Real m, l
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_accuracy, current_shape_accuracy
@@ -1252,18 +1251,12 @@ cdef class Manifold(Triangulation):
             'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
-                      &topology, &is_complete, &m, &l,
+                      &c_is_orientable, &c_is_complete, &m, &l,
                       &initial_shape, &current_shape,
                       &initial_shape_accuracy, &current_shape_accuracy,
                       &initial_modulus, &current_modulus)
 
-        cusp_topology = CuspTopology[topology]
-        if cusp_topology == 'torus cusp':
-            orientable = True
-        elif cusp_topology == 'Klein bottle cusp':
-            orientable = False
-        else:
-            raise ValueError("Unhandled cusp topology")
+        is_orientable = B2B(c_is_orientable)
         shape = Complex2Number(current_shape)
         shape.accuracy = current_shape_accuracy
         modulus = Complex2Number(current_modulus)
@@ -1277,21 +1270,21 @@ cdef class Manifold(Triangulation):
         longitude.accuracy = longitude_accuracy
 
         info = {
-            # Minimal description of topology
-            'orientable' : orientable,
+            # Minimal description of vertex link (orbifold) topology
+            'orientable' : is_orientable,
             'euler_characteristic' : 0,
             'cone_point_orders' : [],
             'cone_point_singular_edge_indices' : [],
 
             # Derived from the minimal description
             'is_cusp' : True,
-            'topology' : cusp_topology,
+            'topology' : VertexLinkTopologyName(0, is_orientable),
             'is_finite' : False,
             'orbifold_euler_characteristic' : 0.0,
 
             # Specific to cusps
             'cusp_index' : cusp_index,
-            'is_complete' : B2B(is_complete),
+            'is_complete' : B2B(c_is_complete),
             'filling' : (Real2float(m), Real2float(l)),
             'shape': self._number_(shape),
             'shape_accuracy': current_shape_accuracy,

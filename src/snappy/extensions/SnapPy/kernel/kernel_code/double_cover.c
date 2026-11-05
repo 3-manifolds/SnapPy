@@ -30,7 +30,7 @@ Triangulation *double_cover(
     /*
      *  Make sure the manifold is nonorientable.
      */
-    if (manifold->orientability != nonorientable_manifold)
+    if (manifold->orientability != nonorientable)
         uFatalError("double_cover", "double_cover");
 
     /*
@@ -54,7 +54,7 @@ Triangulation *double_cover(
     /*
      *  Lift the peripheral curves to the double cover.
      *  The lifted {meridian, longitude} will adhere to the right hand
-     *  rule relative to the local orientation on each Cusp's double
+     *  rule relative to the local orientation on each cusp's double
      *  cover (cf. peripheral_curves.c).  The manifold does not yet
      *  have a global orientation.
      */
@@ -75,9 +75,10 @@ Triangulation *double_cover(
     the_cover->solution_type[filled]    = manifold->solution_type[filled];
 
     /*
-     *  Create Cusps for the_cover, make sure they're in the same order
+     *  Create vertices for the_cover, make sure they're in the same order
      *  as their images in the manifold, copy in the Dehn filling
-     *  coefficients, and set the CuspTopology to torus_cusp.
+     *  coefficients, and record that each lifted cusp has an orientable
+     *  torus link.
      *  We must do this before orienting the_cover, or else the
      *  vertex indices on the_cover will no longer coincide with
      *  those on the manifold.
@@ -91,7 +92,7 @@ Triangulation *double_cover(
      *  Orient the_cover.
      */
     orient(the_cover);
-    if (the_cover->orientability != oriented_manifold)
+    if (the_cover->orientability != orientable)
         uFatalError("double_cover", "double_cover");
 
     /*
@@ -253,25 +254,31 @@ static void lift_peripheral_curves(
             for (v = 0; v < 4; v++)
 
                 for (f = 0; f < 4; f++)
-                    
-                    if (get_cusp_topology(old_tet->cusp[v]) == torus_cusp)
-                    {
-                        new_tet[i][0]->curve[c][right_handed][v][f] =
-                        new_tet[i][1]->curve[c][right_handed][v][f] =
-                            old_tet->curve[c][right_handed][v][f];
 
-                        new_tet[i][0]->curve[c][ left_handed][v][f] =
-                        new_tet[i][1]->curve[c][ left_handed][v][f] =
-                            old_tet->curve[c][ left_handed][v][f];
-                    }
-                    else
-                    {
-                        new_tet[i][0]->curve[c][right_handed][v][f] =
-                            old_tet->curve[c][right_handed][v][f];
+                    if (vertex_is_cusp(old_tet->vertex[v]))
 
-                        new_tet[i][1]->curve[c][ left_handed][v][f] =
-                            old_tet->curve[c][ left_handed][v][f];
-                    }
+                        if (vertex_has_orientable_link(old_tet->vertex[v]))
+                        {
+                            /* Torus cusp */
+
+                            new_tet[i][0]->curve[c][right_handed][v][f] =
+                            new_tet[i][1]->curve[c][right_handed][v][f] =
+                                old_tet->curve[c][right_handed][v][f];
+
+                            new_tet[i][0]->curve[c][ left_handed][v][f] =
+                            new_tet[i][1]->curve[c][ left_handed][v][f] =
+                                old_tet->curve[c][ left_handed][v][f];
+                        }
+                        else
+                        {
+                            /* Klein bottle cusp */
+
+                            new_tet[i][0]->curve[c][right_handed][v][f] =
+                                old_tet->curve[c][right_handed][v][f];
+
+                            new_tet[i][1]->curve[c][ left_handed][v][f] =
+                                old_tet->curve[c][ left_handed][v][f];
+                        }
 }
 
 
@@ -311,7 +318,7 @@ static void set_cusp_data(
                     j,
                     cusp_count;
     IntPair         *old_to_new;
-    CuspTopology    topology;
+    Boolean         is_orientable;
     Boolean         is_complete;
     Real          m,
                     l;
@@ -330,10 +337,10 @@ static void set_cusp_data(
 
     for (i = 0; i < manifold->num_cusps; i++)
     {
-        get_cusp_info(manifold, i, &topology,
+        get_cusp_info(manifold, i, &is_orientable,
             NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-        if (topology == torus_cusp)
+        if (is_orientable)
         {
             old_to_new[i][0] = cusp_count++;
             old_to_new[i][1] = cusp_count++;
@@ -354,7 +361,7 @@ static void set_cusp_data(
      *  cusp in the original manifold) may swap indices many times during
      *  this redundant procedure, as their indices get overwritten.
      *
-     *  While we're here, let's set the topology of each Cusp to torus_cusp.
+     *  While we're here, record that each vertex link is a torus.
      */
 
     for (old_tet = manifold->tet_list_begin.next, i = 0;
@@ -365,10 +372,11 @@ static void set_cusp_data(
 
             for (j = 0; j < 2; j++)
             {
-                new_tet[i][j]->cusp[v]->index = old_to_new
-                    [old_tet->cusp[v]->index] [j];
+                new_tet[i][j]->vertex[v]->cusp_index = old_to_new
+                    [old_tet->vertex[v]->cusp_index] [j];
 
-                set_cusp_topology(new_tet[i][j]->cusp[v], torus_cusp);
+                new_tet[i][j]->vertex[v]->euler_characteristic = 0;
+                new_tet[i][j]->vertex[v]->orientability        = orientable;
             }
 
     /*
@@ -377,10 +385,10 @@ static void set_cusp_data(
 
     for (i = 0; i < manifold->num_cusps; i++)
     {
-        get_cusp_info(manifold, i, &topology, &is_complete, &m, &l,
+        get_cusp_info(manifold, i, &is_orientable, &is_complete, &m, &l,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
 
-        if (topology == torus_cusp)
+        if (is_orientable)
         {
             set_cusp_info(the_cover, old_to_new[i][0], is_complete, m, l);
             set_cusp_info(the_cover, old_to_new[i][1], is_complete, m, l);

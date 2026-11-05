@@ -138,7 +138,7 @@ struct extra
 
 /*
  *  The functions which find the meridian and longitude on the new
- *  Cusp use a MeridionalAnnulus data structure.
+ *  Vertex use a MeridionalAnnulus data structure.
  *
  *  Recall from above that the each old Tetrahedron intersecting
  *  the drilling curve contributes two small new Tetrahedra to
@@ -165,11 +165,11 @@ struct extra
  *  the left_ and right_faces, while new small Tetrahedra are located
  *  at the near_ and bottom_faces.  (The reason for the nonstandard
  *  positioning described in the previous paragraph is that it gives
- *  a good view of the truncated vertices of the new Cusp.)
- *  On the new Cusp, "northward" is from the vertex on the bottom_face
+ *  a good view of the truncated vertices of the new Vertex.)
+ *  On the new Vertex, "northward" is from the vertex on the bottom_face
  *  towards the vertex on the near_face (i.e. "up"), while "eastward"
  *  is from the side near the right_face towards the side near
- *  left_face (i.e. to the right).  The meridian on the new Cusp will
+ *  left_face (i.e. to the right).  The meridian on the new Vertex will
  *  run north, while the longitude runs east (this corresponds to the
  *  usual convention).
  *
@@ -206,7 +206,7 @@ static void set_cusps(Triangulation *old_manifold, Triangulation *new_manifold);
 static void copy_old_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_meridian(PositionedTet ptet);
-static void create_new_longitude(PositionedTet ptet, CuspTopology *cusp_topology);
+static void create_new_longitude(PositionedTet ptet, Orientability *orientability);
 static void move_sideways(MeridionalAnnulus *ma, DirectionToTravel direction);
 static void transfer_CS(Triangulation *old_manifold, Triangulation *new_manifold);
 
@@ -669,7 +669,7 @@ static void set_cusps(
     int         i,
                 j;
     FaceIndex   f;
-    Cusp        **new_cusp_addresses,
+    Vertex      **new_cusp_addresses,
                 *old_cusp,
                 *new_cusp,
                 *brand_new_cusp;
@@ -681,29 +681,29 @@ static void set_cusps(
      *  later convenience.
      */
 
-    new_cusp_addresses = NEW_ARRAY(old_manifold->num_cusps, Cusp *);
+    new_cusp_addresses = NEW_ARRAY(old_manifold->num_cusps, Vertex *);
 
-    for (old_cusp = old_manifold->cusp_list_begin.next;
-         old_cusp != &old_manifold->cusp_list_end;
+    for (old_cusp = old_manifold->vertex_list_begin.next;
+         old_cusp != &old_manifold->vertex_list_end;
          old_cusp = old_cusp->next)
     {
-        new_cusp = NEW_STRUCT(Cusp);
+        new_cusp = NEW_STRUCT(Vertex);
         *new_cusp = *old_cusp;
-        new_cusp_addresses[new_cusp->index] = new_cusp;
-        INSERT_BEFORE(new_cusp, &new_manifold->cusp_list_end);
+        new_cusp_addresses[new_cusp->cusp_index] = new_cusp;
+        INSERT_BEFORE(new_cusp, &new_manifold->vertex_list_end);
     }
 
     /*
-     *  Create a brand new Cusp for the drilling curve.
+     *  Create a brand new Vertex for the drilling curve.
      */
 
-    brand_new_cusp = NEW_STRUCT(Cusp);
-    initialize_cusp(brand_new_cusp);
-    INSERT_BEFORE(brand_new_cusp, &new_manifold->cusp_list_end);
-    brand_new_cusp->index = old_manifold->num_cusps;
+    brand_new_cusp = NEW_STRUCT(Vertex);
+    initialize_vertex(brand_new_cusp);
+    INSERT_BEFORE(brand_new_cusp, &new_manifold->vertex_list_end);
+    brand_new_cusp->cusp_index = old_manifold->num_cusps;
 
     /*
-     *  Set the new_tet->cusp[] fields.
+     *  Set the new_tet->vertex[] fields.
      */
 
     for (old_tet = old_manifold->tet_list_begin.next;
@@ -712,21 +712,21 @@ static void set_cusps(
 
         if (old_tet->extra->drilling_curve_intersects_tet == FALSE)
             for (i = 0; i < 4; i++)
-                old_tet->extra->big_tet->cusp[i]
-                    = new_cusp_addresses[old_tet->cusp[i]->index];
+                old_tet->extra->big_tet->vertex[i]
+                    = new_cusp_addresses[old_tet->vertex[i]->cusp_index];
         else
             for (i = 0; i < 2; i++)
             {
                 f = old_tet->extra->index[i];
                 for (j = 0; j < 4; j++)
-                    old_tet->extra->small_tet[f]->cusp[j]
+                    old_tet->extra->small_tet[f]->vertex[j]
                         = (j == f) ?
                           brand_new_cusp :
-                          new_cusp_addresses[old_tet->cusp[j]->index];
+                          new_cusp_addresses[old_tet->vertex[j]->cusp_index];
             }
 
     /*
-     *  Free the array used to hold the new Cusp addresses.
+     *  Free the array used to hold the new Vertex addresses.
      */
 
     my_free(new_cusp_addresses);
@@ -823,8 +823,8 @@ static void copy_old_peripheral_curves(
         new_tet = new_edge->incident_tet;
         v0 =   one_vertex_at_edge[new_edge->incident_edge_index];
         v1 = other_vertex_at_edge[new_edge->incident_edge_index];
-        if ((new_tet->cusp[v0]->index < old_manifold->num_cusps)
-         == (new_tet->cusp[v1]->index < old_manifold->num_cusps))
+        if ((new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps)
+         == (new_tet->vertex[v1]->cusp_index < old_manifold->num_cusps))
             continue;
 
         /*
@@ -833,8 +833,8 @@ static void copy_old_peripheral_curves(
          */
 
         ptet0.tet           = new_tet;
-        ptet0.right_face    = (new_tet->cusp[v0]->index < old_manifold->num_cusps) ? v1 : v0;
-        ptet0.bottom_face   = (new_tet->cusp[v0]->index < old_manifold->num_cusps) ? v0 : v1;
+        ptet0.right_face    = (new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps) ? v1 : v0;
+        ptet0.bottom_face   = (new_tet->vertex[v0]->cusp_index < old_manifold->num_cusps) ? v0 : v1;
         ptet0.near_face     = remaining_face[ptet0.bottom_face][ptet0.right_face];
         ptet0.left_face     = remaining_face[ptet0.right_face][ptet0.bottom_face];
         ptet0.orientation   = right_handed;
@@ -918,9 +918,10 @@ static void create_new_peripheral_curves(
     Triangulation   *old_manifold,
     Triangulation   *new_manifold)
 {
-    Tetrahedron     *old_tet;
-    PositionedTet   ptet;
-    CuspTopology    cusp_topology;
+    Tetrahedron        *old_tet;
+    PositionedTet      ptet;
+    Orientability      orientability;
+    Vertex             *vertex;
 
     /*
      *  We want to be sure to be sure to get the relative
@@ -957,17 +958,21 @@ static void create_new_peripheral_curves(
              */
 
             create_new_meridian (ptet);
-            create_new_longitude(ptet, &cusp_topology);
+            create_new_longitude(ptet, &orientability);
 
             /*
-             *  Record the topology of the new cusp.
+             *  Record the new cusp's orientability.
+             *
+             *  Set the Euler characteristic of the link of the corresponding
+             *  vertex to zero.
              */
 
-            set_cusp_topology(
+            vertex =
                 old_tet->extra->small_tet[old_tet->extra->index[0]]
-                       ->cusp[old_tet->extra->index[0]],
-                cusp_topology);
-            if (cusp_topology == torus_cusp)
+                ->vertex[old_tet->extra->index[0]];
+            vertex->orientability        = orientability;
+            vertex->euler_characteristic = 0;
+            if (orientability == orientable)
                 new_manifold->num_or_cusps++;
             else
                 new_manifold->num_nonor_cusps++;
@@ -1094,8 +1099,8 @@ static void create_new_meridian(
 
 
 static void create_new_longitude(
-    PositionedTet   ptet,
-    CuspTopology    *cusp_topology)
+    PositionedTet       ptet,
+    Orientability       *orientability)
 {
     MeridionalAnnulus   ma0,
                         ma;
@@ -1117,9 +1122,9 @@ static void create_new_longitude(
      */
 
     /*
-     *  We assume the Cusp is orientable unless we discover otherwise.
+     *  We assume the new cusp is orientable unless we discover otherwise.
      */
-    *cusp_topology = torus_cusp;
+    *orientability = orientable;
 
     ma0.ptet                = ptet;
     ma0.current_position    = 0;    /* will be ignored */
@@ -1202,7 +1207,7 @@ static void create_new_longitude(
 
         if (        ma.ptet.tet == ma0.ptet.tet
          && ma.ptet.orientation != ma0.ptet.orientation)
-            *cusp_topology = Klein_cusp;
+            *orientability = nonorientable;
 
     } while ( ! same_positioned_tet(&ma.ptet, &ma0.ptet));
 }

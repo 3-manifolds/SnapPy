@@ -6,7 +6,7 @@
  *
  *      void peripheral_curves(Triangulation *manifold);
  *
- *  which puts a meridian and longitude on each real cusp. If the
+ *  which puts a meridian and longitude on each cusp. If the
  *  manifold is oriented, the meridian and longitude adhere to
  *  the usual orientation convention;  this is, if you place your
  *  right hand on the torus with your fingers pointing in the
@@ -18,7 +18,7 @@
  *
  *  Even if the manifold isn't oriented, the peripheral curves
  *  adhere to the standard orientation convention relative to
- *  the orientation of each Cusp's orientation double cover (more
+ *  the orientation of each cusp's orientation double cover (more
  *  on this below).
  *
  *  peripheral_curves() does not need to know the cusp orientability
@@ -317,14 +317,14 @@ static void             zero_peripheral_curves(Triangulation *manifold);
 static void             attach_extra(Triangulation *manifold);
 static void             free_extra(Triangulation *manifold);
 static void             initialize_flags(Triangulation *manifold);
-static Boolean          cusp_has_curves(Triangulation *manifold, Cusp *cusp);
-static void             do_one_cusp(Triangulation *manifold, Cusp *cusp);
-static void             pick_base_tet(Triangulation *manifold, Cusp *cusp, Tetrahedron **base_tet, VertexIndex *base_vertex);
+static Boolean          cusp_has_curves(Triangulation *manifold, Vertex *cusp);
+static void             do_one_cusp(Triangulation *manifold, Vertex *cusp);
+static void             pick_base_tet(Triangulation *manifold, Vertex *cusp, Tetrahedron **base_tet, VertexIndex *base_vertex);
 static void             set_up_perimeter(Tetrahedron *base_tet, VertexIndex base_vertex, PerimeterPiece **perimeter_anchor);
 static void             expand_perimeter(PerimeterPiece *perimeter_anchor);
 static void             find_mates(PerimeterPiece *perimeter_anchor);
 static void             simplify_perimeter(PerimeterPiece **perimeter_anchor);
-static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, CuspOrientability *cusp_orientability);
+static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, Orientability *cusp_orientability);
 static void             advance_to_next_side(PerimeterPiece **pp);
 static GluingPattern    determine_gluing_pattern(PerimeterPiece *side[6], int num_sides);
 static void             do_torus(PerimeterPiece *side[6]);
@@ -345,10 +345,10 @@ void peripheral_curves(
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if (is_cusp_real(cusp))
+        if (vertex_is_cusp(cusp))
             do_one_cusp(manifold, cusp);
 
     adjust_Klein_cusp_orientations(manifold);
@@ -367,11 +367,11 @@ void peripheral_curves_as_needed(
     attach_extra(manifold);
     initialize_flags(manifold);
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_real(cusp)
+        if (vertex_is_cusp(cusp)
             && cusp_has_curves(manifold, cusp) == FALSE)
 
             do_one_cusp(manifold, cusp);
@@ -465,7 +465,7 @@ static void initialize_flags(
 
 static Boolean cusp_has_curves(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Tetrahedron     *tet;
     int             c, h;
@@ -478,7 +478,7 @@ static Boolean cusp_has_curves(
 
         for (v = 0; v < 4; v++)
         
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
             
                 for (f = 0; f < 4; f++)
                 
@@ -498,7 +498,7 @@ static Boolean cusp_has_curves(
 
 static void do_one_cusp(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Tetrahedron     *base_tet = NULL;
     VertexIndex     base_vertex = 0;
@@ -518,7 +518,7 @@ static void do_one_cusp(
 
 static void pick_base_tet(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Tetrahedron     **base_tet,
     VertexIndex     *base_vertex)
 {
@@ -529,7 +529,7 @@ static void pick_base_tet(
          tet != &manifold->tet_list_end;
          tet = tet->next)
         for (v = 0; v < 4; v++)
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
             {
                 *base_tet       = tet;
                 *base_vertex    = v;
@@ -851,7 +851,7 @@ static void simplify_perimeter(
 
 static void find_meridian_and_longitude(
     PerimeterPiece    *perimeter_anchor,
-    CuspOrientability *cusp_orientability)
+    Orientability     *cusp_orientability)
 {
     PerimeterPiece  *pp,
                     *side[6];
@@ -891,19 +891,19 @@ static void find_meridian_and_longitude(
         case abAB:
         case abcABC:
             do_torus(side);
-            *cusp_orientability = orientable_cusp;
+            *cusp_orientability = orientable;
             break;
 
         case abAb:
         case abcAcb:
             do_standard_Klein_bottle(side, num_sides);
-            *cusp_orientability = nonorientable_cusp;
+            *cusp_orientability = nonorientable;
             break;
 
         case aabb:
         case aabccB:
             do_P2P2_Klein_bottle(side, num_sides);
-            *cusp_orientability = nonorientable_cusp;
+            *cusp_orientability = nonorientable;
             break;
     }
 }
@@ -1279,15 +1279,15 @@ static void adjust_Klein_cusp_orientations(
     Triangulation   *manifold)
 {
     /*
-     *  As explained at the top of this file, a Cusp's peripheral curves
-     *  live in the its orientation double cover.  When I first wrote this
+     *  As explained at the top of this file, a cusp's peripheral curves
+     *  live in its orientation double cover.  When I first wrote this
      *  file, I didn't worry about the orientation of peripheral curves
      *  in nonorientable manifolds.  Subsequently it became clear that
-     *  they should have the standard orientation relative to the Cusp's
+     *  they should have the standard orientation relative to the cusp's
      *  (oriented, not just orientable) orientation double cover.  In
-     *  the case of a torus Cusp, the peripheral curves live in one
+     *  the case of a torus cusp, the peripheral curves live in one
      *  (arbitrarily chosen) component of the orientation double cover;
-     *  in the case of a Klein bottle Cusp, the orientation double cover
+     *  in the case of a Klein bottle cusp, the orientation double cover
      *  is connected.
      *
      *  Fortunately, it's very easy to check whether the peripheral curves
@@ -1307,10 +1307,10 @@ static void adjust_Klein_cusp_orientations(
     /*
      *  If the manifold is oriented, then the peripheral curves will
      *  already have the correct orientation.  In fact, they will lie
-     *  on the right handed sheet of the Cusp's orientation double
+     *  on the right handed sheet of the cusp's orientation double
      *  cover, relative to the orientation of the manifold.
      */
-    if (manifold->orientability == oriented_manifold)
+    if (manifold->orientability == orientable)
         return;
 
     /*
@@ -1359,7 +1359,7 @@ static void reverse_meridians_where_necessary(
         /* which ideal vertex */
         for (i = 0; i < 4; i++)
 
-            if (tet->cusp[i]->intersection_number[L][M] == -1)
+            if (tet->vertex[i]->intersection_number[L][M] == -1)
 
                 /* which side of the vertex */
                 for (j = 0; j < 4; j++)

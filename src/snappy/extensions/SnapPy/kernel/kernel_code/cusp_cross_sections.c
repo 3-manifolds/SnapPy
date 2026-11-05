@@ -94,10 +94,10 @@ typedef struct ideal_vertex
 
 
 static void     initialize_flags(Triangulation *manifold);
-static void     cross_section(Triangulation *manifold, Cusp *cusp);
-static void     find_starting_point(Triangulation *manifold, Cusp *cusp, Tetrahedron **tet0, VertexIndex *v0);
+static void     cross_section(Triangulation *manifold, Vertex *cusp);
+static void     find_starting_point(Triangulation *manifold, Vertex *cusp, Tetrahedron **tet0, VertexIndex *v0);
 static Real   vertex_area(IdealVertex *ideal_vertex);
-static void     normalize_cusp(Triangulation *manifold, Cusp *cusp, Real cusp_area);
+static void     normalize_cusp(Triangulation *manifold, Vertex *cusp, Real cusp_area);
 
 
 void allocate_cross_sections(
@@ -153,7 +153,7 @@ void free_cross_sections(
 void compute_cross_sections(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  Initialize cross_section->has_been_set flags to FALSE.
@@ -165,8 +165,8 @@ void compute_cross_sections(
      *  Compute a cross section of area (3/8)sqrt(3) for each cusp.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cross_section(manifold, cusp);
@@ -191,7 +191,7 @@ static void initialize_flags(
 
 static void cross_section(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     Real          cusp_area;
     Tetrahedron     *tet0,
@@ -349,7 +349,7 @@ static void cross_section(
 
 static void find_starting_point(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Tetrahedron     **tet0,
     VertexIndex     *v0)
 {
@@ -359,7 +359,7 @@ static void find_starting_point(
 
         for (*v0 = 0; *v0 < 4; (*v0)++)
 
-            if ((*tet0)->cusp[*v0] == cusp)
+            if ((*tet0)->vertex[*v0] == cusp)
 
                 return;
 
@@ -475,7 +475,7 @@ static Real vertex_area(
 
 static void normalize_cusp(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     Real          cusp_area)
 {
     Real      factor;
@@ -497,7 +497,7 @@ static void normalize_cusp(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == cusp)
+            if (tet->vertex[v] == cusp)
 
                 for (f = 0; f < 4; f++)
 
@@ -582,7 +582,7 @@ void compute_tilts_for_one_tet(
      *  dimensions vary as the exponential of the displacement.
      */
     for (i = 0; i < 4; i++)
-        R[i] *= tet->cusp[i]->displacement_exp;
+        R[i] *= tet->vertex[i]->displacement_exp;
 
     /*
      *  Apply the Tilt Theorem to compute the tilts in terms

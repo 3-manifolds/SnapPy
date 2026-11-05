@@ -315,7 +315,7 @@ Triangulation *triangulate_link_complement(
     /*
      *  The triangulation we just created is already oriented.
      */
-    manifold->orientability = oriented_manifold;
+    manifold->orientability = orientable;
 
     /*
      *  Set up the cusps.
@@ -1110,7 +1110,7 @@ static void create_real_cusps(
     LCProjection    *internal_link_projection,
     Triangulation   *manifold)
 {
-    Cusp        **theCusps,
+    Vertex      **theCusps,
                 *theXCusp,
                 *theYCusp;
     LCCrossing  *theCrossing;
@@ -1119,7 +1119,7 @@ static void create_real_cusps(
     /*
      *  Use a temporary array to keep the freshly created Cusps organized.
      */
-    theCusps = NEW_ARRAY(internal_link_projection->num_components, Cusp *);
+    theCusps = NEW_ARRAY(internal_link_projection->num_components, Vertex *);
 
     /*
      *  Create and initialize the Cusps.
@@ -1131,11 +1131,12 @@ static void create_real_cusps(
 
     for (i = 0; i < internal_link_projection->num_components; i++)
     {
-        theCusps[i] = NEW_STRUCT(Cusp);
-        initialize_cusp(theCusps[i]);
-        set_cusp_topology(theCusps[i], torus_cusp);
-        theCusps[i]->index      = i;
-        INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);
+        theCusps[i] = NEW_STRUCT(Vertex);
+        initialize_vertex(theCusps[i]);
+        theCusps[i]->euler_characteristic = 0;
+        theCusps[i]->orientability        = orientable;
+        theCusps[i]->cusp_index           = i;
+        INSERT_BEFORE(theCusps[i], &manifold->vertex_list_end);
         manifold->num_cusps++;
         manifold->num_or_cusps++;
     }
@@ -1152,17 +1153,17 @@ static void create_real_cusps(
         theXCusp = theCusps[theCrossing->component[KLPStrandX]];
         theYCusp = theCusps[theCrossing->component[KLPStrandY]];
 
-        theCrossing->tet[0]->cusp[2] = theXCusp;
-        theCrossing->tet[0]->cusp[3] = theYCusp;
+        theCrossing->tet[0]->vertex[2] = theXCusp;
+        theCrossing->tet[0]->vertex[3] = theYCusp;
 
-        theCrossing->tet[1]->cusp[2] = theYCusp;
-        theCrossing->tet[1]->cusp[3] = theXCusp;
+        theCrossing->tet[1]->vertex[2] = theYCusp;
+        theCrossing->tet[1]->vertex[3] = theXCusp;
 
-        theCrossing->tet[2]->cusp[2] = theXCusp;
-        theCrossing->tet[2]->cusp[3] = theYCusp;
+        theCrossing->tet[2]->vertex[2] = theXCusp;
+        theCrossing->tet[2]->vertex[3] = theYCusp;
 
-        theCrossing->tet[3]->cusp[2] = theYCusp;
-        theCrossing->tet[3]->cusp[3] = theXCusp;
+        theCrossing->tet[3]->vertex[2] = theYCusp;
+        theCrossing->tet[3]->vertex[3] = theXCusp;
     }
 
     /*
@@ -1176,7 +1177,7 @@ static void create_finite_vertices(
     LCProjection    *internal_link_projection,
     Triangulation   *manifold)
 {
-    Cusp    *thePoles[2];
+    Vertex  *thePoles[2];
     int     i,
             j,
             k;
@@ -1186,11 +1187,12 @@ static void create_finite_vertices(
      */
     for (i = 0; i < 2; i++)
     {
-        thePoles[i] = NEW_STRUCT(Cusp);
-        initialize_cusp(thePoles[i]);
-        set_cusp_topology(thePoles[i], sphere_cusp);
-        thePoles[i]->index      = i - 2;    /* indices are -1 and -2 */
-        INSERT_BEFORE(thePoles[i], &manifold->cusp_list_end);
+        thePoles[i] = NEW_STRUCT(Vertex);
+        initialize_vertex(thePoles[i]);
+        thePoles[i]->euler_characteristic = 2;
+        thePoles[i]->orientability        = orientable;
+        thePoles[i]->cusp_index           = i - 2; /* indices are -1 and -2 */
+        INSERT_BEFORE(thePoles[i], &manifold->vertex_list_end);
     }
 
     /*
@@ -1199,7 +1201,7 @@ static void create_finite_vertices(
     for (i = 0; i < internal_link_projection->num_crossings; i++)
         for (j = 0; j < 4; j++)
             for (k = 0; k < 2; k++)
-                internal_link_projection->crossings[i].tet[j]->cusp[k] = thePoles[k];
+                internal_link_projection->crossings[i].tet[j]->vertex[k] = thePoles[k];
 }
 
 

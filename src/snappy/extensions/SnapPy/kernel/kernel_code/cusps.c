@@ -5,38 +5,41 @@
  *
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
- *      Boolean is_cusp_real(const Cusp * cusp);
+ *      Boolean vertex_is_finite(const Vertex * vertex);
+ *      Boolean vertex_is_cusp(const Vertex * vertex);
+ *      Boolean vertex_has_orientable_link(const Vertex * vertex);
+ *      Boolean vertex_is_torus_cusp(const Vertex * vertex);
+ *      Boolean vertex_is_Klein_cusp(const Vertex * vertex);
+ *      Boolean vertex_is_finite_or_cusp(const Vertex * vertex);
  *      void    count_cusps(Triangulation *manifold);
  *      void    index_real_and_fake_cusps(Triangulation *manifold);
- *      void    compute_cusp_Euler_characteristics(Triangulation *manifold);
- *      CuspTopology get_cusp_topology(const Cusp * cusp);
- *      void    set_cusp_topology(Cusp * cusp, CuspTopology topology);
+ *      void    compute_vertex_link_Euler_characteristics(Triangulation *manifold);
  *
- *  create_cusps() is used within the kernel to assign Cusp data
+ *  create_cusps() is used within the kernel to assign Vertex data
  *  structures to Triangulations.  It assumes the neighbor and gluing
  *  fields have been set (all other fields are optional).  It assigns
  *  cusp indices, but does not install peripheral curves, determine
- *  the CuspTopologies, or count the cusps.  You should call
+ *  the vertex link orientabilities, or count the cusps.  You should call
  *  peripheral_curves() to install the peripheral curves and determine
- *  the CuspTopologies, then call count_cusps() to set num_cusps,
+ *  the vertex link orientabilities, then call count_cusps() to set num_cusps,
  *  num_or_cusps and num_nonor_cusps.
  *
- *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Cusp data
- *  structures to the "fake cusps" corresponding to finite vertices.
- *  It assumes fake cusps are indicated by tet->cusp[v] fields of NULL.
- *  The fake cusps are numbered -1, -2, etc.  As explained in the
+ *  create_cusps_and_mark_finite_as_needed() is used within the kernel to
+ *  assign Vertex data structures to finite vertices.  It assumes finite
+ *  vertices are indicated by tet->vertex[v] fields of NULL.  The finite
+ *  vertices are numbered -1, -2, etc.  As explained in the
  *  documentation at the top of finite_vertices.c, finite vertices use
- *  only the orientability, Euler characteristic, index, prev and next
- *  fields of the Cusp data structure.  create_cusps_and_mark_finite_as_needed() does not
- *  disturb the real cusps or the non-NULL tet->cusp[v] fields.
+ *  only the orientability, Euler characteristic, cusp_index, prev and next
+ *  fields of the Vertex data structure.
+ *  create_cusps_and_mark_finite_as_needed() does not disturb the cusps or
+ *  the non-NULL tet->vertex[v] fields.
  *
- *  count_cusps() counts the Cusps of each CuspTopology, and sets
+ *  count_cusps() counts the orientable and nonorientable cusps, and sets
  *  manifold->num_cusps, manifold->num_or_cusps and manifold->num_nonor_cusps.
  *
- *  Using the stored cusp Euler characteristic, index_real_and_fake_cusps() 
- *  renumbers all cusps so that real cusps have consecutive nonnegative
- *  indices beginning at 0 and fake cusps have consecutive negative indices
- *  beginning at -1.
+ *  Using the stored vertex link data, index_real_and_fake_cusps() gives
+ *  cusps consecutive nonnegative indices beginning at 0 and all other
+ *  vertices consecutive negative indices beginning at -1.
  */
 
 #include "kernel.h"
@@ -74,14 +77,15 @@ void create_cusps(
     VertexIndex v;
 
     /*
-     *  Make sure no Cusps are present, and everything is neat and tidy.
+     *  Make sure no Vertex structures are present, and everything is
+     *  neat and tidy.
      */
 
     error_check_for_create_cusps(manifold);
 
     /*
      *  The variable "count" will keep track of the next index
-     *  to be assigned.  The first Cusp we create will have
+     *  to be assigned.  The first Vertex we create will have
      *  index 0, the next will have 1, and so on.
      */
 
@@ -89,7 +93,7 @@ void create_cusps(
 
     /*
      *  We look at each vertex of each Tetrahedron, and whenever we
-     *  encounter a vertex with no assigned Cusp, we create a Cusp
+     *  encounter a vertex with no assigned Vertex, we create a Vertex
      *  for it and recursively assign it to neighboring ideal vertices.
      */
 
@@ -99,10 +103,10 @@ void create_cusps(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == NULL)
+            if (tet->vertex[v] == NULL)
             {
-                Cusp * cusp = create_one_cusp(manifold, tet, v);
-                cusp->index = count++;
+                Vertex * cusp = create_one_cusp(manifold, tet, v);
+                cusp->cusp_index = count++;
             }
 }
 
@@ -116,7 +120,7 @@ void error_check_for_create_cusps(
     if (manifold->num_cusps         != 0
      || manifold->num_or_cusps      != 0
      || manifold->num_nonor_cusps   != 0
-     || manifold->cusp_list_begin.next != &manifold->cusp_list_end)
+     || manifold->vertex_list_begin.next != &manifold->vertex_list_end)
 
         uFatalError("error_check_for_create_cusps", "cusps");
 
@@ -127,7 +131,7 @@ void error_check_for_create_cusps(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] != NULL)
+            if (tet->vertex[v] != NULL)
 
                 uFatalError("error_check_for_create_cusps", "cusps");
 }
@@ -150,7 +154,7 @@ void create_cusps_and_mark_finite_as_needed(
 
     /*
      *  We look at each vertex of each Tetrahedron, and whenever we
-     *  encounter an ideal vertex with no assigned Cusp, we create a Cusp
+     *  encounter an ideal vertex with no assigned Vertex, we create a Vertex
      *  for it and assign it recursively to neighboring ideal vertices.
      */
 
@@ -160,21 +164,22 @@ void create_cusps_and_mark_finite_as_needed(
 
         for (v = 0; v < 4; v++)
 
-            if (tet->cusp[v] == NULL)
+            if (tet->vertex[v] == NULL)
             {
-                Cusp * cusp = create_one_cusp(manifold, tet, v);
-                cusp->index = --count;
-                set_cusp_topology(cusp, sphere_cusp);
+                Vertex * cusp = create_one_cusp(manifold, tet, v);
+                cusp->cusp_index            = --count;
+                cusp->euler_characteristic = 2;
+                cusp->orientability        = orientable;
             }
 }
 
 
-Cusp * create_one_cusp(
+Vertex * create_one_cusp(
     Triangulation   *manifold,
     Tetrahedron     *tet,
     VertexIndex     v)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     IdealVertex *queue;
     int         queue_first,
                 queue_last;
@@ -185,30 +190,31 @@ Cusp * create_one_cusp(
     FaceIndex   f;
 
     /*
-     *  Create the cusp, add it to the list, and set
-     *  the is_finite and index fields.
+     *  Create the Vertex and add it to the list.
      */
 
-    cusp = NEW_STRUCT(Cusp);
-    initialize_cusp(cusp);
-    INSERT_BEFORE(cusp, &manifold->cusp_list_end);
+    cusp = NEW_STRUCT(Vertex);
+    initialize_vertex(cusp);
+    INSERT_BEFORE(cusp, &manifold->vertex_list_end);
 
     /*
-     *  We don't set the euler_characteristic, orientability,
-     *  is_complete, m, l, holonomy, cusp_shape or shape_precision fields.
+     *  Beyond the defaults established by initialize_vertex(), we don't set
+     *  the euler_characteristic, orientability, is_complete, m, l, holonomy,
+     *  cusp_shape or shape_precision fields.
      *
-     *  For "real" cusps the calling routine may
+     *  For cusps the calling routine may
      *
-     *      (1) call compute_cusp_Euler_characteristics to set the Euler
+     *      (1) call compute_vertex_link_Euler_characteristics to set the Euler
      *          characteristic.
      *
-     *      (2) call compute_cusp_orientabilities to set the cusp->orientability.
+     *      (2) call compute_vertex_link_orientabilities to set
+     *          cusp->orientability.
      *
      *      (3) call peripheral_curves() to set the cusp->orientability if
      *          the cusp's Euler characteristic is zero,
      *
      *      (4) keep the default values of cusp->is_complete,
-     *          cusp->m and cusp->l as set by initialize_cusp(), and
+     *          cusp->m and cusp->l as set by initialize_vertex(), and
      *
      *      (5) let the holonomy and cusp_shape be computed automatically
      *          when hyperbolic structure is computed.
@@ -221,7 +227,8 @@ Cusp * create_one_cusp(
      */
 
     /*
-     *  Set the tet->cusp field at all vertices incident to the new cusp.
+     *  Set the tet->vertex field at all ideal vertices corresponding to
+     *  this vertex.
      */
 
     /*
@@ -234,7 +241,7 @@ Cusp * create_one_cusp(
     /*
      *  Set the cusp of the given IdealVertex...
      */
-    tet->cusp[v] = cusp;
+    tet->vertex[v] = cusp;
 
     /*
      *  ...and put it on the queue.
@@ -270,12 +277,12 @@ Cusp * create_one_cusp(
             /*
              *  If the neighbor's cusp hasn't been set...
              */
-            if (nbr->cusp[nbr_v] == NULL)
+            if (nbr->vertex[nbr_v] == NULL)
             {
                 /*
                  *  ...set it...
                  */
-                nbr->cusp[nbr_v] = cusp;
+                nbr->vertex[nbr_v] = cusp;
 
                 /*
                  *  ...and add it to the end of the queue.
@@ -313,7 +320,7 @@ static int orientation_bit(VertexIndex v)
     return 1 << (2 * v + 1);
 }
 
-void compute_cusp_orientabilities(
+void compute_vertex_link_orientabilities(
     Triangulation   *manifold)
 {
     /*
@@ -333,7 +340,7 @@ void compute_cusp_orientabilities(
     CuspTriangle * queue = NEW_ARRAY(4 * manifold->num_tetrahedra, CuspTriangle);
 
     /*
-     *  For each CuspTriangle corresponding to a Cusp with unknown
+     *  For each CuspTriangle corresponding to a Vertex with unknown
      *  orientability...
      */
 
@@ -342,8 +349,8 @@ void compute_cusp_orientabilities(
          initial_tet = initial_tet->next)
         for (VertexIndex initial_v = 0; initial_v < 4; initial_v++)
         {
-            Cusp * cusp = initial_tet->cusp[initial_v];
-            if (cusp->orientability != unknown_cusp_orientability)
+            Vertex * cusp = initial_tet->vertex[initial_v];
+            if (cusp->orientability != unknown_orientability)
                 continue;
 
             /*
@@ -351,7 +358,7 @@ void compute_cusp_orientabilities(
              *  a contradiction.
              */
 
-            cusp->orientability = orientable_cusp;
+            cusp->orientability = orientable;
 
             /*
              *  Put the cusp triangle on the queue,
@@ -414,7 +421,7 @@ void compute_cusp_orientabilities(
                          *  ... check whether its orientation is consistent.
                          */
                         if (nbr_orientation != expected_nbr_orientation)
-                            cusp->orientability = nonorientable_cusp;
+                            cusp->orientability = nonorientable;
                     }
                     else
                     {
@@ -441,7 +448,7 @@ void compute_cusp_orientabilities(
              *  Keeping going until we either discover the cusp is nonorientable
              *  or the queue is exhausted.
              */
-            while (cusp->orientability == orientable_cusp &&
+            while (cusp->orientability == orientable &&
                    queue_first <= queue_last);
         }
 
@@ -451,15 +458,52 @@ void compute_cusp_orientabilities(
     my_free(queue);
 }
 
-Boolean is_cusp_real(
-    const Cusp      *cusp)
+Boolean vertex_is_cusp(
+    const Vertex    *cusp)
 {
     if (cusp->euler_characteristic > 2)
-        uFatalError("is_cusp_real", "cusps.c");
+        uFatalError("vertex_is_cusp", "cusps.c");
 
     return
         cusp->euler_characteristic == 0 &&
         cusp->orb_num_incident_singular_edges == 0;
+}
+
+Boolean vertex_has_orientable_link(
+    const Vertex    *vertex)
+{
+    switch(vertex->orientability) {
+    case orientable:
+        return TRUE;
+    default:
+        uFatalError("vertex_has_orientable_link", "cusps.c");
+    case nonorientable:
+        return FALSE;
+    }
+}
+
+Boolean vertex_is_torus_cusp(
+    const Vertex    *vertex)
+{
+    return vertex_is_cusp(vertex) && vertex_has_orientable_link(vertex);
+}
+
+Boolean vertex_is_Klein_cusp(
+    const Vertex    *vertex)
+{
+    return vertex_is_cusp(vertex) && !vertex_has_orientable_link(vertex);
+}
+
+Boolean vertex_is_finite_or_cusp(
+    const Vertex    *vertex)
+{
+    if (vertex->euler_characteristic > 2)
+        uFatalError("vertex_is_finite_or_cusp", "cusps.c");
+
+    return
+        (vertex->euler_characteristic == 2 ||
+         vertex->euler_characteristic == 0) &&
+        vertex->orb_num_incident_singular_edges == 0;
 }
 
 void count_cusps(
@@ -470,21 +514,15 @@ void count_cusps(
     manifold->num_nonor_cusps   = 0;
     manifold->num_fake_cusps    = 0;
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
-        if (is_cusp_real(cusp)) {
+        if (vertex_is_cusp(cusp)) {
             manifold->num_cusps++;
-            switch(cusp->orientability) {
-            case orientable_cusp:
+            if (vertex_has_orientable_link(cusp))
                 manifold->num_or_cusps++;
-                break;
-            case nonorientable_cusp:
+            else
                 manifold->num_nonor_cusps++;
-                break;
-            default:
-                uFatalError("count_cusps", "cusps.c");
-            }
         }
         else
             manifold->num_fake_cusps++;
@@ -496,20 +534,20 @@ void index_real_and_fake_cusps(
     int real_cusp_count = 0;
     int fake_cusp_count = 0;
 
-    for (Cusp * cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (Vertex * cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (is_cusp_real(cusp))
-            cusp->index = real_cusp_count++;
+        if (vertex_is_cusp(cusp))
+            cusp->cusp_index = real_cusp_count++;
         else
-            cusp->index = --fake_cusp_count;
+            cusp->cusp_index = --fake_cusp_count;
 }
 
-void compute_cusp_Euler_characteristics(
+void compute_vertex_link_Euler_characteristics(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     EdgeClass   *edge;
     Tetrahedron *tet;
     VertexIndex v,
@@ -520,8 +558,8 @@ void compute_cusp_Euler_characteristics(
      *  Initialize all Euler characteristics to zero.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         cusp->euler_characteristic = 0;
@@ -544,8 +582,8 @@ void compute_cusp_Euler_characteristics(
         tet = edge->incident_tet;
         v0  =   one_vertex_at_edge[edge->incident_edge_index];
         v1  = other_vertex_at_edge[edge->incident_edge_index];
-        tet->cusp[v0]->euler_characteristic += 2;
-        tet->cusp[v1]->euler_characteristic += 2;
+        tet->vertex[v0]->euler_characteristic += 2;
+        tet->vertex[v1]->euler_characteristic += 2;
     }
 
     /*
@@ -559,7 +597,7 @@ void compute_cusp_Euler_characteristics(
 
         for (v = 0; v < 4; v++)
 
-            tet->cusp[v]->euler_characteristic -= 3;
+            tet->vertex[v]->euler_characteristic -= 3;
 
     /*
      *  Count the faces in the triangulation of the boundary,
@@ -572,97 +610,19 @@ void compute_cusp_Euler_characteristics(
 
         for (v = 0; v < 4; v++)
 
-            tet->cusp[v]->euler_characteristic += 2;
+            tet->vertex[v]->euler_characteristic += 2;
 
     /*
      *  Divide by two (cf. above).
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         if (cusp->euler_characteristic % 2 != 0)
-            uFatalError("compute_cusp_Euler_characteristics", "cusps");
+            uFatalError("compute_vertex_link_Euler_characteristics", "cusps");
         cusp->euler_characteristic /= 2;
-    }
-}
-
-CuspTopology get_cusp_topology(
-    const Cusp * cusp)
-{
-    switch(cusp->euler_characteristic) {
-    case 2:
-        return sphere_cusp;
-    case 1:
-        if (cusp->orientability != nonorientable_cusp) {
-            /*
-             * Inconsistency.
-             */
-            uFatalError("get_cusp_topology 2", "cusps");
-            return unknown_topology;
-        }
-        return projective_cusp;
-    case 0:
-        switch(cusp->orientability) {
-        case orientable_cusp:
-            return torus_cusp;
-        case nonorientable_cusp:
-            return Klein_cusp;
-        default:
-            /*
-             * Unknown orientability.
-             */
-            uFatalError("get_cusp_topology 3", "cusps");
-            return unknown_topology;
-        }
-    default:
-        if (cusp->euler_characteristic > 2) {
-            /*
-             * Euler characteristic was not computed and still
-             * has value from initialization.
-             */
-            uFatalError("get_cusp_topology 4", "cusps");
-            return unknown_topology;
-        }
-        switch(cusp->orientability) {
-        case orientable_cusp:
-            return higher_genus_orientable_cusp;
-        case nonorientable_cusp:
-            return higher_genus_nonorientable_cusp;
-        default:
-            /*
-             * Unknown orientability.
-             */
-            uFatalError("get_cusp_topology 5", "cusps");
-            return torus_cusp;
-        }
-    }
-}
-
-void set_cusp_topology(Cusp * cusp, CuspTopology topology)
-{
-    switch (topology) {
-    case sphere_cusp:
-        cusp->euler_characteristic = 2;
-        cusp->orientability = orientable_cusp;
-        break;
-    case torus_cusp:
-        cusp->euler_characteristic = 0;
-        cusp->orientability = orientable_cusp;
-        break;
-    case Klein_cusp:
-        cusp->euler_characteristic = 0;
-        cusp->orientability = nonorientable_cusp;
-        break;
-    default:
-        /*
-         * We do not support for the case projective_cusp here but can add
-         * it if needed.
-         * The case higher_genus_[...]_cusp does not have enough information to
-         * set euler_characteristic or orientability.
-         */
-        uFatalError("set_cusp_topology", "cusps");
     }
 }
 

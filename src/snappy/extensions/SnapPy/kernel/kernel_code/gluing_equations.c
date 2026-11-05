@@ -47,7 +47,7 @@ static void initialize_gluing_equations(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i;
 
     /*
@@ -60,7 +60,7 @@ static void initialize_gluing_equations(
 
         for (i = 0; i < manifold->num_tetrahedra; i++)
 
-            if (manifold->orientability == oriented_manifold)
+            if (manifold->orientability == orientable)
                 edge->complex_edge_equation[i] = Zero;
             else
             {
@@ -74,13 +74,13 @@ static void initialize_gluing_equations(
      *  Initialize cusp equations.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < manifold->num_tetrahedra; i++)
 
-            if (manifold->orientability == oriented_manifold)
+            if (manifold->orientability == orientable)
                 cusp->complex_cusp_equation[i] = Zero;
             else
             {
@@ -221,7 +221,7 @@ static void compute_derivative(
              *  is unoriented it will be a 2 x 2 block in the real matrix.
              */
 
-            if (manifold->orientability == oriented_manifold)
+            if (manifold->orientability == orientable)
                 eqn_coef    = &tet->edge_class[e]->complex_edge_equation[tet->index];
             else
             {
@@ -237,7 +237,7 @@ static void compute_derivative(
              *  see the comment preceding this function for details.
              */
 
-            if (manifold->orientability == oriented_manifold)
+            if (manifold->orientability == orientable)
 
                 *eqn_coef = complex_plus(*eqn_coef, d[edge3[e]]);
 
@@ -280,15 +280,15 @@ static void compute_derivative(
              *  If the cusp is complete, use m = 1.0 and l = 0.0.
              */
 
-            if (tet->cusp[v]->is_complete)
+            if (tet->vertex[v]->is_complete)
             {
                 m = 1.0;
                 l = 0.0;
             }
             else
             {
-                m = tet->cusp[v]->m;
-                l = tet->cusp[v]->l;
+                m = tet->vertex[v]->m;
+                l = tet->vertex[v]->l;
             }
 
             /*
@@ -299,14 +299,14 @@ static void compute_derivative(
              *  is unoriented it will be a 2 x 2 block in the real matrix.
              */
 
-            if (manifold->orientability == oriented_manifold)
-                eqn_coef = &tet->cusp[v]->complex_cusp_equation[tet->index];
+            if (manifold->orientability == orientable)
+                eqn_coef = &tet->vertex[v]->complex_cusp_equation[tet->index];
             else
             {
-                eqn_coef_00 = &tet->cusp[v]->real_cusp_equation_re[2 * tet->index];
-                eqn_coef_01 = &tet->cusp[v]->real_cusp_equation_re[2 * tet->index + 1];
-                eqn_coef_10 = &tet->cusp[v]->real_cusp_equation_im[2 * tet->index];
-                eqn_coef_11 = &tet->cusp[v]->real_cusp_equation_im[2 * tet->index + 1];
+                eqn_coef_00 = &tet->vertex[v]->real_cusp_equation_re[2 * tet->index];
+                eqn_coef_01 = &tet->vertex[v]->real_cusp_equation_re[2 * tet->index + 1];
+                eqn_coef_10 = &tet->vertex[v]->real_cusp_equation_im[2 * tet->index];
+                eqn_coef_11 = &tet->vertex[v]->real_cusp_equation_im[2 * tet->index + 1];
             }
 
             /*
@@ -393,7 +393,7 @@ static void compute_derivative(
                  *  the cusp equation.
                  */
 
-                if (manifold->orientability == oriented_manifold)
+                if (manifold->orientability == orientable)
 
                     *eqn_coef = complex_plus(*eqn_coef, dz[right_handed]);
 
@@ -441,7 +441,7 @@ static void compute_rhs(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Complex     desired_holonomy,
                 current_holonomy,
                 rhs;
@@ -472,7 +472,7 @@ static void compute_rhs(
 
         rhs = complex_minus(edge->target_angle_sum, edge->edge_angle_sum);
 
-        if (manifold->orientability == oriented_manifold)
+        if (manifold->orientability == orientable)
             edge->complex_edge_equation[manifold->num_tetrahedra] = rhs;
         else
         {
@@ -487,8 +487,8 @@ static void compute_rhs(
      *  Set the right hand side (rhs) of each cusp equation.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         /*
@@ -513,7 +513,7 @@ static void compute_rhs(
 
         rhs = complex_minus(desired_holonomy, current_holonomy);
 
-        if (manifold->orientability == oriented_manifold)
+        if (manifold->orientability == orientable)
             cusp->complex_cusp_equation[manifold->num_tetrahedra] = rhs;
         else
         {

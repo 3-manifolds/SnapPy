@@ -411,7 +411,7 @@ static void allocate_relation_matrix(
 
     /*
      *  There will be, at most, one relation for each EdgeClass and one
-     *  relation for each Cusp.  We'll worry about the exact number of
+     *  relation for each cusp.  We'll worry about the exact number of
      *  relations later.  By an Euler characteristic argument,
      *  the number of EdgeClasses equals the number of Tetrahedra.
      *
@@ -521,7 +521,7 @@ static void find_cusp_relations(
 
         for (vertex = 0; vertex < 4; vertex++)
         {
-            if (tet->cusp[vertex]->is_complete)
+            if (tet->vertex[vertex]->is_complete)
                 continue;
 
             for (side = 0; side < 4; side++)
@@ -538,32 +538,32 @@ static void find_cusp_relations(
                  *  check for overflows:
                  *
                     relation_matrix->relations
-                            [relation_matrix->num_rows + tet->cusp[vertex]->index]
+                            [relation_matrix->num_rows + tet->vertex[vertex]->cusp_index]
                             [tet->generator_index[side]]
-                        += (MatrixEntry) tet->cusp[vertex]->m * tet->curve[M][h][vertex][side]
-                         + (MatrixEntry) tet->cusp[vertex]->l * tet->curve[L][h][vertex][side];
+                        += (MatrixEntry) tet->vertex[vertex]->m * tet->curve[M][h][vertex][side]
+                         + (MatrixEntry) tet->vertex[vertex]->l * tet->curve[L][h][vertex][side];
                  *
                  *  Here's the current version:
                  */
                 {
                     relation_matrix->relations
-                            [relation_matrix->num_rows + tet->cusp[vertex]->index]
+                            [relation_matrix->num_rows + tet->vertex[vertex]->cusp_index]
                             [tet->generator_index[side]]
                     = safe_addition(
                         relation_matrix->relations
-                                [relation_matrix->num_rows + tet->cusp[vertex]->index]
+                                [relation_matrix->num_rows + tet->vertex[vertex]->cusp_index]
                                 [tet->generator_index[side]],
-                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->m, (MatrixEntry) tet->curve[M][h][vertex][side], overflow),
+                        safe_multiplication((MatrixEntry) tet->vertex[vertex]->m, (MatrixEntry) tet->curve[M][h][vertex][side], overflow),
                         overflow);
 
                     relation_matrix->relations
-                            [relation_matrix->num_rows + tet->cusp[vertex]->index]
+                            [relation_matrix->num_rows + tet->vertex[vertex]->cusp_index]
                             [tet->generator_index[side]]
                     = safe_addition(
                         relation_matrix->relations
-                                [relation_matrix->num_rows + tet->cusp[vertex]->index]
+                                [relation_matrix->num_rows + tet->vertex[vertex]->cusp_index]
                                 [tet->generator_index[side]],
-                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->l, (MatrixEntry) tet->curve[L][h][vertex][side], overflow),
+                        safe_multiplication((MatrixEntry) tet->vertex[vertex]->l, (MatrixEntry) tet->curve[L][h][vertex][side], overflow),
                         overflow);
                     
                     /*

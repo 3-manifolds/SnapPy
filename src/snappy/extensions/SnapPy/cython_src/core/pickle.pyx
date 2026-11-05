@@ -207,22 +207,22 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
         if cusps:
             if p[0] & IS_COMPLETE:
                 for i in range(tri_data.num_or_cusps):
-                    cusps[i].topology = torus_cusp
+                    cusps[i].is_orientable = True
                     cusps[i].m = <Real>0.0
                     cusps[i].l = <Real>0.0
                 for i in range(tri_data.num_or_cusps, num_cusps):
-                    cusps[i].topology = Klein_cusp
+                    cusps[i].is_orientable = False
                     cusps[i].m = <Real>0.0
                     cusps[i].l = <Real>0.0
             else:
                 for i in range(tri_data.num_or_cusps):
                     M, L, n = p[n], p[n+1], n + 2
-                    cusps[i].topology = torus_cusp
+                    cusps[i].is_orientable = True
                     cusps[i].m = <Real>M
                     cusps[i].l = <Real>L
                 for i in range(tri_data.num_or_cusps, num_cusps):
                     M, L, n = p[n], p[n+1], n + 2
-                    cusps[i].topology = Klein_cusp
+                    cusps[i].is_orientable = False
                     cusps[i].m = <Real>M
                     cusps[i].l = <Real>L
         else:
@@ -352,11 +352,11 @@ cdef c_Triangulation* listlike_to_triangulation(listlike,
         cusps = <c_CuspData*>malloc(num_cusps*sizeof(c_CuspData))
         if cusps:
             for i in range(tri_data.num_or_cusps):
-                cusps[i].topology = torus_cusp
+                cusps[i].is_orientable = True
                 cusps[i].m = <Real>0.0
                 cusps[i].l = <Real>0.0
             for i in range(tri_data.num_or_cusps, num_cusps):
-                cusps[i].topology = Klein_cusp
+                cusps[i].is_orientable = False
                 cusps[i].m = <Real>0.0
                 cusps[i].l = <Real>0.0
         else:

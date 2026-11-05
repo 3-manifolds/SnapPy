@@ -78,8 +78,9 @@ cdef class CCuspNeighborhood():
         Return the topological type of the specified cusp.
         """
         N = self.check_index(which_cusp)
-        topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood, N)
-        return CuspTopology[topology]
+        is_orientable = B2B(get_cusp_neighborhood_is_orientable(
+            self.c_cusp_neighborhood, N))
+        return VertexLinkTopologyName(0, is_orientable)
 
     def get_displacement(self, which_cusp = 0):
         """

@@ -52,7 +52,7 @@ FuncResult change_peripheral_curves_nonorientable(
 
     Boolean     *change_orientation;
     MatrixInt22 *new_change_matrices;
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         det, r;
     int         i, j, k;
@@ -62,7 +62,7 @@ FuncResult change_peripheral_curves_nonorientable(
      * for those which checks that the determinant is +1.
      */
 
-    if (manifold->orientability != nonorientable_manifold)
+    if (manifold->orientability != nonorientable)
         return func_bad_input;
 
     change_orientation = NEW_ARRAY(manifold->num_cusps, Boolean);
@@ -72,11 +72,11 @@ FuncResult change_peripheral_curves_nonorientable(
      * change_orientation whether the determinant is -1.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next) {
         
-        det = DET2(change_matrices[cusp->index]);
+        det = DET2(change_matrices[cusp->cusp_index]);
 
         /*
          * Reject matrices with |det| != 1.
@@ -92,11 +92,11 @@ FuncResult change_peripheral_curves_nonorientable(
          * entries.
          */
 
-        if (get_cusp_topology(cusp) == Klein_cusp)
+        if (!vertex_has_orientable_link(cusp))
 
             for (i = 0; i < 2; i++)
                 
-                if (change_matrices[cusp->index][i][!i] != 0) {
+                if (change_matrices[cusp->cusp_index][i][!i] != 0) {
                     my_free(change_orientation);
                     return func_bad_input;
                 }
@@ -105,7 +105,7 @@ FuncResult change_peripheral_curves_nonorientable(
          * Save sign of determinant in change orientation.
          */
 
-        change_orientation[cusp->index] = (det == -1);
+        change_orientation[cusp->cusp_index] = (det == -1);
     }
 
     /*
@@ -118,23 +118,23 @@ FuncResult change_peripheral_curves_nonorientable(
             for (k = 0; k < 2; k++)
                 new_change_matrices[i][j][k] = change_matrices[i][j][k];
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         /*
          * For each cusp whose corresponding matrix has negative determinant.
          */
 
-        if (change_orientation[cusp->index]) {
+        if (change_orientation[cusp->cusp_index]) {
 
             /*
              * Account in the change_matrix that we will flip the meridian.
              */
 
             for (i = 0; i < 2; i++) 
-                new_change_matrices[cusp->index][i][M] =
-                    - new_change_matrices[cusp->index][i][M];
+                new_change_matrices[cusp->cusp_index][i][M] =
+                    - new_change_matrices[cusp->cusp_index][i][M];
             
             /*
              * Flip the meridian's Dehn filling coefficient.
@@ -184,7 +184,7 @@ FuncResult change_peripheral_curves_nonorientable(
              * of negative determinant.
              */
      
-            if (change_orientation[tet->cusp[i]->index])
+            if (change_orientation[tet->vertex[i]->cusp_index])
                 
                 for (j = 0; j < 4; j++) {
                

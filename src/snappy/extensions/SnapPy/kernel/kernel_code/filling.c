@@ -10,7 +10,7 @@
  *
  *      Triangulation   *fill_reasonable_cusps(Triangulation *manifold);
  *
- *      Boolean         cusp_is_fillable(Cusp *cusp);
+ *      Boolean         cusp_is_fillable(Vertex *cusp);
  *      Boolean         is_closed_manifold(Triangulation *manifold);
  *
  *  which the kernel provides to the UI.
@@ -67,7 +67,7 @@
 SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static Boolean  check_fill_cusp_array(Triangulation *manifold, Boolean fill_cusp[]);
-static Boolean  cusp_is_fillable_x(Cusp *cusp);
+static Boolean  cusp_is_fillable_x(Vertex *cusp);
 static Boolean  no_cusps_to_be_filled(int num_cusps, Boolean fill_cusp[]);
 
 
@@ -191,7 +191,7 @@ Triangulation *fill_reasonable_cusps(
     Triangulation   *manifold)
 {
     Boolean         *fill_cusp;
-    Cusp            *cusp;
+    Vertex          *cusp;
     int             i;
     Boolean         all_cusps_are_fillable;
     Triangulation   *new_triangulation;
@@ -206,11 +206,11 @@ Triangulation *fill_reasonable_cusps(
      *  See which cusps are fillable.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        fill_cusp[cusp->index] = cusp_is_fillable_x(cusp);
+        fill_cusp[cusp->cusp_index] = cusp_is_fillable_x(cusp);
 
     /*
      *  If all the cusps are fillable, leave cusp 0 unfilled.
@@ -250,15 +250,15 @@ static Boolean check_fill_cusp_array(
     Boolean         fill_cusp[])
 {
     Boolean at_least_one_cusp_is_left;
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     at_least_one_cusp_is_left = FALSE;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
-        if (fill_cusp[cusp->index])
+        if (fill_cusp[cusp->cusp_index])
         {
             if (cusp_is_fillable_x(cusp) == FALSE)
                 uFatalError("check_fill_cusp_array", "filling");
@@ -279,7 +279,7 @@ Boolean cusp_is_fillable(               /* For external use */
 
 
 static Boolean cusp_is_fillable_x(      /* For internal use */
-    Cusp    *cusp)
+    Vertex  *cusp)
 {
     return( cusp->is_complete == FALSE
          && Dehn_coefficients_are_relatively_prime_integers(cusp) == TRUE);

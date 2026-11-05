@@ -111,8 +111,8 @@
  * equal to "word" in terms of the current generators.
  *
  *
- *  96/9/29  fundamental_group() nows records the basepoint of each Cusp
- *  in the Cusp's basepoint_tet, basepoint_vertex and basepoint_orientation
+ *  96/9/29  fundamental_group() now records the basepoint of each cusp
+ *  in the cusp's basepoint_tet, basepoint_vertex and basepoint_orientation
  *  fields.  The basepoint is the point where the meridian and longitude
  *  meet;  the meridional and longitudinal words are computed relative to
  *  this point to guarantee that they compute.
@@ -412,9 +412,9 @@ static void                 compute_relations(Triangulation *manifold, GroupPres
 static void                 compute_edge_relations(Triangulation *manifold, GroupPresentation *group);
 static void                 compute_one_edge_relation(EdgeClass *edge, GroupPresentation *group);
 static void                 compute_Dehn_relations(Triangulation *manifold, GroupPresentation *group);
-static void                 compute_peripheral_word(Cusp *cusp, PeripheralCurve which_curve, CyclicWord **word_list);
-static void                 find_standard_basepoint(Triangulation *manifold, Cusp *cusp);
-static void                 find_curve_start(Cusp *cusp, PeripheralCurve which_curve, PositionedTet *ptet);
+static void                 compute_peripheral_word(Vertex *cusp, PeripheralCurve which_curve, CyclicWord **word_list);
+static void                 find_standard_basepoint(Triangulation *manifold, Vertex *cusp);
+static void                 find_curve_start(Vertex *cusp, PeripheralCurve which_curve, PositionedTet *ptet);
 static void                 compute_Dehn_word(CyclicWord *meridian, CyclicWord *longitude, int m, int l, CyclicWord **word_list);
 static void                 append_copies(CyclicWord *source, int n, CyclicWord *dest);
 static void                 append_word(CyclicWord *source, CyclicWord *dest);
@@ -829,16 +829,15 @@ static void compute_Dehn_relations(
     Triangulation       *manifold,
     GroupPresentation   *group)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
     int     i;
 
     group->itsNumCusps      = 0;
-    for ( cusp = manifold->cusp_list_begin.next;
-          cusp != &manifold->cusp_list_end;
+    for ( cusp = manifold->vertex_list_begin.next;
+          cusp != &manifold->vertex_list_end;
           cusp = cusp->next )
     {
-        CuspTopology topology = get_cusp_topology(cusp);
-	if ( topology == torus_cusp || topology == Klein_cusp )
+        if (vertex_is_cusp(cusp))
             group->itsNumCusps++;
     }
 
@@ -853,10 +852,8 @@ static void compute_Dehn_relations(
     {
         cusp = find_cusp(manifold, i);
 
-        CuspTopology topology = get_cusp_topology(cusp);
-
-        if ( topology != torus_cusp && topology != Klein_cusp )
-            continue;
+        if (!vertex_is_cusp(cusp))
+            uFatalError("compute_Dehn_relation", "fundamental_group");
         
         /*
          *  First compute the meridian and longitude...
@@ -885,7 +882,7 @@ static void compute_Dehn_relations(
 
 
 static void compute_peripheral_word(
-    Cusp            *cusp,
+    Vertex          *cusp,
     PeripheralCurve which_curve,
     CyclicWord      **word_list)
 {
@@ -1068,7 +1065,7 @@ static void compute_peripheral_word(
 
 static void find_standard_basepoint(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     /*
      *  Find an ideal vertex where both the meridian and longitude
@@ -1087,7 +1084,7 @@ static void find_standard_basepoint(
              cusp->basepoint_vertex < 4;
              cusp->basepoint_vertex++)
         {
-            if (cusp->basepoint_tet->cusp[cusp->basepoint_vertex] != cusp)
+            if (cusp->basepoint_tet->vertex[cusp->basepoint_vertex] != cusp)
                 continue;
 
             for (face = 0; face < 4; face++)
@@ -1126,7 +1123,7 @@ static void find_standard_basepoint(
 
 
 static void find_curve_start(
-    Cusp            *cusp,
+    Vertex          *cusp,
     PeripheralCurve which_curve,
     PositionedTet   *ptet)
 {

@@ -3,10 +3,14 @@
  *
  *  This file contains the function
  *
- *      void close_cusps(Triangulation *manifold, Boolean fill_cusp[]);
+ *      void close_cusps(
+ *          Triangulation *manifold,
+ *          Boolean       fill_cusp[],
+ *          Boolean       fill_by_fold,
+ *          Boolean       mark_solid_tori);
  *
  *  which is used by the function fill_cusps() to permanently
- *  close the indicated cusps (those for which fill_cusp[cusp->index]
+ *  close the indicated cusps (those for which fill_cusp[cusp->cusp_index]
  *  is TRUE).  The Triangulation *manifold must be a manifold with
  *  finite vertices, prepared as in subdivide().  Specifically, we
  *  assume that the Tetrahedra incident to the cusps form disjoint
@@ -221,8 +225,8 @@ static void      fold_one_cusp(Triangulation *manifold, Tetrahedron *tet0);
 static FaceIndex face_with_specified_weight(Tetrahedron *tet, int target);
 static void      fill_cusps_with_solid_tori(Triangulation *manifold, Tetrahedron *short_list_begin, Tetrahedron *short_list_end, Boolean mark_solid_tori);
 static void      fill_cusp_with_solid_torus(Triangulation *manifold, Tetrahedron *tet0, int mark);
-static void      replace_fake_cusps(Triangulation *manifold);
-static void      renumber_real_cusps(Triangulation *manifold);
+static void      replace_finite_vertices(Triangulation *manifold);
+static void      renumber_cusps(Triangulation *manifold);
 
 void close_cusps(
     Triangulation   *manifold,
@@ -244,10 +248,10 @@ void close_cusps(
 
     /*
      *  Simplify the cusps to be filled until each is triangulated
-     *  by at most two triangles.  Ignore (1) fake "Cusps" at finite
-     *  vertices and (2) EdgeClasses not incident to a real Cusp;
-     *  we'll fix them up at the end.  We maintain the tet->edge_class()
-     *  fields for edges incident to real Cusps so that we can tell
+     *  by at most two triangles.  Ignore (1) finite vertices and
+     *  (2) EdgeClasses not incident to a cusp; we'll fix them up at
+     *  the end.  We maintain the tet->edge_class[] fields for edges
+     *  incident to cusps so that we can tell
      *  whether two EdgeClasses are distinct.  The fields within an
      *  EdgeClass are not maintained.
      */
@@ -302,17 +306,17 @@ void close_cusps(
     replace_edge_classes(manifold);
 
     /*
-     *  Get rid of the old fake Cusps and install new ones.
+     *  Replace the Vertex structures representing finite vertices.
      */
 
-    replace_fake_cusps(manifold);
+    replace_finite_vertices(manifold);
 
     /*
-     *  Renumber the remaining real Cusps, so the indices
+     *  Renumber the remaining cusps, so the indices
      *  are contiguous.
      */
 
-    renumber_real_cusps(manifold);
+    renumber_cusps(manifold);
 
     /*
      *  96/9/28  I haven't actually observed any incorrect behavior
@@ -375,36 +379,39 @@ static Boolean incident_to_filled_cusp(
     Tetrahedron *tet,
     Boolean     fill_cusp[])
 {
-    int i;
-
-    for (i = 0; i < 4; i++)
-
-        if (get_cusp_topology(tet->cusp[i]) != sphere_cusp
-         && fill_cusp[tet->cusp[i]->index] == TRUE)
+    for (int i = 0; i < 4; i++)
+        if (vertex_is_cusp(tet->vertex[i]))
         {
-            /*
-             *  Make sure no other routine is using the "extra"
-             *  field in the Tetrahedron data structure.
-             */
-            if (tet->extra != NULL)
-                uFatalError("incident_to_filled_cusp", "close_cusps");
 
-            /*
-             *  Attach the locally defined struct extra.
-             */
-            tet->extra = NEW_STRUCT(Extra);
+            int cusp_index = tet->vertex[i]->cusp_index;
+            if (cusp_index < 0)
+                uFatalError("incident_to_filled_cusp (0)", "close_cusps");
 
-            /*
-             *  Record for posterity the index of the ideal vertex.
-             */
-            tet->extra->ideal_vertex_index = i;
+            if (fill_cusp[cusp_index] == TRUE)
+            {
+                /*
+                 *  Make sure no other routine is using the "extra"
+                 *  field in the Tetrahedron data structure.
+                 */
+                if (tet->extra != NULL)
+                    uFatalError("incident_to_filled_cusp", "close_cusps");
 
-            return TRUE;
+                /*
+                 *  Attach the locally defined struct extra.
+                 */
+                tet->extra = NEW_STRUCT(Extra);
+
+                /*
+                 *  Record for posterity the index of the ideal vertex.
+                 */
+                tet->extra->ideal_vertex_index = i;
+
+                return TRUE;
+            }
         }
 
     return FALSE;
 }
-
 
 static void simplify_cusps(
     Triangulation   *manifold,
@@ -959,10 +966,10 @@ static Boolean two_to_two(
     initialize_tetrahedron(tetA);
     initialize_tetrahedron(tetB);
 
-    new_tet->cusp[0] =     tet->cusp[    f[0]];
-    new_tet->cusp[1] = nbr_tet->cusp[nbr_f[0]];
-    new_tet->cusp[2] =     tet->cusp[    f[3]];
-    new_tet->cusp[3] =     tet->cusp[    f[2]];
+    new_tet->vertex[0] =     tet->vertex[    f[0]];
+    new_tet->vertex[1] = nbr_tet->vertex[nbr_f[0]];
+    new_tet->vertex[2] =     tet->vertex[    f[3]];
+    new_tet->vertex[3] =     tet->vertex[    f[2]];
 
     new_tet->neighbor[0] = NBR_T(1);
     new_tet->neighbor[1] = TET_T(1);
@@ -1044,15 +1051,15 @@ static Boolean two_to_two(
     tetB->edge_class[edge_between_faces[2][3]] = e_class[1];
     tetB->edge_class[edge_between_faces[3][0]] = e_class[3];
 
-    tetA->cusp[1] = tet->cusp[f[1]];
-    tetB->cusp[1] = tet->cusp[f[1]];
+    tetA->vertex[1] = tet->vertex[f[1]];
+    tetB->vertex[1] = tet->vertex[f[1]];
 
-    tetA->cusp[0] = new_tet->cusp[0];
-    tetA->cusp[2] = new_tet->cusp[1];
-    tetA->cusp[3] = new_tet->cusp[2];
-    tetB->cusp[0] = new_tet->cusp[1];
-    tetB->cusp[2] = new_tet->cusp[3];
-    tetB->cusp[3] = new_tet->cusp[0];
+    tetA->vertex[0] = new_tet->vertex[0];
+    tetA->vertex[2] = new_tet->vertex[1];
+    tetA->vertex[3] = new_tet->vertex[2];
+    tetB->vertex[0] = new_tet->vertex[1];
+    tetB->vertex[2] = new_tet->vertex[3];
+    tetB->vertex[3] = new_tet->vertex[0];
 
     tetA->extra = NEW_STRUCT(Extra);
     tetB->extra = NEW_STRUCT(Extra);
@@ -1137,7 +1144,7 @@ static void transfer_curves(
 {
     Tetrahedron *tet;
     VertexIndex v;
-    Cusp        *cusp;
+    Vertex      *cusp;
     int         i,
                 j;
 
@@ -1150,7 +1157,7 @@ static void transfer_curves(
          tet = tet->next)
     {
         v = tet->extra->ideal_vertex_index;
-        cusp = tet->cusp[v];
+        cusp = tet->vertex[v];
 
         for (i = 0; i < 4; i++)
         {
@@ -1173,23 +1180,21 @@ static void standard_form(
     Tetrahedron     *short_list_begin,
     Tetrahedron     *short_list_end)
 {
-    Tetrahedron *tet;
-
     /*
      *  See the documentation in close_cusps() for an illustration of
      *  the standard forms.
      */
 
-    for (tet = short_list_begin->next;
+    for (Tetrahedron * tet = short_list_begin->next;
          tet != short_list_end;
          tet = tet->next)
 
-        if (get_cusp_topology(tet->cusp[tet->extra->ideal_vertex_index]) == torus_cusp)
+        if (vertex_has_orientable_link(
+                tet->vertex[tet->extra->ideal_vertex_index]))
             standard_torus_form(manifold, tet);
         else
             standard_Klein_bottle_form(manifold, tet);
 }
-
 
 static void standard_torus_form(
     Triangulation   *manifold,
@@ -1399,7 +1404,7 @@ static void fold_one_cusp(
     int         i,
                 j;
     int         abs_int_num;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
 
     /*
      *  The illustrations in close_cusps() show the standard forms
@@ -1479,8 +1484,8 @@ static void fold_one_cusp(
      *  Discard tet[0] and tet[1].
      */
 
-    dead_cusp = tet[0]->cusp[f[0][0]];
-    if (get_cusp_topology(dead_cusp) == torus_cusp)
+    dead_cusp = tet[0]->vertex[f[0][0]];
+    if (vertex_has_orientable_link(dead_cusp))
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1553,7 +1558,7 @@ static void fill_cusp_with_solid_torus(
 	        wt_two_face;
     int         i,
                 j;
-    Cusp        *dead_cusp;
+    Vertex      *dead_cusp;
 
     /*
      * First add on more tet so have {1, 2, 3} as absolute values of
@@ -1577,7 +1582,7 @@ static void fill_cusp_with_solid_torus(
     f[0][0] = tet[0]->extra->ideal_vertex_index;
 
     /* We only support torus cusps for now. */
-    if (get_cusp_topology(tet0->cusp[f[0][0]]) != torus_cusp){
+    if (!vertex_is_torus_cusp(tet0->vertex[f[0][0]])) {
 	uFatalError("fill_cusp_with_solid_torus_1", "close_cusps");
     }
 
@@ -1627,7 +1632,7 @@ static void fill_cusp_with_solid_torus(
     new_tet->unchangeable = mark;
 
     for (i = 0; i < 4; i++){
-	new_tet->cusp[i] = tet[0]->cusp[f[0][1]];
+	new_tet->vertex[i] = tet[0]->vertex[f[0][1]];
     }
 
     /* glue first pair of faces */
@@ -1654,8 +1659,8 @@ static void fill_cusp_with_solid_torus(
      *  Discard tet[0] and tet[1].
      */
 
-    dead_cusp = tet[0]->cusp[f[0][0]];
-    if (get_cusp_topology(dead_cusp) == torus_cusp)
+    dead_cusp = tet[0]->vertex[f[0][0]];
+    if (vertex_has_orientable_link(dead_cusp))
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1679,66 +1684,58 @@ static void fill_cusp_with_solid_torus(
 
 
 
-static void replace_fake_cusps(
+static void replace_finite_vertices(
     Triangulation   *manifold)
 {
-    Tetrahedron *tet;
-    int         i;
-    Cusp        *cusp,
-                *dead_cusp;
-
     /*
-     *  Set to NULL all tet->cusp pointers which point to fake Cusps.
+     *  Set to NULL all tet->vertex[] entries which point to finite vertices.
      */
 
-    for (tet = manifold->tet_list_begin.next;
+    for (Tetrahedron * tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
          tet = tet->next)
 
-        for (i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
 
-            if (get_cusp_topology(tet->cusp[i]) == sphere_cusp)
+            if (vertex_is_finite(tet->vertex[i]))
 
-                tet->cusp[i] = NULL;
+                tet->vertex[i] = NULL;
 
     /*
-     *  Free the fake Cusps.
+     *  Free the Vertex structures representing finite vertices.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
-         cusp = cusp->next)
+    for (Vertex * vertex = manifold->vertex_list_begin.next;
+         vertex != &manifold->vertex_list_end;
+         vertex = vertex->next)
 
-        if (get_cusp_topology(cusp) == sphere_cusp)
+        if (vertex_is_finite(vertex))
         {
-            dead_cusp = cusp;
-            cusp = cusp->prev;  /* so the loop will proceed correctly */
+            Vertex * dead_cusp = vertex;
+            vertex = vertex->prev;  /* so the loop will proceed correctly */
             REMOVE_NODE(dead_cusp);
             my_free(dead_cusp);
         }
 
     /*
-     *  Assign new fake Cusps.
+     *  Create new Vertex structures for the finite vertices.
      */
 
     create_cusps_and_mark_finite_as_needed(manifold);
 }
 
 
-static void renumber_real_cusps(
+static void renumber_cusps(
     Triangulation   *manifold)
 {
-    Cusp    *cusp;
-    int     cusp_count;
+    int cusp_count = 0;
 
-    cusp_count = 0;
+    for (Vertex * vertex = manifold->vertex_list_begin.next;
+         vertex != &manifold->vertex_list_end;
+         vertex = vertex->next)
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
-         cusp = cusp->next)
+        if (vertex_is_cusp(vertex))
 
-        if (get_cusp_topology(cusp) != sphere_cusp)
-
-            cusp->index = cusp_count++;
+            vertex->cusp_index = cusp_count++;
 }
 SNAPPEA_NAMESPACE_END_SCOPE

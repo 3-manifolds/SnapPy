@@ -108,7 +108,7 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 void compute_intersection_numbers(
     Triangulation   *manifold)
 {
-    Cusp        *cusp;
+    Vertex      *cusp;
     Tetrahedron *tet;
     int         f,
                 g,
@@ -122,8 +122,8 @@ void compute_intersection_numbers(
      *  Initialize all the intersection numbers to zero.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         for (i = 0; i < 2; i++)     /* i = M, L */
@@ -168,7 +168,7 @@ void compute_intersection_numbers(
                              */
                             if (tet->scratch_curve[0][g][f][i][j] > 0)
 
-                                tet->cusp[i]->intersection_number[g][h]
+                                tet->vertex[i]->intersection_number[g][h]
                                  += tet->scratch_curve[0][g][f][i][j]
                                   * tet->scratch_curve[1][h][f][i][j];
             }
@@ -219,12 +219,12 @@ void compute_intersection_numbers(
                          *  Got that?
                          */
 
-                        tet->cusp[i]->intersection_number[g][h]
+                        tet->vertex[i]->intersection_number[g][h]
                          += FLOW(tet->scratch_curve[0][g][right_handed][i][j],
                                  tet->scratch_curve[0][g][right_handed][i][face_on_the_right])
                           * tet->scratch_curve[1][h][right_handed][i][face_on_the_right];
 
-                        tet->cusp[i]->intersection_number[g][h]
+                        tet->vertex[i]->intersection_number[g][h]
                          += FLOW(tet->scratch_curve[0][g][left_handed][i][j],
                                  tet->scratch_curve[0][g][left_handed][i][face_on_the_left])
                           * tet->scratch_curve[1][h][left_handed][i][face_on_the_left];
@@ -247,7 +247,7 @@ void copy_curves_to_scratch(
     /*
      *  When computing intersection numbers on orientable cusps
      *  (especially in nonorientable manifolds) there is a danger that
-     *  scratch_curves[0] will lie on one sheet of the Cusp's orientation
+     *  scratch_curves[0] will lie on one sheet of the cusp's orientation
      *  double cover while scratch_curves[1] lies on the other sheet.
      *  To avoid this danger, copy_curves_to_scratch() offers the
      *  option to copy the peripheral curves on orientable cusps to
@@ -267,8 +267,8 @@ void copy_curves_to_scratch(
 
                 for (l = 0; l < 4; l++)
 
-                    if (get_cusp_topology(tet->cusp[k]) == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                    if (vertex_is_torus_cusp(tet->vertex[k]) &&
+                        double_copy_on_tori == TRUE)
 
                         tet->scratch_curve[which_set][i][right_handed][k][l] =
                         tet->scratch_curve[which_set][i][ left_handed][k][l] =
@@ -277,13 +277,13 @@ void copy_curves_to_scratch(
 
                     else
                         /*
-                         *      tet->cusp[k]->topology == Klein_cusp
+                         *      vertex_is_Klein_cusp(tet->vertex[k])
                          *   || double_copy_on_tori == FALSE
                          */
 
                         for (j = 0; j < 2; j++)
 
                             tet->scratch_curve[which_set][i][j][k][l]
-                                   = tet->curve[i][j][k][l];
+                                = tet->curve[i][j][k][l];
 }
 SNAPPEA_NAMESPACE_END_SCOPE

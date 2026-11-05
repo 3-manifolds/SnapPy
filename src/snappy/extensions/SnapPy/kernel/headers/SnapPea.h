@@ -163,7 +163,7 @@ typedef Real O31Vector[4];
 /**
  *  MatrixInt22 is a 2 x 2 integer matrix.  A MatrixInt22
  *  may, for example, describe how the peripheral curves of
- *  one Cusp map to those of another.
+ *  one cusp map to those of another.
  */
 
 typedef int MatrixInt22[2][2];
@@ -312,29 +312,10 @@ typedef struct
 
 typedef enum
 {
-    oriented_manifold,
-    nonorientable_manifold,
+    orientable,
+    nonorientable,
     unknown_orientability
 } Orientability;
-
-typedef enum
-{
-    orientable_cusp,
-    nonorientable_cusp,
-    unknown_cusp_orientability
-} CuspOrientability;
-
-typedef enum
-{
-    sphere_cusp,
-    projective_cusp, /* Projective plane */
-    torus_cusp,
-    Klein_cusp, /* Klein bottle */
-    higher_genus_orientable_cusp,
-    higher_genus_nonorientable_cusp,
-    unknown_topology
-} CuspTopology;
-
 
 typedef enum
 {
@@ -901,17 +882,17 @@ extern void core_geodesic(  Triangulation   *manifold,
                             Complex         *core_length,
                             int             *precision);
 /**<
- *  Examines the Cusp of index cusp_index in *manifold.
+ *  Examines the cusp of index cusp_index in *manifold.
  *
- *  If the Cusp is unfilled or the Dehn filling coefficients are not
+ *  If the cusp is unfilled or the Dehn filling coefficients are not
  *  integers, sets *singularity_index to zero and leaves *core_length
  *  undefined.
  *
- *  If the Cusp has relatively prime integer Dehn filling coefficients,
+ *  If the cusp has relatively prime integer Dehn filling coefficients,
  *  sets *singularity_index to 1 and *core_length to the complex length
  *  of the central geodesic.
  *
- *  If the Cusp has non relatively prime integer Dehn filling coefficients,
+ *  If the cusp has non relatively prime integer Dehn filling coefficients,
  *  sets *singularity_index to the index of the singular locus, and
  *  *core_length to the complex length of the central geodesic in the
  *  smallest manifold cover of a neighborhood of the singular set.
@@ -956,7 +937,7 @@ extern void current_curve_basis(        Triangulation   *manifold,
  *  and computes a 2 x 2 integer matrix basis_change with the property
  *  that
  *
- *      if the Cusp of index cusp_index is filled, and has
+ *      if the cusp of index cusp_index is filled, and has
  *          relatively prime integer Dehn filling coefficients,
  *
  *          the first row of basis_change is set to the current
@@ -1008,11 +989,11 @@ extern int get_num_cusp_neighborhoods(
  *  number of cusps.
  */
 
-extern CuspTopology get_cusp_neighborhood_topology(
+extern Boolean get_cusp_neighborhood_is_orientable(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 /**<
- *  Returns the CuspTopology of the given cusp.
+ *  Returns whether the given cusp is orientable.
  */
 
 extern Real get_cusp_neighborhood_displacement(
@@ -1613,7 +1594,7 @@ extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold);
  *  the *shape[complete] field of each Tetrahedron in the Triangulation.  The
  *  solution is also stored as the initial filled solution, by setting the
  *  solution_type[filled] member of *manifold and the *shape[filled] fields
- *  of the Tetrahedra; the is_complete flag of each Cusp is set to TRUE.
+ *  of the Tetrahedra; the is_complete flag of each cusp is set to TRUE.
  *
  *  The hyperbolic structure is computed using Newton's method, beginning
  *  with all tetrahedra regular.
@@ -1703,29 +1684,34 @@ extern Orientability get_orientability(Triangulation *manifold);
  *  Returns the orientability of *manifold.
  */
 
+extern Boolean all_vertices_are_finite_or_cusps(Triangulation *manifold);
+/**<
+ *  Returns TRUE if every vertex is finite or a cusp, that is, if every
+ *  vertex link has no cone points and Euler characteristic either two or zero.
+ */
+
 extern int  get_num_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of real cusps in *manifold. A cusp is real the
- *  vertex link is a torus or Klein bottle without cone points.
+ *  Returns the number of cusps (vertices with vertex link having Euler
+ *  characteristic zero and no cone points) in *manifold.
  */
 
 extern int  get_num_or_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of orientable real cusps (torus cusps without
- *  cone points) in *manifold.
+ *  Returns the number of orientable cusps (vertices with vertex link being
+ *  a torus without cone points) in *manifold.
  */
 
 extern int  get_num_nonor_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of nonorientable real cusps (Klein cusps without
- *  cone points) in *manifold.
+ *  Returns the number of nonorientable cusps (vertices with vertex link
+ *  being a Klein bottle without cone points) in *manifold.
  */
 
 extern int  get_num_fake_cusps(Triangulation *manifold);
 /**<
- *  Returns the number of "fake" cusps in *manifold. A cusp is fake
- *  if the vertex link is anything but a torus or Klein bottle without
- *  cone points.
+ *  Returns the number of non-cusp vertices (vertices whose vertex link has
+ *  nonzero Euler characteristic or cone points) in *manifold.
  */
 
 extern int  get_max_singularity(Triangulation *manifold);
@@ -1742,10 +1728,10 @@ extern int get_num_generators(Triangulation *manifold);
 
 extern void get_cusp_info(  Triangulation   *manifold,
                             int             cusp_index,
-                            CuspTopology    *topology,
+                            Boolean         *is_orientable,
                             Boolean         *is_complete,
-                            Real          *m,
-                            Real          *l,
+                            Real            *m,
+                            Real            *l,
                             Complex         *initial_shape,
                             Complex         *current_shape,
                             int             *initial_shape_precision,
@@ -1757,7 +1743,8 @@ extern void get_cusp_info(  Triangulation   *manifold,
  *  *manifold.  (The cusp indices run from zero to one less than the
  *  number of cusps.)
  *
- *  *topology               is set to torus_cusp, Klein_cusp, or unknown_topology.
+ *  *is_orientable          is set to TRUE for a torus cusp and FALSE for a
+ *                          Klein bottle cusp.
  *  *is_complete            is set to TRUE if the cusp is not Dehn filled, and
  *                          FALSE if it is.
  *  *m and *l               are set to the current Dehn filling coefficients.
@@ -1906,7 +1893,7 @@ extern void isometry_list_cusp_action(  IsometryList    *isometry_list,
                                         int             cusp_map[2][2]);
 /**<
  *  Fills in the cusp_image and cusp_map[2][2] to describe the action
- *  of the given Isometry on the given Cusp.
+ *  of the given Isometry on the given cusp.
  */
 
 extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i);
@@ -2373,7 +2360,7 @@ extern Complex transformed_cusp_shape(    Complex       cusp_shape,
 
 extern void install_shortest_bases( Triangulation   *manifold);
 /**<
- *  Installs the (shortest, second shortest) basis on each torus Cusp
+ *  Installs the (shortest, second shortest) basis on each torus cusp
  *  of manifold, but does not change the bases on Klein bottle cusps.
  */
 
@@ -2516,7 +2503,7 @@ extern Boolean symmetry_group_is_amphicheiral(SymmetryGroup *symmetry_group);
 extern Boolean symmetry_group_invertible_knot(SymmetryGroup *symmetry_group);
 /**<
  *  Assumes the underlying manifold is oriented and has exactly
- *  one Cusp.  Returns TRUE if some Symmetry acts on the Cusp
+ *  one cusp.  Returns TRUE if some Symmetry acts on the cusp
  *  via the matrix (-1, 0; 0, -1);  returns FALSE otherwise.
  */
 

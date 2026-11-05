@@ -8,10 +8,10 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 /*
  * Resets and re-computes all cusp orientabilities.
  *
- * For testing compute_cusp_orientabilities.
+ * For testing compute_vertex_link_orientabilities.
  */
 
-void testing_compute_cusp_orientabilities(Triangulation * manifold);
+void testing_compute_vertex_link_orientabilities(Triangulation * manifold);
 
 SNAPPEA_NAMESPACE_END_SCOPE
 

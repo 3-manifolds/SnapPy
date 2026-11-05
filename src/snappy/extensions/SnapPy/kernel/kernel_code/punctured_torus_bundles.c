@@ -698,7 +698,7 @@ Triangulation *triangulate_punctured_torus_bundle(
     data->num_tetrahedra    = n;
     data->solution_type     = not_attempted;
     data->volume            = 0.0;
-    data->orientability     = (anLRFactorization->negative_determinant == TRUE) ? nonorientable_manifold : oriented_manifold;
+    data->orientability     = (anLRFactorization->negative_determinant == TRUE) ? nonorientable : orientable;
     data->CS_value_is_known = FALSE;
     data->CS_value          = -1.0;
     data->num_or_cusps      = (anLRFactorization->negative_determinant == TRUE) ? 0 : 1;
@@ -728,9 +728,9 @@ Triangulation *triangulate_punctured_torus_bundle(
      *  Set up the cusp.
      */
     data->cusp_data = NEW_ARRAY(1, CuspData);
-    data->cusp_data->topology   = (anLRFactorization->negative_determinant == TRUE) ? Klein_cusp : torus_cusp;
-    data->cusp_data->m          = 0.0;
-    data->cusp_data->l          = 0.0;
+    data->cusp_data->is_orientable = (anLRFactorization->negative_determinant == FALSE);
+    data->cusp_data->m             = 0.0;
+    data->cusp_data->l             = 0.0;
 
     /*
      *  Set up the tetrahedra.

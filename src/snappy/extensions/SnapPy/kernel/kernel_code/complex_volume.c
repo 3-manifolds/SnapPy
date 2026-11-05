@@ -66,9 +66,8 @@
  *     the one of the neighboring tetrahedron.
  *     
  *
- * 3. The cusps (which can have the topology of a torus or of S^2
- *    squeezed flat onto a horosphere) are given complex
- *    coordinates.
+ * 3. Each vertex links (either a torus or a sphere squeezed flat onto a
+ *    horosphere) is given complex coordinates.
  *
  * 4. The lifted Ptolemy coordinates are computed.
  *    For an edge e, pick a tetrahedron t and a face f. At each end of
@@ -368,7 +367,7 @@ Complex complex_volume(
         return Zero;
     }
 
-    if (filled_manifold->orientability != oriented_manifold)
+    if (filled_manifold->orientability != orientable)
     {
         /* filled manifold is not orientable */
         if (err_msg != NULL)
@@ -1108,7 +1107,7 @@ void reorder_tetrahedron(
     int n_faces[4];
     Permutation gluing[4];
     TetShape shape[2];
-    Cusp* cusp[4];
+    Vertex* cusp[4];
     int curve[2][2][4][4];
     EdgeClass* edge_class[6];
 
@@ -1121,7 +1120,7 @@ void reorder_tetrahedron(
         neighbors[i] = tet->neighbor[i];
         n_faces[i] = neighboring_face(tet,i);
         gluing[i] = neighbors[i]->gluing[n_faces[i]];
-        cusp[i] = tet->cusp[i];
+        cusp[i] = tet->vertex[i];
         for (j = 0; j < 4; j++)
             for (k = 0; k < 2; k++)
                 for (l = 0; l < 2; l++)
@@ -1142,7 +1141,7 @@ void reorder_tetrahedron(
         tet->neighbor[EVALUATE(p,i)] = neighbors[i];
         tet->gluing[EVALUATE(p,i)] =
             inverse_permutation[neighbors[i]->gluing[n_faces[i]]];
-        tet->cusp[EVALUATE(p,i)] = cusp[i];
+        tet->vertex[EVALUATE(p,i)] = cusp[i];
     }
 
     /* Permute the peripheral curve information */

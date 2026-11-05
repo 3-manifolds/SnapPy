@@ -19,12 +19,12 @@
  *
  *  compute_cusp_shapes() computes the cusp shapes using the which_structure
  *  (initial or current) hyperbolic structure, and stores each computed cusp
- *  shape in the cusp_shape[which_structure] field of the Cusp data structure.
+ *  shape in the cusp_shape[which_structure] field of the Vertex data structure.
  *
  *  To estimate the computed cusp shape's precision, compute_cusp_shapes()
  *  computes the cusp shape using both the ultimate and penultimate values of
  *  the Tetrahedron shapes.  The number of digits to which the answers agree
- *  is stored in the shape_precision[which_structure] field of the Cusp data
+ *  is stored in the shape_precision[which_structure] field of the Vertex data
  *  structure.
  *
  *  do_Dehn_filling() calls compute_cusp_shapes() to maintain correct values
@@ -33,7 +33,7 @@
  *  takes responsibility for copying the original shape of each cusp into
  *  the cusp_shape[initial] field.
  *
- *  Cusp shapes are computed iff manifold->solution_type[which_structure]
+ *  Vertex shapes are computed iff manifold->solution_type[which_structure]
  *  is geometric_solution, nongeometric_solution, flat_solution, or
  *  (tentatively) other_solution.  For other solution types (degenerate_solution,
  *  etc.) all cusp shapes are set to zero.
@@ -64,11 +64,11 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 
 static void             compute_the_cusp_shapes(Triangulation *manifold, FillingStatus which_structure);
 static void             set_all_shapes_to_zero(Triangulation *manifold, FillingStatus which_structure);
-static void             compute_one_cusp_shape(Triangulation *manifold, Cusp *cusp, FillingStatus which_structure);
+static void             compute_one_cusp_shape(Triangulation *manifold, Vertex *cusp, FillingStatus which_structure);
 static void             compute_translation(PositionedTet *initial_ptet,
                             PeripheralCurve which_curve, TraceDirection which_direction,
                             Complex translation[2], FillingStatus which_structure);
-static PositionedTet    find_start(Triangulation *manifold, Cusp *cusp);
+static PositionedTet    find_start(Triangulation *manifold, Vertex *cusp);
 
 
 void compute_cusp_shapes(
@@ -110,14 +110,14 @@ static void compute_the_cusp_shapes(
     Triangulation   *manifold,
     FillingStatus   which_structure)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
     /*
      *  Call compute_one_cusp_shape() for each unfilled cusp.
      */
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
 
         if ( which_structure == initial
@@ -137,10 +137,10 @@ static void set_all_shapes_to_zero(
     Triangulation   *manifold,
     FillingStatus   which_structure)
 {
-    Cusp    *cusp;
+    Vertex  *cusp;
 
-    for (cusp = manifold->cusp_list_begin.next;
-         cusp != &manifold->cusp_list_end;
+    for (cusp = manifold->vertex_list_begin.next;
+         cusp != &manifold->vertex_list_end;
          cusp = cusp->next)
     {
         cusp->cusp_shape[which_structure]       = Zero;
@@ -151,7 +151,7 @@ static void set_all_shapes_to_zero(
 
 static void compute_one_cusp_shape(
     Triangulation   *manifold,
-    Cusp            *cusp,
+    Vertex          *cusp,
     FillingStatus   which_structure)
 {
     PositionedTet   initial_ptet;
@@ -393,7 +393,7 @@ static void compute_translation(
 
 static PositionedTet find_start(
     Triangulation   *manifold,
-    Cusp            *cusp)
+    Vertex          *cusp)
 {
     int             i;
     Tetrahedron     *tet;
@@ -408,7 +408,7 @@ static PositionedTet find_start(
 
         for (vertex = 0; vertex < 4; vertex++)
         {
-            if (tet->cusp[vertex] != cusp)
+            if (tet->vertex[vertex] != cusp)
                 continue;
 
             for (i = 0; i < 2; i++) {

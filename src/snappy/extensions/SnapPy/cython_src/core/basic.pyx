@@ -174,16 +174,25 @@ def smith_form(M):
 
 # end smith form code
 
+def VertexLinkTopologyName(
+        euler_characteristic : int,
+        is_orientable : bool):
+    if euler_characteristic == 2:
+        return 'spherical link'
+    if euler_characteristic == 1:
+        return 'projective plane link'
+    if euler_characteristic == 0:
+        if is_orientable:
+            return 'torus cusp'
+        else:
+            return 'Klein bottle cusp'
+    if is_orientable:
+        return 'orientable link of higher genus' # ORB-TODO: Wording should match.
+    else:
+        return 'nonorientable link of higher genus'
 
 # Enum conversions
-CuspTopology = [
-    'spherical link',
-    'projective plane link',
-    'torus cusp',
-    'Klein bottle cusp',
-    'orientable link of higher genus', # ORB-TODO: Wording should match.
-    'nonorientable link of higher genus',
-    'unknown']
+
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
@@ -598,10 +607,11 @@ def Manifold_from_Triangulation(Triangulation T,
     if T.c_triangulation is NULL:
         return M
 
-    if T._orb_num_singular_edges() > 0:
+    if not all_vertices_are_finite_or_cusps(T.c_triangulation):
         raise ValueError(
             "Cannot construct a Manifold from a Triangulation with singular "
-            "edges: hyperbolic structures described by cross-ratios are not "
+            "edges or vertex links that are not spheres, tori or Klein "
+            "bottles: hyperbolic structures described by cross-ratios are not "
             "supported for such triangulations. "
             "Use _orb_with_orb_hyperbolic_structure() instead."
         )

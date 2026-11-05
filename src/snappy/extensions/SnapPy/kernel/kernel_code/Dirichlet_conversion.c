@@ -235,14 +235,14 @@ static Triangulation *try_Dirichlet_to_triangulation(
     orient(triangulation);
 
     /*
-     *  Set up the Cusps, including "fake cusps" for the finite vertices.
-     *  Then locate and remove the fake cusps.  If the manifold is closed,
-     *  drill out an arbitrary curve to express it as a Dehn filling.
-     *  Finally, determine the topology of each cusp (torus or Klein bottle)
-     *  and count them.
+     *  Set up the Vertex structures and their link data, including those for
+     *  finite vertices, and install peripheral curves on the cusps.  Then
+     *  remove the finite vertices.  If the manifold is closed, drill out an
+     *  arbitrary curve to express it as a Dehn filling.  Finally, count the
+     *  cusps.
      */
     create_cusps(triangulation);
-    compute_cusp_Euler_characteristics(triangulation);
+    compute_vertex_link_Euler_characteristics(triangulation);
     index_real_and_fake_cusps(triangulation);
     peripheral_curves(triangulation);
     remove_finite_vertices(triangulation,

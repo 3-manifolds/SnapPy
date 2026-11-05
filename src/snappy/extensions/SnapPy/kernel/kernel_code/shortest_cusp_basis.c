@@ -334,7 +334,7 @@ void install_shortest_bases(
          other cusps were filled.
       */
 
-        if (get_cusp_topology(cusp) == torus_cusp && cusp->is_complete )
+        if (vertex_is_torus_cusp(cusp) && cusp->is_complete )
 
             shortest_cusp_basis(    cusp->cusp_shape[current],
                                     change_matrices[cusp->cusp_index]);

@@ -206,7 +206,7 @@ static void set_cusps(Triangulation *old_manifold, Triangulation *new_manifold);
 static void copy_old_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_peripheral_curves(Triangulation *old_manifold, Triangulation *new_manifold);
 static void create_new_meridian(PositionedTet ptet);
-static void create_new_longitude(PositionedTet ptet, CuspTopology *cusp_topology);
+static void create_new_longitude(PositionedTet ptet, CuspOrientability *orientability);
 static void move_sideways(MeridionalAnnulus *ma, DirectionToTravel direction);
 static void transfer_CS(Triangulation *old_manifold, Triangulation *new_manifold);
 
@@ -918,9 +918,10 @@ static void create_new_peripheral_curves(
     Triangulation   *old_manifold,
     Triangulation   *new_manifold)
 {
-    Tetrahedron     *old_tet;
-    PositionedTet   ptet;
-    CuspTopology    cusp_topology;
+    Tetrahedron        *old_tet;
+    PositionedTet      ptet;
+    CuspOrientability  orientability;
+    Vertex             *vertex;
 
     /*
      *  We want to be sure to be sure to get the relative
@@ -957,17 +958,18 @@ static void create_new_peripheral_curves(
              */
 
             create_new_meridian (ptet);
-            create_new_longitude(ptet, &cusp_topology);
+            create_new_longitude(ptet, &orientability);
 
             /*
              *  Record the topology of the new cusp.
              */
 
-            set_cusp_topology(
+            vertex =
                 old_tet->extra->small_tet[old_tet->extra->index[0]]
-                       ->vertex[old_tet->extra->index[0]],
-                cusp_topology);
-            if (cusp_topology == torus_cusp)
+                ->vertex[old_tet->extra->index[0]];
+            vertex->orientability        = orientability;
+            vertex->euler_characteristic = 0;
+            if (orientability == orientable_cusp)
                 new_manifold->num_or_cusps++;
             else
                 new_manifold->num_nonor_cusps++;
@@ -1094,8 +1096,8 @@ static void create_new_meridian(
 
 
 static void create_new_longitude(
-    PositionedTet   ptet,
-    CuspTopology    *cusp_topology)
+    PositionedTet       ptet,
+    CuspOrientability   *orientability)
 {
     MeridionalAnnulus   ma0,
                         ma;
@@ -1117,9 +1119,9 @@ static void create_new_longitude(
      */
 
     /*
-     *  We assume the Vertex is orientable unless we discover otherwise.
+     *  We assume the new cusp is orientable unless we discover otherwise.
      */
-    *cusp_topology = torus_cusp;
+    *orientability = orientable_cusp;
 
     ma0.ptet                = ptet;
     ma0.current_position    = 0;    /* will be ignored */
@@ -1202,7 +1204,7 @@ static void create_new_longitude(
 
         if (        ma.ptet.tet == ma0.ptet.tet
          && ma.ptet.orientation != ma0.ptet.orientation)
-            *cusp_topology = Klein_cusp;
+            *orientability = nonorientable_cusp;
 
     } while ( ! same_positioned_tet(&ma.ptet, &ma0.ptet));
 }

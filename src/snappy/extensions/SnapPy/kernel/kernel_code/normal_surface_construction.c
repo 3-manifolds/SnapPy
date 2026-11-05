@@ -271,7 +271,7 @@ FuncResult find_normal_surfaces(
     NormalSurface   *normal_surface_list,
                     *new_entry;
     Boolean         connected,
-                    orientable,
+                    is_orientable,
                     two_sided;
     int             Euler_characteristic;
     
@@ -403,7 +403,7 @@ FuncResult find_normal_surfaces(
             /*
              *  What have we got?
              */
-            recognize_embedded_surface((*surface_list)->triangulation, &connected, &orientable, &two_sided, &Euler_characteristic);
+            recognize_embedded_surface((*surface_list)->triangulation, &connected, &is_orientable, &two_sided, &Euler_characteristic);
 
             /*
              *  Keep only connected surfaces of nonnegative Euler
@@ -416,7 +416,7 @@ FuncResult find_normal_surfaces(
                 (*surface_list)->num_normal_surfaces++;
                 
                 new_entry->is_connected         = connected;
-                new_entry->is_orientable        = orientable;
+                new_entry->is_orientable        = is_orientable;
                 new_entry->is_two_sided         = two_sided;
                 new_entry->Euler_characteristic = Euler_characteristic;
                 

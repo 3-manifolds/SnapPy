@@ -56,7 +56,7 @@
  *      (u', v') need not be the (shortest, second shortest) basis.
  *
  *  install_shortest_bases() installs the (shortest, second shortest)
- *      basis on each torus Vertex of manifold.  It does not change the bases
+ *      basis on each torus cusp of manifold.  It does not change the bases
  *      on Klein bottle cusps.  As explained for shortest_cusp_basis()
  *      above, the (shortest, second shortest) is not well defined for a
  *      hexagonal lattice, and the results may be machine dependent.

@@ -19,10 +19,10 @@
  *  int             get_num_generators(Triangulation *manifold);
  *  void            get_cusp_info(  Triangulation   *manifold,
  *                                  int             cusp_index,
- *                                  CuspTopology    *topology,
+ *                                  Boolean         *is_orientable,
  *                                  Boolean         *is_complete,
- *                                  double          *m,
- *                                  double          *l,
+ *                                  Real            *m,
+ *                                  Real            *l,
  *                                  Complex         *initial_shape,
  *                                  Complex         *current_shape,
  *                                  int             *initial_shape_precision,

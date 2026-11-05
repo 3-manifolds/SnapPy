@@ -2,11 +2,11 @@
  *  @file orb_cusps.c
  *
  *  Functions to populate Vertex::orb_[num_]incident_singular_edges
- *  and compute orbifold Euler characteristic of cusp.
+ *  and compute the orbifold Euler characteristic of a vertex link.
  *
  *  Note that Orb stored Vertex::cone_points which were indices and
- *  not pointers to EdgeClass. Orb also stored the cusp orbifold
- *  Euler characteristics in Vertex whereas we compute it on the fly.
+ *  not pointers to EdgeClass. Orb also stored the vertex link orbifold
+ *  Euler characteristics in Vertex, whereas we compute them on the fly.
  *
  */
 

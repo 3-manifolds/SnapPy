@@ -600,7 +600,7 @@ Triangulation *terse_to_tri(
     /*
      *  Compute Euler characteristic since peripheral_curves checks it.
      *
-     *  2026/06/01 MG Added when removing Cusps::is_finite.
+     *  2026/06/01 MG Added when removing the is_finite field.
      */
 
     compute_vertex_link_Euler_characteristics(manifold);
@@ -619,13 +619,13 @@ Triangulation *terse_to_tri(
      *      will respect the standard orientation convention.
      *
      *  (3) peripheral_curves() will determine the orientability of
-     *      each Vertex, and write it into the cusp->orientability field.
+     *      each cusp link, and write it into the cusp->orientability field.
      */
     peripheral_curves(manifold);
 
     /*
-     *  Count the total number of Cusps, and also the number
-     *  with torus and Klein bottle CuspTopology.
+     *  Count the total number of cusps, and also the numbers with
+     *  orientable and nonorientable links.
      */
     count_cusps(manifold);
 

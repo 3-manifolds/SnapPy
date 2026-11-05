@@ -247,7 +247,7 @@ void copy_curves_to_scratch(
     /*
      *  When computing intersection numbers on orientable cusps
      *  (especially in nonorientable manifolds) there is a danger that
-     *  scratch_curves[0] will lie on one sheet of the Vertex's orientation
+     *  scratch_curves[0] will lie on one sheet of the cusp's orientation
      *  double cover while scratch_curves[1] lies on the other sheet.
      *  To avoid this danger, copy_curves_to_scratch() offers the
      *  option to copy the peripheral curves on orientable cusps to
@@ -277,7 +277,7 @@ void copy_curves_to_scratch(
 
                     else
                         /*
-                         *      tet->vertex[k]->topology == Klein_cusp
+                         *      vertex_is_Klein_cusp(tet->vertex[k])
                          *   || double_copy_on_tori == FALSE
                          */
 

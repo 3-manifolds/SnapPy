@@ -5,8 +5,9 @@
  *
  *      void    create_cusps(Triangulation *manifold);
  *      void    create_cusps_and_mark_finite_as_needed(Triangulation *manifold);
+ *      Boolean vertex_is_finite(const Vertex * vertex);
  *      Boolean vertex_is_cusp(const Vertex * vertex);
- *      Boolean vertex_has_orienable_link(const Vertex * vertex);
+ *      Boolean vertex_has_orientable_link(const Vertex * vertex);
  *      Boolean vertex_is_torus_cusp(const Vertex * vertex);
  *      Boolean vertex_is_Klein_cusp(const Vertex * vertex);
  *      Boolean vertex_is_finite_or_cusp(const Vertex * vertex);
@@ -18,27 +19,27 @@
  *  structures to Triangulations.  It assumes the neighbor and gluing
  *  fields have been set (all other fields are optional).  It assigns
  *  cusp indices, but does not install peripheral curves, determine
- *  the CuspTopologies, or count the cusps.  You should call
+ *  the vertex link orientabilities, or count the cusps.  You should call
  *  peripheral_curves() to install the peripheral curves and determine
- *  the CuspTopologies, then call count_cusps() to set num_cusps,
+ *  the vertex link orientabilities, then call count_cusps() to set num_cusps,
  *  num_or_cusps and num_nonor_cusps.
  *
- *  create_cusps_and_mark_finite_as_needed() is used within the kernel to assign Vertex data
- *  structures to the "fake cusps" corresponding to finite vertices.
- *  It assumes fake cusps are indicated by tet->vertex[v] fields of NULL.
- *  The fake cusps are numbered -1, -2, etc.  As explained in the
+ *  create_cusps_and_mark_finite_as_needed() is used within the kernel to
+ *  assign Vertex data structures to finite vertices.  It assumes finite
+ *  vertices are indicated by tet->vertex[v] fields of NULL.  The finite
+ *  vertices are numbered -1, -2, etc.  As explained in the
  *  documentation at the top of finite_vertices.c, finite vertices use
- *  only the orientability, Euler characteristic, index, prev and next
- *  fields of the Vertex data structure.  create_cusps_and_mark_finite_as_needed() does not
- *  disturb the real cusps or the non-NULL tet->vertex[v] fields.
+ *  only the orientability, Euler characteristic, cusp_index, prev and next
+ *  fields of the Vertex data structure.
+ *  create_cusps_and_mark_finite_as_needed() does not disturb the cusps or
+ *  the non-NULL tet->vertex[v] fields.
  *
- *  count_cusps() counts the Cusps of each CuspTopology, and sets
+ *  count_cusps() counts the orientable and nonorientable cusps, and sets
  *  manifold->num_cusps, manifold->num_or_cusps and manifold->num_nonor_cusps.
  *
- *  Using the stored cusp Euler characteristic, index_real_and_fake_cusps() 
- *  renumbers all cusps so that real cusps have consecutive nonnegative
- *  indices beginning at 0 and fake cusps have consecutive negative indices
- *  beginning at -1.
+ *  Using the stored vertex link data, index_real_and_fake_cusps() gives
+ *  cusps consecutive nonnegative indices beginning at 0 and all other
+ *  vertices consecutive negative indices beginning at -1.
  */
 
 #include "kernel.h"
@@ -76,7 +77,8 @@ void create_cusps(
     VertexIndex v;
 
     /*
-     *  Make sure no Cusps are present, and everything is neat and tidy.
+     *  Make sure no Vertex structures are present, and everything is
+     *  neat and tidy.
      */
 
     error_check_for_create_cusps(manifold);
@@ -188,8 +190,7 @@ Vertex * create_one_cusp(
     FaceIndex   f;
 
     /*
-     *  Create the cusp, add it to the list, and set
-     *  the is_finite and index fields.
+     *  Create the Vertex and add it to the list.
      */
 
     cusp = NEW_STRUCT(Vertex);
@@ -197,15 +198,17 @@ Vertex * create_one_cusp(
     INSERT_BEFORE(cusp, &manifold->vertex_list_end);
 
     /*
-     *  We don't set the euler_characteristic, orientability,
-     *  is_complete, m, l, holonomy, cusp_shape or shape_precision fields.
+     *  Beyond the defaults established by initialize_vertex(), we don't set
+     *  the euler_characteristic, orientability, is_complete, m, l, holonomy,
+     *  cusp_shape or shape_precision fields.
      *
-     *  For "real" cusps the calling routine may
+     *  For cusps the calling routine may
      *
      *      (1) call compute_vertex_link_Euler_characteristics to set the Euler
      *          characteristic.
      *
-     *      (2) call compute_vertex_link_orientabilities to set the cusp->orientability.
+     *      (2) call compute_vertex_link_orientabilities to set
+     *          cusp->orientability.
      *
      *      (3) call peripheral_curves() to set the cusp->orientability if
      *          the cusp's Euler characteristic is zero,
@@ -224,7 +227,8 @@ Vertex * create_one_cusp(
      */
 
     /*
-     *  Set the tet->vertex field at all vertices incident to the new cusp.
+     *  Set the tet->vertex field at all ideal vertices corresponding to
+     *  this vertex.
      */
 
     /*

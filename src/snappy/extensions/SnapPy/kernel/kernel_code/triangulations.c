@@ -138,10 +138,10 @@ void data_to_triangulation(
     }
 
     /*
-     *  If num_or_cusps or num_nonor_cusps is nonzero, allocate the Cusps.
+     *  If num_or_cusps or num_nonor_cusps is nonzero, allocate the Vertices.
      *      Keep pointers to them on temporary arrays, so we can find them
      *      by their indices.
-     *  Otherwise we will create arbitrary Cusps later.
+     *  Otherwise we will create the Vertex structures later.
      */
     cusps_are_given = (data->num_or_cusps != 0) || (data->num_nonor_cusps != 0);
     if (cusps_are_given == TRUE)
@@ -180,7 +180,7 @@ void data_to_triangulation(
             for (j = 0; j < 4; j++)
             {
                 if (data->tetrahedron_data[i].cusp_index[j] >= 0)
-                    /* assign a real cusp */
+                    /* assign a cusp */
                     tet_array[i]->vertex[j] = cusp_array[data->tetrahedron_data[i].cusp_index[j]];
                 else
                 {
@@ -219,8 +219,8 @@ void data_to_triangulation(
     orient_edge_classes(manifold);
 
     /*
-     *  If the Cusps were specified explicitly, copy in the data.
-     *  Otherwise create arbitrary Cusps now.
+     *  If the cusps were specified explicitly, copy in their data.
+     *  Otherwise create the Vertex structures now.
      */
     if (cusps_are_given == TRUE)
     {
@@ -255,7 +255,7 @@ void data_to_triangulation(
 
     /*
      *  Provide peripheral curves if necessary.
-     *  This automatically records the CuspTopologies.
+     *  This automatically records the vertex link orientabilities.
      */
     peripheral_curves_as_needed(manifold);
 
@@ -275,7 +275,8 @@ void data_to_triangulation(
     }
 
     /*
-     *  Count the Cusps if necessary, noting how many have each topology.
+     *  Count the cusps if necessary, categorizing them by
+     *  orientability.
      */
     if (cusps_are_given == FALSE)
         count_cusps(manifold);
@@ -636,7 +637,7 @@ void copy_triangulation(
 
     /*
      *  Assign consecutive indices to source's Tetrahedra and EdgeClasses.
-     *  The Cusps will already be numbered.
+     *  The Vertices will already have cusp indices.
      *
      *  While we're at it, count the EdgeClasses.
      *  If no finite vertices are present, the number of EdgeClasses
@@ -648,7 +649,7 @@ void copy_triangulation(
     num_edge_classes = count_the_edge_classes(source);
 
     /*
-     *  Find the largest and smallest Vertex indices.
+     *  Find the largest and smallest cusp indices.
      */
     min_cusp_index = source->vertex_list_begin.next->cusp_index;
     max_cusp_index = source->vertex_list_begin.next->cusp_index;
@@ -664,8 +665,8 @@ void copy_triangulation(
     num_potential_cusps = max_cusp_index - min_cusp_index + 1;
 
     /*
-     *  Allocate the new Tetrahedra, EdgeClasses and Cusps.
-     *  For the Cusps we want to allow for the possibility
+     *  Allocate the new Tetrahedra, EdgeClasses and Vertices.
+     *  For the Vertices we want to allow for the possibility
      *  that there'll be gaps in the indexing scheme.
      */
 

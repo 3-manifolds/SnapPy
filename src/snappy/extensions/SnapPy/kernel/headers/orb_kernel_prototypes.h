@@ -28,8 +28,8 @@ extern void orb_normalize_cusp_areas(Triangulation *manifold);
 
 extern void orb_cusps_fill_incident_singular_edges(Triangulation * manifold);
 /**<
- *  Populates Vertex::num_incident_singular_edges and
- *  Vertex::incident_singular_edges. If the triangulation has any singular
+ *  Populates Vertex::orb_num_incident_singular_edges and
+ *  Vertex::orb_incident_singular_edges. If the triangulation has any singular
  *  edges, call this method before many other methods such as
  *  remove_finite_vertices (which, otherwise, would remove vertices
  *  adjacent to singular edges) or
@@ -38,8 +38,8 @@ extern void orb_cusps_fill_incident_singular_edges(Triangulation * manifold);
 
 extern Real orb_compute_orbifold_cusp_euler_characteristic(Vertex * cusp);
 /**<
- *  Computes the orbifold cusp Euler characteristic. Requires that
- *  orb_cusps_fill_incident_singular_edges is called in advance.
+ *  Computes the orbifold Euler characteristic of the vertex link. Requires
+ *  that orb_cusps_fill_incident_singular_edges() be called in advance.
  */
 
 /************************************************************************/

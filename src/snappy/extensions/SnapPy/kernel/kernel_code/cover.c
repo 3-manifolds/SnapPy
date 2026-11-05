@@ -8,7 +8,7 @@
  *  construct_cover() assumes the base_manifold's generators are present,
  *  and correspond to the generators in the representation.  The
  *  representation is assumed to be transitive, so the cover is connected.
- *  construct_cover() also assumes that each Vertex's basepoint_tet,
+ *  construct_cover() also assumes that each cusp's basepoint_tet,
  *  basepoint_vertex and basepoint_orientation are those which were
  *  recorded when the fundamental group was computed.  All these assumptions
  *  will be true if the Triangulation has not been changed since the
@@ -183,8 +183,8 @@ Triangulation *construct_cover(
 
     /*
      *  Create the covering_manifold's Cusps in the "natural" order.  That is,
-     *  Cusps which project to the base_manifold's Vertex 0 should come first,
-     *  then Cusps which project to the base_manifold's Vertex 1, etc.
+     *  Cusps which project to the base_manifold's cusp 0 should come first,
+     *  then cusps which project to the base_manifold's cusp 1, etc.
      */
     error_check_for_create_cusps(covering_manifold);    /* unnecessary   */
     covering_cusp_index = 0;                            /* running count */
@@ -194,11 +194,11 @@ Triangulation *construct_cover(
     {
         /*
          *  We don't know a priori how many Cusps in the covering_manifold
-         *  will project down to the given Vertex in the base_manifold.
+         *  will project down to the given cusp in the base_manifold.
          *  So we examine each of the n lifts of the given ideal vertex,
          *  and assign Cusps to those which haven't already been assigned
-         *  a Vertex at an earlier iteration of the loop.  Let each new
-         *  Vertex's matching_cusp field store a pointer to the corresponding
+         *  a cusp at an earlier iteration of the loop.  Let each new
+         *  cusp's matching_cusp field store a pointer to the corresponding
          *  cusp in the base_manifold.  Note that we are working with
          *  the basepoint_tets and basepoint_vertices relative to which
          *  the fundamental_group() computed the meridians and longitudes;
@@ -236,13 +236,13 @@ Triangulation *construct_cover(
      *      longitude} pair adhere to the right hand rule.
      *
      *  (2) peripheral_curves() will determine the orientability of
-     *      each Vertex, and write it into the cusp->orientability field.
+     *      each cusp link, and write it into the cusp->orientability field.
      */
     peripheral_curves(covering_manifold);
 
     /*
-     *  Count the total number of Cusps, and also the number
-     *  with torus and Klein bottle CuspTopology.
+     *  Count the total number of cusps, and also the numbers with
+     *  orientable and nonorientable links.
      */
     count_cusps(covering_manifold);
 

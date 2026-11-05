@@ -138,7 +138,7 @@ struct Tetrahedron
 {
     Tetrahedron         *neighbor[4];       /**< kernel_typedefs.h                        */
     Permutation         gluing[4];          /**< kernel_typedefs.h                        */
-    Vertex              *vertex[4];         /**< the cusp containing each vertex          */
+    Vertex              *vertex[4];         /**< Vertex structure for each tet vertex     */
     int                 curve[2][2][4][4];  /**< peripheral_curves.c                      */
     int                 scratch_curve[2][2][2][4][4]; /**< intersection_numbers.c (local) */
     EdgeClass           *edge_class[6];     /**< edge_classes.c                           */
@@ -204,7 +204,7 @@ struct Vertex
      * where "CuspTopology" was Klein/torus/unknown.
      */
 
-    CuspOrientability   orientability;          /**< Is cusp orientable?
+    CuspOrientability   orientability;          /**< Is the vertex link orientable?
                                                  *   Initialized to unknown_cusp_orientability
                                                  *   to indicate that it has not been computed
                                                  *   yet.
@@ -217,7 +217,7 @@ struct Vertex
                                                  *   For example, data_to_triangulation
                                                  *   sets it when the cusps are included in
                                                  *   the data.                            */
-    int                 euler_characteristic;   /**< Initialized to a value larger 2 to
+    int                 euler_characteristic;   /**< Initialized to a value larger than 2 to
                                                  *   indicate that it has not been computed
                                                  *   yet.
                                                  *   Computed by calling
@@ -237,15 +237,15 @@ struct Vertex
     int                 shape_precision[2];     /**< cusp_shapes.c                        */
     OrbVertexShape      *orb_vertex_shape;        /**< Encodes hyperbolic structure using vertex Gram matrices */
     int                 orb_num_incident_singular_edges; /**< Corresponds to Triangulation::num_cone_points in Orb. */
-    EdgeClass           **orb_incident_singular_edges;   /**< Singular edges incident to this cusp.
+    EdgeClass           **orb_incident_singular_edges;   /**< Singular edges incident to this vertex.
                                                           * Similar to Triangulation::cone_points,
                                                           * but we store the EdgeClass.
                                                           * Sorted by EdgeClass:orb_singular_index. */
     int                 cusp_index;             /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
-                                                /**   Non-negative indices for "real"
-                                                 *    cusps; negative indices for "fake"
-                                                 *    cusps (with vertex link a sphere).  */
+                                                /**   Nonnegative indices for cusps;
+                                                 *    negative indices for all other
+                                                 *    vertices.                           */
     Real                displacement,           /**< cusp_neighborhoods.c (used globally) */
                         displacement_exp,       /**< cusp_neighborhoods.c (used globally) */
                         reach,                  /**< cusp_neighborhoods.c (local)         */
@@ -276,7 +276,7 @@ struct Triangulation
     int                 num_cusps,              /**< total number of cusps                */
                         num_or_cusps,           /**< number of orientable cusps           */
                         num_nonor_cusps,        /**< number of nonorientable cusps        */
-                        num_fake_cusps;         /**< number of fake cusps                 */
+                        num_fake_cusps;         /**< number of non-cusp vertices          */
     int                 orb_num_singular_edges;
     int                 num_generators;         /**< choose_generators.c (local)          */
     Boolean             CS_value_is_known,      /**< Chern_Simons.c                       */

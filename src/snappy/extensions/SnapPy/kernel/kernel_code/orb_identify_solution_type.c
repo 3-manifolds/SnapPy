@@ -29,8 +29,8 @@ SNAPPEA_NAMESPACE_BEGIN_SCOPE
 #define ORB_DIHEDRAL_EPSILON    1e-2
 
 /*
- *  ORB_IDEAL_EPSILON defines when a cusp orbifold Euler characteristic
- *  or cusp inner product should count as zero.
+ *  ORB_IDEAL_EPSILON defines when a vertex link orbifold Euler
+ *  characteristic or cusp inner product should count as zero.
  */
 #define ORB_IDEAL_EPSILON       1e-4
 

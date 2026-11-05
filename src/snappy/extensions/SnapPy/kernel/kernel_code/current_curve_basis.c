@@ -13,7 +13,7 @@
  *  current_curve_basis() accepts a Triangulation and a cusp index,
  *  and computes a 2 x 2 integer matrix basis_change with the property that
  *
- *      if the Vertex of index cusp_index is filled, and has
+ *      if the cusp of index cusp_index is filled, and has
  *          integer Dehn filling coefficients,
  *
  *          the first row of basis_change is set to the current
@@ -30,7 +30,7 @@
  *  shortest curve which completes the basis.
  *
  *  install_current_curve_bases() installs the current curve basis 
- *      on each Vertex of manifold.
+ *      on each cusp of manifold.
  *
  *  96/9/28 Modified to accept non relatively prime integer coefficients.
  *  For example, (15, 20) is treated the same as (3,4).  Thus in

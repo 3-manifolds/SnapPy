@@ -268,9 +268,8 @@ FuncResult split_along_normal_surface(
     
     /*
      *  Subdivide the manifold.  The result may or may not be connected.
-     *  subdivide_manifold() creates Tetrahedra and real Cusps,
-     *  but not EdgeClasses or fake Cusps ("fake Cusps" are Vertex structures
-     *  for finite vertices).
+     *  subdivide_manifold() creates Tetrahedra and Vertex structures for
+     *  cusps, but not EdgeClasses or Vertex structures for finite vertices.
      */
     subdivision = subdivide_manifold(
             surface_list->triangulation,
@@ -297,7 +296,7 @@ FuncResult split_along_normal_surface(
             extend_orientation(pieces[i], find_correctly_oriented_tet(pieces[i]));
             
             /*
-             *  Install "fake cusps" for the finite vertices.
+             *  Install Vertex structures for the finite vertices.
              */
             create_cusps_and_mark_finite_as_needed(pieces[i]);
             
@@ -308,14 +307,13 @@ FuncResult split_along_normal_surface(
             orient_edge_classes(pieces[i]);
 
             /*
-             *  remove_finite_vertices calls get_cusp_topology which
-             *  requires the Vertex::orientability to be set. Thus,
-             *  calling compute_vertex_link_orientabilities here (even though
-             *  they are also computed by peripheral_curves_as_needed
-             *  later).
+             *  Record the vertex link orientabilities before
+             *  retriangulating.
              *
-             *  2026/06/01 MG This was not needed before when
-             *  remove_finite_vertices simply checked Vertex::is_finite.
+             *  2026/06/01 MG Added when reworking how the vertex
+             *  link topology is recorded. It might not be necessary
+             *  since we call peripheral_curves_as_needed later.
+             *
              */
 
             compute_vertex_link_orientabilities(pieces[i]);
@@ -1618,9 +1616,9 @@ static void separate_connected_components(
         uFatalError("separate_connected_components", "normal_surface_splitting");
     
     /*
-     *  If there's only one piece, transfer all the Cusps to it.
+     *  If there's only one piece, transfer all the cusps to it.
      *  If there are two pieces we have to be a little more careful,
-     *  and transfer each Vertex to the correct piece.
+     *  and transfer each cusp to the correct piece.
      */
     if (pieces[1] == NULL)
     {
@@ -1637,9 +1635,9 @@ static void separate_connected_components(
     else
     {
         /*
-         *  We need to figure out which Vertex goes with which piece.
+         *  We need to figure out which cusp goes with which piece.
          *  Set up an array to record this information:  which_piece[i]
-         *  will equal 0 (resp. 1) when the Vertex of index i belongs to
+         *  will equal 0 (resp. 1) when the cusp of index i belongs to
          *  pieces[0] (resp. pieces[1]).
          */
         which_piece = NEW_ARRAY(subdivision->num_cusps, int);
@@ -1652,7 +1650,7 @@ static void separate_connected_components(
             which_piece[i] = -1;
         
         /*
-         *  Use the tet->vertex[] fields to deduce which Vertex goes where.
+         *  Use the tet->vertex[] fields to deduce which cusp goes where.
          */
         for (i = 0; i < 2; i++)
             for (tet = pieces[i]->tet_list_begin.next;
@@ -1688,10 +1686,10 @@ static void separate_connected_components(
                 uFatalError("separate_connected_components", "normal_surface_splitting");
 
         /*
-         *  The Cusps should be numbered consecutively within each piece,
+         *  The cusps should be numbered consecutively within each piece,
          *  yet retain the same relative order as they had in subdivision.
-         *  The array old_to_new_index[] translates an old Vertex index
-         *  (in subdivision) to a new Vertex index (in pieces[which_piece[i]]).
+         *  The array old_to_new_index[] translates an old cusp index
+         *  (in subdivision) to a new cusp index (in pieces[which_piece[i]]).
          *  As a side effect, this code sets pieces[]->num_cusps.
          */
         old_to_new_index = NEW_ARRAY(subdivision->num_cusps, int);
@@ -1701,7 +1699,7 @@ static void separate_connected_components(
             old_to_new_index[i] = pieces[which_piece[i]]->num_cusps++;
         
         /*
-         *  Transfer the Cusps from subdivision to pieces[0] and pieces[1].
+         *  Transfer the cusps from subdivision to pieces[0] and pieces[1].
          */
         while (subdivision->vertex_list_begin.next != &subdivision->vertex_list_end)
         {

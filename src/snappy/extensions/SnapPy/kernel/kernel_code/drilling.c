@@ -961,7 +961,10 @@ static void create_new_peripheral_curves(
             create_new_longitude(ptet, &orientability);
 
             /*
-             *  Record the topology of the new cusp.
+             *  Record the new cusp's orientability.
+             *
+             *  Set the Euler characteristic of the link of the corresponding
+             *  vertex to zero.
              */
 
             vertex =

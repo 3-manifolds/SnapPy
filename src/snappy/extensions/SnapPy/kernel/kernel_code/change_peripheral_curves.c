@@ -7,15 +7,15 @@
  *                Triangulation *manifold,
  *          CONST MatrixInt22   change_matrices[]);
  *
- *  If all the change_matrices (there should be one for each Vertex) have
- *  determinant +1, then on each Vertex change_peripheral_curves() replaces
+ *  If all the change_matrices (there should be one for each cusp) have
+ *  determinant +1, then on each cusp change_peripheral_curves() replaces
  *
  *  the meridian with   change_matrices[i][0][0] meridians plus
  *                      change_matrices[i][0][1] longitudes, and
  *  the longitude with  change_matrices[i][1][0] meridians plus
  *                      change_matrices[i][1][1] longitudes,
  *
- *  where i is the index of the Vertex.  It returns func_OK.
+ *  where i is the index of the cusp.  It returns func_OK.
  *
  *  If some change_matrix has determinant != +1, change_peripheral_curves()
  *  returns func_bad_input.

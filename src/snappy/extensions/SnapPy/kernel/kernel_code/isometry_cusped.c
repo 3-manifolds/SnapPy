@@ -571,8 +571,8 @@ static void copy_isometry(
 /*
  *  Given a Triangulation *manifold0 whose "image" and "map" fields
  *  describe an isometry to some (not necessarily distinct) manifold,
- *  compute_cusp_action() computes the action on the Cusps.  Only real
- *  cusps are considered -- finite vertices are ignored.
+ *  compute_cusp_action() computes the action on the cusps.  Finite vertices
+ *  are ignored.
  */
 
 static void compute_cusp_action(
@@ -600,7 +600,7 @@ static void compute_cusp_image(
      *  There's a tremendous amount of redundancy here -- each
      *  cusp image is set over and over -- but it hardly matters.
      *
-     *  Ignore negatively indexed Cusps -- they're finite vertices.
+     *  Ignore negatively indexed non-cusp vertices.
      */
 
     for (tet = manifold0->tet_list_begin.next;
@@ -657,7 +657,7 @@ static void compute_cusp_map(
      *  There's a lot of redundancy in this loop, but a trivial
      *  computation so the redundancy hardly matters.
      *
-     *  Ignore negatively indexed Cusps -- they're finite vertices.
+     *  Ignore negatively indexed non-cusp vertices.
      */
 
     for (tet = manifold0->tet_list_begin.next;
@@ -728,7 +728,7 @@ static void copy_images_to_scratch(
 
                     else
                         /*
-                         *      tet->vertex[k]->topology == Klein_cusp
+                         *      vertex_is_Klein_cusp(tet->vertex[k])
                          *   || double_copy_on_tori == FALSE
                          */
 

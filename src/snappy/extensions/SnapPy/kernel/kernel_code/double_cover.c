@@ -317,7 +317,7 @@ static void set_cusp_data(
                     j,
                     cusp_count;
     IntPair         *old_to_new;
-    CuspTopology    topology;
+    Boolean         is_orientable;
     Boolean         is_complete;
     Real          m,
                     l;
@@ -336,10 +336,10 @@ static void set_cusp_data(
 
     for (i = 0; i < manifold->num_cusps; i++)
     {
-        get_cusp_info(manifold, i, &topology,
+        get_cusp_info(manifold, i, &is_orientable,
             NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-        if (topology == torus_cusp)
+        if (is_orientable)
         {
             old_to_new[i][0] = cusp_count++;
             old_to_new[i][1] = cusp_count++;
@@ -383,10 +383,10 @@ static void set_cusp_data(
 
     for (i = 0; i < manifold->num_cusps; i++)
     {
-        get_cusp_info(manifold, i, &topology, &is_complete, &m, &l,
+        get_cusp_info(manifold, i, &is_orientable, &is_complete, &m, &l,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
 
-        if (topology == torus_cusp)
+        if (is_orientable)
         {
             set_cusp_info(the_cover, old_to_new[i][0], is_complete, m, l);
             set_cusp_info(the_cover, old_to_new[i][1], is_complete, m, l);

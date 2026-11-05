@@ -174,6 +174,22 @@ def smith_form(M):
 
 # end smith form code
 
+def VertexLinkTopologyName(
+        euler_characteristic : int,
+        orientable : bool):
+    if euler_characteristic == 2:
+        return 'spherical link'
+    if euler_characteristic == 1:
+        return 'projective plane link'
+    if euler_characteristic == 0:
+        if orientable:
+            return 'torus cusp'
+        else:
+            return 'Klein bottle cusp'
+    if orientable:
+        return 'orientable link of higher genus' # ORB-TODO: Wording should match.
+    else:
+        return 'nonorientable link of higher genus'
 
 # Enum conversions
 CuspTopology = [
@@ -184,6 +200,7 @@ CuspTopology = [
     'orientable link of higher genus', # ORB-TODO: Wording should match.
     'nonorientable link of higher genus',
     'unknown']
+
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']

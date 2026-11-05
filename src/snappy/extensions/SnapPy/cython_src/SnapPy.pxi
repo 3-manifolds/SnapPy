@@ -517,7 +517,7 @@ cdef extern from "SnapPea.h":
     extern int get_num_fake_cusps(c_Triangulation *manifold) except *
     extern int get_max_singularity(c_Triangulation *manifold) except *
     extern int get_num_generators(c_Triangulation *manifold) except *
-    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
+    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean *is_orientable, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
     extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, Real m, Real l) except *
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision) except *
     extern void get_tet_shape(c_Triangulation *manifold, int which_tet, c_FillingStatus which_solution, Boolean fixed_alignment, Real *shape_rect_real, Real *shape_rect_imag, Real *shape_log_real, Real *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *

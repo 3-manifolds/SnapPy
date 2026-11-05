@@ -197,7 +197,7 @@ int get_num_generators(
 void get_cusp_info(
     Triangulation   *manifold,
     int             cusp_index,
-    CuspTopology    *topology,
+    Boolean         *is_orientable,
     Boolean         *is_complete,
     Real            *m,
     Real            *l,
@@ -216,8 +216,8 @@ void get_cusp_info(
      *  Write information corresponding to nonNULL pointers.
      */
 
-    if (topology != NULL)
-        *topology = get_cusp_topology(cusp);
+    if (is_orientable != NULL)
+        *is_orientable = vertex_has_orientable_link(cusp);
 
     if (is_complete != NULL)
         *is_complete = cusp->is_complete;

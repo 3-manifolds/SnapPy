@@ -718,7 +718,7 @@ extern char *my_strdup(const char *);
 
 extern void recognize_embedded_surface( Triangulation   *manifold,
                                         Boolean         *connected,
-                                        Boolean         *orientable,
+                                        Boolean         *is_orientable,
                                         Boolean         *two_sided,
                                         int             *Euler_characteristic);
 /**<

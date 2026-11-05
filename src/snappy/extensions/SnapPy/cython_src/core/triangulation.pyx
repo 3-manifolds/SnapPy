@@ -1340,7 +1340,7 @@ cdef class Triangulation():
     def _orb_vertex_info(self, data_spec=None):
         cdef int num_vertices
         cdef int vertex_index
-        cdef Boolean is_orientable
+        cdef Boolean c_is_orientable
         cdef int euler_characteristic, num_cone_points
         cdef int cusp_index
         cdef Real *cone_point_orders = NULL
@@ -1364,7 +1364,7 @@ cdef class Triangulation():
 
         orb_get_vertex_info(self.c_triangulation,
                             vertex_index,
-                            &is_orientable,
+                            &c_is_orientable,
                             &euler_characteristic,
                             &num_cone_points,
                             &cone_point_orders,
@@ -1375,13 +1375,13 @@ cdef class Triangulation():
         if cusp_index >= 0:
             return self.cusp_info(cusp_index)
 
-        orientable = B2B(is_orientable)
+        is_orientable = B2B(c_is_orientable)
 
         info = {
             'vertex_index' : vertex_index,
 
             # Minimal description of vertex link (orbifold) topology
-            'orientable' : orientable,
+            'orientable' : is_orientable,
             'euler_characteristic' : euler_characteristic,
             'cone_point_orders' :
                 [ Real2float(cone_point_orders[i])
@@ -1394,7 +1394,7 @@ cdef class Triangulation():
             # Derived from the minimal description
             'is_cusp' : False,
             'topology' : VertexLinkTopologyName(
-                euler_characteristic, orientable),
+                euler_characteristic, is_orientable),
             'is_finite' : (
                 euler_characteristic == 2 and num_cone_points == 0),
             'orbifold_euler_characteristic' :
@@ -1435,7 +1435,7 @@ cdef class Triangulation():
 
         # get_cusp_info
         cdef int cusp_index
-        cdef Boolean is_orientable, is_complete
+        cdef Boolean c_is_orientable, c_is_complete
         cdef Real m, l
 
         # core_geodesic
@@ -1453,27 +1453,27 @@ cdef class Triangulation():
             'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
-                      &is_orientable, &is_complete, &m, &l,
+                      &c_is_orientable, &c_is_complete, &m, &l,
                       NULL, NULL, NULL, NULL, NULL, NULL)
 
-        orientable = B2B(is_orientable)
+        is_orientable = B2B(c_is_orientable)
 
         info = {
             # Minimal description of vertex link (orbifold) topology
-            'orientable' : orientable,
+            'orientable' : is_orientable,
             'euler_characteristic' : 0,
             'cone_point_orders' : [],
             'cone_point_singular_edge_indices' : [],
 
             # Derived from the minimal description
             'is_cusp' : True,
-            'topology' : VertexLinkTopologyName(0, orientable),
+            'topology' : VertexLinkTopologyName(0, is_orientable),
             'is_finite' : False,
             'orbifold_euler_characteristic' : 0.0,
 
             # Specific to cusps
             'cusp_index' : cusp_index,
-            'is_complete' : B2B(is_complete),
+            'is_complete' : B2B(c_is_complete),
             'filling' : (Real2float(m), Real2float(l))
            }
 

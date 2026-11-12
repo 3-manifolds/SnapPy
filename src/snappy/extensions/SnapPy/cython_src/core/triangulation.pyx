@@ -2783,7 +2783,7 @@ cdef class Triangulation():
         """
         Compute all covers using low_index.
         """
-        G = self.fundamental_group(try_hard_to_shorten_relators=False)
+        G = self.fundamental_group()
 
         relators = sorted(G.relators(as_int_list=True), key=len)
 
@@ -2821,7 +2821,7 @@ cdef class Triangulation():
         if not _within_sage:
             raise SageNotAvailable('the "gap" method for covers requires Sage')
 
-        G = gap(self.fundamental_group(try_hard_to_shorten_relators=False))
+        G = gap(self.fundamental_group())
         covers = [self.cover(H)
                   for H in G.LowIndexSubgroupsFpGroup(degree)
                   if G.Index(H) == degree]
@@ -2836,7 +2836,7 @@ cdef class Triangulation():
         if not _within_sage:
             raise SageNotAvailable('the "magma" method for covers requires Sage')
 
-        G = magma(self.fundamental_group(try_hard_to_shorten_relators=False))
+        G = magma(self.fundamental_group())
         covers = [self.cover(H)
                   for H in G.LowIndexSubgroups('<%d, %d>' %
                                               (degree, degree))]

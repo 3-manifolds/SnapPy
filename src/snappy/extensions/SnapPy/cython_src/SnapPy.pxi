@@ -633,6 +633,7 @@ cdef extern from "SnapPea.h":
     extern Real orb_volume(c_Triangulation * manifold) except *
 
 cdef extern from "kernel_prototypes.h":
+    extern void *my_malloc(size_t bytes)
     extern void my_free(void *ptr)
     extern void choose_generators(c_Triangulation *manifold,
                                   Boolean compute_corners,

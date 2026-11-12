@@ -1622,6 +1622,16 @@ cdef class Manifold(Triangulation):
                                  'in range(%d).' % len(curves))
             curve_to_drill = curves[which_curve].dual_curve
 
+        if curve_to_drill.c_dual_curve == NULL:
+            raise ValueError('The dual curve is empty.')
+        if (curve_to_drill.num_tetrahedra !=
+                get_num_tetrahedra(self.c_triangulation)):
+            raise ValueError('The dual curve is for a triangulation with a '
+                             'different number of tetrahedra.')
+        # drill_cusp() looks tetrahedra up by their index field, so make
+        # sure it matches the numbering used by face_intersections().
+        number_the_tetrahedra(self.c_triangulation)
+
         new_name = to_byte_str(self.name() + '-%d' % curve_to_drill.index)
         c_new_name = new_name
 

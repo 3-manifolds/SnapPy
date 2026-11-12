@@ -337,13 +337,20 @@ def _link_exterior(self, with_hyperbolic_structure=True,
 link_objects = []
 
 from spherogram.links import (Crossing, Strand, Link, Tangle,
-                              RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid, random_link)
+                              RationalTangle, ZeroTangle, InfinityTangle, 
+                              IdentityBraid, BraidTangle, ComponentTangle, random_link,
+)
+
+from spherogram import (DictLaurentPolynomial, RMatrix, colored_links_gould_R_matrices,
+                        colored_jones_R_matrices, prefactor_colored_jones)
 
 # Monkey-patch the Link class
 Link.exterior = _link_exterior
 link_objects += [
         'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
-        'IdentityBraid', 'random_link',
+        'IdentityBraid', 'BraidTangle', 'ComponentTangle', 'random_link',
+        'DictLaurentPolynomial', 'RMatrix', 'colored_links_gould_R_matrices',
+        'colored_jones_R_matrices', 'prefactor_colored_jones'
         ]
 
 # Monkey-patch the DTcodec class

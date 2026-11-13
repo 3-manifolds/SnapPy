@@ -146,7 +146,6 @@ def set_test_flag(int value):
 def cy_eval(s):
     return eval(s)
 
-
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
@@ -174,6 +173,12 @@ def smith_form(M):
 
 # end smith form code
 
+def is_iterable(obj):
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
 
 # Enum conversions
 CuspTopology = [
@@ -692,6 +697,51 @@ cdef class DualOneSkeletonCurve():
                  for j in range(4)])
 
         return ans
+
+    @staticmethod
+    def from_face_intersections(face_intersections, index=0):
+        """
+        Build a dual curve from a list in the format returned by
+        face_intersections(): entry [i][j] is True iff the curve crosses
+        face j of tetrahedron i, with the tetrahedra numbered as in
+        Triangulation._get_tetrahedra_gluing_data().  The result can be
+        passed to Manifold.drill().
+
+        Only the face data and the size are set, since drilling uses
+        nothing else; the complex length and parity are left unset.  The
+        input is only checked locally (each tetrahedron must be met in 0
+        or 2 faces).  It is up to the caller to make sure it describes a
+        closed curve in the dual 1-skeleton.
+        """
+        cdef int i, j, n
+        cdef c_DualOneSkeletonCurve *c_curve
+        cdef DualOneSkeletonCurve curve
+        rows = [[bool(x) for x in row] for row in face_intersections]
+        n = len(rows)
+        if any(len(row) != 4 for row in rows):
+            raise ValueError('Each tetrahedron needs exactly 4 face entries.')
+        if any(sum(row) not in (0, 2) for row in rows):
+            raise ValueError('A dual curve meets each tetrahedron '
+                             'in either 0 or 2 faces.')
+        size = sum(1 for row in rows if any(row))
+        if size == 0:
+            raise ValueError('The dual curve is empty.')
+
+        c_curve = <c_DualOneSkeletonCurve *>malloc(
+            sizeof(c_DualOneSkeletonCurve))
+        c_curve.tet_intersection = <DualOneSkeletonCurvePiece *>malloc(
+            n * sizeof(DualOneSkeletonCurvePiece))
+        for i in range(n):
+            for j in range(4):
+                c_curve.tet_intersection[i][j] = 1 if rows[i][j] else 0
+        c_curve.size = size
+        c_curve.left_child = NULL
+        c_curve.right_child = NULL
+        c_curve.next_subtree = NULL
+
+        curve = DualOneSkeletonCurve(index, n)
+        curve.set_c_dual_curve(c_curve)
+        return curve
 
     def __dealloc__(self):
         if self.c_dual_curve != NULL:

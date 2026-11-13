@@ -192,7 +192,7 @@ class SnapPyApp(Command):
 class SnapPySdist(sdist):
     def run(self):
         python = sys.executable
-        check_call([python, 'setup.py', 'build_docs'])
+        # check_call([python, 'setup.py', 'build_docs'])
         sdist.run(self)
 
 class SnapPyPipInstall(Command):

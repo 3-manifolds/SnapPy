@@ -722,9 +722,9 @@ cdef class DualOneSkeletonCurve():
         if size == 0:
             raise ValueError('The dual curve is empty.')
 
-        c_curve = <c_DualOneSkeletonCurve *>my_malloc(
+        c_curve = <c_DualOneSkeletonCurve *>malloc(
             sizeof(c_DualOneSkeletonCurve))
-        c_curve.tet_intersection = <DualOneSkeletonCurvePiece *>my_malloc(
+        c_curve.tet_intersection = <DualOneSkeletonCurvePiece *>malloc(
             n * sizeof(DualOneSkeletonCurvePiece))
         for i in range(n):
             for j in range(4):

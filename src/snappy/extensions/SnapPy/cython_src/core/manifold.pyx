@@ -1602,6 +1602,14 @@ cdef class Manifold(Triangulation):
         >>> N = M.drill(0, max_segments=3)
         >>> (M.num_cusps(), N.num_cusps())
         (1, 2)
+
+        You can even specify the dual curve by an array where
+        ``which_curve[t][f]`` is whether face ``f`` of tetraheron
+        ``t`` meets the dual curve.
+
+        >>> spec = [(0, 0, 1, 1)] + 6*[(0, 0, 0, 0)]
+        >>> M.drill(spec).is_isometric_to(N)
+        True
         """
 
         cdef int num_curves
@@ -1614,6 +1622,8 @@ cdef class Manifold(Triangulation):
             curve_to_drill = which_curve
         elif isinstance(which_curve, DualCurveInfo):
             curve_to_drill = which_curve.dual_curve
+        elif is_iterable(which_curve):
+            curve_to_drill = DualOneSkeletonCurve.from_face_intersections(which_curve)
         else:
             which_curve = int(which_curve)
             curves = self.dual_curves(max_segments=max_segments)

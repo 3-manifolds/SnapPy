@@ -146,7 +146,6 @@ def set_test_flag(int value):
 def cy_eval(s):
     return eval(s)
 
-
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
@@ -174,6 +173,12 @@ def smith_form(M):
 
 # end smith form code
 
+def is_iterable(obj):
+    try:
+        iter(obj)
+        return True
+    except TypeError:
+        return False
 
 # Enum conversions
 CuspTopology = [

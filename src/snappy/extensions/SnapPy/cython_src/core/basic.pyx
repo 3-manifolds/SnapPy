@@ -746,8 +746,8 @@ cdef class DualOneSkeletonCurve():
     def __dealloc__(self):
         if self.c_dual_curve != NULL:
             if self.c_dual_curve.tet_intersection != NULL:
-                my_free(self.c_dual_curve.tet_intersection)
-            my_free(self.c_dual_curve)
+                free(self.c_dual_curve.tet_intersection)
+            free(self.c_dual_curve)
 
     def __repr__(self):
         return f'DualCurve({self.index})'

@@ -1550,7 +1550,7 @@ cdef class Manifold(Triangulation):
             )
             result.append(dual_curve_info)
 
-        my_free(curve_list)
+        free(curve_list)
         return self._cache.save(ListOnePerLine(result),
                                 'dual_curves',
                                 *args)

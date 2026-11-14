@@ -1402,9 +1402,9 @@ cdef class Triangulation():
         }
 
         if cone_point_orders != NULL:
-            my_free(cone_point_orders)
+            free(cone_point_orders)
         if cone_point_singular_edge_indices != NULL:
-            my_free(cone_point_singular_edge_indices)
+            free(cone_point_singular_edge_indices)
 
         return VertexInfo(**info)
 

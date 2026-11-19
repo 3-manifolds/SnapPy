@@ -343,7 +343,7 @@ cdef class Triangulation():
         """
         If this is a manifold or triangulation which was constructed as
         a covering space, return a dictionary describing the cover.  Otherwise
-        return 0.  The dictionary keys are 'base', 'type' and 'degree'.
+        return None.  The dictionary keys are 'base', 'type' and 'degree'.
         """
         if self._cover_info:
             return dict(self._cover_info)
